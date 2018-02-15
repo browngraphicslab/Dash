@@ -287,72 +287,22 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            //return if it's an operator dragged from compoundoperatoreditor listview 
+            if (e.Data?.Properties[CompoundOperatorController.OperationBarDragKey] != null) return;
             
-            // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
-            {
-                e.AcceptedOperation = DataPackageOperation.Move;
-            }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            }
-            else
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation;
-            }
+                   // accept move, then copy, and finally accept whatever they requested (for now)
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move; else
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy)) e.AcceptedOperation = DataPackageOperation.Copy; 
+            else  e.AcceptedOperation = e.DataView.RequestedOperation;
+
+            RemoveDragDropIndication(sender as UserControl);
 
             var where = sender is CollectionFreeformView ?
                 Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                 new Point();
 
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
-            {
-                var dragData  = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
-                var getDocs   = dragData.CollectionReference.DereferenceToRoot(null);
-                var subDocs   = new List<DocumentController>();
-                var showField = dragData.FieldKey;
-                var cnote     = new CollectionNote(where, dragData.ViewType);
-
-                if ((getDocs as ListController<DocumentController>).Data.Any())
-                {
-                    var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
-                    if (firstDocValue is ListController<DocumentController> || firstDocValue?.GetValue(null) is List<FieldControllerBase>)
-                        showField = expandCollection(dragData.FieldKey, getDocs, subDocs, showField);
-                    else if (firstDocValue is DocumentController)
-                        subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
-                    else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
-                }
-                if (subDocs != null)
-                    cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
-                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
-                cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
-
-                AddDocument(cnote.Document, null);
-                return;
-            }
-
-            // first check for things we don't want to allow dropped onto the collection
-            //restore previous conditions 
-            if (DocumentView.DragDocumentView != null)
-                DocumentView.DragDocumentView.IsHitTestVisible = true;
-            this.RemoveDragDropIndication(sender as UserControl);
-
-            // true if dragged from key value pane in interfacebuilder
-            var isDraggedFromKeyValuePane = e.DataView?.Properties.ContainsKey(KeyValuePane.DragPropertyKey) ?? false;
-            
-            if (isDraggedFromKeyValuePane) return; // in both these cases we don't want the collection to intercept the event
-
-            //return if it's an operator dragged from compoundoperatoreditor listview 
-            if (e.Data?.Properties[CompoundOperatorController.OperationBarDragKey] != null) return;
-
-            // from now on we are handling this event!
-            e.Handled = true;
-
             // if we are dragging and dropping from the radial menu
-            // if we drag from radial menu
-            var sourceIsRadialMenu = e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) ?? false;
-            if (sourceIsRadialMenu)
+            if (e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) == true)
             {
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
@@ -360,8 +310,7 @@ namespace Dash
                 action?.Invoke(sender as ICollectionView, e);
             }
             // if we drag from the file system
-            var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
-            if (sourceIsFileSystem)
+            else if (e.DataView?.Properties.ContainsKey(StandardDataFormats.StorageItems) == true)
             {
                 try
                 {
@@ -372,7 +321,7 @@ namespace Dash
                     Debug.WriteLine(exception);
                 }
             }
-            else if (e.DataView.Contains(StandardDataFormats.Html))
+            else if (e.DataView?.Contains(StandardDataFormats.Html) == true)
             {
                 var html = await e.DataView.GetHtmlFormatAsync();
 
@@ -446,7 +395,7 @@ namespace Dash
                 }
                 AddDocument(htmlNote, null);
             }
-            else if (e.DataView.Contains(StandardDataFormats.Rtf))
+            else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
             {
                 var text = await e.DataView.GetRtfAsync();
 
@@ -454,7 +403,7 @@ namespace Dash
                 t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text, text)), true);
                 AddDocument(t.Document, null);
             }
-            else if (e.DataView.Contains(StandardDataFormats.Text))
+            else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
                 var t = new RichTextNote(PostitNote.DocumentType);
@@ -467,7 +416,7 @@ namespace Dash
                 }
                 AddDocument(t.Document, null);
             }
-            else if (e.DataView.Contains(StandardDataFormats.Bitmap))
+            else if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
             {
                 var bmp = await e.DataView.GetBitmapAsync();
                 IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
@@ -480,15 +429,31 @@ namespace Dash
                 var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
                 AddDocument(t.Document, null);
             }
-
-            // TODO remove this and all references to TreeMenuNode
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(TreeMenuNode.TreeNodeDragKey))
+            else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
             {
-                var draggedLayout = e.DataView.Properties[TreeMenuNode.TreeNodeDragKey] as DocumentController;
-                AddDocument(draggedLayout.GetViewCopy(where), null);
-            }
+                var dragData = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
+                var getDocs = dragData.CollectionReference.DereferenceToRoot(null);
+                var subDocs = new List<DocumentController>();
+                var showField = dragData.FieldKey;
+                var cnote = new CollectionNote(where, dragData.ViewType);
 
-            if (e.DataView != null && e.DataView.Properties.ContainsKey("DocumentControllerList"))
+                if ((getDocs as ListController<DocumentController>).Data.Any())
+                {
+                    var firstDocValue = (getDocs as ListController<DocumentController>).TypedData.First().GetDataDocument(null).GetDereferencedField(showField, null);
+                    if (firstDocValue is ListController<DocumentController> || firstDocValue?.GetValue(null) is List<FieldControllerBase>)
+                        showField = expandCollection(dragData.FieldKey, getDocs, subDocs, showField);
+                    else if (firstDocValue is DocumentController)
+                        subDocs = (getDocs as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null).GetDereferencedField<DocumentController>(showField, null)).ToList();
+                    else subDocs = pivot((getDocs as ListController<DocumentController>).TypedData, showField);
+                }
+                if (subDocs != null)
+                    cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, new ListController<DocumentController>(subDocs), true);
+                else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
+                cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
+
+                AddDocument(cnote.Document, null);
+            }
+            else if (e.DataView?.Properties.ContainsKey("DocumentControllerList") == true)
             {
                 var collectionViewModel = e.DataView.Properties.ContainsKey(nameof(BaseCollectionViewModel)) == true ?
                           e.DataView.Properties[nameof(BaseCollectionViewModel)] as BaseCollectionViewModel : null;
@@ -523,10 +488,8 @@ namespace Dash
                    e.AcceptedOperation = DataPackageOperation.Link; // if the item stayed in the same container, treat it as link, not a move (a move will remove the source object in DragCompleted)
                 }
             }
-
-
             // if the user drags the entire collection of documents from the search bar
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey))
+            else if (e.DataView?.Properties.ContainsKey(MainSearchBox.SearchCollectionDragKey) == true)
             {
                 // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
                 var models = (e.DataView.Properties[MainSearchBox.SearchCollectionDragKey] as IEnumerable<SearchResultViewModel>);
@@ -535,18 +498,8 @@ namespace Dash
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, collectedDocuments: docs.Select(doc => doc.GetViewCopy()).ToList());
                 AddDocument(cnote.Document, null);
             }
-
-            // if the user drags a single document from the search bar
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(MainSearchBox.SearchResultDragKey))
-            {
-                // the drag contains the view document which we just display an alias of
-                var doc = e.DataView.Properties[MainSearchBox.SearchResultDragKey] as DocumentController;
-                var docAlias = doc.GetViewCopy(where);
-                AddDocument(docAlias, null);
-            }
-
             // if the user drags a data document
-            if (e.DataView != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
@@ -704,11 +657,6 @@ namespace Dash
                 this.ChangeIndicationColor(element, Colors.Transparent);
                 _previousDragEntered = null;
             }
-
-            // remove border from DocumentView once it is dropped onto a collection
-            if (DocumentView.DragDocumentView != null)
-                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
-            DocumentView.DragDocumentView = null;
         }
 
         public void ChangeIndicationColor(UserControl element, Color fill)

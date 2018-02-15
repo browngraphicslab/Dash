@@ -85,8 +85,7 @@ namespace Dash
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
-
-        private List<Tuple<FieldReference, DocumentFieldReference>> _linksToRetry;
+        
         public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
         public CollectionFreeformView()
@@ -657,16 +656,9 @@ namespace Dash
         private bool _multiSelect;
         private Point _marqueeAnchor;
         private bool _isSelecting;
-
+        
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (manipulationHelper != null)
-            {
-                manipulationHelper.ForcePointerReleased();
-                this.ManipulationMode = ManipulationModes.All;
-                manipulationHelper = null;
-                e.Handled = true;
-            }
             if (_marquee != null)
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
@@ -686,12 +678,6 @@ namespace Dash
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
-            if (manipulationHelper != null)
-            {
-                manipulationHelper.ForcePointerMove();
-                args.Handled = true;
-                return;
-            }
             var currentPoint = args.GetCurrentPoint(SelectionCanvas);
             if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
 
@@ -743,6 +729,20 @@ namespace Dash
 
         }
 
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        {
+           if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            {
+                xOuterGrid.CapturePointer(args.Pointer);
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
+                _marqueeAnchor = pos;
+                _isSelecting = true;
+                PreviewTextbox_LostFocus(null, null);
+            }
+        }
+        
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -798,34 +798,6 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        ManipulationControlHelper manipulationHelper = null;
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
-        {
-            var forceDrag = (args.KeyModifiers & VirtualKeyModifiers.Shift) == 0 && (args.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
-                                   .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
-            if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
-            {
-                Debug.WriteLine("Forec Drag");
-                manipulationHelper = new ManipulationControlHelper(this);
-                manipulationHelper.ForcePointerPressed();
-                args.Handled = true;
-                xOuterGrid.CapturePointer(args.Pointer);
-                this.ManipulationMode = ManipulationModes.None;
-                return;
-            }
-            Debug.WriteLine("Manip Mode = " + ManipulationMode);
-            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
-            {
-                xOuterGrid.CapturePointer(args.Pointer);
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                _marqueeAnchor = pos;
-                _isSelecting = true;
-                PreviewTextbox_LostFocus(null, null);
-            }
-        }
-
 
         private List<DocumentView> DocsInMarquee(Rect marquee)
         {

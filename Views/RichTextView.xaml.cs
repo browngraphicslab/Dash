@@ -467,12 +467,6 @@ namespace Dash
             }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
-            if (DocumentView.DragDocumentView != null)
-            {
-                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
-                DocumentView.DragDocumentView.IsHitTestVisible = true;
-                DocumentView.DragDocumentView = null;
-            }
         }
 
         void xRichEditBox_SelectionChanged(object sender, RoutedEventArgs e)

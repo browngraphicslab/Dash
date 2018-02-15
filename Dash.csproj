@@ -511,7 +511,6 @@
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
     <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
-    <Compile Include="Util\DropControls.cs" />
     <Compile Include="Util\NoteDocuments.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">
       <DependentUpon>RichTextView.xaml</DependentUpon>

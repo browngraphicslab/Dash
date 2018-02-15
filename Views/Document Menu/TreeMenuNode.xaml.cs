@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -317,7 +318,8 @@ namespace Dash
 
                 var layout = dc.DataDoc.GetActiveLayout(null) ?? dc.DataDoc;
 
-                e.Data.Properties.Add(TreeNodeDragKey, layout);
+                var dragModel = new DragDocumentModel(layout, true);
+                e.Data.Properties[nameof(DragDocumentModel)] = dragModel;
 
                 return;
             }
@@ -325,7 +327,5 @@ namespace Dash
 
 
         }
-
-        public static readonly string TreeNodeDragKey = "5CD5E435-B5BF-4C85-B5D3-401D73CD8223";
     }
 }

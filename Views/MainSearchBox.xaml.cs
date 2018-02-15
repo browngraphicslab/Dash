@@ -20,8 +20,7 @@ namespace Dash
     {
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
-
-        public const string SearchResultDragKey = "Search Result";
+        
         public const string SearchCollectionDragKey = "Search Collection";
 
         public MainSearchBox()
@@ -156,8 +155,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
             // get the sender's view docs and set the key for the drag to a static const
-            args.Data.Properties[SearchResultDragKey] = ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
