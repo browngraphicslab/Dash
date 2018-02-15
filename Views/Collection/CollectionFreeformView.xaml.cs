@@ -102,14 +102,19 @@ namespace Dash
 
         private void CollectionFreeformView_LayoutUpdated(object sender, object e)
         {
-            foreach (var i in this.xItemsControl.Items)
-                if (i is DocumentViewModel)
+            if (xItemsControl.Items == null)
+            {
+                return;
+            }
+            foreach (var i in xItemsControl.Items)
+            {
+                var dv = i as DocumentViewModel;
+                var b = dv?.GroupingBounds;
+                if (b?.Bottom > ActualHeight)
                 {
-                    var dv = i as DocumentViewModel;
-                    var b = dv.GroupingBounds;
-                    if (b.Bottom > this.ActualHeight)
-                        this.Height = b.Bottom;
+                    Height = b.Value.Bottom;
                 }
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
@@ -190,7 +195,12 @@ namespace Dash
             if (e.NewItems != null)
             {
                 foreach (var d in e.NewItems)
-                    (d as DocumentViewModel).GroupOnCreate = (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
+                {
+                    var documentViewModel = d as DocumentViewModel;
+                    if (documentViewModel != null)
+                        documentViewModel.GroupOnCreate =
+                            (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
+                }
             }
 
             IEnumerable<DocumentView> IterateDocumentViews()
@@ -232,10 +242,10 @@ namespace Dash
                 MakeInkCanvas();
             }
 
-            fitFreeFormChildrenToTheirLayouts();
+            FitFreeFormChildrenToTheirLayouts();
         }
 
-        void fitFreeFormChildrenToTheirLayouts()
+        void FitFreeFormChildrenToTheirLayouts()
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
             //ManipulationControls?.FitToParent();
@@ -248,12 +258,6 @@ namespace Dash
         #endregion
 
         #region DraggingLinesAround
-
-        public DocumentView GetDocView(DocumentController doc)
-        {
-            return DocumentViews.FirstOrDefault(view => view.ViewModel.DocumentController.Equals(doc));
-        }
-
 
         #endregion
 
@@ -304,11 +308,6 @@ namespace Dash
 
             var startX = _transformBeingAnimated.Matrix.OffsetX;
             var startY = _transformBeingAnimated.Matrix.OffsetY;
-
-            var halfTranslateX = translate.X / 2;
-            var halfTranslateY = translate.Y / 2;
-
-
 
             // Create a DoubleAnimation for translating
             var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
@@ -371,19 +370,6 @@ namespace Dash
 
             toReturn.From = from;
             toReturn.To = to;
-            /*
-            if (name == "MatrixTransform.Matrix.OffsetX")
-            {
-                toReturn.From = from;
-                toReturn.To = toReturn.From + to;
-            }
-
-            if (name == "MatrixTransform.Matrix.OffsetY")
-            {
-                toReturn.From = _transformBeingAnimated.Matrix.OffsetY;
-                toReturn.To = Math.Min(0.0, _transformBeingAnimated.Matrix.OffsetY + to); //Clamp to avoid issue with camera going above Y limit.
-            }
-            */
 
             toReturn.EasingFunction = new QuadraticEase();
             return toReturn;
@@ -470,21 +456,6 @@ namespace Dash
             TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
-        private void SetInitialTransformOnBackground()
-        {
-            //var composite = new TransformGroup();
-            //var scale = new ScaleTransform
-            //{
-            //    CenterX = 0,
-            //    CenterY = 0,
-            //    ScaleX = 1,
-            //    ScaleY = 1
-            //};
-
-            //composite.Children.Add(scale);
-            //SetFreeformTransform(new MatrixTransform(){Matrix = composite.Value });
-        }
-
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
             var task = Task.Run(async () =>
@@ -502,11 +473,6 @@ namespace Dash
                 _resourcesLoaded = true;
             });
             args.TrackAsyncAction(task.AsAsyncAction());
-
-            task.ContinueWith(continuationTask =>
-            {
-                SetInitialTransformOnBackground();
-            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -849,8 +815,6 @@ namespace Dash
 
         #endregion
 
-        #region Flyout
-        #endregion
 
         #region DragAndDrop
 
@@ -868,36 +832,14 @@ namespace Dash
 
         #region Activation
 
-        //protected override void OnActivated(bool isSelected)
-        //{
-        //    if (InkController != null)
-        //    {
-        //        InkHostCanvas.IsHitTestVisible = isSelected;
-        //        if (XInkCanvas != null)
-        //        {
-        //            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
-        //        }
-        //    }
-        //}
 
-        private bool _singleTapped;
-
-        private async void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-
             SelectionCanvas?.Children?.Clear();
             DeselectAll();
-
             _isSelecting = false;
-
-            //RenderPreviewTextbox(Util.GetCollectionFreeFormPoint(this, e.GetPosition(MainPage.Instance)));
             RenderPreviewTextbox(e.GetPosition(itemsPanelCanvas));
-
-            // so that doubletap is not overrun by tap events 
-            _singleTapped = true;
-            await Task.Delay(100);
-            if (!_singleTapped) return;
         }
 
         public void RenderPreviewTextbox(Point where)
@@ -905,8 +847,8 @@ namespace Dash
             previewTextBuffer = "";
             if (previewTextbox != null)
             {
-                Canvas.SetLeft(previewTextbox, @where.X);
-                Canvas.SetTop(previewTextbox, @where.Y);
+                Canvas.SetLeft(previewTextbox, where.X);
+                Canvas.SetTop(previewTextbox, where.Y);
                 previewTextbox.Visibility = Visibility.Collapsed;
                 previewTextbox.Visibility = Visibility.Visible;
                 previewTextbox.Text = string.Empty;
@@ -915,43 +857,6 @@ namespace Dash
                 previewTextbox.Focus(FocusState.Pointer);
             }
         }
-
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            _singleTapped = false;
-            e.Handled = true;
-            ChooseLowest(e);
-        }
-
-        private void ChooseLowest(DoubleTappedRoutedEventArgs e)
-        {
-            // get all descendants of free form views and call double tap on the lowest one
-            var freeforms = xItemsControl.GetImmediateDescendantsOfType<CollectionFreeformView>();
-            foreach (var ff in freeforms)
-            {
-                if (ff.xClippingRect.Rect.Contains(e.GetPosition(ff.xOuterGrid)))  // if the child collection is clicked 
-                {
-                    ff.ChooseLowest(e);
-                    return;
-                }
-            }
-
-            // in the lowest possible collectionfreeform 
-            var docViews = xItemsControl.GetImmediateDescendantsOfType<DocumentView>();
-            foreach (DocumentView view in docViews)
-            {
-                if (view.ClipRect.Contains(e.GetPosition(view.OuterGrid)))
-                {
-                    view.OnTapped(view, null); // hack to set selection on the lowest view
-                    return;
-                }
-            }
-
-            // if no docview to select, select the current collectionview 
-            var parentView = this.GetFirstAncestorOfType<DocumentView>();
-            parentView?.OnTapped(parentView, null);
-        }
-
         #endregion
 
         #region SELECTION
@@ -959,7 +864,7 @@ namespace Dash
         private bool _isSelectionEnabled;
         public bool IsSelectionEnabled
         {
-            get { return _isSelectionEnabled; }
+            get => _isSelectionEnabled;
             set
             {
                 _isSelectionEnabled = value;
@@ -970,9 +875,6 @@ namespace Dash
             }
         }
         
-
-        private bool _isToggleOn;
-
         public void DeselectAll()
         {
             foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
@@ -1017,7 +919,7 @@ namespace Dash
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
-        public double Zoom { get { return ManipulationControls.ElementScale; } }
+        public double Zoom => ManipulationControls.ElementScale;
 
 
         private void MakeInkCanvas()
