@@ -334,7 +334,7 @@ namespace Dash
             {
                 case CollectionViewType.Freeform:
                     if (CurrentView is CollectionFreeformView) return;
-                    CurrentView = new CollectionFreeformView();
+                    CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
                     break;
                 case CollectionViewType.Grid:
                     if (CurrentView is CollectionGridView) return;
