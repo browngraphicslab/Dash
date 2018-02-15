@@ -36,33 +36,8 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public int MaxZ { get; set; }
-        Binding _visibilityBinding = null;
-
-        UserControl _currentView;
-        public UserControl CurrentView {
-            get => _currentView;
-            set { _currentView = value;
-                if (_visibilityBinding != null)
-                    xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
-                _visibilityBinding = null;
-                //if (_currentView is CollectionFreeformView)
-                //{
-                //    var docView = xOuterGrid.GetFirstAncestorOfType<DocumentView>();
-                //    var datacontext = docView?.DataContext as DocumentViewModel;
-                //    if (datacontext != null)
-                //    {
-                //        _visibilityBinding = new Binding
-                //        {
-                //            Source = datacontext,
-                //            Path = new PropertyPath(nameof(datacontext.IsSelected))
-                //        };
-
-                //        xContentControl.SetBinding(IsHitTestVisibleProperty, _visibilityBinding);
-                //    }
-                //}
-            }
-        }
-
+        
+        public UserControl CurrentView { get; set; }
         public CollectionViewModel ViewModel
         {
             get => DataContext as CollectionViewModel;
@@ -84,12 +59,9 @@ namespace Dash
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
-        public enum CollectionViewType
-        {
-            Freeform, Grid, Page, DB, Schema, TreeView, Timeline
-        }
+        public enum CollectionViewType  { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
 
-        private CollectionViewType _viewType;
+        CollectionViewType _viewType;
 
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
@@ -114,7 +86,6 @@ namespace Dash
                 args.Handled = true;
             }
         }
-
 
         public void TryBindToParentDocumentSize()
         {
@@ -174,35 +145,7 @@ namespace Dash
 
 
             // set the top-level viewtype to be freeform by default
-            if (ParentDocument == MainPage.Instance.MainDocView)
-            {
-                _viewType = CollectionViewType.Freeform;
-            }
-            switch (_viewType)
-            {
-                case CollectionViewType.Freeform:
-                    SetFreeformView();
-                    break;
-                case CollectionViewType.Grid:
-                    SetGridView();
-                    break;
-                case CollectionViewType.Page:
-                    SetBrowseView();
-                    break;
-                case CollectionViewType.DB:
-                    SetDBView();
-                    break;
-                case CollectionViewType.Schema:
-                    SetSchemaView();
-                    break;
-                case CollectionViewType.TreeView:
-                    break;
-                case CollectionViewType.Timeline:
-                    SetTimelineView();
-                    break;
-                default:
-                    throw new NotImplementedException("You need to add support for your collectionview here");
-            }
+            SetView(ParentDocument == MainPage.Instance.MainDocView ? CollectionViewType.Freeform : _viewType);
 
             // TODO remove this arbtirary styling here
             if (ParentDocument == MainPage.Instance.MainDocView)
@@ -223,7 +166,7 @@ namespace Dash
         /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
         /// view the collection as different formats).
         /// </summary>
-        private void UpdateContextMenu()
+        void UpdateContextMenu()
         {
 
             var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
@@ -290,28 +233,28 @@ namespace Dash
             contextMenu.Items.Add(viewCollectionAs);
             elementsToBeRemoved.Add(viewCollectionAs);
 
-            var freeform = new MenuFlyoutItem() { Text = "Freeform" };
-            freeform.Click += MenuFlyoutItemFreeform_Click;
+            var freeform = new MenuFlyoutItem() { Text = CollectionViewType.Freeform.ToString() };
+            freeform.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(freeform);
 
-            var grid = new MenuFlyoutItem() { Text = "Grid" };
-            grid.Click += MenuFlyoutItemGrid_Click;
+            var grid = new MenuFlyoutItem() { Text = CollectionViewType.Grid.ToString() };
+            grid.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(grid);
 
-            var browse = new MenuFlyoutItem() { Text = "Browse" };
-            browse.Click += MenuFlyoutItemBrowse_Click;
+            var browse = new MenuFlyoutItem() { Text = CollectionViewType.Page.ToString() };
+            browse.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(browse);
 
-            var db = new MenuFlyoutItem() { Text = "DB" };
-            db.Click += MenuFlyoutItemDB_Click;
+            var db = new MenuFlyoutItem() { Text = CollectionViewType.DB.ToString() };
+            db.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(db);
 
-            var schema = new MenuFlyoutItem() { Text = "Schema" };
-            schema.Click += MenuFlyoutItemSchema_Click;
+            var schema = new MenuFlyoutItem() { Text = CollectionViewType.Schema.ToString() };
+            schema.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(schema);
 
-            var timeline = new MenuFlyoutItem() { Text = "Timeline" };
-            timeline.Click += MenuFlyoutItemTimeline_Click;
+            var timeline = new MenuFlyoutItem() { Text = CollectionViewType.Timeline.ToString() };
+            timeline.Click += MenuFlyoutItemView_Click;
             viewCollectionAs.Items.Add(timeline);
 
 
@@ -330,6 +273,7 @@ namespace Dash
             };
 
         }
+        #endregion
 
         /// <summary>
         /// Helper function to add a document controller to the main freeform layout.
@@ -375,98 +319,50 @@ namespace Dash
             addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
         }
 
-        private void MenuFlyoutItemFreeform_Click(object sender, RoutedEventArgs e)
+        void MenuFlyoutItemView_Click(object sender, RoutedEventArgs e)
         {
-            SetFreeformView();
+            SetView((CollectionView.CollectionViewType)Enum.Parse(typeof(CollectionView.CollectionViewType), (sender as MenuFlyoutItem).Text));
         }
-
-        private void MenuFlyoutItemGrid_Click(object sender, RoutedEventArgs e)
-        {
-            SetGridView();
-        }
-
-        private void MenuFlyoutItemBrowse_Click(object sender, RoutedEventArgs e)
-        {
-            SetBrowseView();
-        }
-
-        private void MenuFlyoutItemDB_Click(object sender, RoutedEventArgs e)
-        {
-            SetDBView();
-        }
-
-        private void MenuFlyoutItemSchema_Click(object sender, RoutedEventArgs e)
-        {
-            SetSchemaView();
-        }
-
-        private void MenuFlyoutItemTimeline_Click(object sender, RoutedEventArgs e)
-        {
-            SetTimelineView();
-        }
-
-        #endregion
 
         #endregion
 
         #region Menu
-        private void SetFreeformView()
+        public void SetView(CollectionViewType viewType)
         {
-            if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView() { InkController = ViewModel.InkController };
+            _viewType = viewType;
+            switch (_viewType)
+            {
+                case CollectionViewType.Freeform:
+                    if (CurrentView is CollectionFreeformView) return;
+                    CurrentView = new CollectionFreeformView();
+                    break;
+                case CollectionViewType.Grid:
+                    if (CurrentView is CollectionGridView) return;
+                    CurrentView = new CollectionGridView();
+                    break;
+                case CollectionViewType.Page:
+                    if (CurrentView is CollectionPageView) return;
+                    CurrentView = new CollectionPageView();
+                    break;
+                case CollectionViewType.DB:
+                    if (CurrentView is CollectionDBView) return;
+                    CurrentView = new CollectionDBView();
+                    break;
+                case CollectionViewType.Schema:
+                    if (CurrentView is CollectionDBSchemaView) return;
+                    CurrentView = new CollectionDBSchemaView();
+                    break;
+                case CollectionViewType.TreeView:
+                    break;
+                case CollectionViewType.Timeline:
+                    if (CurrentView is CollectionTimelineView) return;
+                    CurrentView = new CollectionTimelineView();
+                    break;
+                default:
+                    throw new NotImplementedException("You need to add support for your collectionview here");
+            }
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Freeform.ToString()), true);
-            
-            ViewModes?.HighlightAction(SetFreeformView);
-        }
-
-        public void SetDBView()
-        {
-            if (CurrentView is CollectionDBView) return;
-            CurrentView = new CollectionDBView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.DB.ToString()), true);
-            
-            ViewModes?.HighlightAction(SetDBView);
-        }
-        private void SetSchemaView()
-        {
-            if (CurrentView is CollectionDBSchemaView) return;
-            CurrentView = new CollectionDBSchemaView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Schema.ToString()), true);
-           
-            ViewModes?.HighlightAction(SetSchemaView);
-        }
-
-        private void SetTimelineView()
-        {
-            if (CurrentView is CollectionTimelineView) return;
-            CurrentView = new CollectionTimelineView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Timeline.ToString()), true);
-           
-            ViewModes?.HighlightAction(SetTimelineView);
-        }
-        
-        private void SetBrowseView()
-        {
-            if (CurrentView is CollectionPageView) return;
-            CurrentView = new CollectionPageView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Page.ToString()), true);
-            
-            ViewModes?.HighlightAction(SetBrowseView);
-        }
-
-        private void SetGridView()
-        {
-            if (CurrentView is CollectionGridView) return;
-            CurrentView = new CollectionGridView();
-            xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(CollectionViewType.Grid.ToString()), true);
-            
-            ViewModes?.HighlightAction(SetGridView);
+            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
 
         public void MakeSelectionModeMultiple()
@@ -495,20 +391,7 @@ namespace Dash
                 (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
             }
         }
-
-        private void DeleteSelection()
-        {
-            ViewModel.DeleteSelected_Tapped();
-        }
-
-        private void DeleteCollection()
-        {
-            ParentDocument.DeleteDocument();
-        }
-
-        public MenuButton ViewModes;
-
-
+        
         private void PreviewButtonView_DropCompleted(UIElement sender, DropCompletedEventArgs args)
         {
             // TODO fill this in
