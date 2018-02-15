@@ -23,7 +23,7 @@ using Dash.Controllers;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBView : ICollectionView
     {
         public CollectionDBView()
         {
@@ -425,14 +425,7 @@ namespace Dash
             }
             return null;
         }
-
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
 
@@ -460,22 +453,10 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
         }
         #endregion
     }

@@ -33,14 +33,12 @@ namespace Dash
                 (refToImage as ReferenceController).GetDocumentController(null), true);
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context,
-            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
-            bool isInterfaceBuilderLayout = false)
+            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             // create the image
             var editableImage = new EditableImage();
@@ -53,13 +51,7 @@ namespace Dash
             //add to key to framework element dictionary
             if (docController.GetField(KeyStore.DataKey) is ReferenceController reference)
                 if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = image;
-
-            if (isInterfaceBuilderLayout)
-            {
-                editableImage.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(editableImage, docController);
-                return selectableContainer;
-            }
+            
 
             return editableImage;
         }

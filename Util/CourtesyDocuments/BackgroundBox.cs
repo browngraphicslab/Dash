@@ -64,14 +64,12 @@ namespace Dash
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             return prototypeDocument;
         }
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             // create the  view
             var background = new Grid();
@@ -79,14 +77,7 @@ namespace Dash
 
             // make the pdf respond to resizing, interactions etc...
             SetupBindings(background, docController, context);
-
-            if (isInterfaceBuilderLayout)
-            {
-                background.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(background, docController);
-                //SetupBindings(selectableContainer, docController, context);
-                return selectableContainer;
-            }
+            
             return background;
         }
 

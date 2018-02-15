@@ -23,7 +23,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         private DocumentController _parentDocument;
 
@@ -409,23 +409,11 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
         }
 
         #endregion

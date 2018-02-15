@@ -9,7 +9,7 @@ namespace Dash
     public class SimpleCollectionViewModel : BaseCollectionViewModel
     {
 
-        public SimpleCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
+        public SimpleCollectionViewModel() : base()
         {
             CellSize = 250;
             CanDragItems = true;
@@ -23,7 +23,7 @@ namespace Dash
 
         public override void AddDocument(DocumentController document, Context context)
         {
-            var docVm = new DocumentViewModel(document, IsInterfaceBuilder);
+            var docVm = new DocumentViewModel(document);
             DocumentViewModels.Add(docVm);
         }
 

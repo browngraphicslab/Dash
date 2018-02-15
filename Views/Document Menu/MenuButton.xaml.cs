@@ -173,20 +173,21 @@ namespace Dash
                 {
                     e.Handled = true;
                     buttonActions[j]?.Invoke();
-                    HighlightAction(buttonActions[j]);
+                    HighlightAction(buttonActions[j].ToString());
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
                 i++;
             }
         }
 
-        public void HighlightAction(Action action)
+        public void HighlightAction(string text)
         {
             var buttonBackground = Resources["MenuBackground"] as SolidColorBrush;
-            foreach (var b in _buttons) (b.Content as Border).Background = buttonBackground;
+            foreach (var b in _buttons)
+                (b.Content as Border).Background = buttonBackground;
             foreach (var menubutton in _buttons)
             {
-                if (((Action)(menubutton.Tag)) == action)
+                if (menubutton.ToString()  == text)
                     (menubutton.Content as Border).Background = new SolidColorBrush(Colors.Gray);
             }
         }

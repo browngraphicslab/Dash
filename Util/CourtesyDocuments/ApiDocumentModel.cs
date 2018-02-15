@@ -186,8 +186,7 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
@@ -260,8 +259,7 @@ namespace Dash
                 ListController<DocumentController>).Set(documents);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false) {
+        public static FrameworkElement MakeView(DocumentController docController, Context context) {
 
             ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
             ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
@@ -294,11 +292,7 @@ namespace Dash
             containerGrid.ColumnDefinitions.Add(new ColumnDefinition());
             containerGrid.Children.Add(apiDisplay);
             containerGrid.Children.Add(sourceDisplay);
-
-            // return all results
-            if (isInterfaceBuilderLayout) {
-                return new SelectableContainer(containerGrid, docController);
-            }
+            
             return containerGrid;
         }
     }

@@ -68,7 +68,7 @@ namespace Dash
 
                 var textBlockBinding = new FieldBinding<TextController>
                 {
-                    Document = dvm.DocumentController.GetDataDocument(null),
+                    Document = dvm.DataDocument,
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
@@ -77,7 +77,7 @@ namespace Dash
 
                 var textBoxBinding = new FieldBinding<TextController>
                 {
-                    Document = dvm.DocumentController.GetDataDocument(null),
+                    Document = dvm.DataDocument,
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.TwoWay,
@@ -94,12 +94,12 @@ namespace Dash
                     Converter = new SelectedToColorConverter()
                 };
 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
+                var collection = dvm.DataDocument.GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;
                     XIconBox.Visibility = Visibility.Visible;
-                    if (dvm.DocumentController.LayoutName.ToLower().Contains("group"))//tfs: Hack
+                    if (dvm.LayoutDocument.LayoutName.ToLower().Contains("group"))//tfs: Hack
                     {
                         XIconBox.Symbol = Symbol.Copy;
                     }
@@ -108,11 +108,11 @@ namespace Dash
                         XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
+                        new DocumentFieldReference(dvm.DataDocument.Id,
                             KeyStore.GroupingKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
-                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
+                    CollectionTreeView.ContainingDocument = dvm.DataDocument;
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeCol";

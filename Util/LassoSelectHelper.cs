@@ -231,7 +231,7 @@ namespace Dash
                     _view.xItemsControl.Items.OfType<DocumentViewModel>();
                 foreach (var param in parameters)
                 {
-                    var doc = param.DocumentController;
+                    var doc = param.LayoutDocument;
                     var position = doc.GetPositionField().Data;
                     var width = doc.GetWidthField().Data;
                     if (double.IsNaN(width)) width = 0;

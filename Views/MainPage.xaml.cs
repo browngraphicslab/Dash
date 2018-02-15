@@ -166,7 +166,6 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -187,7 +186,6 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 

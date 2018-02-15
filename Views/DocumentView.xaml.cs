@@ -29,7 +29,7 @@ using Dash.Models.DragModels;
 namespace Dash
 {
 
-    public sealed partial class DocumentView : SelectionElement
+    public sealed partial class DocumentView
     {
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); // TODO document views should not be assumed to be in a collection this!
 
@@ -48,8 +48,6 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
 
         public static int dvCount = 0;
-
-        private Storyboard _storyboard;
 
         public MenuFlyout MenuFlyout;
 
@@ -142,14 +140,15 @@ namespace Dash
             {
                 if (_ptrIn) ShowSelectedContext();
             }
-            
 
-            if (ViewModel != null && (ViewModel.IsLowestSelected && 
-                                      (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
-                                      e.VirtualKey.Equals(VirtualKey.Enter)))
+
+            var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
+
+            if (ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+                                      e.VirtualKey.Equals(VirtualKey.Enter))
             {
                 // don't shift enter on key value documents
-                if (ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
+                if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
                     ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
                     return;
 
@@ -165,12 +164,10 @@ namespace Dash
             if (!isMultiSelected)
             {
                 this.CanDrag = false;
-                this.DragStarting -= freeformView.DocView_OnDragStarting;
                 xFieldContainer.BorderThickness = new Thickness(0);
             } else
             {
                 this.CanDrag = true;
-                this.DragStarting += freeformView.DocView_OnDragStarting;
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
                 xFieldContainer.BorderThickness = new Thickness(2);
             }
@@ -188,7 +185,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_localContextPreview);
                 _localContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ViewModel.IsSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_selectedContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -234,7 +231,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_selectedContextPreview);
                 _selectedContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ViewModel.IsSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_localContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -318,11 +315,7 @@ namespace Dash
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (IsSelected == false)
-            {
-                ToggleSelectionBorderAndChrome(false);
-            }
-
+            ToggleSelectionBorderAndChrome(false);
             ToggleGroupSelectionBorderColor(false);
 
 
@@ -350,82 +343,7 @@ namespace Dash
 
         public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (sender is DocumentView docView)
-                CheckForDropOnLink(docView);
-
             ToggleGroupSelectionBorderColor(false);
-        }
-
-        private void CheckForDropOnLink(DocumentView docView)
-        {
-            if (docView != null)
-            {
-                var docType = docView.ViewModel?.DocumentController?.GetActiveLayout()?.DocumentType;
-                if (docType != null && docView.ViewModel?.DocumentController?.IsConnected == false)
-                {
-                    if (docType.Equals(DashConstants.TypeStore.OperatorBoxType))
-                    {
-                        //Get the coordinates of the view
-                        Point screenCoords = docView.TransformToVisual(Window.Current.Content)
-                            .TransformPoint(new Point(0, 0));
-
-                        //parent freeform view
-                        var freeformView = docView.ParentCollection?.CurrentView as CollectionFreeformView;
-                        if (freeformView?.RefToLine != null && !IsConnected(docView))
-                        {
-                            // iterate through all the links in this freeform view to check for overlap
-                            foreach (var link in freeformView.RefToLine)
-                            {
-                                //Get the slope of the line through the endpoints of the link
-                                var converter = freeformView.LineToConverter[link.Value];
-
-                                // first end point of link
-                                var curvePoint1 = converter.Element1
-                                    .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
-                                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2,
-                                        converter.Element1.ActualHeight / 2));
-
-                                // second end point of link
-                                var curvePoint2 = converter.Element2
-                                    .TransformToVisual(freeformView.xItemsControl.ItemsPanelRoot)
-                                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2,
-                                        converter.Element2.ActualHeight / 2));
-
-                                // calculate slope
-                                var slope = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
-
-                                // Figure out the x coordinates where the line intersects the top and bottom bounding horizontal lines of the rectangle of the document view
-                                var intersectionTopX = curvePoint1.X - (1 / slope) * (-screenCoords.Y + curvePoint1.Y);
-                                var intersectionBottomX =
-                                    curvePoint1.X - (1 / slope) * (-(screenCoords.Y + docView.ActualHeight) + curvePoint1.Y);
-
-                                // If the top intersection point is to the left of the documentView, or the bottom intersection is to the right, when the slope is positive,
-                                // the link is outside the document.
-                                if ((slope < 0 && !(intersectionTopX < screenCoords.X ||
-                                                    intersectionBottomX > screenCoords.X + docView.ActualWidth)
-                                     || slope > 0 && !(intersectionTopX > screenCoords.X ||
-                                                       intersectionBottomX < screenCoords.X + docView.ActualWidth)))
-                                {
-                                    // if the document is between the vertical bounds of the link endpoints
-                                    if (screenCoords.Y > (Math.Min(curvePoint1.Y, curvePoint2.Y))
-                                        && (screenCoords.Y + docView.ActualHeight < (Math.Max(curvePoint1.Y, curvePoint2.Y))))
-                                    {
-                                        // connect the dropped document to the documents linked by the path
-                                        ChangeConnections(freeformView, docView, link);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public void DisconnectFromLink()
-        {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
-            ViewModel.DocumentController.IsConnected = false;
         }
 
         /// <summary>
@@ -442,91 +360,6 @@ namespace Dash
             }
             return true;
         }
-
-
-
-        /// <summary>
-        /// Changes the connections to connect the dropped document with the documents connected by the link
-        /// </summary>
-        /// <param name="ffView"></param>
-        /// <param name="docView"></param>
-        /// <param name="link"></param>
-        private void ChangeConnections(CollectionFreeformView ffView, DocumentView docView, KeyValuePair<FieldReference, Path> link)
-        {
-            // the old connection is [referencedDoc] -> [referencingDoc]
-            // the new connections are [referencedDoc] -> [droppedDoc] -> [referencingDoc]
-
-            // get all the ingredients
-            var droppedDoc = docView.ViewModel.DocumentController;
-            var droppedDocOpFMController = droppedDoc.GetField(KeyStore.OperatorKey) as OperatorController;
-            var droppedDocInputKey = droppedDocOpFMController.Inputs.Keys.FirstOrDefault();
-            var droppedDocOutputKey = droppedDocOpFMController.Outputs.Keys.FirstOrDefault();
-
-            var userLink = link.Value as UserCreatedLink;
-
-            var referencingDoc = userLink.referencingDocument;
-            var referencingKey = userLink.referencingKey;
-
-            var referencedKey = userLink.referencedKey;
-            var referencedDoc = userLink.referencedDocument;
-
-
-
-            // Check if nodes inputs/outputs are of the same type
-            var droppedDocOutputType = droppedDocOpFMController.Outputs[droppedDocOutputKey];
-            var droppedDocInputType = droppedDocOpFMController.Inputs[droppedDocInputKey];
-
-            var referencedDocOpFMController = referencedDoc.GetField(KeyStore.OperatorKey) as OperatorController;
-            var referencedDocOutputType = referencedDocOpFMController?.Outputs[referencedKey];
-
-            var referencingDocOpFMController = referencingDoc.GetField(KeyStore.OperatorKey) as OperatorController;
-            var referencingDocInputType = referencingDocOpFMController?.Inputs[referencingKey];
-
-            if (droppedDocOutputType == referencingDocInputType?.Type || referencedDocOutputType == droppedDocInputType?.Type)
-            {
-                // delete the current connection between referenced doc and referencing doc
-                ffView.DeleteLine(link.Key, userLink); // check
-
-                //Add connection between dropped and right node
-                MakeConnection(ffView, droppedDoc, droppedDocOutputKey, referencingDoc, referencingKey);
-
-                //Add connection between dropped and right node
-                MakeConnection(ffView, referencedDoc, referencedKey, droppedDoc, droppedDocInputKey);
-
-                referencedDoc.IsConnected = true;
-                referencingDoc.IsConnected = true;
-                droppedDoc.IsConnected = true;
-            }
-        }
-
-        /// <summary>
-        /// Makes a link between 2 documents
-        /// </summary>
-        /// <param name="ffView"></param>
-        /// <param name="referencedDoc"></param>
-        /// <param name="referencedKey"></param>
-        /// <param name="referencingDoc"></param>
-        /// <param name="referencingKey"></param>
-        /// <returns></returns>
-        private static void MakeConnection(CollectionFreeformView ffView, DocumentController referencedDoc, KeyController referencedKey, DocumentController referencingDoc, KeyController referencingKey)
-        {
-            // set the field of the referencing field to be a field reference to the referenced document/field
-            var fieldRef = new DocumentFieldReference(referencedDoc.GetId(), referencedKey);
-            var thisRef = (referencedDoc.GetDereferencedField(KeyStore.ThisKey, null));
-
-            if (referencedDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType) &&
-                fieldRef is DocumentFieldReference && thisRef != null)
-                referencingDoc.SetField(referencedKey, thisRef, true);
-            else
-            {
-                referencingDoc.SetField(referencingKey,
-                    new DocumentReferenceController(fieldRef.GetDocumentId(), referencedKey), true);
-            }
-
-            // add line visually
-            ffView.AddLineFromData(fieldRef, new DocumentFieldReference(referencingDoc.GetId(), referencingKey));
-        }
-
 
         private void OnDrop(object sender, DragEventArgs e)
         {
@@ -545,7 +378,6 @@ namespace Dash
 
         public DocumentController Choose()
         {
-            OnSelected();
             // bring document to center? 
             var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
             if (mainView != null)
@@ -561,8 +393,10 @@ namespace Dash
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
+            DraggerButton.PointerPressed -= DraggerButton_PointerPressed;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
+            DraggerButton.ManipulationStarted -= DraggerButton_ManipulationStarted;
         }
 
 
@@ -577,12 +411,11 @@ namespace Dash
             }
 
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
-            DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
+            DraggerButton.PointerPressed += DraggerButton_PointerPressed;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DraggerButton.ManipulationStarted += DraggerButton_ManipulationStarted;
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
@@ -606,6 +439,18 @@ namespace Dash
                 ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
                 return;
             }
+        }
+
+
+        bool draggerOverride = false;
+        private void DraggerButton_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (draggerOverride)
+                e.Complete(); 
+        }
+        private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            draggerOverride = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
         }
 
         private void XTitleIcon_Tapped(object sender, TappedRoutedEventArgs e)
@@ -643,6 +488,12 @@ namespace Dash
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
+            // TODO remove this arbtirary styling here
+            if (this == MainPage.Instance.MainDocView)
+            {
+                IsMainCollection = true;
+                view.xOuterGrid.BorderThickness = new Thickness(0);
+            }
         }
 
         public void StyleKeyValuePane()
@@ -658,15 +509,8 @@ namespace Dash
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-
-
-        MenuButton copyButton;
-
-        DispatcherTimer _moveTimer = new DispatcherTimer()
-        {
-            Interval = new TimeSpan(0, 0, 0, 0, 600),
-        };
-
+        
+        
         private bool _draggerButtonBeingManipulated;
 
 
@@ -787,12 +631,6 @@ namespace Dash
                 ProportionalScaling = false;
             }
             _draggerButtonBeingManipulated = false;
-            Debug.WriteLine("Dragger Manipulation Completed");
-            if (!IsSelected)
-            {
-                DraggerButton.Visibility = Visibility.Collapsed;
-            }
-
         }
 
         /// <summary>
@@ -856,12 +694,7 @@ namespace Dash
             {
                 updateIcon();
                 // binds the display title of the document to the back end representation
-                var context = new Context(ViewModel.DocumentController);
-                var dataDoc = ViewModel.DocumentController.GetDataDocument(context);
-                context.AddDocumentContext(dataDoc);
-
-
-                ViewModel.SetHasTitle(this.IsLowestSelected);
+                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
         }
 
@@ -875,7 +708,6 @@ namespace Dash
         {
             if (ParentCollection != null)
             {
-                (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
                 FadeOut.Begin();
 
                 if (addTextBox)
@@ -888,9 +720,6 @@ namespace Dash
 
         private void CopyDocument()
         {
-            _moveTimer.Stop();
-
-
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
@@ -898,8 +727,6 @@ namespace Dash
         }
         private void CopyViewDocument()
         {
-            _moveTimer.Stop();
-
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
@@ -943,13 +770,7 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            (ParentCollection?.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
-        }
-
-        private void OpenLayout()
-        {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(10, 10), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -999,46 +820,23 @@ namespace Dash
                 CoreVirtualKeyStates.Down &&
                 ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
-                ViewModel.SetSelected(null, true);
                 return;
             }
             // handle the event right away before any possible async delays
             if (e != null) e.Handled = true;
 
 
-            if (!IsSelected)
-            {
-                await Task.Delay(100); // allows for double-tap
+            await Task.Delay(100); // allows for double-tap
 
-                //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-                if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
+            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
+            {
+                var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
+                if (zindex > -100)
                 {
-                    var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
-                    if (zindex > -100)
-                    {
-                        ParentCollection.MaxZ += 1;
-                        Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-                    }
-                    OnSelected();
-                    
-
-                    // if the documentview contains a collectionview, assuming that it only has one, set that as selected 
-                    this.GetFirstDescendantOfType<CollectionView>()?.CurrentView.OnSelected();
+                    ParentCollection.MaxZ += 1;
+                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
                 }
-            }
-        }
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel?.SetSelected(this, isSelected);
-            // if we are being deselected
-            if (!isSelected)
-            {
-                ToggleSelectionBorderAndChrome(false);
-            }
-            else
-            {
-                ToggleSelectionBorderAndChrome(true);
             }
         }
 
@@ -1046,7 +844,7 @@ namespace Dash
         {
             xSelectionBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xSelectionBorder.BorderBrush = selected ?
-                SingleSelectionBorderColor : new SolidColorBrush(Colors.Transparent); 
+                SingleSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
         /// <summary>
@@ -1078,6 +876,7 @@ namespace Dash
             // get all the document views that are in the same collection as ourself
             var allDocumentViews = (ParentCollection?.CurrentView as CollectionFreeformView)?.DocumentViews;
             if (allDocumentViews == null) return;
+            return;
 
             // get all the document views connected to ourself (forming a group)
             var documentGroup = AddConnected(new List<DocumentView>(), allDocumentViews);
@@ -1153,13 +952,7 @@ namespace Dash
             
             return grouped;
         }
-
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel?.SetLowestSelected(this, isLowestSelected);
-            ViewModel?.SetHasTitle(isLowestSelected);
-        }
+        
 
         #endregion
 
@@ -1190,15 +983,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        private void DeepestPrototypeFlyoutItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            var prototypes = ViewModel.DocumentController.GetAllPrototypes();
-            var deepestPrototype = prototypes.First.Value;
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(deepestPrototype), new Point(0, 0), this);
-            var same = deepestPrototype.Equals(ViewModel.DocumentController);
-        }
-
+        
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
@@ -1213,7 +998,7 @@ namespace Dash
             foreach (var nestedDocument in overlappedViews)
             {
                 CollectionView nestedCollection = null;
-                if (nestedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+                if (nestedDocument.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                     nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
                 if (nestedCollection != null)
                 {
@@ -1270,11 +1055,6 @@ namespace Dash
             //}
         }
 
-        private void MenuFlyoutItemLayout_Click(object sender, RoutedEventArgs e)
-        {
-            OpenLayout();
-        }
-
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
             KeyValueViewDocument();
@@ -1321,11 +1101,6 @@ namespace Dash
             ShowContext();
         }
 
-        private void XMetadataPanel_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xMetadataPanel.Margin = new Thickness(-xMetadataPanel.ActualWidth, 0, 0, 0);
-        }
-
         private void CopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
@@ -1337,11 +1112,6 @@ namespace Dash
 
         public void HandleShiftEnter()
         {
-            if (ViewModel.IsLowestSelected == false) return;
-
-
-
-
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
@@ -1350,14 +1120,14 @@ namespace Dash
 
 
             // special case for search operators
-            if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+            if (ViewModel.DataDocument.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
             {
-                if (ViewModel.DocumentController.GetField(KeyStore.OperatorKey) is SearchOperatorController)
+                if (ViewModel.DataDocument.GetField(KeyStore.OperatorKey) is SearchOperatorController)
                 {
                     var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
 
                     operatorDoc.SetField(SearchOperatorController.InputCollection,
-                        new DocumentReferenceController(ViewModel.DocumentController.Id,
+                        new DocumentReferenceController(ViewModel.DataDocument.Id,
                             SearchOperatorController.ResultsKey), true);
 
                     // TODO connect output to input
