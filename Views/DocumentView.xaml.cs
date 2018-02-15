@@ -165,7 +165,8 @@ namespace Dash
             {
                 this.CanDrag = false;
                 xFieldContainer.BorderThickness = new Thickness(0);
-            } else
+            }
+            else
             {
                 this.CanDrag = true;
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
@@ -304,19 +305,19 @@ namespace Dash
 
         private void BorderRegion_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(true);
+            //ToggleGroupSelectionBorderColor(true);
         }
 
         private void BorderRegion_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ToggleGroupSelectionBorderColor(false);
+            //ToggleGroupSelectionBorderColor(false);
         }
 
         // since this is public it can be called with any parameters, be safe, check everything
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorderAndChrome(false);
-            ToggleGroupSelectionBorderColor(false);
+            //ToggleGroupSelectionBorderColor(false);
 
 
             _ptrIn = false;
@@ -331,7 +332,7 @@ namespace Dash
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ToggleSelectionBorderAndChrome(true);
-            ToggleGroupSelectionBorderColor(true);
+            //ToggleGroupSelectionBorderColor(true);
 
             _ptrIn = true;
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
@@ -446,7 +447,7 @@ namespace Dash
         private void DraggerButton_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (draggerOverride)
-                e.Complete(); 
+                e.Complete();
         }
         private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -477,7 +478,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
         }
 
         /// <summary>
@@ -509,8 +510,8 @@ namespace Dash
         {
             ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
         }
-        
-        
+
+
         private bool _draggerButtonBeingManipulated;
 
 
@@ -858,13 +859,13 @@ namespace Dash
             if (_draggerButtonBeingManipulated)
             {
                 OperatorEllipse.Visibility = DraggerButton.Visibility = Visibility.Visible;
-                xSelectionBorder.BorderThickness = new Thickness(3);
-                xTitleIcon.Foreground = (SolidColorBrush) Application.Current.Resources["TitleText"];
+                //xSelectionBorder.BorderThickness = new Thickness(3);
+                xTitleIcon.Foreground = (SolidColorBrush)Application.Current.Resources["TitleText"];
             }
             else
             {
                 OperatorEllipse.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
-                xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
+                //xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
                 xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                     ? (SolidColorBrush)Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
@@ -949,10 +950,10 @@ namespace Dash
                     , ordered[i].GroupTransform.ScaleCenter
                     , ordered[i].GroupTransform.ScaleAmount);
             }*/
-            
+
             return grouped;
         }
-        
+
 
         #endregion
 
@@ -983,7 +984,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
@@ -1043,24 +1044,18 @@ namespace Dash
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            var containerCollection = this.GetFirstAncestorOfType<CollectionFreeformView>();
-            var marqueeDocs = containerCollection?.MarqueeSelectedDocs; 
+            //check if there are any documents selected in the marquee - if so, delete all the docs selected and else delete itself 
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
+            if (marqueeDocs == null) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Count > 0)
             {
                 foreach (var doc in marqueeDocs)
-                    doc.DeleteDocument(); 
+                    doc.DeleteDocument();
             }
-            else 
-            //if (IsMainCollection)
-            //{
-            //    var collection = this.GetFirstDescendantOfType<CollectionFreeformView>();
-            //    foreach (var doc in collection.MarqueeSelectedDocs)
-            //    {
-            //        doc.DeleteDocument(); 
-            //    }
-            //} else {
-                DeleteDocument();
-            //}
+            else
+            {
+                DeleteDocument(); 
+            }
         }
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
@@ -1170,7 +1165,7 @@ namespace Dash
         {
             if (sender is Ellipse ellipse)
             {
-                ellipse.Fill = (SolidColorBrush) App.Instance.Resources["FieldHandleColor"];
+                ellipse.Fill = (SolidColorBrush)App.Instance.Resources["FieldHandleColor"];
                 ellipse.Height -= 3;
                 ellipse.Width -= 3;
             }

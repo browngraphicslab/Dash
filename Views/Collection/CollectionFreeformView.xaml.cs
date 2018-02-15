@@ -658,7 +658,7 @@ namespace Dash
         private Point _marqueeAnchor;
         private bool _isSelecting;
 
-        private List<DocumentView> _marqueeSelectedDocs;
+        private List<DocumentView> _marqueeSelectedDocs = new List<DocumentView>();
         public List<DocumentView> MarqueeSelectedDocs => _marqueeSelectedDocs;
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -744,6 +744,11 @@ namespace Dash
                 _marqueeAnchor = pos;
                 _isSelecting = true;
                 PreviewTextbox_LostFocus(null, null);
+                foreach (var doc in _marqueeSelectedDocs)
+                {
+                    doc.MarqueeSelectBorder(false);
+                }
+                _marqueeSelectedDocs.Clear(); 
             }
         }
         
@@ -840,17 +845,15 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
 
-            var selectedDocs = DocsInMarquee(marquee);
+            _marqueeSelectedDocs = DocsInMarquee(marquee);
 
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            if (!IsSelectionEnabled && _marqueeSelectedDocs.Count > 0)
             {
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
                 parentView.MakeSelectionModeMultiple();
             }
-
-            _marqueeSelectedDocs = selectedDocs;
-            foreach (var doc in selectedDocs)
+            foreach (var doc in _marqueeSelectedDocs)
             {
                 doc.MarqueeSelectBorder(true);
             }
