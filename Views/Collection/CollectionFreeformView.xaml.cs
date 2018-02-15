@@ -868,18 +868,6 @@ namespace Dash
 
         #region Activation
 
-        //protected override void OnActivated(bool isSelected)
-        //{
-        //    if (InkController != null)
-        //    {
-        //        InkHostCanvas.IsHitTestVisible = isSelected;
-        //        if (XInkCanvas != null)
-        //        {
-        //            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
-        //        }
-        //    }
-        //}
-
         private bool _singleTapped;
 
         private async void OnTapped(object sender, TappedRoutedEventArgs e)

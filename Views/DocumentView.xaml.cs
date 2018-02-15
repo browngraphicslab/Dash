@@ -47,8 +47,6 @@ namespace Dash
 
         public bool ProportionalScaling { get; set; }
 
-        public static int dvCount = 0;
-
         public MenuFlyout MenuFlyout;
 
         private static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -346,21 +344,6 @@ namespace Dash
             ToggleGroupSelectionBorderColor(false);
         }
 
-        /// <summary>
-        /// Returns true if a document view is already linked to another, false if not
-        /// </summary>
-        /// <param name="docView"></param>
-        /// <returns></returns>
-        private bool IsConnected(DocumentView docView)
-        {
-            var userLinks = docView.ViewModel.DocumentController.GetField(KeyStore.UserLinksKey) as ListController<TextController>;
-            if (userLinks == null || userLinks.Data.Count <= 0)
-            {
-                return false;
-            }
-            return true;
-        }
-
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
@@ -507,7 +490,7 @@ namespace Dash
 
         private void ShowContext()
         {
-            ViewModel.DocumentController.GetDataDocument(null).RestoreNeighboringContext();
+            ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
         
         
@@ -1127,7 +1110,7 @@ namespace Dash
                 }
             }
 
-
+            
             collection.LoadNewActiveTextBox("", where, true);
         }
 
