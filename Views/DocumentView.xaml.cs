@@ -367,6 +367,9 @@ namespace Dash
             ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
         }
 
+        /// <summary>
+        /// Brings the element to the front of its containing parent canvas.
+        /// </summary>
         public void ToFront()
         {
             if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
@@ -375,20 +378,12 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-
-        public DocumentController Choose()
-        {
-            // bring document to center? 
-            var mainView = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-            if (mainView != null)
-            {
-                var pInWorld = Util.PointTransformFromVisual(new Point(Width / 2, Height / 2), this, mainView);
-                var worldMid = new Point(mainView.ClipRect.Width / 2, mainView.ClipRect.Height / 2);
-                mainView.Move(new TranslateTransform { X = worldMid.X - pInWorld.X, Y = worldMid.Y - pInWorld.Y });
-            }
-            return null;
-        }
-
+        
+        /// <summary>
+        /// Removes all handler event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
@@ -398,8 +393,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationStarted -= DraggerButton_ManipulationStarted;
         }
-
-
+        
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel != null && !ViewModel.Undecorated)
@@ -481,7 +475,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Applies custom override styles to the operator view. 
+        /// Applies custom override styles to the collection view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
         public void StyleCollection(CollectionView view)
@@ -547,6 +541,10 @@ namespace Dash
             return new Size();
         }
 
+        /// <summary>
+        /// Resizes the document while keeping its original width/height ratio.
+        /// </summary>
+        /// <param name="e"></param>
         public void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
         {
             var pos = Util.PointTransformFromVisual(e.Position, e.Container);
@@ -608,6 +606,10 @@ namespace Dash
             _draggerButtonBeingManipulated = true;
         }
 
+        /// <summary>
+        /// If the documentView contains a FreeformCollection, resizes the (TODO: is this right) first
+        /// DocumentVIew in that collection to be the size of the FreeformCollection.
+        /// </summary>
         void fitFreeFormChildrenToTheirLayouts()
         {
             var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
@@ -638,6 +640,7 @@ namespace Dash
         /// </summary>
         private void updateIcon()
         {
+            // TODO: why is this commented out if collections can really have titles?
             return;
             //if (ViewModel == null) return;
             //// when you want a new icon, you have to add a check for it here!
@@ -659,26 +662,8 @@ namespace Dash
         {
             // document type specific styles >> use VERY sparringly
             var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
-            if (docType.Type != null)
-            {
-
-            }
-            else
-            {
-
+            if (docType.Type == null)
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
-            }
-
-            // if there is a readable document type, use that as label
-            //var sourceBinding = new Binding
-            //{
-            //    Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-            //    Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
-            //    Mode = BindingMode.TwoWay,
-            //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            //};
-            //xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
-
         }
 
         /// <summary>
@@ -694,10 +679,12 @@ namespace Dash
             {
                 updateIcon();
                 // binds the display title of the document to the back end representation
+                // TODO: shouldn't this be covered by binding
                 ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
         }
 
+        // Controls functionality for the Right-click context menu
         #region Menu
 
         public void DeleteDocument()
@@ -829,15 +816,7 @@ namespace Dash
             await Task.Delay(100); // allows for double-tap
 
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
-            if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
-            {
-                var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
-                if (zindex > -100)
-                {
-                    ParentCollection.MaxZ += 1;
-                    Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-                }
-            }
+            ToFront();
         }
         
         /// <summary>
