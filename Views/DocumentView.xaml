@@ -1,4 +1,4 @@
-﻿<local:SelectionElement
+﻿<UserControl
     x:Name="This"
     x:Class="Dash.DocumentView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -19,7 +19,6 @@
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
-        <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter" />
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
@@ -49,20 +48,16 @@
             <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
 
             <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
-            <RelativePanel x:Name="xMetadataPanel" 
-                  VerticalAlignment="Top"
-                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
-                  >
-                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" >
-                    <TextBlock x:Name="xTitleIcon" 
+
+            <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
+                <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="Transparent"
                                Text="{StaticResource DocumentPlainIcon}" 
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
-            </RelativePanel>
+            </Border>
 
             <!--grid to hold the inner content of the document-->
             <Grid Name="xTargetContentGrid">
@@ -78,7 +73,7 @@
                     <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" />
                 </Grid>
                 <!-- Dragger Button-->
-                <Button x:Name="DraggerButton"
+                <Grid x:Name="DraggerButton"
                         x:FieldModifier="public"
                         Margin="0,0,-20,-20"
                         HorizontalAlignment="Right"
@@ -86,16 +81,12 @@
                         AllowFocusWhenDisabled="False"
                         VerticalAlignment="Bottom"
                         ManipulationMode="TranslateX, TranslateY"
-                        Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                        </ControlTemplate>
-                    </Button.Template>
+                        Visibility="Collapsed">
                     <Border Padding="10,10,20,20" Background="Transparent">
                         <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                     </Border>
-                </Button>
+                </Grid>
             </Grid>
 
             <!--The selection border-->
@@ -127,4 +118,4 @@
         </Grid>
 
     </Grid>
-</local:SelectionElement>
+</UserControl>

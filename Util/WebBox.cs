@@ -75,7 +75,7 @@ namespace Dash
             CourtesyDocument.SetupBindings(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController,FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController,FrameworkElement> keysToFrameworkElementsIn = null)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -129,11 +129,7 @@ namespace Dash
             //add to key to framework element dictionary
             var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = web;
-
-            if (isInterfaceBuilderLayout)
-            {
-                return new SelectableContainer(grid, docController);
-            }
+            
             return grid;
         }
 

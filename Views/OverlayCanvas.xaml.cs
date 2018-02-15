@@ -64,20 +64,5 @@ namespace Dash
             OnToggleEditMode?.Invoke(sender, e);
             //EditButton.Content = FreeformView.MainFreeformView.ViewModel.IsEditorMode ? "STOP" : "EDIT";
         }
-
-        public void OpenInterfaceBuilder(DocumentController vm, Point position)
-        {
-            var interfaceBuilder = new InterfaceBuilder(vm)
-            {
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            interfaceBuilder.RenderTransform = new TranslateTransform()
-            {
-                X = position.X,
-                Y = position.Y
-            };
-            xOuterGrid.Children.Add(interfaceBuilder);
-        }
     }
 }

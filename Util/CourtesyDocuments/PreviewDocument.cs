@@ -37,14 +37,12 @@ namespace Dash
             Document.SetFields(fields, true);
         }
 
-        public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, 
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
         {
             var layout = docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
             FrameworkElement innerContent = null;
@@ -52,7 +50,7 @@ namespace Dash
             {
                 foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
-                innerContent = layout.MakeViewUI(context, false);
+                innerContent = layout.MakeViewUI(context);
             }
             
 
@@ -77,7 +75,7 @@ namespace Dash
                 var innerLayout = dargs.NewValue.DereferenceToRoot<DocumentController>(c);
                 foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
-                var innerCont = innerLayout.MakeViewUI(c, false);
+                var innerCont = innerLayout.MakeViewUI(c);
                 returnContent.Content = innerCont;
             });
 

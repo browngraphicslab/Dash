@@ -130,8 +130,7 @@ namespace Dash
             var point2 = inkPoints.Last();
             var rectToDocView = GetDocViewRects();
             //Try using the new line to delete documents or links
-            var deleted = DeleteIntersectingDocuments(inkPoints, point1, point2) ||
-                          DeleteIntersectingConnections(point1, point2);
+            var deleted = DeleteIntersectingDocuments(inkPoints, point1, point2);
             //If they were deleted, remove the line.
             if (deleted)
             {
@@ -157,7 +156,6 @@ namespace Dash
                     if (PathIntersectsRect(
                         inkPoints, rect))
                     {
-                        FreeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
                         FreeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
                             .DocumentController);
                         deleted = true;
@@ -165,95 +163,6 @@ namespace Dash
             }
             return deleted;
         }
-
-        public bool DeleteIntersectingConnections(Point point1, Point point2)
-        {
-            bool lineDeleted = false;
-            //Calculate line 1: the line of the ink stroke
-            var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
-            var yInt1 = point1.Y - point1.X * slope1;
-            var view = FreeformInkControl.FreeformView;
-            var refsToLines = new Dictionary<FieldReference, Path>();
-            foreach (var pair in view.RefToLine)
-            {
-                refsToLines[pair.Key] = pair.Value;
-            }
-            //iterate through reference:link/path pairs stored by collection
-            foreach (var pair in refsToLines)
-            {
-                //Calculate line 2: an approximation of the bezier curve of the link
-                var line = pair.Value;
-                var converter = view.LineToConverter[line];
-                var curvePoint1 = converter.Element1.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
-                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
-                var curvePoint2 = converter.Element2.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
-                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2, converter.Element2.ActualHeight / 2));
-                var slope2 = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
-                var yInt2 = curvePoint1.Y - curvePoint1.X * slope2;
-
-                //Calculate intersection of the lines
-                var intersectionX = (yInt2 - yInt1) / (slope1 - slope2);
-                var intersectionY = slope1 * intersectionX + yInt1;
-                var intersectionPoint = new Point(intersectionX, intersectionY);
-
-                //if the intersection is on the two line segments, remove the path and the reference
-                if (PointBetween(intersectionPoint, point1, point2) &&
-                    PointBetween(intersectionPoint, curvePoint1, curvePoint2))
-                {
-                    var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                    var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                    var layoutDoc2 = view2.ViewModel.DocumentController;
-                    var fields = layoutDoc2.EnumFields().ToImmutableList();
-                    var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
-                    var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
-                    var dataRef = layoutDoc2.GetField(key2) as ReferenceController;
-                    var referencesEqual =
-                        view1.ViewModel.KeysToFrameworkElements[key1].Equals(converter.Element1) && view2
-                            .ViewModel.KeysToFrameworkElements[key2].Equals(converter.Element2);
-                    if (referencesEqual && view.RefToLine.ContainsKey(pair.Key) && dataRef != null)
-                    {
-                        //Case where we have layout document and need to get dataDoc;
-                        view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
-                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
-                        if (dataDoc != null)
-                        {
-                            bool copy = true;
-                            //TODO tfs: Make it so the user can choose to copy field to dest or just delete the field
-                            if (copy)
-                            {
-                                var field = dataRef.DereferenceToRoot(new Context(dataDoc));
-                                if (field != null)
-                                {
-                                    dataDoc.SetField(key2, field
-                                        .GetCopy(), true);
-                                }
-                                else
-                                {
-                                    dataDoc.RemoveField(key2);
-                                }
-                            }
-                            else
-                            {
-                                dataDoc.RemoveField(key2);
-                            }
-                        }
-                        else
-                        {
-                            //Case where what we thought was a layout doc is actually a data document with an active layout
-                            layoutDoc2.SetField(key2, dataRef.DereferenceToRoot(new Context(layoutDoc2))?.GetCopy(),
-                                true);
-                        }
-                        lineDeleted = true;
-
-                    }
-
-                }
-            }
-            return lineDeleted;
-        }
-
-
-
 
         #endregion
 
@@ -307,11 +216,6 @@ namespace Dash
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
-                DocumentView documentView = FreeformInkControl.FreeformView.GetDocView(doc);
-                if (documentView != null)
-                {
-                    FreeformInkControl.FreeformView.DeleteConnections(documentView);
-                }
             }
 
             var documentController = Util.BlankCollection();

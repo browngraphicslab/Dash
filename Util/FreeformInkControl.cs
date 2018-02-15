@@ -125,7 +125,7 @@ namespace Dash
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
             TargetInkCanvas.InkPresenter.InputDeviceTypes = type;
-            TargetInkCanvas.InkPresenter.IsInputEnabled = FreeformView.IsSelected;
+            TargetInkCanvas.InkPresenter.IsInputEnabled = true;
             FreeformView.ManipulationControls.FilterInput = true;
             switch (type)
             {

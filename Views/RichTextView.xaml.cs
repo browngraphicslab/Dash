@@ -23,6 +23,7 @@ using Windows.ApplicationModel.Core;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using System.Text.RegularExpressions;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -55,7 +56,6 @@ namespace Dash
         private bool CanSizeToFit = false;
         long TextChangedCallbackToken;
         
-        private bool _rightPressed = false;
         PointerEventHandler moveHdlr = null, releasedHdlr = null;
 
         private Point _rightDragLastPosition, _rightDragStartPosition;
@@ -246,47 +246,78 @@ namespace Dash
                 var doc = GetDoc();
                 var point = doc.GetPositionField().Data;
 
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
-                if (nearest != null)
-                {
-                    if (ctrlDown)
-                        nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
-                    return;
-                }
-
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
+
+                var collection = this.GetFirstAncestorOfType<CollectionView>();
+                var contextDoc = theDoc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
+                if (theDoc.DocumentType.Equals(DataBox.DocumentType) && contextDoc != null)
                 {
                     var pt = point;
                     pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                    pt.X += 80;
+                    pt.X += 10;
                     pt.Y += 0;
-                    if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                    var collection = this.GetFirstAncestorOfType<CollectionView>();
-                    if (collection != null)
-                    {
-                        Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
-                    }
+                    
+                    var menuFlyout = new MenuFlyout() { Placement = FlyoutPlacementMode.Bottom };
+                    var menuFlyoutItem = new MenuFlyoutItem() { Text = theDoc.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data ?? "<>" };
+                    menuFlyoutItem.Click += (s, a) => Actions.DisplayDocument(collection.ViewModel, contextDoc.GetDataDocument(null).GetKeyValueAlias(pt));
+                    menuFlyout.Items.Add(menuFlyoutItem);
+                    menuFlyout.Closed += (s, a) => this.ContextFlyout = null;
+                    this.ContextFlyout = menuFlyout;
+                    this.ContextFlyout.ShowAt(this);
                 }
-                else if (target.StartsWith("http"))
+                else
                 {
-                    theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                    if (theDoc != null && theDoc != DBTest.DBNull)
+
+                    var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
+                    if (nearest != null)
+                    {
+                        if (ctrlDown)
+                            nearest.DeleteDocument();
+                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                        return;
+                    }
+
+                    if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
                     {
                         var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        var collection = this.GetFirstAncestorOfType<CollectionView>();
+                        pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
+                        pt.X += 10;
+                        pt.Y += 0;
+                        var api = theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data;
+                        if (api == CollectionNote.APISignature)
+                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                         if (collection != null)
                         {
                             Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
                         }
                     }
-                    else
+                    else if (target.StartsWith("http"))
                     {
-                        MainPage.Instance.WebContext.SetUrl(target);
+                        theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
+                        if (theDoc != null && theDoc != DBTest.DBNull)
+                        {
+                            var pt = point;
+                            pt.X -= 150;
+                            pt.Y -= 50;
+                            if (collection != null)
+                            {
+                                Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
+                            }
+                        }
+                        else
+                        {
+                            if (MainPage.Instance.WebContext != null)
+                                MainPage.Instance.WebContext.SetUrl(target);
+                            else
+                            {
+                                var pt = point;
+                                pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
+                                pt.X += 10;
+                                pt.Y += 0;
+                                var page = new HtmlNote(target, target, pt).Document;
+                                Actions.DisplayDocument(collection.ViewModel, page);
+                            }
+                        }
                     }
                 }
                 this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
@@ -301,7 +332,7 @@ namespace Dash
             foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
             {
                 var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData.Id)
+                if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
                 {
                     var mprect = dvm.GetBoundingRect(MainPage.Instance);
                     var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -388,14 +419,6 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
-            //if (e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
-            //{
-            //    var c = DataDocument.GetField(KeyStore.WebContextKey) as ListController<TextController>;
-            //    if (c != null)
-            //    {
-            //        BrowserView.OpenTab((c.Data.First()as TextController).Data);
-            //    }
-            //}
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
         
@@ -403,14 +426,10 @@ namespace Dash
         {
             e.Handled = true;
             DocumentController theDoc = null;
-            if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
-                theDoc = docCtrls.First();
-            }
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
-            {
-                theDoc = e.DataView.Properties["Operator Document"] as DocumentController;
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                theDoc = dragModel.GetDropDocument(new Point(), true);
             }
             var forceLocal = true;
             var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
@@ -440,12 +459,6 @@ namespace Dash
             }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
-            if (DocumentView.DragDocumentView != null)
-            {
-                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
-                DocumentView.DragDocumentView.IsHitTestVisible = true;
-                DocumentView.DragDocumentView = null;
-            }
         }
 
         void xRichEditBox_SelectionChanged(object sender, RoutedEventArgs e)
@@ -479,8 +492,8 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
-                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
+                return parentDoc.ViewModel?.DataDocument?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
+                       parentDoc.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
             }
             return null;
         }
@@ -489,7 +502,7 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+                parentDoc.ViewModel?.DataDocument?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
             }
         }
 
@@ -498,8 +511,7 @@ namespace Dash
             var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
             if (parentDoc != null)
             {
-                var doc = parentDoc.ViewModel.DocumentController;
-                return doc.GetActiveLayout() ?? doc;
+                return parentDoc.ViewModel.LayoutDocument;
             }
             return null;
         }
@@ -533,7 +545,7 @@ namespace Dash
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
             var docParent = this.GetFirstAncestorOfType<DocumentView>();
-            docParent.ViewModel.DocumentController.GetDataDocument(null).AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            docParent.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
@@ -562,7 +574,7 @@ namespace Dash
         #endregion
 
         #region DocView manipulation on right click
-
+        
         /// <summary>
         /// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
         /// </summary>
@@ -570,87 +582,12 @@ namespace Dash
         /// <param name="e"></param>
         private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
+            var rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (_rightPressed)
+            if (rightPressed)
             {
-                if (moveHdlr == null)
-                    moveHdlr = RichTextView_PointerMoved;
-                if (releasedHdlr == null)
-                    releasedHdlr = RichTextView_PointerReleased;
-                this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-                this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
-                this.RemoveHandler(PointerMovedEvent, moveHdlr);
-                this.AddHandler(PointerMovedEvent, moveHdlr, true);
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                docView?.ToFront();
-                var parent = this.GetFirstAncestorOfType<DocumentView>();
-                var pointerPosition = MainPage.Instance
-                    .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
-                        .CoreWindow.GetForCurrentThread().PointerPosition);
-                _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-                this.CapturePointer(e.Pointer);
-                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
-                parent.DocumentView_PointerEntered(null, null);
-
-            }
-        }
-
-
-        /// <summary>
-        /// Move view around if right mouse button is held down
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var parentCollectionTransform =
-                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null) return;
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            if (parent.ManipulationControls == null)
-                return;
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-
-            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
-
-            translation.X *= parentCollectionTransform.Matrix.M11;
-            translation.Y *= parentCollectionTransform.Matrix.M22;
-
-            _rightDragLastPosition = pointerPosition;
-            parent.ManipulationControls.TranslateAndScale(new
-                ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                    translation,
-                    1.0f), parent.ManipulationControls._grouping);
-
-            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-            if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                parent.ManipulationControls.Snap(true);
-        }
-
-        private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-            this.RemoveHandler(PointerMovedEvent, moveHdlr);
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-            //if (parent != null)
-            //    parent.MoveToContainingCollection();
-            if (_rightPressed)
-            {
-                var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
-                var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-                if (dist < 100)
-                    parent.OnTapped(sender, new TappedRoutedEventArgs());
-                else
-                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-                var dvm = parent.ViewModel;
-                parent.DocumentView_PointerExited(null, null);
-                parent.DocumentView_ManipulationCompleted(null, null);
-
+                new ManipulationControlHelper(this, this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                UpdateDocument();
             }
         }
 
@@ -693,8 +630,13 @@ namespace Dash
                     link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
                 }
 
-                if (xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition && xRichEditBox.Document.Selection.Link != link)
+                if (xRichEditBox.Document.Selection.Link != link)
                 {
+                    if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+                    {
+                        xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
+                    }
+
                     // set the hyperlink for the matched text
                     this.xRichEditBox.Document.Selection.Link = link;
                     // advance the end selection past the RTF embedded HYPERLINK keyword

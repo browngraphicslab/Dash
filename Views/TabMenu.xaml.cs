@@ -60,9 +60,9 @@ namespace Dash
             return Util.GetCollectionFreeFormPoint(_addsToThisCollection, _whereToAdd);
         }
 
-        public void AddToFreeform(DocumentController controller, Context context = null)
+        public void AddToFreeform(DocumentController controller)
         {
-            _addsToThisCollection.ViewModel.AddDocument(controller, context);
+            _addsToThisCollection.ViewModel.AddDocument(controller, null);
         }
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in

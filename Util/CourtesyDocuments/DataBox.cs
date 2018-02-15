@@ -30,14 +30,12 @@ namespace Dash
             //}
         }
 
-        public override FrameworkElement makeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController documentController, Context context)
         {
-            return MakeView(documentController, context, isInterfaceBuilderLayout);
+            return MakeView(documentController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
@@ -53,16 +51,25 @@ namespace Dash
             } else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document
+                FrameworkElement view = null;
                 if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
                 {
-                    return dc.MakeViewUI(context, isInterfaceBuilderLayout);
+                    view =  dc.MakeViewUI(context);
                 }
                 else
                 {
-                    return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
+                    view = dc.GetKeyValueAlias().MakeViewUI(context);
                 }
+                //bcz: this is odd -- the DocumentViewModel is bound to the DataBox, so we have to transfer the
+                //   "container-like" bindings from the contained data view to the DataBox
+                SetupBindings(view, documentController, context);
+                return view;
             }
-            else
+            else if (data is TextController)
+            {
+                return TextingBox.MakeView(documentController, context);
+            }
+            else if (data is RichTextController)
             {
                 return RichTextBox.MakeView(documentController, context);
             }

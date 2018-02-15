@@ -36,15 +36,15 @@ namespace Dash
         }
 
         public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context)
         {
-            return MakeView(docController, context, null, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null, bool isInterfaceBuilderLayout = false)
+            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
         {
-            return MakeOperatorView(docController, context, keysToFrameworkElements, isInterfaceBuilderLayout);
+            return MakeOperatorView(docController, context, keysToFrameworkElements);
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public static FrameworkElement MakeOperatorView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements, bool isInterfaceBuilderLayout, Func<FrameworkElement> customLayout = null)
+            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements, Func<FrameworkElement> customLayout = null)
         {
 
             var data = docController.GetField(KeyStore.DataKey);
@@ -72,8 +72,7 @@ namespace Dash
             SetupBindings(opView, docController, context);
 
             if (keysToFrameworkElements != null) keysToFrameworkElements[opfmc?.FieldKey] = opView;
-
-            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
+            
             return opView;
         }
 

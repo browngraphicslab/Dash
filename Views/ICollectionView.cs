@@ -9,8 +9,6 @@ namespace Dash
 {
     public interface ICollectionView
     {
-        void ToggleSelectAllItems();
-
         BaseCollectionViewModel ViewModel { get; }
     }
 }

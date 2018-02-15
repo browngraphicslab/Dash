@@ -191,7 +191,9 @@ namespace Dash
                 if (listOfCollectedDocs.Any())
                 {
                     Document.SetField(KeyStore.ThumbnailFieldKey,  listOfCollectedDocs.FirstOrDefault(), true);
+                    Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
                 }
+
             }
         }
         public class RichTextNote : NoteDocument
@@ -261,47 +263,6 @@ namespace Dash
                         new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
                     Document = docLayout;
                 }
-            }
-        }
-
-        public class ImageNote : NoteDocument
-        {
-            public static KeyController ImageFieldKey = new KeyController("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
-
-            public override DocumentController CreatePrototype()
-            {
-                var fields = new Dictionary<KeyController, FieldControllerBase>
-                {
-                    {KeyStore.TitleKey, new TextController("Prototype Title")},
-                    {ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png"))}
-                };
-                return new DocumentController(fields, Type, _prototypeID);
-            }
-
-            public override DocumentController CreatePrototypeLayout()
-            {
-                var prototype = GetDocumentPrototype();
-                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, 200, 50);
-                var imageLayout = new ImageBox(new DocumentReferenceController(prototype.GetId(), ImageFieldKey), 0, 50, 200, 200);
-                var prototpeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ imageLayout.Document }, true);
-
-                return prototpeLayout.Document;
-            }
-
-            public ImageNote(DocumentType type) : base(type)
-            {
-                _prototypeID = "C48C8AF2-5609-40F0-9FAA-E300C582AF5F";
-                _prototypeLayout = CreatePrototypeLayout();
-
-                Document = GetDocumentPrototype().MakeDelegate();
-                Document.SetField(KeyStore.TitleKey, new TextController("Title"), true);
-                Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png")), true);
-
-                var docLayout = _prototypeLayout.MakeDelegate();
-                docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
-
-                Document.AddLayoutToLayoutList(docLayout);
-                Document.SetActiveLayout(docLayout, true, true);
             }
         }
 
@@ -378,49 +339,32 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype();
-
-                //var titleLayout = new TextingBox(new DocumentReferenceFieldController(prototype.GetId(), KeyStore.TitleKey), 0, 0, double.NaN, 25, null, Colors.LightBlue);
-                var textLayout  = new TextingBox(new DocumentReferenceController(prototype.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, double.NaN);
-                var prototypeLayout = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ textLayout.Document });
-                prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-                prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                
+                var prototypeLayout = new TextingBox(new DocumentReferenceController(prototype.GetId(), KeyStore.DocumentTextKey), 0, 0, double.NaN, double.NaN);
                 prototypeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 prototypeLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
 
                 return prototypeLayout.Document;
             }
 
-
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
-            public PostitNote(string text = null, string title = "Title", DocumentType type = null) : base(type ?? DocumentType)
+            public PostitNote(string text = null, string title = null, DocumentType type = null) : base(type ?? DocumentType)
             {
                 _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
-
-                if (_prototypeLayout == null)
-                    _prototypeLayout = CreatePrototypeLayout();
-                var docLayout = CreatePrototypeLayout();// _prototypeLayout.MakeDelegate();
-                _prototypeLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);
+                
+                var docLayout = CreatePrototypeLayout();
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetTitleField(title);
+                if (!string.IsNullOrEmpty(title))
+                    dataDocument.SetTitleField(title);
                 dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text ?? "Write something amazing!"), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
                 
-
-                if (false)
-                {
-                    dataDocument.AddLayoutToLayoutList(docLayout);
-                    dataDocument.SetActiveLayout(docLayout, true, true);
-                    Document = dataDocument;
-                }
-                else
-                {
-                    docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-                    docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-                    docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
-                    Document = docLayout;
-                }
+                docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
+                docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
+                Document = docLayout;
             }
         }
 
