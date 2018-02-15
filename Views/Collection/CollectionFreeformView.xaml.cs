@@ -226,6 +226,7 @@ namespace Dash
             xOuterGrid.PointerMoved += OnPointerMoved;
             xOuterGrid.PointerReleased += OnPointerReleased;
 
+            MakePreviewTextbox();
             if (InkController != null)
             {
                 MakeInkCanvas();
@@ -1023,7 +1024,6 @@ namespace Dash
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
             SelectionCanvas = new Canvas();
-            MakePreviewTextbox();
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);

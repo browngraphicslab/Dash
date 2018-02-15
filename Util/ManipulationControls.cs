@@ -395,8 +395,6 @@ namespace Dash
 
         #endregion
 
-
-
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             _isManipulating = false;
@@ -476,70 +474,11 @@ namespace Dash
 
             _isManipulating = true;
             _processManipulation = true;
-
-            _numberOfTimesDirChanged = 0;
+            
             if (e != null) // && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
         }
-
-        public Windows.UI.Color ColorConvert(string colorStr)
-        {
-            colorStr = colorStr.Replace("#", string.Empty);
-
-            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
-            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
-            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
-            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
-
-            return Windows.UI.Color.FromArgb(a, r, g, b);
-        }
-
-        public void AddAllAndHandle()
-        {
-            if (!_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= EmptyManipulationDelta;
-                _element.ManipulationDelta += ElementOnManipulationDelta;
-            }
-
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= EmptyPointerWheelChanged;
-                _element.PointerWheelChanged += ElementOnPointerWheelChanged;
-            }
-            _disabled = false;
-        }
-
-        public void RemoveAllButHandle()
-        {
-            RemoveAllSetHandle(true);
-        }
-
-        public void RemoveAllAndDontHandle()
-        {
-            RemoveAllSetHandle(false);
-        }
-
-        private void RemoveAllSetHandle(bool handle)
-        {
-            if (_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= ElementOnManipulationDelta;
-                _element.ManipulationDelta += EmptyManipulationDelta;
-            }
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
-                _element.PointerWheelChanged += EmptyPointerWheelChanged;
-            }
-            _handle = handle;
-            _disabled = true;
-        }
-
+        
         // == METHODS ==
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -600,15 +539,7 @@ namespace Dash
                 Snap(true);
             e.Handled = true;
         }
-
-        // keeps track of whether the node has been shaken hard enough
-        private static int _numberOfTimesDirChanged = 0;
-        private static double _direction;
-        private static DispatcherTimer _dispatcherTimer;
-
-        // these constants adjust the sensitivity of the shake
-        private static int _millisecondsToShake = 600;
-        private static int _sensitivity = 4;
+        
         public List<DocumentViewModel> _grouping;
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
@@ -697,12 +628,12 @@ namespace Dash
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
-
+           // handleControl = _element.GetFirstAncestorOfType<ContentPresenter>();
             var scaleFactor = e.Scale;
             ElementScale *= scaleFactor;
 
             // set up translation transform
-            var translate = e.Translation;// Util.TranslateInCanvasSpace(e.Translation, handleControl);
+            var translate = e.Translation; // Util.TranslateInCanvasSpace(e.Translation, handleControl);
 
 
 
