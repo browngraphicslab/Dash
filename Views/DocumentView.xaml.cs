@@ -977,11 +977,9 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        static public DocumentView DocumentPressed = null;
+        
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            DocumentPressed = this;
             ToFront();
         }
 

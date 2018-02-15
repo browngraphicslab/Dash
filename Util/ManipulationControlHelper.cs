@@ -45,17 +45,35 @@ namespace Dash
 {
     public class ManipulationControlHelper
     {
-        DocumentView parent = null;
-        Canvas freeformCanvas = null;
-        public ManipulationControlHelper(FrameworkElement element)
-        {
-            parent = element.GetFirstAncestorOfType<DocumentView>();
-            freeformCanvas = ((element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
-        }
+        List<DocumentView> _ancestorDocs;
+        FrameworkElement   _eventElement;
+        CollectionView     _collection;
+        DocumentView       parent = null;
+        Canvas             freeformCanvas = null;
+        PointerEventHandler move_hdlr;
+        PointerEventHandler release_hdlr;
+        Point _rightDragLastPosition, _rightDragStartPosition;
 
-        private Point _rightDragLastPosition, _rightDragStartPosition;
-        public void ForcePointerPressed()
+        public ManipulationControlHelper(FrameworkElement element, FrameworkElement eventElement, Pointer pointer, bool drillDown)
         {
+            move_hdlr = new PointerEventHandler(pointerMOved);
+            release_hdlr = new PointerEventHandler(pointerReleased);
+            _eventElement = eventElement;
+            _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
+            _eventElement.AddHandler(UIElement.PointerMovedEvent,    move_hdlr,    true);
+            _eventElement.CapturePointer(pointer);
+
+            var nestings = element.GetAncestorsOfType<CollectionView>().ToList();
+            var manipTarget = nestings.Count() < 2 || drillDown ? element : nestings[nestings.Count - 2];
+            parent = manipTarget.GetFirstAncestorOfType<DocumentView>();
+            freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
+            _ancestorDocs = element.GetAncestorsOfType<DocumentView>().ToList();
+            foreach (var n in _ancestorDocs)
+                n.OuterGrid.ManipulationMode = ManipulationModes.None;
+            _collection = element as CollectionView;
+            if (_collection != null)
+                _collection.CurrentView.ManipulationMode = ManipulationModes.None;
+            
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
 
@@ -67,21 +85,13 @@ namespace Dash
             parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
             parent.DocumentView_PointerEntered(null, null);
         }
-        public  void ForcePointerReleased()
+        /// <summary>
+        /// Move view around if right mouse button is held down
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void pointerMOved(object sender, PointerRoutedEventArgs e)
         {
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-            var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
-            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-            if (dist < 100)
-                parent.OnTapped(null, new TappedRoutedEventArgs());
-            else
-                parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-            var dvm = parent.ViewModel;
-            parent.DocumentView_ManipulationCompleted(null, null);
-        }
-        public void ForcePointerMove()
-        { 
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
 
@@ -98,6 +108,31 @@ namespace Dash
             //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
             if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
                 parent.ManipulationControls.Snap(true);
+
+            e.Handled = true;
+        }
+
+        private void pointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            _eventElement.ReleasePointerCapture(e.Pointer);
+            _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
+            _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            foreach (var n in _ancestorDocs)
+                n.OuterGrid.ManipulationMode = ManipulationModes.All;
+            if (_collection != null)
+                _collection.CurrentView.ManipulationMode = ManipulationModes.All;
+
+            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+
+            var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
+            var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
+            if (dist < 100)
+                parent.OnTapped(null, new TappedRoutedEventArgs());
+            else
+                parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
+            var dvm = parent.ViewModel;
+            parent.DocumentView_ManipulationCompleted(null, null);
+            e.Handled = true;
         }
     }
 }

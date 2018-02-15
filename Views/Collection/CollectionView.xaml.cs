@@ -101,51 +101,17 @@ namespace Dash
             Unloaded += CollectionView_Unloaded;
 
             PointerPressed += OnPointerPressed;
-            PointerReleased += OnPointerReleased;
-        }
-        ManipulationControlHelper manipulationHelper = null;
-        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (manipulationHelper != null)
-            {
-                PointerMoved -= OnPointerMoved;
-                manipulationHelper.ForcePointerReleased();
-                CurrentView.ManipulationMode = ManipulationModes.All;
-                if (DocumentView.DocumentPressed != null)
-                    DocumentView.DocumentPressed.OuterGrid.ManipulationMode = ManipulationModes.None;
-                manipulationHelper = null;
-                e.Handled = true;
-            }
-
-           xOuterGrid.ReleasePointerCapture(e.Pointer);
-        }
-
-        private void OnPointerMoved(object sender, PointerRoutedEventArgs args)
-        {
-            if (manipulationHelper != null)
-            {
-                manipulationHelper.ForcePointerMove();
-                args.Handled = true;
-
-            }
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var nestings = this.GetAncestorsOfType<CollectionView>().ToList();
             var forceDrag = (args.KeyModifiers & VirtualKeyModifiers.Shift) == 0 && (args.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
                                    .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
             if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
             {
-                manipulationHelper = new ManipulationControlHelper(nestings.Count > 1 ? nestings[0] : this); // manipulate the top-most collection view
-                manipulationHelper.ForcePointerPressed();
+                new ManipulationControlHelper(this, xOuterGrid, args.Pointer, false); // manipulate the top-most collection view
+                
                 args.Handled = true;
-                xOuterGrid.CapturePointer(args.Pointer);
-                if (DocumentView.DocumentPressed != null)
-                    DocumentView.DocumentPressed.OuterGrid.ManipulationMode = ManipulationModes.None;
-                CurrentView.ManipulationMode = ManipulationModes.None;
-                PointerMoved -= OnPointerMoved;
-                PointerMoved += OnPointerMoved;
             }
         }
 

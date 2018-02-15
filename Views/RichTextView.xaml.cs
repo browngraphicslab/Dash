@@ -419,14 +419,6 @@ namespace Dash
 
         private async void released(object sender, PointerRoutedEventArgs e)
         {
-            //if (e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
-            //{
-            //    var c = DataDocument.GetField(KeyStore.WebContextKey) as ListController<TextController>;
-            //    if (c != null)
-            //    {
-            //        BrowserView.OpenTab((c.Data.First()as TextController).Data);
-            //    }
-            //}
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
         }
         
@@ -582,8 +574,7 @@ namespace Dash
         #endregion
 
         #region DocView manipulation on right click
-
-        ManipulationControlHelper manipulationHelper = null;
+        
         /// <summary>
         /// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
         /// </summary>
@@ -595,39 +586,9 @@ namespace Dash
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (rightPressed)
             {
-                if (moveHdlr == null)
-                    moveHdlr = RichTextView_PointerMoved;
-                if (releasedHdlr == null)
-                    releasedHdlr = RichTextView_PointerReleased;
-                this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-                this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
-                this.RemoveHandler(PointerMovedEvent, moveHdlr);
-                this.AddHandler(PointerMovedEvent, moveHdlr, true);
-                manipulationHelper = new ManipulationControlHelper(this);
-                manipulationHelper.ForcePointerPressed();
-                this.CapturePointer(e.Pointer);
+                new ManipulationControlHelper(this, this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
                 UpdateDocument();
             }
-        }
-
-
-        /// <summary>
-        /// Move view around if right mouse button is held down
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            manipulationHelper.ForcePointerMove();
-        }
-
-        private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-            this.RemoveHandler(PointerMovedEvent, moveHdlr);
-
-            manipulationHelper.ForcePointerReleased();
-            manipulationHelper = null;
         }
 
         #endregion
