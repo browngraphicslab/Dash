@@ -73,7 +73,7 @@
                     <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" />
                 </Grid>
                 <!-- Dragger Button-->
-                <Button x:Name="DraggerButton"
+                <Grid x:Name="DraggerButton"
                         x:FieldModifier="public"
                         Margin="0,0,-20,-20"
                         HorizontalAlignment="Right"
@@ -82,15 +82,11 @@
                         VerticalAlignment="Bottom"
                         ManipulationMode="TranslateX, TranslateY"
                         Visibility="Collapsed">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                        </ControlTemplate>
-                    </Button.Template>
                     <Border Padding="10,10,20,20" Background="Transparent">
                         <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                     </Border>
-                </Button>
+                </Grid>
             </Grid>
 
             <!--The selection border-->

@@ -393,8 +393,10 @@ namespace Dash
         {
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
+            DraggerButton.PointerPressed -= DraggerButton_PointerPressed;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
+            DraggerButton.ManipulationStarted -= DraggerButton_ManipulationStarted;
         }
 
 
@@ -409,12 +411,11 @@ namespace Dash
             }
 
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
-            DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
+            DraggerButton.PointerPressed += DraggerButton_PointerPressed;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DraggerButton.ManipulationStarted += DraggerButton_ManipulationStarted;
 
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
@@ -438,6 +439,18 @@ namespace Dash
                 ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
                 return;
             }
+        }
+
+
+        bool draggerOverride = false;
+        private void DraggerButton_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (draggerOverride)
+                e.Complete(); 
+        }
+        private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            draggerOverride = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
         }
 
         private void XTitleIcon_Tapped(object sender, TappedRoutedEventArgs e)
