@@ -844,7 +844,7 @@ namespace Dash
         {
             xSelectionBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xSelectionBorder.BorderBrush = selected ?
-                SingleSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+                GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
         /// <summary>
@@ -1043,6 +1043,14 @@ namespace Dash
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
+            var containerCollection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var marqueeDocs = containerCollection?.MarqueeSelectedDocs; 
+            if (marqueeDocs != null && marqueeDocs.Count > 0)
+            {
+                foreach (var doc in marqueeDocs)
+                    doc.DeleteDocument(); 
+            }
+            else 
             //if (IsMainCollection)
             //{
             //    var collection = this.GetFirstDescendantOfType<CollectionFreeformView>();
@@ -1051,7 +1059,7 @@ namespace Dash
             //        doc.DeleteDocument(); 
             //    }
             //} else {
-            DeleteDocument();
+                DeleteDocument();
             //}
         }
 
