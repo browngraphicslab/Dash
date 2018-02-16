@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Dash.NoteDocuments;
 using Dash.Controllers;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -58,9 +59,8 @@ namespace Dash
                     }
                     return null;
                 });
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: collection.Where((c)=> c != null).ToList()).Document;
-                
-                args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
+                args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(
+                    collection.Where((c) => c != null).ToList(), null, null, CollectionView.CollectionViewType.Schema);
             }
         }
 
@@ -283,7 +283,7 @@ namespace Dash
 
         static KeyController testPatternMatch(DocumentController dmc, KeyController pattern, string term)
         {
-            if (!string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+            if (string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return null;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Key.Equals(pattern)))

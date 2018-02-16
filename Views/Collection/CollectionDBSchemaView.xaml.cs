@@ -478,10 +478,14 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
+                    new DragCollectionFieldModel(
+                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
+                    collectionReference,
                     viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB));
+                    CollectionView.CollectionViewType.DB
+                    ));
             }
         }
     }

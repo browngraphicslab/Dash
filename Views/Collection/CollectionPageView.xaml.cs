@@ -95,7 +95,7 @@ namespace Dash
 
                     DocumentController thumbnailImageViewDoc = null;
                     var richText = pageDoc.GetDataDocument(null).GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
-                    var docText = pageDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
+                    var docText  = pageDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
                     if (docText != null)
                     {
                         thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText.Substring(0, Math.Min(100, docText.Length))).Document;
@@ -460,7 +460,6 @@ namespace Dash
             {
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
                 e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
-                   // (m as DocumentViewModel).DocumentController, true);
             }
         }
     }

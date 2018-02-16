@@ -182,18 +182,21 @@ namespace Dash
 
                 DataDocument = GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
+
+                createLayout(where, viewtype, width, height);
+                SetDocuments(collectedDocuments);
+            }
+            public void SetDocuments(List<DocumentController> collectedDocuments)
+            {
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
                 DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
-                createLayout(where, viewtype, width, height);
-
-                if (listOfCollectedDocs.Any())
+                if (listOfCollectedDocs?.Any() == true)
                 {
-                    Document.SetField(KeyStore.ThumbnailFieldKey,  listOfCollectedDocs.FirstOrDefault(), true);
+                    Document.SetField(KeyStore.ThumbnailFieldKey, listOfCollectedDocs.FirstOrDefault(), true);
                     Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
                 }
-
             }
         }
         public class RichTextNote : NoteDocument
