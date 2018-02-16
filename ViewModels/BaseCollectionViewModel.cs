@@ -547,15 +547,17 @@ namespace Dash
             Debug.WriteLine("CollectionViewOnDragEnter Base");
             this.HighlightPotentialDropTarget(sender as UserControl);
 
+
             // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
+            if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
             {
                 e.AcceptedOperation = DataPackageOperation.Move;
             }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            }  else 
+            else
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation;
             }
@@ -563,12 +565,12 @@ namespace Dash
             // special case for schema view... should be removed
             //if (e.DataView.Properties.ContainsKey("CollectionReference"))
             //    e.AcceptedOperation = DataPackageOperation.Copy;
-            
+
             e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
         }
-        
+
         /// <summary>
         /// Fired by a collection when the item being dragged is no longer over it
         /// </summary>
