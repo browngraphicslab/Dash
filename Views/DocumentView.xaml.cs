@@ -142,7 +142,7 @@ namespace Dash
 
             var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
 
-            if (ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
+            if (ViewModel != null && ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
                                       e.VirtualKey.Equals(VirtualKey.Enter))
             {
                 // don't shift enter on key value documents

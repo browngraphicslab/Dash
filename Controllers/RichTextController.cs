@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using DashShared;
 using DashShared.Models;
+using System.Text.RegularExpressions;
 
 namespace Dash
 {
@@ -129,7 +130,8 @@ namespace Dash
 
         public override string ToString()
         {
-            return Data.ReadableString;
+            var regex = new Regex("HYPERLINK \"[^\"].*\"");
+            return regex.Replace(Data.ReadableString, "");
         }
 
         public override FieldModelController<RichTextModel> Copy()

@@ -46,6 +46,7 @@ namespace Dash
     public class ManipulationControlHelper
     {
         List<DocumentView> _ancestorDocs;
+        List<DocumentView> _descendantDocs;
         FrameworkElement   _eventElement;
         CollectionView     _collection;
         DocumentView       parent = null;
@@ -69,6 +70,9 @@ namespace Dash
             freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
             _ancestorDocs = element.GetAncestorsOfType<DocumentView>().ToList();
             foreach (var n in _ancestorDocs)
+                n.OuterGrid.ManipulationMode = ManipulationModes.None;
+            _descendantDocs = element.GetDescendantsOfType<DocumentView>().ToList();
+            foreach (var n in _descendantDocs)
                 n.OuterGrid.ManipulationMode = ManipulationModes.None;
             _collection = element as CollectionView;
             if (_collection != null)
@@ -118,6 +122,8 @@ namespace Dash
             _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
             _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
             foreach (var n in _ancestorDocs)
+                n.OuterGrid.ManipulationMode = ManipulationModes.All;
+            foreach (var n in _descendantDocs)
                 n.OuterGrid.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.All;

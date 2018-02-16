@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -46,6 +47,8 @@ namespace Dash
                     new[] { "\r\n", "\r", "\n" },
                     StringSplitOptions.None
                 ).FirstOrDefault();
+                var regex = new Regex("HYPERLINK \"[^\"].*\"");
+                computedTitle = regex.Replace(computedTitle, "");
             }
 
             outputs[ComputedTitle] = new TextController(computedTitle ?? "");
