@@ -480,16 +480,16 @@ namespace Dash
 
                 if (dragModel.CanDrop(sender as FrameworkElement))
                 {
-                    var draggedDocument = dragModel.GetDraggedDocument();
-                    if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
-                        (sender as DependencyObject).GetFirstAncestorOfType<DocumentView>()?.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == false &&
-                        this.DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(draggedDocument)).Count() == 0)
-                    {
-                        HandleTemplateLayoutDrop(dragModel);
-                        e.Handled = true;
-                        return;
-                    }
-                    else
+                    //var draggedDocument = dragModel.GetDraggedDocument();
+                    //if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
+                    //    (sender as DependencyObject).GetFirstAncestorOfType<DocumentView>()?.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == false &&
+                    //    this.DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(draggedDocument)).Count() == 0)
+                    //{
+                    //    HandleTemplateLayoutDrop(dragModel);
+                    //    e.Handled = true;
+                    //    return;
+                    //}
+                    //else
                         AddDocument(dragModel.GetDropDocument(where), null);
                 }
             }
@@ -521,7 +521,7 @@ namespace Dash
                         maxH = p.Y + h;
                     if (p.X + w > maxW)
                         maxW = p.X = w;
-                    var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<RichTextController>(RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+                    var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
                     if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
                     {
                         var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));

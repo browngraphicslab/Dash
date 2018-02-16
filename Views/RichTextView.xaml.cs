@@ -55,10 +55,6 @@ namespace Dash
         private SolidColorBrush highlightNotFocused = new SolidColorBrush(Colors.Gray) {Opacity=0.5};
         private bool CanSizeToFit = false;
         long TextChangedCallbackToken;
-        
-        PointerEventHandler moveHdlr = null, releasedHdlr = null;
-
-        private Point _rightDragLastPosition, _rightDragStartPosition;
 
 
         // for manipulation movement
@@ -206,6 +202,9 @@ namespace Dash
 
         public void UpdateDocument()
         {
+
+            if (!this.IsInVisualTree())
+                return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
             string allRtfText = GetRtfText();
@@ -638,10 +637,6 @@ namespace Dash
                 if (refText.StartsWith("http"))
                 {
                     theDoc = new HtmlNote(refText).Document;
-                }
-                else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
-                {
-                    //theDoc = DBFilterOperatorController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {
