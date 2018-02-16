@@ -27,7 +27,7 @@ namespace Dash
         public CompoundOperatorEditor(FieldControllerBase collectionField = null, Context context = null)
         {
             this.InitializeComponent();
-            _collectionViewModel = new SimpleCollectionViewModel(false);
+            _collectionViewModel = new SimpleCollectionViewModel();
             xFreeFormEditor.DataContext = _collectionViewModel;
         }
         

@@ -71,7 +71,8 @@ namespace Dash
             {
                 // if we're on the lowest selecting document view then we can resize it with pointer wheel
                 var docView = _element as DocumentView;
-                if (docView != null) return docView.IsLowestSelected;
+                if (docView != null)
+                    return true;
 
                 /*
                 var colView = _element as CollectionFreeformView;
@@ -394,16 +395,16 @@ namespace Dash
 
         #endregion
 
-
-
         public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
+            _isManipulating = false;
             Snap(false); //Always snap if done manipulating the "border"
             ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
+            _isManipulating = false;
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
                 if (_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
@@ -416,7 +417,6 @@ namespace Dash
         {
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
-            _isManipulating = false;
             var docRoot = ParentDocument;
 
             var groupViews = GroupViews(_grouping);
@@ -453,7 +453,7 @@ namespace Dash
         public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (e != null && _isManipulating)
+            if (e != null && (_isManipulating || _element.ManipulationMode == ManipulationModes.None))
             {
                 e.Complete();
                 return;
@@ -474,70 +474,11 @@ namespace Dash
 
             _isManipulating = true;
             _processManipulation = true;
-
-            _numberOfTimesDirChanged = 0;
+            
             if (e != null) // && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
                 e.Handled = true;
         }
-
-        public Windows.UI.Color ColorConvert(string colorStr)
-        {
-            colorStr = colorStr.Replace("#", string.Empty);
-
-            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
-            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
-            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
-            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
-
-            return Windows.UI.Color.FromArgb(a, r, g, b);
-        }
-
-        public void AddAllAndHandle()
-        {
-            if (!_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= EmptyManipulationDelta;
-                _element.ManipulationDelta += ElementOnManipulationDelta;
-            }
-
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= EmptyPointerWheelChanged;
-                _element.PointerWheelChanged += ElementOnPointerWheelChanged;
-            }
-            _disabled = false;
-        }
-
-        public void RemoveAllButHandle()
-        {
-            RemoveAllSetHandle(true);
-        }
-
-        public void RemoveAllAndDontHandle()
-        {
-            RemoveAllSetHandle(false);
-        }
-
-        private void RemoveAllSetHandle(bool handle)
-        {
-            if (_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= ElementOnManipulationDelta;
-                _element.ManipulationDelta += EmptyManipulationDelta;
-            }
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
-                _element.PointerWheelChanged += EmptyPointerWheelChanged;
-            }
-            _handle = handle;
-            _disabled = true;
-        }
-
+        
         // == METHODS ==
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -572,8 +513,12 @@ namespace Dash
             {
                 return;
             }
+            var pointerPosition = MainPage.Instance.TransformToVisual(_element.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+            var pointerPosition2 = MainPage.Instance.TransformToVisual(_element.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
 
-            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
+            var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+
+            TranslateAndScale(new ManipulationDeltaData(e.Position, delta, e.Delta.Scale));
             Snap(true);
 
             e.Handled = true;
@@ -598,85 +543,8 @@ namespace Dash
                 Snap(true);
             e.Handled = true;
         }
-
-        // keeps track of whether the node has been shaken hard enough
-        private static int _numberOfTimesDirChanged = 0;
-        private static double _direction;
-        private static DispatcherTimer _dispatcherTimer;
-
-        // these constants adjust the sensitivity of the shake
-        private static int _millisecondsToShake = 600;
-        private static int _sensitivity = 4;
+        
         public List<DocumentViewModel> _grouping;
-
-        /// <summary>
-        /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void DetectShake(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            // get the document view that's being manipulated
-            var grid = sender as Grid;
-            var docView = grid?.GetFirstAncestorOfType<DocumentView>();
-
-            if (docView != null)
-            {
-                // calculate the speed of the translation from the velocities property of the eventargs
-                var speed = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
-
-                // calculate the direction of the velocity
-                var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
-
-                // checks if a certain number of direction changes occur in a specified time span
-                if (_numberOfTimesDirChanged == 0)
-                {
-                    StartTimer();
-                    _numberOfTimesDirChanged++;
-                    _direction = dir;
-                }
-                else if (_numberOfTimesDirChanged < _sensitivity)
-                {
-                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
-                    {
-                        _numberOfTimesDirChanged++;
-                        _direction = dir;
-                    }
-                }
-                else
-                {
-                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
-                    {
-                        // if we've reached enough direction changes, break the connection
-                        docView.DisconnectFromLink();
-                        _numberOfTimesDirChanged = 0;
-                    }
-                }
-            }
-        }
-
-        private static void StartTimer()
-        {
-            if (_dispatcherTimer != null)
-            {
-                _dispatcherTimer.Stop();
-            }
-            else
-            {
-                _dispatcherTimer = new DispatcherTimer();
-                _dispatcherTimer.Tick += dispatcherTimer_Tick;
-            }
-            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, _millisecondsToShake);
-
-            _dispatcherTimer.Start();
-
-        }
-
-        private static void dispatcherTimer_Tick(object sender, object e)
-        {
-            _numberOfTimesDirChanged = 0;
-            _dispatcherTimer.Stop();
-        }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
         {
@@ -764,12 +632,12 @@ namespace Dash
         {
             if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
-
+           // handleControl = _element.GetFirstAncestorOfType<ContentPresenter>();
             var scaleFactor = e.Scale;
             ElementScale *= scaleFactor;
 
             // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Translation, handleControl);
+            var translate = e.Translation; // Util.TranslateInCanvasSpace(e.Translation, handleControl);
 
 
 
@@ -784,6 +652,7 @@ namespace Dash
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
                     foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
+
                         g?.TransformDelta(transformGroup);
                     }
                 }

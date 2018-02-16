@@ -1,4 +1,4 @@
-﻿<local:SelectionElement
+﻿<UserControl
     x:Class="Dash.CollectionDBSchemaView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -78,4 +78,4 @@
             </ListView.ItemTemplate>
         </ListView>
     </Grid>
-</local:SelectionElement>
+</UserControl>

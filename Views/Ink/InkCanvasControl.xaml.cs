@@ -27,10 +27,9 @@ using Dash.Views;
 
 namespace Dash
 {
-    public sealed partial class InkCanvasControl : SelectionElement
+    public sealed partial class InkCanvasControl 
     {
         public InkController InkFieldModelController;
-        private readonly bool _isInterfaceBuilder;
         private ManipulationControls _controls;
         Symbol SelectIcon = (Symbol) 0xEF20;
 
@@ -48,10 +47,9 @@ namespace Dash
         /// on the canvas in the underlying data.
         /// </summary>
         /// <param name="inkFieldModelController"></param>
-        public InkCanvasControl(InkController inkFieldModelController, bool isInterfaceBuilder)
+        public InkCanvasControl(InkController inkFieldModelController)
         {
             this.InitializeComponent();
-            _isInterfaceBuilder = isInterfaceBuilder;
             XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
@@ -61,7 +59,6 @@ namespace Dash
             Loaded += OnLoaded;
             XInkCanvas.Tapped += OnTapped;
             Tapped += OnTapped;
-            OnLowestActivated(false);
         }
 
         private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
@@ -80,16 +77,12 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!_isInterfaceBuilder)
-            {
-                OnSelected();
-                e.Handled = true;
-            }
+            e.Handled = true;
         }
 
         private void InkFieldModelControllerOnFieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (!IsLowestSelected || args?.Action == DocumentController.FieldUpdatedAction.Replace)
+            if ( args?.Action == DocumentController.FieldUpdatedAction.Replace)
             {
                 UpdateStrokes();
             }
@@ -148,38 +141,33 @@ namespace Dash
                     XInkCanvas);
         }
 
-        protected override void OnActivated(bool isSelected)
-        {
-            // Do nothing
-        }
-
-        protected override void OnLowestActivated(bool act)
-        {
-            UpdateStrokes();
-            //When lowest activated, ink canvas is drawable
-            if (act)
-            {
-                EditingSymbol.Foreground = new SolidColorBrush(Colors.Black);
-                EditButton.IsHitTestVisible = true;
-                XGrid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
-                XInkCanvas.InkPresenter.IsInputEnabled = true;
-                ScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
-                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
-                ManipulationMode = ManipulationModes.None;
-            } else
-            {
-                ClearSelection();
-                EditingSymbol.Foreground = new SolidColorBrush(Colors.LightGray);
-                XGrid.BorderBrush = new SolidColorBrush(Colors.Black);
-                XInkCanvas.InkPresenter.IsInputEnabled = false;
-                ScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
-                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-                if(InkToolbar.Visibility == Visibility.Visible) xCollapseSettings.Begin();
-                ManipulationMode = ManipulationModes.All;
-                EditButton.IsHitTestVisible = false;
+        //protected override void OnLowestActivated(bool act)
+        //{
+        //    UpdateStrokes();
+        //    //When lowest activated, ink canvas is drawable
+        //    if (act)
+        //    {
+        //        EditingSymbol.Foreground = new SolidColorBrush(Colors.Black);
+        //        EditButton.IsHitTestVisible = true;
+        //        XGrid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+        //        XInkCanvas.InkPresenter.IsInputEnabled = true;
+        //        ScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
+        //        ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+        //        ManipulationMode = ManipulationModes.None;
+        //    } else
+        //    {
+        //        ClearSelection();
+        //        EditingSymbol.Foreground = new SolidColorBrush(Colors.LightGray);
+        //        XGrid.BorderBrush = new SolidColorBrush(Colors.Black);
+        //        XInkCanvas.InkPresenter.IsInputEnabled = false;
+        //        ScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
+        //        ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+        //        if(InkToolbar.Visibility == Visibility.Visible) xCollapseSettings.Begin();
+        //        ManipulationMode = ManipulationModes.All;
+        //        EditButton.IsHitTestVisible = false;
                 
-            }
-        }
+        //    }
+        //}
 
         private void XCollapseSettingsOnCompleted(object sender, object o)
         {

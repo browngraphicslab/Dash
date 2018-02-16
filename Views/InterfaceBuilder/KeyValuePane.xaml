@@ -26,7 +26,7 @@
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" Width="285" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
-            <TextBlock Foreground="White" Margin="0,-2,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
+            <TextBlock Foreground="White" FontSize="20"  Margin="0,-2,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
             
             <!--close button-->
             <Button FontSize="18" Margin="265,0,0,0" Foreground="White" Background="Transparent"

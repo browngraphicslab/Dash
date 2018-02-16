@@ -80,51 +80,5 @@ namespace Dash
             }
         }
 
-        public void AddInputreference(KeyController key, IOReference reference)
-        {
-            if (!InputFieldReferences.ContainsKey(key))
-            {
-                InputFieldReferences[key] = new List<ReferenceController>();
-                (OperatorFieldModel as CompoundOperatorModel).InputFieldReferences[key.Id] = new List<string>();
-            }
-            var r = reference.FieldReference.GetReferenceController();
-            InputFieldReferences[key].Add(r);
-            (OperatorFieldModel as CompoundOperatorModel).InputFieldReferences[key.Id].Add(r.Id);
-            var ioInfo = new IOInfo(reference.Type, true);
-            Inputs.Add(key, ioInfo);
-            (OperatorFieldModel as CompoundOperatorModel).Inputs[key.Id] = ioInfo;
-            UpdateOnServer();
-        }
-
-        public void RemoveInputReference(KeyController key, IOReference reference)
-        {
-            if (!InputFieldReferences.ContainsKey(key))
-            {
-                return;
-            }
-            var r = reference.FieldReference.GetReferenceController();
-            InputFieldReferences[key].Remove(r);
-            (OperatorFieldModel as CompoundOperatorModel).InputFieldReferences[key.Id].Remove(r.Id);
-            //TODO Update keys
-            UpdateOnServer();
-        }
-
-        public void AddOutputreference(KeyController key, IOReference reference)
-        {
-            var r = reference.FieldReference.GetReferenceController();
-            OutputFieldReferences.Add(key, r);
-            (OperatorFieldModel as CompoundOperatorModel).OutputFieldReferences.Add(key.Id, r.Id);
-            Outputs.Add(key, reference.Type);
-            (OperatorFieldModel as CompoundOperatorModel).Outputs[key.Id] = reference.Type;
-            UpdateOnServer();
-        }
-
-        public void RemoveOutputReference(KeyController key)
-        {
-            OutputFieldReferences.Remove(key);
-            (OperatorFieldModel as CompoundOperatorModel).OutputFieldReferences.Remove(key.Id);
-            //TODO Update keys
-            UpdateOnServer();
-        }
     }
 }

@@ -62,7 +62,7 @@ namespace Dash
             docController.SetField(SpacingKey, currentSpacingField, forceMask);
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context,  bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
@@ -113,7 +113,7 @@ namespace Dash
             AddBinding(listview, docController, SpacingKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
 
             var grid = new Grid();
@@ -133,7 +133,7 @@ namespace Dash
             listView.HorizontalContentAlignment = HorizontalAlignment.Center; 
             SetupBindings(listView, docController, context); 
 
-            LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
+            LayoutDocuments(docController, context, listView);
 
             var c = new Context(context);
             docController.FieldModelUpdated += delegate (FieldControllerBase sender,
@@ -142,25 +142,10 @@ namespace Dash
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 if (dargs.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments((DocumentController)sender, c, listView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController)sender, c, listView);
                 }
             };
             grid.Children.Add(listView);
-            if (isInterfaceBuilderLayout)
-            {
-                var icon = new TextBlock()
-                {
-                    Text = "🖹",
-                    FontSize = 100,
-                    Foreground = new SolidColorBrush(Colors.LightBlue),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                grid.Children.Insert(0, icon);
-                var container = new SelectableContainer(grid, docController, dataDocument);
-                SetupBindings(container, docController, context);
-                return container;
-            }
 
             /*          // commented this out for now 
             Ellipse dragEllipse = new Ellipse
@@ -179,16 +164,15 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, ListView list, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, ListView list)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
                 itemsSource.Add(layoutView);
                 
             }
