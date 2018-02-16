@@ -547,20 +547,7 @@ namespace Dash
             Debug.WriteLine("CollectionViewOnDragEnter Base");
             this.HighlightPotentialDropTarget(sender as UserControl);
 
-
-            // accept move, then copy, and finally accept whatever they requested (for now)
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Copy))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-            }
-            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Move) || e.DataView.RequestedOperation.HasFlag(DataPackageOperation.Move))
-            {
-                e.AcceptedOperation = DataPackageOperation.Move;
-            }
-            else
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation;
-            }
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
             // special case for schema view... should be removed
             //if (e.DataView.Properties.ContainsKey("CollectionReference"))
