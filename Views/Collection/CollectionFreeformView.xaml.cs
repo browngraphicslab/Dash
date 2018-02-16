@@ -232,6 +232,12 @@ namespace Dash
                 MakeInkCanvas();
             }
 
+            //make and add selectioncanvas 
+            SelectionCanvas = new Canvas();
+            Canvas.SetLeft(SelectionCanvas, -30000);
+            Canvas.SetTop(SelectionCanvas, -30000);
+            InkHostCanvas.Children.Add(SelectionCanvas);
+
             fitFreeFormChildrenToTheirLayouts();
         }
 
@@ -687,7 +693,6 @@ namespace Dash
 
             if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
 
-
             var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
             var dY = pos.Y - _marqueeAnchor.Y;
@@ -730,13 +735,12 @@ namespace Dash
             _marquee.Height = newHeight;
 
             args.Handled = true;
-
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid) || args.OriginalSource.Equals(SelectionCanvas)) &&
                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
@@ -1035,15 +1039,11 @@ namespace Dash
         private void MakeInkCanvas()
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
-            SelectionCanvas = new Canvas();
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
             InkHostCanvas.Children.Add(XInkCanvas);
-            InkHostCanvas.Children.Add(SelectionCanvas);
         }
 
         private bool loadingPermanentTextbox;
