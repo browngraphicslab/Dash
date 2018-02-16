@@ -94,7 +94,7 @@ namespace Dash
                     Converter = new SelectedToColorConverter()
                 };
 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
+                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;
@@ -109,11 +109,11 @@ namespace Dash
                     }
                     var collectionViewModel = new CollectionViewModel(
                         new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                            KeyStore.GroupingKey));
+                            KeyStore.CollectionKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
-                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                    XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
                     XArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeCol";
                 }
@@ -172,7 +172,7 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
             {
-                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
                 if (docsInGroup != null)
                 {
                     docToFocus = docsInGroup.TypedData.FirstOrDefault();

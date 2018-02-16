@@ -74,29 +74,30 @@ namespace Dash
 
         private void Parse(DocumentNode node)
         {
+            throw new NotImplementedException();
             _parsed.Add(node);
             var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
-            var groups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)
-                ?.TypedData ?? new List<DocumentController>();
+            //var groups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)
+                //?.TypedData ?? new List<DocumentController>();
             var groupDict = new Dictionary<string, DocumentNodeGroup>();
 
-            foreach (var group in groups)
-            {
-                var groupList = group.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-                if (groupList == null) //Group of 1
-                {
-                    var documentNodeGroup = new DocumentNodeGroup();
-                    groupDict[group.Id] = documentNodeGroup;
-                }
-                else
-                {
-                    var groupNode = new DocumentNodeGroup();
-                    foreach (var documentController in groupList.TypedData)
-                    {
-                        groupDict[documentController.Id] = groupNode;
-                    }
-                }
-            }
+            //foreach (var group in groups)
+            //{
+            //    var groupList = group.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            //    if (groupList == null) //Group of 1
+            //    {
+            //        var documentNodeGroup = new DocumentNodeGroup();
+            //        groupDict[group.Id] = documentNodeGroup;
+            //    }
+            //    else
+            //    {
+            //        var groupNode = new DocumentNodeGroup();
+            //        foreach (var documentController in groupList.TypedData)
+            //        {
+            //            groupDict[documentController.Id] = groupNode;
+            //        }
+            //    }
+            //}
 
             //childDocuments.AddRange(node.ViewDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null) ?? new List<DocumentController>());
 

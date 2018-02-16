@@ -74,9 +74,10 @@ namespace Dash
             var text = doc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ??
                 doc.GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString ?? string.Empty;
             var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) || text.ToLower().Contains(FilterString.ToLower()) ||
-                                (doc.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)?.TypedData
+                                (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
                                      .Any(MatchesFilter) ?? false);
             return matchesFilter;
+            throw new NotImplementedException();
         }
 
     }

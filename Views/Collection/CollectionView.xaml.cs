@@ -117,27 +117,28 @@ namespace Dash
 
         public DocumentController GetDocumentGroup(DocumentController document)
         {
-            if (ParentDocument == null)
-                return null;
-            var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            //if (ParentDocument == null)
+            //    return null;
+            //var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
 
-            if (groupsList == null) return null;
-            foreach (var g in groupsList.TypedData)
-            {
-                if (g.Equals(document))
-                {
-                    return null;
-                }
-                else
-                {
-                    var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                    if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(document)).Count() > 0)
-                    {
-                        return g;
-                    }
-                }
-            }
-            return null;
+            //if (groupsList == null) return null;
+            //foreach (var g in groupsList.TypedData)
+            //{
+            //    if (g.Equals(document))
+            //    {
+            //        return null;
+            //    }
+            //    else
+            //    {
+            //        var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            //        if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(document)).Count() > 0)
+            //        {
+            //            return g;
+            //        }
+            //    }
+            //}
+            //return null;
+            throw new NotImplementedException();
         }
 
         #region Load And Unload Initialization and Cleanup

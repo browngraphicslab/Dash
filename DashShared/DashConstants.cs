@@ -173,7 +173,7 @@ namespace DashShared
             public static KeyModel ModifiedTimestampKey = new KeyModel("CAAD33A3-DE94-42CF-A54A-F85C5F04940E", "ModifiedTime");
             public static KeyModel LastWorkspaceKey = new KeyModel("66F05DB2-2F68-4E37-985D-36303A1AF4E4", "_Last Workspace");
             public static KeyModel WorkspaceHistoryKey = new KeyModel("D0630828-1488-4F7B-B0D7-9E89EF05497F", "_Workspace History");
-            public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
+            //public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
             public static KeyModel ActualWidthKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualWidth");

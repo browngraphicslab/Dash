@@ -428,15 +428,15 @@ namespace Dash
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
             var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
-            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () =>
-                    {
-                        var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
-                        if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
-                            GroupManager.RemoveGroup(pc, group);
-                        if (canSplitupDragGroup)
-                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
-                    }));
+            //docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+            //        () =>
+            //        {
+            //            var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
+            //            if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
+            //                GroupManager.RemoveGroup(pc, group);
+            //            if (canSplitupDragGroup)
+            //                GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
+            //        }));
 
             if (manipulationCompletedRoutedEventArgs != null)
             {
@@ -467,10 +467,10 @@ namespace Dash
             }
             var docRoot = ParentDocument;
 
-            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
-            var groupViews = GroupViews(_grouping);
-            foreach (var gv in groupViews)
-                gv.ToFront();
+            //_grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
+            //var groupViews = GroupViews(_grouping);
+            //foreach (var gv in groupViews)
+            //    gv.ToFront();
 
             _isManipulating = true;
             _processManipulation = true;
