@@ -213,6 +213,25 @@ namespace Dash
             if (!allRtfText.Equals(Text.RtfFormatString) || !allText.Equals(Text.ReadableString))
                 Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+
+
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+            var matches = reg.Matches(allText);
+            foreach (var str in matches)
+            {
+                var split = str.ToString().Split(':');
+                var key = split.FirstOrDefault().Trim(' ');
+                var value = split.LastOrDefault().Trim(' ');
+
+                var k = KeyController.LookupKeyByName(key);
+                if (k == null)
+                    k = new KeyController(DashShared.UtilShared.GenerateNewId(), key);
+
+                parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(k, new TextController(value), true);
+            }
+            var rest = reg.Replace(allText, "");
+            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(rest), true);
         }
 
 
@@ -526,8 +545,17 @@ namespace Dash
         #endregion
 
         #region load/unload
-        private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        PointerEventHandler _releasedHdlr = null;
+        PointerEventHandler _pressedHdlr = null;
+        TappedEventHandler _tappedHdlr = null;
+        DocumentView _parentDocView = null;
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            _parentDocView = this.GetFirstAncestorOfType<DocumentView>();
+            _releasedHdlr = new PointerEventHandler(released);
+            _pressedHdlr = new PointerEventHandler(RichTextView_PointerPressed);
+            _tappedHdlr = new TappedEventHandler(tapped);
+
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
             
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
@@ -537,16 +565,15 @@ namespace Dash
             //SetFontSizeBinding();
 
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
-            MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
-            this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
+            MainPage.Instance.AddHandler(PointerReleasedEvent, _releasedHdlr, true);
+            this.AddHandler(PointerPressedEvent, _pressedHdlr, true);
+            this.AddHandler(TappedEvent, _tappedHdlr, true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
-            var docParent = this.GetFirstAncestorOfType<DocumentView>();
-            docParent.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
+            _parentDocView.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            _parentDocView.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
@@ -561,6 +588,7 @@ namespace Dash
             UpdateDocument();
         }
 
+
         /// <summary>
         /// Unsubscribes TextChanged handler on Unload
         /// </summary>
@@ -569,7 +597,13 @@ namespace Dash
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
             xRichEditBox.KeyUp -= XRichEditBox_KeyUp;
-            MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
+            MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
+            this.RemoveHandler(PointerPressedEvent, _pressedHdlr);
+            this.RemoveHandler(TappedEvent, _tappedHdlr);
+            this.xRichEditBox.ContextMenuOpening -= XRichEditBox_ContextMenuOpening;
+            
+            _parentDocView.ViewModel.DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            _parentDocView.xOperatorEllipseBorder.PointerPressed -= XOperatorEllipseBorder_PointerPressed;
         }
         #endregion
 
