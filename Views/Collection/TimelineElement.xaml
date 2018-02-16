@@ -27,7 +27,7 @@
             </Grid>
             <Grid Name="xBottomViewGrid" Grid.Row="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height=".5*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
@@ -40,13 +40,24 @@
                         </local:DocumentView>
                     </Grid>
                 </Canvas>-->
-                <TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>
+                <local:DocumentView Grid.Row="1" x:Name="xDocumentPreview"
+                        DataContext="{Binding DisplayViewModel}" IsHitTestVisible="False">
+                </local:DocumentView>
+                <!--<TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>-->
 
-                <Canvas Grid.Row="2" x:Name="xDocHolder"/>
+                <Canvas Grid.Row="2" HorizontalAlignment="Center" Margin="0,0,190,0" x:Name="xDocHolder"/>
 
             </Grid>
         </Grid>
-        <Ellipse Name="xEllipse" Margin="0,-165,0,0" Width="18" Height="18" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3.75*"></RowDefinition>
+                <RowDefinition Height=".5*"></RowDefinition>
+                <RowDefinition Height="6*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Ellipse Name="xEllipse" Grid.Row="1" Width="18" Height="18" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
+
+        </Grid>
 
     </Grid>
 </UserControl>

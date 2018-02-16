@@ -26,12 +26,19 @@ namespace Dash
     public class TimelineElementViewModel : ViewModelBase
     {
         private DocumentViewModel _documentViewModel;
+        private DocumentViewModel _displayViewModel;
         private DocumentContext _documentContext;
 
         public DocumentViewModel DocumentViewModel
         {
             get => _documentViewModel;
             set => SetProperty(ref _documentViewModel, value);
+        }
+
+        public DocumentViewModel DisplayViewModel
+        {
+            get => _displayViewModel;
+            set => SetProperty(ref _displayViewModel, value);
         }
 
         public DocumentContext DocumentContext

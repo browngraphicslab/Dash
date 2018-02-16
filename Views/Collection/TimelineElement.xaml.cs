@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using Windows.UI;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -180,9 +181,39 @@ namespace Dash
             var vm = DataContext as TimelineElementViewModel;
             Debug.Assert(vm != null);
             ViewModel = vm;
-        }
 
-       
+
+
+            DocumentController thumbnailImageViewDoc = null;
+            var richText = vm.DocumentViewModel.DataDocument.GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
+            var docText = vm.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
+
+            if (docText != null)
+            {
+                thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText).Document;
+            }
+            else
+            {
+                thumbnailImageViewDoc = (vm.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? vm.DocumentViewModel.DocumentController).GetViewCopy();
+            }
+            thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
+            ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) };
+        
+        //if (docText != null)
+        //{
+        //    thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText.Substring(0, Math.Min(100, docText.Length))).Document;
+        //}
+        //else
+        //{
+        //    thumbnailImageViewDoc = (vm.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? vm.DocumentViewModel.DocumentController).GetViewCopy();
+        //}
+
+
+        //thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
+
+    }
+
+
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {

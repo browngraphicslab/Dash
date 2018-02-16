@@ -107,7 +107,7 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <local:DocumentView  IsHitTestVisible="False"/>
+                        <local:DocumentView IsHitTestVisible="False"/>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
