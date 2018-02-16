@@ -453,7 +453,6 @@ namespace Dash
             //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
             //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            DraggerButton.Margin = new Thickness(0, 0, -(20 - width), -20);
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             if (ParentCollection != null)
             {
