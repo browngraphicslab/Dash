@@ -209,8 +209,8 @@ namespace Dash
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
             string allRtfText = GetRtfText();
             UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            if (!allRtfText.Equals(Text.RtfFormatString) || !allText.Equals(Text.ReadableString))
-                Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            if (!allRtfText.Equals(Text.RtfFormatString))
+                Text = new RichTextModel.RTD(allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
 
 
@@ -229,8 +229,8 @@ namespace Dash
 
                 parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(k, new TextController(value), true);
             }
-            var rest = reg.Replace(allText, "");
-            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(rest), true);
+           // var rest = reg.Replace(allText, "");
+            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
         }
 
 
@@ -467,14 +467,12 @@ namespace Dash
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
             createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false, forceLocal);
+            
+            string allRtfText = GetRtfText();
+            UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+            Text = new RichTextModel.RTD(allRtfText);
+            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
 
-            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
-            {
-                string allRtfText = GetRtfText();
-                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText);
-                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-            }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
         }

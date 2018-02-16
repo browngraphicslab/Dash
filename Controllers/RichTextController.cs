@@ -16,7 +16,6 @@ namespace Dash
 {
     public class RichTextController: FieldModelController<RichTextModel>
     {
-        private string _lowerRichText;
         public RichTextController(): base(new RichTextModel()) { }
         public RichTextController(RichTextModel.RTD data):base(new RichTextModel(data)) { }
 
@@ -43,7 +42,6 @@ namespace Dash
                 if (RichTextFieldModel.Data == value) return;
                 RichTextFieldModel.Data = value;
                 OnFieldModelUpdated(null);
-                _lowerRichText = RichTextFieldModel.Data.ReadableString.ToLower();
             }
         }
         public override object GetValue(Context context)
@@ -65,32 +63,22 @@ namespace Dash
 
         public override IEnumerable<DocumentController> GetReferences()
         {
-            var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var link in links)
-            {
-                var split = link.Split('\"');
-                if (split.Count() > 1)
-                {
-                    var doc = ContentController<FieldModel>.GetController<DocumentController>(split[1]);
-                    if (doc != null)
-                        yield return doc;
-                }
-            }
+            yield return null;
+            //var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            //foreach (var link in links)
+            //{
+            //    var split = link.Split('\"');
+            //    if (split.Count() > 1)
+            //    {
+            //        var doc = ContentController<FieldModel>.GetController<DocumentController>(split[1]);
+            //        if (doc != null)
+            //            yield return doc;
+            //    }
+            //}
         }
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            int maxStringSize = 125;
-            int textDecrementForContext = 8;
-
-            _lowerRichText = string.IsNullOrEmpty(_lowerRichText) ? RichTextFieldModel.Data.ReadableString.ToLower() : _lowerRichText;
-            if (_lowerRichText.Contains(searchString))
-            {
-                var index = _lowerRichText.IndexOf(searchString);
-                index = Math.Max(0, index - textDecrementForContext);
-                var substring = Data.ReadableString.Substring(index, Math.Min(maxStringSize, Data.ReadableString.Length - index));
-                return new StringSearchModel(substring, true);
-            }
             return StringSearchModel.False;
         }
 
@@ -130,8 +118,7 @@ namespace Dash
 
         public override string ToString()
         {
-            var regex = new Regex("HYPERLINK \"[^\"].*\"");
-            return regex.Replace(Data.ReadableString, "");
+            return "RichTextController";
         }
 
         public override FieldModelController<RichTextModel> Copy()

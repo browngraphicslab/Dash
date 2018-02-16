@@ -20,7 +20,7 @@ namespace Dash
         }
 
         //Input keys
-        public static readonly KeyController RichTextKey = NoteDocuments.RichTextNote.RTFieldKey;// new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
+        public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;// new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
 
         //Output keys
         public static readonly KeyController ComputedTitle = new KeyController("94E01AAF-DD88-4130-9EE5-18D7B8B2674C", "Computed Title");
@@ -28,7 +28,7 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
-            [RichTextKey] = new IOInfo(TypeInfo.RichText, true),
+            [RichTextKey] = new IOInfo(TypeInfo.Text, true),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -41,9 +41,9 @@ namespace Dash
             string computedTitle = null;
 
             var value = inputs[RichTextKey];
-            if (value is RichTextController rtc)
+            if (value is TextController rtc)
             {
-                computedTitle = rtc.Data.ReadableString.Split(
+                computedTitle = rtc.Data.Split(
                     new[] { "\r\n", "\r", "\n" },
                     StringSplitOptions.None
                 ).FirstOrDefault();

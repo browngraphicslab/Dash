@@ -48,12 +48,8 @@ namespace Dash
                     var key =  testPatternMatch(d.GetDataDocument(null), pattern, term);
                     if (key != null)
                     {
-                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                        var derefField = d.GetDataDocument(null).GetDereferencedField(key, null);
-                        if (derefField is TextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as TextController).Data)), true);
-                        else if (derefField is RichTextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as RichTextController).Data.ReadableString)), true);
+                        var derefField = d.GetDataDocument(null).GetDereferencedField<TextController>(key, null)?.Data;
+                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, derefField ?? "<empty>").Document;
                         rnote.GetDataDocument(null).SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }
@@ -301,12 +297,6 @@ namespace Dash
                         foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null)))
                             if (testPatternMatch(nestedDoc, null, term) != null)
                                 return pfield.Key;
-                    }
-                    else if (pvalue is RichTextController)
-                    {
-                        var text = (pvalue as RichTextController).Data.ReadableString;
-                        if (text != null && text.Contains(term))
-                            return pfield.Key;
                     }
                     else if (pvalue is TextController)
                     {

@@ -398,15 +398,13 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(PostitNote.DocumentType);
-                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text, text)), true);
+                var t = new RichTextNote(PostitNote.DocumentType, text);
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(PostitNote.DocumentType);
-                t.Document.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                var t = new RichTextNote(PostitNote.DocumentType, text);
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {
