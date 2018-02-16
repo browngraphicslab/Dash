@@ -1043,7 +1043,7 @@ namespace Dash
         private List<DocumentView> GetMarqueeDocuments()
         {
             var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
-            if (marqueeDocs == null) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
+            if (marqueeDocs == null || marqueeDocs.Count == 0) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Count > 0)
                 return marqueeDocs;
             return null; 
