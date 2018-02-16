@@ -287,7 +287,6 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("????ishould be herE???");
             //return if it's an operator dragged from compoundoperatoreditor listview 
             if (e.Data?.Properties[CompoundOperatorController.OperationBarDragKey] != null) return;
             
