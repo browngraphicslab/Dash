@@ -85,7 +85,7 @@ namespace Dash
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
-        
+
         public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
         public CollectionFreeformView()
@@ -227,16 +227,17 @@ namespace Dash
             xOuterGrid.PointerReleased += OnPointerReleased;
 
             MakePreviewTextbox();
-            if (InkController != null)
-            {
-                MakeInkCanvas();
-            }
-
+            
             //make and add selectioncanvas 
             SelectionCanvas = new Canvas();
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
             InkHostCanvas.Children.Add(SelectionCanvas);
+
+            if (InkController != null)
+            {
+                MakeInkCanvas();
+            }
 
             fitFreeFormChildrenToTheirLayouts();
         }
@@ -739,9 +740,9 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-           if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid) || args.OriginalSource.Equals(SelectionCanvas)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                 //(args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
@@ -752,10 +753,10 @@ namespace Dash
                 {
                     doc.MarqueeSelectBorder(false);
                 }
-                _marqueeSelectedDocs.Clear(); 
+                _marqueeSelectedDocs.Clear();
             }
         }
-        
+
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -863,9 +864,6 @@ namespace Dash
             }
         }
 
-        #endregion
-
-        #region Flyout
         #endregion
 
         #region DragAndDrop
@@ -985,7 +983,7 @@ namespace Dash
                 }
             }
         }
-        
+
 
         private bool _isToggleOn;
 
@@ -1024,7 +1022,7 @@ namespace Dash
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
         }
-        
+
         #endregion
 
         #region Ink

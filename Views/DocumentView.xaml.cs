@@ -742,22 +742,22 @@ namespace Dash
 
         private void CopyDataDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetDataCopy(), null);
         }
 
         private void ShowPreviewDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetPreviewDocument(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetPreviewDocument(), null);
         }
 
         private void KeyValueViewDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
         }
 
         private void InstanceDataDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetDataInstance(), null);
         }
         public void ScreenCap()
         {
@@ -1051,12 +1051,22 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            CopyDocument();
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.CopyDocument();
+            else
+                CopyDocument();
         }
 
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            CopyViewDocument();
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.CopyViewDocument();
+            else
+                CopyViewDocument();
         }
 
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
@@ -1072,7 +1082,12 @@ namespace Dash
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            KeyValueViewDocument();
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.KeyValueViewDocument();
+            else
+                KeyValueViewDocument();
         }
 
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e)
