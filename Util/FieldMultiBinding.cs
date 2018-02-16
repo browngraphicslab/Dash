@@ -1,12 +1,148 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Data;
+using Dash;
 
 namespace Dash
 {
-    class FieldMultiBinding
+    class FieldMultiBinding<TXaml> : IFieldBinding
     {
+        public BindingMode Mode { get; set; }
+        public Context Context { get; set; }
+
+        private FieldReference[] _references;
+
+        public XamlDereferenceLevel XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot;
+        public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
+        public Object FallbackValue;
+
+        public SafeDataToXamlConverter<List<Object>, TXaml> Converter;//TODO Should this be a list of objects of of FieldControllerBase?
+        public Object ConverterParameter;
+
+        public String Tag;
+
+        public FieldMultiBinding(params FieldReference[] refs)
+        {
+            _references = refs;
+        }
+
+        public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
+        {
+            if (Converter == null)//We can't evaluate a multibinding without a converter
+            {
+                return;
+            }
+            List<Object> fields = new List<Object>(_references.Length);
+            bool foundNullField = false;
+            if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel)
+            {
+                foreach (var fieldReference in _references)
+                {
+                    var fieldControllerBase = fieldReference.Dereference(context);
+                    if (fieldControllerBase == null)
+                    {
+                        foundNullField = true;
+                        break;
+                    }
+                    fields.Add(fieldControllerBase.GetValue(context));
+                }
+            }
+            else if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceToRoot)
+            {
+                foreach (var fieldReference in _references)
+                {
+                    var fieldControllerBase = fieldReference.DereferenceToRoot(context);
+                    if (fieldControllerBase == null)
+                    {
+                        foundNullField = true;
+                        break;
+                    }
+                    fields.Add(fieldControllerBase.GetValue(context));
+                }
+            }
+            if (!foundNullField)
+            {
+                var data = Converter.ConvertDataToXaml(fields, ConverterParameter);
+                if (data != null)
+                {
+                    element.SetValue(property, data);
+                }
+                else
+                {
+#if PRINT_BINDING_ERROR_DETAILED
+                        Debug.WriteLine(
+                            $"Error evaluating binding: Error with converter or GetValue\n" +
+                            $"  Converter   = {Converter?.GetType().Name ?? "null"}\n" +
+                            $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                    Debug.WriteLine($"Error evaluating binding: Error with converter or GetValue of MultiBinding, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+#endif
+                }
+            }
+            else if (FallbackValue != null)
+            {
+                element.SetValue(property, FallbackValue);
+            }
+            else
+            {
+#if PRINT_BINDING_ERROR_DETAILED
+                    Debug.WriteLine(
+                        $"Error evaluating binding: Field was missing and there was no fallback value\n" +
+                        $"  Tag         = {(string.IsNullOrWhiteSpace(Tag) ? "<empty>" : Tag)}");
+#else
+                Debug.WriteLine($"Error evaluating binding: Field was missing and there was no fallback value, #define PRINT_BINDING_ERROR_DETAILED to print more detailed");
+#endif
+
+                element.ClearValue(property);
+            }
+        }
+
+        public bool ConvertFromXaml(object xamlData)
+        {
+            if (xamlData is TXaml)
+            {
+                var fieldData = Converter.ConvertXamlToData((TXaml)xamlData, ConverterParameter);
+                if (fieldData.Count != _references.Length)
+                {
+                    return false;
+                }
+                if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel)
+                {
+                    for (int i = 0; i < fieldData.Count; ++i)
+                    {
+                        _references[i].Dereference(Context).SetValue(fieldData[i]);
+                    }
+                } else if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceToRoot)
+                {
+                    for (int i = 0; i < fieldData.Count; ++i)
+                    {
+                        _references[i].DereferenceToRoot(Context).SetValue(fieldData[i]);
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public void Add(FieldControllerBase.FieldUpdatedHandler handler)
+        {
+            foreach (var fieldReference in _references)
+            {
+                fieldReference.GetDocumentController(Context).AddFieldUpdatedListener(fieldReference.FieldKey, handler);
+            }
+        }
+
+        public void Remove(FieldControllerBase.FieldUpdatedHandler handler)
+        {
+            foreach (var fieldReference in _references)
+            {
+                fieldReference.GetDocumentController(Context).RemoveFieldUpdatedListener(fieldReference.FieldKey, handler);
+            }
+        }
     }
 }

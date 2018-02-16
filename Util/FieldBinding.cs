@@ -52,7 +52,7 @@ namespace Dash
             var refField = Document.GetField(Key) as ReferenceController;
             if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel && refField?.GetDocumentController(context)?.GetField(refField.FieldKey) is ReferenceController)
             {
-                element.SetValue(property, refField.GetDocumentController(context).GetField(refField.FieldKey).GetValue(context));
+                element.SetValue(property, refField.Dereference(context).GetValue(context));
             }
             else
             {
