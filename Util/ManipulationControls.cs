@@ -652,7 +652,6 @@ namespace Dash
                     var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
                     foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
-
                         g?.TransformDelta(transformGroup);
                     }
                 }

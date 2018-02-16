@@ -502,6 +502,7 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
+            Debug.WriteLine(delta.Translate);
             ToggleGroupSelectionBorderColor(true);
             ViewModel?.TransformDelta(delta);
         }

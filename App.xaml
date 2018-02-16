@@ -535,6 +535,21 @@
             </Setter>
         </Style>
 
+        <!-- remove transparent gloss on listviewitem roll over-->
+        <Style TargetType="ListViewItem" x:Key="xNoGlossListViewItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border Name="Border" BorderBrush="Transparent" BorderThickness="2">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- app Titles -->
         <Style TargetType="TextBox" x:Key="xTitleStyle">
             <Setter Property="TextAlignment" Value="Left" />
