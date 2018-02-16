@@ -75,7 +75,7 @@ namespace Dash
             CourtesyDocument.SetupBindings(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController,FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -125,28 +125,10 @@ namespace Dash
 
             if (html == null)
                 SetupBindings(web, docController, context);
-
-            //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = web;
             
             return grid;
         }
 
-        //public static async void getHtml(Uri url, WebView web)
-        //{
-        //    var MobileUserAgent = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3";
-        //    var handler = new HttpClientHandler { AllowAutoRedirect = true };
-        //    var client = new HttpClient(handler);
-        //   // client.DefaultRequestHeaders.Add("user-agent", MobileUserAgent);
-        //    var response = await client.GetAsync(url);
-        //    response.EnsureSuccessStatusCode();
-        //    var html = await response.Content.ReadAsStringAsync();
-
-        //    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-        //    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
-        //    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
-        //}
         private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             var _WebView = sender as WebView;

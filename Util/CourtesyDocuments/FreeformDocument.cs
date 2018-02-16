@@ -51,12 +51,12 @@ namespace Dash
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
 
             var grid = new Grid();
             SetupBindings(grid, docController, context);
-            LayoutDocuments(docController, context, grid, keysToFrameworkElementsIn);
+            LayoutDocuments(docController, context, grid);
 
             grid.Clip = new RectangleGeometry();
             grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
@@ -72,11 +72,11 @@ namespace Dash
                 var collFieldArgs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
-                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, keysToFrameworkElementsIn);
+                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid);
                 }
                 else
                 {
-                    LayoutDocuments((DocumentController) sender, c, grid, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController) sender, c, grid);
                 }
             }
 
@@ -92,18 +92,18 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             grid.Children.Clear();
-            AddDocuments(layoutDocuments, context, grid, keysToFrameworkElementsIn);
+            AddDocuments(layoutDocuments, context, grid);
         }
 
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElements=null)
+        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid)
         {
             foreach (var layoutDocument in docs)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context);
                 // TODO this is a hack because the horizontal and vertical alignment of our layouts are by default stretch
                 // TODO as set in SetDefaultLayouts, we should really be checking to see if this should be left and top, but for now
                 // TODO it helps the freeformdocument position elements correctly

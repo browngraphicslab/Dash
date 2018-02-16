@@ -53,48 +53,6 @@ namespace Dash
 
     public static class FileDropHelper
     {
-
-        public static DocumentController CreateFieldLayoutDocumentFromReference(ReferenceController reference,
-            double x = 0, double y = 0, double w = 200, double h = 200, TypeInfo listType = TypeInfo.None)
-        {
-            var type = reference.DereferenceToRoot(null).TypeInfo;
-            switch (type)
-            {
-                case TypeInfo.Text:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.Number:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.Image:
-                    return new ImageBox(reference, x, y, w, h).Document;
-                case TypeInfo.List:
-                    if (listType == TypeInfo.Document)
-                    {
-                        return new CollectionBox(reference, x, y, w, h).Document;
-                    }
-                    throw new NotImplementedException();
-                case TypeInfo.Document:
-                    return new DocumentBox(reference, x, y, w, h).Document;
-                case TypeInfo.Point:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichText:
-                    return new RichTextBox(reference, x, y, w, h).Document;
-                default:
-                    return null;
-            }
-        }
-
-        public static DocumentController AddFieldFromData(object data, DocumentController document, KeyController key,
-            Point position, TypeInfo type, ListController<DocumentController> activeLayout)
-        {
-            var fmc = FieldControllerFactory.CreateFromModel(TypeInfoHelper.CreateFieldModelHelper(type, data));
-            document.SetField(key, fmc, true);
-            var layoutDoc =
-                CreateFieldLayoutDocumentFromReference(new DocumentReferenceController(document.GetId(), key),
-                    position.X, position.Y);
-            activeLayout?.Add(layoutDoc);
-            return layoutDoc;
-        }
-
         public static async Task<DocumentController> GetDroppedFile(DragEventArgs e)
         {
             var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();

@@ -42,7 +42,7 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var layout = docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
             FrameworkElement innerContent = null;

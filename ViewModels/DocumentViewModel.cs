@@ -220,8 +220,6 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        private Rect _groupingBounds;
-        private Rect _bounds;
         public void UpdateActualSize(double actualwidth, double actualheight)
         {
             _actualWidth = actualwidth;
@@ -234,29 +232,19 @@ namespace Dash
         /// <summary>
         /// Bounds that include the group margin
         /// </summary>
-        public Rect GroupingBounds {
-            get
-            {
-                return new TranslateTransform
-                {
-                    X = GroupTransform.Translate.X,
-                    Y = GroupTransform.Translate.Y
-                }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
-                _actualHeight + 2 * GroupMargin));
-            }
-        }
-
-        public Rect Bounds
+        public Rect GroupingBounds => new TranslateTransform
         {
-            get
-            {
-                return new TranslateTransform
-                {
-                    X = GroupTransform.Translate.X,
-                    Y = GroupTransform.Translate.Y
-                }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
-            }
-        }
+            X = GroupTransform.Translate.X,
+            Y = GroupTransform.Translate.Y
+        }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
+            _actualHeight + 2 * GroupMargin));
+
+        public Rect Bounds => new TranslateTransform
+        {
+            X = GroupTransform.Translate.X,
+            Y = GroupTransform.Translate.Y
+        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+
         public void TransformDelta(TransformGroupData delta)
         {
             var currentTranslate = GroupTransform.Translate;
@@ -277,9 +265,9 @@ namespace Dash
             {
                 if (SetProperty(ref _backgroundBrush, value))
                 {
-                    if (value is SolidColorBrush)
+                    if (value is SolidColorBrush scb)
                     {
-                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController((value as SolidColorBrush).Color.ToString()), true);
+                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController(scb.Color.ToString()), true);
                     }
                 }
             }
@@ -306,7 +294,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = LayoutDocument.MakeViewUI(null, KeysToFrameworkElements);
+                    _content = LayoutDocument.MakeViewUI(null);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
@@ -315,13 +303,6 @@ namespace Dash
             {
                 _content = value;
             }
-        }
-
-        private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements
-        {
-            get => keysToFrameworkElements;
-            set => keysToFrameworkElements = value;
         }
         
         private double _actualWidth;

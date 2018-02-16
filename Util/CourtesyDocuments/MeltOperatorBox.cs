@@ -29,14 +29,12 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null);
+            return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
-            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            return OperatorBox.MakeOperatorView(docController, context, keysToFrameworkElementsIn,
-                () => new MeltOperatorView());
+            return OperatorBox.MakeOperatorView(docController, context, () => new MeltOperatorView());
         }
     }
 

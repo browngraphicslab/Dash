@@ -21,13 +21,6 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-
-            // try to apply a data document to the databox if the passed in refToData was actualyl a reference
-            //var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
-            //if (dataDoc != null)
-            //{
-            //    Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
-            //}
         }
 
         public override FrameworkElement makeView(DocumentController documentController, Context context)

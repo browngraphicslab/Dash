@@ -113,7 +113,7 @@ namespace Dash
             AddBinding(listview, docController, SpacingKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
 
             var grid = new Grid();
@@ -142,7 +142,7 @@ namespace Dash
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 if (dargs.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments((DocumentController)sender, c, listView, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController)sender, c, listView);
                 }
             };
             grid.Children.Add(listView);
@@ -164,13 +164,13 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, ListView list,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, ListView list)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context,  keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
                 itemsSource.Add(layoutView);
