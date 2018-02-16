@@ -522,7 +522,12 @@ namespace Dash
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             ToggleGroupSelectionBorderColor(true);
-            ViewModel?.TransformDelta(delta);
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.ViewModel?.TransformDelta(delta); 
+            else
+                ViewModel?.TransformDelta(delta);
         }
 
         /// <summary>
@@ -1032,6 +1037,18 @@ namespace Dash
 
         #region Context menu click handlers
 
+        /// <summary>
+        /// Checks if there are documents selected by marquee - if so, return the documents; else, return null 
+        /// </summary>
+        private List<DocumentView> GetMarqueeDocuments()
+        {
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
+            if (marqueeDocs == null) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
+            if (marqueeDocs != null && marqueeDocs.Count > 0)
+                return marqueeDocs;
+            return null; 
+        }
+
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
             CopyDocument();
@@ -1045,17 +1062,12 @@ namespace Dash
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
             //check if there are any documents selected in the marquee - if so, delete all the docs selected and else delete itself 
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
-            if (marqueeDocs == null) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Count > 0)
-            {
+            var marqueeDocs = GetMarqueeDocuments(); 
+            if (marqueeDocs != null)
                 foreach (var doc in marqueeDocs)
                     doc.DeleteDocument();
-            }
             else
-            {
                 DeleteDocument(); 
-            }
         }
 
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
@@ -1076,8 +1088,12 @@ namespace Dash
 
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e)
         {
-            ScreenCap();
-
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.ScreenCap();
+            else
+                ScreenCap();
         }
 
 

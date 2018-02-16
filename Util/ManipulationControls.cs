@@ -638,24 +638,22 @@ namespace Dash
 
             // set up translation transform
             var translate = e.Translation; // Util.TranslateInCanvasSpace(e.Translation, handleControl);
-
-
-
+            
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
                 var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
                     new Point(scaleFactor, scaleFactor), e.Position);
+                var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
                 if (grouped != null && grouped.Any())
                 {
-                    var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+                    //var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
                     foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
                         g?.TransformDelta(transformGroup);
                     }
                 }
-
                 OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
             }
         }
