@@ -51,20 +51,23 @@ namespace Dash
             
             element.ManipulationDelta += ElementOnManipulationDelta;
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
+            element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationStarted += ElementOnManipulationStarted;
+            element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
+            element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
             if (borderRegions != null)
             {
                 foreach (var borderRegion in borderRegions)
                 {
                     borderRegion.ManipulationMode = ManipulationModes.All;
                     borderRegion.ManipulationDelta += ElementOnManipulationDelta;
-                    borderRegion.ManipulationStarted += BorderOnManipulationStarted;
+                    borderRegion.ManipulationStarted += (sender, args) => {
+                        ElementOnManipulationStarted(sender, args);
+                        Grouping = null;
+                    };
                     borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
                 }
             }
-            element.ManipulationMode = ManipulationModes.All;
-            element.ManipulationStarted += ElementOnManipulationStarted;
-            element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
-            element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
 
         #region Snapping Layouts
@@ -347,11 +350,6 @@ namespace Dash
                 if (!ClampScale(scaleAmount))
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
             }
-        }
-        void BorderOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            ElementOnManipulationStarted(sender, e);
-            Grouping = null;
         }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
