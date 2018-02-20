@@ -46,7 +46,6 @@ namespace Dash
     public class ManipulationControlHelper
     {
         List<DocumentView> _ancestorDocs;
-        List<DocumentView> _descendantDocs;
         FrameworkElement   _eventElement;
         CollectionView     _collection;
         DocumentView       manipulationDocumentTarget = null;

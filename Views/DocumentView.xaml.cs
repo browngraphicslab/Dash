@@ -433,7 +433,9 @@ namespace Dash
         }
         private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            ManipulationMode = ManipulationModes.All;
             draggerOverride = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            e.Handled = true;
         }
 
         private void XTitleIcon_Tapped(object sender, TappedRoutedEventArgs e)
@@ -968,6 +970,7 @@ namespace Dash
         
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             ToFront();
         }
 
@@ -1116,7 +1119,6 @@ namespace Dash
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            this.ManipulationMode = ManipulationModes.All;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -1147,11 +1149,23 @@ namespace Dash
         private void xOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.ManipulationMode = ManipulationModes.None;
+            e.Handled = true;
         }
 
         private void xOperatorEllipseBorder_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             this.ManipulationMode = ManipulationModes.All;
+        }
+
+        private void xTitleIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            ManipulationMode = ManipulationModes.All;
+            e.Handled = true;
+        }
+
+        private void xTitleIcon_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            ManipulationMode = ManipulationModes.All;
         }
     }
 }

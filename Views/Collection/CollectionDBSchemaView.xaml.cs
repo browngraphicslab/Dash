@@ -488,5 +488,10 @@ namespace Dash
                     ));
             }
         }
+
+        private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+           this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
     }
 }

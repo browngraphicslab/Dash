@@ -51,6 +51,8 @@
 
             <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
                 <TextBlock x:Name="xTitleIcon" 
+                           PointerPressed="xTitleIcon_PointerPressed"
+                           PointerEntered="xTitleIcon_PointerEntered"
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="Transparent"
                                Text="{StaticResource DocumentPlainIcon}" 

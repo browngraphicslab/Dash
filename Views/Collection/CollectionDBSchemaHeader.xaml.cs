@@ -105,5 +105,11 @@ namespace Dash
             ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
             ViewModel.SchemaView.xHeaderView.CanDragItems = true;
         }
+
+        private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+            e.Handled = true;
+        }
     }
 }
