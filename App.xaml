@@ -691,7 +691,7 @@
             <Setter Property="AllowDrop" Value="True"/>
         </Style>
         <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
-            <Setter Property="Fill" Value="{StaticResource FieldHandleColor}" />
+            <Setter Property="Fill" Value="Gold" />
             <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
             <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>

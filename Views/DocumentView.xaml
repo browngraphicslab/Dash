@@ -95,10 +95,10 @@
             <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" PointerPressed="xOperatorEllipseBorder_PointerPressed" PointerReleased="xOperatorEllipseBorder_PointerReleased" Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
                 <Grid  CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" >
                     <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"
-                         Visibility="Collapsed" Fill="Gold"
+                         Visibility="Collapsed"
                          PointerEntered="OperatorEllipseUnhighlight_OnPointerEntered" />
                     <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
-                         Visibility="Collapsed" Fill="Gold"
+                         Visibility="Collapsed"
                          PointerExited="OperatorEllipseHighlight_OnPointerExited"/>
                 </Grid>
             </Border>
