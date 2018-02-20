@@ -187,8 +187,7 @@ namespace Dash
 
         //    return data;
         //}
-
-        static ManipulationControlHelper _helper = null;
+        
         private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
         {
             var web = sender as WebView;
