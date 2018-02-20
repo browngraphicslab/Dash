@@ -107,13 +107,11 @@ namespace Dash
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
-            manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new
-                ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                    translation,
-                    1.0f), manipulationDocumentTarget.ManipulationControls._grouping);
+            manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translation, 1.0f, 
+                        manipulationDocumentTarget.ManipulationControls.Grouping);
 
-            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-            if (manipulationDocumentTarget.ManipulationControls._grouping == null || manipulationDocumentTarget.ManipulationControls._grouping.Count < 2)
+            //Only preview a snap if the grouping only includes the current node. 
+            if (manipulationDocumentTarget.ManipulationControls.Grouping == null || manipulationDocumentTarget.ManipulationControls.Grouping.Count < 2)
                 manipulationDocumentTarget.ManipulationControls.Snap(true);
 
             if (e != null)

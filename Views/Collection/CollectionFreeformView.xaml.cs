@@ -57,7 +57,7 @@ namespace Dash
 
         private Canvas itemsPanelCanvas;
 
-        public ManipulationControls ManipulationControls;
+        public ViewManipulationControls ManipulationControls;
 
         public bool TagMode { get; set; }
         public KeyController TagKey { get; set; }
@@ -227,7 +227,7 @@ namespace Dash
         {
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
-            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls = new ViewManipulationControls(this);
             ManipulationControls.ElementScale = (ViewModel as CollectionViewModel).ContainerDocument
                                                 .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
@@ -1114,7 +1114,7 @@ namespace Dash
                 }
                 if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                 {
-                    documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
+                    documentView.ManipulationControls.ElementOnManipulationCompleted(null, null);
                     documentView.ViewModel.GroupOnCreate = false;
                 }
             }

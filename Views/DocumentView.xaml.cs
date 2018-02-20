@@ -389,7 +389,7 @@ namespace Dash
             {
                 xTitleIcon.Tapped += XTitleIcon_Tapped;
                 // add manipulation code
-                ManipulationControls = new ManipulationControls(this, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+                ManipulationControls = new ManipulationControls(this, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
                 ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             }
 
@@ -419,7 +419,7 @@ namespace Dash
             ToFront();
             if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true)
             {
-                ManipulationControls.ManipulationCompleted(null, false); // TODO this causes groups to show up, and needs to be moved
+                ManipulationControls.ElementOnManipulationCompleted(null, null); // TODO this causes groups to show up, and needs to be moved
                 return;
             }
         }
