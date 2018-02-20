@@ -57,7 +57,6 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
-            element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -86,20 +85,12 @@ namespace Dash
         }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            if (e != null && _freeformView.ManipulationMode == ManipulationModes.None)
-            {
-                e.Complete();
-                return;
-            }
-            if (e != null && e.PointerDeviceType == BlockedInputType && FilterInput)
+            if (_freeformView.ManipulationMode == ManipulationModes.None || (e.PointerDeviceType == BlockedInputType && FilterInput))
             {
                 e.Complete();
                 _processManipulation = false;
-                e.Handled = true;
-                return;
-            }
-            
-            _processManipulation = true;
+            } else
+                _processManipulation = true;
             e.Handled = true;
         }
         /// <summary>
@@ -112,28 +103,19 @@ namespace Dash
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
-                var containerScale = new Point(e.Delta.Translation.X == 0 ? 0 : (pointerPosition2.X - pointerPosition.X) / e.Delta.Translation.X, e.Delta.Translation.Y == 0 ? 0 : (pointerPosition2.Y - pointerPosition.Y) / e.Delta.Translation.Y);
-
-                var translate = new Point(e.Delta.Translation.X * containerScale.X, e.Delta.Translation.Y * containerScale.Y);
+                var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
                 if (_processManipulation)
                 {
                     ElementScale *= e.Delta.Scale;
-
-                    //Clamp the scale factor 
                     if (!ClampScale(e.Delta.Scale))
                     {
-                        // translate the entire group except for
-                        var transformGroup = new TransformGroupData(translate, new Point(e.Delta.Scale, e.Delta.Scale), e.Position);
-                        OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
+                        OnManipulatorTranslatedOrScaled?.Invoke(
+                            new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position));
                     }
                 }
                 e.Handled = true;
             }
-        }
-        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
-        {
-            manipulationCompletedRoutedEventArgs.Handled = true;
         }
         
         public void FitToParent()

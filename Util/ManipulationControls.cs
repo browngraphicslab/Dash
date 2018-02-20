@@ -378,7 +378,7 @@ namespace Dash
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
-                var delta = new Point(e.Delta.Translation.X == 0 ? 0 : (pointerPosition2.X - pointerPosition.X), e.Delta.Translation.Y == 0 ? 0 : (pointerPosition2.Y - pointerPosition.Y) );
+                var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
                 TranslateAndScale(e.Position, delta, e.Delta.Scale, Grouping);
                 //DetectShake(sender, e);
