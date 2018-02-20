@@ -719,6 +719,14 @@ namespace Dash
                 var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                 var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
 
+                if (e.Key == VirtualKey.C)
+                {
+                    var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
+                    doc.GetWidthField().Data = _marquee.Width;
+                    doc.GetHeightField().Data = _marquee.Height;
+                    ViewModel.AddDocument(doc, null);
+                }
+
                 foreach (var v in viewsinMarquee)
                     v.DeleteDocument();
 
@@ -728,13 +736,6 @@ namespace Dash
                 _marquee = null;
                 _isSelecting = false;
                 e.Handled = true;
-                if (e.Key == VirtualKey.C)
-                {
-                    var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
-                    doc.GetWidthField().Data = _marquee.Width;
-                    doc.GetHeightField().Data = _marquee.Height;
-                    ViewModel.AddDocument(doc, null);
-                }
             }
             if (_marquee != null && e.Key == VirtualKey.G)
             {
