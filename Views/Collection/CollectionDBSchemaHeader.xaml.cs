@@ -109,7 +109,6 @@ namespace Dash
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-            e.Handled = true;
         }
     }
 }

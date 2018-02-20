@@ -847,6 +847,10 @@ namespace Dash
                     ? (SolidColorBrush)Application.Current.Resources["TitleText"]
                     : new SolidColorBrush(Colors.Transparent);
             }
+            if (OperatorEllipseUnhighlight.Visibility == Visibility.Collapsed)
+                OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
+
+
         }
 
         private void ToggleGroupSelectionBorderColor(bool isGroupBorderVisible)
