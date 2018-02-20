@@ -61,8 +61,9 @@ namespace Dash
             release_hdlr = new PointerEventHandler(pointerReleased);
             _eventElement = eventElement;
             _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
-            _eventElement.AddHandler(UIElement.PointerMovedEvent,    move_hdlr,    true);
-            _eventElement.CapturePointer(pointer);
+            _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
+            if (pointer != null)
+                _eventElement.CapturePointer(pointer);
 
             var nestings = element.GetAncestorsOfType<CollectionView>().ToList();
             var manipTarget = nestings.Count() < 2 || drillDown ? element : nestings[nestings.Count - 2];
@@ -77,9 +78,12 @@ namespace Dash
             _collection = element as CollectionView;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.None;
-            
+
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
+            pointerPressed(element, null);
+        }
+        public void pointerPressed(object sender, PointerRoutedEventArgs e) { 
 
             parent.ToFront();
             var pointerPosition = MainPage.Instance
@@ -94,7 +98,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void pointerMOved(object sender, PointerRoutedEventArgs e)
+        public void pointerMOved(object sender, PointerRoutedEventArgs e)
         {
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
@@ -113,14 +117,19 @@ namespace Dash
             if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
                 parent.ManipulationControls.Snap(true);
 
-            e.Handled = true;
+            if (e != null)
+                e.Handled = true;
         }
 
-        private void pointerReleased(object sender, PointerRoutedEventArgs e)
+        public void pointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            _eventElement.ReleasePointerCapture(e.Pointer);
-            _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
-            _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            if (_eventElement != null)
+            {
+                if (e != null)
+                    _eventElement.ReleasePointerCapture(e.Pointer);
+                _eventElement.RemoveHandler(UIElement.PointerReleasedEvent, release_hdlr);
+                _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
+            }
             foreach (var n in _ancestorDocs)
                 n.OuterGrid.ManipulationMode = ManipulationModes.All;
             foreach (var n in _descendantDocs)
@@ -133,12 +142,17 @@ namespace Dash
             var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
             if (dist < 100)
+            {
                 parent.OnTapped(null, new TappedRoutedEventArgs());
+                if (e == null)
+                    parent.RightTap();
+            }
             else
                 parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-            var dvm = parent.ViewModel;
             parent.DocumentView_ManipulationCompleted(null, null);
-            e.Handled = true;
+
+            if (e != null)
+                e.Handled = true;
         }
     }
 }

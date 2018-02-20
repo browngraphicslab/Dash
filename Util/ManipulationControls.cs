@@ -535,8 +535,8 @@ namespace Dash
             {
                 return;
             }
-
-            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
+            var containerScale = _element.GetFirstAncestorOfType<CollectionFreeformView>()?.TransformGroup.ScaleAmount ?? new Point(1,1);
+            TranslateAndScale(new ManipulationDeltaData(e.Position, new Point(e.Delta.Translation.X/containerScale.X, e.Delta.Translation.Y/containerScale.Y), e.Delta.Scale), _grouping);
             //DetectShake(sender, e);
 
             if (_grouping == null || _grouping.Count < 2)
