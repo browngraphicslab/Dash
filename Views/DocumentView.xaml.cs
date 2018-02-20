@@ -833,13 +833,13 @@ namespace Dash
         {
             if (_draggerButtonBeingManipulated)
             {
-                OperatorEllipse.Visibility = DraggerButton.Visibility = Visibility.Visible;
+                OperatorEllipseUnhighlight.Visibility = DraggerButton.Visibility = Visibility.Visible;
                 xSelectionBorder.BorderThickness = new Thickness(3);
                 xTitleIcon.Foreground = (SolidColorBrush) Application.Current.Resources["TitleText"];
             }
             else
             {
-                OperatorEllipse.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
+                OperatorEllipseUnhighlight.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
                 xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
                 xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                     ? (SolidColorBrush)Application.Current.Resources["TitleText"]
@@ -1116,29 +1116,20 @@ namespace Dash
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            this.ManipulationMode = ManipulationModes.All;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
-        private void OperatorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        private void OperatorEllipseUnhighlight_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Ellipse ellipse)
-            {
-                ellipse.Fill = new SolidColorBrush(Colors.Gold);
-                ellipse.Height += 3;
-                ellipse.Width += 3;
-            }
+            OperatorEllipseHighlight.Visibility = Visibility.Visible;
         }
 
-        private void OperatorEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void OperatorEllipseHighlight_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is Ellipse ellipse)
-            {
-                ellipse.Fill = (SolidColorBrush) App.Instance.Resources["FieldHandleColor"];
-                ellipse.Height -= 3;
-                ellipse.Width -= 3;
-            }
+            OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
         }
 
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e)
@@ -1151,6 +1142,16 @@ namespace Dash
             var frameworkElement = sender as FrameworkElement;
             if (frameworkElement != null)
                 Canvas.SetLeft(xContextTitle, -frameworkElement.ActualWidth - 1);
+        }
+
+        private void xOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.ManipulationMode = ManipulationModes.None;
+        }
+
+        private void xOperatorEllipseBorder_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            this.ManipulationMode = ManipulationModes.All;
         }
     }
 }
