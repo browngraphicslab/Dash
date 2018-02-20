@@ -145,7 +145,7 @@ namespace Dash
             {
                 parent.OnTapped(null, new TappedRoutedEventArgs());
                 if (e == null)
-                    parent.RightTap();
+                    _eventElement.GetFirstAncestorOfType<DocumentView>()?.RightTap();
             }
             else
                 parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);

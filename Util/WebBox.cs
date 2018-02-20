@@ -198,7 +198,7 @@ namespace Dash
             switch (e.Value as string)
             {
                 case "0":    web.GetFirstAncestorOfType<DocumentView>()?.ToFront();  break;
-                case "2":    web.Tag = new ManipulationControlHelper(web, web, null, false); break;
+                case "2":    web.Tag = new ManipulationControlHelper(web, web, null, true); break;
                 case "move": parent.DocumentView_PointerEntered(null, null);
                              (web.Tag as ManipulationControlHelper)?.pointerMOved(web, null); break;
                 case "leave": parent.DocumentView_PointerExited(null, null); break;
