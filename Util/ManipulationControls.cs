@@ -163,7 +163,7 @@ namespace Dash
         /// </summary>
         public void Snap(bool preview)
         {
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
             if (parent == null || _element.Equals(parent))
@@ -221,7 +221,7 @@ namespace Dash
         {
             if (closestDocumentView == null) return;
 
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
@@ -264,7 +264,7 @@ namespace Dash
             var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             Debug.Assert(parent != null);
 
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
             var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
@@ -450,7 +450,7 @@ namespace Dash
             var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping != null && _grouping.Contains(dv?.ViewModel));
             return groupings?.ToList() ?? new List<DocumentView>();
         }
-        public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
+        public DocumentView ParentDocument { get => _element as DocumentView ?? _element.GetFirstAncestorOfType<DocumentView>(); }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null && (_isManipulating || _element.ManipulationMode == ManipulationModes.None))
@@ -468,9 +468,9 @@ namespace Dash
             var docRoot = ParentDocument;
 
             _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
-            var groupViews = GroupViews(_grouping);
-            foreach (var gv in groupViews)
-                gv.ToFront();
+            //var groupViews = GroupViews(_grouping);
+            //foreach (var gv in groupViews)
+            //    gv.ToFront();
 
             _isManipulating = true;
             _processManipulation = true;
@@ -652,7 +652,7 @@ namespace Dash
                     new Point(scaleFactor, scaleFactor), e.Position);
                 if (grouped != null && grouped.Any())
                 {
-                    var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+                    var docRoot = ParentDocument;
                     foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
                     {
                         g?.TransformDelta(transformGroup);

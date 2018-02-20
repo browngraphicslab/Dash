@@ -49,15 +49,16 @@ namespace Dash
         List<DocumentView> _descendantDocs;
         FrameworkElement   _eventElement;
         CollectionView     _collection;
-        DocumentView       parent = null;
+        DocumentView       manipulationDocumentTarget = null;
         Canvas             freeformCanvas = null;
         PointerEventHandler move_hdlr;
         PointerEventHandler release_hdlr;
         Point _rightDragLastPosition, _rightDragStartPosition;
+        int _numMovements;
 
-        public ManipulationControlHelper(FrameworkElement element, FrameworkElement eventElement, Pointer pointer, bool drillDown)
+        public ManipulationControlHelper(FrameworkElement eventElement, Pointer pointer, bool drillDown)
         {
-            move_hdlr = new PointerEventHandler(pointerMOved);
+            move_hdlr = new PointerEventHandler(pointerMoved);
             release_hdlr = new PointerEventHandler(pointerReleased);
             _eventElement = eventElement;
             _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
@@ -65,57 +66,55 @@ namespace Dash
             if (pointer != null)
                 _eventElement.CapturePointer(pointer);
 
-            var nestings = element.GetAncestorsOfType<CollectionView>().ToList();
-            var manipTarget = nestings.Count() < 2 || drillDown ? element : nestings[nestings.Count - 2];
-            parent = manipTarget.GetFirstAncestorOfType<DocumentView>();
+            var nestings = _eventElement.GetAncestorsOfType<CollectionView>().ToList();
+            var manipTarget = nestings.Count() < 2 || drillDown ? _eventElement : nestings[nestings.Count - 2];
+            manipulationDocumentTarget = manipTarget.GetFirstAncestorOfType<DocumentView>();
             freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
-            _ancestorDocs = element.GetAncestorsOfType<DocumentView>().ToList();
+            _ancestorDocs = _eventElement.GetAncestorsOfType<DocumentView>().ToList();
+            _ancestorDocs.AddRange(_eventElement.GetDescendantsOfType<DocumentView>());
             foreach (var n in _ancestorDocs)
-                n.OuterGrid.ManipulationMode = ManipulationModes.None;
-            _descendantDocs = element.GetDescendantsOfType<DocumentView>().ToList();
-            foreach (var n in _descendantDocs)
-                n.OuterGrid.ManipulationMode = ManipulationModes.None;
-            _collection = element as CollectionView;
+                n.ManipulationMode = ManipulationModes.None;
+            _collection = _eventElement as CollectionView;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.None;
 
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
-            pointerPressed(element, null);
+            if (parentCollectionTransform == null || manipulationDocumentTarget.ManipulationControls == null) return;
+            pointerPressed(_eventElement, null);
         }
-        public void pointerPressed(object sender, PointerRoutedEventArgs e) { 
-
-            parent.ToFront();
+        public void pointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            _numMovements = 0;
             var pointerPosition = MainPage.Instance
-                .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
+                .TransformToVisual(manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
                     .CoreWindow.GetForCurrentThread().PointerPosition);
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-            parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
-            parent.DocumentView_PointerEntered(null, null);
+            manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted(null, null);
+            manipulationDocumentTarget.DocumentView_PointerEntered(null, null);
         }
         /// <summary>
         /// Move view around if right mouse button is held down
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void pointerMOved(object sender, PointerRoutedEventArgs e)
+        public void pointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            _numMovements++;
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null || parent.ManipulationControls == null) return;
+            if (parentCollectionTransform == null || manipulationDocumentTarget.ManipulationControls == null) return;
 
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-
+            var pointerPosition = MainPage.Instance.TransformToVisual(manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
-            parent.ManipulationControls.TranslateAndScale(new
+            manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new
                 ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
                     translation,
-                    1.0f), parent.ManipulationControls._grouping);
+                    1.0f), manipulationDocumentTarget.ManipulationControls._grouping);
 
             //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-            if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                parent.ManipulationControls.Snap(true);
+            if (manipulationDocumentTarget.ManipulationControls._grouping == null || manipulationDocumentTarget.ManipulationControls._grouping.Count < 2)
+                manipulationDocumentTarget.ManipulationControls.Snap(true);
 
             if (e != null)
                 e.Handled = true;
@@ -131,25 +130,23 @@ namespace Dash
                 _eventElement.RemoveHandler(UIElement.PointerMovedEvent, move_hdlr);
             }
             foreach (var n in _ancestorDocs)
-                n.OuterGrid.ManipulationMode = ManipulationModes.All;
-            foreach (var n in _descendantDocs)
-                n.OuterGrid.ManipulationMode = ManipulationModes.All;
+                n.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.All;
 
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+            var pointerPosition = MainPage.Instance.TransformToVisual(manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
             var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-            if (dist < 100)
+            if (dist < 100 && _numMovements < 10)
             {
-                parent.OnTapped(null, new TappedRoutedEventArgs());
-                if (e == null)
+                manipulationDocumentTarget?.OnTapped(null, new TappedRoutedEventArgs());
+                if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.RightTap();
             }
             else
-                parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-            parent.DocumentView_ManipulationCompleted(null, null);
+                manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(null, null);
+            manipulationDocumentTarget.DocumentView_ManipulationCompleted(null, null);
 
             if (e != null)
                 e.Handled = true;

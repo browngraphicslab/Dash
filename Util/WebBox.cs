@@ -14,6 +14,8 @@ using System.Numerics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
+using Windows.UI.Core;
+using Windows.System;
 
 namespace Dash
 {    /// <summary>
@@ -117,7 +119,7 @@ namespace Dash
 
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
-            
+
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
@@ -195,12 +197,13 @@ namespace Dash
             if (parent == null)
                 return;
 
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down);
             switch (e.Value as string)
             {
-                case "0":    web.GetFirstAncestorOfType<DocumentView>()?.ToFront();  break;
-                case "2":    web.Tag = new ManipulationControlHelper(web, web, null, true); break;
+                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
                 case "move": parent.DocumentView_PointerEntered(null, null);
-                             (web.Tag as ManipulationControlHelper)?.pointerMOved(web, null); break;
+                             (web.Tag as ManipulationControlHelper)?.pointerMoved(web, null); break;
                 case "leave": parent.DocumentView_PointerExited(null, null); break;
                 case "up":   (web.Tag as ManipulationControlHelper)?.pointerReleased(web, null);
                              web.Tag = null; break;

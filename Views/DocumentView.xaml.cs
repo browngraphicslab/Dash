@@ -389,7 +389,7 @@ namespace Dash
             {
                 xTitleIcon.Tapped += XTitleIcon_Tapped;
                 // add manipulation code
-                ManipulationControls = new ManipulationControls(OuterGrid, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+                ManipulationControls = new ManipulationControls(this, true, true, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
                 ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
             }
 
@@ -811,11 +811,11 @@ namespace Dash
 
             await Task.Delay(100); // allows for double-tap
 
-            //Selects it and brings it to the foreground of the canvas, in front of all other documents.
+            // Selects it and brings it to the foreground of the canvas, in front of all other documents.
             if (ParentCollection != null && this.GetFirstAncestorOfType<ContentPresenter>() != null)
             {
                 var zindex = Canvas.GetZIndex(this.GetFirstAncestorOfType<ContentPresenter>());
-                if (zindex > -100)
+                if (zindex > -100 && zindex < ParentCollection.MaxZ)
                 {
                     ParentCollection.MaxZ += 1;
                     Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);

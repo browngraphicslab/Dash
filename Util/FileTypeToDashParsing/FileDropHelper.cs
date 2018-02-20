@@ -184,16 +184,22 @@ namespace Dash
                 };
             }
 
-            // otherwise the file is a local file so check the storage file path and file type
+            // otherwise the file is a local file so check the storage file path and file type 
             var fileType = GetFileType(storageItem.Path) ??
-                           GetFileType(storageItem.FileType) ??
-                           throw new ArgumentException(
-                               $"We do not support the file type for the passed in file: {storageItem.Path}");
+                           GetFileType(storageItem.FileType);
+
+            if (fileType == null)
+            {
+
+                Debug.WriteLine(
+                     $"We do not support the file type for the passed in file: {storageItem.Path}");
+                return new FileData();
+            }
 
             return new FileData()
             {
                 File = storageItem,
-                Filetype = fileType,
+                Filetype = (FileType)fileType,
                 FileUri = string.IsNullOrWhiteSpace(storageItem.Path) ? null : new Uri(storageItem.Path)
             };
         }

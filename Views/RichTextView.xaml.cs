@@ -617,7 +617,7 @@ namespace Dash
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (rightPressed)
             {
-                new ManipulationControlHelper(this, this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
                 UpdateDocument();
             }
         }

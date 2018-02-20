@@ -80,7 +80,7 @@ namespace Dash
                                    .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
             if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
             {
-                new ManipulationControlHelper(this, xOuterGrid, args.Pointer, false); // manipulate the top-most collection view
+                new ManipulationControlHelper(this, args.Pointer, false); // manipulate the top-most collection view
                 
                 args.Handled = true;
             }
