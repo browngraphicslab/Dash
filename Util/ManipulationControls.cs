@@ -450,7 +450,9 @@ namespace Dash
             var collectionFreeFormChildren = (ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
             // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
             var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => Grouping != null && Grouping.Contains(dv?.ViewModel));
-            return groupings?.ToList() ?? new List<DocumentView>();
+            if (groupings == null || !groupings.Any())
+                groupings = new DocumentView[] { ParentDocument };
+            return groupings.ToList();
         }
         public void Dispose()
         {
