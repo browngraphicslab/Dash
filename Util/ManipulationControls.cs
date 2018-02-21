@@ -351,6 +351,7 @@ namespace Dash
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
             }
         }
+
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
@@ -358,10 +359,6 @@ namespace Dash
                 e.Complete();
                 return;
             }
-            Grouping = GroupManager.SetupGroupings(ParentDocument.ViewModel, ParentDocument.ParentCollection, false);
-            //var groupViews = GroupViews(_grouping);
-            //foreach (var gv in groupViews)
-            //    gv.ToFront();
 
             if (e != null)
                 e.Handled = true;
@@ -433,9 +430,7 @@ namespace Dash
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                         () => {
-                            var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
-                            if (docRoot.MoveToContainingCollection(overlappedViews, groupViews))
-                                GroupManager.RemoveGroup(pc, group);
+                            docRoot.MoveToContainingCollection(overlappedViews, groupViews);
                         }));
 
                 if (manipulationCompletedRoutedEventArgs != null)

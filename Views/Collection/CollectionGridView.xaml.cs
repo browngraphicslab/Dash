@@ -133,7 +133,7 @@ namespace Dash
                 {
                     var pc = this.GetFirstAncestorOfType<CollectionView>();
                     var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
-                    GroupManager.RemoveGroup(pc, group);
+                    //GroupManager.RemoveGroup(pc, group);
                     ViewModel.RemoveDocument(dvm.DocumentController);
                 }
             }

@@ -63,7 +63,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                    [KeyStore.GroupingKey] = new ListController<DocumentController>(),
+                    //[KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
@@ -92,7 +92,7 @@ namespace Dash
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
-                DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                //DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
                 Document = DataDocument;
             }
@@ -107,7 +107,7 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                    [KeyStore.GroupingKey] = new ListController<DocumentController>(),
+                    //[KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
@@ -190,7 +190,7 @@ namespace Dash
             {
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
-                DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                //DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
                 if (listOfCollectedDocs?.Any() == true)
                 {

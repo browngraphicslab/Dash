@@ -211,11 +211,12 @@ namespace Dash
                         yield return doc;
             }
 
-            if (!SuspendGroups)
-            {
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                    GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
-            }
+            ////Got rid of groups
+            //if (!SuspendGroups)
+            //{
+            //    foreach (var dvm in ViewModel.DocumentViewModels)
+            //        GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
+            //}
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
@@ -528,6 +529,8 @@ namespace Dash
 
         public bool TagNote(string tagValue, DocumentView docView)
         {
+            return false;
+            //throw new NotImplementedException("requires groups, which we got rid of");
             if (!TagMode)
             {
                 return false;
@@ -535,28 +538,28 @@ namespace Dash
 
             var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
 
-            ListController<DocumentController> group =
-                groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-            if (groupDoc == null || group == null)
-            {
-                return false;
-            }
+            //ListController<DocumentController> group =
+            //    groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            //if (groupDoc == null || group == null)
+            //{
+            //    return false;
+            //}
 
-            DocumentController image = null;
-            foreach (var documentController in group.TypedData)
-            {
-                if (documentController.DocumentType.Equals(ImageBox.DocumentType))
-                {
-                    image = documentController.GetDataDocument(null);
-                    break;
-                }
-            }
+            //DocumentController image = null;
+            //foreach (var documentController in group.TypedData)
+            //{
+            //    if (documentController.DocumentType.Equals(ImageBox.DocumentType))
+            //    {
+            //        image = documentController.GetDataDocument(null);
+            //        break;
+            //    }
+            //}
 
-            if (image != null)
-            {
-                image.SetField(TagKey, new TextController(tagValue), true);
-                return true;
-            }
+            //if (image != null)
+            //{
+            //    image.SetField(TagKey, new TextController(tagValue), true);
+            //    return true;
+            //}
             return false;
         }
 

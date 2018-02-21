@@ -118,13 +118,15 @@ namespace Dash
                 {
                     return posField.Data.Y;
                 }
-                var groupField = LayoutDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if (groupField != null)
-                {
-                    return groupField.TypedData.Min(
-                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                              double.PositiveInfinity);
-                }
+
+                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                //if (groupField != null)
+                //{
+                //    return groupField.TypedData.Min(
+                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                //              double.PositiveInfinity);
+                //}
+
                 return double.PositiveInfinity; //Use inf so that sorting works reasonably
             }
             set
