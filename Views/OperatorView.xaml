@@ -10,7 +10,7 @@
     d:DesignWidth="400" DataContextChanged="OnUserControlDataContextChanged" RightTapped="OnRightTapped"
     x:Name="OpView">
 
-    <Grid Margin="0,0,0,0" Background="#88888888">
+    <Grid x:Name="OuterGrid"  Margin="0,0,0,0" Background="#88888888">
         <!-- Content containing grid -->
         <Grid x:Name="XGrid" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
@@ -26,14 +26,7 @@
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" 
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="MinWidth" Value="0"/>
-                        <Setter Property="Margin" Value="0,-7"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50" ItemContainerStyle="{StaticResource xNoGlossListViewItem}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <local:OperatorInputEntry OperatorFieldReference="{Binding ElementName=OpView, Path=DataContext}"></local:OperatorInputEntry>
@@ -43,15 +36,7 @@
 
             <!-- Output link handles and labels -->
             <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled"  
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50">
-                <ItemsControl.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="MinWidth" Value="0"/>
-                        <Setter Property="Margin" Value="0,-7"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Right"/>
-                    </Style>
-                </ItemsControl.ItemContainerStyle>
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" MinWidth="50" ItemContainerStyle="{StaticResource xNoGlossListViewItem}">
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

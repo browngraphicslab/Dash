@@ -249,6 +249,7 @@ namespace Dash
 
         public void TransformDelta(TransformGroupData delta)
         {
+            Debug.WriteLine("HIHI");
             var currentTranslate = GroupTransform.Translate;
             var currentScaleAmount = GroupTransform.ScaleAmount;
 

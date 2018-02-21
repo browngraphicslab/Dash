@@ -58,7 +58,7 @@ namespace Dash
                 SetupBindings(view, documentController, context);
                 return view;
             }
-            else if (data is TextController)
+            else if (data is TextController || data is NumberController)
             {
                 return TextingBox.MakeView(documentController, context);
             }

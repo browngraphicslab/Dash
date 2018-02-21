@@ -182,23 +182,26 @@ namespace Dash
 
                 DataDocument = GetDocumentPrototype().MakeDelegate();
                 DataDocument.SetField(KeyStore.ThisKey, DataDocument, true);
+
+                createLayout(where, viewtype, width, height);
+                SetDocuments(collectedDocuments);
+            }
+            public void SetDocuments(List<DocumentController> collectedDocuments)
+            {
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
                 DataDocument.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
                 //DataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
-                createLayout(where, viewtype, width, height);
-
-                if (listOfCollectedDocs.Any())
+                if (listOfCollectedDocs?.Any() == true)
                 {
-                    Document.SetField(KeyStore.ThumbnailFieldKey,  listOfCollectedDocs.FirstOrDefault(), true);
+                    Document.SetField(KeyStore.ThumbnailFieldKey, listOfCollectedDocs.FirstOrDefault(), true);
                     Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
                 }
-
             }
         }
         public class RichTextNote : NoteDocument
         {
-            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "Rich Text");
+            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "_Rich Text");
             
             public override DocumentController CreatePrototype()
             {
@@ -213,7 +216,7 @@ namespace Dash
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
                     [RichTextTitleOperatorController.RichTextKey] =
-                    new DocumentReferenceController(protoDoc.Id, RTFieldKey),
+                    new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
                     [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
                 }, DocumentType.DefaultType);
 
@@ -242,6 +245,7 @@ namespace Dash
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
                 dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
 
                 if (_prototypeLayout == null)

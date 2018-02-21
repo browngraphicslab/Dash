@@ -57,7 +57,7 @@ namespace Dash
 
         private Canvas itemsPanelCanvas;
 
-        public ManipulationControls ManipulationControls;
+        public ViewManipulationControls ManipulationControls;
 
         public bool TagMode { get; set; }
         public KeyController TagKey { get; set; }
@@ -228,7 +228,7 @@ namespace Dash
         {
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
-            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls = new ViewManipulationControls(this);
             ManipulationControls.ElementScale = (ViewModel as CollectionViewModel).ContainerDocument
                                                 .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
@@ -716,11 +716,19 @@ namespace Dash
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
-            if (_marquee != null && e.Key == VirtualKey.Back)
+            if (_marquee != null && (e.Key == VirtualKey.Back || e.Key == VirtualKey.C))
             {
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                 var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+
+                if (e.Key == VirtualKey.C)
+                {
+                    var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
+                    doc.GetWidthField().Data = _marquee.Width;
+                    doc.GetHeightField().Data = _marquee.Height;
+                    ViewModel.AddDocument(doc, null);
+                }
 
                 foreach (var v in viewsinMarquee)
                     v.DeleteDocument();
@@ -747,26 +755,6 @@ namespace Dash
                 _isSelecting = false;
                 e.Handled = true;
             }
-            if (_marquee != null && e.Key == VirtualKey.C)
-            {
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
-                var doc = new CollectionNote(where, CollectionView.CollectionViewType.Page, 400, 500, docsinMarquee).Document;
-                doc.GetWidthField().Data = _marquee.Width;
-                doc.GetHeightField().Data = _marquee.Height;
-                ViewModel.AddDocument(doc, null);
-
-                foreach (var v in viewsinMarquee)
-                    v.DeleteDocument();
-
-                _multiSelect = false;
-                SelectionCanvas.Children.Remove(_marquee);
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                _marquee = null;
-                _isSelecting = false;
-                e.Handled = true;
-            }
         }
 
         private List<DocumentView> DocsInMarquee(Rect marquee)
@@ -774,27 +762,14 @@ namespace Dash
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
-                IEnumerable<DocumentViewModel> docs =
-                    xItemsControl.Items.OfType<DocumentViewModel>();
-                foreach (var docvm in docs)
+                var docs = xItemsControl.ItemsPanelRoot.Children;
+                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null))
                 {
-                    var doc = docvm.LayoutDocument;
-                    if (doc.GetPositionField() != null)
+                    var rect = documentView.TransformToVisual(this).TransformBounds(
+                        new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
+                    if (marquee.IntersectsWith(rect))
                     {
-                        var position = doc.GetPositionField().Data;
-                        var width = doc.GetWidthField().Data;
-                        if (double.IsNaN(width)) width = 0;
-                        var height = doc.GetHeightField().Data;
-                        if (double.IsNaN(height)) height = 0;
-                        var rect = new Rect(position, new Size(width, height));
-                        if (marquee.IntersectsWith(rect) && xItemsControl.ItemContainerGenerator != null && xItemsControl
-                                .ContainerFromItem(docvm) is ContentPresenter contentPresenter)
-                        {
-                            var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
-                            if (documentView != null)
-                                selectedDocs.Add(
-                                    documentView);
-                        }
+                        selectedDocs.Add( documentView);
                     }
                 }
             }
@@ -1117,7 +1092,7 @@ namespace Dash
                 }
                 if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                 {
-                    documentView.ManipulationControls.BorderOnManipulationCompleted(null, null);
+                    documentView.ManipulationControls.ElementOnManipulationCompleted(null, null);
                     documentView.ViewModel.GroupOnCreate = false;
                 }
             }
