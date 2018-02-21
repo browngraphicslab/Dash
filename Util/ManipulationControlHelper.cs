@@ -143,8 +143,6 @@ namespace Dash
             }
             else
                 manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-            manipulationDocumentTarget.DocumentView_ManipulationCompleted(null, null);
-
             if (e != null)
                 e.Handled = true;
         }
