@@ -330,7 +330,10 @@ namespace Dash
         {
             if (ViewModel != null && !ViewModel.Undecorated)
             {
-                xTitleIcon.Tapped += XTitleIcon_Tapped;
+                xTitleIcon.Tapped += (s, args) => {
+                    ShowContext();
+                    args.Handled = true;
+                };
                 // add manipulation code
                 ManipulationControls = new ManipulationControls(this, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
                 ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
@@ -369,12 +372,6 @@ namespace Dash
             ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
             if (ManipulationMode == ManipulationModes.All)
                 e.Handled = true;
-        }
-
-        private void XTitleIcon_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ShowContext();
-            e.Handled = true;
         }
 
         #region Xaml Styling Methods (used by operator/collection view)
@@ -421,13 +418,6 @@ namespace Dash
 
         #endregion
 
-
-        private void ShowContext()
-        {
-            ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
-        }
-
-
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
@@ -444,7 +434,7 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public Size Resize(double dx = 0, double dy = 0)
+        Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
             if (dvm != null)
@@ -460,7 +450,7 @@ namespace Dash
             return new Size();
         }
 
-        public void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
+        void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
         {
             var pos = Util.PointTransformFromVisual(e.Position, e.Container);
             var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
@@ -470,7 +460,6 @@ namespace Dash
             var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * gt.ScaleAmount.X, 5), 0.2);
             ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
         }
-        
 
         /// <summary>
         /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
@@ -511,28 +500,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Updates the minimized-view icon from the ViewModel's corresponding IconType array.
-        /// </summary>
-        private void updateIcon()
-        {
-            return;
-            //if (ViewModel == null) return;
-            //// when you want a new icon, you have to add a check for it here!
-            //if (ViewModel.IconType == IconTypeEnum.Document)
-            //{
-            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            //}
-            //else if (ViewModel.IconType == IconTypeEnum.Collection)
-            //{
-            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            //}
-            //else if (ViewModel.IconType == IconTypeEnum.Api)
-            //{
-            //    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
-            //}
-        }
-
-        /// <summary>
         /// The first time the local DocumentViewModel _vm can be set to the new datacontext
         /// this resets the fields otherwise does nothing
         /// </summary>
@@ -543,7 +510,6 @@ namespace Dash
             ViewModel = DataContext as DocumentViewModel;
             if (ViewModel != null)
             {
-                updateIcon();
                 // binds the display title of the document to the back end representation
                 ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
@@ -568,7 +534,10 @@ namespace Dash
                 }
             }
         }
-
+        public void ShowContext()
+        {
+            ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
+        }
         public void GetJson()
         {
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
@@ -582,9 +551,7 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        public Rect ClipRect => new Rect();
-
+        
         public void RightTap()
         {
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
