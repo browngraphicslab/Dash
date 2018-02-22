@@ -17,6 +17,7 @@ using NewControls.Geometry;
 using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
 using System.Collections.ObjectModel;
+using DashShared;
 
 namespace Dash
 {
@@ -36,6 +37,10 @@ namespace Dash
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
+
+
+        private List<DocumentController> _documentsToRemoveAfterManipulation = new List<DocumentController>();
+
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -109,45 +114,103 @@ namespace Dash
                 return;
             }
 
-            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;  //TODO: there should be a more logical way of managing this rectangle's visibility
+
 
             var currentBoundingBox = docRoot.ViewModel.Bounds;
             var closest = GetClosestDocumentView(currentBoundingBox);
+
+            if (closest == null) return;
+
+            bool snappingToCollection = closest.Item1.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
+            else if (snappingToCollection)
+                SnapToCollection(docRoot, closest);
             else
                 SnapToDocumentView(docRoot, closest);
+        }
+
+        private void SnapToCollection(DocumentView currentDoc, Tuple<DocumentView, Side, double> closest)
+        {
+            var collection = closest.Item1;
+            var side = closest.Item2;
+
+            var newCollectionBoundingBoxNullable = BoundingBox(currentDoc.ViewModel, collection.ViewModel);
+            if (!newCollectionBoundingBoxNullable.HasValue)
+                return;
+            var newCollectionBoundingBox = newCollectionBoundingBoxNullable.Value;
+
+            //Translate and resize the collection using bounding box
+            var currentScaleAmount = collection.ViewModel.GroupTransform.ScaleAmount;
+            var translate = new Point(newCollectionBoundingBox.X, newCollectionBoundingBox.Y);
+            collection.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
+            collection.ViewModel.Width = newCollectionBoundingBox.Width;
+            collection.ViewModel.Height = newCollectionBoundingBox.Height;
+
+            //TODO: readjust the amount panned so that snapping to top and left of collection doesn't look so bad
+
+
+            var collectionView = collection.GetFirstDescendantOfType<CollectionFreeformView>();
+            
+            //Add ParentDocument to collection
+            if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+            {
+                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(currentDoc.ViewModel.DocumentController, null);
+            }
+            
+            _documentsToRemoveAfterManipulation = new List<DocumentController>()
+            {
+                currentDoc.ViewModel.DocumentController
+            };
+
+
+            //Readjust the translates so that they are relative to the bounding box
+            currentDoc.ViewModel.GroupTransform = new TransformGroupData(new Point(currentDoc.ViewModel.Bounds.X - newCollectionBoundingBox.X, currentDoc.ViewModel.Bounds.Y - newCollectionBoundingBox.Y), currentScaleAmount);
+
         }
 
         /// <summary>
         /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
         /// </summary>
         /// <param name="closestDocumentView"></param>
-        private void SnapToDocumentView(DocumentView currrentDoc, Tuple<DocumentView, Side, double> closestDocumentView)
+        private void SnapToDocumentView(DocumentView currentDoc, Tuple<DocumentView, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null)
             {
                 return;
             }
-
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
-            var currentScaleAmount = currrentDoc.ViewModel.GroupTransform.ScaleAmount;
+            var currentScaleAmount = currentDoc.ViewModel.GroupTransform.ScaleAmount;
 
             var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
                 documentView.ViewModel.GroupTransform.Translate.Y);
             var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
                 documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
 
-            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
-
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currentDoc.ActualWidth, currentDoc.ActualHeight);
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
-
-            currrentDoc.ViewModel.Width = newBoundingBox.Width;
-            currrentDoc.ViewModel.Height = newBoundingBox.Height;
+            currentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
+            currentDoc.ViewModel.Width = newBoundingBox.Width;
+            currentDoc.ViewModel.Height = newBoundingBox.Height;
         }
+
+
+        private Rect? BoundingBox(DocumentViewModel doc1, DocumentViewModel doc2, double padding = 0)
+        {
+            if (doc1 == null || doc2 == null)
+            {
+                return null;
+            }
+            var minX = Math.Min(doc1.Bounds.X, doc2.Bounds.X);
+            var minY = Math.Min(doc1.Bounds.Y, doc2.Bounds.Y);
+
+            var maxX = Math.Max(doc1.Bounds.Right, doc2.Bounds.Right);
+            var maxY = Math.Max(doc1.Bounds.Bottom, doc2.Bounds.Bottom);
+            return new Rect(new Point(minX - padding, minY - padding), new Point(maxX + padding, maxY + padding));
+        }
+
 
 
         /// <summary>
@@ -161,7 +224,7 @@ namespace Dash
 
             var docRoot = ParentDocument;
 
-            var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
@@ -170,7 +233,7 @@ namespace Dash
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
-            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, parent?.xItemsControl.ItemsPanelRoot);
+            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.xItemsControl.ItemsPanelRoot);
             MainPage.Instance.TemporaryRectangle.Width = boundingBoxScreenSpace.Width;
             MainPage.Instance.TemporaryRectangle.Height = boundingBoxScreenSpace.Height;
 
@@ -430,6 +493,14 @@ namespace Dash
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                         () => {
+
+                            if (_documentsToRemoveAfterManipulation.Any())
+                            {
+                                var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+                                currentCollection?.ViewModel.RemoveDocuments(_documentsToRemoveAfterManipulation);
+                                _documentsToRemoveAfterManipulation.Clear();
+                            }
+
                             docRoot.MoveToContainingCollection(overlappedViews, groupViews);
                         }));
 
