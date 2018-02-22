@@ -133,13 +133,15 @@ namespace Dash
                 {
                     return posField.Data.Y;
                 }
-                var groupField = LayoutDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if (groupField != null)
-                {
-                    return groupField.TypedData.Min(
-                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                              double.PositiveInfinity);
-                }
+
+                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                //if (groupField != null)
+                //{
+                //    return groupField.TypedData.Min(
+                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                //              double.PositiveInfinity);
+                //}
+
                 return double.PositiveInfinity; //Use inf so that sorting works reasonably
             }
             set
@@ -231,8 +233,6 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        private Rect _groupingBounds;
-        private Rect _bounds;
         public void UpdateActualSize(double actualwidth, double actualheight)
         {
             _actualWidth = actualwidth;
@@ -242,17 +242,12 @@ namespace Dash
 
         }
 
-        public Rect Bounds
+        public Rect Bounds => new TranslateTransform
         {
-            get
-            {
-                return new TranslateTransform
-                {
-                    X = XPos,
-                    Y = YPos
-                }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
-            }
-        }
+            X = XPos,
+            Y = YPos
+        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+
         public void TransformDelta(TransformGroupData delta)
         {
             var currentTranslate = Position;
@@ -274,9 +269,9 @@ namespace Dash
             {
                 if (SetProperty(ref _backgroundBrush, value))
                 {
-                    if (value is SolidColorBrush)
+                    if (value is SolidColorBrush scb)
                     {
-                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController((value as SolidColorBrush).Color.ToString()), true);
+                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController(scb.Color.ToString()), true);
                     }
                 }
             }
@@ -303,7 +298,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = LayoutDocument.MakeViewUI(null, KeysToFrameworkElements);
+                    _content = LayoutDocument.MakeViewUI(null);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
@@ -312,13 +307,6 @@ namespace Dash
             {
                 _content = value;
             }
-        }
-
-        private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements
-        {
-            get => keysToFrameworkElements;
-            set => keysToFrameworkElements = value;
         }
         
         private double _actualWidth;

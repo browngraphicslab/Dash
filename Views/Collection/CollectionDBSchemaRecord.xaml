@@ -11,32 +11,26 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Height="50">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <!--<Grid Width="30" Height="25" Background="Gray" ManipulationMode="All" PointerPressed="CollectionDBSchemaRecordField_PointerPressed" ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" CanDrag="True"  />-->
-        <ListView Grid.Column="1" 
+     <ListView Grid.Column="1" 
                     Style="{ThemeResource xSchemaListView}"
                     ItemsSource="{Binding RecordFields}"
                     SelectionMode="None"
+                  Height="50"
                     CanDrag="False">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel CanDrag="False" Orientation="Horizontal"  Margin="0"/>
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <local:CollectionDBSchemaRecordField DataContext="{Binding}" 
+        <ListView.ItemsPanel>
+            <ItemsPanelTemplate>
+                <ItemsStackPanel CanDrag="False" Orientation="Horizontal"  Margin="0"/>
+            </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
+        <ListView.ItemTemplate>
+            <DataTemplate>
+                <local:CollectionDBSchemaRecordField DataContext="{Binding}" 
                                                          CanDrag="True"
                                                          ManipulationMode="All"
                                                          ManipulationStarted="CollectionDBSchemaRecordField_ManipulationStarted" 
                                                          PointerPressed="CollectionDBSchemaRecordField_PointerPressed"
                                                          />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </Grid>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
 </UserControl>

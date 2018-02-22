@@ -94,11 +94,9 @@ namespace Dash
                     PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
 
                     DocumentController thumbnailImageViewDoc = null;
-                    var richText = pageDoc.GetDataDocument(null).GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
-                    var docText = pageDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
-                    if (docText != null)
+                    if (!string.IsNullOrEmpty(pageDoc.Title))
                     {
-                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText.Substring(0, Math.Min(100, docText.Length))).Document;
+                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
                     }
                     else
                     {
@@ -299,7 +297,7 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -324,7 +322,7 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -460,7 +458,6 @@ namespace Dash
             {
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
                 e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
-                   // (m as DocumentViewModel).DocumentController, true);
             }
         }
     }

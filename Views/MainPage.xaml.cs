@@ -105,7 +105,7 @@ namespace Dash
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
                         [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                        [KeyStore.GroupingKey] = new ListController<DocumentController>()
+                        //[KeyStore.GroupingKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
@@ -113,7 +113,7 @@ namespace Dash
                 }
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
-                var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                //var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
@@ -124,7 +124,7 @@ namespace Dash
                     var documentController = new NoteDocuments.CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
-                    grouped.Add(documentController);
+                    //grouped.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
                     lastWorkspace = documentController;
                 }
@@ -413,7 +413,8 @@ namespace Dash
 
             };
 
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
+            //TODO: do we need this if we aren't doing grouping?
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.CollectionKey));
             xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu

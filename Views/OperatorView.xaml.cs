@@ -29,8 +29,6 @@ namespace Dash
         private MenuFlyout _flyout;
         private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
-        private Dictionary<KeyController, FrameworkElement> _keysToFrameworkElements;
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements { get { return _keysToFrameworkElements; } }
         private DocumentView documentView;
 
         /// <summary>
@@ -57,10 +55,9 @@ namespace Dash
 
 
 
-        public OperatorView(Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
+        public OperatorView()
         {
             this.InitializeComponent();
-            _keysToFrameworkElements = keysToFrameworkElements;
             this.Loaded += OperatorView_Loaded;
 
         }

@@ -69,7 +69,7 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the  view
             var background = new Grid();

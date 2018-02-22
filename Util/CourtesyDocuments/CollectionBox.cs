@@ -58,11 +58,11 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null, null);
+            return MakeView(docController, context, null);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+            Context context, DocumentController dataDocument)
         {
 
             // get a collection and collection view model from the data
@@ -76,16 +76,6 @@ namespace Dash
             var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? DefaultCollectionView;
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
             var view       = new CollectionView(collectionViewModel,  viewType);
-
-            //add to key to framework element dictionary
-            //var reference = data as ReferenceController;
-            //if (keysToFrameworkElementsIn != null)
-            //{
-            //    keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-            //    keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
-            //    docController.SetField(KeyStore.CollectionOutputKey,
-            //        new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
-            //}
 
             SetupBindings(view, docController, context);
             

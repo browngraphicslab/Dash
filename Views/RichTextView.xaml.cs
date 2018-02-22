@@ -55,10 +55,6 @@ namespace Dash
         private SolidColorBrush highlightNotFocused = new SolidColorBrush(Colors.Gray) {Opacity=0.5};
         private bool CanSizeToFit = false;
         long TextChangedCallbackToken;
-        
-        PointerEventHandler moveHdlr = null, releasedHdlr = null;
-
-        private Point _rightDragLastPosition, _rightDragStartPosition;
 
 
         // for manipulation movement
@@ -206,13 +202,35 @@ namespace Dash
 
         public void UpdateDocument()
         {
+
+            if (!this.IsInVisualTree())
+                return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
             string allRtfText = GetRtfText();
             UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            if (!allRtfText.Equals(Text.RtfFormatString) || !allText.Equals(Text.ReadableString))
-                Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            if (!allRtfText.Equals(Text.RtfFormatString))
+                Text = new RichTextModel.RTD(allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+
+
+            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
+            var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+            var matches = reg.Matches(allText);
+            foreach (var str in matches)
+            {
+                var split = str.ToString().Split(':');
+                var key = split.FirstOrDefault().Trim(' ');
+                var value = split.LastOrDefault().Trim(' ');
+
+                var k = KeyController.LookupKeyByName(key);
+                if (k == null)
+                    k = new KeyController(DashShared.UtilShared.GenerateNewId(), key);
+
+                parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(k, new TextController(value), true);
+            }
+           // var rest = reg.Replace(allText, "");
+            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
         }
 
 
@@ -449,14 +467,12 @@ namespace Dash
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
             createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false, forceLocal);
+            
+            string allRtfText = GetRtfText();
+            UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
+            Text = new RichTextModel.RTD(allRtfText);
+            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
 
-            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
-            {
-                string allRtfText = GetRtfText();
-                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText);
-                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-            }
             xRichEditBox.Document.Selection.SetRange(s1, s2);
             e.Handled = true;
         }
@@ -526,8 +542,17 @@ namespace Dash
         #endregion
 
         #region load/unload
-        private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        PointerEventHandler _releasedHdlr = null;
+        PointerEventHandler _pressedHdlr = null;
+        TappedEventHandler _tappedHdlr = null;
+        DocumentView _parentDocView = null;
+        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
+            _parentDocView = this.GetFirstAncestorOfType<DocumentView>();
+            _releasedHdlr = new PointerEventHandler(released);
+            _pressedHdlr = new PointerEventHandler(RichTextView_PointerPressed);
+            _tappedHdlr = new TappedEventHandler(tapped);
+
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
             
             xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
@@ -537,16 +562,15 @@ namespace Dash
             //SetFontSizeBinding();
 
             xRichEditBox.KeyUp += XRichEditBox_KeyUp;
-            MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
-            this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
+            MainPage.Instance.AddHandler(PointerReleasedEvent, _releasedHdlr, true);
+            this.AddHandler(PointerPressedEvent, _pressedHdlr, true);
+            this.AddHandler(TappedEvent, _tappedHdlr, true);
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
-            var docParent = this.GetFirstAncestorOfType<DocumentView>();
-            docParent.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
+            _parentDocView.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            _parentDocView.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
@@ -561,6 +585,7 @@ namespace Dash
             UpdateDocument();
         }
 
+
         /// <summary>
         /// Unsubscribes TextChanged handler on Unload
         /// </summary>
@@ -569,7 +594,13 @@ namespace Dash
         private void UnLoaded(object sender, RoutedEventArgs e)
         {
             xRichEditBox.KeyUp -= XRichEditBox_KeyUp;
-            MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
+            MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
+            this.RemoveHandler(PointerPressedEvent, _pressedHdlr);
+            this.RemoveHandler(TappedEvent, _tappedHdlr);
+            this.xRichEditBox.ContextMenuOpening -= XRichEditBox_ContextMenuOpening;
+            
+            _parentDocView.ViewModel.DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            _parentDocView.xOperatorEllipseBorder.PointerPressed -= XOperatorEllipseBorder_PointerPressed;
         }
         #endregion
 
@@ -586,7 +617,7 @@ namespace Dash
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (rightPressed)
             {
-                new ManipulationControlHelper(this, this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
                 UpdateDocument();
             }
         }
@@ -604,10 +635,6 @@ namespace Dash
                 if (refText.StartsWith("http"))
                 {
                     theDoc = new HtmlNote(refText).Document;
-                }
-                else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
-                {
-                    //theDoc = DBFilterOperatorController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
                 }
                 else
                 {
