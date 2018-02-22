@@ -709,7 +709,9 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
         {
-            grouped = GetMarqueeDocuments();    //TODO hack lol 
+            var marqueeGroup = GetMarqueeDocuments();
+            if (marqueeGroup != null && marqueeGroup.Count > 0)
+                grouped = marqueeGroup; 
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             if (collection == null || ViewModel == null)
