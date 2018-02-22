@@ -197,7 +197,7 @@ namespace Dash
                 var scaleController =
                     LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null);
 
-                if (scaleController != null && (Math.Abs(scaleController.Data.X - value.X) > 0.05f || Math.Abs(scaleController.Data.Y - value.Y) > 0.05f))
+                if (scaleController != null)
                 {
                     scaleController.Data = value;
                 }
