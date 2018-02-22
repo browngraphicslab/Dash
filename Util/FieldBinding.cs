@@ -160,6 +160,7 @@ namespace Dash
         public static void AddFieldBinding<T>(this T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
         {
             TryRemoveOldBinding(element, property);
+            if (binding == null) return;
             switch (binding.Mode)
             {
                 case BindingMode.OneTime:

@@ -15,6 +15,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -70,6 +71,16 @@ namespace Dash
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
 
+        private long _bindRenderTransformToken = -1;
+        public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
+            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+
+        public bool BindRenderTransform
+        {
+            get { return (bool)GetValue(BindRenderTransformProperty); }
+            set { SetValue(BindRenderTransformProperty, value); }
+        }
+
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -82,6 +93,7 @@ namespace Dash
             InitializeComponent();
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+
 
             DataContextChanged += DocumentView_DataContextChanged;
             // set bounds
@@ -106,6 +118,30 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
 
             MenuFlyout = xMenuFlyout;
+        }
+
+        private void BindRenderTransformChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (BindRenderTransform)
+            {
+                var doc = ViewModel?.DocumentController;
+                if (doc == null)
+                {
+                    Debug.Fail("The view model should not be null at this point");
+                }
+                FieldMultiBinding<MatrixTransform> binding = new FieldMultiBinding<MatrixTransform>(
+                    new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Mode = BindingMode.OneWay
+                };
+                this.AddFieldBinding(RenderTransformProperty, binding);
+            }
+            else
+            {
+                this.AddFieldBinding(RenderTransformProperty, null);
+            }
         }
 
         private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
@@ -163,7 +199,8 @@ namespace Dash
             {
                 this.CanDrag = false;
                 xFieldContainer.BorderThickness = new Thickness(0);
-            } else
+            }
+            else
             {
                 this.CanDrag = true;
                 xFieldContainer.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
@@ -429,7 +466,7 @@ namespace Dash
         private void DraggerButton_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (draggerOverride)
-                e.Complete(); 
+                e.Complete();
         }
         private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -460,7 +497,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
         }
 
         /// <summary>
@@ -492,8 +529,8 @@ namespace Dash
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
-        
-        
+
+
         private bool _draggerButtonBeingManipulated;
 
 
@@ -673,8 +710,14 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
+            if (_bindRenderTransformToken != -1)
+            {
+                UnregisterPropertyChangedCallback(BindRenderTransformProperty, _bindRenderTransformToken);
+            }
             if (ViewModel != null)
             {
+                _bindRenderTransformToken = RegisterPropertyChangedCallback(BindRenderTransformProperty, BindRenderTransformChanged);
+                BindRenderTransformChanged(this, BindRenderTransformProperty);
                 updateIcon();
                 // binds the display title of the document to the back end representation
                 ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
@@ -822,7 +865,7 @@ namespace Dash
                 }
             }
         }
-        
+
         /// <summary>
         /// Sets whther the selection border is on, all other chrome can be turned off or on independently
         /// so that we don't see huge amounts of chrome when we hover over groups
@@ -835,7 +878,7 @@ namespace Dash
             {
                 OperatorEllipse.Visibility = DraggerButton.Visibility = Visibility.Visible;
                 xSelectionBorder.BorderThickness = new Thickness(3);
-                xTitleIcon.Foreground = (SolidColorBrush) Application.Current.Resources["TitleText"];
+                xTitleIcon.Foreground = (SolidColorBrush)Application.Current.Resources["TitleText"];
             }
             else
             {
@@ -931,10 +974,10 @@ namespace Dash
                     , ordered[i].GroupTransform.ScaleCenter
                     , ordered[i].GroupTransform.ScaleAmount);
             }*/
-            
+
             return grouped;
         }
-        
+
 
         #endregion
 
@@ -965,7 +1008,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ToFront();
@@ -1110,7 +1153,7 @@ namespace Dash
                 }
             }
 
-            
+
             collection.LoadNewActiveTextBox("", where, true);
         }
 
@@ -1135,7 +1178,7 @@ namespace Dash
         {
             if (sender is Ellipse ellipse)
             {
-                ellipse.Fill = (SolidColorBrush) App.Instance.Resources["FieldHandleColor"];
+                ellipse.Fill = (SolidColorBrush)App.Instance.Resources["FieldHandleColor"];
                 ellipse.Height -= 3;
                 ellipse.Width -= 3;
             }

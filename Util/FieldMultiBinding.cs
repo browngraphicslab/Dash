@@ -21,7 +21,7 @@ namespace Dash
         public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
         public Object FallbackValue;
 
-        public SafeDataToXamlConverter<List<Object>, TXaml> Converter;//TODO Should this be a list of objects of of FieldControllerBase?
+        public SafeDataToXamlConverter<List<object>, TXaml> Converter;//TODO Should this be a list of objects of of FieldControllerBase?
         public Object ConverterParameter;
 
         public String Tag;
