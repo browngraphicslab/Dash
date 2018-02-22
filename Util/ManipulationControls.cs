@@ -194,19 +194,16 @@ namespace Dash
 
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
-            var currentScaleAmount = currrentDoc.ViewModel.GroupTransform.ScaleAmount;
 
-            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
-                documentView.ViewModel.GroupTransform.Translate.Y);
-            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
-                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+            var topLeftPoint = documentView.ViewModel.Position;
+            var bottomRightPoint = new Point(documentView.ViewModel.XPos + documentView.ActualWidth,
+                documentView.ViewModel.YPos + documentView.ActualHeight);
 
             var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
-
+            currrentDoc.ViewModel.Position = translate;
             currrentDoc.ViewModel.Width = newBoundingBox.Width;
             currrentDoc.ViewModel.Height = newBoundingBox.Height;
         }

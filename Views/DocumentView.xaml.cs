@@ -573,9 +573,9 @@ namespace Dash
             var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
             var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
                 new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-            var gt = ViewModel.GroupTransform;
-            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * gt.ScaleAmount.X, 5), 0.2);
-            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
+            var curScale = ViewModel.Scale;
+            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
+            ViewModel.Scale = new Point(scale, scale);
         }
 
         /// <summary>
@@ -738,8 +738,7 @@ namespace Dash
 
                 if (addTextBox)
                 {
-                    (ParentCollection.CurrentView as CollectionFreeformView)?.
-                        RenderPreviewTextbox(ViewModel.GroupTransform.Translate);
+                    (ParentCollection.CurrentView as CollectionFreeformView)?.RenderPreviewTextbox(ViewModel.Position);
                 }
             }
         }
