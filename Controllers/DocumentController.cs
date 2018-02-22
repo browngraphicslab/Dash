@@ -1200,7 +1200,7 @@ namespace Dash
             return sp;
         }
 
-        public FrameworkElement MakeViewUI(Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
             context = new Context(context);
             context.AddDocumentContext(this);
@@ -1218,60 +1218,56 @@ namespace Dash
                 }
                 Debug.Assert(doc != null);
 
-                return doc.MakeViewUI(context, keysToFrameworkElementsIn, GetDataDocument());
+                return doc.MakeViewUI(context, GetDataDocument());
             }
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType.Equals(TextingBox.DocumentType))
             {
-                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, true); //
+                return TextingBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(ImageBox.DocumentType))
             {
-                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn); //
+                return ImageBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(PdfBox.DocumentType))
             {
-                return PdfBox.MakeView(this, context, keysToFrameworkElementsIn);
-            }
-            if (DocumentType.Equals(DocumentBox.DocumentType))
-            {
-                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn);//
+                return PdfBox.MakeView(this, context);
             }
             if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
             {
-                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);//
+                return KeyValueDocumentBox.MakeView(this, context, dataDocument);//
             }
             if (DocumentType.Equals(StackLayout.DocumentType))
             {
-                return StackLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
+                return StackLayout.MakeView(this, context, dataDocument); //
             }
             if (DocumentType.Equals(WebBox.DocumentType))
             {
-                return WebBox.MakeView(this, context, keysToFrameworkElementsIn); //
+                return WebBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
-                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);//
+                return CollectionBox.MakeView(this, context, dataDocument);//
             }
             if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
             {
-                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn); //
+                return OperatorBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
             {
-                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
+                return FreeFormDocument.MakeView(this, context, dataDocument); //
             }
             if (DocumentType.Equals(InkBox.DocumentType))
             {
-                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn);
+                return InkBox.MakeView(this, context, dataDocument);
             }
             if (DocumentType.Equals(GridViewLayout.DocumentType))
             {
-                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
+                return GridViewLayout.MakeView(this, context, dataDocument); //
             }
             if (DocumentType.Equals(ListViewLayout.DocumentType))
             {
-                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
+                return ListViewLayout.MakeView(this, context, dataDocument); //
             }
             if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
             {
@@ -1279,27 +1275,27 @@ namespace Dash
             }
             if (DocumentType.Equals(RichTextBox.DocumentType))
             {
-                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn); //
+                return RichTextBox.MakeView(this, context); //
             }
             if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
-                return GridLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn); //
+                return GridLayout.MakeView(this, context, dataDocument); //
             }
             if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
             {
-                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
+                return MeltOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
             {
-                return QuizletOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
+                return QuizletOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
             {
-                return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
+                return ExtractSentencesOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
             {
-                return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn);
+                return SearchOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
@@ -1307,19 +1303,19 @@ namespace Dash
             }
             if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
-                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn); //I set the framework element as the operator view for now
+                return ApiOperatorBox.MakeView(this, context); //I set the framework element as the operator view for now
             }
             if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
             {
-                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn);
+                return PreviewDocument.MakeView(this, context);
             }
             if (DocumentType.Equals(BackgroundBox.DocumentType))
             {
-                return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn);
+                return BackgroundBox.MakeView(this, context);
             }
             if (DocumentType.Equals(DataBox.DocumentType))
             {
-                return DataBox.MakeView(this, context);//TODO add keysToFrameworkElementsIn
+                return DataBox.MakeView(this, context);
             }
             return makeAllViewUI(context);
         }

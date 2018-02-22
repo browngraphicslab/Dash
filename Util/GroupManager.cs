@@ -117,6 +117,8 @@ namespace Dash
                 return new ListController<DocumentController>(new List<DocumentController>());
             var groupDataDoc = collectionView.ParentDocument.ViewModel.DataDocument;
             var groupsList = groupDataDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            if (groupsList == null)
+                return new ListController<DocumentController>(new List<DocumentController>());
             var addedItems = new List<DocumentController>();
             foreach (var d in collectionView.ViewModel.DocumentViewModels)
                 if (collectionView.GetDocumentGroup(d.DocumentController) == null && !groupsList.Data.Contains(d.DocumentController))

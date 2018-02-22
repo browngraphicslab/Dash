@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Dash.NoteDocuments;
 using Dash.Controllers;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -47,20 +48,15 @@ namespace Dash
                     var key =  testPatternMatch(d.GetDataDocument(null), pattern, term);
                     if (key != null)
                     {
-                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                        var derefField = d.GetDataDocument(null).GetDereferencedField(key, null);
-                        if (derefField is TextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as TextController).Data)), true);
-                        else if (derefField is RichTextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as RichTextController).Data.ReadableString)), true);
+                        var derefField = d.GetDataDocument(null).GetDereferencedField<TextController>(key, null)?.Data;
+                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, derefField ?? "<empty>").Document;
                         rnote.GetDataDocument(null).SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }
                     return null;
                 });
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: collection.Where((c)=> c != null).ToList()).Document;
-                
-                args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
+                args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(
+                    collection.Where((c) => c != null).ToList(), null, null, CollectionView.CollectionViewType.Schema);
             }
         }
 
@@ -283,7 +279,7 @@ namespace Dash
 
         static KeyController testPatternMatch(DocumentController dmc, KeyController pattern, string term)
         {
-            if (!string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+            if (string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return null;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Key.Equals(pattern)))
@@ -301,12 +297,6 @@ namespace Dash
                         foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null)))
                             if (testPatternMatch(nestedDoc, null, term) != null)
                                 return pfield.Key;
-                    }
-                    else if (pvalue is RichTextController)
-                    {
-                        var text = (pvalue as RichTextController).Data.ReadableString;
-                        if (text != null && text.Contains(term))
-                            return pfield.Key;
                     }
                     else if (pvalue is TextController)
                     {

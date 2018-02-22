@@ -71,7 +71,7 @@ namespace Dash
         private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView?.hideDraggerButton();
+            //docView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             docView?.StyleKeyValuePane();
         }
 

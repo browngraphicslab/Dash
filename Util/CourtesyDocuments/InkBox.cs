@@ -29,7 +29,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+            Context context, DocumentController dataDocument)
         {
 
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
@@ -37,11 +37,6 @@ namespace Dash
             {
                 var inkCanvas = new InkCanvasControl(fmController);
                 SetupBindings(inkCanvas, docController, context);
-
-                //add to key to framework element dictionary
-                var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-                if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = inkCanvas;
-
 
                 return inkCanvas;
             }
