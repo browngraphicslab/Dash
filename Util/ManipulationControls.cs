@@ -142,8 +142,8 @@ namespace Dash
             var newCollectionBoundingBox = newCollectionBoundingBoxNullable.Value;
 
             //Store amount needed to readjust
-            var readjustmentX = Math.Min(0, newCollectionBoundingBox.X - collection.ViewModel.GroupTransform.Translate.X);
-            var readjustmentY = Math.Min(0, newCollectionBoundingBox.Y - collection.ViewModel.GroupTransform.Translate.Y);
+            //var readjustmentX = Math.Min(0, newCollectionBoundingBox.X - collection.ViewModel.GroupTransform.Translate.X);
+            //var readjustmentY = Math.Min(0, newCollectionBoundingBox.Y - collection.ViewModel.GroupTransform.Translate.Y);
 
             //Translate and resize the collection using bounding box
             var currentScaleAmount = collection.ViewModel.GroupTransform.ScaleAmount;
@@ -152,18 +152,13 @@ namespace Dash
             collection.ViewModel.Width = newCollectionBoundingBox.Width;
             collection.ViewModel.Height = newCollectionBoundingBox.Height;
 
-
-
-            var collectionView = collection.GetFirstDescendantOfType<CollectionFreeformView>();
-
-
-            
-
+            /*
+            var collectionView = collection.GetFirstDescendantOfType<CollectionFreeformView>();     
             if (collectionView != null)
             {
                 //TODO: readjust the amount panned so that snapping to top and left of collection doesn't look so bad
-                collectionView.TransformGroup = new TransformGroupData(new Point(collectionView.TransformGroup.Translate.X - readjustmentX, collectionView.TransformGroup.Translate.Y - readjustmentY), collectionView.TransformGroup.ScaleAmount);
-            }
+                //collectionView.TransformGroup = new TransformGroupData(new Point(collectionView.TransformGroup.Translate.X - readjustmentX, collectionView.TransformGroup.Translate.Y - readjustmentY), collectionView.TransformGroup.ScaleAmount);
+            }*/
 
             //Add ParentDocument to collection
             if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
