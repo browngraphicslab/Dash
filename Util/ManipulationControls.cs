@@ -162,7 +162,7 @@ namespace Dash
             if (collectionView != null)
             {
                 //TODO: readjust the amount panned so that snapping to top and left of collection doesn't look so bad
-                collectionView.TransformGroup = new TransformGroupData(new Point(collectionView.TransformGroup.Translate.X + readjustmentX, collectionView.TransformGroup.Translate.Y + readjustmentY), collectionView.TransformGroup.ScaleAmount);
+                collectionView.TransformGroup = new TransformGroupData(new Point(collectionView.TransformGroup.Translate.X - readjustmentX, collectionView.TransformGroup.Translate.Y - readjustmentY), collectionView.TransformGroup.ScaleAmount);
             }
 
             //Add ParentDocument to collection
