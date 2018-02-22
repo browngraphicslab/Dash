@@ -109,7 +109,7 @@ namespace Dash
             foreach (var i in xItemsControl.Items)
             {
                 var dv = i as DocumentViewModel;
-                var b = dv?.GroupingBounds;
+                var b = dv?.Bounds;
                 if (b?.Bottom > ActualHeight)
                 {
                     Height = b.Value.Bottom;
