@@ -115,7 +115,7 @@ namespace Dash
         {
             if (BindRenderTransform)
             {
-                var doc = ViewModel?.DocumentController;
+                var doc = ViewModel?.LayoutDocument;
                 if (doc == null)
                 {
                     Debug.Fail("The view model should not be null at this point");
