@@ -107,7 +107,7 @@ namespace Dash
         }
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
 
         {
             context = context ?? new Context();
@@ -121,7 +121,7 @@ namespace Dash
             Debug.Assert(col != null);
             foreach (var documentController in col.GetElements())
             {
-                var element = documentController.MakeViewUI(context, keysToFrameworkElementsIn);
+                var element = documentController.MakeViewUI(context);
                 grid.Children.Add(element);
             }
             return grid;

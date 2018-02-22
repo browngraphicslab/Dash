@@ -78,7 +78,7 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the pdf view
             var pdfView = new PdfView();
@@ -87,10 +87,6 @@ namespace Dash
             // make the pdf respond to resizing, interactions etc...
             SetupBindings(pdf, docController, context);
             SetupPdfBinding(pdf, docController, context);
-
-            // set up interactions with operations
-            var reference = GetPdfReference(docController);
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = pdf;
             
             return pdfView;
         }

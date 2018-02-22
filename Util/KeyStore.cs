@@ -32,7 +32,6 @@ namespace Dash
         public static KeyController SystemUriKey = new KeyController(DashConstants.KeyStore.SystemUriKey);
         public static KeyController ThumbnailFieldKey = new KeyController(DashConstants.KeyStore.ThumbnailFieldKey);
         public static KeyController HeaderKey = new KeyController(DashConstants.KeyStore.HeaderKey);
-        public static KeyController UserLinksKey = new KeyController(DashConstants.KeyStore.UserLinksKey);
         public static KeyController CollectionOutputKey = new KeyController(DashConstants.KeyStore.CollectionOutputKey);
         public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
         public static KeyController OperatorCacheKey = new KeyController(DashConstants.KeyStore.OperatorCacheKey);
@@ -43,7 +42,7 @@ namespace Dash
         public static KeyController ModifiedTimestampKey = new KeyController(DashConstants.KeyStore.ModifiedTimestampKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
         public static KeyController WorkspaceHistoryKey = new KeyController(DashConstants.KeyStore.WorkspaceHistoryKey);
-        public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
+        //public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
         public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
         public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);

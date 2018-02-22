@@ -164,7 +164,6 @@ namespace DashShared
             public static KeyModel SystemUriKey = new KeyModel("CA740B60-10D5-4B2C-9C9A-E6E4A7D2CA4E", "File Path");
             public static KeyModel ThumbnailFieldKey = new KeyModel("67D3BD61-43EC-4BDE-913A-E459F9D15E76", "_ThumbnailField");
             public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
-            public static KeyModel UserLinksKey = new KeyModel("D5E8B9F2-BDDC-4031-B40D-E4762E535E65", "_User-Created Links");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
             public static KeyModel OperatorKey = new KeyModel("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
             public static KeyModel OperatorCacheKey = new KeyModel("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041", "Operator Cache");
@@ -173,7 +172,7 @@ namespace DashShared
             public static KeyModel ModifiedTimestampKey = new KeyModel("CAAD33A3-DE94-42CF-A54A-F85C5F04940E", "ModifiedTime");
             public static KeyModel LastWorkspaceKey = new KeyModel("66F05DB2-2F68-4E37-985D-36303A1AF4E4", "_Last Workspace");
             public static KeyModel WorkspaceHistoryKey = new KeyModel("D0630828-1488-4F7B-B0D7-9E89EF05497F", "_Workspace History");
-            public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
+            //public static KeyModel GroupingKey = new KeyModel("6EE9FC92-9AD3-45BA-AC47-5CECE42A9163", "_Grouped Documents");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
             public static KeyModel ActualWidthKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualWidth");

@@ -478,11 +478,20 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
+                    new DragCollectionFieldModel(
+                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
+                    collectionReference,
                     viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB));
+                    CollectionView.CollectionViewType.DB
+                    ));
             }
+        }
+
+        private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+           this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
     }
 }

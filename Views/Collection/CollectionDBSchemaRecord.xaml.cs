@@ -61,11 +61,7 @@ namespace Dash
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-
-            //var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            //args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
-            //args.Data.Properties.Add("View", true);
-            //args.Data.RequestedOperation = DataPackageOperation.Link;
+            
             GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
         }
 

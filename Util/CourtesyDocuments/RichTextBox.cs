@@ -37,7 +37,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+            Context context)
         {
             RichTextView rtv = null;
             var refToRichText =
@@ -67,11 +67,6 @@ namespace Dash
             SetupTextBinding(rtv, docController, context);
             SetupBindings(rtv, docController, context);
 
-
-            //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = rtv;
-            
             return rtv;
         }
 

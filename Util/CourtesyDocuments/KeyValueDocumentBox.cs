@@ -20,7 +20,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.

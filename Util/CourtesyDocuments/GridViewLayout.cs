@@ -113,7 +113,7 @@ namespace Dash
             AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
 
             var grid = new Grid();
@@ -126,7 +126,7 @@ namespace Dash
             gridView.ItemContainerStyle = new Style { TargetType = typeof(GridViewItem) };
             SetupBindings(gridView, docController, context); 
 
-            LayoutDocuments(docController, context, gridView, keysToFrameworkElementsIn);
+            LayoutDocuments(docController, context, gridView);
             var c = new Context(context);
             docController.FieldModelUpdated += delegate (FieldControllerBase sender,
                 FieldUpdatedEventArgs args, Context context1)
@@ -134,21 +134,21 @@ namespace Dash
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 if (dargs.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments((DocumentController)sender, c, gridView, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController)sender, c, gridView);
                 }
             };
             grid.Children.Add(gridView);
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid,  Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             double maxHeight = 0;
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
                 itemsSource.Add(layoutView);

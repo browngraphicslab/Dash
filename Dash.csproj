@@ -134,6 +134,7 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
+    <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
@@ -179,8 +180,8 @@
     <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
+    <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
-    <Compile Include="Util\GroupManager.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
@@ -257,6 +258,7 @@
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\SuperscriptTextInline.cs" />
     <Compile Include="Util\UWPCommunityToolkit\Markdown\Parse\Inlines\TextRunInline.cs" />
     <Compile Include="Controllers\UserCreatedLink.cs" />
+    <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
@@ -500,7 +502,6 @@
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleDBTest.cs" />
-    <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />

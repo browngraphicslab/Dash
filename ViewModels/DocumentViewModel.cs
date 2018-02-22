@@ -94,13 +94,28 @@ namespace Dash
         public IconTypeEnum IconType => iconType;
         
 
+        public Point Position
+        {
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            set
+            {
+                var positionController =
+                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
+
+                if (positionController != null && (Math.Abs(positionController.Data.X - value.X) > 0.05f || Math.Abs(positionController.Data.Y - value.Y) > 0.05f))
+                {
+                    positionController.Data = value;
+                }
+            }
+        }
+
         public double XPos
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
             set
             {
                 var positionController =
-                    LayoutDocument.GetDereferencedField(KeyStore.PositionFieldKey, null) as PointController;
+                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
 
                 if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
                 {
@@ -118,13 +133,15 @@ namespace Dash
                 {
                     return posField.Data.Y;
                 }
-                var groupField = LayoutDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                if (groupField != null)
-                {
-                    return groupField.TypedData.Min(
-                        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                              double.PositiveInfinity);
-                }
+
+                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                //if (groupField != null)
+                //{
+                //    return groupField.TypedData.Min(
+                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
+                //              double.PositiveInfinity);
+                //}
+
                 return double.PositiveInfinity; //Use inf so that sorting works reasonably
             }
             set
@@ -172,25 +189,21 @@ namespace Dash
             }
         }
 
-        public TransformGroupData GroupTransform
+        public Point Scale
         {
-            get => _normalGroupTransform;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null).Data;
             set
             {
-                if (SetProperty(ref _normalGroupTransform, value))
+                var scaleController =
+                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null);
+
+                if (scaleController != null)
                 {
-                    // set position
-                    var posFieldModelController = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
-                    Debug.Assert(posFieldModelController != null, "posFieldModelController != null");
-                    posFieldModelController.Data = value.Translate;
-                    // set scale amount
-                    var scaleAmountFieldModelController = LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null);
-                    if (scaleAmountFieldModelController != null)
-                        scaleAmountFieldModelController.Data = value.ScaleAmount;
+                    scaleController.Data = value;
                 }
             }
         }
+
         public double GroupMargin
         {
             get => _groupMargin;
@@ -220,8 +233,6 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        private Rect _groupingBounds;
-        private Rect _bounds;
         public void UpdateActualSize(double actualwidth, double actualheight)
         {
             _actualWidth = actualwidth;
@@ -231,43 +242,24 @@ namespace Dash
 
         }
 
-        /// <summary>
-        /// Bounds that include the group margin
-        /// </summary>
-        public Rect GroupingBounds {
-            get
-            {
-                return new TranslateTransform
-                {
-                    X = GroupTransform.Translate.X,
-                    Y = GroupTransform.Translate.Y
-                }.TransformBounds(new Rect(-GroupMargin, -GroupMargin, _actualWidth + 2 * GroupMargin,
-                _actualHeight + 2 * GroupMargin));
-            }
-        }
-
-        public Rect Bounds
+        public Rect Bounds => new TranslateTransform
         {
-            get
-            {
-                return new TranslateTransform
-                {
-                    X = GroupTransform.Translate.X,
-                    Y = GroupTransform.Translate.Y
-                }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
-            }
-        }
+            X = XPos,
+            Y = YPos
+        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+
         public void TransformDelta(TransformGroupData delta)
         {
-            var currentTranslate = GroupTransform.Translate;
-            var currentScaleAmount = GroupTransform.ScaleAmount;
+            var currentTranslate = Position;
+            var currentScaleAmount = Scale;
 
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X * scaleAmount.X, currentTranslate.Y + deltaTranslate.Y * scaleAmount.Y);
 
-            GroupTransform = new TransformGroupData(translate, scaleAmount);
+            Position = translate;
+            Scale = scaleAmount;
         }
 
         public Brush BackgroundBrush
@@ -277,9 +269,9 @@ namespace Dash
             {
                 if (SetProperty(ref _backgroundBrush, value))
                 {
-                    if (value is SolidColorBrush)
+                    if (value is SolidColorBrush scb)
                     {
-                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController((value as SolidColorBrush).Color.ToString()), true);
+                        LayoutDocument.SetField(KeyStore.BackgroundColorKey, new TextController(scb.Color.ToString()), true);
                     }
                 }
             }
@@ -306,7 +298,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = LayoutDocument.MakeViewUI(null, KeysToFrameworkElements);
+                    _content = LayoutDocument.MakeViewUI(null);
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;
@@ -315,13 +307,6 @@ namespace Dash
             {
                 _content = value;
             }
-        }
-
-        private Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = new Dictionary<KeyController, FrameworkElement>();
-        public Dictionary<KeyController, FrameworkElement> KeysToFrameworkElements
-        {
-            get => keysToFrameworkElements;
-            set => keysToFrameworkElements = value;
         }
         
         private double _actualWidth;
@@ -399,8 +384,6 @@ namespace Dash
             if (oldLayoutDoc == null) return;
             oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
             oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
-            oldLayoutDoc.GetPositionField().FieldModelUpdated -= PosFieldModelController_FieldModelUpdatedEvent;
-            oldLayoutDoc.GetScaleAmountField().FieldModelUpdated -= ScaleAmountFieldModelController_FieldModelUpdatedEvent;
         }
 
         private void RemoveControllerListeners()
@@ -428,30 +411,11 @@ namespace Dash
 
             ListenToHeightField();
             ListenToWidthField();
-            ListenToTransformGroupField();
 
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(LayoutDocument);
             Context = newContext;
-        }
-
-        private void ListenToTransformGroupField()
-        {
-            //TODO These events should probably be added to and removed from the document, not to the fields
-            var scaleAmountField = LayoutDocument.GetScaleAmountField();
-            if (scaleAmountField != null)
-                scaleAmountField.FieldModelUpdated +=
-                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
-            var posField = LayoutDocument.GetPositionField();
-            if (posField != null)
-            {
-                posField.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-            }
-            if (posField != null && scaleAmountField != null)
-            {
-                GroupTransform = new TransformGroupData(posField.Data, scaleAmountField.Data);
-            }
         }
 
         private void ListenToWidthField()
@@ -515,24 +479,6 @@ namespace Dash
             if (iconFieldModelController != null)
             {
                 iconType = (IconTypeEnum)iconFieldModelController.Data;
-            }
-        }
-
-        private void PosFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-        {
-            var posFieldModelController = sender as PointController;
-            if (posFieldModelController != null)
-            {
-                GroupTransform = new TransformGroupData(posFieldModelController.Data, GroupTransform.ScaleAmount);
-            }
-        }
-
-        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var scaleAmountFieldModelController = sender as PointController;
-            if (scaleAmountFieldModelController != null)
-            {
-                GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleAmountFieldModelController.Data);
             }
         }
 

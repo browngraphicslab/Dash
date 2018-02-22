@@ -56,7 +56,7 @@ namespace Dash
         /// <param name="context"></param>
         /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
             var stack = new RelativePanel();
             var stackFieldData =
@@ -71,7 +71,7 @@ namespace Dash
                 FrameworkElement prev = null;
                 foreach (var stackDoc in stackFieldData.GetElements())
                 {
-                    var item = stackDoc.MakeViewUI(context, keysToFrameworkElementsIn);
+                    var item = stackDoc.MakeViewUI(context);
                     if (item != null)
                     {
                         stack.Children.Add(item);

@@ -139,8 +139,10 @@ namespace Dash
         /// </summary>
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            // get all the view docs for the search and set the key for the drag to a static const
-            args.Data.Properties[SearchCollectionDragKey] = SearchHelper.SearchOverCollection(_currentSearch);//GetViewDocumentsForCurrentSearch();
+            // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+            var docs = SearchHelper.SearchOverCollection(_currentSearch).Select((srvm)=> srvm.ViewDocument.GetViewCopy());
+           
+            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
