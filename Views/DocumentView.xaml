@@ -24,6 +24,7 @@
     </UserControl.Resources>
     <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
         <!-- Main document view -->
+
         <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
         <Grid.ContextFlyout>
             <MenuFlyout x:Name = "xMenuFlyout">
@@ -41,6 +42,7 @@
                 <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
             </MenuFlyout>
         </Grid.ContextFlyout>
+
 
         <!--Used to render the drop shadow and provide a background to the document-->
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
