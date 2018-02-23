@@ -102,28 +102,38 @@ namespace Dash
                 ViewModel?.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
 
-            Loaded += (sender, e) =>
-            {
+            Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
             };
-            
+            Unloaded += (sender, e) =>
+            {
+                Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
+                Window.Current.CoreWindow.KeyUp -= CoreWindow_KeyUp;
+            };
+
+            PointerPressed += (sender, e) =>  ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
-            AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);
+            RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
+            AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
+
+            SizeChanged += (sender, e) => {
+                ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+                PositionContextPreview();
+            };
 
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-            Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
+            Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
 
             // setup DraggerButton
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationStarted += (object s, ManipulationStartedRoutedEventArgs e) =>
             {
-                if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
-                    CoreVirtualKeyStates.Down)
-                {  // if dragger is dragged, then ignore any pointer exit events which will change the visibility of the dragger
+                if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
+                {  
                     e.Handled = true;
-                    PointerExited -= DocumentView_PointerExited;
+                    PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                 }
             };
             void restorePointerTracking() {
@@ -170,7 +180,8 @@ namespace Dash
 
             // add manipulation code
             ManipulationControls = new ManipulationControls(this, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
+            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
+                SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
 
             MenuFlyout = xMenuFlyout;
         }
@@ -403,17 +414,6 @@ namespace Dash
 
         #endregion
 
-
-        /// <summary>
-        /// Update viewmodel when manipulator moves document
-        /// </summary>
-        /// <param name="delta"></param>
-        private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
-        {
-            foreach (var doc in GetMarqueeDocuments())
-                doc.ViewModel?.TransformDelta(delta); 
-        }
-
         /// <summary>
         /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
@@ -458,8 +458,7 @@ namespace Dash
                 var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
                 ViewModel.Scale = new Point(scale, scale);
             }
-            if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) ==
-                   CoreVirtualKeyStates.Down)
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
@@ -497,7 +496,6 @@ namespace Dash
         // Controls functionality for the Right-click context menu
         #region Menu
 
-
         /// <summary>
         /// Brings the element to the front of its containing parent canvas.
         /// </summary>
@@ -515,11 +513,7 @@ namespace Dash
 
             xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
         }
-        public void DeleteDocument()
-        {
-            DeleteDocument(false);
-        }
-        public void DeleteDocument(bool addTextBox)
+        public void DeleteDocument(bool addTextBox=false)
         {
             if (ParentCollection != null)
             {
@@ -551,7 +545,6 @@ namespace Dash
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
         }
         public void ShowContext()
-
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
@@ -571,57 +564,31 @@ namespace Dash
         public void MarqueeSelectBorder(bool selected)
         {
             xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetContentGrid.BorderBrush = selected ?
-                GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
         /// </summary>
-        List<DocumentView> GetMarqueeDocuments()
+        List<DocumentView> SelectedDocuments()
         {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Contains(this))
                 return marqueeDocs;
             return new List<DocumentView>(new DocumentView[] { this } );
         }
 
         #endregion
-        public async void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
-                // handle the event right away before any possible async delays
-                if (e != null) e.Handled = true;
-
-                await Task.Delay(100); // allows for double-tap
-
-                //Selects it and brings it to the foreground of the canvas, in front of all other documents.
                 ToFront();
             }
         }
-
-        private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            this.DocumentView_OnTapped(sender, new TappedRoutedEventArgs());
-            var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
-            if (text != null) 
-                await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
-        }
-        
-        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-            ToFront();
-        }
-
-        private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
-            PositionContextPreview();
-        }
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            ViewModel.DecorationState = false;
+            if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+                ViewModel.DecorationState = false;
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
@@ -632,7 +599,7 @@ namespace Dash
         #region UtilityFuncions
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            var grouped = GetMarqueeDocuments();
+            var grouped = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             if (collection == null || ViewModel == null)
@@ -671,7 +638,6 @@ namespace Dash
             }
             return false;
         }
-
         public void HandleShiftEnter()
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
@@ -705,22 +671,22 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in GetMarqueeDocuments())
+            foreach (var doc in SelectedDocuments())
                 doc.CopyDocument();
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in GetMarqueeDocuments())
+            foreach (var doc in SelectedDocuments())
                 doc.CopyViewDocument();
         }
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in GetMarqueeDocuments())
+            foreach (var doc in SelectedDocuments())
                 doc.DeleteDocument();
         }
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in GetMarqueeDocuments())
+            foreach (var doc in SelectedDocuments())
                 doc.KeyValueViewDocument();
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y)), null) ; }
@@ -734,6 +700,18 @@ namespace Dash
                 (ViewModel.DocumentController.GetAllContexts() ?? new List<DocumentContext>()).Select(
                     c => c.Title + "  :  " + c.Url)));
             Clipboard.SetContent(data);
+        }
+        private void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e) {
+            var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
+            if (text != null)
+               Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+
+            //var storageFile = item as StorageFile;
+            //var fields = new Dictionary<KeyController, FieldControllerBase>
+            //{
+            //    [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
+            //};
+            //var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
         }
 
         #endregion

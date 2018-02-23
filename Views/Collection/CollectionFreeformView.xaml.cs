@@ -634,8 +634,8 @@ namespace Dash
         private Point _marqueeAnchor;
         private bool _isSelecting;
 
-        private List<DocumentView> _marqueeSelectedDocs = new List<DocumentView>();
-        public List<DocumentView> MarqueeSelectedDocs => _marqueeSelectedDocs;
+        private List<DocumentView> _selectedDocs = new List<DocumentView>();
+        public List<DocumentView> SelectedDocs => _selectedDocs;
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -717,11 +717,11 @@ namespace Dash
                 _marqueeAnchor = pos;
                 _isSelecting = true;
                 PreviewTextbox_LostFocus(null, null);
-                foreach (var doc in _marqueeSelectedDocs)
+                foreach (var doc in _selectedDocs)
                 {
                     doc.MarqueeSelectBorder(false);
                 }
-                _marqueeSelectedDocs.Clear();
+                _selectedDocs.Clear();
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 args.Handled = true;
             }
@@ -795,15 +795,15 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
 
-            _marqueeSelectedDocs = DocsInMarquee(marquee);
+            _selectedDocs = DocsInMarquee(marquee);
 
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && _marqueeSelectedDocs.Count > 0)
+            if (!IsSelectionEnabled && _selectedDocs.Count > 0)
             {
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
                 parentView.MakeSelectionModeMultiple();
             }
-            foreach (var doc in _marqueeSelectedDocs)
+            foreach (var doc in _selectedDocs)
             {
                 doc.MarqueeSelectBorder(true);
             }
@@ -830,7 +830,6 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
             SelectionCanvas?.Children?.Clear();
             DeselectAll();
             _isSelecting = false;

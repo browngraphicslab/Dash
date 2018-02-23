@@ -83,7 +83,6 @@ namespace Dash
         {
             this.InitializeComponent();
             Loaded   += OnLoaded;
-            Unloaded += UnLoaded;
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
@@ -242,22 +241,21 @@ namespace Dash
 
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
-            string target = null;
             var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (true || ctrlDown)
+            string target = null;
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            if (s1 == s2)
             {
-                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-                if (s1 == s2)
-                {
-                    this.xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
-                }
-                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-                {
-                    target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                }
-                this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+                xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
             }
+            if (xRichEditBox.Document.Selection.Link.Length > 1)
+            {
+                target = xRichEditBox.Document.Selection.Link.Split('\"')[1];
+            }
+            if (xRichEditBox.Document.Selection.EndPosition != s2)
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
+
             if (target != null)
             {
                 var doc = GetDoc();
@@ -284,7 +282,6 @@ namespace Dash
                 }
                 else
                 {
-
                     var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
                     if (nearest != null)
                     {
@@ -572,6 +569,8 @@ namespace Dash
             _parentDataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+            Unloaded -= UnLoaded;
+            Unloaded += UnLoaded;
         }
 
         void selectedFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)

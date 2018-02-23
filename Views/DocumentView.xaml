@@ -10,10 +10,7 @@
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
     d:DesignHeight="400"
-    xmlns:localConverters="using:Dash.Converters"
-    RightTapped="DocumentView_OnRightTapped"
-    PointerPressed="DocumentView_OnPointerPressed"
-    SizeChanged="DocumentView_OnSizeChanged">
+    xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
@@ -38,6 +35,7 @@
                 <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                <MenuFlyoutItem Text="Launch app" Click="MenuFlyoutLaunch_Click"/>
                 <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
             </MenuFlyout>
         </Grid.ContextFlyout>

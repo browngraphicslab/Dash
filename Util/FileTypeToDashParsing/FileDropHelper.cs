@@ -245,35 +245,5 @@ namespace Dash
             return null;
 
         }
-
-
-        // TODO remove this method
-        public static async void HandleDropOnCollection(object sender, DragEventArgs e,
-            BaseCollectionViewModel collection)
-        {
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                var elem = sender as UIElement;
-                var dropPoint = e.GetPosition(elem);
-                foreach (var item in items)
-                {
-                    var storageFile = item as StorageFile;
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
-                    };
-                    var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
-                    var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey))
-                        .Document;
-                    doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> { tb }, dropPoint).Document,
-                        false, true);
-                    collection.AddDocument(doc, null);
-                    dropPoint.X += 20;
-                    dropPoint.Y += 20;
-                }
-            }
-            e.Handled = true;
-        }
     }
 }
