@@ -108,12 +108,6 @@ namespace Dash
                 DataContextChanged += (s, a) => updateBindings(null, null);
             };
             
-            void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e) { ViewModel.DecorationState = false; }
-            void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
-            {
-                ViewModel.DecorationState = ViewModel?.Undecorated == false;
-                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            }
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
             AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);
@@ -624,6 +618,15 @@ namespace Dash
         {
             ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
             PositionContextPreview();
+        }
+        public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.DecorationState = false;
+        }
+        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
 
         #region UtilityFuncions
