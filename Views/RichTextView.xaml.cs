@@ -980,7 +980,7 @@ namespace Dash
             e.Handled = true;
 
             var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent?.OnTapped(null, null);
+            parent?.DocumentView_OnTapped(null, null);
         }
         #endregion
 

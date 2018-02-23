@@ -438,7 +438,7 @@ namespace Dash
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
             var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
 
         // TODO lsm wrote this here it's a hack we should definitely remove this

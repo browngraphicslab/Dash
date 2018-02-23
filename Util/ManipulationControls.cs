@@ -61,10 +61,7 @@ namespace Dash
                 {
                     borderRegion.ManipulationMode = ManipulationModes.All;
                     borderRegion.ManipulationDelta += ElementOnManipulationDelta;
-                    borderRegion.ManipulationStarted += (sender, args) => {
-                        ElementOnManipulationStarted(sender, args);
-                        Grouping = null;
-                    };
+                    borderRegion.ManipulationStarted += ElementOnManipulationStarted;
                     borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
                 }
             }
@@ -207,7 +204,7 @@ namespace Dash
             foreach (var side in sides)
             {
                 var sideRect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
-                foreach (var sibling in listOfSiblings)
+                foreach (var sibling in listOfSiblings.Where((sib) => sib.ViewModel != null))
                 {
                     Rect intersection = sideRect;
                     intersection.Intersect(sibling.ViewModel.Bounds); //Mutates intersection
@@ -365,6 +362,11 @@ namespace Dash
         /// </summary>
         void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
+            {
+                e.Complete();
+                return;
+            }
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) ||
                 Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
             {
@@ -372,11 +374,10 @@ namespace Dash
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
-                TranslateAndScale(e.Position, delta, e.Delta.Scale, Grouping);
+                TranslateAndScale(e.Position, delta, e.Delta.Scale);
                 //DetectShake(sender, e);
 
-                if (Grouping == null || Grouping.Count < 2)
-                    Snap(true);
+                Snap(true);
                 e.Handled = true;
             }
         }
@@ -385,39 +386,26 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(Point position, Point translate, double scaleFactor, List<DocumentViewModel> grouped = null)
+        public void TranslateAndScale(Point position, Point translate, double scaleFactor)
         {
             ElementScale *= scaleFactor;
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
-                // translate the entire group except for
-
-                var transformGroup = new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position);
-                if (grouped != null && grouped.Any())
-                {
-                    foreach (var g in grouped.Except(new List<DocumentViewModel> { ParentDocument.ViewModel }))
-                    {
-                        g?.TransformDelta(transformGroup);
-                    }
-                }
-                OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position));
             }
         }
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                if (Grouping == null || Grouping.Count < 2)
-                    Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
                 MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
                 var docRoot = ParentDocument;
-
-                var groupViews = GroupViews(Grouping);
-
+                
                 var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
                 var x = pointerPosition2.X - Window.Current.Bounds.X;
                 var y = pointerPosition2.Y - Window.Current.Bounds.Y;
@@ -426,9 +414,7 @@ namespace Dash
 
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                        () => {
-                            docRoot.MoveToContainingCollection(overlappedViews, groupViews);
-                        }));
+                        () => docRoot.MoveToContainingCollection(overlappedViews)));
 
                 if (manipulationCompletedRoutedEventArgs != null)
                 {
@@ -437,15 +423,6 @@ namespace Dash
             }
         }
         
-        List<DocumentView> GroupViews(List<DocumentViewModel> groups)
-        {
-            var collectionFreeFormChildren = (ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
-            // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
-            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => Grouping != null && Grouping.Contains(dv?.ViewModel));
-            if (groupings == null || !groupings.Any())
-                groupings = new DocumentView[] { ParentDocument };
-            return groupings.ToList();
-        }
         public void Dispose()
         {
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;

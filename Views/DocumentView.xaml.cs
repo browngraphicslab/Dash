@@ -44,7 +44,6 @@ namespace Dash
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
-        bool _ptrIn;
         bool _multiSelected;
 
         /// <summary>
@@ -87,16 +86,37 @@ namespace Dash
 
             _bindRenderTransformToken = RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
+            void updateBindings(object sender, DependencyProperty dp)
+            {
+                var doc = ViewModel?.LayoutDocument;
+                var binding =  !BindRenderTransform || doc == null ? null :
+                        new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
+                                                               new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
+                        Converter = new TransformGroupMultiConverter(),
+                        Mode = BindingMode.OneWay
+                    };
+                this.AddFieldBinding(RenderTransformProperty, binding);
+
+                // binds the display title of the document to the back end representation
+                // TODO: shouldn't this be covered by binding
+                ViewModel?.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
+            }
+
             Loaded += (sender, e) =>
             {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
             };
-            this.Drop += OnDrop;
-
+            
+            void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e) { ViewModel.DecorationState = false; }
+            void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
+            {
+                ViewModel.DecorationState = ViewModel?.Undecorated == false;
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            }
             PointerEntered += DocumentView_PointerEntered;
-            PointerExited += DocumentView_PointerExited;
-            AddHandler(TappedEvent, new TappedEventHandler(OnTapped), true);
+            PointerExited  += DocumentView_PointerExited;
+            AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);
 
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
@@ -107,23 +127,22 @@ namespace Dash
             {
                 if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) !=
                     CoreVirtualKeyStates.Down)
-                {  // if dragger is dragged, then ignore any pointer exit/enter events which will change the visibility of the dragger
+                {  // if dragger is dragged, then ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
-                    PointerEntered -= DocumentView_PointerEntered;
                     PointerExited -= DocumentView_PointerExited;
                 }
             };
-            DraggerButton.PointerReleased += (object s, PointerRoutedEventArgs args) =>
-            {
-                PointerEntered -= DocumentView_PointerEntered;
+            void restorePointerTracking() {
+                ViewModel.DecorationState = DraggerButton.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
-                PointerEntered += DocumentView_PointerEntered;
                 PointerExited += DocumentView_PointerExited;
             };
-            DraggerButton.PointerPressed += (object s, PointerRoutedEventArgs args) =>
+            DraggerButton.ManipulationCompleted += (s, e) => restorePointerTracking();
+            DraggerButton.PointerReleased += (s, e) => restorePointerTracking();
+            DraggerButton.PointerPressed += (s, e) =>
             {
                 ManipulationMode = ManipulationModes.None;
-                args.Handled = !args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
             };
 
             // setup OperatorEllipse 
@@ -190,11 +209,11 @@ namespace Dash
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
             var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
 
-            if (f1State.HasFlag(CoreVirtualKeyStates.Down) && _ptrIn)
+            if (f1State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
             {
                 ShowLocalContext(true);
             }
-            if (f2State.HasFlag(CoreVirtualKeyStates.Down) && _ptrIn)
+            if (f2State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
             {
                 ShowSelectedContext();
             }
@@ -304,7 +323,7 @@ namespace Dash
             {
                 if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
-                var context = ViewModel.DocumentController
+                var context = ViewModel.DataDocument
                     .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext();
                 if (context == null) return;
                 ViewModel.SetHasTitle(true);
@@ -329,8 +348,8 @@ namespace Dash
                 {
                     ShowSelectedContext(true);
                 }
-                ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
-                ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
+                ViewModel.DataDocument.RemoveFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
+                ViewModel.DataDocument.AddFieldUpdatedListener(KeyStore.SelectedSchemaRow, OnSelectedSchemaRowUpdated);
             }
         }
 
@@ -351,77 +370,6 @@ namespace Dash
             }
         }
 
-        // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            ToggleSelectionBorderAndChrome(false);
-
-            _ptrIn = false;
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-            if (f1State.HasFlag(CoreVirtualKeyStates.None)) ShowLocalContext(false);
-        }
-
-        // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            ToggleSelectionBorderAndChrome(true);
-            
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-
-            _ptrIn = true;
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-            if (f1State.HasFlag(CoreVirtualKeyStates.Down)) ShowLocalContext(true);
-            if (f2State.HasFlag(CoreVirtualKeyStates.Down)) ShowSelectedContext(); // TODO show selected row
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-                e.Handled = true;
-            ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-        }
-
-        /// <summary>
-        /// Brings the element to the front of its containing parent canvas.
-        /// </summary>
-        public void ToFront()
-        {
-            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
-                return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-        }
-
-        void updateBindings(object sender, DependencyProperty dp)
-        {
-            if (BindRenderTransform && ViewModel != null)
-            {
-                var doc = ViewModel?.LayoutDocument;
-                if (doc == null)
-                {
-                    Debug.Fail("The view model should not be null at this point");
-                }
-                var binding = new FieldMultiBinding<MatrixTransform>(
-                    new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
-                    new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey))
-                {
-                    Converter = new TransformGroupMultiConverter(),
-                    Mode = BindingMode.OneWay
-                };
-                this.AddFieldBinding(RenderTransformProperty, binding);
-            }
-            else
-            {
-                this.AddFieldBinding(RenderTransformProperty, null);
-            }
-
-            // binds the display title of the document to the back end representation
-            // TODO: shouldn't this be covered by binding
-            ViewModel?.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
-        }
-
         #region Xaml Styling Methods (used by operator/collection view)
 
         /// <summary>
@@ -430,16 +378,12 @@ namespace Dash
         /// </summary>
         public void StyleOperator(double width, string title)
         {
-            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
-            //xGradientOverlay.Margin = new Thickness(width, 0, width, 0);
-            //xShadowTarget.Margin = new Thickness(width, 0, width, 0);
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             if (ParentCollection != null)
             {
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
         }
 
         /// <summary>
@@ -461,10 +405,7 @@ namespace Dash
         /// Applies custom override styles to the KeyValuePane view. 
         /// width - the width of a single link node (generally App.xaml defines this, "InputHandleWidth")
         /// </summary>
-        public void StyleKeyValuePane()
-        {
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-        }
+        public void StyleKeyValuePane() { }
 
         #endregion
 
@@ -475,50 +416,8 @@ namespace Dash
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
-            //ToggleGroupSelectionBorderColor(true);
-            var marqueeDocs = GetMarqueeDocuments();
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.ViewModel?.TransformDelta(delta); 
-            else
-                ViewModel?.TransformDelta(delta);
-        }
-
-        /// <summary>
-        /// Resizes the CollectionView according to the increments in width and height. 
-        /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
-        /// the Grid must change size to accomodate the height of the ListView.
-        /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        Size Resize(double dx = 0, double dy = 0)
-        {
-            if (ViewModel != null)
-            {
-                Debug.Assert(ViewModel != null, "ViewModel != null");
-                Debug.Assert(ViewModel.Width != double.NaN);
-                Debug.Assert(ViewModel.Height != double.NaN);
-                ViewModel.Width = Math.Max(ViewModel.Width + dx, MinWidth);
-                ViewModel.Height = Math.Max(ViewModel.Height + dy, MinHeight);
-                // should we allow documents with NaN's for width & height to be resized?
-                return new Size(ViewModel.Width, ViewModel.Height);
-            }
-            return new Size();
-        }
-        
-        /// <summary>
-        /// Resizes the document while keeping its original width/height ratio.
-        /// </summary>
-        /// <param name="e"></param>
-        public void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
-        {
-            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-            var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-            var curScale = ViewModel.Scale;
-            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-            ViewModel.Scale = new Point(scale, scale);
+            foreach (var doc in GetMarqueeDocuments())
+                doc.ViewModel?.TransformDelta(delta); 
         }
 
         /// <summary>
@@ -529,6 +428,42 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            /// <summary>
+            /// Resizes the CollectionView according to the increments in width and height. 
+            /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
+            /// the Grid must change size to accomodate the height of the ListView.
+            /// </summary>
+            /// <param name="dx"></param>
+            /// <param name="dy"></param>
+            Size Resize(double dx = 0, double dy = 0)
+            {
+                if (ViewModel != null)
+                {
+                    Debug.Assert(ViewModel != null, "ViewModel != null");
+                    Debug.Assert(ViewModel.Width != double.NaN);
+                    Debug.Assert(ViewModel.Height != double.NaN);
+                    ViewModel.Width = Math.Max(ViewModel.Width + dx, MinWidth);
+                    ViewModel.Height = Math.Max(ViewModel.Height + dy, MinHeight);
+                    // should we allow documents with NaN's for width & height to be resized?
+                    return new Size(ViewModel.Width, ViewModel.Height);
+                }
+                return new Size();
+            }
+
+            /// <summary>
+            /// Resizes the document while keeping its original width/height ratio.
+            /// </summary>
+            /// <param name="e"></param>
+            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
+            {
+                var curScale = ViewModel.Scale;
+                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
+                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
+                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
+                ViewModel.Scale = new Point(scale, scale);
+            }
             if ((Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) ==
                    CoreVirtualKeyStates.Down)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
@@ -568,6 +503,17 @@ namespace Dash
         // Controls functionality for the Right-click context menu
         #region Menu
 
+
+        /// <summary>
+        /// Brings the element to the front of its containing parent canvas.
+        /// </summary>
+        public void ToFront()
+        {
+            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
+                return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
         public void ForceRightTapContextMenu()
         {
             var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
@@ -627,8 +573,26 @@ namespace Dash
         #endregion
 
         #region Activation
-        
-        public async void OnTapped(object sender, TappedRoutedEventArgs e)
+
+        public void MarqueeSelectBorder(bool selected)
+        {
+            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetContentGrid.BorderBrush = selected ?
+                GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+        }
+        /// <summary>
+        /// Returns the currently selected documents, or just this document if nothing is selected
+        /// </summary>
+        List<DocumentView> GetMarqueeDocuments()
+        {
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
+            if (marqueeDocs != null && marqueeDocs.Count > 0)
+                return marqueeDocs;
+            return new List<DocumentView>(new DocumentView[] { this } );
+        }
+
+        #endregion
+        public async void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
@@ -642,54 +606,9 @@ namespace Dash
             }
         }
 
-        public void MarqueeSelectBorder(bool selected)
-        {
-            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetContentGrid.BorderBrush = selected ?
-                GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
-        }
-        /// <summary>
-        /// Checks if there are documents selected by marquee - if so, return the documents; else, return null 
-        /// </summary>
-        List<DocumentView> GetMarqueeDocuments()
-        {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
-            if (marqueeDocs == null || marqueeDocs.Count == 0) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Count > 0)
-                return marqueeDocs;
-            return null;
-        }
-
-        /// <summary>
-        /// Sets whther the selection border is on, all other chrome can be turned off or on independently
-        /// so that we don't see huge amounts of chrome when we hover over groups
-        /// </summary>
-        /// <param name="isBorderOn"></param>
-        /// <param name="isOtherChromeVisible"></param>
-        private void ToggleSelectionBorderAndChrome(bool isBorderOn, bool isOtherChromeVisible = true)
-        {
-            OperatorEllipseUnhighlight.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
-            xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
-                ? (SolidColorBrush)Application.Current.Resources["TitleText"]
-                : new SolidColorBrush(Colors.Transparent);
-            if (OperatorEllipseUnhighlight.Visibility == Visibility.Collapsed)
-                OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
-
-        }
-        
-        #endregion
-
-        private void DocumentView_OnDragOver(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                e.AcceptedOperation = (DataPackageOperation.Copy | DataPackageOperation.Move) & (e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation);
-            }
-        }
-
         private async void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            this.OnTapped(sender, new TappedRoutedEventArgs());
+            this.DocumentView_OnTapped(sender, new TappedRoutedEventArgs());
             var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
             if (text != null) 
                 await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
@@ -708,11 +627,9 @@ namespace Dash
         }
 
         #region UtilityFuncions
-        public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            var marqueeGroup = GetMarqueeDocuments();
-            if (marqueeGroup != null && marqueeGroup.Count > 0)
-                grouped = marqueeGroup; 
+            var grouped = GetMarqueeDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             if (collection == null || ViewModel == null)
@@ -785,38 +702,25 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            var marqueeDocs = GetMarqueeDocuments();
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.CopyDocument();
-            else CopyDocument();
+            foreach (var doc in GetMarqueeDocuments())
+                doc.CopyDocument();
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            var marqueeDocs = GetMarqueeDocuments();
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.CopyViewDocument();
-            else CopyViewDocument();
+            foreach (var doc in GetMarqueeDocuments())
+                doc.CopyViewDocument();
         }
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            //check if there are any documents selected in the marquee - if so, delete all the docs selected and else delete itself 
-            var marqueeDocs = GetMarqueeDocuments(); 
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.DeleteDocument();
-            else DeleteDocument(); 
+            foreach (var doc in GetMarqueeDocuments())
+                doc.DeleteDocument();
         }
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            var marqueeDocs = GetMarqueeDocuments();
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.KeyValueViewDocument();
-            else KeyValueViewDocument();
+            foreach (var doc in GetMarqueeDocuments())
+                doc.KeyValueViewDocument();
         }
-        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetPreviewDocument(), null); }
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(), null); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }

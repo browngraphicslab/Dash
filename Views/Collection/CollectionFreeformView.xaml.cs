@@ -710,7 +710,6 @@ namespace Dash
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                 //(args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
                  !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
@@ -723,6 +722,8 @@ namespace Dash
                     doc.MarqueeSelectBorder(false);
                 }
                 _marqueeSelectedDocs.Clear();
+                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+                args.Handled = true;
             }
         }
 

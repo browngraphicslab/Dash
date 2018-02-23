@@ -204,7 +204,10 @@ namespace Dash
                 case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
                 case "move": parent.DocumentView_PointerEntered(null, null);
                              (web.Tag as ManipulationControlHelper)?.pointerMoved(web, null); break;
-                case "leave": parent.DocumentView_PointerExited(null, null); break;
+                case "leave": { if (parent.IsPointerOver())
+                                    parent.DocumentView_PointerExited(null, null);
+                                break;
+                              }
                 case "up":   (web.Tag as ManipulationControlHelper)?.pointerReleased(web, null);
                              web.Tag = null; break;
             }

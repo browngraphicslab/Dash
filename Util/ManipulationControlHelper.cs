@@ -106,12 +106,10 @@ namespace Dash
             var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
-            manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translation, 1.0f, 
-                        manipulationDocumentTarget.ManipulationControls.Grouping);
+            manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translation, 1.0f);
 
             //Only preview a snap if the grouping only includes the current node. 
-            if (manipulationDocumentTarget.ManipulationControls.Grouping == null || manipulationDocumentTarget.ManipulationControls.Grouping.Count < 2)
-                manipulationDocumentTarget.ManipulationControls.Snap(true);
+            manipulationDocumentTarget.ManipulationControls.Snap(true);
 
             if (e != null)
                 e.Handled = true;
@@ -137,7 +135,7 @@ namespace Dash
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
             if (dist < 100 && _numMovements < 10)
             {
-                manipulationDocumentTarget?.OnTapped(null, new TappedRoutedEventArgs());
+                manipulationDocumentTarget?.DocumentView_OnTapped(null, new TappedRoutedEventArgs());
                 if (e == null)  // this is only true for WebBox's.  In this case, we need to generate a rightTap on the WebBox event element to create its context menu even if the manipulation document tareet was a higher level collection
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
             }
