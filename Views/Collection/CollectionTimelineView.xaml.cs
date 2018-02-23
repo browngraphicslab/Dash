@@ -25,6 +25,8 @@ namespace Dash
 
     public class TimelineElementViewModel : ViewModelBase
     {
+        #region variables
+
         private DocumentViewModel _documentViewModel;
         private DocumentViewModel _displayViewModel;
         private DocumentContext _documentContext;
@@ -47,7 +49,16 @@ namespace Dash
             set => SetProperty(ref _documentContext, value);
         }
 
+        public double TitleY;
+        public double PositionX;
 
+        public enum DisplayType { Above, Below, Hidden};
+
+        public DisplayType CurrDisplay;
+
+        #endregion
+
+        #region constructors
         public TimelineElementViewModel()
         {
         }
@@ -57,6 +68,7 @@ namespace Dash
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
         }
+        #endregion
     }
 
 
@@ -66,14 +78,28 @@ namespace Dash
 
         private readonly Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler> _docViewModelToHandler =
             new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
-
-
+        
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
 
-        public double CurrentXPosition { get; set; }
+        private double CurrentXPosition;
+        private double CurrentTopY;
+
 
         public List<double> DisplayedXPositions { get; private set; }
 
+        public TimelineMetadata Metadata { get; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
+        public event Action MetadataUpdated;
+
+        public static double LastDisplayedPosition = 0;
+
+        private double _minGap = 30;
+        private double _maxGap = 300;
+
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
 
         public CollectionTimelineView()
         {
@@ -93,48 +119,32 @@ namespace Dash
             Loaded += CollectionTimelineView_Loaded;
         }
 
+
+
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
         {
-            CollectionTimelineView_OnSizeChanged(null, null);
-        }
-
-        public TimelineMetadata Metadata { get; }
-        public BaseCollectionViewModel ViewModel { get; private set; }
-        public event Action MetadataUpdated;
-
-
-        private void UpdateMetadataMinAndMax()
-        {
-            try
-            {
-                
-                
-                Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
-                Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
-                
-                MetadataUpdated?.Invoke();
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
-        }
-
-        private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            DisplayedXPositions = new List<double>();
             SetTimelineFormatting();
         }
 
+        private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {            
+            SetTimelineFormatting();
+        }
+
+        /// <summary>
+        /// Formats the timeline based on current size
+        /// </summary>
         private void SetTimelineFormatting()
         {
+            DisplayedXPositions = new List<double>();
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight - 80;
-           // Canvas.SetTop(xItemsControl, 17 - ActualHeight / 2);
 
-            CurrentXPosition = 0;
+            LayoutTimelineElements();
+
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
+            
             MetadataUpdated?.Invoke();
 
             var width = CurrentXPosition + 100;
@@ -147,11 +157,119 @@ namespace Dash
             SetTimelineWidth(width);
         }
 
+
+
+        #region Timeline Element Positioning
+
+        /// <summary>
+        /// Spaces out all the timeline elements
+        /// </summary>
+        private void LayoutTimelineElements()
+        {
+            CurrentXPosition = 0;
+            CurrentTopY = 0;
+            foreach (var element in _contextList)
+            {
+                PositionElement(element);
+            }
+        }
+
+        /// <summary>
+        /// Positions a specific element along the timeline
+        /// </summary>
+        /// <param name="element"></param>
+        private void PositionElement(TimelineElementViewModel element)
+        {
+            var x = CalculateXPosition(element, Metadata); //ehh fix
+            var gapDistance = x - CurrentXPosition;
+
+            if (gapDistance < _minGap)
+            {
+                x = CurrentXPosition + _minGap;
+            }
+            else if (gapDistance > _maxGap)
+            {
+                x = CurrentXPosition + _maxGap;
+            }
+
+            CurrentXPosition = x;
+            element.PositionX = x;
+
+
+            if (DisplayElement(x))
+            {
+                LastDisplayedPosition = x;
+                element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
+                DisplayedXPositions.Add(x);
+                
+            }
+            else
+            {
+                element.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
+            }
+
+            element.TitleY = CurrentTopY;
+            CurrentTopY += 40;
+            if (CurrentTopY > 200) CurrentTopY = 0;
+        }
+
+        /// <summary>
+        /// Finds the expected x position of the element from the timestamp
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="metadata"></param>
+        /// <returns></returns>
+        private double CalculateXPosition(TimelineElementViewModel context, TimelineMetadata metadata)
+        {
+            var totalTime = metadata.MaxTime - metadata.MinTime;
+            Debug.Assert(totalTime != 0);
+            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - metadata.MinTime) / totalTime;
+            var offset = normOffset * (metadata.ActualWidth - 2 * metadata.LeftRightMargin) + metadata.LeftRightMargin;
+            return offset;
+        }
+
+        /// <summary>
+        /// Returns whether or not to display a timeline element
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        private bool DisplayElement(double x)
+        {
+            foreach (var pos in DisplayedXPositions)
+            {
+                if (Math.Abs(x - pos) < 200)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        #endregion
+
+    
+
         private void SetTimelineWidth(double width)
         {
             xHorizontalLine.Width = width;
             Canvas.SetLeft(xVerticalLineRight, width + 80);
             xScrollViewCanvas.Width = width;
+        }
+
+
+        private void UpdateMetadataMinAndMax()
+        {
+            try
+            {
+                Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
+                Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
+
+                MetadataUpdated?.Invoke();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
 
         #region ContextManagement
