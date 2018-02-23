@@ -454,6 +454,7 @@ namespace Dash
 
         private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
             foreach (var m in e.Items)
             {
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
