@@ -23,7 +23,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         private DocumentController _parentDocument;
 
@@ -409,23 +409,11 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
         }
 
         #endregion
@@ -490,11 +478,20 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
+                    new DragCollectionFieldModel(
+                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
+                    collectionReference,
                     viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB));
+                    CollectionView.CollectionViewType.DB
+                    ));
             }
+        }
+
+        private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+           this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
     }
 }

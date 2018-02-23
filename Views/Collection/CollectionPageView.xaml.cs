@@ -26,7 +26,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionPageView : SelectionElement, ICollectionView
+    public sealed partial class CollectionPageView : ICollectionView
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
         //private ScrollViewer _scrollViewer;
@@ -94,11 +94,9 @@ namespace Dash
                     PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
 
                     DocumentController thumbnailImageViewDoc = null;
-                    var richText = pageDoc.GetDataDocument(null).GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
-                    var docText = pageDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ReadableString ?? null;
-                    if (docText != null)
+                    if (!string.IsNullOrEmpty(pageDoc.Title))
                     {
-                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText.Substring(0, Math.Min(100, docText.Length))).Document;
+                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
                     }
                     else
                     {
@@ -131,22 +129,22 @@ namespace Dash
             if (captionKey != null && CurPage != null)
             {
 
-                var bodyDoc = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
+                var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
 
                 var currPageBinding = new FieldBinding<FieldControllerBase>()
                 {
                     Mode = BindingMode.TwoWay,
-                    Document = CurPage.DocumentController.GetDataDocument(null),
+                    Document = CurPage.DataDocument,
                     Key = CaptionKey,
                     Converter = new ObjectToStringConverter()
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
 
-                if (bodyDoc?.Equals(CurPage.DocumentController.GetDataDocument(null)) == false)
+                if (bodyDoc?.Equals(CurPage.DataDocument) == false)
                     bodyDoc?.SetField(CaptionKey,
-                        new DocumentReferenceController(CurPage.DocumentController.GetDataDocument(null).GetId(),
+                        new DocumentReferenceController(CurPage.DataDocument.GetId(),
                             CaptionKey), true);
 
                 xDocTitle.Height = 50;
@@ -160,7 +158,7 @@ namespace Dash
                 DisplayString = keyasgn;
                 DisplayKey = documentKey;
                 xDocView.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                var data = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField(DisplayKey,null);
+                var data = CurPage.DataDocument.GetDereferencedField(DisplayKey,null);
                 if (!string.IsNullOrEmpty(DisplayString))
                 {
                     var keysToReplace = new Regex("#[a-z0-9A-Z_]*").Matches(DisplayString);
@@ -170,12 +168,12 @@ namespace Dash
                         var k = KeyController.LookupKeyByName(keyToReplace.ToString().Substring(1));
                         if (k != null)
                         {
-                            var value = CurPage.DocumentController.GetDataDocument(null).GetDereferencedField<TextController>(k, null)?.Data;
+                            var value = CurPage.DataDocument.GetDereferencedField<TextController>(k, null)?.Data;
                             if (value != null)
                                 replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                         }
                     }
-                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DocumentController.GetDataDocument(null));
+                    var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DataDocument);
                     if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
                     {
                         var imgView = img.GetViewCopy();
@@ -186,7 +184,7 @@ namespace Dash
                 }
                 if (data != null)
                 {
-                    CurPage.DocumentController.GetDataDocument(null).SetField(DisplayKey, data, true);
+                    CurPage.DataDocument.SetField(DisplayKey, data, true);
                     var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
                     xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
@@ -204,7 +202,7 @@ namespace Dash
                 var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.OneWay,
-                    Document = value.DocumentController.GetDataDocument(null),
+                    Document = value.DataDocument,
                     Key = KeyStore.TitleKey,
                     Tag = "CurPage Title Binding"
                 };
@@ -217,16 +215,7 @@ namespace Dash
 
                 SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
-
-
-                var ind = PageDocumentViewModels.IndexOf(CurPage);
-                if (ind >= 0 && ViewModel.ThumbDocumentViewModels.Count > ind)
-                {
-                    var thumb = ViewModel.ThumbDocumentViewModels[ind];
-                    foreach (var t in ViewModel.ThumbDocumentViewModels)
-                        t.SetSelected(null, false);
-                    thumb.SetSelected(null, true);
-                }
+                
                 var cview = (CurPage?.Content as CollectionView);
                 if (cview != null)
                 {
@@ -276,14 +265,7 @@ namespace Dash
                 _element.Loaded -= _element_Loaded;
             }
         }
-
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
 
@@ -315,7 +297,7 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -340,7 +322,7 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<RichTextController>(Dash.NoteDocuments.RichTextNote.RTFieldKey, null)?.Data?.ReadableString;
+            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -360,23 +342,6 @@ namespace Dash
         public void SetDropIndicationFill(Brush fill)
         {
         }
-        #endregion
-
-        #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-        }
-
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-            Focus(FocusState.Keyboard);
-        }
-
         #endregion
 
         private void PrevButton_Click(object sender, RoutedEventArgs e)
@@ -490,7 +455,10 @@ namespace Dash
         private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             foreach (var m in e.Items)
-                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((m as DocumentViewModel).DocumentController, true);
+            {
+                var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
+                e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
+            }
         }
     }
 }

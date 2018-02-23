@@ -44,7 +44,7 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             throw new NotImplementedException("We don't have access to the data document here");
         }
@@ -54,10 +54,9 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <param name="context"></param>
-        /// <param name="isInterfaceBuilderLayout"></param>
         /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
             var stack = new RelativePanel();
             var stackFieldData =
@@ -72,7 +71,7 @@ namespace Dash
                 FrameworkElement prev = null;
                 foreach (var stackDoc in stackFieldData.GetElements())
                 {
-                    var item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    var item = stackDoc.MakeViewUI(context);
                     if (item != null)
                     {
                         stack.Children.Add(item);
@@ -107,16 +106,13 @@ namespace Dash
             }
             if (horizontal)
             {
-                stack.Height = docController.GetHeightField(context).Data;
+                stack.Height = docController.GetHeightField(context)?.Data ?? stack.Height; ;
             } else
             {
-                stack.Width = docController.GetWidthField(context).Data;
+                stack.Width = docController.GetWidthField(context)?.Data ?? stack.Width;
             }
             SetupBindings(stack, docController, context);
-            if (isInterfaceBuilderLayout)
-            {
-                return new SelectableContainer(stack, docController, dataDocument);
-            }
+
             return stack;
         }
     }

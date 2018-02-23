@@ -24,7 +24,7 @@ namespace Dash
 
         static public void RemoveGroup(CollectionView parentCollection, DocumentController group)
         {
-            var groupDataDocument = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+            var groupDataDocument = parentCollection.ParentDocument.ViewModel.DataDocument;
             var groupsList = groupDataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
             if (groupsList != null)
             {
@@ -42,7 +42,7 @@ namespace Dash
             {
                 var docsToReassign = groupToSplit.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null).TypedData.Select(d => parentCollection.GetDocumentViewModel(d)).ToList();
 
-                var groupsList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var groupsList = parentCollection.ParentDocument.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
                 groupsList.Remove(groupToSplit);
                 
                 var groupings = new List<DocumentViewModel>();
@@ -52,7 +52,7 @@ namespace Dash
                         groupings = SetupGroupings(dv, parentCollection, true);
                 }
 
-                foreach (var dv in docsToReassign.Where((d)=>d != null && !d.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType)).ToList())
+                foreach (var dv in docsToReassign.Where((d)=>d != null && !d.LayoutDocument.DocumentType.Equals(BackgroundBox.DocumentType)).ToList())
                 {
                     if (parentCollection.GetDocumentGroup(dv.DocumentController) == null)
                         dv.BackgroundBrush = new SolidColorBrush(Colors.Transparent);
@@ -87,7 +87,7 @@ namespace Dash
                 if (forceUpdate) // recompute groups if forceUpdate is set, otherwise use the groups they way they were
                 {
                     var groupsList = GetGroupsList(parentCollection);
-                    var groupDataDocument = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+                    var groupDataDocument = parentCollection.ParentDocument.ViewModel.DataDocument;
                     var otherGroups = groupsList.Data.Where((gd) => !gd.Equals(dragGroupDocument)).Select((gd) => gd as DocumentController).ToList();
                     var groups = AddConnected(parentCollection, groupedViews, dragGroupDocument, otherGroups);
                     groupDataDocument.SetField(KeyStore.GroupingKey, new ListController<DocumentController>(groups ?? groupsList.TypedData), true);
@@ -115,8 +115,10 @@ namespace Dash
         {
             if (collectionView.ParentDocument == null)
                 return new ListController<DocumentController>(new List<DocumentController>());
-            var groupDataDoc = collectionView.ParentDocument.ViewModel.DocumentController.GetDataDocument(null);
+            var groupDataDoc = collectionView.ParentDocument.ViewModel.DataDocument;
             var groupsList = groupDataDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            if (groupsList == null)
+                return new ListController<DocumentController>(new List<DocumentController>());
             var addedItems = new List<DocumentController>();
             foreach (var d in collectionView.ViewModel.DocumentViewModels)
                 if (collectionView.GetDocumentGroup(d.DocumentController) == null && !groupsList.Data.Contains(d.DocumentController))
@@ -147,7 +149,7 @@ namespace Dash
         
         static public List<DocumentController> GetGroupDocumentsList(CollectionView parentCollection, DocumentController doc, bool onlyGroups = false)
         {
-            var groupList = parentCollection.ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+            var groupList = parentCollection.ParentDocument.ViewModel.DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
             
             foreach (var g in groupList.TypedData)
                 if (g.Equals(doc))

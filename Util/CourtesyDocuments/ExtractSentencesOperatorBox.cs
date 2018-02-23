@@ -24,17 +24,14 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null, isInterfaceBuilderLayout);
+            return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context,
-            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn, bool isInterfaceBuilder)
+        public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
-            return OperatorBox.MakeOperatorView(documentController, context, keysToFrameworkElementsIn,
-                isInterfaceBuilder, () => new ExtractSentencesOperatorView());
+            return OperatorBox.MakeOperatorView(documentController, context, () => new ExtractSentencesOperatorView());
         }
     }
 }

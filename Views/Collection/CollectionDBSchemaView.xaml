@@ -1,4 +1,4 @@
-﻿<local:SelectionElement
+﻿<UserControl
     x:Class="Dash.CollectionDBSchemaView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,35 +27,28 @@
         </Grid.RowDefinitions>
         <Border Visibility="Collapsed" x:Name="HeaderBorderThickness" BorderThickness="1" />
         <!--grid wrapping the headers for formatting-->
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="30" />
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Column="1" 
+        <ListView x:Name="xHeaderView" x:FieldModifier="public" Grid.Row="0" 
                       CanDragItems="True"
                       CanReorderItems="True"
                       AllowDrop="True"
                       DragItemsStarting="xHeaderView_DragItemsStarting"
-                      Style="{StaticResource xSchemaListView}"
-                      
+                      Style="{StaticResource xSchemaListView}" 
                       SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                       >
-                <!--header list-->
-                <ListView.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Horizontal" Margin="0"/>
-                    </ItemsPanelTemplate>
-                </ListView.ItemsPanel>
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
-                            <local:CollectionDBSchemaHeader DataContext="{Binding}" Height="40"/>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </Grid>
+            <!--header list-->
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Orientation="Horizontal" Margin="0"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="#20000000" BorderThickness="{Binding ElementName=HeaderBorderThickness,Path=BorderThickness}" CornerRadius="5" Background="Gray">
+                        <local:CollectionDBSchemaHeader DataContext="{Binding}" Height="40"/>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
         <!--records list-->
         <ListView x:Name="xRecordsView" Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
@@ -64,6 +57,7 @@
                   CanDragItems="True"
                   Height="100"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
+                  PointerPressed="xRecordsView_PointerPressed"  
                   Loaded="XRecordsView_OnLoaded"
                   DragItemsStarting="XRecordsView_OnDragItemsStarting">
             <ListView.ItemsPanel>
@@ -78,4 +72,4 @@
             </ListView.ItemTemplate>
         </ListView>
     </Grid>
-</local:SelectionElement>
+</UserControl>

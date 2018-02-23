@@ -26,7 +26,6 @@ namespace Dash
             AddOperator(() => new ConcatOperatorController(), "Concat");
             AddOperator(() => new DocumentAppendOperatorController(), "Append");
             AddOperator(() => new ImageOperatorController(), "UriToImage");
-            AddOperator(() => new FilterOperatorController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
             AddOperator(() => new CompoundOperatorController(), "Compound");
             AddOperator(() => new ExecuteHtmlJavaScriptController(), "HtmlScript", rfmc => new ExecuteHtmlOperatorBox(rfmc));
