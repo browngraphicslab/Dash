@@ -85,7 +85,7 @@ namespace Dash
 
         public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
         public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
-        
+
         public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
         public CollectionFreeformView()
@@ -180,14 +180,14 @@ namespace Dash
                     }
 
                     SetFreeformTransform(
-                        new MatrixTransform() {Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y)});
+                        new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
                 }
             }
         }
         public bool SuspendGroups = false;
 
         private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
+        { 
             if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
             {
                 DocumentViews = IterateDocumentViews().ToList();
@@ -238,6 +238,13 @@ namespace Dash
             xOuterGrid.PointerReleased += OnPointerReleased;
 
             MakePreviewTextbox();
+            
+            //make and add selectioncanvas 
+            SelectionCanvas = new Canvas();
+            Canvas.SetLeft(SelectionCanvas, -30000);
+            Canvas.SetTop(SelectionCanvas, -30000);
+            InkHostCanvas.Children.Add(SelectionCanvas);
+
             if (InkController != null)
             {
                 MakeInkCanvas();
@@ -626,7 +633,10 @@ namespace Dash
         private bool _multiSelect;
         private Point _marqueeAnchor;
         private bool _isSelecting;
-        
+
+        private List<DocumentView> _marqueeSelectedDocs = new List<DocumentView>();
+        public List<DocumentView> MarqueeSelectedDocs => _marqueeSelectedDocs;
+
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
@@ -652,7 +662,6 @@ namespace Dash
             if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
 
             if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
-
 
             var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
@@ -696,23 +705,27 @@ namespace Dash
             _marquee.Height = newHeight;
 
             args.Handled = true;
-
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-           if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                 //(args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
+                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 _marqueeAnchor = pos;
                 _isSelecting = true;
                 PreviewTextbox_LostFocus(null, null);
+                foreach (var doc in _marqueeSelectedDocs)
+                {
+                    doc.MarqueeSelectBorder(false);
+                }
+                _marqueeSelectedDocs.Clear();
             }
         }
-        
+
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -781,18 +794,21 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
 
-            var selectedDocs = DocsInMarquee(marquee);
+            _marqueeSelectedDocs = DocsInMarquee(marquee);
 
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            if (!IsSelectionEnabled && _marqueeSelectedDocs.Count > 0)
             {
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
                 parentView.MakeSelectionModeMultiple();
             }
+            foreach (var doc in _marqueeSelectedDocs)
+            {
+                doc.MarqueeSelectBorder(true);
+            }
         }
 
         #endregion
-
 
         #region DragAndDrop
 
@@ -852,7 +868,7 @@ namespace Dash
                 }
             }
         }
-        
+
         public void DeselectAll()
         {
             foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
@@ -888,7 +904,7 @@ namespace Dash
             ViewModel.CollectionViewOnDragEnter(sender, e);
 
         }
-        
+
         #endregion
 
         #region Ink
@@ -903,15 +919,11 @@ namespace Dash
         private void MakeInkCanvas()
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
-            SelectionCanvas = new Canvas();
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
             InkHostCanvas.Children.Add(XInkCanvas);
-            InkHostCanvas.Children.Add(SelectionCanvas);
         }
 
         private bool loadingPermanentTextbox;
