@@ -778,7 +778,7 @@ namespace Dash
                 var docs = xItemsControl.ItemsPanelRoot.Children;
                 foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null))
                 {
-                    var rect = documentView.TransformToVisual(this).TransformBounds(
+                    var rect = documentView.TransformToVisual(itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
