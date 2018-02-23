@@ -405,7 +405,6 @@ namespace Dash
             //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
             DraggerButton.PointerPressed += DraggerButton_PointerPressed;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-
             // Adds a function to tabmenu, which brings said DocumentView to focus 
             // this gets the hierarchical view of the document, clicking on this will shimmy over to this
 
@@ -526,6 +525,10 @@ namespace Dash
             var curScale = ViewModel.Scale;
             var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
             ViewModel.Scale = new Point(scale, scale);
+
+            //var deltaMax = Math.Max(e.Delta.Translation.X / ActualWidth, e.Delta.Translation.Y / ActualHeight);
+            //var scale = Math.Max(Math.Min(ViewModel.Scale.X * (1 + deltaMax), 5), 0.2);
+            //ViewModel.Scale = new Point(scale, scale);
         }
 
         /// <summary>
@@ -537,9 +540,9 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var proportionalScaling = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-
+            e.Handled = true;
             if (proportionalScaling)
-            {
+            {        
                 ProportionalResize(e);
             }
             else
