@@ -15,6 +15,7 @@ using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
@@ -62,9 +63,18 @@ namespace Dash
         /// <summary>
         /// A reference to the actual context preview
         /// </summary>
-        UIElement _localContextPreview;
-        UIElement _selectedContextPreview;
-    
+        private UIElement _localContextPreview;
+        private UIElement _selectedContextPreview;
+
+        private long _bindRenderTransformToken = -1;
+        public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
+            "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+
+        public bool BindRenderTransform
+        {
+            get { return (bool)GetValue(BindRenderTransformProperty); }
+            set { SetValue(BindRenderTransformProperty, value); }
+        }
 
         // == CONSTRUCTORs ==
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -77,6 +87,7 @@ namespace Dash
             InitializeComponent();
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+
 
             DataContextChanged += DocumentView_DataContextChanged;
             // set bounds
@@ -98,6 +109,30 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
 
             MenuFlyout = xMenuFlyout;
+        }
+
+        private void BindRenderTransformChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (BindRenderTransform)
+            {
+                var doc = ViewModel?.LayoutDocument;
+                if (doc == null)
+                {
+                    Debug.Fail("The view model should not be null at this point");
+                }
+                FieldMultiBinding<MatrixTransform> binding = new FieldMultiBinding<MatrixTransform>(
+                    new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
+                    new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey))
+                {
+                    Converter = new TransformGroupMultiConverter(),
+                    Mode = BindingMode.OneWay
+                };
+                this.AddFieldBinding(RenderTransformProperty, binding);
+            }
+            else
+            {
+                this.AddFieldBinding(RenderTransformProperty, null);
+            }
         }
 
         private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
@@ -366,7 +401,7 @@ namespace Dash
                 return;
             }
         }
-        
+
         private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
@@ -391,7 +426,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
         }
 
         /// <summary>
@@ -456,9 +491,9 @@ namespace Dash
             var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
             var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
                 new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-            var gt = ViewModel.GroupTransform;
-            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * gt.ScaleAmount.X, 5), 0.2);
-            ViewModel.GroupTransform = new TransformGroupData(gt.Translate, new Point(scale, scale));
+            var curScale = ViewModel.Scale;
+            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
+            ViewModel.Scale = new Point(scale, scale);
         }
 
         /// <summary>
@@ -508,8 +543,14 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel = DataContext as DocumentViewModel;
+            if (_bindRenderTransformToken != -1)
+            {
+                UnregisterPropertyChangedCallback(BindRenderTransformProperty, _bindRenderTransformToken);
+            }
             if (ViewModel != null)
             {
+                _bindRenderTransformToken = RegisterPropertyChangedCallback(BindRenderTransformProperty, BindRenderTransformChanged);
+                BindRenderTransformChanged(this, BindRenderTransformProperty);
                 // binds the display title of the document to the back end representation
                 ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
@@ -529,8 +570,7 @@ namespace Dash
 
                 if (addTextBox)
                 {
-                    (ParentCollection.CurrentView as CollectionFreeformView)?.
-                        RenderPreviewTextbox(ViewModel.GroupTransform.Translate);
+                    (ParentCollection.CurrentView as CollectionFreeformView)?.RenderPreviewTextbox(ViewModel.Position);
                 }
             }
         }
@@ -587,7 +627,7 @@ namespace Dash
                 }
             }
         }
-        
+
         /// <summary>
         /// Sets whther the selection border is on, all other chrome can be turned off or on independently
         /// so that we don't see huge amounts of chrome when we hover over groups
@@ -602,33 +642,6 @@ namespace Dash
                 : new SolidColorBrush(Colors.Transparent);
             if (OperatorEllipseUnhighlight.Visibility == Visibility.Collapsed)
                 OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
-        }
-        
-        public List<DocumentView> AddConnected(List<DocumentView> grouped, List<DocumentView> documentViews)
-        {
-            grouped = grouped ?? new List<DocumentView>();
-            var docRootBounds = ViewModel.GroupingBounds;
-            foreach (var doc in documentViews)
-            {
-                var docBounds = doc.ViewModel.GroupingBounds;
-                docBounds.Intersect(docRootBounds);
-                if (docBounds == Rect.Empty || grouped.Contains(doc)) continue;
-                grouped.Add(doc);
-                doc.AddConnected(grouped, documentViews);
-            }
-
-            /*
-            var ordered = grouped.Where(d => d != null && (d.ViewModel.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController) != null).Select(doc => doc.ViewModel).OrderBy(vm => (vm.DocumentController.GetField(KeyStore.PositionFieldKey) as PointController).Data.Y).ToArray();
-            var length = ordered.Length;
-            for (int i = 1; i < length; i++)
-            {
-                ordered[i].GroupTransform = new TransformGroupData(
-                    new Point(ordered[i].GroupTransform.Translate.X, ordered[i - 1].GroupTransform.Translate.Y + ordered[i - 1].Height + 5)
-                    , ordered[i].GroupTransform.ScaleCenter
-                    , ordered[i].GroupTransform.ScaleAmount);
-            }*/
-            
-            return grouped;
         }
         
         #endregion
@@ -659,7 +672,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        
+
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
@@ -762,7 +775,7 @@ namespace Dash
                     return;
                 }
             }
-            
+
             collection.LoadNewActiveTextBox("", where, true);
         }
 

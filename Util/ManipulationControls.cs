@@ -146,9 +146,7 @@ namespace Dash
             //var readjustmentY = Math.Min(0, newCollectionBoundingBox.Y - collection.ViewModel.GroupTransform.Translate.Y);
 
             //Translate and resize the collection using bounding box
-            var currentScaleAmount = collection.ViewModel.GroupTransform.ScaleAmount;
-            var translate = new Point(newCollectionBoundingBox.X, newCollectionBoundingBox.Y);
-            collection.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
+            collection.ViewModel.Position = new Point(newCollectionBoundingBox.X, newCollectionBoundingBox.Y);
             collection.ViewModel.Width = newCollectionBoundingBox.Width;
             collection.ViewModel.Height = newCollectionBoundingBox.Height;
 
@@ -173,7 +171,7 @@ namespace Dash
 
 
             //Readjust the translates so that they are relative to the bounding box
-            currentDoc.ViewModel.GroupTransform = new TransformGroupData(new Point(currentDoc.ViewModel.Bounds.X - newCollectionBoundingBox.X, currentDoc.ViewModel.Bounds.Y - newCollectionBoundingBox.Y), currentScaleAmount);
+            currentDoc.ViewModel.Position = new Point(currentDoc.ViewModel.Bounds.X - newCollectionBoundingBox.X, currentDoc.ViewModel.Bounds.Y - newCollectionBoundingBox.Y);
 
         }
 
@@ -189,20 +187,16 @@ namespace Dash
             }
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
-            var currentScaleAmount = currentDoc.ViewModel.GroupTransform.ScaleAmount;
 
-            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
-                documentView.ViewModel.GroupTransform.Translate.Y);
-            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
-                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+            var topLeftPoint = documentView.ViewModel.Position;
+            var bottomRightPoint = new Point(documentView.ViewModel.XPos + documentView.ActualWidth,
+                documentView.ViewModel.YPos + documentView.ActualHeight);
 
             var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currentDoc.ActualWidth, currentDoc.ActualHeight);
-            var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
-            currentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
+            currentDoc.ViewModel.Position = new Point(newBoundingBox.X, newBoundingBox.Y);
             currentDoc.ViewModel.Width = newBoundingBox.Width;
             currentDoc.ViewModel.Height = newBoundingBox.Height;
         }
-
 
         private Rect? BoundingBox(DocumentViewModel doc1, DocumentViewModel doc2, double padding = 0)
         {

@@ -240,7 +240,7 @@ namespace Dash
             // using this as a setter for the transform massive hack - LM
             var _ = new DocumentViewModel(opController)
             {
-                GroupTransform = new TransformGroupData(Util.GetCollectionFreeFormPoint(mp, screenPoint), new Point(1, 1))
+                Position = Util.GetCollectionFreeFormPoint(mp, screenPoint)
             };
 
             if (opController != null)

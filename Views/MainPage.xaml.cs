@@ -297,8 +297,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
 
                     
 
@@ -331,8 +331,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
