@@ -33,6 +33,7 @@
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
+                     TextChanged="XRichEditBox_OnTextChanged"
                          >
             <!--FORMAT PROPERTIES TOOLTIP-->                          <!--Holding="XRichEditBox_OnHolding"-->
 

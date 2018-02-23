@@ -203,7 +203,7 @@ namespace Dash
         public void UpdateDocument()
         {
 
-            if (!this.IsInVisualTree())
+            if (!this.IsInVisualTree() || Text == null)
                 return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
@@ -570,7 +570,6 @@ namespace Dash
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
 
             _parentDocView.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            _parentDocView.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
@@ -580,10 +579,6 @@ namespace Dash
             MatchQuery(GetSelected());
         }
 
-        private void XOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            UpdateDocument();
-        }
 
 
         /// <summary>
@@ -600,7 +595,6 @@ namespace Dash
             this.xRichEditBox.ContextMenuOpening -= XRichEditBox_ContextMenuOpening;
             
             _parentDocView.ViewModel.DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            _parentDocView.xOperatorEllipseBorder.PointerPressed -= XOperatorEllipseBorder_PointerPressed;
         }
         #endregion
 
@@ -618,7 +612,6 @@ namespace Dash
             if (rightPressed)
             {
                 new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
-                UpdateDocument();
             }
         }
 
@@ -725,7 +718,6 @@ namespace Dash
         private void XRichEditBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             HasFocus = false;
-            UpdateDocument();
         }
 
         #endregion
@@ -1050,6 +1042,11 @@ namespace Dash
     //    }
     //}
     #endregion
+
+        private void XRichEditBox_OnTextChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateDocument();
+        }
     }
 }
 
