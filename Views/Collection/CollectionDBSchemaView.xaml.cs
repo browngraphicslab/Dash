@@ -170,6 +170,7 @@ namespace Dash
                     var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                     if (column < 0) return;
                     var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    this.xRecordsView.SelectedItem = recordViewModel;
                     updateEditBox(recordViewModel.RecordFields[column]);
                 }
 

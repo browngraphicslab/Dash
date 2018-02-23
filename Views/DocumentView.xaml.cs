@@ -580,7 +580,7 @@ namespace Dash
         List<DocumentView> GetMarqueeDocuments()
         {
             var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Count > 0)
+            if (marqueeDocs != null && marqueeDocs.Contains(this))
                 return marqueeDocs;
             return new List<DocumentView>(new DocumentView[] { this } );
         }
@@ -723,7 +723,7 @@ namespace Dash
             foreach (var doc in GetMarqueeDocuments())
                 doc.KeyValueViewDocument();
         }
-        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(), null); }
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y)), null) ; }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
