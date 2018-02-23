@@ -393,6 +393,7 @@ namespace Dash
             if (!ClampScale(scaleFactor))
             {
                 // translate the entire group except for
+
                 var transformGroup = new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position);
                 if (grouped != null && grouped.Any())
                 {
@@ -401,7 +402,6 @@ namespace Dash
                         g?.TransformDelta(transformGroup);
                     }
                 }
-
                 OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
             }
         }

@@ -480,13 +480,20 @@ namespace Dash
 
         #endregion
 
+
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
-            ViewModel?.TransformDelta(delta);
+            //ToggleGroupSelectionBorderColor(true);
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.ViewModel?.TransformDelta(delta); 
+            else
+                ViewModel?.TransformDelta(delta);
         }
 
         /// <summary>
@@ -615,7 +622,30 @@ namespace Dash
                 }
             }
         }
+
+        private void CopyDocument()
+        {
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
+        }
+        private void CopyViewDocument()
+        {
+            // will this screw things up?
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
+
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
+        }
+
+        private void KeyValueViewDocument()
+        {
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
+        }
+
         public void ShowContext()
+
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
@@ -659,6 +689,14 @@ namespace Dash
 
             //Selects it and brings it to the foreground of the canvas, in front of all other documents.
             ToFront();
+
+        }
+
+        public void MarqueeSelectBorder(bool selected)
+        {
+            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetContentGrid.BorderBrush = selected ?
+                GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
         /// <summary>
@@ -697,16 +735,7 @@ namespace Dash
             var query = await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
 
         }
-
-        private void XTitle_OnKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Tab)
-            {
-                this.Focus(FocusState.Programmatic);
-                e.Handled = true;
-            }
-        }
-
+        
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
@@ -715,6 +744,10 @@ namespace Dash
         
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews, List<DocumentView> grouped)
         {
+            var marqueeGroup = GetMarqueeDocuments();
+            if (marqueeGroup != null && marqueeGroup.Count > 0)
+                grouped = marqueeGroup; 
+
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             if (collection == null || ViewModel == null)
                 return false;
@@ -754,15 +787,60 @@ namespace Dash
         }
 
         #region Context menu click handlers
+        /// <summary>
+        /// Checks if there are documents selected by marquee - if so, return the documents; else, return null 
+        /// </summary>
+        private List<DocumentView> GetMarqueeDocuments()
+        {
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.MarqueeSelectedDocs;
+            if (marqueeDocs == null || marqueeDocs.Count == 0) marqueeDocs = this.GetFirstDescendantOfType<CollectionFreeformView>()?.MarqueeSelectedDocs;
+            if (marqueeDocs != null && marqueeDocs.Count > 0)
+                return marqueeDocs;
+            return null; 
+        }
 
-        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e) { ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);  }
-        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e) { ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null); }
-        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e) { DeleteDocument(); }
-        private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null); }
+        private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
+        {
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.CopyDocument();
+            else CopyDocument();
+        }
+
+        private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
+        {
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.CopyViewDocument();
+            else CopyViewDocument();
+        }
+
+        private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
+        {
+            //check if there are any documents selected in the marquee - if so, delete all the docs selected and else delete itself 
+            var marqueeDocs = GetMarqueeDocuments(); 
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.DeleteDocument();
+            else DeleteDocument(); 
+        }
+
+        private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
+        {
+            var marqueeDocs = GetMarqueeDocuments();
+            if (marqueeDocs != null)
+                foreach (var doc in marqueeDocs)
+                    doc.KeyValueViewDocument();
+            else KeyValueViewDocument();
+        }
+
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DocumentController.GetPreviewDocument(), null); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
+        
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
             var data = new DataPackage() { };
