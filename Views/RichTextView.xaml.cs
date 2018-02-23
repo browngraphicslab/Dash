@@ -202,7 +202,6 @@ namespace Dash
 
         public void UpdateDocument()
         {
-
             if (!this.IsInVisualTree() || Text == null)
                 return;
             string allText;
@@ -227,10 +226,10 @@ namespace Dash
                 if (k == null)
                     k = new KeyController(DashShared.UtilShared.GenerateNewId(), key);
 
-                parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(k, new TextController(value), true);
+                _parentDataDocument.SetField(k, new TextController(value), true);
             }
-           // var rest = reg.Replace(allText, "");
-            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            // var rest = reg.Replace(allText, "");
+            _parentDataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
         }
 
 
@@ -546,9 +545,11 @@ namespace Dash
         PointerEventHandler _pressedHdlr = null;
         TappedEventHandler _tappedHdlr = null;
         DocumentView _parentDocView = null;
+        DocumentController _parentDataDocument = null;
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             _parentDocView = this.GetFirstAncestorOfType<DocumentView>();
+            _parentDataDocument = _parentDocView.ViewModel.DataDocument;
             _releasedHdlr = new PointerEventHandler(released);
             _pressedHdlr = new PointerEventHandler(RichTextView_PointerPressed);
             _tappedHdlr = new TappedEventHandler(tapped);
@@ -568,8 +569,7 @@ namespace Dash
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
-
-            _parentDocView.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+            _parentDataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
@@ -593,8 +593,8 @@ namespace Dash
             this.RemoveHandler(PointerPressedEvent, _pressedHdlr);
             this.RemoveHandler(TappedEvent, _tappedHdlr);
             this.xRichEditBox.ContextMenuOpening -= XRichEditBox_ContextMenuOpening;
-            
-            _parentDocView.ViewModel.DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
+
+            _parentDataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
         }
         #endregion
 
