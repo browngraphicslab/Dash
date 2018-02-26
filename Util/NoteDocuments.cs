@@ -288,14 +288,14 @@ namespace Dash
                 return prototpeLayout.Document;
             }
 
-            public ImageNote(DocumentType type) : base(type)
+            public ImageNote(DocumentType type, ImageController image = null) : base(type)
             {
                 _prototypeID = "C48C8AF2-5609-40F0-9FAA-E300C582AF5F";
                 _prototypeLayout = CreatePrototypeLayout();
 
                 Document = GetDocumentPrototype().MakeDelegate();
                 Document.SetField(KeyStore.TitleKey, new TextController("Title"), true);
-                Document.SetField(ImageFieldKey, new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png")), true);
+                Document.SetField(ImageFieldKey, image ?? new ImageController(new Uri("ms-appx://Dash/Assets/DefaultImage.png")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointController(new Point(0, 0)), true);

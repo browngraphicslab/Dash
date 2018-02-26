@@ -24,11 +24,14 @@ using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
 using Windows.Devices.Input;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models.DragModels;
 using Dash.Views.Document_Menu;
+using Buffer = System.Buffer;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -335,10 +338,10 @@ namespace Dash
 
         }
 
-        private void Paste_Clicked(object sender, RoutedEventArgs e)
+        private async void Paste_Clicked(object sender, RoutedEventArgs e)
         {
             DataPackageView content = Clipboard.GetContent();
-            
+
             //only true if copied from within Dash
             if (content.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
@@ -365,18 +368,46 @@ namespace Dash
                         GetFlyoutOriginCoordinates())
                     : new Point();
 
-                var txt = Clipboard.GetContent().GetTextAsync();
-                Debug.Print("word:  " + txt.ToString());
-
-                /*
-                Clipboard.GetContent().GetStorageItemsAsync();
-
-                if (Clipboard.GetContent().GetDataAsync(DataFormats.Text) == true)
+                if (content.Contains(StandardDataFormats.Text))
                 {
-                    
+                    string text = await content.GetTextAsync();
+                    // To output the text from this example, you need a TextBlock control
+                    Debug.WriteLine("Clipboard now contains: " + text);
+                    var postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
                 }
+                else if (content.Contains(StandardDataFormats.Bitmap))
+                {
+                    IRandomAccessStreamReference imageReceived = null;
+                    try
+                    {
+                        imageReceived = await content.GetBitmapAsync();
+                        if (imageReceived != null)
+                        {
+                            
+                            // To output the text from this example, you need a TextBlock control
+                            Debug.WriteLine("Clipboard now contains: " + imageReceived);
 
-                */
+                            IRandomAccessStreamWithContentType thumbnailStream = await imageReceived.OpenReadAsync();
+
+                            BitmapImage bit = new BitmapImage();
+                            bit.SetSource(thumbnailStream);
+                            Uri uri = bit.UriSource;
+                            Debug.Print("bit: " + uri);
+                            
+                            //can make bitmap with source, but then wont have uri
+
+                            ImageController ic = new ImageController(uri);
+                            DocumentController doc = new NoteDocuments.ImageNote(NoteDocuments.PostitNote.DocumentType, ic).Document;
+                            Actions.DisplayDocument(ViewModel, doc, where);
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                  
+                }
             }
         }
 

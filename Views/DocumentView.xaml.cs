@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Newtonsoft.Json;
@@ -1431,10 +1432,11 @@ namespace Dash
                 Clipboard.Clear();
                 Uri imgUri = this.ViewModel.DocumentController.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data;
                 // Create an absolute Uri from a string.
-                Debug.Print(imgUri.ToString());
 
-                // dataPackage.SetWebLink(imgUri);
+                BitmapImage bitmapImage = new BitmapImage(imgUri);
+
                 dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromUri(imgUri));
+                //this should work, but does not :(
             }
             else
             {
