@@ -88,26 +88,31 @@ namespace Dash
 
 
         //START OF NEW SNAPPING
-        public void Snap(bool preview = false)
+        public void Snap(bool preview)
         {
             //Stop snapping if panning current collection
             var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
                 return;
 
-            //MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;  //TODO: there should be a more logical way of managing this rectangle's visibility
 
             var closest = GetClosestDocumentView(); //Get the closest DocumentView to snap to 
-            if (closest == null) return;
+            if (closest == null)
+            {
+                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                return;
+            }
 
             bool isSnappingToCollection = closest.Item1.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType);
-            if(isSnappingToCollection)
+            if (isSnappingToCollection)
                 SnapToCollection(closest);
             else
-                SnapToDocument(closest);
+            {
+                SnapToDocument(closest, preview); 
+            }
         }
 
-        private void SnapToDocument(Tuple<DocumentView, Side, double> closest)
+        private void SnapToDocument(Tuple<DocumentView, Side, double> closest, bool preview)
         {
             if (closest == null)
             {
@@ -117,6 +122,56 @@ namespace Dash
             var side = closest.Item2;
 
             ParentDocument.ViewModel.Position = SimpleSnapPoint(closestDocumentView.ViewModel.Bounds, ~side);
+
+
+            if (preview)
+            {
+                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                var line = PreviewLine(closestDocumentView.ViewModel.Bounds, ~side);
+                MainPage.Instance.AlignmentLine.X1 = line.p1.X;
+                MainPage.Instance.AlignmentLine.Y1 = line.p1.Y;
+                MainPage.Instance.AlignmentLine.X2 = line.p2.X;
+                MainPage.Instance.AlignmentLine.Y2 = line.p2.Y;
+            }
+        }
+
+        private (Point p1, Point p2) PreviewLine(Rect snappingTo, Side snappingToSide)
+        {
+            Rect parentDocumentBounds = ParentDocument.ViewModel.Bounds;
+
+            Point point1 = new Point();
+            Point point2 = new Point();
+
+            switch (snappingToSide)
+            {
+                case Side.Top:
+                    point1.Y = point2.Y = snappingTo.Top;
+                    point1.X = Math.Min(parentDocumentBounds.Left, snappingTo.Left);
+                    point2.X = Math.Max(parentDocumentBounds.Right, snappingTo.Right);
+                    break;
+                case Side.Bottom:
+                    point1.Y = point2.Y = snappingTo.Bottom;
+                    point1.X = Math.Min(parentDocumentBounds.Left, snappingTo.Left);
+                    point2.X = Math.Max(parentDocumentBounds.Right, snappingTo.Right);
+                    break;
+                case Side.Left:
+                    point1.X = point2.X = snappingTo.Left;
+                    point1.Y = Math.Min(parentDocumentBounds.Top, snappingTo.Top);
+                    point2.Y = Math.Max(parentDocumentBounds.Bottom, snappingTo.Bottom);
+                    break;
+                case Side.Right:
+                    point1.X = point2.X = snappingTo.Right;
+                    point1.Y = Math.Min(parentDocumentBounds.Top, snappingTo.Top);
+                    point2.Y = Math.Max(parentDocumentBounds.Bottom, snappingTo.Bottom);
+                    break;
+            }
+
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+
+            var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.xItemsControl.ItemsPanelRoot);
+
+            return (screenPoint1, screenPoint2);
         }
 
         private Point SimpleSnapPoint(Rect snappingTo, Side snappingToSide)
@@ -253,11 +308,12 @@ namespace Dash
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
             var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.xItemsControl.ItemsPanelRoot);
-            MainPage.Instance.TemporaryRectangle.Width = boundingBoxScreenSpace.Width;
-            MainPage.Instance.TemporaryRectangle.Height = boundingBoxScreenSpace.Height;
 
-            Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.X);
-            Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
+            //MainPage.Instance.TemporaryRectangle.Width = boundingBoxScreenSpace.Width;
+            //MainPage.Instance.TemporaryRectangle.Height = boundingBoxScreenSpace.Height;
+
+            //Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.X);
+            //Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
         }
 
 
@@ -443,7 +499,8 @@ namespace Dash
             {
                 Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
-                MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+                //MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
                 var docRoot = ParentDocument;
                 
