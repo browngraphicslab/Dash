@@ -185,7 +185,7 @@ namespace Dash
                 if (data != null)
                 {
                     CurPage.DataDocument.SetField(DisplayKey, data, true);
-                    var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
+                    var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
                     xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
                 }

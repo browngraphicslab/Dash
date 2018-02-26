@@ -433,12 +433,11 @@ namespace Dash
             {
                 if (ViewModel != null)
                 {
-                    Debug.Assert(ViewModel != null, "ViewModel != null");
-                    Debug.Assert(ViewModel.Width != double.NaN);
-                    Debug.Assert(ViewModel.Height != double.NaN);
-                    ViewModel.Width = Math.Max(ViewModel.Width + dx, MinWidth);
-                    ViewModel.Height = Math.Max(ViewModel.Height + dy, MinHeight);
-                    // should we allow documents with NaN's for width & height to be resized?
+                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+                    var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
+                    var h = ViewModel.Height;
+                    ViewModel.Width  = Math.Max(w + dx, MinWidth);
+                    ViewModel.Height = Math.Max(h + dy, MinHeight);
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
