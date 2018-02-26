@@ -23,8 +23,11 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using System.Numerics;
+using Windows.Devices.Input;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Models.DragModels;
 using Dash.Views.Document_Menu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -222,8 +225,15 @@ namespace Dash
 
             var elementsToBeRemoved = new List<MenuFlyoutItemBase>();
 
-            // add a horizontal separator in context menu
             var contextMenu = ParentDocument.MenuFlyout;
+
+            // add the item to create a new document
+            var paste = new MenuFlyoutItem() { Text = "Paste", Icon = new FontIcon() { Glyph = "\uf0ea;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
+            paste.Click += Paste_Clicked; ;
+            contextMenu.Items.Add(paste);
+            elementsToBeRemoved.Add(paste);
+
+            // add a horizontal separator in context menu
             var separatorOne = new MenuFlyoutSeparator();
             contextMenu.Items.Add(separatorOne);
             elementsToBeRemoved.Add(separatorOne);
@@ -324,6 +334,52 @@ namespace Dash
             };
 
         }
+
+        private void Paste_Clicked(object sender, RoutedEventArgs e)
+        {
+            DataPackageView content = Clipboard.GetContent();
+            
+            //only true if copied from within Dash
+            if (content.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+
+                var where = CurrentView is CollectionFreeformView
+                    ? Util.GetCollectionFreeFormPoint((CollectionFreeformView) CurrentView,
+                        GetFlyoutOriginCoordinates())
+                    : new Point();
+
+                // var where = GetFlyoutOriginCoordinates();
+                //save point in class when right click tapped
+
+                var ddm = content.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                if (ddm != null)
+                {
+                    ViewModel.AddDocument(ddm.GetDropDocument(where), null);
+                }
+
+            }
+            else
+            {
+                var where = CurrentView is CollectionFreeformView
+                    ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)CurrentView,
+                        GetFlyoutOriginCoordinates())
+                    : new Point();
+
+                var txt = Clipboard.GetContent().GetTextAsync();
+                Debug.Print("word:  " + txt.ToString());
+
+                /*
+                Clipboard.GetContent().GetStorageItemsAsync();
+
+                if (Clipboard.GetContent().GetDataAsync(DataFormats.Text) == true)
+                {
+                    
+                }
+
+                */
+            }
+        }
+
 
         /// <summary>
         /// Helper function to add a document controller to the main freeform layout.

@@ -161,6 +161,7 @@
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CopiedVars.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />

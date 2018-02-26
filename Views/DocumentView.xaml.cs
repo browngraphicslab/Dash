@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -23,6 +24,8 @@ using DashShared;
 using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+
+//using Dash.Util;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -73,6 +76,10 @@ namespace Dash
         /// </summary>
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
+
+        //varibles save what is in clipboard 
+        public static DocumentController _copied;
+        public static DocumentView _copiedview;
 
 
         // == CONSTRUCTORs ==
@@ -1410,5 +1417,35 @@ namespace Dash
             if (frameworkElement != null)
                 Canvas.SetLeft(xContextTitle, -frameworkElement.ActualWidth - 1);
         }
+
+
+        private void MenuFlyoutItemCopy2_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+
+            var dataPackage = new DataPackage();
+            dataPackage.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, true);
+         
+            if (this.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
+            {
+                Clipboard.Clear();
+                Uri imgUri = this.ViewModel.DocumentController.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data;
+                // Create an absolute Uri from a string.
+                Debug.Print(imgUri.ToString());
+
+                // dataPackage.SetWebLink(imgUri);
+                dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromUri(imgUri));
+            }
+            else
+            {
+                Clipboard.Clear();
+                //works for text
+                dataPackage.SetText(this.ViewModel.DocumentController.Title);
+            }
+
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            Clipboard.SetContent(dataPackage);
+        }
+
     }
 }
