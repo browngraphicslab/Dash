@@ -37,7 +37,7 @@ namespace Dash
     {
 
         #region ScalingVariables    
-
+        CollectionViewModel LastViewModel = null;
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -45,7 +45,7 @@ namespace Dash
         #endregion
         
         private TransformGroupData _transformGroup = new TransformGroupData(new Point(), new Point());
-        private Canvas _itemsPanelCanvas;
+        private Canvas _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
 
         public ViewManipulationControls ViewManipulationControls { get; set; }
         public bool                     TagMode { get; set; }
@@ -93,6 +93,8 @@ namespace Dash
             xOuterGrid.PointerPressed  += OnPointerPressed;
             xOuterGrid.PointerMoved    += OnPointerMoved;
             xOuterGrid.PointerReleased += OnPointerReleased;
+            ViewManipulationControls = new ViewManipulationControls(this);
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
         public TransformGroupData TransformGroup
@@ -122,10 +124,11 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (ViewModel != null)
+            if (ViewModel != null && ViewModel != LastViewModel)
             {
-                ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+                if (LastViewModel != null)
+                    LastViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                ViewModel.DocumentViewModels.CollectionChanged     += DocumentViewModels_CollectionChanged;
                 
                 var doc = ViewModel.ContainerDocument;
 
@@ -136,8 +139,8 @@ namespace Dash
                     ViewManipulationControls.ElementScale = zoom.X;
                 }
 
-                SetFreeformTransform(
-                    new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
+                SetFreeformTransform(new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
+                LastViewModel = ViewModel;
             }
         }
 
@@ -159,10 +162,6 @@ namespace Dash
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
-
-            ViewManipulationControls = new ViewManipulationControls(this);
-            ViewManipulationControls.ElementScale = ViewModel.ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
-            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             MakePreviewTextbox();
             
@@ -299,7 +298,6 @@ namespace Dash
         /// </summary>   
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
-            _itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
@@ -491,9 +489,8 @@ namespace Dash
         private bool      _multiSelect;
         private Point     _marqueeAnchor;
         private bool      _isSelecting;
-
-        private List<DocumentView> _selectedDocs = new List<DocumentView>();
-        public List<DocumentView> SelectedDocs => _selectedDocs;
+        
+        public List<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -575,16 +572,35 @@ namespace Dash
                 _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                 _isSelecting = true;
                 PreviewTextbox_LostFocus(null, null);
-                foreach (var doc in _selectedDocs)
+                foreach (var doc in SelectedDocs)
                 {
                     doc.MarqueeSelectBorder(false);
                 }
-                _selectedDocs.Clear();
+                SelectedDocs.Clear();
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 args.Handled = true;
             }
         }
 
+        public void MakeSelectionModeMultiple()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            ViewModel.CanDragItems = true;
+
+            IsSelectionEnabled = true;
+        }
+        private void MakeSelectionModeSingle()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
+            ViewModel.CanDragItems = true;
+        }
+        private void MakeSelectionModeNone()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+            ViewModel.CanDragItems = false;
+
+            IsSelectionEnabled = false;
+        }
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -653,15 +669,15 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
 
-            _selectedDocs = DocsInMarquee(marquee);
+            SelectedDocs = DocsInMarquee(marquee);
 
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && _selectedDocs.Count > 0)
+            if (!IsSelectionEnabled && SelectedDocs.Count > 0)
             {
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
-                parentView.MakeSelectionModeMultiple();
+                MakeSelectionModeMultiple();
             }
-            foreach (var doc in _selectedDocs)
+            foreach (var doc in SelectedDocs)
             {
                 doc.MarqueeSelectBorder(true);
             }

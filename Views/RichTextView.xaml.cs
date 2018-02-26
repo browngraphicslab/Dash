@@ -201,7 +201,7 @@ namespace Dash
 
         public void UpdateDocument()
         {
-            if (!this.IsInVisualTree() || Text == null)
+            if (DataContext == null || Text == null)
                 return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);

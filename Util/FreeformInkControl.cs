@@ -31,7 +31,6 @@ namespace Dash
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
-        private CollectionView _collectionView;
         public CollectionFreeformView FreeformView;
         public InkController InkController;
         public LassoSelectHelper LassoHelper;
@@ -48,7 +47,6 @@ namespace Dash
             InkController = view.InkController;
             LassoHelper = new LassoSelectHelper(FreeformView);
             InkRecognitionHelper = new InkRecognitionHelper(this);
-            _collectionView = FreeformView.GetFirstAncestorOfType<CollectionView>();
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.Mode =
                 GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Eraser
                     ? InkInputProcessingMode.Erasing
@@ -214,7 +212,7 @@ namespace Dash
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
             if (!FreeformView.IsSelectionEnabled && selectionList.Count > 0) 
             {
-                _collectionView.MakeSelectionModeMultiple();
+                FreeformView.MakeSelectionModeMultiple();
             }
         }
 

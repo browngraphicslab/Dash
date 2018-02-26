@@ -276,31 +276,6 @@ namespace Dash
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
-        public void MakeSelectionModeMultiple()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
-            ViewModel.CanDragItems = true;
-
-            if (CurrentView is CollectionFreeformView)
-            {
-                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true;
-            }
-        }
-        private void MakeSelectionModeSingle()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
-            ViewModel.CanDragItems = true;
-        }
-        private void MakeSelectionModeNone()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-            ViewModel.CanDragItems = false;
-
-            if (CurrentView is CollectionFreeformView)
-            {
-                (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
-            }
-        }
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
