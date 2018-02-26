@@ -126,20 +126,20 @@ namespace Dash
         {
             TargetInkCanvas.InkPresenter.InputDeviceTypes = type;
             TargetInkCanvas.InkPresenter.IsInputEnabled = true;
-            FreeformView.ManipulationControls.FilterInput = true;
+            FreeformView.ViewManipulationControls.FilterInput = true;
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
                     break;
                 case CoreInputDeviceTypes.Pen:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Pen;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Pen;
                     break;
                 case CoreInputDeviceTypes.Touch:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Touch;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Touch;
                     break;
                 default:
-                    FreeformView.ManipulationControls.FilterInput = false;
+                    FreeformView.ViewManipulationControls.FilterInput = false;
                     TargetInkCanvas.InkPresenter.IsInputEnabled = false;
                     break;
             }

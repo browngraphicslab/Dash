@@ -231,7 +231,7 @@ namespace Dash
         private void ContainerDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var cview = (CurPage?.Content as CollectionView);
-            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
+            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
         }
 
         private void Cview_Loaded(object sender, RoutedEventArgs e)
@@ -239,7 +239,7 @@ namespace Dash
             var cview = sender as CollectionView;
             cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
             cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
-            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
+            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
         }
 
         private void Content_Loaded(object sender, RoutedEventArgs e)
@@ -262,7 +262,7 @@ namespace Dash
             var _element = sender as CollectionFreeformView;
             if (_element is CollectionFreeformView)
             {
-                _element.ManipulationControls.FitToParent();
+                _element.ViewManipulationControls.FitToParent();
                 _element.Loaded -= _element_Loaded;
             }
         }
@@ -374,7 +374,7 @@ namespace Dash
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
         {
             var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element?.ManipulationControls?.FitToParent();
+            _element?.ViewManipulationControls?.FitToParent();
         }
 
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)

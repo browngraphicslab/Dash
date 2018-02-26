@@ -52,9 +52,6 @@ namespace Dash
         public KeyController OutputKey { get; set; }
         public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.CollectionKey;
 
-        public KeyController _collectionKey = null; // bcz: hack for now.  need to properly be able to set the output collection key from a collection view
-
-
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
             SelectionGroup = new List<DocumentViewModel>();
@@ -154,7 +151,6 @@ namespace Dash
                 }
             }
         }
-
 
         public void AddDocument(DocumentController doc, Context context)
         {
@@ -706,10 +702,6 @@ namespace Dash
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-            // special case for schema view... should be removed
-            //if (e.DataView.Properties.ContainsKey("CollectionReference"))
-            //    e.AcceptedOperation = DataPackageOperation.Copy;
-
             e.DragUIOverride.IsContentVisible = true;
 
             e.Handled = true;
@@ -722,7 +714,6 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragLeave Base");
             // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
             var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
             parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
@@ -732,13 +723,6 @@ namespace Dash
             {
                 var color = ((SolidColorBrush)App.Instance.Resources["DragHighlight"]).Color;
                 this.ChangeIndicationColor(element, color);
-                //element.HasDragLeft = true;
-                //var parent = element.ParentSelectionElement;
-                //// if the current collection fires a dragleave event and its parent hasn't
-                //if (parent != null && !parent.HasDragLeft)
-                //{
-                //    this.ChangeIndicationColor(parent, color);
-                //}
             }
             this.RemoveDragDropIndication(sender as UserControl);
             e.Handled = true;
