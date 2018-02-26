@@ -78,7 +78,7 @@ namespace Dash
             }
         }
 
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
         #region ItemSelection
 
@@ -170,6 +170,7 @@ namespace Dash
                     var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                     if (column < 0) return;
                     var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    this.xRecordsView.SelectedItem = recordViewModel;
                     updateEditBox(recordViewModel.RecordFields[column]);
                 }
 
@@ -219,17 +220,16 @@ namespace Dash
         private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
-            ViewModel = DataContext as BaseCollectionViewModel;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
 
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel = DataContext as BaseCollectionViewModel;
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
                 ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
@@ -438,7 +438,7 @@ namespace Dash
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
             var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
 
         // TODO lsm wrote this here it's a hack we should definitely remove this

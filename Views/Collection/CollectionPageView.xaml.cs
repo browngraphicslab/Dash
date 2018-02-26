@@ -28,7 +28,7 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
 
         public CollectionPageView()
@@ -82,9 +82,8 @@ namespace Dash
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             args.Handled = true;
-            if (ViewModel != DataContext)
+            if (ViewModel != null)
             {
-                ViewModel = DataContext as BaseCollectionViewModel;
                 ViewModel.ThumbDocumentViewModels.Clear();
                 foreach (var pageDoc in ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController))
                 {
@@ -97,6 +96,7 @@ namespace Dash
                     if (!string.IsNullOrEmpty(pageDoc.Title))
                     {
                         thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
+                        thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
                     }
                     else
                     {
@@ -126,9 +126,9 @@ namespace Dash
 
         public void SetHackCaptionText(KeyController captionKey)
         {
+            captionKey = captionKey ?? KeyStore.TitleKey;
             if (captionKey != null && CurPage != null)
             {
-
                 var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
@@ -153,6 +153,7 @@ namespace Dash
         }
         public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
         {
+            documentKey = documentKey ?? KeyStore.DataKey;
             if (documentKey != null && CurPage != null)
             {
                 DisplayString = keyasgn;
@@ -185,7 +186,7 @@ namespace Dash
                 if (data != null)
                 {
                     CurPage.DataDocument.SetField(DisplayKey, data, true);
-                    var db = new DataBox(data); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
+                    var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
                     xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
                 }
@@ -230,7 +231,7 @@ namespace Dash
         private void ContainerDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             var cview = (CurPage?.Content as CollectionView);
-            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
+            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
         }
 
         private void Cview_Loaded(object sender, RoutedEventArgs e)
@@ -238,7 +239,7 @@ namespace Dash
             var cview = sender as CollectionView;
             cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
             cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
-            (cview?.CurrentView as CollectionFreeformView)?.ManipulationControls?.FitToParent();
+            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
         }
 
         private void Content_Loaded(object sender, RoutedEventArgs e)
@@ -261,7 +262,7 @@ namespace Dash
             var _element = sender as CollectionFreeformView;
             if (_element is CollectionFreeformView)
             {
-                _element.ManipulationControls.FitToParent();
+                _element.ViewManipulationControls.FitToParent();
                 _element.Loaded -= _element_Loaded;
             }
         }
@@ -322,19 +323,27 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
-            if (keyString?.StartsWith("#") == true)
+            if (dragModel.DraggedKey != null)
             {
-                var key = keyString.Substring(1);
-                var k = KeyController.LookupKeyByName(key);
-                if (k == null)
-                {
-                    var splits = key.Split("=");
-                    k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
-                }
-                SetHackCaptionText(k);
-
+                SetHackCaptionText(dragModel.DraggedKey);
                 e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            else
+            {
+                var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+                if (keyString?.StartsWith("#") == true)
+                {
+                    var key = keyString.Substring(1);
+                    var k = KeyController.LookupKeyByName(key);
+                    if (k == null)
+                    {
+                        var splits = key.Split("=");
+                        k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                    }
+                    SetHackCaptionText(k);
+
+                    e.AcceptedOperation = DataPackageOperation.Copy;
+                }
             }
             e.Handled = true;
         }
@@ -365,7 +374,7 @@ namespace Dash
         private void FitPageButton_Click(object sender, RoutedEventArgs e)
         {
             var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element?.ManipulationControls?.FitToParent();
+            _element?.ViewManipulationControls?.FitToParent();
         }
 
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -454,6 +463,7 @@ namespace Dash
 
         private void xThumbs_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
             foreach (var m in e.Items)
             {
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);

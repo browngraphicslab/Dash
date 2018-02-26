@@ -96,32 +96,6 @@ namespace Dash
             return null;
         }
 
-        public DocumentController GetDocumentGroup(DocumentController document)
-        {
-            //if (ParentDocument == null)
-            //    return null;
-            //var groupsList = ParentDocument.ViewModel.DocumentController.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-
-            //if (groupsList == null) return null;
-            //foreach (var g in groupsList.TypedData)
-            //{
-            //    if (g.Equals(document))
-            //    {
-            //        return null;
-            //    }
-            //    else
-            //    {
-            //        var cfield = g.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-            //        if (cfield != null && cfield.Data.Where((cd) => (cd as DocumentController).Equals(document)).Count() > 0)
-            //        {
-            //            return g;
-            //        }
-            //    }
-            //}
-            //return null;
-            throw new NotImplementedException();
-        }
-
         #region Load And Unload Initialization and Cleanup
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
@@ -301,31 +275,6 @@ namespace Dash
             }
             xContentControl.Content = CurrentView;
             ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
-        }
-        public void MakeSelectionModeMultiple()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
-            ViewModel.CanDragItems = true;
-
-            if (CurrentView is CollectionFreeformView)
-            {
-                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true;
-            }
-        }
-        private void MakeSelectionModeSingle()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
-            ViewModel.CanDragItems = true;
-        }
-        private void MakeSelectionModeNone()
-        {
-            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-            ViewModel.CanDragItems = false;
-
-            if (CurrentView is CollectionFreeformView)
-            {
-                (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
-            }
         }
         private void GetJson()
         {

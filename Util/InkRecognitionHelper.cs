@@ -218,14 +218,11 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
 
-            var documentController = Util.BlankCollection();
-            documentController.SetField(KeyStore.CollectionKey,
-                new ListController<DocumentController>(recognizedDocuments), true);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                    new DocumentReferenceController(documentController.GetId(),
-                        KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
-                     region.BoundingRect.Height).Document, true, true);
+            var cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            cnote.SetDocuments(recognizedDocuments);
+            var documentController = cnote.Document;
+            documentController.SetLayoutDimensions(region.BoundingRect.Width,
+                region.BoundingRect.Height);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
@@ -255,32 +252,10 @@ namespace Dash
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
             int fieldIndex = 0;
-            var stringFields = TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r));
-            var enumerable = stringFields as IList<Rect> ?? stringFields.ToList();
-            ListController<TextController> list = enumerable.Count == 0 ? null : new ListController<TextController>();
-            foreach (var rect in enumerable)
-            {
-                DeleteStrokesByID(TextBoundsDictionary[rect].GetStrokeIds().ToImmutableHashSet());
-                var str = TextBoundsDictionary[rect].RecognizedText;
-                TryGetText(str, out string text, out KeyController key,
-                    enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
-                var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                doc.ParseDocField(key, text);
-                var field = doc.GetField(key);
-                if (field != null && field is TextController)
-                {
-                    list.Add(field);
-                }
-                var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
-                    relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-                (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
-                    rect.Height / 1.5;
-                layoutDocs.Add(textBox.Document);
-                keysToRemove.Add(rect);
-            }
-            //now try making fields from only partially intersected lines
+            //try making fields from only partially intersected lines
             var intersectedLines = TextBoundsDictionary.Keys.Where(r => r.IntersectsWith(region.BoundingRect) && !keysToRemove.Contains(r));
             var intersectionEnumerable = intersectedLines as IList<Rect> ?? intersectedLines.ToList();
+            ListController<TextController> list = intersectionEnumerable.Count == 0 ? null : new ListController<TextController>();
             if (list == null && intersectionEnumerable.Count > 0) list = new ListController<TextController>();
             foreach (var rect in intersectionEnumerable)
             {
@@ -300,9 +275,9 @@ namespace Dash
                     if (containedLine != "")
                     {
                         TryGetText(containedLine, out string text, out KeyController key,
-                            enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
+                            intersectionEnumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                         var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
-                        doc.ParseDocField(key, text);
+                        doc.ParseDocField(key, "="+text);
                         var field = doc.GetField(key);
                         if (field != null)
                         {

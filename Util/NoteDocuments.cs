@@ -43,7 +43,7 @@ namespace Dash
                 var prototype = ContentController<FieldModel>.GetController<DocumentController>(_prototypeID);
                 if (prototype == null)
                 {
-                    prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
+                    prototype = CreatePrototype();
                     prototype.SetField(KeyStore.ThisKey, prototype, true);
                 }
                 return prototype;
@@ -101,6 +101,7 @@ namespace Dash
         public class CollectionNote : NoteDocument
         {
             public static string APISignature = "Collected Docs Note Data API";
+            public static int Offset = 250;
 
             public override DocumentController CreatePrototype()
             {
@@ -109,8 +110,8 @@ namespace Dash
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
                     //[KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
-                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
-                };
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
+            };
                 var protoDoc =  new DocumentController(fields, Type, _prototypeID);
 
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>

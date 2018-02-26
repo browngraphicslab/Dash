@@ -1,11 +1,9 @@
-﻿using DashShared;
-using Microsoft.Graphics.Canvas;
+﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -14,31 +12,22 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Devices.HumanInterfaceDevice;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
-using Dash.Controllers;
 using static Dash.NoteDocuments;
-using Dash.Controllers.Operators;
-using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
 using Dash.Annotations;
 using DashShared.Models;
-using Flurl.Util;
 using NewControls.Geometry;
-using Syncfusion.Pdf.Graphics;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -48,19 +37,20 @@ namespace Dash
     {
 
         #region ScalingVariables    
-
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        CollectionViewModel LastViewModel = null;
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
         #endregion
+        
+        private TransformGroupData _transformGroup = new TransformGroupData(new Point(), new Point());
+        private Canvas _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
 
-        private Canvas itemsPanelCanvas;
-
-        public ViewManipulationControls ManipulationControls;
-
-        public bool TagMode { get; set; }
-        public KeyController TagKey { get; set; }
+        public ViewManipulationControls ViewManipulationControls { get; set; }
+        public bool                     TagMode { get; set; }
+        public KeyController            TagKey { get; set; }
+        public List<DocumentView>       DocumentViews { get; private set; } = new List<DocumentView>();
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -79,55 +69,34 @@ namespace Dash
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
         /// </summary>
-        private Storyboard _storyboard1;
+        private Storyboard _storyboard1, _storyboard2;
 
-        private Storyboard _storyboard2;
-
-        public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
-        public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
-        
-        public Dictionary<Path, Tuple<KeyController, KeyController>> LineToElementKeysDictionary = new Dictionary<Path, Tuple<KeyController, KeyController>>();
 
         public CollectionFreeformView()
         {
-
             InitializeComponent();
-            Loaded += Freeform_Loaded;
-            Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            DragLeave += Collection_DragLeave;
-            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
-            this.LayoutUpdated += CollectionFreeformView_LayoutUpdated;
-        }
-
-        private void CollectionFreeformView_LayoutUpdated(object sender, object e)
-        {
-            if (xItemsControl.Items == null)
+            Loaded    += Freeform_Loaded;
+            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
+            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
+            Drop      += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
+            Window.Current.CoreWindow.KeyUp += (sender, e) =>
             {
-                return;
-            }
-            foreach (var i in xItemsControl.Items)
-            {
-                var dv = i as DocumentViewModel;
-                var b = dv?.Bounds;
-                if (b?.Bottom > ActualHeight)
+                if (e.VirtualKey == VirtualKey.Back)
                 {
-                    Height = b.Value.Bottom;
+                    ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
                 }
-            }
+            };
+            xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            xOuterGrid.PointerExited  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            xOuterGrid.SizeChanged    += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+            xOuterGrid.PointerPressed  += OnPointerPressed;
+            xOuterGrid.PointerMoved    += OnPointerMoved;
+            xOuterGrid.PointerReleased += OnPointerReleased;
+            ViewManipulationControls = new ViewManipulationControls(this);
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
-        private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
-        {
-            if (args.VirtualKey == VirtualKey.Back)
-            {
-                ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
-            }
-        }
-
-        public List<DocumentView> DocumentViews { get; private set; } = new List<DocumentView>();
-
-        private TransformGroupData _transformGroup = new TransformGroupData(new Point(), new Point());
         public TransformGroupData TransformGroup
         {
             get => _transformGroup;
@@ -139,7 +108,7 @@ namespace Dash
                     return;
                 }
                 _transformGroup = value;
-                var doc = (ViewModel as CollectionViewModel)?.ContainerDocument;
+                var doc = ViewModel?.ContainerDocument;
                 if (doc != null)
                 {
                     var colCenter = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey);
@@ -155,52 +124,31 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            if (vm != null)
+            if (ViewModel != null && ViewModel != LastViewModel)
             {
-                // remove old events
-                if (ViewModel?.DocumentViewModels != null)
-                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                if (LastViewModel != null)
+                    LastViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                ViewModel.DocumentViewModels.CollectionChanged     += DocumentViewModels_CollectionChanged;
+                
+                var doc = ViewModel.ContainerDocument;
 
-                // add new events
-                ViewModel = vm;
-                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
-
-                var cvm = vm as CollectionViewModel;
-                if (cvm != null)
+                var pos  = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                if (ViewManipulationControls != null)
                 {
-                    var doc = cvm.ContainerDocument;
-
-                    var pos = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                    var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                    if (ManipulationControls != null)
-                    {
-                        ManipulationControls.ElementScale = zoom.X;
-                    }
-
-                    SetFreeformTransform(
-                        new MatrixTransform() {Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y)});
+                    ViewManipulationControls.ElementScale = zoom.X;
                 }
+
+                SetFreeformTransform(new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
+                LastViewModel = ViewModel;
             }
         }
-        public bool SuspendGroups = false;
 
         private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
+        { 
             if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
             {
                 DocumentViews = IterateDocumentViews().ToList();
-            }
-            if (e.NewItems != null)
-            {
-                foreach (var d in e.NewItems)
-                {
-                    var documentViewModel = d as DocumentViewModel;
-                    if (documentViewModel != null)
-                        documentViewModel.GroupOnCreate =
-                            (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
-                }
             }
 
             IEnumerable<DocumentView> IterateDocumentViews()
@@ -210,34 +158,19 @@ namespace Dash
                     if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
-
-            ////Got rid of groups
-            //if (!SuspendGroups)
-            //{
-            //    foreach (var dvm in ViewModel.DocumentViewModels)
-            //        GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
-            //}
-        }
-
-        private void Freeform_Unloaded(object sender, RoutedEventArgs e)
-        {
-            ManipulationControls?.Dispose();
         }
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
-            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
-
-            ManipulationControls = new ViewManipulationControls(this);
-            ManipulationControls.ElementScale = (ViewModel as CollectionViewModel).ContainerDocument
-                                                .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
-            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
-
-            xOuterGrid.PointerPressed += OnPointerPressed;
-            xOuterGrid.PointerMoved += OnPointerMoved;
-            xOuterGrid.PointerReleased += OnPointerReleased;
 
             MakePreviewTextbox();
+            
+            //make and add selectioncanvas 
+            SelectionCanvas = new Canvas();
+            Canvas.SetLeft(SelectionCanvas, -30000);
+            Canvas.SetTop(SelectionCanvas, -30000);
+            InkHostCanvas.Children.Add(SelectionCanvas);
+
             if (InkController != null)
             {
                 MakeInkCanvas();
@@ -249,16 +182,11 @@ namespace Dash
         void FitFreeFormChildrenToTheirLayouts()
         {
             var parentOfFreeFormChild = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
-            //ManipulationControls?.FitToParent();
             if (parentOfFreeFormChild.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
             {
-                ManipulationControls?.FitToParent();
+                ViewManipulationControls?.FitToParent();
             }
         }
-
-        #endregion
-
-        #region DraggingLinesAround
 
         #endregion
 
@@ -267,30 +195,21 @@ namespace Dash
 
         public void Move(TranslateTransform translate)
         {
-            if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-
             var composite = new TransformGroup();
-            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add((xItemsControl.ItemsPanelRoot as Canvas).RenderTransform);
             composite.Children.Add(translate);
-            var compValue = composite.Value;
 
-            SetFreeformTransform(new MatrixTransform { Matrix = compValue });
+            SetFreeformTransform(new MatrixTransform { Matrix = composite.Value });
         }
-
 
         public void MoveAnimated(TranslateTransform translate)
         {
-            if (!IsHitTestVisible) return;
-
-            var old = (itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
-
+            var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
             {
                 return;
             }
             _transformBeingAnimated = new MatrixTransform() { Matrix = (Matrix)old };
-
 
             Debug.Assert(_transformBeingAnimated != null);
             var milliseconds = 1000;
@@ -344,9 +263,6 @@ namespace Dash
             _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
-
-
-
         }
 
         private void Storyboard1OnCompleted(object sender, object e)
@@ -382,9 +298,6 @@ namespace Dash
         /// </summary>   
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
-            if (!IsHitTestVisible) return;
-            Debug.Assert(itemsPanelCanvas != null);
-
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
@@ -403,7 +316,7 @@ namespace Dash
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(itemsPanelCanvas.RenderTransform); // get the current transform
+            composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
@@ -415,8 +328,6 @@ namespace Dash
         #endregion
 
         #region BackgroundTiling
-
-
 
         private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
         {
@@ -487,64 +398,16 @@ namespace Dash
 
 
         #endregion
-
-        #region Clipping
-        /// <summary>
-        /// SizeChanged event. Updates the clipping rect's size on canvas resize.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
-        }
-
-        #endregion
-
-        #region PointerChrome
-
-        /// <summary>
-        /// When the mouse hovers over the backgorund
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Background_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
-        }
-
-        /// <summary>
-        /// when the mouse leaves the background
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Background_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-        }
-
-        #endregion
-
+        
         #region Tagging
 
         public bool TagNote(string tagValue, DocumentView docView)
         {
             return false;
-            //throw new NotImplementedException("requires groups, which we got rid of");
             if (!TagMode)
             {
                 return false;
             }
-
-            var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
-
-            //ListController<DocumentController> group =
-            //    groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-            //if (groupDoc == null || group == null)
-            //{
-            //    return false;
-            //}
-
             //DocumentController image = null;
             //foreach (var documentController in group.TypedData)
             //{
@@ -623,10 +486,12 @@ namespace Dash
         #region Marquee Select
 
         private Rectangle _marquee;
-        private bool _multiSelect;
-        private Point _marqueeAnchor;
-        private bool _isSelecting;
+        private bool      _multiSelect;
+        private Point     _marqueeAnchor;
+        private bool      _isSelecting;
         
+        public List<DocumentView> SelectedDocs { get; set; } = new List<DocumentView>();
+
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
@@ -652,7 +517,6 @@ namespace Dash
             if (!currentPoint.Properties.IsLeftButtonPressed || !_isSelecting) return;
 
             if ((args.KeyModifiers & VirtualKeyModifiers.Shift) != 0) _multiSelect = true;
-
 
             var pos = currentPoint.Position;
             var dX = pos.X - _marqueeAnchor.X;
@@ -696,23 +560,47 @@ namespace Dash
             _marquee.Height = newHeight;
 
             args.Handled = true;
-
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-           if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                (args.OriginalSource.Equals(XInkCanvas) || args.OriginalSource.Equals(xOuterGrid)) &&
-                !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            if (XInkCanvas.IsTopmost() &&
+                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
                 xOuterGrid.CapturePointer(args.Pointer);
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                _marqueeAnchor = pos;
+                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
                 _isSelecting = true;
                 PreviewTextbox_LostFocus(null, null);
+                foreach (var doc in SelectedDocs)
+                {
+                    doc.MarqueeSelectBorder(false);
+                }
+                SelectedDocs.Clear();
+                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+                args.Handled = true;
             }
         }
-        
+
+        public void MakeSelectionModeMultiple()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            ViewModel.CanDragItems = true;
+
+            IsSelectionEnabled = true;
+        }
+        private void MakeSelectionModeSingle()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
+            ViewModel.CanDragItems = true;
+        }
+        private void MakeSelectionModeNone()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+            ViewModel.CanDragItems = false;
+
+            IsSelectionEnabled = false;
+        }
         private void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
@@ -765,7 +653,7 @@ namespace Dash
                 var docs = xItemsControl.ItemsPanelRoot.Children;
                 foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null))
                 {
-                    var rect = documentView.TransformToVisual(this).TransformBounds(
+                    var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
@@ -781,25 +669,23 @@ namespace Dash
             SelectionCanvas.Children.Clear();
             if (!_multiSelect) DeselectAll();
 
-            var selectedDocs = DocsInMarquee(marquee);
+            SelectedDocs = DocsInMarquee(marquee);
 
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!IsSelectionEnabled && selectedDocs.Count > 0)
+            if (!IsSelectionEnabled && SelectedDocs.Count > 0)
             {
                 var parentView = this.GetFirstAncestorOfType<CollectionView>();
-                parentView.MakeSelectionModeMultiple();
+                MakeSelectionModeMultiple();
+            }
+            foreach (var doc in SelectedDocs)
+            {
+                doc.MarqueeSelectBorder(true);
             }
         }
 
         #endregion
 
-
         #region DragAndDrop
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
 
         public void SetDropIndicationFill(Brush fill)
         {
@@ -810,14 +696,15 @@ namespace Dash
 
         #region Activation
 
-
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
-            SelectionCanvas?.Children?.Clear();
-            DeselectAll();
-            _isSelecting = false;
-            RenderPreviewTextbox(e.GetPosition(itemsPanelCanvas));
+            if (XInkCanvas.IsTopmost())
+            {
+                SelectionCanvas?.Children?.Clear();
+                DeselectAll();
+                _isSelecting = false;
+                RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+            }
         }
 
         public void RenderPreviewTextbox(Point where)
@@ -852,21 +739,15 @@ namespace Dash
                 }
             }
         }
-        
+
         public void DeselectAll()
         {
             foreach (var docView in DocumentViews.Where(dv => ViewModel.SelectionGroup.Contains(dv.ViewModel)))
             {
-                Deselect(docView);
+                ViewModel.SelectionGroup.Remove(docView.ViewModel);
+                docView.ToggleMultiSelected(false);
             }
             ViewModel.SelectionGroup.Clear();
-        }
-
-        private void Deselect(DocumentView docView)
-        {
-            ViewModel.SelectionGroup.Remove(docView.ViewModel);
-            docView.ToggleMultiSelected(false);
-
         }
 
         public void Select(DocumentView docView)
@@ -874,51 +755,33 @@ namespace Dash
             ViewModel.SelectionGroup.Add(docView.ViewModel);
             docView.ToggleMultiSelected(true);
         }
-
-        private void Collection_DragLeave(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("CollectionViewOnDragLeave FreeForm");
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
-
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("CollectionViewOnDragEnter FreeForm");
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-
-        }
         
         #endregion
 
-        #region Ink
-
+        #region TextInputBox
+        
+        string previewTextBuffer = "";
         public InkController InkController;
         public FreeformInkControl InkControl;
         public InkCanvas XInkCanvas;
         public Canvas SelectionCanvas;
-        public double Zoom => ManipulationControls.ElementScale;
+        public double Zoom => ViewManipulationControls.ElementScale;
 
-
-        private void MakeInkCanvas()
+        void MakeInkCanvas()
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
-            SelectionCanvas = new Canvas();
 
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
             InkHostCanvas.Children.Add(XInkCanvas);
-            InkHostCanvas.Children.Add(SelectionCanvas);
         }
 
-        private bool loadingPermanentTextbox;
+        bool loadingPermanentTextbox;
 
-        private TextBox previewTextbox { get; set; }
+        TextBox previewTextbox { get; set; }
 
-        private void MakePreviewTextbox()
+        void MakePreviewTextbox()
         {
             previewTextbox = new TextBox
             {
@@ -933,15 +796,13 @@ namespace Dash
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
         }
 
-        private void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
+        void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
             previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
         }
 
-        string previewTextBuffer = "";
-
-        private void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
+        void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
                 .HasFlag(CoreVirtualKeyStates.Down);
@@ -977,7 +838,7 @@ namespace Dash
             }
         }
 
-        private string KeyCodeToUnicode(VirtualKey key)
+        string KeyCodeToUnicode(VirtualKey key)
         {
 
             var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
@@ -1073,11 +934,10 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             if (sender is DocumentView documentView)
             {
-                OnDocumentViewLoaded?.Invoke(this, documentView);
                 DocumentViews.Add(documentView);
 
                 if (loadingPermanentTextbox)
@@ -1090,30 +950,22 @@ namespace Dash
                         richEditBox.Focus(FocusState.Programmatic);
                     }
                 }
-                if (documentView.ViewModel.GroupOnCreate && !documentView.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-                {
-                    documentView.ManipulationControls.ElementOnManipulationCompleted(null, null);
-                    documentView.ViewModel.GroupOnCreate = false;
-                }
             }
 
         }
-        private void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
+        void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
             previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
-            Debug.WriteLine("Got Focus");
-            previewTextbox.Visibility = Visibility.Collapsed;
-            var richEditBox = sender as RichEditBox;
             var text = previewTextBuffer;
-            (sender as RichEditBox).GotFocus -= RichEditBox_GotFocus;
+            var richEditBox = sender as RichEditBox;
+            richEditBox.GotFocus -= RichEditBox_GotFocus;
             previewTextbox.Text = string.Empty;
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
 
         #endregion
-
 
         public event PropertyChangedEventHandler PropertyChanged;
 

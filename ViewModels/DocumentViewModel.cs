@@ -33,7 +33,6 @@ namespace Dash
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         public string DebugName = "";
-        public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument { get => DocumentController.GetDataDocument(); }
 
@@ -239,7 +238,6 @@ namespace Dash
             _actualHeight = actualheight;
             LayoutDocument.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
             LayoutDocument.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
-
         }
 
         public Rect Bounds => new TranslateTransform
@@ -256,7 +254,7 @@ namespace Dash
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X * scaleAmount.X, currentTranslate.Y + deltaTranslate.Y * scaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X , currentTranslate.Y + deltaTranslate.Y);
 
             Position = translate;
             Scale = scaleAmount;
@@ -276,8 +274,6 @@ namespace Dash
                 }
             }
         }
-
-        public bool GroupOnCreate = false;
 
         public Brush BorderBrush
         {
@@ -322,6 +318,13 @@ namespace Dash
         public Context Context { get; set; }
 
         public bool Undecorated { get; set; }
+
+        bool _decorationState = false;
+        public bool DecorationState
+        {
+            get => _decorationState;
+            set => SetProperty(ref _decorationState, value);
+        }
 
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()

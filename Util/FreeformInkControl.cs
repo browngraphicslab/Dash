@@ -31,7 +31,6 @@ namespace Dash
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
-        private CollectionView _collectionView;
         public CollectionFreeformView FreeformView;
         public InkController InkController;
         public LassoSelectHelper LassoHelper;
@@ -48,7 +47,6 @@ namespace Dash
             InkController = view.InkController;
             LassoHelper = new LassoSelectHelper(FreeformView);
             InkRecognitionHelper = new InkRecognitionHelper(this);
-            _collectionView = FreeformView.GetFirstAncestorOfType<CollectionView>();
             TargetInkCanvas.InkPresenter.InputProcessingConfiguration.Mode =
                 GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Eraser
                     ? InkInputProcessingMode.Erasing
@@ -126,20 +124,20 @@ namespace Dash
         {
             TargetInkCanvas.InkPresenter.InputDeviceTypes = type;
             TargetInkCanvas.InkPresenter.IsInputEnabled = true;
-            FreeformView.ManipulationControls.FilterInput = true;
+            FreeformView.ViewManipulationControls.FilterInput = true;
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
                     break;
                 case CoreInputDeviceTypes.Pen:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Pen;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Pen;
                     break;
                 case CoreInputDeviceTypes.Touch:
-                    FreeformView.ManipulationControls.BlockedInputType = PointerDeviceType.Touch;
+                    FreeformView.ViewManipulationControls.BlockedInputType = PointerDeviceType.Touch;
                     break;
                 default:
-                    FreeformView.ManipulationControls.FilterInput = false;
+                    FreeformView.ViewManipulationControls.FilterInput = false;
                     TargetInkCanvas.InkPresenter.IsInputEnabled = false;
                     break;
             }
@@ -214,7 +212,7 @@ namespace Dash
             //Makes the collectionview's selection mode "Multiple" if documents were selected.
             if (!FreeformView.IsSelectionEnabled && selectionList.Count > 0) 
             {
-                _collectionView.MakeSelectionModeMultiple();
+                FreeformView.MakeSelectionModeMultiple();
             }
         }
 
