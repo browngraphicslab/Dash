@@ -122,6 +122,13 @@ namespace Dash
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, dob).ToList();
             return overlappedViews.Count > 0;
         }
+        public static bool IsTopmost(this UIElement dob)
+        {
+            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
+            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, MainPage.Instance).ToList();
+            return dob == overlappedViews.FirstOrDefault();
+        }
 
         public static Rect GetBoundingRect(this FrameworkElement dob, FrameworkElement relativeTo = null)
         {

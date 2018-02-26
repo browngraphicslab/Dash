@@ -652,6 +652,8 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
+            if (!XInkCanvas.IsTopmost())
+                return;
             if ((args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                  !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
             {
@@ -773,6 +775,8 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (!XInkCanvas.IsTopmost())
+                return;
             SelectionCanvas?.Children?.Clear();
             DeselectAll();
             _isSelecting = false;
