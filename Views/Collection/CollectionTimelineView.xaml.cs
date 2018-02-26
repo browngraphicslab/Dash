@@ -92,7 +92,7 @@ namespace Dash
         }
 
         public TimelineMetadata Metadata { get; }
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public event Action MetadataUpdated;
 
 
@@ -158,14 +158,6 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            // remove events from the old ViewModel (null checks itself)
-            RemoveViewModelEvents(ViewModel);
-
-            // update the ViewModel variable to the current view model and set its selection
-            ViewModel = vm;
-
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);

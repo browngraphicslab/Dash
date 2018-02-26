@@ -78,7 +78,7 @@ namespace Dash
             }
         }
 
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
         #region ItemSelection
 
@@ -220,17 +220,16 @@ namespace Dash
         private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
-            ViewModel = DataContext as BaseCollectionViewModel;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             if (ViewModel != null)
                 UpdateFields(new Context(ParentDocument));
 
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel = DataContext as BaseCollectionViewModel;
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             if (ParentDocument != null)
                 ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;

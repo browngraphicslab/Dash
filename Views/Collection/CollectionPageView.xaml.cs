@@ -28,7 +28,7 @@ namespace Dash
 {
     public sealed partial class CollectionPageView : ICollectionView
     {
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
 
         public CollectionPageView()
@@ -82,9 +82,8 @@ namespace Dash
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             args.Handled = true;
-            if (ViewModel != DataContext)
+            if (ViewModel != null)
             {
-                ViewModel = DataContext as BaseCollectionViewModel;
                 ViewModel.ThumbDocumentViewModels.Clear();
                 foreach (var pageDoc in ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController))
                 {

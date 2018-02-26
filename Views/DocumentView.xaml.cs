@@ -179,7 +179,7 @@ namespace Dash
             xContextTitle.SizeChanged += (sender, e) =>  Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
 
             // add manipulation code
-            ManipulationControls = new ManipulationControls(this, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
+            ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
                 SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
 
@@ -431,7 +431,7 @@ namespace Dash
             /// <param name="dy"></param>
             Size Resize(double dx = 0, double dy = 0)
             {
-                if (ViewModel != null)
+                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;

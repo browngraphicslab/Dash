@@ -45,7 +45,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ManipulationControls(DocumentView element, List<FrameworkElement> borderRegions = null)
+        public ManipulationControls(DocumentView element)
         {
             ParentDocument = element;
             
@@ -53,22 +53,10 @@ namespace Dash
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
-            if (borderRegions != null)
-            {
-                foreach (var borderRegion in borderRegions)
-                {
-                    borderRegion.ManipulationMode = ManipulationModes.All;
-                    borderRegion.ManipulationDelta += ElementOnManipulationDelta;
-                    borderRegion.ManipulationStarted += ElementOnManipulationStarted;
-                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
-                }
-            }
         }
 
         #region Snapping Layouts
-
 
         /// <summary>
         /// Enum used for snapping.

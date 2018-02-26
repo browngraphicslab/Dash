@@ -49,7 +49,7 @@ namespace Dash
 
         #region ScalingVariables    
 
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
@@ -121,7 +121,7 @@ namespace Dash
                     return;
                 }
                 _transformGroup = value;
-                var doc = (ViewModel as CollectionViewModel)?.ContainerDocument;
+                var doc = ViewModel?.ContainerDocument;
                 if (doc != null)
                 {
                     var colCenter = doc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey);
@@ -137,33 +137,22 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            if (vm != null)
+            if (ViewModel != null)
             {
-                // remove old events
-                if (ViewModel?.DocumentViewModels != null)
-                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-
-                // add new events
-                ViewModel = vm;
+                ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+                
+                var doc = ViewModel.ContainerDocument;
 
-                var cvm = vm as CollectionViewModel;
-                if (cvm != null)
+                var pos  = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                if (ManipulationControls != null)
                 {
-                    var doc = cvm.ContainerDocument;
-
-                    var pos = doc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                    var zoom = doc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                    if (ManipulationControls != null)
-                    {
-                        ManipulationControls.ElementScale = zoom.X;
-                    }
-
-                    SetFreeformTransform(
-                        new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
+                    ManipulationControls.ElementScale = zoom.X;
                 }
+
+                SetFreeformTransform(
+                    new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
             }
         }
         public bool SuspendGroups = false;
@@ -174,16 +163,6 @@ namespace Dash
             {
                 DocumentViews = IterateDocumentViews().ToList();
             }
-            if (e.NewItems != null)
-            {
-                foreach (var d in e.NewItems)
-                {
-                    var documentViewModel = d as DocumentViewModel;
-                    if (documentViewModel != null)
-                        documentViewModel.GroupOnCreate =
-                            (DataContext as CollectionViewModel)?.GroupOnCreate ?? false;
-                }
-            }
 
             IEnumerable<DocumentView> IterateDocumentViews()
             {
@@ -192,13 +171,6 @@ namespace Dash
                     if (doc.GetFirstAncestorOfType<DocumentView>()?.Equals(parentDoc) == true)
                         yield return doc;
             }
-
-            ////Got rid of groups
-            //if (!SuspendGroups)
-            //{
-            //    foreach (var dvm in ViewModel.DocumentViewModels)
-            //        GroupManager.SetupGroupings(dvm, this.GetFirstAncestorOfType<CollectionView>(), false);
-            //}
         }
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
@@ -519,21 +491,10 @@ namespace Dash
         public bool TagNote(string tagValue, DocumentView docView)
         {
             return false;
-            //throw new NotImplementedException("requires groups, which we got rid of");
             if (!TagMode)
             {
                 return false;
             }
-
-            var groupDoc = docView.ManipulationControls.ParentDocument.ParentCollection.GetDocumentGroup(docView.ViewModel.DocumentController);
-
-            //ListController<DocumentController> group =
-            //    groupDoc?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-            //if (groupDoc == null || group == null)
-            //{
-            //    return false;
-            //}
-
             //DocumentController image = null;
             //foreach (var documentController in group.TypedData)
             //{

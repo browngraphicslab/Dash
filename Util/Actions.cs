@@ -131,7 +131,7 @@ namespace Dash
             
         }
 
-        public static void DisplayDocument(BaseCollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
+        public static void DisplayDocument(CollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {

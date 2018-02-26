@@ -21,10 +21,6 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-        public static readonly string DragPropertyKey = "key_value_pane_drag_key 1893741";
-
-        private bool _addKVPaneOpen = true;   
-
         /// <summary>
         /// True if we are editing the key of the selected key value
         /// </summary>

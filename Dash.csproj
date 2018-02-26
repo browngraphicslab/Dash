@@ -403,7 +403,6 @@
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\UITask.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="ViewModels\ICollectionViewModel.cs" />
