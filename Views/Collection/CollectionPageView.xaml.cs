@@ -97,6 +97,7 @@ namespace Dash
                     if (!string.IsNullOrEmpty(pageDoc.Title))
                     {
                         thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
+                        thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
                     }
                     else
                     {
@@ -126,9 +127,9 @@ namespace Dash
 
         public void SetHackCaptionText(KeyController captionKey)
         {
+            captionKey = captionKey ?? KeyStore.TitleKey;
             if (captionKey != null && CurPage != null)
             {
-
                 var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
@@ -153,6 +154,7 @@ namespace Dash
         }
         public void SetHackBodyDoc(KeyController documentKey, string keyasgn)
         {
+            documentKey = documentKey ?? KeyStore.DataKey;
             if (documentKey != null && CurPage != null)
             {
                 DisplayString = keyasgn;
@@ -322,19 +324,27 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
-            if (keyString?.StartsWith("#") == true)
+            if (dragModel.DraggedKey != null)
             {
-                var key = keyString.Substring(1);
-                var k = KeyController.LookupKeyByName(key);
-                if (k == null)
-                {
-                    var splits = key.Split("=");
-                    k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
-                }
-                SetHackCaptionText(k);
-
+                SetHackCaptionText(dragModel.DraggedKey);
                 e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            else
+            {
+                var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+                if (keyString?.StartsWith("#") == true)
+                {
+                    var key = keyString.Substring(1);
+                    var k = KeyController.LookupKeyByName(key);
+                    if (k == null)
+                    {
+                        var splits = key.Split("=");
+                        k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                    }
+                    SetHackCaptionText(k);
+
+                    e.AcceptedOperation = DataPackageOperation.Copy;
+                }
             }
             e.Handled = true;
         }

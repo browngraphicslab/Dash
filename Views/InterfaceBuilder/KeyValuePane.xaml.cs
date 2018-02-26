@@ -55,10 +55,17 @@ namespace Dash
 
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             DataContextChanged += KeyValuePane_DataContextChanged;
+            PointerPressed += (sender, e) =>
+                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
 
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
+        }
+
+        void FontIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void KeyValuePane_Unloaded(object sender, RoutedEventArgs e)
