@@ -97,24 +97,6 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             DragLeave += Collection_DragLeave;
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
-            this.LayoutUpdated += CollectionFreeformView_LayoutUpdated;
-        }
-
-        private void CollectionFreeformView_LayoutUpdated(object sender, object e)
-        {
-            if (xItemsControl.Items == null)
-            {
-                return;
-            }
-            foreach (var i in xItemsControl.Items)
-            {
-                var dv = i as DocumentViewModel;
-                var b = dv?.Bounds;
-                if (b?.Bottom > ActualHeight)
-                {
-                    Height = b.Value.Bottom;
-                }
-            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow coreWindow, KeyEventArgs args)
