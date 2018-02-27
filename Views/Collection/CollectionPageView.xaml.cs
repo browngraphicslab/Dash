@@ -29,14 +29,17 @@ namespace Dash
     public sealed partial class CollectionPageView : ICollectionView
     {
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
-        //private ScrollViewer _scrollViewer;
+        public CollectionViewModel OldViewModel = null;
 
         public CollectionPageView()
         {
             this.InitializeComponent();
-            DataContextChanged += CollectionPageView_DataContextChanged;
             xThumbs.Loaded += (sender, e) =>
             {
+                DataContextChanged -= CollectionPageView_DataContextChanged;
+                DataContextChanged += CollectionPageView_DataContextChanged;
+                if (ViewModel != null)
+                    CollectionPageView_DataContextChanged(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
@@ -46,11 +49,47 @@ namespace Dash
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
+            Unloaded += (sender, e) =>
+            {
+                if (ViewModel != null)
+                    ViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                if (OldViewModel != null)
+                    OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+                OldViewModel = null;
+            };
+
 
             this.AddHandler(KeyDownEvent, new KeyEventHandler(SelectionElement_KeyDown), true);
             this.xDocContainer.AddHandler(PointerReleasedEvent, new PointerEventHandler(xDocContainer_PointerReleased), true);
             this.GotFocus += CollectionPageView_GotFocus;
             this.LosingFocus += CollectionPageView_LosingFocus;
+        }
+
+        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            PageDocumentViewModels.Clear();
+            ViewModel.ThumbDocumentViewModels.Clear();
+            foreach (var pageDoc in ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController))
+            {
+                var pageViewDoc = pageDoc.GetViewCopy();
+                pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
+
+                PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
+
+                DocumentController thumbnailImageViewDoc = null;
+                if (!string.IsNullOrEmpty(pageDoc.Title))
+                {
+                    thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
+                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
+                }
+                else
+                {
+                    thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
+                }
+                thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
+                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) });
+            }
+            CurPage = PageDocumentViewModels.LastOrDefault();
         }
 
         private void CollectionPageView_LosingFocus(UIElement sender, LosingFocusEventArgs args)
@@ -81,33 +120,22 @@ namespace Dash
 
         private void CollectionPageView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            args.Handled = true;
-            if (ViewModel != null)
+            if (args != null)
+                args.Handled = true;
+            if (ViewModel != null && ViewModel != OldViewModel)
             {
-                ViewModel.ThumbDocumentViewModels.Clear();
-                foreach (var pageDoc in ViewModel.DocumentViewModels.Select((vm) => vm.DocumentController))
-                {
-                    var pageViewDoc = pageDoc.GetViewCopy();
-                    pageViewDoc.SetLayoutDimensions(double.NaN, double.NaN);
-
-                    PageDocumentViewModels.Add(new DocumentViewModel(pageViewDoc) { Undecorated = true });
-
-                    DocumentController thumbnailImageViewDoc = null;
-                    if (!string.IsNullOrEmpty(pageDoc.Title))
-                    {
-                        thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
-                        thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
-                    }
-                    else
-                    {
-                        thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
-                    }
-                    thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                    ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush=new SolidColorBrush(Colors.Transparent) });
-                }
+                if (OldViewModel != null)
+                    OldViewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged1;
+                ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+                DocumentViewModels_CollectionChanged(null, null);
+                OldViewModel = ViewModel;
             }
         }
 
+        private void DocumentViewModels_CollectionChanged1(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         private void xThumbs_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -380,7 +408,8 @@ namespace Dash
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var ind = xThumbs.SelectedIndex;
-            CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
+            if (PageDocumentViewModels.Count > 0)
+                CurPage = PageDocumentViewModels[Math.Max(0, Math.Min(PageDocumentViewModels.Count - 1, ind))];
             if (xThumbs.ItemsPanelRoot != null &&  ind >= 0 && ind < xThumbs.ItemsPanelRoot.Children.Count)
             {
                 var x = xThumbs.ItemsPanelRoot.Children[ind].GetFirstDescendantOfType<Control>();

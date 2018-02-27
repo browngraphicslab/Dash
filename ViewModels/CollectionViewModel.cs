@@ -33,7 +33,7 @@ namespace Dash
         static UserControl _previousDragEntered;
         FieldReference _collectionRef;
         Context        _context;
-        bool           _canDragItems;
+        bool           _canDragItems = true;
         double         _cellSize;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => _collectionRef.DereferenceToRoot<ListController<DocumentController>>(_context);
@@ -60,7 +60,7 @@ namespace Dash
             Debug.Assert(refToCollection != null);
             _collectionRef = refToCollection;
             _context = context;
-            AddViewModels(CollectionController.TypedData, context);
+            addViewModels(CollectionController.TypedData, context);
 
             var copiedContext = new Context(context);
 
@@ -71,7 +71,7 @@ namespace Dash
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                     if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                     {
-                        UpdateViewModels(cargs, copiedContext);
+                        updateViewModels(cargs, copiedContext);
                     }
                     else
                     {
@@ -81,7 +81,7 @@ namespace Dash
                         var documents = collectionFieldModelController.GetElements();
                         DocumentViewModels.Clear();
 
-                        AddViewModels(documents, context);
+                        addViewModels(documents, context);
                     }
 
                 });
@@ -94,18 +94,18 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private void UpdateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
         {
             switch (args.ListAction)
             {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    AddViewModels(args.ChangedDocuments, c);
+                    addViewModels(args.ChangedDocuments, c);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    RemoveViewModels(args.ChangedDocuments);
+                    removeViewModels(args.ChangedDocuments);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
@@ -116,7 +116,7 @@ namespace Dash
             }
         }
 
-        private void AddViewModels(List<DocumentController> documents, Context c)
+        void addViewModels(List<DocumentController> documents, Context c)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
@@ -128,7 +128,7 @@ namespace Dash
             }
         }
 
-        private void RemoveViewModels(List<DocumentController> documents)
+        void removeViewModels(List<DocumentController> documents)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
@@ -209,26 +209,6 @@ namespace Dash
         {
             get { return _itemSelectionMode; }
             set { SetProperty(ref _itemSelectionMode, value); }
-        }
-
-        #endregion
-
-        #region Event Handlers
-
-        /// <summary>
-        /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
-        /// **Note that this removes the DocumentModel as well, and any other associated DocumentViewModels.
-        /// </summary>
-        /// <param name="sender">The "Delete" menu option</param>
-        /// <param name="e"></param>
-        public void DeleteSelected_Tapped()
-        {
-            var itemsToDelete = SelectionGroup.ToList();
-            SelectionGroup.Clear();
-            foreach (var vmp in itemsToDelete)
-            {
-                CollectionController.Remove(vmp.DocumentController);
-            }
         }
 
         #endregion
@@ -766,19 +746,6 @@ namespace Dash
         {
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
-        }
-
-        #endregion
-
-        #region Selection
-
-        public void ToggleSelectAllItems(ListViewBase listView)
-        {
-            var isAllItemsSelected = listView.SelectedItems.Count == DocumentViewModels.Count;
-            if (!isAllItemsSelected)
-                listView.SelectAll();
-            else
-                listView.SelectedItems.Clear();
         }
 
         #endregion

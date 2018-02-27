@@ -105,11 +105,13 @@ namespace Dash
             Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
+                Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+                Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
             Unloaded += (sender, e) =>
             {
                 Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp -= CoreWindow_KeyUp;
+                Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
             };
 
             PointerPressed += (sender, e) =>  ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
@@ -122,9 +124,6 @@ namespace Dash
                 ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
                 PositionContextPreview();
             };
-
-            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-            Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
 
             // setup DraggerButton
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
@@ -236,25 +235,6 @@ namespace Dash
 
                 HandleShiftEnter();
             }
-        }
-
-        public void ToggleMultiSelected(bool isMultiSelected)
-        {
-            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
-            if (isMultiSelected == _multiSelected || freeformView == null)
-                return;
-            if (!isMultiSelected)
-            {
-                this.CanDrag = false;
-                xTargetContentGrid.BorderThickness = new Thickness(0);
-            }
-            else
-            {
-                this.CanDrag = true;
-                xTargetContentGrid.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
-                xTargetContentGrid.BorderThickness = new Thickness(2);
-            }
-            _multiSelected = isMultiSelected;
         }
 
         public void ShowLocalContext(bool showContext)
@@ -560,7 +540,7 @@ namespace Dash
 
         #region Activation
 
-        public void MarqueeSelectBorder(bool selected)
+        public void SetSelectionBorder(bool selected)
         {
             xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);

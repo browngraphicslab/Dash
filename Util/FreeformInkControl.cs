@@ -200,20 +200,11 @@ namespace Dash
         /// <param name="selectionPoints"></param>
         private void LassoSelectDocs(PointCollection selectionPoints)
         {
-            SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
             var selectionList =
                 LassoHelper.GetSelectedDocuments(
                     new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000)))); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl
-            foreach (var docView in selectionList)
-            {
-                FreeformView.Select(docView);
-            }
-            //Makes the collectionview's selection mode "Multiple" if documents were selected.
-            if (!FreeformView.IsSelectionEnabled && selectionList.Count > 0) 
-            {
-                FreeformView.MakeSelectionModeMultiple();
-            }
+            FreeformView.SelectDocs(selectionList);
         }
 
         /// <summary>
