@@ -28,7 +28,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase, ICollectionViewModel
+    public class CollectionViewModel : ViewModelBase
     {
         static UserControl _previousDragEntered;
         FieldReference _collectionRef;

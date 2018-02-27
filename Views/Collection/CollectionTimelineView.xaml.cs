@@ -163,7 +163,7 @@ namespace Dash
             Initialize(ViewModel);
         }
 
-        private void Initialize(ICollectionViewModel viewModel)
+        private void Initialize(CollectionViewModel viewModel)
         {
             foreach (var dvm in viewModel.DocumentViewModels)
             {
@@ -176,13 +176,13 @@ namespace Dash
             UpdateMetadataMinAndMax();
         }
 
-        private void AddViewModelEvents(ICollectionViewModel viewModel)
+        private void AddViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
         }
 
-        private void RemoveViewModelEvents(ICollectionViewModel viewModel)
+        private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;

@@ -405,7 +405,6 @@
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
-    <Compile Include="ViewModels\ICollectionViewModel.cs" />
     <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
     <Compile Include="Views\Operators\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>

@@ -73,7 +73,7 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e, ICollectionViewModel collectionViewModel)
+        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e, CollectionViewModel collectionViewModel)
         {
             // the point where the items will be dropped
             var where = new Point();
@@ -90,7 +90,7 @@ namespace Dash
             HandleDrop(e.DataView, where, collectionViewModel);
         }
 
-        public static async void HandleDrop(DataPackageView dataView, Point where, ICollectionViewModel collectionViewModel)
+        public static async void HandleDrop(DataPackageView dataView, Point where, CollectionViewModel collectionViewModel)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
