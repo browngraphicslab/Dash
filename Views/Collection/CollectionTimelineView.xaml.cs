@@ -140,19 +140,19 @@ namespace Dash
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight - 80;
 
-            LayoutTimelineElements();
+            LayoutTimelineElements(ActualWidth - 420);
 
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
             
             MetadataUpdated?.Invoke();
 
-            var width = CurrentXPosition + 100;
-            var minWidth = ActualWidth - 160;
-            if (width < minWidth)
-            {
-                width = minWidth;
-            }
+            var width = ActualWidth - 160;
+            //var minWidth = ActualWidth - 160;
+            //if (width < minWidth)
+            //{
+            //    width = minWidth;
+            //}
 
             SetTimelineWidth(width);
         }
@@ -164,7 +164,7 @@ namespace Dash
         /// <summary>
         /// Spaces out all the timeline elements
         /// </summary>
-        private void LayoutTimelineElements()
+        private void LayoutTimelineElements(double width)
         {
             CurrentXPosition = 0;
             CurrentTopY = 0;
@@ -172,7 +172,15 @@ namespace Dash
             {
                 PositionElement(element);
             }
+
+            var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
+            foreach (var element in _contextList)
+            {
+                element.PositionX *= scaleFactor;
+            }
         }
+
+       
 
         /// <summary>
         /// Positions a specific element along the timeline
