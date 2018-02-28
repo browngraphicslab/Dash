@@ -51,7 +51,6 @@ namespace Dash
 
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
-            SelectionGroup = new List<DocumentViewModel>();
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             Debug.Assert(refToCollection != null);
