@@ -166,6 +166,7 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     Document = CurPage.DataDocument,
                     Key = CaptionKey,
+                    FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Converter = new ObjectToStringConverter()
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);

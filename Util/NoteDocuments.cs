@@ -284,7 +284,18 @@ namespace Dash
                     [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
-                return new DocumentController(fields, DocumentType, _prototypeID);
+                var protoDoc = new DocumentController(fields, DocumentType, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [RichTextTitleOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
+                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -312,9 +323,10 @@ namespace Dash
                 _prototypeID = "223BB098-78FA-4D61-8D18-D9E15086AC39";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(KeyStore.TitleKey,    new TextController(title), true);
+                if (!string.IsNullOrEmpty(title))
+                    dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 dataDocument.SetField(KeyStore.HtmlTextKey, new TextController(text ?? "Html stuff here"), true);
-                dataDocument.SetField(KeyStore.ThisKey,     dataDocument, true);
+                dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
                 
                 var docLayout = CreateLayout();
                 docLayout.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
