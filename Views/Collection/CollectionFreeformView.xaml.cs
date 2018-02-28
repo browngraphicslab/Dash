@@ -68,11 +68,6 @@ namespace Dash
 
         public CollectionFreeformView()
         {
-            void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
-            {
-                if (args.VirtualKey == VirtualKey.Back)
-                    ViewModel.RemoveDocuments(ViewModel.SelectionGroup.Select(vm => vm.DocumentController).ToList());
-            }
             InitializeComponent();
             Loaded += (sender, e) =>
             {
@@ -80,14 +75,9 @@ namespace Dash
                 DataContextChanged += OnDataContextChanged;
                 if (ViewModel != null)
                     OnDataContextChanged(null, null);
-                Window.Current.CoreWindow.KeyUp += CoreWindow_KeyUp;
                 setupCanvases();
             };
-            Unloaded += (sender, e) =>
-            {
-                _lastViewModel = null;
-                Window.Current.CoreWindow.KeyUp -= CoreWindow_KeyUp;
-            };
+            Unloaded  += (sender, e) => _lastViewModel = null;
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
             Drop      += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
