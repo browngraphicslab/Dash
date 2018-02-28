@@ -161,7 +161,7 @@ namespace Dash
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
 
-                var currPageBinding = new FieldBinding<FieldControllerBase>()
+                var currPageBinding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.TwoWay,
                     Document = CurPage.DataDocument,
