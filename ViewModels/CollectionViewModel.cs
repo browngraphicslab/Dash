@@ -607,6 +607,18 @@ namespace Dash
                 }
             }
             // if the user drags a data document
+            else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
+            {
+                var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
+                foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                {
+                    var start = dragModel.First().GetDraggedDocument().GetPositionField().Data;
+                    AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X + where.X,
+                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y + where.Y), true)).ToList(), null);
+                }
+            }
+            // if the user drags a data document
             else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];

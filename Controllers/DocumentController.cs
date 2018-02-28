@@ -794,7 +794,7 @@ namespace Dash
 
             foreach (var field in array)
             {
-                if (SetFieldHelper(field.Key, field.Value, forceMask))
+                if (field.Key != null && SetFieldHelper(field.Key, field.Value, forceMask))
                 {
                     shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
