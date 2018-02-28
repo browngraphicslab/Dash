@@ -46,9 +46,6 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
-
-        // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModel> SelectionGroup { get; set; }
         public KeyController OutputKey { get; set; }
         public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.CollectionKey;
 
