@@ -403,10 +403,8 @@
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\UITask.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
-    <Compile Include="ViewModels\ICollectionViewModel.cs" />
     <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
     <Compile Include="Views\Operators\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
