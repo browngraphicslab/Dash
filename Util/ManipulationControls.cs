@@ -348,7 +348,7 @@ namespace Dash
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {

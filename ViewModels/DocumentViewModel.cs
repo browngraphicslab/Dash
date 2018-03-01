@@ -254,7 +254,7 @@ namespace Dash
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X , currentTranslate.Y + deltaTranslate.Y);
 
             Position = translate;
             Scale = scaleAmount;

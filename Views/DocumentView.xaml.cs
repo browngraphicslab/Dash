@@ -362,108 +362,6 @@ namespace Dash
             }
         }
 
-        // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            ToggleSelectionBorderAndChrome(false);
-
-            _ptrIn = false;
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-            if (f1State.HasFlag(CoreVirtualKeyStates.None)) ShowLocalContext(false);
-        }
-
-        // since this is public it can be called with any parameters, be safe, check everything
-        public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            ToggleSelectionBorderAndChrome(true);
-
-
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-
-            _ptrIn = true;
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-            if (f1State.HasFlag(CoreVirtualKeyStates.Down)) ShowLocalContext(true);
-            if (f2State.HasFlag(CoreVirtualKeyStates.Down)) ShowSelectedContext(); // TODO show selected row
-        }
-
-        private void OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Contains(StandardDataFormats.StorageItems)) e.Handled = true;
-            ParentCollection?.ViewModel.ChangeIndicationColor(ParentCollection.CurrentView, Colors.Transparent);
-        }
-
-        /// <summary>
-        /// Brings the element to the front of its containing parent canvas.
-        /// </summary>
-        public void ToFront()
-        {
-            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
-                return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-        }
-
-
-        
-        /// <summary>
-        /// Removes all handler event.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void This_Unloaded(object sender, RoutedEventArgs e)
-        {
-            //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
-            DraggerButton.PointerPressed -= DraggerButton_PointerPressed;
-            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
-        }
-
-        private void This_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel != null && !ViewModel.Undecorated)
-            {
-                xTitleIcon.Tapped += (s, args) => {
-                    ShowContext();
-                    args.Handled = true;
-                };
-                // add manipulation code
-                ManipulationControls = new ManipulationControls(this, new List<FrameworkElement>(new FrameworkElement[] { xTitleIcon }));
-                ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
-            }
-
-            //Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
-            DraggerButton.PointerPressed += DraggerButton_PointerPressed;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            // Adds a function to tabmenu, which brings said DocumentView to focus 
-            // this gets the hierarchical view of the document, clicking on this will shimmy over to this
-
-            // add corresponding instance of this to hierarchical view
-            if (!IsMainCollection() && ViewModel != null)
-            {
-                if (double.IsNaN(ViewModel.Width) &&
-                    (ParentCollection?.CurrentView is CollectionFreeformView))
-                {
-                    ViewModel.Width = 50;
-                    ViewModel.Height = 50;
-                }
-            }
-
-            ToFront();
-            if (ViewModel?.DocumentController?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == true)
-            {
-                ManipulationControls.ElementOnManipulationCompleted(null, null); // TODO this causes groups to show up, and needs to be moved
-                return;
-            }
-        }
-
-        private void DraggerButton_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
-            if (ManipulationMode == ManipulationModes.All)
-                e.Handled = true;
-        }
-
         #region Xaml Styling Methods (used by operator/collection view)
 
         /// <summary>
@@ -504,63 +402,6 @@ namespace Dash
         #endregion
 
         /// <summary>
-        /// Update viewmodel when manipulator moves document
-        /// </summary>
-        /// <param name="delta"></param>
-        private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
-        {
-            //ToggleGroupSelectionBorderColor(true);
-            var marqueeDocs = GetMarqueeDocuments();
-            if (marqueeDocs != null)
-                foreach (var doc in marqueeDocs)
-                    doc.ViewModel?.TransformDelta(delta); 
-            else
-                ViewModel?.TransformDelta(delta);
-        }
-
-        /// <summary>
-        /// Resizes the CollectionView according to the increments in width and height. 
-        /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
-        /// the Grid must change size to accomodate the height of the ListView.
-        /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        Size Resize(double dx = 0, double dy = 0)
-        {
-            var dvm = DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                Debug.Assert(dvm != null, "dvm != null");
-                Debug.Assert(dvm.Width != double.NaN);
-                Debug.Assert(dvm.Height != double.NaN);
-                dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
-                dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
-                // should we allow documents with NaN's for width & height to be resized?
-                return new Size(dvm.Width, dvm.Height);
-            }
-            return new Size();
-        }
-        
-        /// <summary>
-        /// Resizes the document while keeping its original width/height ratio.
-        /// </summary>
-        /// <param name="e"></param>
-        public void ProportionalResize(ManipulationDeltaRoutedEventArgs e)
-        {
-            var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-            var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-            var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-            var curScale = ViewModel.Scale;
-            var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-            ViewModel.Scale = new Point(scale, scale);
-
-            //var deltaMax = Math.Max(e.Delta.Translation.X / ActualWidth, e.Delta.Translation.Y / ActualHeight);
-            //var scale = Math.Max(Math.Min(ViewModel.Scale.X * (1 + deltaMax), 5), 0.2);
-            //ViewModel.Scale = new Point(scale, scale);
-        }
-
-        /// <summary>
         /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
@@ -568,10 +409,6 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var proportionalScaling = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            e.Handled = true;
-            if (proportionalScaling)
-            {        
             /// <summary>
             /// Resizes the CollectionView according to the increments in width and height. 
             /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 

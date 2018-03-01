@@ -96,7 +96,7 @@ namespace Dash
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        public void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) ||
                 Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
