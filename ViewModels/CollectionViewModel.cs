@@ -114,12 +114,13 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents, Context c)
         {
-            using (BindableDocumentViewModels.DeferRefresh())
+            using (BindableDocumentViewModels.DeferRefresh())   
             {
                 foreach (var documentController in documents)
                 {
                     var documentViewModel = new DocumentViewModel(documentController, c);
-                    DocumentViewModels.Add(documentViewModel);
+                    if (!DocumentViewModels.Contains(documentViewModel))
+                        DocumentViewModels.Add(documentViewModel);
                 }
             }
         }

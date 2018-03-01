@@ -114,7 +114,6 @@ namespace Dash
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
         void setupCanvases() {
 
             MakePreviewTextbox();
@@ -135,7 +134,6 @@ namespace Dash
                 ViewManipulationControls.FitToParent();
             }
         }
-
         #endregion
 
         #region Manipulation
@@ -247,27 +245,28 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
+        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
-                X = transformationDelta.Translate.X,
-                Y = transformationDelta.Translate.Y
+                X = transformation.Translate.X,
+                Y = transformation.Translate.Y
             };
 
             // calculate the scale delta
             var scaleDelta = new ScaleTransform
             {
-                CenterX = transformationDelta.ScaleCenter.X,
-                CenterY = transformationDelta.ScaleCenter.Y,
-                ScaleX = transformationDelta.ScaleAmount.X,
-                ScaleY = transformationDelta.ScaleAmount.Y
+                CenterX = transformation.ScaleCenter.X,
+                CenterY = transformation.ScaleCenter.Y,
+                ScaleX = transformation.ScaleAmount.X,
+                ScaleY = transformation.ScaleAmount.Y
             };
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
+            if (!abs)
+                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
@@ -278,7 +277,7 @@ namespace Dash
         #endregion
 
         #region BackgroundTiling
-        
+
         bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
         const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE

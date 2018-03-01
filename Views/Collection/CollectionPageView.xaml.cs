@@ -228,7 +228,6 @@ namespace Dash
             {
                 xDocView.DataContext = value;
 
-
                 var binding = new FieldBinding<TextController>()
                 {
                     Mode = BindingMode.OneWay,
