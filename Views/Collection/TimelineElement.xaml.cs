@@ -106,7 +106,7 @@ namespace Dash
                 thumbnailImageViewDoc = (vm.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? vm.DocumentViewModel.DocumentController).GetViewCopy();
             }
             thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
-            ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) };
+            ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc) { Width= 220, BackgroundBrush = new SolidColorBrush(Colors.Transparent) };
         }
 
         #endregion
@@ -121,7 +121,7 @@ namespace Dash
             xTopY.Height = new GridLength(vm.TitleY);
 
             var x = vm.PositionX - 270;
-            var y = 503 - EllipseSize / 2;
+            var y = 501 - EllipseSize / 2;
 
             RenderTransform = new TranslateTransform()
             {

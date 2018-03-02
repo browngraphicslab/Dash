@@ -52,6 +52,7 @@ namespace Dash
         public double TitleY;
         public double PositionX;
 
+
         public enum DisplayType { Above, Below, Hidden};
 
         public DisplayType CurrDisplay;
@@ -83,6 +84,8 @@ namespace Dash
 
         private double CurrentXPosition;
         private double CurrentTopY;
+
+        public double Scale;
 
 
         public List<double> DisplayedXPositions { get; private set; }
@@ -123,6 +126,7 @@ namespace Dash
 
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
         {
+            Scale = .75;
             SetTimelineFormatting();
         }
 
@@ -136,28 +140,31 @@ namespace Dash
         /// </summary>
         private void SetTimelineFormatting()
         {
-            var minWidth = 300;
-
             DisplayedXPositions = new List<double>();
+
+
+            var scaledWidth = Scale * ActualWidth;
+
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight;
 
 
-            var width = ActualWidth - 160;
-            if(width < minWidth)
+            var adjustedWidth = scaledWidth - 160;
+            var minWidth = 300;
+            if (adjustedWidth < minWidth)
             {
-                width = minWidth;
+                adjustedWidth = minWidth;
             }
 
 
-            LayoutTimelineElements(width);
+            LayoutTimelineElements(scaledWidth);
 
             Metadata.ActualHeight = ActualHeight;
-            Metadata.ActualWidth = ActualWidth;
+            Metadata.ActualWidth = scaledWidth;
             
             MetadataUpdated?.Invoke();
 
-            SetTimelineWidth(width);
+            SetTimelineWidth(scaledWidth);
         }
 
 
@@ -170,15 +177,18 @@ namespace Dash
         private void LayoutTimelineElements(double width)
         {
             CurrentXPosition = 0;
-            CurrentTopY = 0;
+            CurrentTopY = 30;
             foreach (var element in _contextList)
             {
                 PositionElement(element);
             }
 
+            var offset = _contextList[0].PositionX - 100;
+
             var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
             foreach (var element in _contextList)
             {
+                element.PositionX -= offset;
                 element.PositionX *= scaleFactor;
             }
         }
@@ -219,9 +229,10 @@ namespace Dash
                 element.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
             }
 
+            //stacking vertically
             element.TitleY = CurrentTopY;
             CurrentTopY += 40;
-            if (CurrentTopY > 200) CurrentTopY = 0;
+            if (CurrentTopY > 200) CurrentTopY = 30;
         }
 
         /// <summary>

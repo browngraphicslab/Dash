@@ -23,9 +23,9 @@
             <Grid Margin="0,-250,0,0">
                 <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80" Width="1800" Height="80">
                     <Grid Name="xRectangleGrid">
-                        <Rectangle x:Name="xHorizontalLine" Height="3" Fill="Gray" Width="1300" Canvas.Left="80"></Rectangle>
-                        <Rectangle x:Name="xVerticalLineLeft" Height="35" Width="3" Canvas.Left="80" Canvas.Top="-15"  Fill="Gray" VerticalAlignment="Center" HorizontalAlignment="Left"></Rectangle>
-                        <Rectangle x:Name="xVerticalLineRight" Height="35" Width="3" Canvas.Left="1380" Canvas.Top="-15" Fill="Gray" HorizontalAlignment="Right"></Rectangle>
+                        <Rectangle x:Name="xHorizontalLine" Height="2" Fill="Gray" Width="1300" Canvas.Left="80"></Rectangle>
+                        <Rectangle x:Name="xVerticalLineLeft" Height="30" Width="3" Canvas.Left="80" Canvas.Top="-15"  Fill="Gray" VerticalAlignment="Center" HorizontalAlignment="Left"></Rectangle>
+                        <Rectangle x:Name="xVerticalLineRight" Height="30" Width="3" Canvas.Left="1380" Canvas.Top="-15" Fill="Gray" HorizontalAlignment="Right"></Rectangle>
                     </Grid>
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
