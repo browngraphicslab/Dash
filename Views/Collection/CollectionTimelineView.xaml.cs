@@ -136,23 +136,26 @@ namespace Dash
         /// </summary>
         private void SetTimelineFormatting()
         {
+            var minWidth = 300;
+
             DisplayedXPositions = new List<double>();
             xScrollViewer.Width = ActualWidth;
-            xScrollViewer.Height = ActualHeight - 80;
+            xScrollViewer.Height = ActualHeight;
 
-            LayoutTimelineElements(ActualWidth - 420);
+
+            var width = ActualWidth - 160;
+            if(width < minWidth)
+            {
+                width = minWidth;
+            }
+
+
+            LayoutTimelineElements(width);
 
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = ActualWidth;
             
             MetadataUpdated?.Invoke();
-
-            var width = ActualWidth - 160;
-            //var minWidth = ActualWidth - 160;
-            //if (width < minWidth)
-            //{
-            //    width = minWidth;
-            //}
 
             SetTimelineWidth(width);
         }

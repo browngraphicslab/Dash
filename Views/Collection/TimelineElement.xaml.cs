@@ -65,6 +65,10 @@ namespace Dash
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
+            xTimeBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortDateString();
+            xDateBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortTimeString();
+
+
             UpdateTimelinePosition();
             LoadContext();
 
@@ -116,8 +120,8 @@ namespace Dash
 
             xTopY.Height = new GridLength(vm.TitleY);
 
-            var x = vm.PositionX;
-            var y = 505 - EllipseSize / 2;
+            var x = vm.PositionX - 270;
+            var y = 503 - EllipseSize / 2;
 
             RenderTransform = new TranslateTransform()
             {
@@ -152,11 +156,13 @@ namespace Dash
             {
                 xTopViewGrid.Visibility = Visibility.Collapsed;
                 xBottomViewGrid.Visibility = Visibility.Visible;
+                xDateTimeStackPanel.Visibility = Visibility.Visible;
             }
             else if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above)
             {
                 xTopViewGrid.Visibility = Visibility.Visible;
                 xBottomViewGrid.Visibility = Visibility.Collapsed;
+                xDateTimeStackPanel.Visibility = Visibility.Collapsed;
             }
             else if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Hidden)
             {

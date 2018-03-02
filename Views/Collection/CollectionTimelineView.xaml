@@ -19,7 +19,7 @@
         
         
         <!--background lines-->
-        <ScrollViewer Name="xScrollViewer" Width="1500" Margin="0,78,0,0" HorizontalAlignment="Left"  Height="910" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+        <ScrollViewer Name="xScrollViewer" Width="1500" HorizontalAlignment="Left"  Height="910" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
             <Grid Margin="0,-250,0,0">
                 <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80" Width="1800" Height="80">
                     <Grid Name="xRectangleGrid">
