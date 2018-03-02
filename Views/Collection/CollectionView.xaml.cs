@@ -351,9 +351,6 @@ namespace Dash
                         GetFlyoutOriginCoordinates())
                     : new Point();
 
-                // var where = GetFlyoutOriginCoordinates();
-                //save point in class when right click tapped
-
                 var ddm = content.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 if (ddm != null)
                 {
@@ -384,16 +381,17 @@ namespace Dash
                         imageReceived = await content.GetBitmapAsync();
                         if (imageReceived != null)
                         {
-                            
                             // To output the text from this example, you need a TextBlock control
-                            Debug.WriteLine("Clipboard now contains: " + imageReceived);
 
                             IRandomAccessStreamWithContentType thumbnailStream = await imageReceived.OpenReadAsync();
 
                             BitmapImage bit = new BitmapImage();
                             bit.SetSource(thumbnailStream);
                             Uri uri = bit.UriSource;
-                            Debug.Print("bit: " + uri);
+                            //uri is null
+                            Debug.Print("bit: " + uri.ToString());
+
+                            //need to convert thumbnailStream to uri!
                             
                             //can make bitmap with source, but then wont have uri
 

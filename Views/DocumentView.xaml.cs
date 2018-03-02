@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
@@ -25,6 +27,7 @@ using DashShared;
 using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Path = Windows.UI.Xaml.Shapes.Path;
 
 //using Dash.Util;
 
@@ -1420,7 +1423,7 @@ namespace Dash
         }
 
 
-        private void MenuFlyoutItemCopy2_OnClick(object sender, RoutedEventArgs e)
+        private async void MenuFlyoutItemCopy2_OnClick(object sender, RoutedEventArgs e)
         {
             
 
@@ -1431,12 +1434,21 @@ namespace Dash
             {
                 Clipboard.Clear();
                 Uri imgUri = this.ViewModel.DocumentController.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data;
-                // Create an absolute Uri from a string.
 
-                BitmapImage bitmapImage = new BitmapImage(imgUri);
+                if (imgUri.IsFile)
+                {
+                    var storageFile =
+                        await StorageFile.GetFileFromPathAsync(imgUri.LocalPath);
 
-                dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromUri(imgUri));
-                //this should work, but does not :(
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(storageFile));
+                }
+                else
+                {
+                    Debug.WriteLine("Copying an image from the web");
+                    Debug.Assert(false,
+                        "this code is untested, so if you hit this make sure copying images from the web works");
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromUri(imgUri));
+                }
             }
             else
             {
