@@ -244,7 +244,7 @@ namespace Dash
         {
             X = XPos,
             Y = YPos
-        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
 
         public void TransformDelta(TransformGroupData delta)
         {
@@ -331,7 +331,7 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-
+            BackgroundBrush = BackgroundBrush ?? new SolidColorBrush(Color.FromArgb(180,255,255,255));
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
 

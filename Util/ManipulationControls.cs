@@ -96,7 +96,9 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
+
             var currentBoundingBox = docRoot.ViewModel.Bounds;
+
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
@@ -119,11 +121,13 @@ namespace Dash
             var side = closestDocumentView.Item2;
 
             var topLeftPoint = documentViewModel.Position;
-            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth,
-                documentViewModel.YPos + documentViewModel.ActualHeight);
+            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth * documentViewModel.Scale.X,
+                documentViewModel.YPos + documentViewModel.ActualHeight * documentViewModel.Scale.Y);
 
-            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth, currrentDocModel.ActualHeight);
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth * currrentDocModel.Scale.X, currrentDocModel.ActualHeight * currrentDocModel.Scale.Y);
 
+            Debug.WriteLine("P " + documentViewModel.Position);
+            Debug.WriteLine("P2 " + currrentDocModel.Position);
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
             currrentDocModel.Position = translate;
