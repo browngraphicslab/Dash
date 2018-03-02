@@ -109,7 +109,7 @@ namespace Dash
             manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translation, 1.0f);
 
             //Only preview a snap if the grouping only includes the current node. 
-            manipulationDocumentTarget.ManipulationControls.Snap(true);
+            manipulationDocumentTarget.ManipulationControls.Align(translation);
 
             if (e != null)
                 e.Handled = true;

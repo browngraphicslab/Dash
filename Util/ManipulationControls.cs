@@ -86,15 +86,80 @@ namespace Dash
         private const double ALIGNMENT_THRESHOLD = .2;
 
 
-
-        //START OF NEW SNAPPING
-        public void Snap(bool preview)
+        enum AlignmentAxis
         {
-            //Stop snapping if panning current collection
+            XMin, XMid, XMax, YMin, YMid, YMax
+        }
+
+        double[] AlignmentAxes(Rect bounds)
+        {
+            double[] axes = new double[6];
+            axes[(int)AlignmentAxis.XMin] = bounds.Left;
+            axes[(int)AlignmentAxis.XMid] = bounds.Left + bounds.Width/2.0;
+            axes[(int)AlignmentAxis.XMax] = bounds.Right;
+            axes[(int)AlignmentAxis.YMin] = bounds.Top;
+            axes[(int)AlignmentAxis.YMid] = bounds.Top + bounds.Height / 2.0;
+            axes[(int)AlignmentAxis.YMax] = bounds.Bottom;
+            return axes;
+        }
+
+        public Point Align(Point translate)
+        {
+            MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+            //Don't do any alignment if simply panning the collection
             var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
-                return;
+                return translate;
 
+            var boundsBeforeTranslation = ParentDocument.ViewModel.Bounds;
+            var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + translate.X, boundsBeforeTranslation.Y + translate.Y, boundsBeforeTranslation.Width, boundsBeforeTranslation.Height);
+            var listOfSiblings = collectionFreeformView.DocumentViews.Where(docView => docView != ParentDocument && docView.ViewModel != null).ToList();
+            var parentDocumentAxes = AlignmentAxes(parentDocumentBounds);
+            //var previewLines = new List<(Point, Point)>();
+
+            foreach(var documentView in listOfSiblings)
+            {
+                var documentBounds = documentView.ViewModel.Bounds;
+                var documentAxes = AlignmentAxes(documentBounds);
+
+                //For every axis in the ParentDocument
+                for(int parentAxis = 0; parentAxis < 6; parentAxis++)
+                {
+                    for(int otherAxis = 3 * (parentAxis/3); otherAxis < 3* (parentAxis/3) + 3; otherAxis++)
+                    {
+                        var delta = documentAxes[otherAxis] - parentDocumentAxes[parentAxis];
+                        var distance = Math.Abs(delta);
+                        
+                        //If X axis
+                        if(parentAxis < 3 && distance < 15)
+                        {
+                            if((translate.X < 0 && parentDocumentAxes[parentAxis] <= documentAxes[otherAxis]) || ((translate.X > 0 && parentDocumentAxes[parentAxis] >= documentAxes[otherAxis])))
+                            {
+                                break;
+                            }
+                            ShowPreviewLine(parentDocumentAxes, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, translate.Y));
+                            return new Point(delta, translate.Y);
+                        }
+                        if(parentAxis >=3 && distance < 15)
+                        {
+                            if ((translate.Y < 0 && parentDocumentAxes[parentAxis] <= documentAxes[otherAxis]) || ((translate.Y > 0 && parentDocumentAxes[parentAxis] >= documentAxes[otherAxis])))
+                            {
+                                break;
+                            }
+                            ShowPreviewLine(parentDocumentAxes, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, translate.Y));
+                            return new Point(translate.X, delta);
+
+                        }
+
+                    }
+                    
+                }
+            }
+
+            return translate ;
+            
+            /*
 
             var closest = GetClosestDocumentView(); //Get the closest DocumentView to snap to 
             if (closest == null)
@@ -110,7 +175,43 @@ namespace Dash
             {
                 SnapToDocument(closest, preview); 
             }
+            */
         }
+
+        private void ShowPreviewLine(double[] parentDocumentAxes, double[] otherDocumentAxes, AlignmentAxis parentAxis, AlignmentAxis otherAxis, Point point)
+        {
+            MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Visible;
+
+            Point p1, p2;
+            //If X axis
+            if((int) parentAxis < 3)
+            {
+                p1.X = otherDocumentAxes[(int)otherAxis];
+                p2.X = otherDocumentAxes[(int)otherAxis];
+                p1.Y = Math.Min(parentDocumentAxes[(int)AlignmentAxis.YMin], otherDocumentAxes[(int)AlignmentAxis.YMin]);
+                p2.Y = Math.Max(parentDocumentAxes[(int)AlignmentAxis.YMax], otherDocumentAxes[(int)AlignmentAxis.YMax]);
+
+            }
+            else
+            {
+                p1.Y = otherDocumentAxes[(int)otherAxis];
+                p2.Y = otherDocumentAxes[(int)otherAxis];
+                p1.X = Math.Min(parentDocumentAxes[(int)AlignmentAxis.XMin], otherDocumentAxes[(int)AlignmentAxis.XMin]);
+                p2.X = Math.Max(parentDocumentAxes[(int)AlignmentAxis.XMax], otherDocumentAxes[(int)AlignmentAxis.XMax]);
+
+            }
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+
+
+            var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.xItemsControl.ItemsPanelRoot);
+            MainPage.Instance.AlignmentLine.X1 = screenPoint1.X;
+            MainPage.Instance.AlignmentLine.Y1 = screenPoint1.Y;
+            MainPage.Instance.AlignmentLine.X2 = screenPoint2.X;
+            MainPage.Instance.AlignmentLine.Y2 = screenPoint2.Y;
+
+        }
+
 
         private void SnapToDocument(Tuple<DocumentView, Side, double> closest, bool preview)
         {
@@ -309,11 +410,6 @@ namespace Dash
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
             var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.xItemsControl.ItemsPanelRoot);
 
-            //MainPage.Instance.TemporaryRectangle.Width = boundingBoxScreenSpace.Width;
-            //MainPage.Instance.TemporaryRectangle.Height = boundingBoxScreenSpace.Height;
-
-            //Canvas.SetLeft(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.X);
-            //Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
         }
 
 
@@ -470,11 +566,11 @@ namespace Dash
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
+                var deltaAfterAlignment = Align(delta);
 
-                TranslateAndScale(e.Position, delta, e.Delta.Scale);
+                TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
 
-                Snap(true);
                 e.Handled = true;
             }
         }
@@ -497,7 +593,7 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                //Align(false); //Align if you're dragging the element body and it's not a part of the group
 
                 //MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
                 MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
