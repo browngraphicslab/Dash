@@ -526,7 +526,8 @@ namespace Dash
         
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
+            var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                SelectionCanvas, xItemsControl.ItemsPanelRoot);
             if (_marquee != null && (e.Key == VirtualKey.Back || e.Key == VirtualKey.C))
             {
                 var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
