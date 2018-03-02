@@ -530,7 +530,6 @@ namespace Dash
                 SelectionCanvas, xItemsControl.ItemsPanelRoot);
             if (_marquee != null && (e.Key == VirtualKey.Back || e.Key == VirtualKey.C))
             {
-
                 var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                 var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
 
@@ -569,7 +568,7 @@ namespace Dash
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
-                        selectedDocs.Add(documentView);
+                        selectedDocs.Add( documentView);
                     }
                 }
             }
