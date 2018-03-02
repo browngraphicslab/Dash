@@ -126,13 +126,11 @@ namespace Dash
 
             var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth * currrentDocModel.Scale.X, currrentDocModel.ActualHeight * currrentDocModel.Scale.Y);
 
-            Debug.WriteLine("P " + documentViewModel.Position);
-            Debug.WriteLine("P2 " + currrentDocModel.Position);
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
             currrentDocModel.Position = translate;
-            currrentDocModel.Width = newBoundingBox.Width;
-            currrentDocModel.Height = newBoundingBox.Height;
+            currrentDocModel.Width = newBoundingBox.Width / currrentDocModel.Scale.X;
+            currrentDocModel.Height = newBoundingBox.Height / currrentDocModel.Scale.Y;
         }
 
 
