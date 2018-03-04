@@ -105,6 +105,7 @@ namespace Dash
                 {
                     positionController.Data = value;
                 }
+                else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
             }
         }
 
@@ -150,7 +151,8 @@ namespace Dash
                     if (widthFieldModelController != null)
                     {
                         widthFieldModelController.Data = value;
-                    }
+                    } else
+                        LayoutDocument.SetField(KeyStore.WidthFieldKey, new NumberController(value), true);
                 }
             }
         }
@@ -166,7 +168,11 @@ namespace Dash
                 {
                     var heightFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
                     if (heightFieldModelController != null)
+                    {
                         heightFieldModelController.Data = value;
+                    }
+                    else
+                        LayoutDocument.SetField(KeyStore.HeightFieldKey, new NumberController(value), true);
                 }
             }
         }
@@ -183,6 +189,8 @@ namespace Dash
                 {
                     scaleController.Data = value;
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
             }
         }
 
