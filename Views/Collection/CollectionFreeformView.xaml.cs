@@ -78,9 +78,6 @@ namespace Dash
                 setupCanvases();
             };
             Unloaded  += (sender, e) => _lastViewModel = null;
-            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
-            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
-            Drop      += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
             xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
             xOuterGrid.PointerExited  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             xOuterGrid.SizeChanged    += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
@@ -526,30 +523,28 @@ namespace Dash
         
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                SelectionCanvas, xItemsControl.ItemsPanelRoot);
-            if (_marquee != null && (e.Key == VirtualKey.Back || e.Key == VirtualKey.C))
+            if (_marquee != null && (e.Key == VirtualKey.C  || e.Key == VirtualKey.Back || e.Key == VirtualKey.G))
             {
-                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
-
-                if (e.Key == VirtualKey.C)
+                var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.C)
                 {
-                    ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+
+                    if (e.Key == VirtualKey.C)
+                    {
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    }
+
+                    foreach (var v in viewsinMarquee)
+                        v.DeleteDocument();
                 }
-
-                foreach (var v in viewsinMarquee)
-                    v.DeleteDocument();
-
-                DeselectAll();
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                e.Handled = true;
-            }
-            if (_marquee != null && e.Key == VirtualKey.G)
-            {
-                ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
-
+                if (e.Key == VirtualKey.G)
+                {
+                    ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
+                }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 e.Handled = true;

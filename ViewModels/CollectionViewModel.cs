@@ -426,8 +426,9 @@ namespace Dash
 
             RemoveDragDropIndication(sender as UserControl);
 
-            var where = sender is CollectionFreeformView ?
-                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+            var senderView = (sender as CollectionView)?.CurrentView;
+            var where = senderView is CollectionFreeformView ?
+                Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance)) :
                 new Point();
 
             // if we are dragging and dropping from the radial menu
@@ -686,7 +687,19 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragEnter Base");
+            this.HighlightPotentialDropTarget(sender as UserControl);
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.DragUIOverride.IsContentVisible = true;
+
+            e.Handled = true;
+        }
+        /// <summary>
+        /// Fired by a collection when an item is dragged over it
+        /// </summary>
+        public void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
             this.HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
@@ -703,9 +716,10 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
+            // bcz: this fix causes a hard crash sometimes -- just call HighlightPotentialDropTarget instead?
+            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one -
+            //var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            //parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as UserControl;
             if (element != null)

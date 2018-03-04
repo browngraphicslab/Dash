@@ -69,22 +69,6 @@ namespace Dash
         }
 
         #region DragAndDrop
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
-
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;

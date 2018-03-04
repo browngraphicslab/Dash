@@ -125,16 +125,19 @@ namespace Dash
             {
                 var r = Rect.Empty;
                 foreach (var dvm in _freeformView.ViewModel.DocumentViewModels)
+
                 {
                     r.Union(dvm.Bounds);
                 }
                 if (r != Rect.Empty)
                 {
-                    var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
-                    var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
-                    var trans = new Point(-r.Left * scaleAmt.X, -r.Top * scaleAmt.Y);
+                    var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var scale    = new Point(scaleAmt, scaleAmt);
+                    var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
 
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt), true);
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
                 }
             }
         }

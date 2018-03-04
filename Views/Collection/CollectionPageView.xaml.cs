@@ -298,24 +298,12 @@ namespace Dash
 
         #region DragAndDrop
 
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
         private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
             this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
-        private void xDocContainer_DragOver(object sender, DragEventArgs e)
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
             this.xDockSpots.Visibility = Windows.UI.Xaml.Visibility.Visible;
         }

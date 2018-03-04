@@ -95,7 +95,7 @@ namespace Dash
 
         public Point Position
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             set
             {
                 var positionController =
@@ -110,7 +110,7 @@ namespace Dash
 
         public double XPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
             set
             {
                 var positionController =
@@ -125,24 +125,7 @@ namespace Dash
 
         public double YPos
         {
-            get
-            {
-                var posField = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-                if (posField != null)
-                {
-                    return posField.Data.Y;
-                }
-
-                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                //if (groupField != null)
-                //{
-                //    return groupField.TypedData.Min(
-                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                //              double.PositiveInfinity);
-                //}
-
-                return double.PositiveInfinity; //Use inf so that sorting works reasonably
-            }
+            get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
             set
             {
                 var positionController =  LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
@@ -190,7 +173,7 @@ namespace Dash
 
         public Point Scale
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1,1);
             set
             {
                 var scaleController =

@@ -40,11 +40,7 @@ namespace Dash
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
         public UserControl CurrentView { get; set; }
-        public CollectionViewModel ViewModel
-        {
-            get => DataContext as CollectionViewModel;
-            set => DataContext = value;
-        }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
 
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
@@ -67,9 +63,13 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
-            ViewModel = vm;
+            DataContext = vm;
 
             Unloaded += CollectionView_Unloaded;
+            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
+            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
+            DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
+            Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             PointerPressed += OnPointerPressed;
         }

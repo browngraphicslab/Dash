@@ -29,13 +29,14 @@ namespace Dash
         public CollectionDBView()
         {
             this.InitializeComponent();
-            DataContextChanged += CollectionDBView_DataContextChanged;
             Loaded             += CollectionDBView_Loaded;
+            Unloaded           += CollectionDBView_Unloaded;
             SizeChanged        += (sender, e) => updateChart(new Context(ParentDocument), true);
             xParameter.Style    = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
             xTagCloud.TermDragStarting += XTagCloud_TermDragStarting;
         }
+
 
         void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
@@ -62,18 +63,23 @@ namespace Dash
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
         {
-            var dv = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
-            
-            ParentDocument = dv.ViewModel.DocumentController;
-            updateChart(new Context(ParentDocument));
+            DataContextChanged += CollectionDBView_DataContextChanged;
+            CollectionDBView_DataContextChanged(sender, null);
+        }
+        private void CollectionDBView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DataContextChanged -= CollectionDBView_DataContextChanged;
+            ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
         }
 
-        private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionDBView_DataContextChanged(object sender, DataContextChangedEventArgs args)
         {
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             updateChart(new Context(ParentDocument));
-        }   //Input Keys
+        }   
+        
+        //Input Keys
         public static readonly KeyController FilterFieldKey = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
         public static readonly KeyController BucketsKey = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
         public static readonly KeyController SelectedKey = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
@@ -87,14 +93,11 @@ namespace Dash
             get { return _parentDocument; }
             set
             {
+                if (ParentDocument != null)
+                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                 _parentDocument = value;
                 if (value != null)
                 {
-                    //if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
-                    //{
-                    //    _parentDocument = _parentDocument.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
-                    //}
-                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(BucketsKey) == null)
                         ParentDocument.SetField(BucketsKey, new ListController<NumberController>(new NumberController[] {
                                                         new NumberController(0), new NumberController(0), new NumberController(0), new NumberController(0)}), true);
@@ -148,7 +151,7 @@ namespace Dash
                 dargs.Reference.FieldKey.Equals(CollectionDBView.FilterFieldKey) ||
                 dargs.Reference.FieldKey.Equals(CollectionDBView.BucketsKey) && !autofit ||
                 dargs.Reference.FieldKey.Equals(CollectionDBView.SelectedKey) ||
-                dargs.Reference.FieldKey.Equals(ViewModel.CollectionKey))
+                dargs.Reference.FieldKey.Equals(ViewModel?.CollectionKey))
                 updateChart(new Context(ParentDocument));
         }
 
@@ -417,24 +420,7 @@ namespace Dash
         
 
         #region DragAndDrop
-
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("drop event from collection");
-
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
+        
 
         public void SetDropIndicationFill(Brush fill)
         {
