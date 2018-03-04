@@ -87,7 +87,7 @@ namespace Dash
 
         }
 
-        static public KeyController LookupKeyByName(string name)
+        public static KeyController LookupKeyByName(string name)
         {
             foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
             {

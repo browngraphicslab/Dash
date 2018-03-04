@@ -51,6 +51,12 @@ namespace DashShared
             return Equals((EntityBase) obj);
         }
 
+
+        public virtual bool ValueEquals(EntityBase otherModel)
+        {
+            return string.Equals(this.Serialize(), otherModel.Serialize());
+        }
+
         public override int GetHashCode()
         {
             return (Id != null ? Id.GetHashCode() : 0);

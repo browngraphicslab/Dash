@@ -5,6 +5,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType("mult")]
     public class MultiplyOperatorController : OperatorController
     {
 

@@ -19,6 +19,26 @@ namespace Dash
         }
     }
 
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class OperatorTypeAttribute : Attribute
+    {
+        private string _name;
+        public double version;
+
+        public OperatorTypeAttribute(string name)
+        {
+            this._name = name;
+
+            // Default value.
+            version = 1.0;
+        }
+
+        public string GetType()
+        {
+            return _name;
+        }
+    }
     public abstract class OperatorController : FieldModelController<OperatorModel>
     {
         /// <summary>

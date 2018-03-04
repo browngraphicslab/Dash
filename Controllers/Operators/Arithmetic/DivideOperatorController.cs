@@ -6,6 +6,7 @@ using DashShared.Models;
 
 namespace Dash
 {
+    [OperatorType("div")]
     public class DivideOperatorController : OperatorController
     {
 

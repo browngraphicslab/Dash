@@ -135,6 +135,9 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
                 xMainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+
+
+                OperatorScriptParser.TEST();
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(

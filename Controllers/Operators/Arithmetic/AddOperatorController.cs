@@ -4,6 +4,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType("add")]
     public class AddOperatorController : OperatorController
     {
         public AddOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

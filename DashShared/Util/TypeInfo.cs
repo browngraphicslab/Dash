@@ -59,6 +59,9 @@ namespace DashShared
         CollectionTitle,
         ImageToColorPalette,
         GroupTitle,
-        Quizlet
+        Quizlet,
+        ExecDish, //super useful
+        ParseSearchStringToDish,
+        IntersectByValue
     }
 }
