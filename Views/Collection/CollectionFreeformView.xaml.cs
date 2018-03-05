@@ -78,9 +78,6 @@ namespace Dash
                 setupCanvases();
             };
             Unloaded  += (sender, e) => _lastViewModel = null;
-            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
-            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
-            Drop      += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
             xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
             xOuterGrid.PointerExited  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             xOuterGrid.SizeChanged    += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
@@ -114,7 +111,6 @@ namespace Dash
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-
         void setupCanvases() {
 
             MakePreviewTextbox();
@@ -135,7 +131,6 @@ namespace Dash
                 ViewManipulationControls.FitToParent();
             }
         }
-
         #endregion
 
         #region Manipulation
@@ -247,27 +242,28 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
+        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
-                X = transformationDelta.Translate.X,
-                Y = transformationDelta.Translate.Y
+                X = transformation.Translate.X,
+                Y = transformation.Translate.Y
             };
 
             // calculate the scale delta
             var scaleDelta = new ScaleTransform
             {
-                CenterX = transformationDelta.ScaleCenter.X,
-                CenterY = transformationDelta.ScaleCenter.Y,
-                ScaleX = transformationDelta.ScaleAmount.X,
-                ScaleY = transformationDelta.ScaleAmount.Y
+                CenterX = transformation.ScaleCenter.X,
+                CenterY = transformation.ScaleCenter.Y,
+                ScaleX = transformation.ScaleAmount.X,
+                ScaleY = transformation.ScaleAmount.Y
             };
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
+            if (!abs)
+                composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
@@ -278,7 +274,7 @@ namespace Dash
         #endregion
 
         #region BackgroundTiling
-        
+
         bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
         const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
@@ -383,10 +379,7 @@ namespace Dash
         public void ShowTagKeyBox()
         {
             TagKeyBox.Visibility = Visibility.Visible;
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            Debug.WriteLine(mousePos);
-            mousePos = Util.PointTransformFromVisual(mousePos, Window.Current.Content, xOuterGrid);
+            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, xOuterGrid);
             TagKeyBox.RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
         }
 
@@ -527,29 +520,28 @@ namespace Dash
         
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var where = Util.PointTransformFromVisual(_marqueeAnchor, SelectionCanvas, this.xItemsControl.ItemsPanelRoot);
-            if (_marquee != null && (e.Key == VirtualKey.Back || e.Key == VirtualKey.C))
+            if (_marquee != null && (e.Key == VirtualKey.C  || e.Key == VirtualKey.Back || e.Key == VirtualKey.G))
             {
-                var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
-
-                if (e.Key == VirtualKey.C)
+                var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.C)
                 {
-                    ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+
+                    if (e.Key == VirtualKey.C)
+                    {
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    }
+
+                    foreach (var v in viewsinMarquee)
+                        v.DeleteDocument();
                 }
-
-                foreach (var v in viewsinMarquee)
-                    v.DeleteDocument();
-
-                DeselectAll();
-                MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                e.Handled = true;
-            }
-            if (_marquee != null && e.Key == VirtualKey.G)
-            {
-                ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
-
+                if (e.Key == VirtualKey.G)
+                {
+                    ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
+                }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 e.Handled = true;

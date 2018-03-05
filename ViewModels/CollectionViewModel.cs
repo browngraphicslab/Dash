@@ -114,12 +114,13 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents, Context c)
         {
-            using (BindableDocumentViewModels.DeferRefresh())
+            using (BindableDocumentViewModels.DeferRefresh())   
             {
                 foreach (var documentController in documents)
                 {
                     var documentViewModel = new DocumentViewModel(documentController, c);
-                    DocumentViewModels.Add(documentViewModel);
+                    if (!DocumentViewModels.Contains(documentViewModel))
+                        DocumentViewModels.Add(documentViewModel);
                 }
             }
         }
@@ -368,7 +369,7 @@ namespace Dash
         {
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
-                FileDropHelper.HandleDrop(dvp, where, this);
+                FileDropHelper.HandleDrop(where, dvp, this);
             }
             else if (dvp.Contains(StandardDataFormats.Bitmap))
             {
@@ -404,7 +405,7 @@ namespace Dash
             await encoder.FlushAsync();
             var dp = new DataPackage();
             dp.SetStorageItems(new IStorageItem[] { savefile });
-            FileDropHelper.HandleDrop(dp.GetView(), where, this);
+            FileDropHelper.HandleDrop(where, dp.GetView(), this);
         }
 
         /// <summary>
@@ -425,9 +426,16 @@ namespace Dash
 
             RemoveDragDropIndication(sender as UserControl);
 
-            var where = sender is CollectionFreeformView ?
-                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                new Point();
+            var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
+            var where = new Point();
+            if (senderView is CollectionFreeformView)
+                where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            else if (DocumentViewModels.Count > 0)
+            {
+                var lastPos = DocumentViewModels.Last().Position;
+                where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
+            }
+
 
             // if we are dragging and dropping from the radial menu
             if (e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) == true)
@@ -435,14 +443,14 @@ namespace Dash
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
                         Action<ICollectionView, DragEventArgs>;
-                action?.Invoke(sender as ICollectionView, e);
+                action?.Invoke(senderView, e);
             }
             // if we drag from the file system
             else if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
             {
                 try
                 {
-                    FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                    FileDropHelper.HandleDrop(where, e.DataView, this);
                 }
                 catch (Exception exception)
                 {
@@ -685,7 +693,19 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragEnter Base");
+            this.HighlightPotentialDropTarget(sender as UserControl);
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.DragUIOverride.IsContentVisible = true;
+
+            e.Handled = true;
+        }
+        /// <summary>
+        /// Fired by a collection when an item is dragged over it
+        /// </summary>
+        public void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
             this.HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
@@ -702,9 +722,10 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
+            // bcz: this fix causes a hard crash sometimes -- just call HighlightPotentialDropTarget instead?
+            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one -
+            //var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            //parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as UserControl;
             if (element != null)

@@ -9,9 +9,6 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
-    Drop="CollectionViewOnDrop"
-    DragEnter="CollectionViewOnDragEnter"
-    DragLeave="CollectionViewOnDragLeave"
     Tapped="OnTapped"
     >
     <Grid x:Name="Grid" Background="Transparent">

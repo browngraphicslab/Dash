@@ -115,18 +115,23 @@ namespace Dash
             return Window.Current.Content != null && dob.GetAncestors().Contains(Window.Current.Content);
         }
 
+        public static Point RootPointerPos(this UIElement dob)
+        {
+            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition.X - Window.Current.Bounds.X;
+            var y = pointerPosition.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            return pos;
+        }
+
         public static bool IsPointerOver(this UIElement dob)
         {
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, dob).ToList();
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), dob).ToList();
             return overlappedViews.Count > 0;
         }
         public static bool IsTopmost(this UIElement dob)
         {
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, MainPage.Instance).ToList();
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), MainPage.Instance).ToList();
             return dob == overlappedViews.FirstOrDefault();
         }
 

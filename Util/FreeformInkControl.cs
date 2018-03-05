@@ -17,6 +17,14 @@ using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
+    /// <summary>
+    /// This class acts as a manager for the InkCanvas associated with each FreeformCollectionView. It 
+    /// controls what inputs the InkCanvas sees and how those inputs are processed; i.e. for ink, erasing, selecting, etc.
+    /// For ink recognition, the FreeformInkControl passes ink data to the InkRecognitionHelper associated with this control.
+    /// TODO: Could every FreeformInkControl use the same instance of the InkRecognitionHelper? Would that be more efficient?
+    /// TODO: This class could be abstracted so that it can be applied to managing ink on documents or in other places.
+    /// TODO: The LassoSelectHelper could be moved into this class.
+    /// </summary>
     public class FreeformInkControl
     {
         private enum InkSelectionMode
@@ -119,7 +127,12 @@ namespace Dash
             }
         }
 
-
+        /// <summary>
+        /// - Sets the device type that the InkCanvas will accept input from. 
+        /// - Blocks input from that device type in the host CollectionFreeformView, so that you don't accidentally scroll the background of the freeform
+        /// view when you intend to draw.
+        /// </summary>
+        /// <param name="type"></param>
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
             TargetInkCanvas.InkPresenter.InputDeviceTypes = type;

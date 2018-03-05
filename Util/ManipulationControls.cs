@@ -96,7 +96,9 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
+
             var currentBoundingBox = docRoot.ViewModel.Bounds;
+
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
@@ -119,16 +121,16 @@ namespace Dash
             var side = closestDocumentView.Item2;
 
             var topLeftPoint = documentViewModel.Position;
-            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth,
-                documentViewModel.YPos + documentViewModel.ActualHeight);
+            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth * documentViewModel.Scale.X,
+                documentViewModel.YPos + documentViewModel.ActualHeight * documentViewModel.Scale.Y);
 
-            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth, currrentDocModel.ActualHeight);
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth * currrentDocModel.Scale.X, currrentDocModel.ActualHeight * currrentDocModel.Scale.Y);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
             currrentDocModel.Position = translate;
-            currrentDocModel.Width = newBoundingBox.Width;
-            currrentDocModel.Height = newBoundingBox.Height;
+            currrentDocModel.Width = newBoundingBox.Width / currrentDocModel.Scale.X;
+            currrentDocModel.Height = newBoundingBox.Height / currrentDocModel.Scale.Y;
         }
 
 
@@ -394,10 +396,7 @@ namespace Dash
 
                 var docRoot = ParentDocument;
                 
-                var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition2.X - Window.Current.Bounds.X;
-                var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                var pos = docRoot.RootPointerPos();
                 var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();

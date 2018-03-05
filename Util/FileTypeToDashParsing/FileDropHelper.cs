@@ -70,27 +70,10 @@ namespace Dash
         ///     Handles the situation where a file is dropped on a collection. The DragEventArgs are assumed
         ///     to have StorageItems, and the DragEventArgs should have been handled
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="where"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e, CollectionViewModel collectionViewModel)
-        {
-            // the point where the items will be dropped
-            var where = new Point();
-            if (sender is CollectionFreeformView)
-                where = Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance));
-            
-            // if not freeformview, and if there are more documents in the collection, display it next to the latest document 
-            else if (collectionViewModel.DocumentViewModels.Count > 0)
-            {
-                var last = collectionViewModel.DocumentViewModels[collectionViewModel.DocumentViewModels.Count - 1];
-                var lastPos = last.DocumentController.GetPositionField().Data;
-                where = new Point(lastPos.X + CollectionNote.Offset, lastPos.Y);
-            }
-            HandleDrop(e.DataView, where, collectionViewModel);
-        }
-
-        public static async void HandleDrop(DataPackageView dataView, Point where, CollectionViewModel collectionViewModel)
+        public static async void HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();

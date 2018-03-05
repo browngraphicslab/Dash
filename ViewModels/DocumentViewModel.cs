@@ -95,7 +95,7 @@ namespace Dash
 
         public Point Position
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             set
             {
                 var positionController =
@@ -105,12 +105,13 @@ namespace Dash
                 {
                     positionController.Data = value;
                 }
+                else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
             }
         }
 
         public double XPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
             set
             {
                 var positionController =
@@ -125,24 +126,7 @@ namespace Dash
 
         public double YPos
         {
-            get
-            {
-                var posField = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-                if (posField != null)
-                {
-                    return posField.Data.Y;
-                }
-
-                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                //if (groupField != null)
-                //{
-                //    return groupField.TypedData.Min(
-                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                //              double.PositiveInfinity);
-                //}
-
-                return double.PositiveInfinity; //Use inf so that sorting works reasonably
-            }
+            get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
             set
             {
                 var positionController =  LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
@@ -167,7 +151,8 @@ namespace Dash
                     if (widthFieldModelController != null)
                     {
                         widthFieldModelController.Data = value;
-                    }
+                    } else
+                        LayoutDocument.SetField(KeyStore.WidthFieldKey, new NumberController(value), true);
                 }
             }
         }
@@ -183,14 +168,18 @@ namespace Dash
                 {
                     var heightFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
                     if (heightFieldModelController != null)
+                    {
                         heightFieldModelController.Data = value;
+                    }
+                    else
+                        LayoutDocument.SetField(KeyStore.HeightFieldKey, new NumberController(value), true);
                 }
             }
         }
 
         public Point Scale
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1,1);
             set
             {
                 var scaleController =
@@ -200,6 +189,8 @@ namespace Dash
                 {
                     scaleController.Data = value;
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
             }
         }
 
@@ -244,7 +235,7 @@ namespace Dash
         {
             X = XPos,
             Y = YPos
-        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
 
         public void TransformDelta(TransformGroupData delta)
         {
@@ -331,7 +322,6 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
 

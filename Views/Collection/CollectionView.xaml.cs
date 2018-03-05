@@ -33,18 +33,14 @@ using Windows.UI.Core;
 
 namespace Dash
 {
-    public sealed partial class CollectionView : UserControl
+    public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
         public UserControl CurrentView { get; set; }
-        public CollectionViewModel ViewModel
-        {
-            get => DataContext as CollectionViewModel;
-            set => DataContext = value;
-        }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
 
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
@@ -67,9 +63,13 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
-            ViewModel = vm;
+            DataContext = vm;
 
             Unloaded += CollectionView_Unloaded;
+            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
+            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
+            DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
+            Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             PointerPressed += OnPointerPressed;
         }
@@ -80,20 +80,10 @@ namespace Dash
                                    .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
             if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
             {
-                new ManipulationControlHelper(this, args.Pointer, false); // manipulate the top-most collection view
+                new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
                 
                 args.Handled = true;
             }
-        }
-        
-        public DocumentViewModel GetDocumentViewModel(DocumentController document)
-        {
-            foreach (var dv in ViewModel.DocumentViewModels)
-            {
-                if (dv.DocumentController.Equals(document))
-                    return dv;
-            }
-            return null;
         }
 
         #region Load And Unload Initialization and Cleanup
