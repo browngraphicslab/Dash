@@ -85,16 +85,6 @@ namespace Dash
                 args.Handled = true;
             }
         }
-        
-        public DocumentViewModel GetDocumentViewModel(DocumentController document)
-        {
-            foreach (var dv in ViewModel.DocumentViewModels)
-            {
-                if (dv.DocumentController.Equals(document))
-                    return dv;
-            }
-            return null;
-        }
 
         #region Load And Unload Initialization and Cleanup
 

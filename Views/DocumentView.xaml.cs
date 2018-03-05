@@ -44,7 +44,6 @@ namespace Dash
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
-        bool _multiSelected;
 
         /// <summary>
         /// The width of the context preview
@@ -61,8 +60,7 @@ namespace Dash
         /// </summary>
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
-
-        private long _bindRenderTransformToken = -1;
+        
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
 
@@ -84,7 +82,7 @@ namespace Dash
             MinWidth = 100;
             MinHeight = 25;
 
-            _bindRenderTransformToken = RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
+            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
             void updateBindings(object sender, DependencyProperty dp)
             {
@@ -585,10 +583,10 @@ namespace Dash
         #region UtilityFuncions
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            var grouped = SelectedDocuments();
+            var selectedDocs = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null || ViewModel == null)
+            if (collection == null || ViewModel == null || selectedDocs == null)
                 return false;
 
             foreach (var nestedDocument in overlappedViews)
@@ -596,26 +594,21 @@ namespace Dash
                 CollectionView nestedCollection = null;
                 if (nestedDocument.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
                     nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
-                if (nestedCollection != null)
+                if (nestedCollection != null && !nestedCollection.GetAncestors().ToList().Contains(this))
                 {
-                    if (nestedCollection.GetAncestors().ToList().Contains(this))
-                        continue;
                     if (!nestedCollection.Equals(collection))
                     {
-                        if (grouped != null)
+                        foreach (var selDoc in selectedDocs)
                         {
-                            foreach (var g in grouped)
-                            {
-                                var pos = g.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                                var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                                    new Point();
-                                nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
-                                collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                            var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                                new Point();
+                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
 
-                            }
-                            return true;
                         }
+                        return true;
                     }
                     else break;
                 }
