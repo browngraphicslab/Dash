@@ -369,7 +369,7 @@ namespace Dash
         {
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
-                FileDropHelper.HandleDrop(dvp, where, this);
+                FileDropHelper.HandleDrop(where, dvp, this);
             }
             else if (dvp.Contains(StandardDataFormats.Bitmap))
             {
@@ -405,7 +405,7 @@ namespace Dash
             await encoder.FlushAsync();
             var dp = new DataPackage();
             dp.SetStorageItems(new IStorageItem[] { savefile });
-            FileDropHelper.HandleDrop(dp.GetView(), where, this);
+            FileDropHelper.HandleDrop(where, dp.GetView(), this);
         }
 
         /// <summary>
@@ -427,9 +427,15 @@ namespace Dash
             RemoveDragDropIndication(sender as UserControl);
 
             var senderView = (sender as CollectionView)?.CurrentView;
-            var where = senderView is CollectionFreeformView ?
-                Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance)) :
-                new Point();
+            var where = new Point();
+            if (senderView is CollectionFreeformView)
+                where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            else if (DocumentViewModels.Count > 0)
+            {
+                var lastPos = DocumentViewModels.Last().Position;
+                where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
+            }
+
 
             // if we are dragging and dropping from the radial menu
             if (e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) == true)
@@ -444,7 +450,7 @@ namespace Dash
             {
                 try
                 {
-                    FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                    FileDropHelper.HandleDrop(where, e.DataView, this);
                 }
                 catch (Exception exception)
                 {
