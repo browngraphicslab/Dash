@@ -379,10 +379,7 @@ namespace Dash
         public void ShowTagKeyBox()
         {
             TagKeyBox.Visibility = Visibility.Visible;
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            Debug.WriteLine(mousePos);
-            mousePos = Util.PointTransformFromVisual(mousePos, Window.Current.Content, xOuterGrid);
+            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, xOuterGrid);
             TagKeyBox.RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
         }
 

@@ -426,7 +426,7 @@ namespace Dash
 
             RemoveDragDropIndication(sender as UserControl);
 
-            var senderView = (sender as CollectionView)?.CurrentView;
+            var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
             var where = new Point();
             if (senderView is CollectionFreeformView)
                 where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
@@ -443,7 +443,7 @@ namespace Dash
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
                         Action<ICollectionView, DragEventArgs>;
-                action?.Invoke(sender as ICollectionView, e);
+                action?.Invoke(senderView, e);
             }
             // if we drag from the file system
             else if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)

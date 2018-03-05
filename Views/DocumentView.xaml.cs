@@ -492,10 +492,7 @@ namespace Dash
         }
         public void ForceRightTapContextMenu()
         {
-            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var pos = new Point(pointerPosition2.X - Window.Current.Bounds.X, pointerPosition2.Y - Window.Current.Bounds.Y);
-
-            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
+            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
         }
         public void DeleteDocument(bool addTextBox=false)
         {

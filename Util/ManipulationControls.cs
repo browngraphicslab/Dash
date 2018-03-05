@@ -396,10 +396,7 @@ namespace Dash
 
                 var docRoot = ParentDocument;
                 
-                var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition2.X - Window.Current.Bounds.X;
-                var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                var pos = docRoot.RootPointerPos();
                 var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
