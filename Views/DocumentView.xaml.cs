@@ -133,6 +133,11 @@ namespace Dash
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                 }
             };
+            DraggerButton.ManipulationCompleted += (s, e) =>
+            {
+                if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
+                    e.Handled = true;
+            };
             void restorePointerTracking() {
                 ViewModel.DecorationState = DraggerButton.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
