@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI;
 using Windows.UI.Xaml.Controls;
+using Windows.System;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -99,6 +100,8 @@ namespace Dash
         private double _minGap = 30;
         private double _maxGap = 300;
 
+        private double _scrollScaleAmount = 2;
+
 
         /// <summary>
         /// Constructor
@@ -120,13 +123,31 @@ namespace Dash
             DisplayedXPositions = new List<double>();
 
             Loaded += CollectionTimelineView_Loaded;
+
+            PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
         }
 
+       
 
+        private void CollectionTimelineView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
+            {
+                var point = e.GetCurrentPoint(this);
+
+                var scaleFactor = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+                Scale *= scaleFactor;
+                SetTimelineFormatting();
+                //var scrollTo = xScrollViewer.HorizontalOffset + 20;
+
+                //xScrollViewer.ChangeView(null, scrollTo, null, false);
+            }
+
+        }
 
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
         {
-            Scale = .75;
+            Scale = .9;
             SetTimelineFormatting();
         }
 
@@ -176,6 +197,11 @@ namespace Dash
         /// </summary>
         private void LayoutTimelineElements(double width)
         {
+            if(_contextList.Count < 1)
+            {
+                return;
+            }
+
             CurrentXPosition = 0;
             CurrentTopY = 30;
             foreach (var element in _contextList)
