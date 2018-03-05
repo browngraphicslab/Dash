@@ -33,7 +33,7 @@ using Windows.UI.Core;
 
 namespace Dash
 {
-    public sealed partial class CollectionView : UserControl
+    public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
 
