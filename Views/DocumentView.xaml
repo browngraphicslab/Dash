@@ -18,7 +18,7 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
+    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0">
         <!-- Main document view -->
 
         <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
@@ -61,7 +61,7 @@
         <Grid Name="xTargetContentGrid">
             <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-            <!-- Dragger Button-->
+            <!-- Dragger Button
             <Grid x:Name="DraggerButton"
                         x:FieldModifier="public"
                         Margin="0,0,-20,-20"
@@ -75,7 +75,7 @@
                     <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                 </Border>
-            </Grid>
+            </Grid> -->
         </Grid>
 
         <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{Binding DecorationState}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
@@ -98,5 +98,17 @@
                     Visibility="Collapsed"/>
         </Canvas>
 
+        <Ellipse x:Name="ResizeHandleTopLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleTopRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}" 
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
     </Grid>
 </UserControl>

@@ -99,7 +99,7 @@ namespace Dash
 
                 // binds the display title of the document to the back end representation
                 // TODO: shouldn't this be covered by binding
-                ViewModel?.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
+                ViewModel?.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
             }
 
             Loaded += (sender, e) => {
@@ -125,24 +125,24 @@ namespace Dash
                 PositionContextPreview();
             };
 
-            // setup DraggerButton
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationStarted += (object s, ManipulationStartedRoutedEventArgs e) =>
-            {
-                if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
-                {  
-                    e.Handled = true;
-                    PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
-                }
-            };
+            // setup ResizeHandles
+            ResizeHandleTopLeft.ManipulationDelta += ResizeHandleTopLeft_OnManipulationDelta;
+            ResizeHandleTopRight.ManipulationDelta += ResizeHandleTopRight_OnManipulationDelta;
+            ResizeHandleBottomLeft.ManipulationDelta += ResizeHandleBottomLeft_OnManipulationDelta;
+            ResizeHandleBottomRight.ManipulationDelta += ResizeHandleBottomRight_OnManipulationDelta;
+            ResizeHandleTopLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+            ResizeHandleTopRight.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+            ResizeHandleBottomLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+            ResizeHandleBottomRight.ManipulationStarted += ResizeHandles_OnManipulationStarted;
+
             void restorePointerTracking() {
-                ViewModel.DecorationState = DraggerButton.IsPointerOver();
+                ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
             };
-            DraggerButton.ManipulationCompleted += (s, e) => restorePointerTracking();
-            DraggerButton.PointerReleased += (s, e) => restorePointerTracking();
-            DraggerButton.PointerPressed += (s, e) =>
+            ResizeHandleBottomRight.ManipulationCompleted += (s, e) => restorePointerTracking();
+            ResizeHandleBottomRight.PointerReleased += (s, e) => restorePointerTracking();
+            ResizeHandleBottomRight.PointerPressed += (s, e) =>
             {
                 ManipulationMode = ManipulationModes.None;
                 e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
@@ -255,7 +255,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_localContextPreview);
                 _localContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
+                ViewModel.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
                 if (_selectedContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -301,7 +301,7 @@ namespace Dash
                 xContextCanvas.Children.Remove(_selectedContextPreview);
                 _selectedContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
+                ViewModel.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
                 if (_localContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -402,13 +402,95 @@ namespace Dash
         #endregion
 
         /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
+        /// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+
+        public void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
+            {
+                e.Handled = true;
+                PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
+            }
+        }
+
+        public void ResizeHandleTopLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Resize(sender as FrameworkElement, e, true, true);
+        }
+
+        public void ResizeHandleTopRight_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Resize(sender as FrameworkElement, e, true, false);
+        }
+
+        public void ResizeHandleBottomLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Resize(sender as FrameworkElement, e, false, true);
+        }
+
+        public void ResizeHandleBottomRight_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Resize(sender as FrameworkElement, e, false, false);
+        }
+
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
+        {
+
+            /// <summary>
+            /// Resizes the document while keeping its original width/height ratio.
+            /// </summary>
+            /// <param name="e"></param>
+            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
+            {
+
+                /*
+                var curScale = ViewModel.Scale;
+                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
+                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
+                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
+                ViewModel.Scale = new Point(scale, scale);
+                */
+            }
+
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
+                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+
+            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+
+            // set old and new sizes for change in height/width comparisons
+            Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
+            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth * oldSize.Width : oldSize.Height;
+            Size newSize = new Size();
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            int cursorXDirection = shiftLeft ? -1 : 1;
+            int cursorYDirection = shiftTop ? -1 : 1;
+            int moveXScale = shiftLeft ? 1 : 0;
+            int moveYScale = shiftTop ? 1 : 0;
+            
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                // proportional resizing
+                var diffX = cursorXDirection * p.X;
+                newSize = Resize(diffX, ViewModel.ActualHeight / ViewModel.ActualWidth * diffX);
+            }
+            else
+            {
+                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
+                newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
+                
+                // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
+                newSize.Height = double.IsNaN(newSize.Height)
+                    ? ViewModel.ActualHeight / ViewModel.ActualWidth * newSize.Width
+                    : newSize.Height;
+            }
+
             /// <summary>
             /// Resizes the CollectionView according to the increments in width and height. 
             /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -423,39 +505,17 @@ namespace Dash
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
                     var h = ViewModel.Height;
-                    ViewModel.Width  = Math.Max(w + dx, MinWidth);
+                    ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
             }
 
-            /// <summary>
-            /// Resizes the document while keeping its original width/height ratio.
-            /// </summary>
-            /// <param name="e"></param>
-            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
-            {
-                var curScale = ViewModel.Scale;
-                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
-                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-                ViewModel.Scale = new Point(scale, scale);
-            }
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
+            ViewModel.XPos = (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width)*ViewModel.Scale.X);
+            ViewModel.YPos = (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height)*ViewModel.Scale.Y);
 
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                ProportionalResize(e);
-            }
-            else
-            {
-                var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-                Resize(p.X, p.Y);
-            }
             e.Handled = true;
 
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
