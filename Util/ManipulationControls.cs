@@ -405,6 +405,7 @@ namespace Dash
                 OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
             }
         }
+
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)

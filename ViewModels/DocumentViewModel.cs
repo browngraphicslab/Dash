@@ -23,8 +23,6 @@ namespace Dash
     {
 
         // == MEMBERS, GETTERS, SETTERS ==
-        private double _height;
-        private double _width;
         private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
@@ -105,6 +103,7 @@ namespace Dash
                 if (positionController != null && (Math.Abs(positionController.Data.X - value.X) > 0.05f || Math.Abs(positionController.Data.Y - value.Y) > 0.05f))
                 {
                     positionController.Data = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -120,6 +119,7 @@ namespace Dash
                 if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
                 {
                     positionController.Data = new Point(value, positionController.Data.Y);
+                    OnPropertyChanged();
                 }
             }
         }
@@ -151,40 +151,39 @@ namespace Dash
                 if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
                 {
                     positionController.Data = new Point(positionController.Data.X, value);
+                    OnPropertyChanged();
                 }
             }
         }
 
         public double Width
         {
-            get => _width;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
             set
             {
-                //Debug.Assert(double.IsNaN(value) == false);
+                var widthController =
+                    LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
 
-                if (SetProperty(ref _width, value))
+                if (widthController != null && Math.Abs(widthController.Data - value) > 0.05f)
                 {
-                    var widthFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
-                    if (widthFieldModelController != null)
-                    {
-                        widthFieldModelController.Data = value;
-                    }
+                    widthController.Data = value;
+                    OnPropertyChanged();
                 }
             }
         }
 
         public double Height
         {
-            get => _height;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
             set
             {
-                //Debug.Assert(double.IsNaN(value) == false);
+                var heightController =
+                    LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
 
-                if (SetProperty(ref _height, value))
+                if (heightController != null && Math.Abs(heightController.Data - value) > 0.05f)
                 {
-                    var heightFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
-                    if (heightFieldModelController != null)
-                        heightFieldModelController.Data = value;
+                    heightController.Data = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -200,6 +199,7 @@ namespace Dash
                 if (scaleController != null)
                 {
                     scaleController.Data = value;
+                    OnPropertyChanged();
                 }
             }
         }
@@ -409,37 +409,10 @@ namespace Dash
             UpdateContent();
             LayoutChanged?.Invoke(this, context);
 
-            ListenToHeightField();
-            ListenToWidthField();
-
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(LayoutDocument);
             Context = newContext;
-        }
-
-        private void ListenToWidthField()
-        {
-            var widthField = LayoutDocument.GetWidthField();
-            if (widthField != null)
-            {
-                widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
-                Width = widthField.Data;
-            }
-            else
-                Width = double.NaN;
-        }
-
-        private void ListenToHeightField()
-        {
-            var heightField = LayoutDocument.GetHeightField();
-            if (heightField != null)
-            {
-                heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
-                Height = heightField.Data;
-            }
-            else
-                Height = double.NaN;
         }
 
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
