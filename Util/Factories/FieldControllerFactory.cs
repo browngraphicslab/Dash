@@ -175,9 +175,6 @@ namespace Dash
                 case OperatorType.Zip:
                     controller = new ZipOperatorController(model);
                     break;
-                case OperatorType.Filter:
-                    controller = new FilterOperatorController(model);
-                    break;
                 //case OperatorType.CollectionMap:
                 //    controller = new CollectionMapOperator(model);
                 //    break;

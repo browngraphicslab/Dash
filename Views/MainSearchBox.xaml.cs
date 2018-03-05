@@ -20,8 +20,7 @@ namespace Dash
     {
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
-
-        public const string SearchResultDragKey = "Search Result";
+        
         public const string SearchCollectionDragKey = "Search Collection";
 
         public MainSearchBox()
@@ -140,8 +139,10 @@ namespace Dash
         /// </summary>
         private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            // get all the view docs for the search and set the key for the drag to a static const
-            args.Data.Properties[SearchCollectionDragKey] = SearchHelper.SearchOverCollection(_currentSearch);//GetViewDocumentsForCurrentSearch();
+            // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+            var docs = SearchHelper.SearchOverCollection(_currentSearch).Select((srvm)=> srvm.ViewDocument.GetViewCopy());
+           
+            args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -156,8 +157,9 @@ namespace Dash
         /// <param name="args"></param>
         private void SearchResult_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            var dragModel = new DragDocumentModel(((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument, true);
             // get the sender's view docs and set the key for the drag to a static const
-            args.Data.Properties[SearchResultDragKey] = ((sender as FrameworkElement)?.DataContext as SearchResultViewModel)?.ViewDocument;
+            args.Data.Properties[nameof(DragDocumentModel)] = dragModel;
 
             // set the allowed operations
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
@@ -532,7 +534,7 @@ namespace Dash
                 var results = new List<SearchResultViewModel>();
                 foreach (var docController in docControllers)
                 {
-                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.Image1FieldKey,
+                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.ImageFieldKey,
                         null);
                     var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
                     results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));

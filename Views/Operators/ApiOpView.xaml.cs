@@ -37,7 +37,7 @@ namespace Dash.Views
             var refToOp = args.NewValue as FieldReference;
             var doc = refToOp.GetDocumentController(null);
             _operatorDoc = doc;
-            xGrid.Children.Add(ApiDocumentModel.MakeView(_operatorDoc, null, false));
+            xGrid.Children.Add(ApiDocumentModel.MakeView(_operatorDoc, null));
         }
     }
 }

@@ -17,6 +17,12 @@ using static Dash.NoteDocuments;
 
 namespace Dash
 {
+    /// <summary>
+    /// This class manages recognition of ink strokes, which are converted into documents with text fields or collections.
+    /// - There is one InkRecognitionHelper associated with each FreeformInkControl
+    /// TODO: this class is in need of a major refactor. Ideally should only recognize inkstrokes within the recognition bounds, and allow for better nesting
+    /// TODO: do we still need NewStrokes?
+    /// </summary>
     public sealed class InkRecognitionHelper
     {
         private List<IInkAnalysisNode> _shapeRegions;
@@ -34,7 +40,10 @@ namespace Dash
         }
 
         /// <summary>
-        /// Tries to find documents or collections at the double tap point, or delete using the newest stroke.
+        /// - Highest-level method, called at each new recognition event
+        /// - Tries to find documents or collections at the double tap point, or delete using the newest stroke.
+        /// TODO: is commented-out code still needed?
+        /// TODO: do we need the textboundsdictionary? 
         /// </summary>
         /// <param name="onlySelectedStrokes"></param>
         public async void RecognizeInk(bool onlySelectedStrokes = false)
@@ -125,13 +134,13 @@ namespace Dash
             var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(
                 p.Position, FreeformInkControl.SelectionCanvas,
                 FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot)));
+            //check for linearity
             if (!IsLinear(inkPoints)) return false;
             var point1 = inkPoints[0];
             var point2 = inkPoints.Last();
             var rectToDocView = GetDocViewRects();
             //Try using the new line to delete documents or links
-            var deleted = DeleteIntersectingDocuments(inkPoints, point1, point2) ||
-                          DeleteIntersectingConnections(point1, point2);
+            var deleted = DeleteIntersectingDocuments(inkPoints, point1, point2);
             //If they were deleted, remove the line.
             if (deleted)
             {
@@ -145,6 +154,8 @@ namespace Dash
             return deleted;
         }
 
+        //Removes all documents from the Collection associated with this InkRecognitionHelper's FreeformInkControl that are intersected by the line
+        //passed in.
         private bool DeleteIntersectingDocuments(List<Point> inkPoints, Point point1, Point point2)
         {
             bool deleted = false;
@@ -157,7 +168,6 @@ namespace Dash
                     if (PathIntersectsRect(
                         inkPoints, rect))
                     {
-                        FreeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
                         FreeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
                             .DocumentController);
                         deleted = true;
@@ -166,99 +176,16 @@ namespace Dash
             return deleted;
         }
 
-        public bool DeleteIntersectingConnections(Point point1, Point point2)
-        {
-            bool lineDeleted = false;
-            //Calculate line 1: the line of the ink stroke
-            var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
-            var yInt1 = point1.Y - point1.X * slope1;
-            var view = FreeformInkControl.FreeformView;
-            var refsToLines = new Dictionary<FieldReference, Path>();
-            foreach (var pair in view.RefToLine)
-            {
-                refsToLines[pair.Key] = pair.Value;
-            }
-            //iterate through reference:link/path pairs stored by collection
-            foreach (var pair in refsToLines)
-            {
-                //Calculate line 2: an approximation of the bezier curve of the link
-                var line = pair.Value;
-                var converter = view.LineToConverter[line];
-                var curvePoint1 = converter.Element1.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
-                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
-                var curvePoint2 = converter.Element2.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
-                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2, converter.Element2.ActualHeight / 2));
-                var slope2 = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
-                var yInt2 = curvePoint1.Y - curvePoint1.X * slope2;
-
-                //Calculate intersection of the lines
-                var intersectionX = (yInt2 - yInt1) / (slope1 - slope2);
-                var intersectionY = slope1 * intersectionX + yInt1;
-                var intersectionPoint = new Point(intersectionX, intersectionY);
-
-                //if the intersection is on the two line segments, remove the path and the reference
-                if (PointBetween(intersectionPoint, point1, point2) &&
-                    PointBetween(intersectionPoint, curvePoint1, curvePoint2))
-                {
-                    var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                    var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                    var layoutDoc2 = view2.ViewModel.DocumentController;
-                    var fields = layoutDoc2.EnumFields().ToImmutableList();
-                    var key1 = view.LineToElementKeysDictionary[pair.Value].Item1;
-                    var key2 = view.LineToElementKeysDictionary[pair.Value].Item2;
-                    var dataRef = layoutDoc2.GetField(key2) as ReferenceController;
-                    var referencesEqual =
-                        view1.ViewModel.KeysToFrameworkElements[key1].Equals(converter.Element1) && view2
-                            .ViewModel.KeysToFrameworkElements[key2].Equals(converter.Element2);
-                    if (referencesEqual && view.RefToLine.ContainsKey(pair.Key) && dataRef != null)
-                    {
-                        //Case where we have layout document and need to get dataDoc;
-                        view.DeleteLine(pair.Key, view.RefToLine[pair.Key]);
-                        var dataDoc = (layoutDoc2.GetField(KeyStore.DataKey) as ReferenceController)?.GetDocumentController(new Context(layoutDoc2.GetDataDocument(null)));
-                        if (dataDoc != null)
-                        {
-                            bool copy = true;
-                            //TODO tfs: Make it so the user can choose to copy field to dest or just delete the field
-                            if (copy)
-                            {
-                                var field = dataRef.DereferenceToRoot(new Context(dataDoc));
-                                if (field != null)
-                                {
-                                    dataDoc.SetField(key2, field
-                                        .GetCopy(), true);
-                                }
-                                else
-                                {
-                                    dataDoc.RemoveField(key2);
-                                }
-                            }
-                            else
-                            {
-                                dataDoc.RemoveField(key2);
-                            }
-                        }
-                        else
-                        {
-                            //Case where what we thought was a layout doc is actually a data document with an active layout
-                            layoutDoc2.SetField(key2, dataRef.DereferenceToRoot(new Context(layoutDoc2))?.GetCopy(),
-                                true);
-                        }
-                        lineDeleted = true;
-
-                    }
-
-                }
-            }
-            return lineDeleted;
-        }
-
-
-
-
         #endregion
 
         #region Add collection, doc, operator
 
+        /// <summary>
+        /// Finds the bounds of all ink strokes recognized as text. Creates a dictionary of bounds->InkAnalysisLine and removes 
+        /// the recognized ink data from the analyzer.
+        /// TODO: is this still needed if we aren't removing the ink stroke data?
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<Rect, InkAnalysisLine> GetTextBoundsAndRemoveData()
         {
             var textLineRegions = new List<InkAnalysisLine>(Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line)
@@ -275,13 +202,18 @@ namespace Dash
             return textBoundsDictionary;
         }
 
+        /// <summary>
+        /// Generates a collection from a circular or elliptical ink drawing and captures all of the drawn or preexisting documents within the ink drawing, 
+        /// adding them to the collection.
+        /// </summary>
+        /// <param name="region"></param>
         private void AddCollectionFromShapeRegion(InkAnalysisInkDrawing region)
         {
             var regions = new List<IInkAnalysisNode>(_shapeRegions);
             List<DocumentController> recognizedDocuments = new List<DocumentController>();
             //Look for rectangles inside ellipse and add them as docs to collection
             foreach (var child in regions.OfType<InkAnalysisInkDrawing>().Where(
-                r => RectContainsRect(region.BoundingRect, r.BoundingRect)))
+                r => region.BoundingRect.Contains(r.BoundingRect)))
             {
                 if (child.DrawingKind == InkAnalysisDrawingKind.Rectangle ||
                     child.DrawingKind == InkAnalysisDrawingKind.Square)
@@ -291,6 +223,7 @@ namespace Dash
                     _shapeRegions.Remove(child);
                 }
             }
+            //Get preexisting documents within circle by transforming points to collection space and using LassoHelper to get contained docs.
             var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
                 .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
                     FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
@@ -307,37 +240,24 @@ namespace Dash
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
-                DocumentView documentView = FreeformInkControl.FreeformView.GetDocView(doc);
-                if (documentView != null)
-                {
-                    FreeformInkControl.FreeformView.DeleteConnections(documentView);
-                }
             }
-
-            var documentController = Util.BlankCollection();
-            documentController.SetField(KeyStore.CollectionKey,
-                new ListController<DocumentController>(recognizedDocuments), true);
-            documentController.SetActiveLayout(
-                new CollectionBox(
-                    new DocumentReferenceController(documentController.GetId(),
-                        KeyStore.CollectionKey), position.X, position.Y, region.BoundingRect.Width,
-                     region.BoundingRect.Height).Document, true, true);
+            //Construct the new collection
+            var cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            cnote.SetDocuments(recognizedDocuments);
+            var documentController = cnote.Document;
+            documentController.SetLayoutDimensions(region.BoundingRect.Width,
+                region.BoundingRect.Height);
             FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
 
-        private void AddOperatorFromRegion(InkAnalysisInkDrawing region)
-        {
-            Point absPos =
-                Util.PointTransformFromVisual(new Point(region.BoundingRect.X, region.BoundingRect.Y),
-                    FreeformInkControl.TargetInkCanvas, MainPage.Instance);
-            Canvas.SetLeft(TabMenu.Instance, absPos.X);
-            Canvas.SetTop(TabMenu.Instance, absPos.Y);
-
-            DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
-            Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
-        }
-
+        /// <summary>
+        /// Constructs a new document with the bounds of the rectangular region passed in, and tries to recognize text and add contained
+        /// recognized words as text fields on the document.
+        /// </summary>
+        /// <param name="region"></param>
+        /// <param name="addToFreeformView"></param>
+        /// <returns></returns>
         private DocumentController AddDocumentFromShapeRegion(InkAnalysisInkDrawing region, bool addToFreeformView = true)
         {
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
@@ -351,32 +271,10 @@ namespace Dash
             var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
             int fieldIndex = 0;
-            var stringFields = TextBoundsDictionary.Keys.Where(r => RectContainsRect(region.BoundingRect, r));
-            var enumerable = stringFields as IList<Rect> ?? stringFields.ToList();
-            ListController<TextController> list = enumerable.Count == 0 ? null : new ListController<TextController>();
-            foreach (var rect in enumerable)
-            {
-                DeleteStrokesByID(TextBoundsDictionary[rect].GetStrokeIds().ToImmutableHashSet());
-                var str = TextBoundsDictionary[rect].RecognizedText;
-                TryGetText(str, out string text, out KeyController key,
-                    enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
-                var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                doc.ParseDocField(key, text);
-                var field = doc.GetField(key);
-                if (field != null && field is TextController)
-                {
-                    list.Add(field);
-                }
-                var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
-                    relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-                (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
-                    rect.Height / 1.5;
-                layoutDocs.Add(textBox.Document);
-                keysToRemove.Add(rect);
-            }
-            //now try making fields from only partially intersected lines
+            //try making fields from only partially intersected lines
             var intersectedLines = TextBoundsDictionary.Keys.Where(r => r.IntersectsWith(region.BoundingRect) && !keysToRemove.Contains(r));
             var intersectionEnumerable = intersectedLines as IList<Rect> ?? intersectedLines.ToList();
+            ListController<TextController> list = intersectionEnumerable.Count == 0 ? null : new ListController<TextController>();
             if (list == null && intersectionEnumerable.Count > 0) list = new ListController<TextController>();
             foreach (var rect in intersectionEnumerable)
             {
@@ -396,9 +294,9 @@ namespace Dash
                     if (containedLine != "")
                     {
                         TryGetText(containedLine, out string text, out KeyController key,
-                            enumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
+                            intersectionEnumerable.Count() > 1 ? (++fieldIndex).ToString() : "");
                         var relativePosition = new Point(containedRect.X - topLeft.X, containedRect.Y - topLeft.Y);
-                        doc.ParseDocField(key, text);
+                        doc.ParseDocField(key, "="+text);
                         var field = doc.GetField(key);
                         if (field != null)
                         {
@@ -498,13 +396,12 @@ namespace Dash
 
         #region Helper methods
 
-        private bool PointBetween(Point testPoint, Point a, Point b)
-        {
-            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)),
-                new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
-            return rect.Contains(testPoint);
-        }
-
+        /// <summary>
+        /// Checks if a list of points is linear by assessing whether the R^2 value is greater than 0.9
+        /// - rotates the line and checks R^2 value again because R^2 = 0 for horizontal line.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
         private bool IsLinear(IEnumerable<Point> points)
         {
             var pList = points.ToList();
@@ -520,18 +417,6 @@ namespace Dash
             Util.LinearRegression(xVals, yVals, 0, pList.Count, out double rsquared, out double yInt,
                 out double slope);
             return rsquared;
-        }
-
-        private double GetRange(IEnumerable<double> vals)
-        {
-            var min = double.PositiveInfinity;
-            var max = double.NegativeInfinity;
-            foreach (var val in vals)
-            {
-                if (val > max) max = val;
-                if (val < min) min = val;
-            }
-            return max - min;
         }
 
         private List<Point> RotatePoints(List<Point> points)
@@ -607,24 +492,6 @@ namespace Dash
                 key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
             }
 
-        }
-
-        private bool RectContainsRect(Rect outer, Rect inner)
-        {
-            var topLeft = new Point(inner.X, inner.Y);
-            var topRight = new Point(inner.X + inner.Width, inner.Y);
-            var bottomLeft = new Point(inner.X, inner.Y + inner.Height);
-            var bottomRight = new Point(inner.X + inner.Width, inner.Y + inner.Height);
-            var points = new List<Point>
-            {
-                topLeft,
-                topRight,
-                bottomLeft,
-                bottomRight
-            };
-            foreach (var point in points)
-                if (!outer.Contains(point)) return false;
-            return true;
         }
 
         #endregion

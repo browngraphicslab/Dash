@@ -36,15 +36,15 @@ namespace Dash
         }
 
         public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context)
         {
-            return MakeView(docController, context, null, isInterfaceBuilderLayout);
+            return MakeView(docController, context);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null, bool isInterfaceBuilderLayout = false)
+            Context context)
         {
-            return MakeOperatorView(docController, context, keysToFrameworkElements, isInterfaceBuilderLayout);
+            return MakeOperatorView(docController, context);
         }
 
         /// <summary>
@@ -52,14 +52,14 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public static FrameworkElement MakeOperatorView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements, bool isInterfaceBuilderLayout, Func<FrameworkElement> customLayout = null)
+            Context context, Func<FrameworkElement> customLayout = null)
         {
 
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = data as ReferenceController;
             Debug.Assert(opfmc != null, "We assume that documents containing operators contain a reference to the required operator doc in the data key");
             Debug.Assert(opfmc.GetFieldReference() is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
-            var opView = new OperatorView(keysToFrameworkElements)
+            var opView = new OperatorView()
             {
                 DataContext = opfmc.GetFieldReference(),
             };
@@ -70,10 +70,7 @@ namespace Dash
             }
 
             SetupBindings(opView, docController, context);
-
-            if (keysToFrameworkElements != null) keysToFrameworkElements[opfmc?.FieldKey] = opView;
-
-            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
+            
             return opView;
         }
 

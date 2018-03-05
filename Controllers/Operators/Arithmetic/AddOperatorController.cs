@@ -31,7 +31,7 @@ namespace Dash
             [SumKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             double sum = 0;
             foreach (var value in inputs.Values)

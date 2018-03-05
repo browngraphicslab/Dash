@@ -23,10 +23,6 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-        public static readonly string DragPropertyKey = "key_value_pane_drag_key 1893741";
-
-        private bool _addKVPaneOpen = true;   
-
         /// <summary>
         /// True if we are editing the key of the selected key value
         /// </summary>
@@ -58,10 +54,17 @@ namespace Dash
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             
             DataContextChanged += KeyValuePane_DataContextChanged;
+            PointerPressed += (sender, e) =>
+                this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
 
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
+        }
+
+        void FontIcon_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void KeyValuePane_Unloaded(object sender, RoutedEventArgs e)
@@ -74,7 +77,7 @@ namespace Dash
         private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView?.hideDraggerButton();
+            //docView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             docView?.StyleKeyValuePane();
         }
 

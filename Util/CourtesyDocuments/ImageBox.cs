@@ -33,14 +33,11 @@ namespace Dash
                 (refToImage as ReferenceController).GetDocumentController(null), true);
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
-            Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the image
             var editableImage = new EditableImage();
@@ -48,18 +45,7 @@ namespace Dash
 
             // setup bindings on the image
             SetupBindings(image, docController, context);
-            SetupImageBinding(image, docController, context);
-
-            //add to key to framework element dictionary
-            if (docController.GetField(KeyStore.DataKey) is ReferenceController reference)
-                if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference.FieldKey] = image;
-
-            if (isInterfaceBuilderLayout)
-            {
-                editableImage.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(editableImage, docController);
-                return selectableContainer;
-            }
+            SetupImageBinding(image, docController, context);   
 
             return editableImage;
         }

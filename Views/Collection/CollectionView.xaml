@@ -10,10 +10,11 @@
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
+    AllowDrop="True"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
 
-    <Grid x:Name="xOuterGrid" BorderThickness="8" BorderBrush="#07FFFFFF">
+    <Grid x:Name="xOuterGrid" x:FieldModifier="public" BorderThickness="8" BorderBrush="#07FFFFFF">
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -28,38 +29,9 @@
                         Margin="0"
                         VerticalAlignment="Stretch"
                         ManipulationMode="All">
-                    <ContentControl x:Name="xContentControl" Loaded="xContentControl_Loaded" 
+                    <ContentControl x:Name="xContentControl" x:FieldModifier="public"
                                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
-                <!--output ellipse - currently COLLAPSED for the Berkeley demo-->
-                <Grid HorizontalAlignment="Right" 
-                      PointerPressed="ConnectionEllipseOutput_OnPointerPressed"
-                      PointerReleased="ConnectionEllipseOutput_OnPointerReleased"
-                      ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
-                      VerticalAlignment="Center"
-                      Background="Transparent"
-                      ManipulationMode="None"
-                      Width="25" Height ="50"
-                      Margin ="0,0,-15,0"
-                      Visibility="Collapsed">
-                    <Ellipse x:Name="ConnectionEllipseOutput"
-                                x:FieldModifier="public"
-                                Style="{StaticResource xOutputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0"/>
-                </Grid>
-                <!--input ellipse - currently COLLAPSED for the Berkeley demo-->
-                <Grid HorizontalAlignment="Left" 
-                        PointerPressed="ConnectionEllipseInput_OnPointerPressed"
-                        PointerReleased="ConnectionEllipseInput_OnPointerReleased"
-                        ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
-                        Width="50" Height="50" Background="Transparent"
-                        ManipulationMode="None" Visibility="Collapsed">
-                    <Ellipse x:Name="ConnectionEllipseInput"
-                                x:FieldModifier="public"
-                                Style="{StaticResource xInputLinkHandle}"
-                                VerticalAlignment="Center" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-                </Grid>
-
 
             </Grid>
             <!-- Options Menu-->

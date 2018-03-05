@@ -18,23 +18,25 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using static Dash.NoteDocuments;
 using Dash.Controllers;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class CollectionDBView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBView : ICollectionView
     {
         public CollectionDBView()
         {
             this.InitializeComponent();
-            DataContextChanged += CollectionDBView_DataContextChanged;
             Loaded             += CollectionDBView_Loaded;
+            Unloaded           += CollectionDBView_Unloaded;
             SizeChanged        += (sender, e) => updateChart(new Context(ParentDocument), true);
             xParameter.Style    = Application.Current.Resources["xSearchTextBox"] as Style;
             MinWidth = MinHeight = 50;
             xTagCloud.TermDragStarting += XTagCloud_TermDragStarting;
         }
+
 
         void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
@@ -47,38 +49,37 @@ namespace Dash
                     var key =  testPatternMatch(d.GetDataDocument(null), pattern, term);
                     if (key != null)
                     {
-                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                        var derefField = d.GetDataDocument(null).GetDereferencedField(key, null);
-                        if (derefField is TextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as TextController).Data)), true);
-                        else if (derefField is RichTextController)
-                            rnote.GetDataDocument(null).SetField(RichTextNote.RTFieldKey, new RichTextController(new RichTextModel.RTD((derefField as RichTextController).Data.ReadableString)), true);
+                        var derefField = d.GetDataDocument(null).GetDereferencedField<TextController>(key, null)?.Data;
+                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, derefField ?? "<empty>").Document;
                         rnote.GetDataDocument(null).SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }
                     return null;
                 });
-                var collectionDoc = new CollectionNote(new Point(), CollectionView.CollectionViewType.Schema, collectedDocuments: collection.Where((c)=> c != null).ToList()).Document;
-                
-                args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { collectionDoc }));
+                args.Data.Properties[nameof(DragCollectionFieldModel)] = new DragCollectionFieldModel(
+                    collection.Where((c) => c != null).ToList(), null, null, CollectionView.CollectionViewType.Schema);
             }
         }
 
         private void CollectionDBView_Loaded(object sender, RoutedEventArgs e)
         {
-            var dv = VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(this);
-            
-            ParentDocument = dv.ViewModel.DocumentController;
-            updateChart(new Context(ParentDocument));
+            DataContextChanged += CollectionDBView_DataContextChanged;
+            CollectionDBView_DataContextChanged(sender, null);
+        }
+        private void CollectionDBView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DataContextChanged -= CollectionDBView_DataContextChanged;
+            ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
         }
 
-        private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionDBView_DataContextChanged(object sender, DataContextChangedEventArgs args)
         {
-            ViewModel = DataContext as BaseCollectionViewModel;
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             updateChart(new Context(ParentDocument));
-        }   //Input Keys
+        }   
+        
+        //Input Keys
         public static readonly KeyController FilterFieldKey = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
         public static readonly KeyController BucketsKey = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
         public static readonly KeyController SelectedKey = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
@@ -92,14 +93,11 @@ namespace Dash
             get { return _parentDocument; }
             set
             {
+                if (ParentDocument != null)
+                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                 _parentDocument = value;
                 if (value != null)
                 {
-                    //if (_parentDocument.GetField(KeyStore.DocumentContextKey) != null)
-                    //{
-                    //    _parentDocument = _parentDocument.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
-                    //}
-                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(BucketsKey) == null)
                         ParentDocument.SetField(BucketsKey, new ListController<NumberController>(new NumberController[] {
                                                         new NumberController(0), new NumberController(0), new NumberController(0), new NumberController(0)}), true);
@@ -142,7 +140,7 @@ namespace Dash
                 }
             }
         }
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
         private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
@@ -153,7 +151,7 @@ namespace Dash
                 dargs.Reference.FieldKey.Equals(CollectionDBView.FilterFieldKey) ||
                 dargs.Reference.FieldKey.Equals(CollectionDBView.BucketsKey) && !autofit ||
                 dargs.Reference.FieldKey.Equals(CollectionDBView.SelectedKey) ||
-                dargs.Reference.FieldKey.Equals(ViewModel.CollectionKey))
+                dargs.Reference.FieldKey.Equals(ViewModel?.CollectionKey))
                 updateChart(new Context(ParentDocument));
         }
 
@@ -283,7 +281,7 @@ namespace Dash
 
         static KeyController testPatternMatch(DocumentController dmc, KeyController pattern, string term)
         {
-            if (!string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+            if (string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return null;
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Key.Equals(pattern)))
@@ -301,12 +299,6 @@ namespace Dash
                         foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null)))
                             if (testPatternMatch(nestedDoc, null, term) != null)
                                 return pfield.Key;
-                    }
-                    else if (pvalue is RichTextController)
-                    {
-                        var text = (pvalue as RichTextController).Data.ReadableString;
-                        if (text != null && text.Contains(term))
-                            return pfield.Key;
                     }
                     else if (pvalue is TextController)
                     {
@@ -425,34 +417,10 @@ namespace Dash
             }
             return null;
         }
-
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
+        
 
         #region DragAndDrop
-
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("drop event from collection");
-
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
+        
 
         public void SetDropIndicationFill(Brush fill)
         {
@@ -460,22 +428,10 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
         }
         #endregion
     }

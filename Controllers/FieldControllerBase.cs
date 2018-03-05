@@ -108,7 +108,7 @@ namespace Dash
             return tb.makeView(tb.Document, context);
         }
 
-        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id, bool isInterfaceBuilder = false)
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };
@@ -117,7 +117,7 @@ namespace Dash
                 ? new ImageBox(refField).Document
                 : new TextingBox(refField).Document;
             hstack.Children.Add(label);
-            var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
+            var ele = dBox.MakeViewUI(context);
             hstack.Children.Add(ele);
             sp.Children.Add(hstack);
         }

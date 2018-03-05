@@ -500,9 +500,9 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController BlankDocWithPosition(Point pos)
+        public static DocumentController BlankDocWithPosition(Point pos, double width=200, double height=200)
         {
-            return new Dash.BackgroundBox(pos.X, pos.Y, 200, 200).Document;
+            return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextController("Document")
@@ -576,6 +576,19 @@ namespace Dash
                 }
             }
             return typedHeaders;
+        }
+
+        /// <summary>
+        /// Given 2 points which represent vectors, returns a point that represents the projection of the argument point onto the first.
+        /// </summary>
+        /// <param name="a"> The vector to project onto (as point) </param>
+        /// <param name="b"> The vector to be projected (as point) </param>
+        /// <returns></returns>
+        public static Point PointProjectArg(this Point a, Point b)
+        {
+            var dotProduct = a.X * b.X + a.Y * b.Y;
+            var aMagSq = Math.Pow(a.X, 2) + Math.Pow(a.Y, 2);
+            return new Point(a.X * dotProduct / aMagSq, a.Y * dotProduct / aMagSq);
         }
     }
 }

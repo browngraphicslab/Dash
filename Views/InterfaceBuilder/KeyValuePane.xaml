@@ -28,6 +28,7 @@
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
+
             <TextBlock Foreground="White" Margin="0,-2,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
 
             <!--close button-->
@@ -169,8 +170,13 @@
                                            VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                             </ScrollViewer>
                             <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0"
+<<<<<<< HEAD
                                       DragStarting="Icon_OnDragStarting" CanDrag="True"
                                       FontSize="14" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
+=======
+                                      DragStarting="Icon_OnDragStarting" CanDrag="True" PointerPressed="FontIcon_PointerPressed"  
+                                      FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
+>>>>>>> 0f4f8fbb5ea2e44d59976b89ae7f0a25d19e04dc
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

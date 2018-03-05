@@ -14,7 +14,7 @@ namespace Dash.Sources.FilePicker {
 
         public PDFFilePicker() {
             this.InitializeComponent();
-            new ManipulationControls(this, true, false);
+            //new ManipulationControls(this);
 
         }
 

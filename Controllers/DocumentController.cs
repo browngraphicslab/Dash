@@ -96,10 +96,11 @@ namespace Dash
         {
             get
             {
-                var titleController = GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
+ GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
                 if (titleController != null)
                 {
-                    return titleController.Data;
+                    return titleController;
                 }
                 return DocumentType.Type;
             }
@@ -605,15 +606,17 @@ namespace Dash
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var newContext = new Context(c);
-                        if (newContext.DocContextList.Where((d) => d.IsDelegateOf(GetId())).Count() == 0
-                        ) // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
+                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                             newContext.AddDocumentContext(this);
+                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
+                            reference, args, false);
                         if (ShouldExecute(newContext, reference.FieldKey))
                         {
-                            newContext = Execute(newContext, true);
+                            newContext = Execute(newContext, true, updateArgs);
                         }
                         OnDocumentFieldUpdated(this,
-                            new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false),
+                            updateArgs,
                             newContext, true);
                     };
                 if (oldField != null)
@@ -791,7 +794,7 @@ namespace Dash
 
             foreach (var field in array)
             {
-                if (SetFieldHelper(field.Key, field.Value, forceMask))
+                if (field.Key != null && SetFieldHelper(field.Key, field.Value, forceMask))
                 {
                     shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
@@ -1017,7 +1020,7 @@ namespace Dash
             return false;
         }
 
-        public Context Execute(Context oldContext, bool update)
+        public Context Execute(Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1060,13 +1063,47 @@ namespace Dash
                 }
             }
 
-            // execute the operator
-            opField.Execute(inputs, outputs);
+            bool needsToExecute = updatedArgs != null;
+            var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
+            var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
+                "_Cache Access Key");
+
+            //TODO We should get rid of old cache values that aren't necessary at some point
+            var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
+            if (updatedArgs == null)
+            {
+                foreach (var opFieldOutput in opField.Outputs)
+                {
+                    var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
+                    if (field == null)
+                    {
+                        needsToExecute = true;
+                        outputs.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        outputs[opFieldOutput.Key] = field;
+                    }
+                }
+            }
+
+
+            if (needsToExecute)
+            {
+                // execute the operator
+                opField.Execute(inputs, outputs, updatedArgs);
+            }
 
             // pass the updates along 
             // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
+                if (needsToExecute)
+                {
+                    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
+                        .SetField(key, fieldModel.Value, true);
+                }
                 var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)
@@ -1117,7 +1154,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilder = false)
+        private FrameworkElement makeAllViewUI(Context context)
         {
             var fields = EnumFields().Where((f) => !f.Key.IsUnrenderedKey()).ToList();
             if (fields.Count > 15)
@@ -1125,7 +1162,7 @@ namespace Dash
             var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldControllerBase> f)
             {
-                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId(), isInterfaceBuilder);
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId());
             }
 
 
@@ -1163,117 +1200,12 @@ namespace Dash
             return sp;
         }
 
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
             context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument(null));
 
-            //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
-            if (DocumentType.Equals(TextingBox.DocumentType))
-            {
-                return TextingBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder, true); //
-            }
-            if (DocumentType.Equals(ImageBox.DocumentType))
-            {
-                return ImageBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(PdfBox.DocumentType))
-            {
-                return PdfBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DocumentBox.DocumentType))
-            {
-                return DocumentBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);//
-            }
-            if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
-            {
-                return KeyValueDocumentBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
-            }
-            if (DocumentType.Equals(StackLayout.DocumentType))
-            {
-                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
-            }
-            if (DocumentType.Equals(WebBox.DocumentType))
-            {
-                return WebBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-            {
-                return CollectionBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);//
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
-            {
-                return OperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
-            {
-                return FreeFormDocument.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(InkBox.DocumentType))
-            {
-                return InkBox.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(GridViewLayout.DocumentType))
-            {
-                return GridViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(ListViewLayout.DocumentType))
-            {
-                return ListViewLayout.MakeView(this, context, dataDocument, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
-            {
-                return ExecuteHtmlOperatorBox.MakeView(this, context, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(RichTextBox.DocumentType))
-            {
-                return RichTextBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
-            {
-                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder, keysToFrameworkElementsIn); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.FilterOperatorDocumentType))
-            {
-                return FilterOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
-            {
-                return MeltOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
-            {
-                return QuizletOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
-            {
-                return ExtractSentencesOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
-            {
-                return SearchOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
-            {
-                return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(ApiOperatorBox.DocumentType))
-            {
-                return ApiOperatorBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder); //I set the framework element as the operator view for now
-            }
-            if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
-            {
-                return PreviewDocument.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(BackgroundBox.DocumentType))
-            {
-                return BackgroundBox.MakeView(this, context, keysToFrameworkElementsIn, isInterfaceBuilder);
-            }
-            if (DocumentType.Equals(DataBox.DocumentType))
-            {
-                return DataBox.MakeView(this, context, isInterfaceBuilder);//TODO add keysToFrameworkElementsIn
-            }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
@@ -1282,20 +1214,108 @@ namespace Dash
 
                 if (doc.DocumentType.Equals(DefaultLayout.DocumentType))
                 {
-                    if (isInterfaceBuilder)
-                    {
-                        var activeLayout = this.GetActiveLayout(context);
-                        return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
-                    }
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
 
-                return doc.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElementsIn, this);
+                return doc.MakeViewUI(context, GetDataDocument());
             }
-            if (isInterfaceBuilder)
+            //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
+            if (DocumentType.Equals(TextingBox.DocumentType))
             {
-                return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+                return TextingBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(ImageBox.DocumentType))
+            {
+                return ImageBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(PdfBox.DocumentType))
+            {
+                return PdfBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
+            {
+                return KeyValueDocumentBox.MakeView(this, context, dataDocument);//
+            }
+            if (DocumentType.Equals(StackLayout.DocumentType))
+            {
+                return StackLayout.MakeView(this, context, dataDocument); //
+            }
+            if (DocumentType.Equals(WebBox.DocumentType))
+            {
+                return WebBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
+            {
+                return CollectionBox.MakeView(this, context, dataDocument);//
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
+            {
+                return OperatorBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
+            {
+                return FreeFormDocument.MakeView(this, context, dataDocument); //
+            }
+            if (DocumentType.Equals(InkBox.DocumentType))
+            {
+                return InkBox.MakeView(this, context, dataDocument);
+            }
+            if (DocumentType.Equals(GridViewLayout.DocumentType))
+            {
+                return GridViewLayout.MakeView(this, context, dataDocument); //
+            }
+            if (DocumentType.Equals(ListViewLayout.DocumentType))
+            {
+                return ListViewLayout.MakeView(this, context, dataDocument); //
+            }
+            if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
+            {
+                return ExecuteHtmlOperatorBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(RichTextBox.DocumentType))
+            {
+                return RichTextBox.MakeView(this, context); //
+            }
+            if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
+            {
+                return GridLayout.MakeView(this, context, dataDocument); //
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
+            {
+                return MeltOperatorBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
+            {
+                return QuizletOperatorBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
+            {
+                return ExtractSentencesOperatorBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
+            {
+                return SearchOperatorBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
+            {
+                return DBSearchOperatorBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(ApiOperatorBox.DocumentType))
+            {
+                return ApiOperatorBox.MakeView(this, context); //I set the framework element as the operator view for now
+            }
+            if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
+            {
+                return PreviewDocument.MakeView(this, context);
+            }
+            if (DocumentType.Equals(BackgroundBox.DocumentType))
+            {
+                return BackgroundBox.MakeView(this, context);
+            }
+            if (DocumentType.Equals(DataBox.DocumentType))
+            {
+                return DataBox.MakeView(this, context);
             }
             return makeAllViewUI(context);
         }

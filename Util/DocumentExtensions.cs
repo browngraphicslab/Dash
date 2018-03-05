@@ -183,7 +183,7 @@ namespace Dash
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointController(
-                        new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? doc.GetActiveLayout().GetField<NumberController>(KeyStore.ActualWidthKey).Data) + 70, 
                         where?.Y ?? oldPosition.Data.Y)),
                         true);
             }
@@ -223,7 +223,7 @@ namespace Dash
                                             new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
                 newDoc = activeLayout;
             }
-            else if (docContext == null && activeLayout != null) // has a layout
+            else if (activeLayout != null) // has a layout
             {
                 docContext = doc.MakeDelegate(); // inherit the document so we can override its layout
                 var copiedLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts

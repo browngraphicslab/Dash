@@ -53,7 +53,7 @@ namespace Dash
     }
 
 
-    public sealed partial class CollectionTimelineView : SelectionElement, ICollectionView
+    public sealed partial class CollectionTimelineView : ICollectionView
     {
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
 
@@ -92,7 +92,7 @@ namespace Dash
         }
 
         public TimelineMetadata Metadata { get; }
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public event Action MetadataUpdated;
 
 
@@ -158,21 +158,12 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            // remove events from the old ViewModel (null checks itself)
-            RemoveViewModelEvents(ViewModel);
-
-            // update the ViewModel variable to the current view model and set its selection
-            ViewModel = vm;
-            ViewModel.SetSelected(this, IsSelected);
-
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
         }
 
-        private void Initialize(ICollectionViewModel viewModel)
+        private void Initialize(CollectionViewModel viewModel)
         {
             foreach (var dvm in viewModel.DocumentViewModels)
             {
@@ -185,13 +176,13 @@ namespace Dash
             UpdateMetadataMinAndMax();
         }
 
-        private void AddViewModelEvents(ICollectionViewModel viewModel)
+        private void AddViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
         }
 
-        private void RemoveViewModelEvents(ICollectionViewModel viewModel)
+        private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
@@ -227,8 +218,7 @@ namespace Dash
             foreach (var vm in viewModels)
             {
                 _trackedViewModels.Remove(vm);
-                var dataDocument = vm.DocumentController.GetDataDocument(null);
-                dataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
+                vm.DataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
             }
         }
 
@@ -237,7 +227,7 @@ namespace Dash
             foreach (var vm in viewModels)
             {
                 _trackedViewModels.Add(vm);
-                var dataDocument = vm.DocumentController.GetDataDocument(null);
+                var dataDocument = vm.DataDocument;
 
                 void Handler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
                 {
@@ -273,9 +263,8 @@ namespace Dash
 
         private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)
         {
-            var dataDocument = vm.DocumentController.GetDataDocument(null);
             var webContextList =
-                dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
+                vm.DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             webContextList?.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
             return webContextList;
         }
@@ -283,30 +272,11 @@ namespace Dash
         #endregion
 
         #region Selection
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-            ViewModel.UpdateDocumentsOnSelection(isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
-
+        
+        
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
-        }
-
-        // TODO not sure how this should be implemented or if it would ever get called (part of the interface...)
-        public void ToggleSelectAllItems()
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

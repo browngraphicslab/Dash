@@ -58,7 +58,7 @@ namespace Dash
             docController.SetField(GridViewKey, currentSpacingField, forceMask);
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             throw new NotImplementedException("We don't have access to the data document here");
         }
@@ -113,7 +113,7 @@ namespace Dash
             AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
         {
 
             var grid = new Grid();
@@ -126,7 +126,7 @@ namespace Dash
             gridView.ItemContainerStyle = new Style { TargetType = typeof(GridViewItem) };
             SetupBindings(gridView, docController, context); 
 
-            LayoutDocuments(docController, context, gridView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+            LayoutDocuments(docController, context, gridView);
             var c = new Context(context);
             docController.FieldModelUpdated += delegate (FieldControllerBase sender,
                 FieldUpdatedEventArgs args, Context context1)
@@ -134,39 +134,23 @@ namespace Dash
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 if (dargs.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
-                    LayoutDocuments((DocumentController)sender, c, gridView, isInterfaceBuilderLayout, keysToFrameworkElementsIn);
+                    LayoutDocuments((DocumentController)sender, c, gridView);
                 }
             };
             grid.Children.Add(gridView);
-            if (isInterfaceBuilderLayout)
-            {
-                var icon = new TextBlock()
-                {
-                    Text = "▦",
-                    FontSize = 100,
-                    Foreground = new SolidColorBrush(Colors.LightBlue),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                grid.Children.Insert(0, icon);
-                var container = new SelectableContainer(grid, docController, dataDocument);
-                //SetupBindings(container, docController, context);
-                return container;
-            }
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid, bool isInterfaceBuilder, Dictionary<KeyController, FrameworkElement> keysToFrameworkElements = null)
+        private static void LayoutDocuments(DocumentController docController, Context context, GridView grid)
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
             double maxHeight = 0;
             foreach (var layoutDocument in layoutDocuments)
             {
-                var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder, keysToFrameworkElements);
+                var layoutView = layoutDocument.MakeViewUI(context);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-                if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
                 itemsSource.Add(layoutView);
             }
             grid.ItemsSource = itemsSource;

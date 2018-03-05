@@ -14,6 +14,8 @@ using System.Numerics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
+using Windows.UI.Core;
+using Windows.System;
 
 namespace Dash
 {    /// <summary>
@@ -75,7 +77,7 @@ namespace Dash
             CourtesyDocument.SetupBindings(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController,FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -88,14 +90,7 @@ namespace Dash
             var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
-            var grid = new Grid {Background = new SolidColorBrush(Colors.Transparent), Name = "webGridRoot"};
-            var web = new WebView
-            {
-                IsHitTestVisible = true,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-               
-            };
+            var web = new WebView();
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
                 if (html.StartsWith("http"))
@@ -111,56 +106,25 @@ namespace Dash
                 }
             else web.Source = new Uri(textfieldModelController.Data);
             web.LoadCompleted += Web_LoadCompleted;
-            grid.Children.Add(web);
-            var overgrid = new Grid
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Color.FromArgb(0x20, 0xff, 0xff, 0xff)),
-                Name = "overgrid"
-                ,IsHitTestVisible = false
-            };
-            grid.Children.Add(overgrid);
-            web.Tag = new Tuple<Point,bool,Point>(new Point(), false, new Point()); // hack for allowing web page to be dragged with right mouse button
 
             if (html == null)
                 SetupBindings(web, docController, context);
-
-            //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = web;
-
-            if (isInterfaceBuilderLayout)
-            {
-                return new SelectableContainer(grid, docController);
-            }
-            return grid;
+            
+            return web;
         }
 
-        //public static async void getHtml(Uri url, WebView web)
-        //{
-        //    var MobileUserAgent = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3";
-        //    var handler = new HttpClientHandler { AllowAutoRedirect = true };
-        //    var client = new HttpClient(handler);
-        //   // client.DefaultRequestHeaders.Add("user-agent", MobileUserAgent);
-        //    var response = await client.GetAsync(url);
-        //    response.EnsureSuccessStatusCode();
-        //    var html = await response.Content.ReadAsStringAsync();
-
-        //    var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
-        //    var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
-        //    web.NavigateToString(html.StartsWith("http") ? html : correctedHtml);
-        //}
         private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
         {
             var _WebView = sender as WebView;
 
             _WebView.ScriptNotify -= _WebView_ScriptNotify;
             _WebView.ScriptNotify += _WebView_ScriptNotify;
-            
+
             await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify(e.button.toString()); } document.onmousedown=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move'); } document.onmousemove=x;" });
-            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up'); } document.onmouseup=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('move');  } document.onmousemove=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('up');    } document.onmouseup=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('enter'); } document.onpointerenter=x;" });
+            await _WebView.InvokeScriptAsync("eval", new[] { "function x(e) { window.external.notify('leave'); } document.onmouseout=x;" });
             //await _WebView.InvokeScriptAsync("eval", new[]
             //{"function tableToJson(table) { var data = []; var headers = []; for (var i = 0; i < table.rows[0].cells.length; i++) {headers[i] = table.rows[0].cells[i].textContent.toLowerCase().replace(' ', ''); } for (var i = 1; i < table.rows.length; i++) { var tableRow = table.rows[i]; var rowData = { }; " +
             //"for (var j = 0; j < tableRow.cells.length; j++) { rowData[headers[j]] = tableRow.cells[j].textContent; } data.push(rowData); } return data; } window.external.notify( JSON.stringify( tableToJson( document.getElementsByTagName('table')[0]) ))"
@@ -174,7 +138,7 @@ namespace Dash
             _WebView.NavigationCompleted += _WebView_NavigationCompleted;
             _WebView_NavigationCompleted(_WebView, null);
         }
-
+        
         private async static void _WebView_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
             var _WebView = sender as WebView;
@@ -225,85 +189,28 @@ namespace Dash
 
         //    return data;
         //}
+        
         private static void _WebView_ScriptNotify(object sender, NotifyEventArgs e)
         {
             var web = sender as WebView;
-            var down_and_right_and_last = (Tuple<Point,bool, Point>)web.Tag;
-            var down = down_and_right_and_last.Item1;
-            var right = down_and_right_and_last.Item2;
-            var last = down_and_right_and_last.Item3;
-            var parent = web.GetFirstAncestorOfType<DocumentView>();
+            var parent = web?.GetFirstAncestorOfType<DocumentView>();
             if (parent == null)
                 return;
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
 
-            if (e.Value == "0")
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down);
+            switch (e.Value as string)
             {
-                parent.DocumentView_PointerEntered(null, null);
-                var docView = web.GetFirstAncestorOfType<DocumentView>();
-                docView?.ToFront();
-                web.Tag = new Tuple<Point, bool, Point>(new Point(), false, new Point());
-            } else if (e.Value == "2") // right mouse button == 2
-            {
-                var docView = web.GetFirstAncestorOfType<DocumentView>();
-                docView?.ToFront();
-                //var rt = parent.RenderTransform.TransformPoint(new Point());
-                var rt = new Point();
-                web.Tag = new Tuple<Point, bool, Point>(pointerPosition, true, pointerPosition);
-                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
-                parent.DocumentView_PointerEntered(null, null);
-            }
-            else if (e.Value == "move" && right)
-            {
-                var parentCollectionTransform =
-                    ((web.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
-                if (parentCollectionTransform == null) return;
-
-                var translation = new Point(pointerPosition.X - last.X, pointerPosition.Y - last.Y);
-
-                translation.X *= parentCollectionTransform.Matrix.M11;
-                translation.Y *= parentCollectionTransform.Matrix.M22;
-
-                last = pointerPosition;
-                if (parent.ManipulationControls != null)
-                {
-                    parent.ManipulationControls.TranslateAndScale(new
-                        ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                            translation,
-                            1.0f), parent.ManipulationControls._grouping);
-
-                    //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-                    if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                        parent.ManipulationControls.Snap(true);
-                }
-                web.Tag = new Tuple<Point, bool, Point>(down, right, last);
-            }
-            else if (e.Value == "move")
-            {
-                parent.DocumentView_PointerEntered(null, null);
-            }
-            else if (e.Value == "up")
-            {
-                web.Tag = new Tuple<Point, bool, Point>(new Point(), false, new Point());
-                if (Math.Sqrt((pointerPosition.X - down.X) * (pointerPosition.X - down.X) + (pointerPosition.Y - down.Y) * (pointerPosition.Y - down.Y)) < 8)
-                {
-                    if (right)
-                        parent.RightTap();
-                    parent.OnTapped(null, null);
-                }
-                else
-                {
-                    parent.OnTapped(null, null);
-                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-                }
-
-                parent.DocumentView_PointerExited(null, null);
-                parent.DocumentView_ManipulationCompleted(null, null);
-
-                // web.InvokeScriptAsync("eval", new[] { "window.external.notify(window.scrollY.toString()); " });
-
-                //web.InvokeScriptAsync("eval", new[] { "window.scrollTo(0, 572); " });
-                // web.InvokeScriptAsync("eval", new[] { "window.open('http://www.msn.com', window.name, '');" });
+                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
+                case "move": parent.DocumentView_PointerEntered(null, null);
+                             (web.Tag as ManipulationControlHelper)?.pointerMoved(web, null); break;
+                case "leave": { if (!parent.IsPointerOver())
+                                    parent.DocumentView_PointerExited(null, null);
+                                break;
+                              }
+                case "up":  parent.ToFront();
+                            (web.Tag as ManipulationControlHelper)?.pointerReleased(web, null);
+                             web.Tag = null; break;
             }
         }
 

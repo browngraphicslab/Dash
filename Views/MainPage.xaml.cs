@@ -105,7 +105,7 @@ namespace Dash
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
                         [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                        [KeyStore.GroupingKey] = new ListController<DocumentController>()
+                        //[KeyStore.GroupingKey] = new ListController<DocumentController>()
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
@@ -113,7 +113,7 @@ namespace Dash
                 }
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
-                var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                //var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
@@ -124,7 +124,7 @@ namespace Dash
                     var documentController = new NoteDocuments.CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
-                    grouped.Add(documentController);
+                    //grouped.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
                     lastWorkspace = documentController;
                 }
@@ -166,7 +166,6 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -187,7 +186,6 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 
@@ -299,8 +297,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
 
                     
 
@@ -333,8 +331,8 @@ namespace Dash
                     var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -360,20 +358,15 @@ namespace Dash
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
             {
-                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition.X - Window.Current.Bounds.X;
-                var y = pointerPosition.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
-                if (topCollection == null)
+                if (topCollection != null)
                 {
-                    return;
+                    // add tabitemviewmodels that directs user to documentviews within the current collection 
+
+                    TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                    TabMenu.Instance?.AddGoToTabItems();
                 }
-
-                // add tabitemviewmodels that directs user to documentviews within the current collection 
-
-                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu
@@ -388,8 +381,7 @@ namespace Dash
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (e.PointerDeviceType != PointerDeviceType.Touch) return;
-            var pointerPosition = e.GetPosition(this);
-            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
+            var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
             if (topCollection == null)
@@ -415,7 +407,8 @@ namespace Dash
 
             };
 
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
+            //TODO: do we need this if we aren't doing grouping?
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.CollectionKey));
             xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu
