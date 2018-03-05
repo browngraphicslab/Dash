@@ -65,7 +65,6 @@ namespace Dash
         private void OutputEllipse_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
-            e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
         }
 
 
