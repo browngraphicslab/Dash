@@ -1367,7 +1367,7 @@ namespace Dash
         }
 
         public override TypeInfo TypeInfo { get; }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             throw new NotImplementedException();
         }

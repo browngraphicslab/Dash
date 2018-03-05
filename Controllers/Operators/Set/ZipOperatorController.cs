@@ -22,21 +22,6 @@ namespace Dash
         {
         }
 
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            //return new ZipOperatorFieldController(OperatorFieldModel);
-            return new ZipOperatorController();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
             [AKey] = new IOInfo(TypeInfo.List, true),
@@ -77,6 +62,16 @@ namespace Dash
                 if (ExcludedKeys.Contains(field.Key)) continue;
                 fields[field.Key] = field.Value;
             }
+        }
+
+        public override void Init()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new ZipOperatorController();
         }
     }
 }

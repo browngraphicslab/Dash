@@ -41,18 +41,10 @@ namespace Dash
             OutputFieldReferences = new Dictionary<KeyController, ReferenceController>(copy.OutputFieldReferences);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             Debug.Assert(OperatorFieldModel is CompoundOperatorModel);
             return new CompoundOperatorController(this);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>();

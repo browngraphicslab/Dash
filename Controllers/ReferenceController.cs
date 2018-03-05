@@ -93,7 +93,7 @@ namespace Dash
             }
             return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);

@@ -138,19 +138,9 @@ namespace Dash
                 }
             }
         };
-        
+       
 
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            return null;
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ExecuteHtmlJavaScriptController();
         }

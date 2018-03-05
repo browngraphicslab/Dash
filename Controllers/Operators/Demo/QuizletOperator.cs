@@ -40,17 +40,7 @@ namespace Dash
 
         }
 
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return "QuizletOperator()";
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new QuizletOperator();
         }

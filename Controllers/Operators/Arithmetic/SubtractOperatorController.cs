@@ -41,17 +41,9 @@ namespace Dash
             outputs[DifferenceKey] = new NumberController(a - b);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new SubtractOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new SubtractOperatorController();
         }
     }
 }

@@ -95,7 +95,7 @@ namespace Dash
             return Data;
         }
 
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             Debug.Assert(value is Uri);
             if (value is Uri u)

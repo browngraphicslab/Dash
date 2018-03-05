@@ -42,17 +42,7 @@ namespace Dash
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new SearchOperatorController();
         }

@@ -50,19 +50,9 @@ namespace Dash
             outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new CollectionTitleOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
         }
 
     }
@@ -76,7 +66,7 @@ namespace Dash
         public GroupTitleOperatorController() : base(new OperatorModel(OperatorType.GroupTitle))
         {
         }
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new GroupTitleOperatorController();
         }

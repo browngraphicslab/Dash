@@ -48,17 +48,9 @@ namespace Dash
             outputs[ProductKey] = new NumberController(a * b);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new MultiplyOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

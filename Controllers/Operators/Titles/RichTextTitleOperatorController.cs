@@ -54,19 +54,9 @@ namespace Dash
             outputs[ComputedTitle] = new TextController(computedTitle ?? "");
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RichTextTitleOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
         }
     }
 }

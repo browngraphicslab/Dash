@@ -69,17 +69,9 @@ namespace Dash
             outputs[MatchesKey] = new ListController<TextController>(collected);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new AddOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new RegexOperatorController(OperatorFieldModel);
         }
     }
 }

@@ -99,20 +99,9 @@ namespace Dash
         }
 
 
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ImageToColorPalette();
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
         }
     }
 }

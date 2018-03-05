@@ -48,18 +48,9 @@ namespace Dash
             //(doc.GetField(IntersectionKey) as ListController<DocumentController>).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            //return new IntersectionOperatorModelController(OperatorFieldModel);
             return new IntersectionOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

@@ -86,19 +86,9 @@ namespace Dash
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ExtractSentencesOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
         }
 
     }
