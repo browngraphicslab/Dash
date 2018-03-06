@@ -57,7 +57,7 @@ namespace Dash
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
 
-            xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
+            //xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
         }
@@ -178,68 +178,72 @@ namespace Dash
         /// <returns></returns>
         private bool UserInputIsValid()
         {
-            var type = (TypeInfo)xTypeComboBox.SelectedItem;
-
-            return xNewKeyField.Text != "" && type != TypeInfo.None &&
-                   (xNewValueField.Text != "" || type == TypeInfo.List || type == TypeInfo.Document);
+            return xNewKeyText.Text != "" &&
+                   xNewValueText.Text != "" ;
         }
 
         /// <summary>
         ///     Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is
         ///     successful in adding the pair.
+        ///     
+        /// TODO @tyler: type info parsing - right now we will just assume text as the type for the key value pair
         /// </summary>
         private void AddKeyValuePair()
         {
 
             if (!UserInputIsValid()) return;
 
-            var item = (TypeInfo) xTypeComboBox.SelectedItem;
-            var key = KeyController.LookupKeyByName(xNewKeyField.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);
-            FieldControllerBase fmController = new TextController("something went wrong");
-            var stringValue = xNewValueField.Text;
 
-            _dataContextDocument.ParseDocField(key, xNewValueField.Text);
+            //var item = (TypeInfo) xTypeComboBox.SelectedItem;
+            var key = KeyController.LookupKeyByName(xNewKeyText.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyText.Text);
+            FieldControllerBase fmController = new TextController("something went wrong");
+            var stringValue = xNewValueText.Text;
+
+            _dataContextDocument.ParseDocField(key, xNewValueText.Text);
             fmController = _dataContextDocument.GetField(key);
 
             if (fmController == null)
-            {
-                switch (item)
-                {
-                    case TypeInfo.Number:
-                        fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
-                        break;
-                    case TypeInfo.Image:
-                        // TODO check to see if the uri is valid
-                        fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
-                        break;
-                    case TypeInfo.Text:
-                        fmController = new TextController(xNewValueField.Text);
-                        break;
-                    case TypeInfo.List:
-                        //TODO tfs: this can only create lists of docs(collections), not lists of other things
-                        fmController = new ListController<DocumentController>();
-                        break;
-                    case TypeInfo.Point:
-                        fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
-                        break;
-                    case TypeInfo.Document:
-                        fmController = new Converters.DocumentControllerToStringConverter(null).ConvertXamlToData(stringValue);
-                        break;
-                    case TypeInfo.None:
-                    case TypeInfo.PointerReference:
-                    case TypeInfo.DocumentReference:
-                    case TypeInfo.Operator:
-                    case TypeInfo.Ink:
-                    case TypeInfo.RichText:
-                    case TypeInfo.Rectangle:
-                    case TypeInfo.Key:
-                    case TypeInfo.Reference:
-                    case TypeInfo.Any:
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                _dataContextDocument.SetField(key, fmController, true);
-            }
+                fmController = new TextController(xNewValueText.Text);
+
+            //if (fmController == null)
+            //{
+            //    switch (item)
+            //    {
+            //        case TypeInfo.Number:
+            //            fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
+            //            break;
+            //        case TypeInfo.Image:
+            //            // TODO check to see if the uri is valid
+            //            fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
+            //            break;
+            //        case TypeInfo.Text:
+            //            fmController = new TextController(xNewValueField.Text);
+            //            break;
+            //        case TypeInfo.List:
+            //            //TODO tfs: this can only create lists of docs(collections), not lists of other things
+            //            fmController = new ListController<DocumentController>();
+            //            break;
+            //        case TypeInfo.Point:
+            //            fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
+            //            break;
+            //        case TypeInfo.Document:
+            //            fmController = new Converters.DocumentControllerToStringConverter(null).ConvertXamlToData(stringValue);
+            //            break;
+            //        case TypeInfo.None:
+            //        case TypeInfo.PointerReference:
+            //        case TypeInfo.DocumentReference:
+            //        case TypeInfo.Operator:
+            //        case TypeInfo.Ink:
+            //        case TypeInfo.RichText:
+            //        case TypeInfo.Rectangle:
+            //        case TypeInfo.Key:
+            //        case TypeInfo.Reference:
+            //        case TypeInfo.Any:
+            //        default:
+            //            throw new ArgumentOutOfRangeException();
+            //    }
+            //    _dataContextDocument.SetField(key, fmController, true);
+            //}
 
 
             var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
@@ -250,33 +254,14 @@ namespace Dash
 
             // TODO check if adding was succesful
             // reset the fields to the empty values
-            xNewKeyField.Text = "";
-            xNewValueField.Text = "";
-            xTypeComboBox.SelectedIndex = 0;
-            ToggleAddKVPane(false);
+            xNewKeyText.Text = "";
+            xNewValueText.Text = "";
+            //xTypeComboBox.SelectedIndex = 0;
+            //ToggleAddKVPane(false);
             xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
 
             return;
-        }
-
-        /// <summary>
-        ///     Toggles the bottom pane UI for adding new key-value pairs
-        /// </summary>
-        private void ToggleAddKVPane(bool showAddMenu)
-        {
-            if (!showAddMenu)
-            {
-                xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            }
-            else
-            {
-                xNewFieldPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xCreateFieldButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                // set type selection box to text by default
-                xTypeComboBox.SelectedIndex = 2;
-            }
         }
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -334,10 +319,13 @@ namespace Dash
             //var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
             var keyColumnWidth = columnDefinitions[0].ActualWidth;
             if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
+            {
                 _editKey = true;
+            }
             else
+            {
                 _editKey = false;
-
+            }
 
             // set the selectedKV pair, a bunch of textbox methods rely on this field being set
             _selectedKV = (sender as FrameworkElement)?.DataContext as KeyFieldContainer;
@@ -398,18 +386,6 @@ namespace Dash
             _tb = null;
         }
 
-        private void ShowCreateFieldOptions(object sender, RoutedEventArgs e)
-        {
-            ToggleAddKVPane(true);
-            // focus on the combo box by defalt
-            xTypeComboBox.Focus(FocusState.Programmatic);
-        }
-
-        private void CancelField_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ToggleAddKVPane(false);
-        }
-
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
@@ -448,29 +424,6 @@ namespace Dash
             }
         }
 
-        private void XTypeComboBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            // focus on the key field if the user hits enter
-            if (e.Key == VirtualKey.Enter)
-            {
-                xNewKeyField.Focus(FocusState.Programmatic);
-                e.Handled = true;
-            }
-        }
-
-        private void XAddButton_OnKeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Tab)
-            {
-                e.Handled = true;
-            }
-
-            // add the field if the user hits enter
-            if (e.Key == VirtualKey.Enter)
-            {
-                AddKeyValuePair();
-            }
-        }
 
         /// <summary>
         /// changing background color slightly to show that you've moused over this element
@@ -491,6 +444,39 @@ namespace Dash
         {
             var container = (Panel)sender;
             container.Background = new SolidColorBrush(Color.FromArgb(0,255,255, 255));
+        }
+
+        /// <summary>
+        /// add new key value pair on enter in list view of key value grid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AddKeyValueFieldOnEnter(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                // check key field is filled in
+                if (xNewKeyText.Text != "")
+                {
+                    AddKeyValuePair();
+                    xNewKeyText.Focus(FocusState.Programmatic);
+                }
+                xFieldsScroller.UpdateLayout();
+                xFieldsScroller.ScrollToVerticalOffset(xFieldsScroller.ActualHeight);
+            }
+        }
+
+        /// <summary>
+        /// hides tab menu on tab up, and focuses on value field
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TextFocus_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Tab)
+            {
+                e.Handled = true;
+            }
         }
     }
 }
