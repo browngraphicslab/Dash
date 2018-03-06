@@ -76,13 +76,20 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var forceDrag = (args.KeyModifiers & VirtualKeyModifiers.Shift) == 0 && (args.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
-                                   .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
-            if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
+            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
+            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            if (parentFreeform != null && rightBtn)
             {
-                new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-                
-                args.Handled = true;
+                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
+                if (shifted || parentParentFreeform == null)
+                {
+                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
+
+                    args.Handled = true;
+                } else
+                    if (parentParentFreeform != null)
+                        CurrentView.ManipulationMode = ManipulationModes.None;
             }
         }
 
