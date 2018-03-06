@@ -62,6 +62,7 @@ namespace DashShared
         Quizlet,
         ExecDish, //super useful
         ParseSearchStringToDish,
-        IntersectByValue
+        IntersectByValue,
+        ExecuteDishToString
     }
 }

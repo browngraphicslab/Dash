@@ -707,10 +707,13 @@ namespace Dash
         {
             var opCont = GetField(KeyStore.OperatorKey) as OperatorController;
             if (opCont == null) return true;
-            if (!opCont.Inputs.ContainsKey(key)) return true;
+            if (!opCont.Inputs.Any(i => i.Key.Equals(key)))
+            {
+                return true;
+            }
 
             var rawField = field.DereferenceToRoot(null);
-            return rawField == null || (opCont.Inputs[key].Type & rawField.TypeInfo) != 0;
+            return rawField == null || (opCont.Inputs.First(i=>i.Key.Equals(key)).Value.Type & rawField.TypeInfo) != 0;
         }
 
 
@@ -946,7 +949,7 @@ namespace Dash
             {
                 return new List<KeyController> { key };
             }
-            return new List<KeyController>(opField.Inputs.Keys);
+            return new List<KeyController>(opField.Inputs.Select(i => i.Key));
         }
 
         /// <summary>
@@ -1016,7 +1019,7 @@ namespace Dash
             context = context ?? new Context(this);
             var opField = GetDereferencedField<OperatorController>(KeyStore.OperatorKey, context);
             if (opField != null)
-                return opField.Inputs.ContainsKey(updatedKey) || opField.Outputs.ContainsKey(updatedKey);
+                return opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
             return false;
         }
 

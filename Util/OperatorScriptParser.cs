@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
@@ -15,6 +16,8 @@ namespace Dash
             new KeyValuePair<char, char>('"','"'),
             new KeyValuePair<char, char>('(', ')')
         };
+
+        private static char FunctionOpeningCharacter = '(';
 
         private static OperatorScript os = OperatorScript.Instance;
 
@@ -43,6 +46,19 @@ namespace Dash
             TestNumber("add(A:exec(Script:'exec(Script:'mult(A:5,B:div(A:1,B:2.5))')'),B:5)", 7);
 
             var testResults = Interpret("exec(Script:parseSearchString(Query:'cat dog'))");
+
+
+
+            //Testing unnamed params
+            TestNumber("add(20,B:25)", 45);
+            TestNumber("add(20,25)", 45);
+            TestNumber("add(exec('exec('mult(5,div(A:1,B:2.5))')'),5)", 7);
+            TestNumber("add(exec('exec('mult(5,div(A:1,2.5))')'),5)", 7);
+            TestNumber("add(exec('exec('mult(5,div(1,B:2.5))')'),5)", 7);
+
+            var parts4 = ParseToOuterFunctionParts(@"search('trent')");
+            Debug.Assert(parts4.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", "'trent'" } })));
+
         }
 
         private static void TestNumber(string script, double correctValue)
@@ -61,33 +77,55 @@ namespace Dash
 
         public static FieldControllerBase Interpret(string script)
         {
-            var se = ParseToExpression(script);
-            return se.Execute();
+            try
+            {
+                var se = ParseToExpression(script);
+                return se.Execute();
+            }
+            catch (ScriptException scriptException)
+            {
+                throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
+            }
         }
 
         private static ScriptExpression ParseToExpression(string script)
         {
+            ScriptExpression toReturn;
+            if (script.Length == 0)
+            {
+                throw new ScriptException(new EmptyScriptErrorModel());
+            }
             switch (script[0])
             {
                 case '\'':
                 case '\"':
-                    return ParseString(script);
+                    toReturn = ParseString(script);
+                    break;
                 default:
                     double number;
-                    if (Double.TryParse(script, out number))
+                    if (Double.TryParse(script, out number))//TODO optimize this
                     {
-                        return ParseNumber(number);
+                        toReturn = ParseNumber(number);
+                        break;
                     }
 
-                    return ParseFunction(script);
+                    toReturn = ParseFunction(script);
+                    break;
             }
+
+            if (toReturn == null)
+            {
+                
+            }
+
+            return toReturn;
         }
 
         private static ScriptExpression ParseString(string s)
         {
             if (s.Length < 2)
             {
-                return null;
+                throw new ScriptException(new InvalidStringScriptErrorModel(s)); 
             }
             if (s[0] == '\'' && s[s.Length - 1] == '\'' ||
                 s[0] == '\"' && s[s.Length - 1] == '\"')
@@ -109,26 +147,31 @@ namespace Dash
             var parameters = new Dictionary<KeyController, ScriptExpression>();
 
             var keys = OperatorScript.GetKeyControllersForFunction(parts.FunctionName);
+            var keyDict = OperatorScript.GetKeyControllerDictionaryForFunction(parts.FunctionName);
 
             if (keys == null)
             {
-                //TODO handle the case when the function cant be found.  Throw an exception
-            }
-
-            if (parameters.Count != keys.Count)
-            {
-                //TODO handle the case where in input parameter count doesn't match the given parameters count
+                throw new ScriptException(new FunctionNotFoundScriptErrorModel(parts.FunctionName));
             }
 
             foreach (var parameter in parts.FunctionParameters)
             {
                 if (!keys.ContainsKey(parameter.Key))
                 {
-                    //TODO handle the case where the function doesn't contain the specified key.
+                    //handles the case where the function doesn't contain the specified key.
                     //Maybe generalize and look for very similarly named keys, and then Throw an exception if it still cant be found.
+                    throw new ScriptException(new InvalidParameterScriptErrorModel(parameter.Key));
                 }
                 var keyController = keys[parameter.Key];
                 parameters.Add(keyController, ParseToExpression(parameter.Value));
+            }
+
+            foreach (var kvp in keyDict)
+            {
+                if (kvp.Value.IsRequired && !parameters.ContainsKey(kvp.Key))
+                {
+                    throw new ScriptException(new MissingParameterScriptErrorModel(func, kvp.Key.Name));
+                }
             }
 
             return new FunctionExpression(parts.FunctionName, parameters);
@@ -141,7 +184,7 @@ namespace Dash
             foreach(char c in script)
             {
                 parametersStartIndex++;
-                if (c == '(')
+                if (c == FunctionOpeningCharacter)
                 {
                     break;
                 }
@@ -155,7 +198,12 @@ namespace Dash
                 parametersEndIndex++;
             }
 
-            parts.FunctionParameters = ParseOutFunctionParameters(script.Substring(parametersStartIndex, script.Length - parametersEndIndex - parametersStartIndex));
+            if (script.Length < parametersEndIndex + parametersStartIndex)
+            {
+                throw new ScriptException(new FunctionCallMissingScriptErrorModel(script));
+            }
+
+            parts.FunctionParameters = ParseOutFunctionParameters(script.Substring(parametersStartIndex, script.Length - parametersEndIndex - parametersStartIndex), parts.FunctionName);
 
             return parts;
         }
@@ -167,9 +215,18 @@ namespace Dash
         /// </summary>
         /// <param name="innerFunctionParameters"></param>
         /// <returns></returns>
-        private static Dictionary<string, string> ParseOutFunctionParameters(string innerFunctionParameters)
+        private static Dictionary<string, string> ParseOutFunctionParameters(string innerFunctionParameters, string functionName)
         {
             var toReturn = new Dictionary<string, string>();
+
+            var functionKeys = OperatorScript.GetOrderedKeyControllersForFunction(functionName);
+
+            if (functionKeys == null)
+            {
+                throw new ScriptException(new FunctionNotFoundScriptErrorModel(functionName));
+            }
+
+            int parameterIndex = -1;
 
             bool inValue = false;
             char closingChar = ' ';
@@ -196,33 +253,57 @@ namespace Dash
                 }
                 if (c == ',')
                 {
-                    kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex, i - startIndex));
+                    kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex, i - startIndex), functionKeys, ++parameterIndex, functionName);
                     if (toReturn.ContainsKey(kvp.Key))
                     {
-                        //TODO ignore or throw exception
+                        throw new ScriptException(new ParameterProvidedMultipleTimesScriptErrorModel(functionName, kvp.Key));
                     }
                     toReturn[kvp.Key.Trim()] = kvp.Value.Trim();
                     startIndex = i + 1;
                 }
             }
-            kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex));
+            kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex), functionKeys, ++parameterIndex, functionName);
             if (toReturn.ContainsKey(kvp.Key))
             {
-                //TODO ignore or throw exception
+                throw new ScriptException(new ParameterProvidedMultipleTimesScriptErrorModel(functionName, kvp.Key));
             }
             toReturn[kvp.Key.Trim()] = kvp.Value.Trim();
 
             return toReturn;
         }
 
-        private static KeyValuePair<string, string> ParseKeyValue(string s)
+        private static KeyValuePair<string, string> ParseKeyValue(string s, List<KeyController> functionKeys, int parameterIndex, string functionName)
         {
             int index = s.IndexOf(':');
-            if (index == -1)
+
+            KeyValuePair<string, string> kvp;
+
+            bool hasProvidedParamName = (index != -1);//TODO im not certain that this is foolproof 
+            if (hasProvidedParamName)
             {
-                //TODO throw exception
+                var funcOpeningCharIndex = s.IndexOf(FunctionOpeningCharacter);
+                if (funcOpeningCharIndex != -1 && funcOpeningCharIndex < index)
+                {
+                    hasProvidedParamName = false;
+                }
             }
-            return new KeyValuePair<string, string>(s.Substring(0, index), s.Substring(index + 1));
+
+            if (hasProvidedParamName)
+            {
+                kvp = new KeyValuePair<string, string>(s.Substring(0, index).Trim(), s.Substring(index + 1).Trim());
+            }
+            else
+            {
+                if (parameterIndex >= functionKeys.Count)
+                {
+                    throw new ScriptException(new TooManyParametersGivenScriptErrorModel(functionName, s));
+                }
+
+                //This could also be bad if we aren't requireing either all named or all unnamed params
+                kvp = new KeyValuePair<string, string>(functionKeys[parameterIndex].Name, s.Trim());
+            }
+
+            return kvp;
         }
 
         public class FunctionParts
@@ -284,10 +365,123 @@ namespace Dash
             public override FieldControllerBase Execute()
             {
                 var outputs = new Dictionary<KeyController, FieldControllerBase>();
-                var inputs = parameters.ToDictionary(kv => kv.Key, kv => kv.Value.Execute());
+
+                var inputs = new Dictionary<KeyController, FieldControllerBase>();
+                foreach (var parameter in parameters)
+                {
+                    inputs.Add(parameter.Key, parameter.Value.Execute());
+                }
+
 
                 return OperatorScript.Run(opName, inputs);
             }
+        }
+
+        public abstract class ScriptErrorModel : EntityBase
+        {
+            public string ExtraInfo { get; set; }
+        }
+
+        public class ScriptException : Exception
+        {
+            public ScriptException(ScriptErrorModel error)
+            {
+                Error = error;
+            }
+            public ScriptErrorModel Error { get; }
+        }
+
+        public class InvalidDishScriptException : Exception
+        {
+            public InvalidDishScriptException(string script, ScriptErrorModel scriptErrorModel, ScriptException innerScriptException =  null)
+            {
+                Script = script;
+                ScriptErrorModel = scriptErrorModel;
+                InnerScriptException = innerScriptException;
+            }
+
+            public string Script { get; private set; }
+            public ScriptException InnerScriptException { get; }
+            public ScriptErrorModel ScriptErrorModel { get; private set; }
+        }
+
+        public class InvalidParameterScriptErrorModel : ScriptErrorModel
+        {
+            public InvalidParameterScriptErrorModel(string parameterName)
+            {
+                ParameterName = parameterName;
+            }
+            public string ParameterName { get; }
+        }
+
+        public class ParameterProvidedMultipleTimesScriptErrorModel : ScriptErrorModel
+        {
+            public ParameterProvidedMultipleTimesScriptErrorModel(string functionName, string parameterName)
+            {
+                ParameterName = parameterName;
+                FunctionName = functionName;
+            }
+            public string ParameterName { get; }
+            public string FunctionName { get; }
+        }
+
+        public class FunctionNotFoundScriptErrorModel : ScriptErrorModel
+        {
+            public FunctionNotFoundScriptErrorModel(string functionName)
+            {
+                FunctionName = functionName;
+            }
+            public string FunctionName { get; }
+        }
+
+        public class FunctionCallMissingScriptErrorModel : ScriptErrorModel
+        {
+            public FunctionCallMissingScriptErrorModel(string attemptedFunction)
+            {
+                AttemptedFunction = attemptedFunction;
+            }
+            public string AttemptedFunction { get; }
+        }
+
+
+        public class InvalidStringScriptErrorModel : ScriptErrorModel
+        {
+            public InvalidStringScriptErrorModel(string attemptedString)
+            {
+                AttemptedString = attemptedString;
+            }
+            public string AttemptedString { get; }
+        }
+
+        public class EmptyScriptErrorModel : ScriptErrorModel
+        {
+            public EmptyScriptErrorModel()
+            {
+                ExtraInfo = ExtraInfo ?? "";
+                ExtraInfo += "The script was a blank space";
+            }
+        }
+
+        public class TooManyParametersGivenScriptErrorModel : ScriptErrorModel
+        {
+            public TooManyParametersGivenScriptErrorModel(string functionName, string paramValue)
+            {
+                FunctionName = functionName;
+                ParameterValue = paramValue;
+            }
+            public string FunctionName { get; }
+            public string ParameterValue{ get; }
+        }
+
+        public class MissingParameterScriptErrorModel : ScriptErrorModel
+        {
+            public MissingParameterScriptErrorModel(string functionName, string missingParam)
+            {
+                FunctionName = functionName;
+                MissingParameter = missingParam;
+            }
+            public string FunctionName { get; }
+            public string MissingParameter { get; }
         }
     }
 }

@@ -54,7 +54,13 @@ namespace DashShared
 
         public virtual bool ValueEquals(EntityBase otherModel)
         {
-            return string.Equals(this.Serialize(), otherModel.Serialize());
+            var tempId = Id;
+            Id = "";
+            var copy = otherModel.Clone();
+            copy.Id = "";
+            var equal =  string.Equals(this.Serialize(), copy.Serialize());
+            Id = tempId;
+            return equal;
         }
 
         public override int GetHashCode()

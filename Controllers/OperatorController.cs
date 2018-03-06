@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -44,7 +46,24 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, IOInfo> Inputs { get; }
+        public abstract ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; }
+
+        /*
+        /// <summary>
+        /// returns the Inputs in specific order for the operator
+        /// </summary>
+        public virtual List<KeyController> InputKeyOrder
+        {
+            get
+            {
+                return Inputs.Keys.ToList(); 
+            }
+        }
+
+        public KeyController GetKeyAtIndex(int index)
+        {
+            return InputKeyOrder[index];
+        }*/
 
         /// <summary>
         /// Keys of all outputs of the operator Document 

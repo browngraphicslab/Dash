@@ -36,6 +36,8 @@ namespace Dash
             AddOperator(() => new ImageToColorPalette(), "Image To Palette");
             AddOperator(() => new SearchOperatorController(), "Search", rfmc => new SearchOperatorBox(rfmc));
             AddOperator(() => new QuizletOperator(), "Quizlet", rfmc => new QuizletOperatorBox(rfmc));
+            AddOperator(() => new ExecDishOperatorController(), "Exec Operator");
+            AddOperator(() => new GetScriptValueAsStringOperatorController(), "Exec To String Operator");
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");

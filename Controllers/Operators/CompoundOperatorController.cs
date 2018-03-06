@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace Dash
 
         private CompoundOperatorController(CompoundOperatorController copy) : this()
         {
-            Inputs = new ObservableDictionary<KeyController, IOInfo>(copy.Inputs);
+            Inputs = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>(copy.Inputs);
             Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
             InputFieldReferences = new Dictionary<KeyController, List<ReferenceController>>(copy.InputFieldReferences);
             OutputFieldReferences = new Dictionary<KeyController, ReferenceController>(copy.OutputFieldReferences);
@@ -55,7 +56,7 @@ namespace Dash
             return false;
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>();
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>();
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
 

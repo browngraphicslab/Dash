@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Dash.Models;
@@ -29,11 +30,11 @@ namespace Dash
             new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
-                [HtmlInputKey] = new IOInfo(TypeInfo.Text, true),
-                [ScriptKey]    = new IOInfo(TypeInfo.Text, true),
+                new KeyValuePair<KeyController, IOInfo>(HtmlInputKey, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(ScriptKey, new IOInfo(TypeInfo.Text, true))
 
             };
 

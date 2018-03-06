@@ -28,16 +28,43 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// gets all the keys of a function's parameters but as a dictionary of key name to key controller
+        /// </summary>
+        /// <param name="funcName"></param>
+        /// <returns></returns>
         public static Dictionary<string, KeyController> GetKeyControllersForFunction(string funcName)
+        {
+            return GetOrderedKeyControllersForFunction(funcName).ToDictionary(k => k.Name, v => v);
+        }
+
+        /// <summary>
+        /// returns an ordered list of the keycontorllers in a function
+        /// </summary>
+        /// <param name="funcName"></param>
+        /// <returns></returns>
+        public static List<KeyController> GetOrderedKeyControllersForFunction(string funcName)
         {
             if (_functionMap.ContainsKey(funcName))
             {
                 var t = _functionMap[funcName];
                 var op = (OperatorController)Activator.CreateInstance(t);
-                return op.Inputs.Keys.ToDictionary(k => k.Name, v => v);
+                return op.Inputs.ToList().Select(i => i.Key).ToList();
             }
             return null;
-        } 
+        }
+
+
+        public static Dictionary<KeyController, IOInfo> GetKeyControllerDictionaryForFunction(string funcName)
+        {
+            if (_functionMap.ContainsKey(funcName))
+            {
+                var t = _functionMap[funcName];
+                var op = (OperatorController)Activator.CreateInstance(t);
+                return op.Inputs.ToDictionary(k => k.Key, v => v.Value);
+            }
+            return null;
+        }
 
         private static IEnumerable<Type> GetTypesWithOperatorAttribute(Assembly assembly)
         {

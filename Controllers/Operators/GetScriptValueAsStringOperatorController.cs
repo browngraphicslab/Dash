@@ -8,25 +8,21 @@ using DashShared;
 
 namespace Dash
 {
-    /// <summary>
-    /// Operator Class used to execute Dish Scripting Language (DSL) as a string and return the return value
-    /// </summary>
-    [OperatorType("exec")]
-    public class ExecDishOperatorController : OperatorController
+    [OperatorType("execToString")]
+    public class GetScriptValueAsStringOperatorController : OperatorController
     {
-
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("0F040954-2914-4794-90C4-FE442DD665B4", "Script");
+        public static readonly KeyController ScriptKey = new KeyController("7C56D13F-007A-45B3-AD42-E62DD14E802B", "Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("5006A73E-2466-4301-9A95-78083000603E", "Result");
+        public static readonly KeyController ResultKey = new KeyController("D56D3217-88ED-4BB2-A192-A3DB3F6427C2", "Result");
 
-        public ExecDishOperatorController() : base(new OperatorModel(OperatorType.ExecDish))
+
+        public GetScriptValueAsStringOperatorController() : base(new OperatorModel(OperatorType.ExecuteDishToString))
         {
         }
 
-
-        public ExecDishOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        public GetScriptValueAsStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
@@ -51,12 +47,20 @@ namespace Dash
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
-            [ResultKey] = TypeInfo.Any
+            [ResultKey] = TypeInfo.Text
         };
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
-            var result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
-            outputs[ResultKey] = result;
+            string result;
+            try
+            {
+                result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "").GetValue(null).ToString();
+            }
+            catch (OperatorScriptParser.InvalidDishScriptException e)
+            {
+                result = e.ScriptErrorModel.Serialize();
+            }
+            outputs[ResultKey] = new TextController(result);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -32,10 +33,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController PaletteKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Color Palette");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [ImageKey] = new IOInfo(TypeInfo.Image, true),
-            [FakeAsyncInput] = new IOInfo(TypeInfo.List, true)
+            new KeyValuePair<KeyController, IOInfo>(ImageKey, new IOInfo(TypeInfo.Image, true)),
+            new KeyValuePair<KeyController, IOInfo>(FakeAsyncInput, new IOInfo(TypeInfo.List, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

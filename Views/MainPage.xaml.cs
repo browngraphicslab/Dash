@@ -137,13 +137,12 @@ namespace Dash
                 xMainDocView.DataContext = new DocumentViewModel(lastWorkspace);
 
 
-                OperatorScriptParser.TEST();
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-
+            OperatorScriptParser.TEST();
 
             BrowserView.ForceInit();
 

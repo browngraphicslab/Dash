@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,10 +41,10 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {
-            [SetAKey] = new IOInfo(TypeInfo.List, true),
-            [SetBKey] = new IOInfo(TypeInfo.List, true)
+            new KeyValuePair<KeyController, IOInfo>(SetAKey, new IOInfo(TypeInfo.List, true)),
+            new KeyValuePair<KeyController, IOInfo>(SetBKey, new IOInfo(TypeInfo.List, true)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {

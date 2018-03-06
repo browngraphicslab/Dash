@@ -190,6 +190,12 @@ namespace Dash
                 case OperatorType.ImageToUri:
                     controller = new ImageOperatorController(model);
                     break;
+                case OperatorType.ExecDish:
+                    controller = new ExecDishOperatorController(model);
+                    break;
+                case OperatorType.ExecuteDishToString:
+                    controller = new GetScriptValueAsStringOperatorController(model);
+                    break;
                 case OperatorType.DocumentAppend:
                     controller = new DocumentAppendOperatorController(model);
                     break;

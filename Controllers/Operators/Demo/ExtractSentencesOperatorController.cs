@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,11 +28,11 @@ namespace Dash
         public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
         public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
-                [InputCollection] = new IOInfo(TypeInfo.List, true),
-                [TextField] = new IOInfo(TypeInfo.Text, true)
+                new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true))
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =

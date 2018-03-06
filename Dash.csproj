@@ -121,6 +121,7 @@
     <Compile Include="Controllers\Operators\Demo\QuizletOperator.cs" />
     <Compile Include="Controllers\Operators\DocumentAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ExecDishOperatorController.cs" />
+    <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\Image\ImageToColorPalette.cs" />
     <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
