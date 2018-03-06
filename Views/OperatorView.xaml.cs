@@ -26,21 +26,20 @@ namespace Dash
 {
     public sealed partial class OperatorView : UserControl
     {
-        private MenuFlyout _flyout;
-        private DocumentView documentView;
+        private DocumentView _documentView;
 
         /// <summary>
         /// The operator field model controller backing this operator view
         /// </summary>
-        private OperatorController _operator { get; set; }
+        private OperatorController _operator;
 
         /// <summary>
         /// Used to cache the last datacontext so that we don't rebind unecessarily
         /// </summary>
-        private object _lastDataContext { get; set; } = null;
+        private object _lastDataContext;
 
 
-        public DocumentView DocumentView { get { return documentView; } }
+        public DocumentView DocumentView => _documentView;
 
         /// <summary>
         /// The optional innner content of the operator, it is almost always going to be a <see cref="FrameworkElement"/>
@@ -68,12 +67,11 @@ namespace Dash
 
         private void OperatorView_Loaded(object sender, RoutedEventArgs e)
         {
-            documentView = this.GetFirstAncestorOfType<DocumentView>();
-            if (documentView == null)
+            _documentView = this.GetFirstAncestorOfType<DocumentView>();
+            if (_documentView == null)
                 return;
-            documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
+            _documentView.StyleOperator((Double)Application.Current.Resources["InputHandleWidth"] / 2, _operator.GetOperatorType());
         }
-
 
 
         /// <summary>
