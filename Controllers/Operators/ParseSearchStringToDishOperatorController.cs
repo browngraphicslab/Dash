@@ -55,7 +55,7 @@ namespace Dash
         private string WrapSearchTermInFunction(string searchTerm)
         {
             //TODO not have the function name and paremter name strings be hardcoded here
-            return "search(Term:'" + searchTerm + "')";
+            return "search(Term:{" + searchTerm + "})";
         }
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)

@@ -1,65 +1,97 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Accord.Math;
 using DashShared;
 
 namespace Dash
 {
     public class OperatorScriptParser
     {
-        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairs = new List<KeyValuePair<char, char>>()
+        private static char FunctionOpeningCharacter = '(';
+        private static char FunctionClosingCharacter = ')';
+
+        private static char[] StringOpeningCharacters = new char[]{'{', '<'};
+        private static char[] StringClosingCharacters = new char[] { '}', '>'};
+
+        private static char ParameterDelimiterCharacter = ',';
+
+        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>(
+            StringOpeningCharacters.Select(i => new KeyValuePair<char, char>(i, StringClosingCharacters[StringOpeningCharacters.IndexOf(i)]))
+            );
+
+        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsTrackingInternals = new List<KeyValuePair<char, char>>()
         {
-            new KeyValuePair<char, char>('\'','\''),
-            new KeyValuePair<char, char>('"','"'),
-            new KeyValuePair<char, char>('(', ')')
+            new KeyValuePair<char, char>('[',']'),
+            new KeyValuePair<char, char>(FunctionOpeningCharacter, FunctionClosingCharacter)
         };
 
-        private static char FunctionOpeningCharacter = '(';
 
         private static OperatorScript os = OperatorScript.Instance;
 
         public static void TEST()
         {
-            var parts1 = ParseToOuterFunctionParts(@"search(term:'trent')");
-            Debug.Assert(parts1.Equals(new FunctionParts("search", new Dictionary<string, string>(){{"term","'trent'"}})));
+            for (int i = 0; i < StringOpeningCharacters.Length; i++)
+            {
+                char o = StringOpeningCharacters[i];
+                char c = StringClosingCharacters[i];
+                var parts1 = ParseToOuterFunctionParts($"search(term:{o}trent{c})");
+                Debug.Assert(parts1.Equals(new FunctionParts("search", new Dictionary<string, string>() {{"term", $"{o}trent{c}" } })));
 
-            var parts2 = ParseToOuterFunctionParts(@"search(term:'trent', test:'tyler')");
-            Debug.Assert(parts2.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "term", "'trent'" }, { "test", "'tyler'" } })));
+                var parts2 = ParseToOuterFunctionParts($"search(term:{o}trent{c}, test:{o}tyler{c})");
+                Debug.Assert(parts2.Equals(new FunctionParts("search", new Dictionary<string, string>() {{"term", $"{o}trent{c}" }, {"test", $"{o}tyler{c}" }})));
 
-            var parts3 = ParseToOuterFunctionParts(" search (term:'trent', hello:', \" world')");
-            Debug.Assert(parts3.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "term", "'trent'" }, { "hello", "', \" world'" } })));
+                var parts3 = ParseToOuterFunctionParts($" search (term:{o}trent{c}, hello:{o}, {o} world{c})");
+                Debug.Assert(parts3.Equals(new FunctionParts("search", new Dictionary<string, string>() {{"term", $"{o}trent{c}" }, {"hello", $"{o}, {o} world{c}" }})));
 
-            TestString(@"'hello'","hello");
-            TestString("'hello \" world,,,'", "hello \" world,,,");
-            TestNumber("2", 2);
-            TestNumber("add(A:20,B:25)", 45);
-            TestNumber("add(A:20,B:add(A:25,B:30))", 75);
-            TestNumber("add(A: add(B: 1, A: 2), B: add(A: 25, B: 30))", 58);
-            TestNumber("mult (A: add(B: 1, A: 2), B: add(A: 25, B: 30))", 3 * (25 + 30));
-            TestNumber("div (A: add(B: 20, A: 10), B: add(A: 1, B: 2))", 10);
-            TestNumber("mult(A:5,B:div(A:1,B:2.5))",2);
-            TestNumber("exec(Script:'mult(A:5,B:div(A:1,B:2.5))')", 2);
-            TestNumber("exec(Script:'exec(Script:'mult(A:5,B:div(A:1,B:2.5))')')", 2);
-            TestNumber("add(A:exec(Script:'exec(Script:'mult(A:5,B:div(A:1,B:2.5))')'),B:5)", 7);
+                TestString($"{o}hello{c}", "hello");
+                TestString($"{o}hello {c} world,,,{c}", $"hello {c} world,,,");
+                TestNumber("2", 2);
+                TestNumber("add(A:20,B:25)", 45);
+                TestNumber("add(A:20,B:add(A:25,B:30))", 75);
+                TestNumber("add(A: add(B: 1, A: 2), B: add(A: 25, B: 30))", 58);
+                TestNumber("mult (A: add(B: 1, A: 2), B: add(A: 25, B: 30))", 3 * (25 + 30));
+                TestNumber("div (A: add(B: 20, A: 10), B: add(A: 1, B: 2))", 10);
+                TestNumber("mult(A:5,B:div(A:1,B:2.5))", 2);
+                TestNumber($"exec(Script:{o}mult(A:5,B:div(A:1,B:2.5)){c})", 2);
+                TestNumber($"exec(Script:{o}exec(Script:{o}mult(A:5,B:div(A:1,B:2.5)){c}){c})", 2);
+                TestNumber($"add(A:exec(Script:{o}exec(Script:{o}mult(A:5,B:div(A:1,B:2.5)){c}){c}),B:5)", 7);
 
-            var testResults = Interpret("exec(Script:parseSearchString(Query:'cat dog'))");
+                var testResults = Interpret($"exec(Script:parseSearchString(Query:{o}cat dog{c}))");//Shouldn't throw an error
 
 
 
-            //Testing unnamed params
-            TestNumber("add(20,B:25)", 45);
-            TestNumber("add(20,25)", 45);
-            TestNumber("add(exec('exec('mult(5,div(A:1,B:2.5))')'),5)", 7);
-            TestNumber("add(exec('exec('mult(5,div(A:1,2.5))')'),5)", 7);
-            TestNumber("add(exec('exec('mult(5,div(1,B:2.5))')'),5)", 7);
+                //Testing unnamed params
+                TestNumber("add(20,B:25)", 45);
+                TestNumber("add(20,25)", 45);
+                TestNumber($"add(exec({o}exec({o}mult(5,div(A:1,B:2.5)){c}){c}),5)", 7);
+                TestNumber($"add(exec({o}exec({o}mult(5,div(A:1,2.5)){c}){c}),5)", 7);
+                TestNumber($"add(exec({o}exec({o}mult(5,div(1,B:2.5)){c}){c}),5)", 7);
 
-            //TestNumber("add(exec('div(add(5,9),4)'),4", 7.5f); //TODO 
+                TestNumber($"add(exec({o}div(add(5,9),4){c}),4)", 7.5f); //TODO 
 
-            var parts4 = ParseToOuterFunctionParts(@"search('trent')");
-            Debug.Assert(parts4.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", "'trent'" } })));
+                var parts4 = ParseToOuterFunctionParts($"search({o}trent{c})");
+                Debug.Assert(parts4.Equals(new FunctionParts("search", new Dictionary<string, string>() {{"Term", $"{o}trent{c}" } })));
+
+
+                //Testing parse to strign wtihout string notation
+
+                TestString("hello", "hello");
+                TestString("{hello}", "hello");
+                TestString("[\"'(", "[\"'(");
+                TestString("{[\"'(}", "[\"'(");
+                TestString("{[\"{'(}", "[\"{'(");
+                TestString("{{{}", "{{");
+
+                var parts5 = ParseToOuterFunctionParts($"search(trent)");
+                Debug.Assert(parts5.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", $"trent" } })));
+
+                var testResults2 = Interpret($"search(hello)"); //Shouldn't throw an error
+            }
 
         }
 
@@ -72,8 +104,8 @@ namespace Dash
 
         private static void TestString(string script, string correctValue)
         {
-            var number1 = Interpret(script);
-            Debug.Assert(number1.GetValue(null).Equals(correctValue));
+            var s = Interpret(script);
+            Debug.Assert(s.GetValue(null).Equals(correctValue));
         }
 
         /// <summary>
@@ -126,27 +158,32 @@ namespace Dash
             {
                 throw new ScriptException(new EmptyScriptErrorModel());
             }
-            switch (script[0])
-            {
-                case '\'':
-                case '\"':
-                    toReturn = ParseString(script);
-                    break;
-                default:
-                    double number;
-                    if (Double.TryParse(script, out number))//TODO optimize this
-                    {
-                        toReturn = ParseNumber(number);
-                        break;
-                    }
 
-                    toReturn = ParseFunction(script);
-                    break;
+            if (StringOpeningCharacters.Contains(script[0]))
+            {
+                toReturn = ParseString(script);
+            }
+            else
+            {
+                double number;
+                if (Double.TryParse(script, out number)) //TODO optimize this
+                {
+                    toReturn = ParseNumber(number);
+                }
+                else
+                {
+                    toReturn = IsFunction(script) ? ParseFunction(script) : ParseToExpression(StringOpeningCharacters[0] + script + StringClosingCharacters[0]);
+                }
             }
             
             Debug.Assert(toReturn != null);
 
             return toReturn;
+        }
+
+        private static bool IsFunction(string script)
+        {
+            return char.IsLetter(script[0]) && script.Any(i => i.Equals(FunctionOpeningCharacter));
         }
 
         private static ScriptExpression ParseString(string s)
@@ -155,11 +192,14 @@ namespace Dash
             {
                 throw new ScriptException(new InvalidStringScriptErrorModel(s)); 
             }
-            if (s[0] == '\'' && s[s.Length - 1] == '\'' ||
-                s[0] == '\"' && s[s.Length - 1] == '\"')
+            for (int i = 0; i < StringOpeningCharacters.Length; i++)
             {
-                return new LiteralExpression(new TextController(s.Substring(1, s.Length - 2)));
+                if (s[0] == StringOpeningCharacters[i] && s[s.Length - 1] == StringClosingCharacters[i])
+                {
+                    return new LiteralExpression(new TextController(s.Substring(1, s.Length - 2)));
+                }
             }
+
             //TODO Make sure there aren't multiple quotes
             return new LiteralExpression(new TextController(s));//TODO
         }
@@ -221,7 +261,7 @@ namespace Dash
             parts.FunctionName = parts.FunctionName.Trim();
 
             int parametersEndIndex = 1;
-            while (script.Length - parametersEndIndex - parametersStartIndex > 0 && script[script.Length - parametersEndIndex] != ')')
+            while (script.Length - parametersEndIndex - parametersStartIndex > 0 && script[script.Length - parametersEndIndex] != FunctionClosingCharacter)
             {
                 parametersEndIndex++;
             }
@@ -254,32 +294,40 @@ namespace Dash
                 throw new ScriptException(new FunctionNotFoundScriptErrorModel(functionName));
             }
 
+            var allEncapsulatingCharacters = EncapsulatingCharacterPairsIgnoringInternals.Concat(EncapsulatingCharacterPairsTrackingInternals).ToArray();
+            HashSet<char> ignoreValueClosingChars = new HashSet<char>(EncapsulatingCharacterPairsIgnoringInternals.Select(i => i.Value));
+
             int parameterIndex = -1;
 
-            bool inValue = false;
-            char closingChar = ' ';
+            Stack<char> closingCharacters = new Stack<char>();
             int startIndex = 0;
             KeyValuePair<string, string> kvp;
             for (int i = 0; i < innerFunctionParameters.Length; ++i)
             {
                 char c = innerFunctionParameters[i];
-                if (inValue)
+
+                if (!closingCharacters.Any() || !ignoreValueClosingChars.Contains(closingCharacters.Peek()))
                 {
-                    if (c == closingChar)
+                    foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
                     {
-                        inValue = false;
+                        if (c == encapsulatingCharacterPair.Key)
+                        {
+                            closingCharacters.Push(encapsulatingCharacterPair.Value);
+                        }
+                    }
+                }
+
+                if (closingCharacters.Any())
+                {
+                    if (c == closingCharacters.Peek())
+                    {
+                        closingCharacters.Pop();
                     }
                     continue;
                 }
-                foreach (var encapsulatingCharacterPair in EncapsulatingCharacterPairs)
-                {
-                    if (c == encapsulatingCharacterPair.Key)
-                    {
-                        inValue = true;
-                        closingChar = encapsulatingCharacterPair.Value;
-                    }
-                }
-                if (c == ',')
+
+
+                if (c == ParameterDelimiterCharacter)
                 {
                     kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex, i - startIndex), functionKeys, ++parameterIndex, functionName);
                     if (toReturn.ContainsKey(kvp.Key))

@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("simplifiedSearch")]
+    [OperatorType("find")]
     public class SimplifiedSearchOperatorController : OperatorController
     {
 
@@ -55,7 +55,7 @@ namespace Dash
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
 
-            var stringScriptToExecute = $"exec(Script:parseSearchString(Query:'{searchQuery}'))";
+            var stringScriptToExecute = $"exec(Script:parseSearchString(Query:{{{searchQuery}}}))";
 
             var searchOutputList = OperatorScriptParser.Interpret(stringScriptToExecute) as BaseListController;
             if (searchOutputList != null)
