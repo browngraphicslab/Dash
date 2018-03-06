@@ -63,6 +63,8 @@ namespace DashShared
         ExecDish, //super useful
         ParseSearchStringToDish,
         IntersectByValue,
-        ExecuteDishToString
+        ExecuteDishToString,
+        SimplifiedSearch,
+        GetKeys
     }
 }

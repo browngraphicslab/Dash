@@ -56,6 +56,8 @@ namespace Dash
             TestNumber("add(exec('exec('mult(5,div(A:1,2.5))')'),5)", 7);
             TestNumber("add(exec('exec('mult(5,div(1,B:2.5))')'),5)", 7);
 
+            //TestNumber("add(exec('div(add(5,9),4)'),4", 7.5f); //TODO 
+
             var parts4 = ParseToOuterFunctionParts(@"search('trent')");
             Debug.Assert(parts4.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", "'trent'" } })));
 
@@ -74,7 +76,13 @@ namespace Dash
             Debug.Assert(number1.GetValue(null).Equals(correctValue));
         }
 
-
+        /// <summary>
+        /// Method to call to execute a string as a Dish Script and return the FieldController return value.
+        /// This method should throw exceptions if the string is not a valid script.
+        /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message
+        /// </summary>
+        /// <param name="script"></param>
+        /// <returns></returns>
         public static FieldControllerBase Interpret(string script)
         {
             try
@@ -85,6 +93,29 @@ namespace Dash
             catch (ScriptException scriptException)
             {
                 throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
+            }
+        }
+
+        /// <summary>
+        /// Public method to call to COMPILE but not Execute a Dish script.  
+        /// This will return the helpful error message of the invalid script, or NULL if the script compiled correctly.
+        /// 
+        /// This is slightly faster than actually executing a script so if you are repeatedly checking the validity of a Dish script without needing the return value, call this.
+        /// 
+        /// AS YOU SHOULD KNOW, JUST BECAUSE IT WILL COMPILE DOESN'T MEAN IT WILL RETURN A VALID VALUE WHEN EXECUTED.   
+        /// For instance: add(5, 'hello world') will compile but obviously not return a valid value.
+        /// </summary>
+        /// <param name="script"></param>
+        public static string GetScriptError(string script)
+        {
+            try
+            {
+                ParseToExpression(script);
+                return null;
+            }
+            catch (ScriptException scriptException)
+            {
+                return scriptException.Error.GetHelpfulString();
             }
         }
 
@@ -112,11 +143,8 @@ namespace Dash
                     toReturn = ParseFunction(script);
                     break;
             }
-
-            if (toReturn == null)
-            {
-                
-            }
+            
+            Debug.Assert(toReturn != null);
 
             return toReturn;
         }
@@ -380,6 +408,8 @@ namespace Dash
         public abstract class ScriptErrorModel : EntityBase
         {
             public string ExtraInfo { get; set; }
+
+            public abstract string GetHelpfulString();
         }
 
         public class ScriptException : Exception
@@ -412,6 +442,10 @@ namespace Dash
                 ParameterName = parameterName;
             }
             public string ParameterName { get; }
+            public override string GetHelpfulString()
+            {
+                return $"A function's parameter was invalid and not part of the function invoked.  Parameter: {ParameterName}";
+            }
         }
 
         public class ParameterProvidedMultipleTimesScriptErrorModel : ScriptErrorModel
@@ -423,6 +457,11 @@ namespace Dash
             }
             public string ParameterName { get; }
             public string FunctionName { get; }
+
+            public override string GetHelpfulString()
+            {
+                return $"A parameter was passed multiple times into the same function.  Function: {FunctionName}   Parameter: {ParameterName}";
+            }
         }
 
         public class FunctionNotFoundScriptErrorModel : ScriptErrorModel
@@ -432,6 +471,11 @@ namespace Dash
                 FunctionName = functionName;
             }
             public string FunctionName { get; }
+
+            public override string GetHelpfulString()
+            {
+                return $"An unknown function was called.  Function: {FunctionName}";
+            }
         }
 
         public class FunctionCallMissingScriptErrorModel : ScriptErrorModel
@@ -441,6 +485,11 @@ namespace Dash
                 AttemptedFunction = attemptedFunction;
             }
             public string AttemptedFunction { get; }
+
+            public override string GetHelpfulString()
+            {
+                return $"A function was given but not called.  Attemped Function: {AttemptedFunction}";
+            }
         }
 
 
@@ -451,6 +500,12 @@ namespace Dash
                 AttemptedString = attemptedString;
             }
             public string AttemptedString { get; }
+
+
+            public override string GetHelpfulString()
+            {
+                return $"A string literal or string return value was invalidly formatted.  Attempted String: {AttemptedString}";
+            }
         }
 
         public class EmptyScriptErrorModel : ScriptErrorModel
@@ -459,6 +514,11 @@ namespace Dash
             {
                 ExtraInfo = ExtraInfo ?? "";
                 ExtraInfo += "The script was a blank space";
+            }
+
+            public override string GetHelpfulString()
+            {
+                return $"The script or an inner part of the script was empty.";
             }
         }
 
@@ -471,6 +531,11 @@ namespace Dash
             }
             public string FunctionName { get; }
             public string ParameterValue{ get; }
+
+            public override string GetHelpfulString()
+            {
+                return $"Too many parameters were passed into a function.  Function Name: {FunctionName}    Last given parameter: {ParameterValue}";
+            }
         }
 
         public class MissingParameterScriptErrorModel : ScriptErrorModel
@@ -482,6 +547,11 @@ namespace Dash
             }
             public string FunctionName { get; }
             public string MissingParameter { get; }
+
+            public override string GetHelpfulString()
+            {
+                return $"A function call was missing a required parameter.  Function Name: {FunctionName}    Missing parameter: {MissingParameter}";
+            }
         }
     }
 }

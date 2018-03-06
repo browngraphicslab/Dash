@@ -72,7 +72,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
-            ///very simple for now, can only join with intersections
+            //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
             var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 1)

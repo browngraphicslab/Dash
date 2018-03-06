@@ -38,6 +38,8 @@ namespace Dash
             AddOperator(() => new QuizletOperator(), "Quizlet", rfmc => new QuizletOperatorBox(rfmc));
             AddOperator(() => new ExecDishOperatorController(), "Exec Operator");
             AddOperator(() => new GetScriptValueAsStringOperatorController(), "Exec To String Operator");
+            AddOperator(() => new SimplifiedSearchOperatorController(), "Simplified Search");
+            AddOperator(() => new GetKeysOperatorController(), "Get Keys");
 
             //TODO fix DB special case
             //AddOperator<DBFilterOperatorController>("DBFilter", OperatorDocumentFactory.CreateDBFilterDocumentController, "⊇");

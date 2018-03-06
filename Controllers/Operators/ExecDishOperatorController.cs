@@ -55,8 +55,15 @@ namespace Dash
         };
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
-            var result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
-            outputs[ResultKey] = result;
+            try
+            {
+                var result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
+                outputs[ResultKey] = result;
+            }
+            catch (OperatorScriptParser.InvalidDishScriptException dishScriptException)
+            {
+                outputs[ResultKey] = new TextController(dishScriptException.ScriptErrorModel.GetHelpfulString());
+            }
         }
     }
 }

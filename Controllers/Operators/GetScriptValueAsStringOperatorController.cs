@@ -58,7 +58,7 @@ namespace Dash
             }
             catch (OperatorScriptParser.InvalidDishScriptException e)
             {
-                result = e.ScriptErrorModel.Serialize();
+                result = e.ScriptErrorModel.GetHelpfulString();
             }
             outputs[ResultKey] = new TextController(result);
         }

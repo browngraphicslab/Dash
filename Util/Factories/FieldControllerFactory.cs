@@ -196,6 +196,12 @@ namespace Dash
                 case OperatorType.ExecuteDishToString:
                     controller = new GetScriptValueAsStringOperatorController(model);
                     break;
+                case OperatorType.SimplifiedSearch:
+                    controller = new SimplifiedSearchOperatorController(model);
+                    break;
+                case OperatorType.GetKeys:
+                    controller = new GetKeysOperatorController(model);
+                    break;
                 case OperatorType.DocumentAppend:
                     controller = new DocumentAppendOperatorController(model);
                     break;
