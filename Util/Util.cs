@@ -500,9 +500,9 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController BlankDocWithPosition(Point pos)
+        public static DocumentController BlankDocWithPosition(Point pos, double width=200, double height=200)
         {
-            return new Dash.BackgroundBox(pos.X, pos.Y, 200, 200).Document;
+            return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextController("Document")

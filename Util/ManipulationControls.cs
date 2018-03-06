@@ -45,7 +45,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ManipulationControls(DocumentView element, List<FrameworkElement> borderRegions = null)
+        public ManipulationControls(DocumentView element)
         {
             ParentDocument = element;
             
@@ -53,25 +53,10 @@ namespace Dash
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
-            if (borderRegions != null)
-            {
-                foreach (var borderRegion in borderRegions)
-                {
-                    borderRegion.ManipulationMode = ManipulationModes.All;
-                    borderRegion.ManipulationDelta += ElementOnManipulationDelta;
-                    borderRegion.ManipulationStarted += (sender, args) => {
-                        ElementOnManipulationStarted(sender, args);
-                        Grouping = null;
-                    };
-                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
-                }
-            }
         }
 
         #region Snapping Layouts
-
 
         /// <summary>
         /// Enum used for snapping.
@@ -111,39 +96,41 @@ namespace Dash
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
+
             var currentBoundingBox = docRoot.ViewModel.Bounds;
+
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
             else
-                SnapToDocumentView(docRoot, closest);
+                SnapToDocumentView(docRoot.ViewModel, closest);
         }
 
         /// <summary>
         /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
         /// </summary>
         /// <param name="closestDocumentView"></param>
-        private void SnapToDocumentView(DocumentView currrentDoc, Tuple<DocumentView, Side, double> closestDocumentView)
+        private void SnapToDocumentView(DocumentViewModel currrentDocModel, Tuple<DocumentViewModel, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null)
             {
                 return;
             }
 
-            var documentView = closestDocumentView.Item1;
+            var documentViewModel = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var topLeftPoint = documentView.ViewModel.Position;
-            var bottomRightPoint = new Point(documentView.ViewModel.XPos + documentView.ActualWidth,
-                documentView.ViewModel.YPos + documentView.ActualHeight);
+            var topLeftPoint = documentViewModel.Position;
+            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth * documentViewModel.Scale.X,
+                documentViewModel.YPos + documentViewModel.ActualHeight * documentViewModel.Scale.Y);
 
-            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth * currrentDocModel.Scale.X, currrentDocModel.ActualHeight * currrentDocModel.Scale.Y);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.Position = translate;
-            currrentDoc.ViewModel.Width = newBoundingBox.Width;
-            currrentDoc.ViewModel.Height = newBoundingBox.Height;
+            currrentDocModel.Position = translate;
+            currrentDocModel.Width = newBoundingBox.Width / currrentDocModel.Scale.X;
+            currrentDocModel.Height = newBoundingBox.Height / currrentDocModel.Scale.Y;
         }
 
 
@@ -152,7 +139,7 @@ namespace Dash
         /// </summary>
         /// <param name="currentBoundingBox"></param>
         /// <param name="closestDocumentView"></param>
-        private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentView, Side, double> closestDocumentView)
+        private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentViewModel, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null) return;
 
@@ -160,10 +147,10 @@ namespace Dash
 
             var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
-            var documentView = closestDocumentView.Item1;
+            var documentViewModel = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestBoundsInCollectionSpace = documentView.ViewModel.Bounds;
+            var closestBoundsInCollectionSpace = documentViewModel.Bounds;
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
@@ -176,7 +163,7 @@ namespace Dash
         }
 
 
-        private Tuple<DocumentView, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
+        private Tuple<DocumentViewModel, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
         {
             //List of all DocumentViews hit, along with a double representing how close they are
             var allDocumentViewsHit = HitTestFromSides(currentBoundingBox);
@@ -192,16 +179,16 @@ namespace Dash
         /// <param name="topLeftScreenPoint"></param>
         /// <param name="bottomRightScreenPoint"></param>
         /// <returns></returns>
-        private List<Tuple<DocumentView, Side, double>> HitTestFromSides(Rect currentBoundingBox)
+        private List<Tuple<DocumentViewModel, Side, double>> HitTestFromSides(Rect currentBoundingBox)
         {
 
-            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
+            var documentViewsAboveThreshold = new List<Tuple<DocumentViewModel, Side, double>>();
             var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             Debug.Assert(parent != null);
 
             var docRoot = ParentDocument;
 
-            var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
+            var listOfSiblings = parent.ViewModel.DocumentViewModels;
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
 
             foreach (var side in sides)
@@ -210,12 +197,12 @@ namespace Dash
                 foreach (var sibling in listOfSiblings)
                 {
                     Rect intersection = sideRect;
-                    intersection.Intersect(sibling.ViewModel.Bounds); //Mutates intersection
+                    intersection.Intersect(sibling.Bounds); //Mutates intersection
 
                     var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
                     if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
                     {
-                        documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(sibling, side, confidence));
+                        documentViewsAboveThreshold.Add(new Tuple<DocumentViewModel, Side, double>(sibling, side, confidence));
                     }
                 }
             }
@@ -223,9 +210,9 @@ namespace Dash
             return documentViewsAboveThreshold;
         }
 
-        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
+        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentViewModel otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = otherDocumentView.ViewModel.Bounds; // otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = otherDocumentView.Bounds; // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
@@ -365,6 +352,11 @@ namespace Dash
         /// </summary>
         void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
+            {
+                e.Complete();
+                return;
+            }
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) ||
                 Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
             {
@@ -372,11 +364,10 @@ namespace Dash
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
-                TranslateAndScale(e.Position, delta, e.Delta.Scale, Grouping);
+                TranslateAndScale(e.Position, delta, e.Delta.Scale);
                 //DetectShake(sender, e);
 
-                if (Grouping == null || Grouping.Count < 2)
-                    Snap(true);
+                Snap(true);
                 e.Handled = true;
             }
         }
@@ -385,24 +376,14 @@ namespace Dash
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(Point position, Point translate, double scaleFactor, List<DocumentViewModel> grouped = null)
+        public void TranslateAndScale(Point position, Point translate, double scaleFactor)
         {
             ElementScale *= scaleFactor;
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
-                // translate the entire group except for
-                var transformGroup = new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position);
-                if (grouped != null && grouped.Any())
-                {
-                    foreach (var g in grouped.Except(new List<DocumentViewModel> { ParentDocument.ViewModel }))
-                    {
-                        g?.TransformDelta(transformGroup);
-                    }
-                }
-
-                OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position));
             }
         }
 
@@ -410,26 +391,18 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                if (Grouping == null || Grouping.Count < 2)
-                    Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
                 MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
                 var docRoot = ParentDocument;
-
-                var groupViews = GroupViews(Grouping);
-
-                var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition2.X - Window.Current.Bounds.X;
-                var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                
+                var pos = docRoot.RootPointerPos();
                 var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
                 var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                        () => {
-                            docRoot.MoveToContainingCollection(overlappedViews, groupViews);
-                        }));
+                        () => docRoot.MoveToContainingCollection(overlappedViews)));
 
                 if (manipulationCompletedRoutedEventArgs != null)
                 {
@@ -438,15 +411,6 @@ namespace Dash
             }
         }
         
-        List<DocumentView> GroupViews(List<DocumentViewModel> groups)
-        {
-            var collectionFreeFormChildren = (ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
-            // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
-            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => Grouping != null && Grouping.Contains(dv?.ViewModel));
-            if (groupings == null || !groupings.Any())
-                groupings = new DocumentView[] { ParentDocument };
-            return groupings.ToList();
-        }
         public void Dispose()
         {
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;

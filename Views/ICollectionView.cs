@@ -9,6 +9,6 @@ namespace Dash
 {
     public interface ICollectionView
     {
-        BaseCollectionViewModel ViewModel { get; }
+        CollectionViewModel ViewModel { get; }
     }
 }

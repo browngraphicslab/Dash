@@ -31,7 +31,6 @@ namespace Dash
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         public string DebugName = "";
-        public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument { get => DocumentController.GetDataDocument(); }
 
@@ -90,11 +89,11 @@ namespace Dash
         }
 
         public IconTypeEnum IconType => iconType;
-        
+
 
         public Point Position
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             set
             {
                 var positionController =
@@ -105,12 +104,13 @@ namespace Dash
                     positionController.Data = value;
                     OnPropertyChanged();
                 }
+                else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
             }
         }
 
         public double XPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
+            get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
             set
             {
                 var positionController =
@@ -126,27 +126,10 @@ namespace Dash
 
         public double YPos
         {
-            get
-            {
-                var posField = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-                if (posField != null)
-                {
-                    return posField.Data.Y;
-                }
-
-                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                //if (groupField != null)
-                //{
-                //    return groupField.TypedData.Min(
-                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                //              double.PositiveInfinity);
-                //}
-
-                return double.PositiveInfinity; //Use inf so that sorting works reasonably
-            }
+            get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
             set
             {
-                var positionController =  LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
+                var positionController = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
 
                 if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
                 {
@@ -161,14 +144,16 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
             set
             {
-                var widthController =
-                    LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
-
-                if (widthController != null && Math.Abs(widthController.Data - value) > 0.05f)
+                var widthController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
+                if (widthController != null)
                 {
-                    widthController.Data = value;
-                    OnPropertyChanged();
+                    if (Math.Abs(widthController.Data - value) > 0.05f)
+                    {
+                        widthController.Data = value;
+                    }
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.WidthFieldKey, new NumberController(value), true);
             }
         }
 
@@ -177,20 +162,22 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
             set
             {
-                var heightController =
-                    LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
-
-                if (heightController != null && Math.Abs(heightController.Data - value) > 0.05f)
+                var heightController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
+                if (heightController != null)
                 {
-                    heightController.Data = value;
-                    OnPropertyChanged();
+                    if (Math.Abs(heightController.Data - value) > 0.05f)
+                    {
+                        heightController.Data = value;
+                    }
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.HeightFieldKey, new NumberController(value), true);
             }
         }
 
         public Point Scale
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set
             {
                 var scaleController =
@@ -201,6 +188,8 @@ namespace Dash
                     scaleController.Data = value;
                     OnPropertyChanged();
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
             }
         }
 
@@ -220,7 +209,7 @@ namespace Dash
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((DocumentViewModel) obj);
+            return Equals((DocumentViewModel)obj);
         }
 
         public override string ToString()
@@ -239,14 +228,13 @@ namespace Dash
             _actualHeight = actualheight;
             LayoutDocument.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
             LayoutDocument.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
-
         }
 
         public Rect Bounds => new TranslateTransform
         {
             X = XPos,
             Y = YPos
-        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
+        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
 
         public void TransformDelta(TransformGroupData delta)
         {
@@ -256,7 +244,7 @@ namespace Dash
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X * scaleAmount.X, currentTranslate.Y + deltaTranslate.Y * scaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
             Position = translate;
             Scale = scaleAmount;
@@ -276,8 +264,6 @@ namespace Dash
                 }
             }
         }
-
-        public bool GroupOnCreate = false;
 
         public Brush BorderBrush
         {
@@ -308,7 +294,7 @@ namespace Dash
                 _content = value;
             }
         }
-        
+
         private double _actualWidth;
         private double _actualHeight;
 
@@ -323,12 +309,18 @@ namespace Dash
 
         public bool Undecorated { get; set; }
 
+        bool _decorationState = false;
+        public bool DecorationState
+        {
+            get => _decorationState;
+            set => SetProperty(ref _decorationState, value);
+        }
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
 

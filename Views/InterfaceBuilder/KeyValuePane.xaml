@@ -88,7 +88,7 @@
                                            VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                             </ScrollViewer>
                             <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0"
-                                      DragStarting="Icon_OnDragStarting" CanDrag="True"
+                                      DragStarting="Icon_OnDragStarting" CanDrag="True" PointerPressed="FontIcon_PointerPressed"  
                                       FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
                         </Grid>
                     </DataTemplate>

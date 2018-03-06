@@ -183,7 +183,7 @@ namespace Dash
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointController(
-                        new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? doc.GetActiveLayout().GetField<NumberController>(KeyStore.ActualWidthKey).Data) + 70, 
                         where?.Y ?? oldPosition.Data.Y)),
                         true);
             }

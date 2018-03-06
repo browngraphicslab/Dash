@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 
@@ -112,6 +113,26 @@ namespace Dash
         public static bool IsInVisualTree(this DependencyObject dob)
         {
             return Window.Current.Content != null && dob.GetAncestors().Contains(Window.Current.Content);
+        }
+
+        public static Point RootPointerPos(this UIElement dob)
+        {
+            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition.X - Window.Current.Bounds.X;
+            var y = pointerPosition.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            return pos;
+        }
+
+        public static bool IsPointerOver(this UIElement dob)
+        {
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), dob).ToList();
+            return overlappedViews.Count > 0;
+        }
+        public static bool IsTopmost(this UIElement dob)
+        {
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), MainPage.Instance).ToList();
+            return dob == overlappedViews.FirstOrDefault();
         }
 
         public static Rect GetBoundingRect(this FrameworkElement dob, FrameworkElement relativeTo = null)

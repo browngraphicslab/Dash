@@ -83,7 +83,6 @@ namespace Dash
         {
             this.InitializeComponent();
             Loaded   += OnLoaded;
-            Unloaded += UnLoaded;
 
             TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
@@ -202,8 +201,7 @@ namespace Dash
 
         public void UpdateDocument()
         {
-
-            if (!this.IsInVisualTree())
+            if (DataContext == null || Text == null)
                 return;
             string allText;
             xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
@@ -227,10 +225,10 @@ namespace Dash
                 if (k == null)
                     k = new KeyController(DashShared.UtilShared.GenerateNewId(), key);
 
-                parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(k, new TextController(value), true);
+                _parentDataDocument.SetField(k, new TextController(value), true);
             }
-           // var rest = reg.Replace(allText, "");
-            parentDoc.ViewModel.DocumentController.GetDataDocument(null).SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            // var rest = reg.Replace(allText, "");
+            _parentDataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
         }
 
 
@@ -243,22 +241,21 @@ namespace Dash
 
         private void tapped(object sender, TappedRoutedEventArgs e)
         {
-            string target = null;
             var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (true || ctrlDown)
+            string target = null;
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            if (s1 == s2)
             {
-                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-                if (s1 == s2)
-                {
-                    this.xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
-                }
-                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-                {
-                    target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                }
-                this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+                xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
             }
+            if (xRichEditBox.Document.Selection.Link.Length > 1)
+            {
+                target = xRichEditBox.Document.Selection.Link.Split('\"')[1];
+            }
+            if (xRichEditBox.Document.Selection.EndPosition != s2)
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
+
             if (target != null)
             {
                 var doc = GetDoc();
@@ -285,7 +282,6 @@ namespace Dash
                 }
                 else
                 {
-
                     var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
                     if (nearest != null)
                     {
@@ -546,9 +542,11 @@ namespace Dash
         PointerEventHandler _pressedHdlr = null;
         TappedEventHandler _tappedHdlr = null;
         DocumentView _parentDocView = null;
+        DocumentController _parentDataDocument = null;
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             _parentDocView = this.GetFirstAncestorOfType<DocumentView>();
+            _parentDataDocument = _parentDocView.ViewModel.DataDocument;
             _releasedHdlr = new PointerEventHandler(released);
             _pressedHdlr = new PointerEventHandler(RichTextView_PointerPressed);
             _tappedHdlr = new TappedEventHandler(tapped);
@@ -568,11 +566,11 @@ namespace Dash
             this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
             Scroll = this.GetFirstDescendantOfType<ScrollBar>();
             Scroll.LayoutUpdated += Scroll_LayoutUpdated;
-
-            _parentDocView.ViewModel.DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            _parentDocView.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
+            _parentDataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+            Unloaded -= UnLoaded;
+            Unloaded += UnLoaded;
         }
 
         void selectedFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -580,10 +578,6 @@ namespace Dash
             MatchQuery(GetSelected());
         }
 
-        private void XOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            UpdateDocument();
-        }
 
 
         /// <summary>
@@ -598,9 +592,8 @@ namespace Dash
             this.RemoveHandler(PointerPressedEvent, _pressedHdlr);
             this.RemoveHandler(TappedEvent, _tappedHdlr);
             this.xRichEditBox.ContextMenuOpening -= XRichEditBox_ContextMenuOpening;
-            
-            _parentDocView.ViewModel.DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            _parentDocView.xOperatorEllipseBorder.PointerPressed -= XOperatorEllipseBorder_PointerPressed;
+
+            _parentDataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
         }
         #endregion
 
@@ -618,7 +611,6 @@ namespace Dash
             if (rightPressed)
             {
                 new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
-                UpdateDocument();
             }
         }
 
@@ -725,7 +717,6 @@ namespace Dash
         private void XRichEditBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             HasFocus = false;
-            UpdateDocument();
         }
 
         #endregion
@@ -988,7 +979,7 @@ namespace Dash
             e.Handled = true;
 
             var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent?.OnTapped(null, null);
+            parent?.DocumentView_OnTapped(null, null);
         }
         #endregion
 
@@ -1050,6 +1041,11 @@ namespace Dash
     //    }
     //}
     #endregion
+
+        private void XRichEditBox_OnTextChanged(object sender, RoutedEventArgs e)
+        {
+            UpdateDocument();
+        }
     }
 }
 

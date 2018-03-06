@@ -26,7 +26,7 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl, ICollectionView
     {
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         //private ScrollViewer _scrollViewer;
         public CollectionGridView()
         {
@@ -55,44 +55,20 @@ namespace Dash
             }
         }
 
-        public CollectionGridView(BaseCollectionViewModel viewModel) : this()
+        public CollectionGridView(CollectionViewModel viewModel) : this()
         {
             DataContext = viewModel;
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            if (vm != null)
-            {
-                // remove events from current view model if there is a current view model
-                ViewModel = vm;
-
-                var style = new Style(typeof(GridViewItem));
-                style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
-                style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
-                xGridView.ItemContainerStyle = style;
-            }
+            var style = new Style(typeof(GridViewItem));
+            style.Setters.Add(new Setter(WidthProperty, ViewModel.CellSize));
+            style.Setters.Add(new Setter(HeightProperty, ViewModel.CellSize));
+            xGridView.ItemContainerStyle = style;
         }
 
         #region DragAndDrop
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
-
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;
@@ -131,9 +107,6 @@ namespace Dash
                 var dvm = args.Items.Cast<DocumentViewModel>().FirstOrDefault();
                 if (dvm != null)
                 {
-                    var pc = this.GetFirstAncestorOfType<CollectionView>();
-                    var group = pc?.GetDocumentGroup(dvm.DocumentController) ?? dvm.DocumentController;
-                    //GroupManager.RemoveGroup(pc, group);
                     ViewModel.RemoveDocument(dvm.DocumentController);
                 }
             }
