@@ -115,7 +115,6 @@ namespace Dash
             xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
             // store a clone of paragraph format after initialization as default format
             xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-
         }
 
 
@@ -123,60 +122,13 @@ namespace Dash
 
         private void SizeToFit()
         {
-            if (!this.IsInVisualTree() || !CanSizeToFit)
-                return;
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-           
-            xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-            var relative = this.GetFirstAncestorOfType<RelativePanel>();
-            if (relative != null)
-                relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
-
-            if (false)
+            if (this.IsInVisualTree() && CanSizeToFit)
             {
-                int count = 0;
-                float lastMax = 20;
-                float lastMin = 6;
-                float lastGoodSize = 0;
-                var selectedText = xRichEditBox.Document.Selection;
-
-                while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
-                {
-                    var charFormatting = selectedText.CharacterFormat;
-                    var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                    float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
-                    if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
-                        lastGoodSize = curSize;
-                    if (delta < 0)
-                    {
-                        lastMax = curSize;
-                        delta = (float)Math.Ceiling(delta);
-                    }
-                    else
-                    {
-                        lastMin = curSize;
-                        if (delta < 1)
-                            break;
-                        else delta = (float)Math.Floor(delta);
-                    }
-                    try
-                    {
-                        charFormatting.Size = curSize + delta / 2;
-                        selectedText.CharacterFormat = charFormatting;
-                    }
-                    catch (Exception) { }
-                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                }
-                if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
-                {
-                    var charFormatting = selectedText.CharacterFormat;
-                    charFormatting.Size = lastGoodSize;
-                    selectedText.CharacterFormat = charFormatting;
-                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                }
+                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                var relative = this.GetFirstAncestorOfType<RelativePanel>();
+                if (relative != null)
+                    relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
             }
-            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
 
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
@@ -610,7 +562,7 @@ namespace Dash
                                 .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
             if (rightPressed)
             {
-                new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+               new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
             }
         }
 

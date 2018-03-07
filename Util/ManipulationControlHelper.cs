@@ -62,7 +62,8 @@ namespace Dash
             _eventElement = eventElement;
             _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
             _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-            if (pointer != null)
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            if (!shiftState && pointer != null)
                 _eventElement.CapturePointer(pointer);
 
             var nestings = _eventElement.GetAncestorsOfType<CollectionView>().ToList();
@@ -99,6 +100,8 @@ namespace Dash
         /// <param name="e"></param>
         public void pointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            if (e?.Pointer != null)
+                _eventElement.CapturePointer(e.Pointer);
             _numMovements++;
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || manipulationDocumentTarget.ManipulationControls == null) return;

@@ -196,6 +196,15 @@ namespace Dash
                 SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
 
             MenuFlyout = xMenuFlyout;
+            
+            xMenuFlyout.Opened += XMenuFlyout_Opened;
+        }
+
+        private void XMenuFlyout_Opened(object sender, object e)
+        {
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            if (shiftState)
+                xMenuFlyout.Hide();
         }
 
         private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)

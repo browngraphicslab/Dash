@@ -35,17 +35,7 @@
                          Background="Transparent"
                      TextChanged="XRichEditBox_OnTextChanged"
                          >
-            <!--FORMAT PROPERTIES TOOLTIP-->                          <!--Holding="XRichEditBox_OnHolding"-->
 
-            <ToolTipService.ToolTip>
-                <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
-                    <ToolTip.Content>
-                        <TextBlock x:Name="xFormatTipText" Padding="2" FontSize="10" Foreground="White">
-                        </TextBlock>
-                    </ToolTip.Content>
-                </ToolTip>
-            </ToolTipService.ToolTip>
-            
             <!--FORMAT OPTIONS FLYOUT-->
             <FlyoutBase.AttachedFlyout>
                 <Flyout>
