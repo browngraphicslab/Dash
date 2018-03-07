@@ -21,8 +21,6 @@
                          AllowDrop="True"
                          Grid.Row="0"
                          Foreground="{StaticResource MainText}"
-                         GotFocus="xRichEditBox_GotFocus"
-                         LostFocus="XRichEditBox_OnLostFocus"
                          Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
@@ -33,7 +31,6 @@
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
-                     TextChanged="XRichEditBox_OnTextChanged"
                          >
 
             <!--FORMAT OPTIONS FLYOUT-->
@@ -50,10 +47,10 @@
                     <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
                     <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8" Background="WhiteSmoke"></Button>
                     <!--SEARCH BOX-->
-                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" QuerySubmitted="XSearchBox_QuerySubmitted" QueryChanged="XSearchBox_OnQueryChanged" Background="WhiteSmoke"></SearchBox>
+                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="WhiteSmoke"></SearchBox>
                     <!--BUTTON FOR CLOSING SEARCH REGION-->
                     <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
-                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke" Click="xSearchDelete_Click">
+                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke">
                         <TextBlock Text="x" Padding="1"></TextBlock>
                     </Button>
                 </StackPanel>

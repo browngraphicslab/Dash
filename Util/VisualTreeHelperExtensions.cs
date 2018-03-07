@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -170,6 +172,27 @@ namespace Dash
                             dob.ActualHeight));
 
             return new Rect(pos, pos2);
+        }
+
+        public static bool IsRightPressed(this PointerRoutedEventArgs e)
+        {
+            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
+        }
+        public static bool IsCtrlPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsShiftPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsAltPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsTabPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Tab).HasFlag(CoreVirtualKeyStates.Down);
         }
     }
 }

@@ -356,7 +356,7 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox ))
             {
                 var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
