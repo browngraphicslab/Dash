@@ -112,7 +112,15 @@ namespace Dash
                 Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
             };
 
-            PointerPressed += (sender, e) =>  ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            PointerPressed += (sender, e) =>
+            {
+                var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+                var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
+                ManipulationMode = right && parentFreeform != null && (shiftState || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+            };
+            //ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
@@ -156,7 +164,7 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                var selected = (this.ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
                 if (selected?.Count() > 0)
                 {
                     args.Data.Properties[nameof(List<DragDocumentModel>)] =
@@ -614,7 +622,7 @@ namespace Dash
         {
             var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Contains(this))
-                return marqueeDocs;
+                return marqueeDocs.ToList();
             return new List<DocumentView>(new DocumentView[] { this } );
         }
 

@@ -82,12 +82,13 @@ namespace Dash
             if (parentFreeform != null && rightBtn)
             {
                 var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
-                if (shifted || parentParentFreeform == null)
+                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
+                if (!grabbed && (shifted || parentParentFreeform == null))
                 {
                     new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
 
                     args.Handled = true;
-                } else
+                } else 
                     if (parentParentFreeform != null)
                         CurrentView.ManipulationMode = ManipulationModes.None;
             }
