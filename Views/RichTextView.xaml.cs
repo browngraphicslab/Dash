@@ -425,10 +425,6 @@ namespace Dash
         #endregion
 
         #region getters
-        RichTextModel.RTD GetText()
-        {
-            return TargetRTFController?.Data ??  TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextModel.RTD;
-        }
 
         string GetSelected()
         {
