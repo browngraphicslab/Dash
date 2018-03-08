@@ -320,13 +320,9 @@ namespace Dash
                 var key = keyString.Substring(1);
                 var splits = key.Split("=");
                 var keyName = splits.Length > 0 ? splits[0] : key;
-                var k = KeyController.LookupKeyByName(keyName);
                 var keyasgn = splits.Length > 1 ? splits[1] : "";
-                if (k == null)
-                {
-                    k = new KeyController(UtilShared.GenerateNewId(), keyName);
-                }
-                SetHackBodyDoc(k, keyasgn);
+
+                SetHackBodyDoc(KeyController.LookupKeyByName(keyName, true), keyasgn);
                 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }

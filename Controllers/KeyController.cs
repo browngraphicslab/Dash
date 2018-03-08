@@ -87,14 +87,15 @@ namespace Dash
 
         }
 
-        static public KeyController LookupKeyByName(string name)
+        static public KeyController LookupKeyByName(string name, bool createIfNull = false)
         {
             foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
             {
                 if (k.Name == name)
                     return k;
             }
-            return null;
+            return createIfNull ?
+                new KeyController(DashShared.UtilShared.GenerateNewId(), name) : null;
         }
 
         public override FieldModelController<KeyModel> Copy()
