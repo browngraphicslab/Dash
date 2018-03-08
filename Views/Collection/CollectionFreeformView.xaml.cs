@@ -45,7 +45,7 @@ namespace Dash
         public bool                      TagMode { get; set; }
         public KeyController             TagKey { get; set; }
         public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
-        public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel.DocumentController != null).ToList(); }
+        public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
         public TransformGroupData        TransformGroup {
             get => _transformGroup;

@@ -74,6 +74,12 @@ namespace Dash
 
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
 
+            xRichEditBox.Drop += (s, e) =>
+            {
+                e.Handled = true;
+                xRichEditBox_Drop(s, e);
+            };
+
             xRichEditBox.GotFocus += (s,e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
             xRichEditBox.TextChanged += (s,e) => UpdateDocument();
@@ -189,95 +195,40 @@ namespace Dash
         }
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var s1 = xRichEditBox.Document.Selection.StartPosition;
-            var s2 = xRichEditBox.Document.Selection.EndPosition;
-            if (s1 == s2)
-            {
-                xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
-            }
-
-            string target = xRichEditBox.Document.Selection.Link.Length > 1 ? xRichEditBox.Document.Selection.Link.Split('\"')[1] : null;
-
-            if (xRichEditBox.Document.Selection.EndPosition != s2)
-                xRichEditBox.Document.Selection.SetRange(s1, s2);
-
+            var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
-                var doc = getLayoutDoc();
-                var point = doc.GetPositionField().Data;
-
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-
-                var collectionVM = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
-                var contextDoc   = theDoc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
-                if (theDoc.DocumentType.Equals(DataBox.DocumentType) && contextDoc != null)
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(null), this.IsCtrlPressed());
+                if (nearest != null)
                 {
-                    var pt = point;
-                    pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                    pt.X += 10;
-                    pt.Y += 0;
-                    
-                    var menuFlyout = new MenuFlyout() { Placement = FlyoutPlacementMode.Bottom };
-                    var menuFlyoutItem = new MenuFlyoutItem() { Text = theDoc.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data ?? "<>" };
-                    menuFlyoutItem.Click += (s, a) => Actions.DisplayDocument(collectionVM, contextDoc.GetDataDocument(null).GetKeyValueAlias(pt));
-                    menuFlyout.Items.Add(menuFlyoutItem);
-                    menuFlyout.Closed += (s, a) => this.ContextFlyout = null;
-                    this.ContextFlyout = menuFlyout;
-                    this.ContextFlyout.ShowAt(this);
+                    if (this.IsCtrlPressed())
+                        nearest.DeleteDocument();
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
                 }
                 else
                 {
-                    var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(null), this.IsCtrlPressed());
-                    if (nearest != null)
+                    var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
+                    if (theDoc != null)
                     {
-                        if (this.IsCtrlPressed())
-                            nearest.DeleteDocument();
-                        else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
-                    }
-                    else if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
-                    {
-                        var pt = point;
-                        pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                        pt.X += 10;
-                        pt.Y += 0;
                         var api = theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data;
                         if (api == CollectionNote.APISignature)
                             theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                        if (collectionVM != null)
-                        {
-                            Actions.DisplayDocument(collectionVM, theDoc.GetViewCopy(pt));
-                        }
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
                     }
                     else if (target.StartsWith("http"))
                     {
-                        theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                        if (theDoc != null && theDoc != DBTest.DBNull)
-                        {
-                            var pt = point;
-                            pt.X -= 150;
-                            pt.Y -= 50;
-                            if (collectionVM != null)
-                            {
-                                Actions.DisplayDocument(collectionVM, theDoc.GetViewCopy(pt));
-                            }
-                        }
+                        if (MainPage.Instance.WebContext != null)
+                            MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            if (MainPage.Instance.WebContext != null)
-                                MainPage.Instance.WebContext.SetUrl(target);
-                            else
-                            {
-                                var pt = point;
-                                pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                                pt.X += 10;
-                                pt.Y += 0;
-                                var page = new HtmlNote(target, target, pt).Document;
-                                Actions.DisplayDocument(collectionVM, page);
-                            }
+                            theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target }) ?? new HtmlNote(target, target, pt).Document;
+                            if (theDoc != null && theDoc.GetPositionField() == null)
+                                theDoc = HtmlNote.CreateLayout(theDoc, new DocumentReferenceController(theDoc.GetId(), KeyStore.DataKey), pt);
+                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
                         }
                     }
                 }
-                this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
             }
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {
@@ -305,6 +256,7 @@ namespace Dash
                 return nearest;
             }
         }
+
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
@@ -418,7 +370,22 @@ namespace Dash
         #endregion
 
         #region hyperlink
+        
+        string getHyperlinkTargetForSelection()
+        {
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            if (s1 == s2)
+            {
+                xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
+            }
 
+            string target = xRichEditBox.Document.Selection.Link.Length > 1 ? xRichEditBox.Document.Selection.Link.Split('\"')[1] : null;
+
+            if (xRichEditBox.Document.Selection.EndPosition != s2)
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
+            return target;
+        }
         static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
         {
             var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -457,9 +424,9 @@ namespace Dash
             Point startPt;
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
             string link = "\"" + theDoc.GetId() + "\"";
-            if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null)?.Data?.StartsWith("http"))
+            if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
+                link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }
 
             if (xRichEditBox.Document.Selection.Link != link)

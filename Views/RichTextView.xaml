@@ -21,7 +21,6 @@
                          AllowDrop="True"
                          Grid.Row="0"
                          Foreground="{StaticResource MainText}"
-                         Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch"  

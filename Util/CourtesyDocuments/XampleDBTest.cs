@@ -18,8 +18,7 @@ namespace Dash
 
 
         public static KeyController WebUrlKey = new KeyController("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
-
-        public static DocumentController DBNull = CreateNull();
+        
         public static DocumentController DBDoc = CreateDB();
 
 
