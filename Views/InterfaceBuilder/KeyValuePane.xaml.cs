@@ -461,8 +461,7 @@ namespace Dash
                     AddKeyValuePair();
                     xNewKeyText.Focus(FocusState.Programmatic);
                 }
-                xFieldsScroller.UpdateLayout();
-                xFieldsScroller.ScrollToVerticalOffset(xFieldsScroller.ActualHeight);
+                xFieldsScroller.ChangeView(0.0, xFieldsScroller.ScrollableHeight, 1);
             }
         }
 
