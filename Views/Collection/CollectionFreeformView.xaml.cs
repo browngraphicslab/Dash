@@ -39,12 +39,13 @@ namespace Dash
         TransformGroupData  _transformGroup = new TransformGroupData(new Point(), new Point());
         Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         CollectionViewModel _lastViewModel = null;
+        List<DocumentView>  _selectedDocs = new List<DocumentView>();
 
         public ViewManipulationControls  ViewManipulationControls { get; set; }
         public bool                      TagMode { get; set; }
         public KeyController             TagKey { get; set; }
         public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
-        public List<DocumentView>        SelectedDocs { get; set; } = new List<DocumentView>();
+        public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
         public TransformGroupData        TransformGroup {
             get => _transformGroup;
@@ -617,7 +618,7 @@ namespace Dash
             {
                 doc.SetSelectionBorder(false);
             }
-            SelectedDocs.Clear();
+            _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
         }
@@ -626,7 +627,7 @@ namespace Dash
         {
             SelectionCanvas.Children.Clear();
 
-            SelectedDocs.AddRange(selected);
+            _selectedDocs.AddRange(selected);
             
             foreach (var doc in SelectedDocs)
             {

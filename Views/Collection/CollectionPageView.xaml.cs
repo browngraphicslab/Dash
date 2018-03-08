@@ -320,13 +320,9 @@ namespace Dash
                 var key = keyString.Substring(1);
                 var splits = key.Split("=");
                 var keyName = splits.Length > 0 ? splits[0] : key;
-                var k = KeyController.LookupKeyByName(keyName);
                 var keyasgn = splits.Length > 1 ? splits[1] : "";
-                if (k == null)
-                {
-                    k = new KeyController(UtilShared.GenerateNewId(), keyName);
-                }
-                SetHackBodyDoc(k, keyasgn);
+
+                SetHackBodyDoc(KeyController.LookupKeyByName(keyName, true), keyasgn);
                 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }
@@ -486,6 +482,11 @@ namespace Dash
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
                 e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
             }
+        }
+
+        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
     }
 }
