@@ -88,7 +88,7 @@ namespace Dash
 
 
         //START OF NEW SNAPPING
-        public void Snap(bool preview)
+        public void SimpleAlign(bool preview)
         {
             //Stop snapping if panning current collection
             var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
@@ -96,7 +96,7 @@ namespace Dash
                 return;
 
 
-            var closest = GetClosestDocumentView(); //Get the closest DocumentView to snap to 
+            var closest = GetClosestDocumentView(ParentDocument.ViewModel.Bounds); //Get the closest DocumentView to snap to 
             if (closest == null)
             {
                 MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
@@ -107,9 +107,23 @@ namespace Dash
             if (isSnappingToCollection)
                 SnapToCollection(closest);
             else
+                SnapToDocument(closest, preview);
+        }
+
+        public void ResizeAlign(Rect boundingBoxIfResized)
+        {
+            var closest = GetClosestDocumentView(boundingBoxIfResized); //Get the closest DocumentView to snap to 
+            if (closest == null)
             {
-                SnapToDocument(closest, preview); 
+                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                return;
             }
+
+            var closestDocumentView = closest.Item1;
+            var side = closest.Item2;
+
+            ParentDocument.ViewModel.Position = SimpleSnapPoint(closestDocumentView.ViewModel.Bounds, ~side);
+
         }
 
         private void SnapToDocument(Tuple<DocumentView, Side, double> closest, bool preview)
@@ -122,7 +136,6 @@ namespace Dash
             var side = closest.Item2;
 
             ParentDocument.ViewModel.Position = SimpleSnapPoint(closestDocumentView.ViewModel.Bounds, ~side);
-
 
             if (preview)
             {
@@ -231,10 +244,10 @@ namespace Dash
 
         }
 
-        private Tuple<DocumentView, Side, double> GetClosestDocumentView()
+        private Tuple<DocumentView, Side, double> GetClosestDocumentView(Rect bounds)
         {
             //Get a list of all DocumentViews hittested using the ParentDocument's bounds + some threshold
-            var allDocumentViewsHit = HitTestFromSides(ParentDocument.ViewModel.Bounds);
+            var allDocumentViewsHit = HitTestFromSides(bounds);
 
             //Return closest DocumentView (using the double that represents the confidence) or null
             return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
@@ -474,7 +487,7 @@ namespace Dash
                 TranslateAndScale(e.Position, delta, e.Delta.Scale);
                 //DetectShake(sender, e);
 
-                Snap(true);
+                SimpleAlign(true);
                 e.Handled = true;
             }
         }
@@ -497,8 +510,6 @@ namespace Dash
         {
             if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
             {
-                Snap(false); //Snap if you're dragging the element body and it's not a part of the group
-
                 //MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
                 MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
