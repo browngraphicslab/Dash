@@ -30,7 +30,6 @@ namespace Dash
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
             fields[KeyStore.InkDataKey] = new InkController();
 
-
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             

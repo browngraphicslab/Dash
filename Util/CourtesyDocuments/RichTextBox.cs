@@ -51,9 +51,7 @@ namespace Dash
                 var richText = new RichTextView()
                 {
                     TargetFieldReference = referenceToText,
-                    TargetDocContext = context,
                     DataDocument = refToRichText.GetDocumentController(context)
-                    
                 };
                 rtv = richText;
                 rtv.ManipulationMode = ManipulationModes.All;

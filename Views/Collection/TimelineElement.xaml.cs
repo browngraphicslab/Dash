@@ -32,6 +32,8 @@ namespace Dash
         private UIElement _contextPreview;
 
         private double _ellipseSize = 18;
+        private double _offsetX = 200;
+        private double _offsetY = 492;
 
         private double EllipseSize
         {
@@ -43,8 +45,6 @@ namespace Dash
                 OnPropertyChanged();
             }
         }
-
-
 
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Dash
             ViewModel = vm;
             
             DocumentController thumbnailImageViewDoc = null;
-            var richText = vm.DocumentViewModel.DataDocument.GetDereferencedField<RichTextController>(NoteDocuments.RichTextNote.RTFieldKey, null)?.Data;
+            var richText = vm.DocumentViewModel.DataDocument.GetDereferencedField<RichTextController>(KeyStore.DataKey, null)?.Data; //NoteDocuments.RichTextNote.RTFieldKey
             var docText = vm.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ToString() ?? null;
 
             if (docText != null)
@@ -118,10 +118,12 @@ namespace Dash
         {
             var vm = DataContext as TimelineElementViewModel;
 
+            // set vertical stacking height
             xTopY.Height = new GridLength(vm.TitleY);
 
-            var x = vm.PositionX - 200;
-            var y = 501 - EllipseSize / 2;
+            // find x and y position
+            var x = vm.PositionX - _offsetX;
+            var y = _offsetY;
 
             RenderTransform = new TranslateTransform()
             {
@@ -130,13 +132,13 @@ namespace Dash
             };
 
             UpdateView();
-
         }
 
 
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            // toggle view and update
             if(ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above)
             {
                 ViewModel.CurrDisplay = TimelineElementViewModel.DisplayType.Below;

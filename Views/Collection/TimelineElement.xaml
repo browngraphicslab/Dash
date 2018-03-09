@@ -15,7 +15,7 @@
                 <RowDefinition Height="1*"></RowDefinition>
                 <RowDefinition Height="6*"></RowDefinition>
             </Grid.RowDefinitions>
-       
+            <!--top display-->
             <Grid Name="xTopViewGrid" Grid.Row="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>
@@ -25,12 +25,12 @@
                 <TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>
                 <Rectangle Name="xUpperLine" Grid.Row="2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2" Visibility="Visible"></Rectangle>
             </Grid>
+            <!--time stamp-->
             <StackPanel Name="xDateTimeStackPanel" Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Center">
                 <TextBlock  Name="xTimeBlock" FontSize="12" Height="20" Margin="-4" Opacity=".4" HorizontalTextAlignment="Center" HorizontalAlignment="Center"></TextBlock>
                 <TextBlock  Name="xDateBlock" Height="28" FontSize="14" Opacity=".6" HorizontalTextAlignment="Center" HorizontalAlignment="Center"></TextBlock>
-
             </StackPanel>
-            
+            <!--bottom display-->
             <Grid Name="xBottomViewGrid" Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height=".5*"></RowDefinition>
@@ -39,25 +39,15 @@
                     <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Rectangle Grid.Row="0" Name="xLowerLine" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2"></Rectangle>
-                <!--<Canvas x:Name="xWebHolderTop" Grid.Row="1">
-                    <Grid Name="xDocGrid" BorderBrush="LightGray" BorderThickness="1" Background="White" Opacity=".9">
-                        <local:DocumentView x:Name="xDocumentPreview" Width="150" Height="30"
-                        DataContext="{Binding DocumentViewModel}" 
-                        SizeChanged="DocumentPreviewSizeChanged" IsHitTestVisible="False">
-                        </local:DocumentView>
-                    </Grid>
-                </Canvas>-->
+                <!--document preview text-->
                 <StackPanel Grid.Row="1" HorizontalAlignment="Center" Height="70" VerticalAlignment="Center">
                     <local:DocumentView  x:Name="xDocumentPreview"
                         DataContext="{Binding DisplayViewModel}" IsHitTestVisible="False" VerticalAlignment="Center">
                     </local:DocumentView>
-                    <!--<TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>-->
-
                 </StackPanel>
-                    <Rectangle Grid.Row="2" Name="xLowerLine2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2"></Rectangle>
-
+                <Rectangle Grid.Row="2" Name="xLowerLine2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2"></Rectangle>
+                <!--document context canvas-->
                 <Canvas Grid.Row="3" HorizontalAlignment="Center" Margin="0,0,190,0" x:Name="xDocHolder"/>
-
             </Grid>
         </Grid>
         <Grid>
@@ -66,9 +56,8 @@
                 <RowDefinition Height=".5*"></RowDefinition>
                 <RowDefinition Height="6*"></RowDefinition>
             </Grid.RowDefinitions>
+            <!--tappable toggle ellipse-->
             <Ellipse Name="xEllipse" Grid.Row="1" Width="18" Height="18" Fill="#CC114433" Tapped="TimelineElement_OnTapped"/>
-
         </Grid>
-
     </Grid>
 </UserControl>

@@ -76,43 +76,42 @@ namespace Dash
 
     public sealed partial class CollectionTimelineView : ICollectionView
     {
-        private readonly ObservableCollection<TimelineElementViewModel> _contextList;
 
         private readonly Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler> _docViewModelToHandler =
             new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
         
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
 
-        private double CurrentXPosition;
-        private double CurrentTopY;
-
-        public double Scale;
-
-
-        public List<double> DisplayedXPositions { get; private set; }
-
         public TimelineMetadata Metadata { get; }
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public event Action MetadataUpdated;
 
+        private readonly ObservableCollection<TimelineElementViewModel> _contextList;
+
+        // timeline element layout
+        public List<double> DisplayedXPositions { get; private set; }
+        private double CurrentXPosition;
         public static double LastDisplayedPosition = 0;
 
-        private double _minGap = 30;
-        private double _maxGap = 300;
+        private double CurrentTopY; // how tall the element is vertically
 
-        private double _scrollScaleAmount = 1;
+        private double _minGap = 30; // the minimum width between timeline elements
+        private double _maxGap = 300; // the maximum width between timeline elements
+
+        public double Scale; // the current scale
 
 
         /// <summary>
         /// Constructor
         /// </summary>
-
         public CollectionTimelineView()
         {
             this.InitializeComponent();
-            _contextList = new ObservableCollection<TimelineElementViewModel>();
-            DataContextChanged += OnDataContextChanged;
 
+            _contextList = new ObservableCollection<TimelineElementViewModel>();
+            DisplayedXPositions = new List<double>();
+
+            DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionTimelineView_Unloaded;
 
             Metadata = new TimelineMetadata
@@ -120,46 +119,37 @@ namespace Dash
                 LeftRightMargin = 160
             };
 
-            DisplayedXPositions = new List<double>();
-
             Loaded += CollectionTimelineView_Loaded;
-
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
         }
 
-       
 
+        /// <summary>
+        /// Changes timeline scale (zooms in and out)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CollectionTimelineView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
-                
-
-
+                // If the user scrolled up, scale up by 1.07; if the user scrolled down, scale down by 1.07
                 var scaleFactor = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
-                var scale = Scale;
 
                 if (!(scaleFactor < 1 && Scale * scaleFactor < .85))
                 {
+                    // Find scroll offset to maintain the scale center roughly at the position of the cursor
+                    var scrollShift = (e.GetCurrentPoint(this).Position.X) * Scale * (scaleFactor - 1);
 
-
+                    // Change scale of timeline and update view and scroll position
                     Scale *= scaleFactor;
-
-                    var scrollShift = (80 + e.GetCurrentPoint(this).Position.X) * scale * (scaleFactor - 1);
-
-
                     SetTimelineFormatting();
 
-                    var scrollTo = xScrollViewer.HorizontalOffset + 20;
-
-                    xScrollViewer.ChangeView(scrollTo, null, null, false);
-
+                    var scrollTo = xScrollViewer.HorizontalOffset + scrollShift;
+                    xScrollViewer.ChangeView(scrollTo, null, null, true);
                 }
-
                 e.Handled = true;
-
             }
-
         }
 
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
@@ -173,33 +163,30 @@ namespace Dash
             SetTimelineFormatting();
         }
 
+
+        #region Timeline formatting
+        
         /// <summary>
         /// Formats the timeline based on current size
         /// </summary>
         private void SetTimelineFormatting()
         {
+            // refresh this list
             DisplayedXPositions = new List<double>();
 
+            
 
-            var scaledWidth = Scale * ActualWidth;
-
+            // set scrollviewer to be the same dimensions as the screen
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight;
 
-
-            var adjustedWidth = scaledWidth - 160;
-            var minWidth = 300;
-            if (adjustedWidth < minWidth)
-            {
-                adjustedWidth = minWidth;
-            }
-
-
+            // find new width and layout elements and timeline
+            var scaledWidth = Scale * ActualWidth;
+          
             LayoutTimelineElements(scaledWidth);
 
             Metadata.ActualHeight = ActualHeight;
             Metadata.ActualWidth = scaledWidth;
-            
             MetadataUpdated?.Invoke();
 
             SetTimelineWidth(scaledWidth);
@@ -219,6 +206,7 @@ namespace Dash
                 return;
             }
 
+            // reset position trackers and position elements
             CurrentXPosition = 0;
             CurrentTopY = 30;
             foreach (var element in _contextList)
@@ -226,8 +214,8 @@ namespace Dash
                 PositionElement(element);
             }
 
+            // rescale and reposition elements
             var offset = _contextList[0].PositionX - 100;
-
             var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
             foreach (var element in _contextList)
             {
@@ -244,9 +232,11 @@ namespace Dash
         /// <param name="element"></param>
         private void PositionElement(TimelineElementViewModel element)
         {
-            var x = CalculateXPosition(element, Metadata); //ehh fix
+            // laying out horizontally
+            var x = CalculateXPosition(element);
             var gapDistance = x - CurrentXPosition;
 
+            // adjust gaps if necessary
             if (gapDistance < _minGap)
             {
                 x = CurrentXPosition + _minGap;
@@ -255,11 +245,10 @@ namespace Dash
             {
                 x = CurrentXPosition + _maxGap;
             }
-
             CurrentXPosition = x;
             element.PositionX = x;
 
-
+            // display or hide element based on layout
             if (DisplayElement(x))
             {
                 LastDisplayedPosition = x;
@@ -284,12 +273,12 @@ namespace Dash
         /// <param name="context"></param>
         /// <param name="metadata"></param>
         /// <returns></returns>
-        private double CalculateXPosition(TimelineElementViewModel context, TimelineMetadata metadata)
+        private double CalculateXPosition(TimelineElementViewModel context)
         {
-            var totalTime = metadata.MaxTime - metadata.MinTime;
+            var totalTime = Metadata.MaxTime - Metadata.MinTime;
             Debug.Assert(totalTime != 0);
-            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - metadata.MinTime) / totalTime;
-            var offset = normOffset * (metadata.ActualWidth - 2 * metadata.LeftRightMargin) + metadata.LeftRightMargin;
+            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - Metadata.MinTime) / totalTime;
+            var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
 
@@ -300,6 +289,7 @@ namespace Dash
         /// <returns></returns>
         private bool DisplayElement(double x)
         {
+            // return false to hide current timeline element if it is too close to another displayed element
             foreach (var pos in DisplayedXPositions)
             {
                 if (Math.Abs(x - pos) < 200)
@@ -313,7 +303,10 @@ namespace Dash
         #endregion
 
     
-
+        /// <summary>
+        /// sets the width of the timeline shape
+        /// </summary>
+        /// <param name="width"></param>
         private void SetTimelineWidth(double width)
         {
             xHorizontalLine.Width = width;
@@ -337,6 +330,8 @@ namespace Dash
             }
         }
 
+        #endregion
+
         #region ContextManagement
 
         private void CollectionTimelineView_Unloaded(object sender, RoutedEventArgs e)
@@ -348,20 +343,12 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as BaseCollectionViewModel;
-
-            // remove events from the old ViewModel (null checks itself)
-            RemoveViewModelEvents(ViewModel);
-
-            // update the ViewModel variable to the current view model and set its selection
-            ViewModel = vm;
-
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
         }
 
-        private void Initialize(ICollectionViewModel viewModel)
+        private void Initialize(CollectionViewModel viewModel)
         {
             foreach (var dvm in viewModel.DocumentViewModels)
             {
@@ -374,13 +361,13 @@ namespace Dash
             UpdateMetadataMinAndMax();
         }
 
-        private void AddViewModelEvents(ICollectionViewModel viewModel)
+        private void AddViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
         }
 
-        private void RemoveViewModelEvents(ICollectionViewModel viewModel)
+        private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;

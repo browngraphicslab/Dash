@@ -41,8 +41,6 @@ namespace Dash
 
         ObservableCollection<FontFamily> FontFamilyNames = new ObservableCollection<FontFamily>();
 
-        private RichTextFormattingHelper _rtfHelper;
-
         #endregion
 
         /// <summary>
@@ -59,7 +57,6 @@ namespace Dash
         private void FormattingMenuView_Loaded(object sender, RoutedEventArgs e)
         {  
             WC = new WordCount(xRichEditBox);
-            _rtfHelper = new RichTextFormattingHelper(richTextView, xRichEditBox);
 
             SetUpFontFamilyComboBox();
             SetUpFontSizeComboBox();
@@ -184,68 +181,68 @@ namespace Dash
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Bold(true);
+            richTextView.Bold(true);
         }
 
         private void ItalicsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Italicize(true);
+            richTextView.Italicize(true);
         }
 
         private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Underline(true);
+            richTextView.Underline(true);
         }
 
         private void AllCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.AllCaps(true);
+            richTextView.AllCaps(true);
         }
 
         private void SmallCapsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.SmallCaps(true);
+            richTextView.SmallCaps(true);
         }
 
         private void SuperscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Superscript(true);
+            richTextView.Superscript(true);
         }
 
         private void SubscriptButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Subscript(true);
+            richTextView.Subscript(true);
         }
 
         private void StrikethroughButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Strikethrough(true);
+            richTextView.Strikethrough(true);
         }
 
         private void LeftAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Alignment(ParagraphAlignment.Left, true);
+            richTextView.Alignment(ParagraphAlignment.Left, true);
         }
 
         private void CenterAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Alignment(ParagraphAlignment.Center, true);
+            richTextView.Alignment(ParagraphAlignment.Center, true);
         }
 
         private void RightAlignButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _rtfHelper.Alignment(ParagraphAlignment.Right, true);
+            richTextView.Alignment(ParagraphAlignment.Right, true);
         }
 
         private void BulletedListButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
             {
-                _rtfHelper.Marker(MarkerType.None, true);
+                richTextView.Marker(MarkerType.None, true);
             }
             else
             {
-                _rtfHelper.Marker(MarkerType.Bullet, true);
+                richTextView.Marker(MarkerType.Bullet, true);
             }
         }
 
@@ -253,11 +250,11 @@ namespace Dash
         {
             if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.UnicodeSequence)
             {
-                _rtfHelper.Marker(MarkerType.None, true);
+                richTextView.Marker(MarkerType.None, true);
             }
             else
             {
-                _rtfHelper.Marker(MarkerType.UnicodeSequence, true);
+                richTextView.Marker(MarkerType.UnicodeSequence, true);
             }
         }
         
@@ -287,7 +284,7 @@ namespace Dash
             if(colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
-                _rtfHelper.Foreground(color, true);
+                richTextView.Foreground(color, true);
             }
         }
 
@@ -297,7 +294,7 @@ namespace Dash
             if (colorPicker != null)
             {
                 var color = colorPicker.SelectedColor;
-                _rtfHelper.Highlight(color, true);
+                richTextView.Highlight(color, true);
             }
         }
 

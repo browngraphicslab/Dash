@@ -10,11 +10,7 @@
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
     d:DesignHeight="400"
-    xmlns:localConverters="using:Dash.Converters"
-    AllowDrop="True" DragOver="DocumentView_OnDragOver"
-    DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
-    PointerPressed="DocumentView_OnPointerPressed"
-    SizeChanged="DocumentView_OnSizeChanged">
+    xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
@@ -22,8 +18,9 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
+    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0">
         <!-- Main document view -->
+
         <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
         <Grid.ContextFlyout>
             <MenuFlyout x:Name = "xMenuFlyout">
@@ -38,9 +35,11 @@
                 <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                <MenuFlyoutItem Text="Launch app" Click="MenuFlyoutLaunch_Click"/>
                 <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
             </MenuFlyout>
         </Grid.ContextFlyout>
+
 
         <!--Used to render the drop shadow and provide a background to the document-->
         <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
@@ -48,11 +47,10 @@
 
         <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
 
-        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
+        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Visibility="{Binding DecorationState}" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
             <TextBlock x:Name="xTitleIcon" 
-                           PointerPressed="xTitleIcon_PointerPressed"
                                FontFamily="{StaticResource FontAwesome}" 
-                               Foreground="Transparent"
+                               Foreground="{StaticResource TitleText}"           
                                Text="{StaticResource DocumentPlainIcon}" 
                                HorizontalAlignment="Stretch"
                                Height="32"
@@ -63,7 +61,7 @@
         <Grid Name="xTargetContentGrid">
             <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-            <!-- Dragger Button-->
+            <!-- Dragger Button
             <Grid x:Name="DraggerButton"
                         x:FieldModifier="public"
                         Margin="0,0,-20,-20"
@@ -72,38 +70,45 @@
                         AllowFocusWhenDisabled="False"
                         VerticalAlignment="Bottom"
                         ManipulationMode="TranslateX, TranslateY"
-                        Visibility="Collapsed">
+                        Visibility="{Binding DecorationState}">
                 <Border Padding="10,10,20,20" Background="Transparent">
                     <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                 </Border>
-            </Grid>
+            </Grid> -->
         </Grid>
 
-        <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" PointerPressed="xOperatorEllipseBorder_PointerPressed" PointerReleased="xOperatorEllipseBorder_PointerReleased" Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
-            <Grid  CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" >
-                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"
-                         Visibility="Collapsed"
-                         PointerEntered="OperatorEllipseUnhighlight_OnPointerEntered" />
+        <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{Binding DecorationState}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+            <Grid  >
+                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
                 <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
-                         Visibility="Collapsed"
-                         PointerExited="OperatorEllipseHighlight_OnPointerExited"/>
+                         Visibility="Collapsed"/>
             </Grid>
         </Border>
 
         <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <HyperlinkButton                              
+            <HyperlinkButton   
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     Foreground="CornflowerBlue"
                     Content=""
-                    Tapped="xContextLinkTapped"
                     VerticalContentAlignment="Center"
                     x:Name="xContextTitle"
                     Margin="0, 0, 15, 0"
-                    Visibility="Collapsed"
-                    SizeChanged="xContextHyperLinkSizechanged"/>
+                    Visibility="Collapsed"/>
         </Canvas>
 
+        <Ellipse x:Name="ResizeHandleTopLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleTopRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}" 
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
     </Grid>
 </UserControl>

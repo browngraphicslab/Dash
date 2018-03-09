@@ -70,20 +70,10 @@ namespace Dash
         ///     Handles the situation where a file is dropped on a collection. The DragEventArgs are assumed
         ///     to have StorageItems, and the DragEventArgs should have been handled
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="where"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e,
-            ICollectionViewModel collectionViewModel)
-        {
-            // the point where the items will be dropped
-            var where = sender is CollectionFreeformView
-                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
-                : new Point();
-            HandleDrop(e.DataView, where, collectionViewModel);
-        }
-
-        public static async void HandleDrop(DataPackageView dataView, Point where, ICollectionViewModel collectionViewModel)
+        public static async void HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -95,7 +85,7 @@ namespace Dash
                 var fileType = await GetFileData(files.First(), dataView);
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
-                {
+                { 
                     documentController.GetPositionField().Data = where;
                     collectionViewModel.AddDocument(documentController, null);
                 }
@@ -107,7 +97,8 @@ namespace Dash
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                // for each file, get it's type, parse it, and add it to the output collection
+                int xPos = 0, yPos = 0, count = 0;  
+                // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
                     FileData fileType;
@@ -118,6 +109,15 @@ namespace Dash
                         if (documentController != null)
                         {
                             outputCollection.Add(documentController);
+                            // place files in a grid 
+                            if (count % 5 == 0)
+                            {
+                                yPos += CollectionNote.Offset;
+                                xPos = 0;
+                            }
+                            documentController.GetPositionField().Data = new Point(xPos, yPos); 
+                            xPos += CollectionNote.Offset;
+                            count++;
                         }
                     }
                     catch (ArgumentException e)
@@ -125,10 +125,8 @@ namespace Dash
                         Debug.WriteLine(e);
                     }
                 }
-
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
                 collectionViewModel.AddDocument(cnote.Document, null);
-
             }
             else
             {
@@ -162,14 +160,14 @@ namespace Dash
             }
         }
 
-        
+
         /// <summary>
         /// Gets all the file data for a storage item that is coming from a drag event args
         /// </summary>
         /// <param name="storageItem"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private static async Task<FileData> GetFileData(IStorageFile storageItem,  DataPackageView dataView)
+        private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
             if (storageItem.FileType.EndsWith(".url"))
@@ -219,9 +217,9 @@ namespace Dash
             if (filepath.EndsWith(".pptx"))
                 return FileType.Ppt;
             if (filepath.EndsWith(".jpg") ||
-                filepath.EndsWith(".jpeg") || 
-                filepath.EndsWith(".png") || 
-                filepath.EndsWith(".bmp") || 
+                filepath.EndsWith(".jpeg") ||
+                filepath.EndsWith(".png") ||
+                filepath.EndsWith(".bmp") ||
                 filepath.EndsWith(".gif")) // PRODUCTION READY! Is this all of them? who knows?
                 return FileType.Image;
             if (filepath.EndsWith(".txt"))
@@ -229,36 +227,6 @@ namespace Dash
 
             return null;
 
-        }
-
-
-        // TODO remove this method
-        public static async void HandleDropOnCollection(object sender, DragEventArgs e,
-            BaseCollectionViewModel collection)
-        {
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                var elem = sender as UIElement;
-                var dropPoint = e.GetPosition(elem);
-                foreach (var item in items)
-                {
-                    var storageFile = item as StorageFile;
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
-                    };
-                    var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
-                    var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey))
-                        .Document;
-                    doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document,
-                        false, true);
-                    collection.AddDocument(doc, null);
-                    dropPoint.X += 20;
-                    dropPoint.Y += 20;
-                }
-            }
-            e.Handled = true;
         }
     }
 }
