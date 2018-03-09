@@ -214,17 +214,32 @@ namespace Dash
                 PositionElement(element);
             }
 
-            // rescale and reposition elements
+            // rescale and reposition elements, and set display type (above or below)
             var offset = _contextList[0].PositionX - 100;
             var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
                 element.PositionX *= scaleFactor;
+                SetDisplayType(element);
             }
         }
 
-       
+        private void SetDisplayType(TimelineElementViewModel element)
+        {
+            // display or hide element based on layout
+            if (DisplayElement(element.PositionX))
+            {
+                LastDisplayedPosition = element.PositionX;
+                element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
+                DisplayedXPositions.Add(element.PositionX);
+
+            }
+            else
+            {
+                element.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
+            }
+        }
 
         /// <summary>
         /// Positions a specific element along the timeline
@@ -247,19 +262,6 @@ namespace Dash
             }
             CurrentXPosition = x;
             element.PositionX = x;
-
-            // display or hide element based on layout
-            if (DisplayElement(x))
-            {
-                LastDisplayedPosition = x;
-                element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
-                DisplayedXPositions.Add(x);
-                
-            }
-            else
-            {
-                element.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
-            }
 
             //stacking vertically
             element.TitleY = CurrentTopY;
