@@ -90,12 +90,12 @@ namespace Dash
 
         public IconTypeEnum IconType => iconType;
 
-
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             set
             {
+                Debug.WriteLine("Position set"); 
                 var positionController =
                     LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
 
@@ -180,6 +180,8 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set
             {
+                Debug.WriteLine("Scale set");
+
                 var scaleController =
                     LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null);
 
@@ -222,7 +224,7 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        public void UpdateActualSize(double actualwidth, double actualheight)
+        public void UpdateActualSize(double actualwidth, double actualheight)      
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
@@ -235,20 +237,6 @@ namespace Dash
             X = XPos,
             Y = YPos
         }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
-
-        public void TransformDelta(TransformGroupData delta)
-        {
-            var currentTranslate = Position;
-            var currentScaleAmount = Scale;
-
-            var deltaTranslate = delta.Translate;
-            var deltaScaleAmount = delta.ScaleAmount;
-            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-
-            Position = translate;
-            Scale = scaleAmount;
-        }
 
         public Brush BackgroundBrush
         {

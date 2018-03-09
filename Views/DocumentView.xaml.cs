@@ -105,6 +105,9 @@ namespace Dash
                 DataContextChanged += (s, a) => updateBindings(null, null);
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
+
+                _viewScale = ViewModel?.LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
+                _viewPos = ViewModel?.LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             };
             Unloaded += (sender, e) =>
             {
@@ -189,15 +192,40 @@ namespace Dash
             // setup Context Title
             xContextTitle.Tapped += (sender, e) => ShowContext();
             xContextTitle.SizeChanged += (sender, e) =>  Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
-
+            
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
-                SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
+                SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
 
             MenuFlyout = xMenuFlyout;
             
             xMenuFlyout.Opened += XMenuFlyout_Opened;
+        }
+
+        private Point _viewPos;
+        private Point _viewScale;
+
+        public void UpdateViewModel()
+        {
+            ViewModel.Position = _viewPos;             
+            ViewModel.Scale = _viewScale;
+        }
+
+        public void TransformDelta(TransformGroupData delta)
+        {
+            var currentTranslate = _viewPos;  
+            var currentScaleAmount = _viewScale;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+
+            _viewPos = translate;
+            _viewScale = scaleAmount; 
+            var data = new List<object> { translate, scaleAmount };
+            RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(data); 
         }
 
         private void XMenuFlyout_Opened(object sender, object e)
