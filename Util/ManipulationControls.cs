@@ -345,7 +345,9 @@ namespace Dash
             }
 
             if (e != null)
+            {
                 e.Handled = true;
+            }
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
@@ -387,9 +389,9 @@ namespace Dash
             }
         }
 
-        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
+            if (e == null || !e.Handled)
             {
                 Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
@@ -404,9 +406,11 @@ namespace Dash
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                         () => docRoot.MoveToContainingCollection(overlappedViews)));
 
-                if (manipulationCompletedRoutedEventArgs != null)
+                docRoot.UpdateViewModel(); 
+
+                if (e != null)
                 {
-                    manipulationCompletedRoutedEventArgs.Handled = true;
+                    e.Handled = true;
                 }
             }
         }

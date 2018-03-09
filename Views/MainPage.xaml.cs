@@ -375,7 +375,16 @@ namespace Dash
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
-
+            var coll = ((xMainDocView.DataContext as DocumentViewModel).Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (coll != null)
+            {
+                if (e.VirtualKey == VirtualKey.Delete)
+                {
+                    foreach (var d in coll.SelectedDocs)
+                        d.DeleteDocument();
+                }
+            }
+            
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
