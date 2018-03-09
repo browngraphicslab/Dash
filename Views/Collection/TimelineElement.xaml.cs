@@ -120,7 +120,7 @@ namespace Dash
 
             xTopY.Height = new GridLength(vm.TitleY);
 
-            var x = vm.PositionX - 270;
+            var x = vm.PositionX - 200;
             var y = 501 - EllipseSize / 2;
 
             RenderTransform = new TranslateTransform()

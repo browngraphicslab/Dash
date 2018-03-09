@@ -100,7 +100,7 @@ namespace Dash
         private double _minGap = 30;
         private double _maxGap = 300;
 
-        private double _scrollScaleAmount = 2;
+        private double _scrollScaleAmount = 1;
 
 
         /// <summary>
@@ -133,14 +133,31 @@ namespace Dash
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
-                var point = e.GetCurrentPoint(this);
+                
+
 
                 var scaleFactor = e.GetCurrentPoint(this).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
-                Scale *= scaleFactor;
-                SetTimelineFormatting();
-                //var scrollTo = xScrollViewer.HorizontalOffset + 20;
+                var scale = Scale;
 
-                //xScrollViewer.ChangeView(null, scrollTo, null, false);
+                if (!(scaleFactor < 1 && Scale * scaleFactor < .85))
+                {
+
+
+                    Scale *= scaleFactor;
+
+                    var scrollShift = (80 + e.GetCurrentPoint(this).Position.X) * scale * (scaleFactor - 1);
+
+
+                    SetTimelineFormatting();
+
+                    var scrollTo = xScrollViewer.HorizontalOffset + 20;
+
+                    xScrollViewer.ChangeView(scrollTo, null, null, false);
+
+                }
+
+                e.Handled = true;
+
             }
 
         }
