@@ -643,7 +643,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -658,7 +658,7 @@ namespace Dash
 
         public void StyleKeyValuePane()
         {
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed; ;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
 
         }
 
@@ -1350,9 +1350,6 @@ namespace Dash
         public void HandleShiftEnter()
         {
             if (ViewModel.IsLowestSelected == false) return;
-
-
-
 
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();

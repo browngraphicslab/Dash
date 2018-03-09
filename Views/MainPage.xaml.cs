@@ -28,6 +28,8 @@ using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -82,6 +84,10 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
             SearchVisible = false;
+
+            var infod = new InfoDot();
+            infod.Visibility = Visibility.Visible;
+            xCanvas.Children.Add(infod);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
