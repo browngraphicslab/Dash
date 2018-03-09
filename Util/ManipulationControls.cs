@@ -52,7 +52,7 @@ namespace Dash
         public ManipulationControls(DocumentView element)
         {
             ParentDocument = element;
-            
+
             element.ManipulationDelta += ElementOnManipulationDelta;
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
@@ -84,6 +84,20 @@ namespace Dash
         /// </summary>
         private const double ALIGNMENT_THRESHOLD = .2;
 
+        /// <summary>
+        /// copmutes the Bounds of the ViewModel during interaction.  This uses the cached position and scale values 
+        /// that bypass the ViewModel's persistent data. When not manipulating the document, use DocumentViewModel's Bounds property.
+        /// </summary>
+        /// <param name="dvm"></param>
+        /// <returns></returns>
+        public static Rect InteractiveBounds(DocumentViewModel dvm)
+        {
+            return new TranslateTransform
+            {
+                X = dvm.InteractiveManipulationPosition.X,
+                Y = dvm.InteractiveManipulationPosition.Y
+            }.TransformBounds(new Rect(0, 0, dvm.ActualWidth * dvm.InteractiveManipulationScale.X, dvm.ActualHeight * dvm.InteractiveManipulationScale.Y));
+        }
 
         /// <summary>
         /// Previews the new location/position of the element
@@ -101,7 +115,7 @@ namespace Dash
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
 
-            var currentBoundingBox = docRoot.ViewModel.Bounds;
+            var currentBoundingBox = InteractiveBounds(docRoot.ViewModel);
 
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
@@ -154,7 +168,7 @@ namespace Dash
             var documentViewModel = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestBoundsInCollectionSpace = documentViewModel.Bounds;
+            var closestBoundsInCollectionSpace = InteractiveBounds(documentViewModel);
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
@@ -201,7 +215,7 @@ namespace Dash
                 foreach (var sibling in listOfSiblings)
                 {
                     Rect intersection = sideRect;
-                    intersection.Intersect(sibling.Bounds); //Mutates intersection
+                    intersection.Intersect(InteractiveBounds(sibling)); //Mutates intersection
 
                     var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
                     if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
@@ -216,7 +230,7 @@ namespace Dash
 
         private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentViewModel otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = otherDocumentView.Bounds; // otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = InteractiveBounds(otherDocumentView); // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
@@ -337,9 +351,9 @@ namespace Dash
 
                 if (!ClampScale(scaleAmount))
                 {
-                    OnManipulatorStarted.Invoke();
+                    OnManipulatorStarted.Invoke();  // have to update the cached values before calling translate or scale (which uses the caches)
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
-                    OnManipulatorCompleted.Invoke();
+                    OnManipulatorCompleted.Invoke(); // then have to flush the caches to the viewmodel since we have to assume this is the end of the interaction.
                 }
             }
         }

@@ -90,12 +90,20 @@ namespace Dash
 
         public IconTypeEnum IconType => iconType;
 
+        /// <summary>
+        /// The cached Position of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Position instead
+        /// </summary>
+        public Point InteractiveManipulationPosition;
+        /// <summary>
+        /// The cached Scale of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Scale instead
+        /// </summary>
+        public Point InteractiveManipulationScale;
 
         /// <summary>
-        /// Variables that drive the translate / scale manipulation before manipulation ends
+        /// The actual position of the document as written to the LayoutDocument  model
         /// </summary>
-        public Point InteractiveViewPosition;
-        public Point InteractiveViewScale;
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
@@ -110,7 +118,7 @@ namespace Dash
                     OnPropertyChanged();
                 }
                 else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
-                InteractiveViewPosition = value;
+                InteractiveManipulationPosition = value;
             }
         }
 
@@ -177,7 +185,7 @@ namespace Dash
                 }
                 else
                     LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
-                InteractiveViewScale = value;
+                InteractiveManipulationScale = value;
             }
         }
 
@@ -220,9 +228,9 @@ namespace Dash
 
         public Rect Bounds => new TranslateTransform
         {
-            X = InteractiveViewPosition.X,
-            Y = InteractiveViewPosition.Y
-        }.TransformBounds(new Rect(0, 0, _actualWidth * InteractiveViewScale.X, _actualHeight * InteractiveViewScale.Y));
+            X = XPos,
+            Y = YPos,
+        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
 
         public Brush BackgroundBrush
         {
@@ -294,6 +302,9 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
+
+            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
+            InteractiveManipulationScale = Scale;
 
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             SetUpSmallIcon();

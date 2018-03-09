@@ -195,13 +195,13 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () => SelectedDocuments().ForEach((d) =>
             {
-                d.ViewModel.InteractiveViewPosition = d.ViewModel.Position;
-                d.ViewModel.InteractiveViewScale = d.ViewModel.Scale;
+                d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
             });
             ManipulationControls.OnManipulatorCompleted += () => SelectedDocuments().ForEach((d) =>
             {
-                d.ViewModel.Position = d.ViewModel.InteractiveViewPosition;
-                d.ViewModel.Scale = d.ViewModel.InteractiveViewScale;
+                d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
             });
 
             MenuFlyout = xMenuFlyout;
@@ -209,24 +209,23 @@ namespace Dash
             xMenuFlyout.Opened += XMenuFlyout_Opened;
         }
 
-        /// <summary>
-        /// Called by Manipulation controls.  
-        /// this updates the position of the document without modifying the underlying viewModel.  
-        /// At the end of the interaction, the temporary values are copied to the viewModel.
+        /// <summary> 
+        /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
+        /// At the end of the interaction, the caches are copied to the viewModel.
         /// </summary>
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-            var currentTranslate = ViewModel.InteractiveViewPosition;  
-            var currentScaleAmount = ViewModel.InteractiveViewScale;
+            var currentTranslate = ViewModel.InteractiveManipulationPosition;  
+            var currentScaleAmount = ViewModel.InteractiveManipulationScale;
 
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-            ViewModel.InteractiveViewPosition = translate;
-            ViewModel.InteractiveViewScale = scaleAmount; 
+            ViewModel.InteractiveManipulationPosition = translate;
+            ViewModel.InteractiveManipulationScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
