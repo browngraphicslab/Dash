@@ -90,6 +90,12 @@ namespace Dash
 
         public IconTypeEnum IconType => iconType;
 
+
+        /// <summary>
+        /// Variables that drive the translate / scale manipulation before manipulation ends
+        /// </summary>
+        public Point InteractiveViewPosition;
+        public Point InteractiveViewScale;
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
@@ -104,38 +110,20 @@ namespace Dash
                     OnPropertyChanged();
                 }
                 else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
+                InteractiveViewPosition = value;
             }
         }
 
         public double XPos
         {
             get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
-            set
-            {
-                var positionController =
-                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
-                {
-                    positionController.Data = new Point(value, positionController.Data.Y);
-                    OnPropertyChanged();
-                }
-            }
+            set => Position = new Point(value, YPos);
         }
 
         public double YPos
         {
             get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
-            set
-            {
-                var positionController = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
-                {
-                    positionController.Data = new Point(positionController.Data.X, value);
-                    OnPropertyChanged();
-                }
-            }
+            set => Position = new Point(XPos, value);
         }
 
         public double Width
@@ -189,6 +177,7 @@ namespace Dash
                 }
                 else
                     LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
+                InteractiveViewScale = value;
             }
         }
 
@@ -231,9 +220,9 @@ namespace Dash
 
         public Rect Bounds => new TranslateTransform
         {
-            X = XPos,
-            Y = YPos
-        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
+            X = InteractiveViewPosition.X,
+            Y = InteractiveViewPosition.Y
+        }.TransformBounds(new Rect(0, 0, _actualWidth * InteractiveViewScale.X, _actualHeight * InteractiveViewScale.Y));
 
         public Brush BackgroundBrush
         {
@@ -305,6 +294,7 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
+
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);

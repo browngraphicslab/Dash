@@ -34,8 +34,12 @@ namespace Dash
         public double ElementScale { get; set; } = 1.0;
         public List<DocumentViewModel> Grouping { get; set; }
 
+        public delegate void OnManipulationCompletedHandler();
+        public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
+        public event OnManipulationCompletedHandler OnManipulatorCompleted;
+        public event OnManipulationStartedHandler OnManipulatorStarted;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -332,7 +336,11 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
+                {
+                    OnManipulatorStarted.Invoke();
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
+                    OnManipulatorCompleted.Invoke();
+                }
             }
         }
 
@@ -343,6 +351,8 @@ namespace Dash
                 e.Complete();
                 return;
             }
+
+            OnManipulatorStarted?.Invoke();
 
             if (e != null)
             {
@@ -406,7 +416,7 @@ namespace Dash
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                         () => docRoot.MoveToContainingCollection(overlappedViews)));
 
-                docRoot.UpdateViewModel(); 
+                OnManipulatorCompleted?.Invoke();
 
                 if (e != null)
                 {

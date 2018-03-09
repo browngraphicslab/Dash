@@ -105,9 +105,6 @@ namespace Dash
                 DataContextChanged += (s, a) => updateBindings(null, null);
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
-
-                _viewScale = ViewModel?.LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-                _viewPos = ViewModel?.LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             };
             Unloaded += (sender, e) =>
             {
@@ -195,8 +192,17 @@ namespace Dash
             
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
-                SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorStarted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.InteractiveViewPosition = d.ViewModel.Position;
+                d.ViewModel.InteractiveViewScale = d.ViewModel.Scale;
+            });
+            ManipulationControls.OnManipulatorCompleted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.Position = d.ViewModel.InteractiveViewPosition;
+                d.ViewModel.Scale = d.ViewModel.InteractiveViewScale;
+            });
 
             MenuFlyout = xMenuFlyout;
             
@@ -204,30 +210,23 @@ namespace Dash
         }
 
         /// <summary>
-        /// Variables that drive the translate / scale manipulation before manipulation ends
+        /// Called by Manipulation controls.  
+        /// this updates the position of the document without modifying the underlying viewModel.  
+        /// At the end of the interaction, the temporary values are copied to the viewModel.
         /// </summary>
-        private Point _viewPos;
-        private Point _viewScale;
-
-        // called when manipulation ends; updates the field controllers 
-        public void UpdateViewModel()
-        {
-            ViewModel.Position = _viewPos;             
-            ViewModel.Scale = _viewScale;
-        }
-
+        /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
-            var currentTranslate = _viewPos;  
-            var currentScaleAmount = _viewScale;
+            var currentTranslate = ViewModel.InteractiveViewPosition;  
+            var currentScaleAmount = ViewModel.InteractiveViewScale;
 
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-            _viewPos = translate;
-            _viewScale = scaleAmount; 
+            ViewModel.InteractiveViewPosition = translate;
+            ViewModel.InteractiveViewScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
@@ -559,9 +558,9 @@ namespace Dash
             }
 
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
-            ViewModel.XPos = (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width)*ViewModel.Scale.X);
-            ViewModel.YPos = (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height)*ViewModel.Scale.Y);
-            this._viewPos = ViewModel.Position;
+            ViewModel.Position = new Point(
+                 (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                 (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
 
             e.Handled = true;
 
