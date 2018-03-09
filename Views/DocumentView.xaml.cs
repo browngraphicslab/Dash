@@ -203,9 +203,13 @@ namespace Dash
             xMenuFlyout.Opened += XMenuFlyout_Opened;
         }
 
+        /// <summary>
+        /// Variables that drive the translate / scale manipulation before manipulation ends
+        /// </summary>
         private Point _viewPos;
         private Point _viewScale;
 
+        // called when manipulation ends; updates the field controllers 
         public void UpdateViewModel()
         {
             ViewModel.Position = _viewPos;             
@@ -224,8 +228,7 @@ namespace Dash
 
             _viewPos = translate;
             _viewScale = scaleAmount; 
-            var data = new List<object> { translate, scaleAmount };
-            RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(data); 
+            RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
         private void XMenuFlyout_Opened(object sender, object e)

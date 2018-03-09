@@ -338,8 +338,6 @@ namespace Dash
 
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            Debug.WriteLine("manipulation started");
-            
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
                 e.Complete();
