@@ -561,6 +561,7 @@ namespace Dash
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.XPos = (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width)*ViewModel.Scale.X);
             ViewModel.YPos = (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height)*ViewModel.Scale.Y);
+            this._viewPos = ViewModel.Position;
 
             e.Handled = true;
 
