@@ -85,9 +85,7 @@ namespace Dash
 
             SearchVisible = false;
 
-            var infod = new InfoDot();
-            infod.Visibility = Visibility.Visible;
-            xCanvas.Children.Add(infod);
+            //TODO: GET CORD FROM MATRIX TRANS IN COLL FREEFORM VIEW
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -153,6 +151,21 @@ namespace Dash
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
+        }
+
+        public void AddInfoDot(DocumentViewModel dvm)
+        {
+            var infod = new InfoDot();
+            infod.Margin = new Thickness(dvm.XPos + dvm.Width, dvm.YPos + dvm.Height, 0, 0); //dots are appearing to bottom left
+
+
+            //TODO: set DataContext to dvm
+            infod.DataContext = dvm;
+            Canvas.SetLeft(infod, dvm.XPos);
+            Canvas.SetTop(infod, dvm.YPos);
+            xCanvas.Children.Add(infod);
+
+
         }
 
         public bool SetCurrentWorkspace(DocumentController workspace)
