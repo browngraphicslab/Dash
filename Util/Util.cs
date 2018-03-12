@@ -502,7 +502,7 @@ namespace Dash
 
         public static DocumentController BlankDocWithPosition(Point pos, double width=200, double height=200)
         {
-            return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
+            //return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextController("Document")

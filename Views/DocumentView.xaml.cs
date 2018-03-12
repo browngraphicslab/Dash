@@ -189,15 +189,44 @@ namespace Dash
             // setup Context Title
             xContextTitle.Tapped += (sender, e) => ShowContext();
             xContextTitle.SizeChanged += (sender, e) =>  Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
-
+            
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
-                SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
+            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorStarted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
+            });
+            ManipulationControls.OnManipulatorCompleted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+            });
 
             MenuFlyout = xMenuFlyout;
             
             xMenuFlyout.Opened += XMenuFlyout_Opened;
+        }
+
+        /// <summary> 
+        /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
+        /// At the end of the interaction, the caches are copied to the viewModel.
+        /// </summary>
+        /// <param name="delta"></param>
+        public void TransformDelta(TransformGroupData delta)
+        {
+            var currentTranslate = ViewModel.InteractiveManipulationPosition;  
+            var currentScaleAmount = ViewModel.InteractiveManipulationScale;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+
+            ViewModel.InteractiveManipulationPosition = translate;
+            ViewModel.InteractiveManipulationScale = scaleAmount; 
+            RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
         private void XMenuFlyout_Opened(object sender, object e)
@@ -401,11 +430,12 @@ namespace Dash
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
-            // TODO remove this arbtirary styling here
-            if (this == MainPage.Instance.MainDocView) // special styling for the Main collection
-            {
-                view.xOuterGrid.BorderThickness = new Thickness(0);
-            }
+            if (this != MainPage.Instance.MainDocView) return;
+            view.xOuterGrid.BorderThickness = new Thickness(0);
+            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -528,8 +558,9 @@ namespace Dash
             }
 
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
-            ViewModel.XPos = (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width)*ViewModel.Scale.X);
-            ViewModel.YPos = (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height)*ViewModel.Scale.Y);
+            ViewModel.Position = new Point(
+                 (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                 (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
 
             e.Handled = true;
 

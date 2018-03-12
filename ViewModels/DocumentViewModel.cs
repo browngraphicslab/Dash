@@ -90,7 +90,20 @@ namespace Dash
 
         public IconTypeEnum IconType => iconType;
 
+        /// <summary>
+        /// The cached Position of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Position instead
+        /// </summary>
+        public Point InteractiveManipulationPosition;
+        /// <summary>
+        /// The cached Scale of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Scale instead
+        /// </summary>
+        public Point InteractiveManipulationScale;
 
+        /// <summary>
+        /// The actual position of the document as written to the LayoutDocument  model
+        /// </summary>
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
@@ -105,38 +118,20 @@ namespace Dash
                     OnPropertyChanged();
                 }
                 else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
+                InteractiveManipulationPosition = value;
             }
         }
 
         public double XPos
         {
             get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
-            set
-            {
-                var positionController =
-                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
-                {
-                    positionController.Data = new Point(value, positionController.Data.Y);
-                    OnPropertyChanged();
-                }
-            }
+            set => Position = new Point(value, YPos);
         }
 
         public double YPos
         {
             get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
-            set
-            {
-                var positionController = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
-                {
-                    positionController.Data = new Point(positionController.Data.X, value);
-                    OnPropertyChanged();
-                }
-            }
+            set => Position = new Point(XPos, value);
         }
 
         public double Width
@@ -190,6 +185,7 @@ namespace Dash
                 }
                 else
                     LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
+                InteractiveManipulationScale = value;
             }
         }
 
@@ -222,7 +218,7 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        public void UpdateActualSize(double actualwidth, double actualheight)
+        public void UpdateActualSize(double actualwidth, double actualheight)      
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
@@ -233,22 +229,8 @@ namespace Dash
         public Rect Bounds => new TranslateTransform
         {
             X = XPos,
-            Y = YPos
+            Y = YPos,
         }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
-
-        public void TransformDelta(TransformGroupData delta)
-        {
-            var currentTranslate = Position;
-            var currentScaleAmount = Scale;
-
-            var deltaTranslate = delta.Translate;
-            var deltaScaleAmount = delta.ScaleAmount;
-            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-
-            Position = translate;
-            Scale = scaleAmount;
-        }
 
         public Brush BackgroundBrush
         {
@@ -320,6 +302,10 @@ namespace Dash
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
+
+            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
+            InteractiveManipulationScale = Scale;
+
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
