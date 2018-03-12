@@ -41,6 +41,11 @@ namespace Dash
         public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
 
         /// <summary>
+        /// The unique type of the operator, necessary for persistence and serialization
+        /// </summary>
+        public abstract KeyController OperatorType { get; }
+
+        /// <summary>
         /// Function which provides an optional layout for the operator no need to override this unless you
         ///  are using a custom layout
         /// </summary>

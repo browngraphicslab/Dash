@@ -9,7 +9,7 @@ namespace Dash
     public class DivideOperatorController : OperatorController
     {
 
-        public DivideOperatorController() : base(new OperatorModel(OperatorType.Divide))
+        public DivideOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -41,6 +41,9 @@ namespace Dash
                 [QuotientKey] = TypeInfo.Number,
                 [RemainderKey] = TypeInfo.Number
             };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("7169B1E9-957A-49DC-91F6-16364A1AB576", "Divide Operator Controller");
 
         public static int numExecutions = 0;
 
