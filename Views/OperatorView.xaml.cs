@@ -54,6 +54,11 @@ namespace Dash
         }
 
 
+        void mymethod()
+        {
+
+        }
+
 
         public OperatorView()
         {
