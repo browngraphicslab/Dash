@@ -13,12 +13,17 @@ namespace Dash
     {
         public override MatrixTransform ConvertDataToXaml(List<object> data, object parameter = null)
         {
+            return ConvertDataToXamlHelper(data, parameter); 
+        }
+
+        public static MatrixTransform ConvertDataToXamlHelper(List<object> data, object parameter = null)
+        {
             if (data.Count < 2 || !(data[0] is Point) || !(data[1] is Point))
             {
                 return null;
             }
-            var pos = (Point) data[0];
-            var scale = (Point) data[1];
+            var pos = (Point)data[0];
+            var scale = (Point)data[1];
             TransformGroup group = new TransformGroup();
             group.Children.Add(new ScaleTransform()
             {
@@ -32,7 +37,7 @@ namespace Dash
                 X = pos.X,
                 Y = pos.Y
             });
-            return new MatrixTransform() {Matrix = group.Value};
+            return new MatrixTransform() { Matrix = group.Value };
         }
 
         public override List<object> ConvertXamlToData(MatrixTransform xaml, object parameter = null)

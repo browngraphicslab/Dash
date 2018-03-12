@@ -21,30 +21,16 @@
                          AllowDrop="True"
                          Grid.Row="0"
                          Foreground="{StaticResource MainText}"
-                         GotFocus="xRichEditBox_GotFocus"
-                         LostFocus="XRichEditBox_OnLostFocus"
-                         Drop="xRichEditBox_Drop"   
                          x:Name="xRichEditBox" 
                          VerticalAlignment="Stretch" 
-                         HorizontalAlignment="Stretch" 
-                         SelectionChanged="xRichEditBox_SelectionChanged"  
+                         HorizontalAlignment="Stretch"  
                          BorderThickness="0"
                          IsColorFontEnabled="True" 
                          SelectionHighlightColor="{StaticResource DarkWindowsBlue}"
                          IsTextPredictionEnabled="True"
                          Background="Transparent"
                          >
-            <!--FORMAT PROPERTIES TOOLTIP-->                          <!--Holding="XRichEditBox_OnHolding"-->
 
-            <ToolTipService.ToolTip>
-                <ToolTip x:Name="xFormatTip" Background="{StaticResource DarkBackground}" Padding="3">
-                    <ToolTip.Content>
-                        <TextBlock x:Name="xFormatTipText" Padding="2" FontSize="10" Foreground="White">
-                        </TextBlock>
-                    </ToolTip.Content>
-                </ToolTip>
-            </ToolTipService.ToolTip>
-            
             <!--FORMAT OPTIONS FLYOUT-->
             <FlyoutBase.AttachedFlyout>
                 <Flyout>
@@ -59,10 +45,10 @@
                     <!--EXPAND/COLLAPSE REPLACE BOX BUTTON-->
                     <Button x:Name="xReplaceModeButton" Content="▲" Padding="-3" Height="25" Width="15" Foreground="Gray" FontSize="8" Background="WhiteSmoke"></Button>
                     <!--SEARCH BOX-->
-                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" QuerySubmitted="XSearchBox_QuerySubmitted" QueryChanged="XSearchBox_OnQueryChanged" Background="WhiteSmoke"></SearchBox>
+                    <SearchBox x:Name="xSearchBox" Padding="0"  Height="25" Width="100" BorderBrush="Transparent" Background="WhiteSmoke"></SearchBox>
                     <!--BUTTON FOR CLOSING SEARCH REGION-->
                     <Button x:Name="xSearchDelete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="-3"
-                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke" Click="xSearchDelete_Click">
+                            Height="25" Width="15" VerticalContentAlignment="Top" Background="WhiteSmoke">
                         <TextBlock Text="x" Padding="1"></TextBlock>
                     </Button>
                 </StackPanel>

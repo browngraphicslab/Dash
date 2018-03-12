@@ -28,7 +28,7 @@
             <SymbolIcon x:Name="XIconBox" Foreground="#EEEEFFFF" Grid.Column="1" Visibility="Collapsed"></SymbolIcon>
             <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="2" DoubleTapped="XTextBlock_OnDoubleTapped" CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
             <Border x:Name="xBorder" Grid.Column="1" Background="White" Visibility="Collapsed">
-                <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" KeyUp="XTextBox_OnKeyUp" />
+                <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyUp="XTextBox_OnKeyUp" />
             </Border>
             <TextBlock x:Name="XArrowBlock" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped"></TextBlock>
         </Grid>

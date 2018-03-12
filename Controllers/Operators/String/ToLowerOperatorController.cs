@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
 
-namespace Dash
+namespace Dash.Controllers.Operators.String
 {
-    public interface ICollectionView
+    public class ToLowerOperatorController : OperatorController
     {
-        CollectionViewModel ViewModel { get; }
     }
 }

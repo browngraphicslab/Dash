@@ -43,7 +43,7 @@ namespace Dash
                 var prototype = ContentController<FieldModel>.GetController<DocumentController>(_prototypeID);
                 if (prototype == null)
                 {
-                    prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
+                    prototype = CreatePrototype();
                     prototype.SetField(KeyStore.ThisKey, prototype, true);
                 }
                 return prototype;
@@ -101,6 +101,7 @@ namespace Dash
         public class CollectionNote : NoteDocument
         {
             public static string APISignature = "Collected Docs Note Data API";
+            public static int Offset = 250;
 
             public override DocumentController CreatePrototype()
             {
@@ -109,8 +110,8 @@ namespace Dash
                     [KeyStore.CollectionKey] = new ListController<DocumentController>(),
                     //[KeyStore.GroupingKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController(APISignature),
-                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
-                };
+                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
+            };
                 var protoDoc =  new DocumentController(fields, Type, _prototypeID);
 
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
@@ -201,13 +202,11 @@ namespace Dash
         }
         public class RichTextNote : NoteDocument
         {
-            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "_Rich Text");
-            
             public override DocumentController CreatePrototype()
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [RTFieldKey]                    = new RichTextController(new RichTextModel.RTD("Prototype Content")),
+                    [KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                     [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey )
                 };
@@ -229,7 +228,7 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetDocumentPrototype(); 
-                var richTextLayout = new RichTextBox(new DocumentReferenceController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
+                var richTextLayout = new RichTextBox(new DocumentReferenceController(prototype.GetId(), KeyStore.DataKey), 0, 0, double.NaN, double.NaN);
                 var prototypeLayout = new StackLayout(new DocumentController[] { richTextLayout.Document });
                 prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
                 prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
@@ -244,7 +243,7 @@ namespace Dash
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(RTFieldKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                dataDocument.SetField(KeyStore.DataKey, new RichTextController(new RichTextModel.RTD(text)), true);
                 dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                 dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
 
@@ -279,27 +278,38 @@ namespace Dash
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
                     [KeyStore.TitleKey] = new TextController("Prototype Title"),
-                    [KeyStore.HtmlTextKey] = new TextController("Prototype Content"),
+                    [KeyStore.DataKey] = new TextController("Prototype Content"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
                 };
-                return new DocumentController(fields, DocumentType, _prototypeID);
+                var protoDoc = new DocumentController(fields, DocumentType, _prototypeID);
+
+                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [RichTextTitleOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
+                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
+                }, DocumentType.DefaultType);
+
+                protoDoc.SetField(KeyStore.TitleKey,
+                    new DocumentReferenceController(titleDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+
+                return protoDoc;
             }
 
             public override DocumentController CreatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
-            public DocumentController CreateLayout()
+            public static DocumentController CreateLayout(DocumentController dataDocument, DocumentReferenceController docRef, Point where)
             {
-                var prototype = GetDocumentPrototype();
-
-                var htmlLayout = new WebBox(new DocumentReferenceController(prototype.GetId(), KeyStore.HtmlTextKey), 0, 0, double.NaN, double.NaN);
+                var htmlLayout = new WebBox(docRef, 0, 0, double.NaN, double.NaN);
                 var layoutDoc = new StackLayout(new DocumentController[] { /*titleLayout.Document,*/ htmlLayout.Document }).Document;
                 layoutDoc.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
                 layoutDoc.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
                 layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                layoutDoc.SetVerticalAlignment(VerticalAlignment.Stretch);
+                layoutDoc.SetVerticalAlignment(VerticalAlignment.Stretch); 
+                layoutDoc.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                layoutDoc.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
 
                 return layoutDoc;
             }
@@ -311,17 +321,13 @@ namespace Dash
                 _prototypeID = "223BB098-78FA-4D61-8D18-D9E15086AC39";
 
                 var dataDocument = GetDocumentPrototype().MakeDelegate();
-                dataDocument.SetField(KeyStore.TitleKey,    new TextController(title), true);
-                dataDocument.SetField(KeyStore.HtmlTextKey, new TextController(text ?? "Html stuff here"), true);
-                dataDocument.SetField(KeyStore.ThisKey,     dataDocument, true);
+                if (!string.IsNullOrEmpty(title))
+                    dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+                dataDocument.SetField(KeyStore.DataKey, new TextController(text ?? "Html stuff here"), true);
+                dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
                 
-                var docLayout = CreateLayout();
-                docLayout.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
-                
-                docLayout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-                docLayout.SetField(KeyStore.WidthFieldKey, new NumberController(400), true);
-                docLayout.SetField(KeyStore.HeightFieldKey, new NumberController(400), true);
-                Document = docLayout;
+                var docLayout = CreateLayout(dataDocument, new DocumentReferenceController(GetDocumentPrototype().GetId(), KeyStore.DataKey), where);
+               Document = docLayout;
             }
         }
         public class PostitNote : NoteDocument

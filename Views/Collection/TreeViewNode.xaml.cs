@@ -241,6 +241,7 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Visible;
+            XTextBox.Focus(FocusState.Keyboard);
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
@@ -259,6 +260,12 @@ namespace Dash
             {
                 XTextBlock.Focus(FocusState.Programmatic);
             }
+        }
+
+        private void XTextBox_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+        {
+            if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
+                args.Cancel = true;
         }
     }
 }

@@ -10,9 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"    
-    DragOver="xDocContainer_DragOver" 
-    Drop="CollectionViewOnDrop"
-    DragEnter="CollectionViewOnDragEnter"
+    DragOver="CollectionViewOnDragOver"
     DragLeave="CollectionViewOnDragLeave"
     >
     <Grid x:Name="Grid" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -107,7 +105,10 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <local:DocumentView  IsHitTestVisible="False"/>
+
+                        <Grid Background="#01000000" PointerPressed="xThumbs_PointerPressed">
+                            <local:DocumentView IsHitTestVisible="False"/>
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

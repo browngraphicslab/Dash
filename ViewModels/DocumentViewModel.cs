@@ -23,8 +23,6 @@ namespace Dash
     {
 
         // == MEMBERS, GETTERS, SETTERS ==
-        private double _height;
-        private double _width;
         private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
@@ -33,7 +31,6 @@ namespace Dash
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         public string DebugName = "";
-        public bool DoubleTapEnabled = true;
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument { get => DocumentController.GetDataDocument(); }
 
@@ -92,11 +89,24 @@ namespace Dash
         }
 
         public IconTypeEnum IconType => iconType;
-        
 
+        /// <summary>
+        /// The cached Position of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Position instead
+        /// </summary>
+        public Point InteractiveManipulationPosition;
+        /// <summary>
+        /// The cached Scale of the document **during** a ManipulationControls interaction.
+        /// When not interacting, use Scale instead
+        /// </summary>
+        public Point InteractiveManipulationScale;
+
+        /// <summary>
+        /// The actual position of the document as written to the LayoutDocument  model
+        /// </summary>
         public Point Position
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
             set
             {
                 var positionController =
@@ -105,93 +115,64 @@ namespace Dash
                 if (positionController != null && (Math.Abs(positionController.Data.X - value.X) > 0.05f || Math.Abs(positionController.Data.Y - value.Y) > 0.05f))
                 {
                     positionController.Data = value;
+                    OnPropertyChanged();
                 }
+                else LayoutDocument.SetField(KeyStore.PositionFieldKey, new PointController(value), true);
+                InteractiveManipulationPosition = value;
             }
         }
 
         public double XPos
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data.X ?? double.PositiveInfinity;//Use inf so that sorting works reasonably
-            set
-            {
-                var positionController =
-                    LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.X - value) > 0.05f)
-                {
-                    positionController.Data = new Point(value, positionController.Data.Y);
-                }
-            }
+            get => Position.X; // infinity causes problems with Bounds and other things expecting a number. double.PositiveInfinity;//Use inf so that sorting works reasonably
+            set => Position = new Point(value, YPos);
         }
 
         public double YPos
         {
-            get
-            {
-                var posField = LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-                if (posField != null)
-                {
-                    return posField.Data.Y;
-                }
-
-                //var groupField = DocumentController.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
-                //if (groupField != null)
-                //{
-                //    return groupField.TypedData.Min(
-                //        dc => dc.GetField<PointController>(KeyStore.PositionFieldKey)?.Data.Y ??
-                //              double.PositiveInfinity);
-                //}
-
-                return double.PositiveInfinity; //Use inf so that sorting works reasonably
-            }
-            set
-            {
-                var positionController =  LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null);
-
-                if (positionController != null && Math.Abs(positionController.Data.Y - value) > 0.05f)
-                {
-                    positionController.Data = new Point(positionController.Data.X, value);
-                }
-            }
+            get => Position.Y; // infinity causes problems with Bounds and other things expecting a number. 
+            set => Position = new Point(XPos, value);
         }
 
         public double Width
         {
-            get => _width;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
             set
             {
-                //Debug.Assert(double.IsNaN(value) == false);
-
-                if (SetProperty(ref _width, value))
+                var widthController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
+                if (widthController != null)
                 {
-                    var widthFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null);
-                    if (widthFieldModelController != null)
+                    if (Math.Abs(widthController.Data - value) > 0.05f)
                     {
-                        widthFieldModelController.Data = value;
+                        widthController.Data = value;
                     }
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.WidthFieldKey, new NumberController(value), true);
             }
         }
 
         public double Height
         {
-            get => _height;
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
             set
             {
-                //Debug.Assert(double.IsNaN(value) == false);
-
-                if (SetProperty(ref _height, value))
+                var heightController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
+                if (heightController != null)
                 {
-                    var heightFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null);
-                    if (heightFieldModelController != null)
-                        heightFieldModelController.Data = value;
+                    if (Math.Abs(heightController.Data - value) > 0.05f)
+                    {
+                        heightController.Data = value;
+                    }
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.HeightFieldKey, new NumberController(value), true);
             }
         }
 
         public Point Scale
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null).Data;
+            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set
             {
                 var scaleController =
@@ -200,7 +181,11 @@ namespace Dash
                 if (scaleController != null)
                 {
                     scaleController.Data = value;
+                    OnPropertyChanged();
                 }
+                else
+                    LayoutDocument.SetField(KeyStore.ScaleAmountFieldKey, new PointController(value), true);
+                InteractiveManipulationScale = value;
             }
         }
 
@@ -220,7 +205,7 @@ namespace Dash
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((DocumentViewModel) obj);
+            return Equals((DocumentViewModel)obj);
         }
 
         public override string ToString()
@@ -233,34 +218,19 @@ namespace Dash
             return LayoutDocument.GetHashCode();
         }
 
-        public void UpdateActualSize(double actualwidth, double actualheight)
+        public void UpdateActualSize(double actualwidth, double actualheight)      
         {
             _actualWidth = actualwidth;
             _actualHeight = actualheight;
             LayoutDocument.SetField(KeyStore.ActualWidthKey, new NumberController(_actualWidth), true);
             LayoutDocument.SetField(KeyStore.ActualHeightKey, new NumberController(_actualHeight), true);
-
         }
 
         public Rect Bounds => new TranslateTransform
         {
             X = XPos,
-            Y = YPos
-        }.TransformBounds(new Rect(0, 0, _actualWidth, _actualHeight));
-
-        public void TransformDelta(TransformGroupData delta)
-        {
-            var currentTranslate = Position;
-            var currentScaleAmount = Scale;
-
-            var deltaTranslate = delta.Translate;
-            var deltaScaleAmount = delta.ScaleAmount;
-            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
-            var translate = new Point(currentTranslate.X + deltaTranslate.X * scaleAmount.X, currentTranslate.Y + deltaTranslate.Y * scaleAmount.Y);
-
-            Position = translate;
-            Scale = scaleAmount;
-        }
+            Y = YPos,
+        }.TransformBounds(new Rect(0, 0, _actualWidth * Scale.X, _actualHeight * Scale.Y));
 
         public Brush BackgroundBrush
         {
@@ -276,8 +246,6 @@ namespace Dash
                 }
             }
         }
-
-        public bool GroupOnCreate = false;
 
         public Brush BorderBrush
         {
@@ -308,7 +276,7 @@ namespace Dash
                 _content = value;
             }
         }
-        
+
         private double _actualWidth;
         private double _actualHeight;
 
@@ -323,12 +291,22 @@ namespace Dash
 
         public bool Undecorated { get; set; }
 
+        bool _decorationState = false;
+        public bool DecorationState
+        {
+            get => _decorationState;
+            set => SetProperty(ref _decorationState, value);
+        }
+
         // == CONSTRUCTOR ==
         public DocumentViewModel(DocumentController documentController, Context context = null) : base()
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
-            BorderBrush = new SolidColorBrush(Colors.LightGray);
 
+            InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
+            InteractiveManipulationScale = Scale;
+
+            BorderBrush = new SolidColorBrush(Colors.LightGray);
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
 
@@ -409,37 +387,10 @@ namespace Dash
             UpdateContent();
             LayoutChanged?.Invoke(this, context);
 
-            ListenToHeightField();
-            ListenToWidthField();
-
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(LayoutDocument);
             Context = newContext;
-        }
-
-        private void ListenToWidthField()
-        {
-            var widthField = LayoutDocument.GetWidthField();
-            if (widthField != null)
-            {
-                widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
-                Width = widthField.Data;
-            }
-            else
-                Width = double.NaN;
-        }
-
-        private void ListenToHeightField()
-        {
-            var heightField = LayoutDocument.GetHeightField();
-            if (heightField != null)
-            {
-                heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
-                Height = heightField.Data;
-            }
-            else
-                Height = double.NaN;
         }
 
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)

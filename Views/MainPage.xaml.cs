@@ -356,22 +356,17 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox ))
             {
-                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition.X - Window.Current.Bounds.X;
-                var y = pointerPosition.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
-                if (topCollection == null)
+                if (topCollection != null)
                 {
-                    return;
+                    // add tabitemviewmodels that directs user to documentviews within the current collection 
+
+                    TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                    TabMenu.Instance?.AddGoToTabItems();
                 }
-
-                // add tabitemviewmodels that directs user to documentviews within the current collection 
-
-                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu
@@ -380,14 +375,22 @@ namespace Dash
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
-
+            var coll = ((xMainDocView.DataContext as DocumentViewModel).Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (coll != null)
+            {
+                if (e.VirtualKey == VirtualKey.Delete)
+                {
+                    foreach (var d in coll.SelectedDocs)
+                        d.DeleteDocument();
+                }
+            }
+            
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (e.PointerDeviceType != PointerDeviceType.Touch) return;
-            var pointerPosition = e.GetPosition(this);
-            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
+            var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
             if (topCollection == null)
