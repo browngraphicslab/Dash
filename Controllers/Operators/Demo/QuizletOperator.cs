@@ -17,6 +17,8 @@ namespace Dash
         {
         }
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new QuizletOperatorBox(rfmc);
+
         //Input keys
         public static readonly KeyController TermKey = new KeyController("CC94FF84-09E5-4DB8-B962-C5ECF8EE9AE9", "Answer");
         public static readonly KeyController ImageKey = new KeyController("B3A5C8E3-6A24-4E4C-BAAE-BE1F9A7BE7C4", "Image Prompt");

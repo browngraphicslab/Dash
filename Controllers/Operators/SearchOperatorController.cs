@@ -17,6 +17,8 @@ namespace Dash
         {
         }
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
+
         //Input keys
         public static readonly KeyController TextKey = new KeyController("69DDED67-894A-41F0-81B2-FF6A8357B0DA", /*"Search Text"*/"");
         public static readonly KeyController InputCollection = new KeyController("4ECAFE47-0E2D-4A04-B24D-42C6668A4962", /*"Input"*/"");

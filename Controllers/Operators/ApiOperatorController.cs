@@ -75,6 +75,9 @@ namespace Dash
             [OutputKey] = TypeInfo.Document
         };
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =
+            rfmc => new ApiOperatorBox(rfmc);
+
         public ObservableDictionary<KeyController, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
         public ObservableDictionary<KeyController, ApiParameter> Headers { get; } = new ObservableDictionary<KeyController, ApiParameter>();
         public ObservableDictionary<KeyController, ApiParameter> AuthParameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();

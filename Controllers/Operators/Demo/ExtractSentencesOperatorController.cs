@@ -27,6 +27,8 @@ namespace Dash
         public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
         public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =  rfmc => new ExtractSentencesOperatorBox(rfmc);
+
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
             {

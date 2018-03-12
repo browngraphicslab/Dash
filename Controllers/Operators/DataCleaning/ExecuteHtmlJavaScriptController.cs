@@ -28,6 +28,8 @@ namespace Dash
         public static readonly KeyController OutputDocumentKey =
             new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
+
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()

@@ -41,6 +41,12 @@ namespace Dash
         public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
 
         /// <summary>
+        /// Function which provides an optional layout for the operator no need to override this unless you
+        ///  are using a custom layout
+        /// </summary>
+        public virtual Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = null;
+
+        /// <summary>
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
