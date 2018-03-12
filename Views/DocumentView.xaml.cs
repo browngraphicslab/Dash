@@ -430,11 +430,12 @@ namespace Dash
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
-            // TODO remove this arbtirary styling here
-            if (this == MainPage.Instance.MainDocView) // special styling for the Main collection
-            {
-                view.xOuterGrid.BorderThickness = new Thickness(0);
-            }
+            if (this != MainPage.Instance.MainDocView) return;
+            view.xOuterGrid.BorderThickness = new Thickness(0);
+            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
