@@ -45,9 +45,12 @@ namespace Dash
         {
         }
 
-        public ExtractKeywordsOperatorController() : base(new OperatorModel(OperatorType.ExtractKeywords))
+        public ExtractKeywordsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("8EA60017-CF8E-4885-B712-7C38906C299F", "Keywords");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -99,7 +102,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new ExtractKeywordsOperatorController(new OperatorModel(OperatorType.ExtractKeywords));
+            return new ExtractKeywordsOperatorController();
         }
     }
 }

@@ -14,12 +14,15 @@ namespace Dash
 
         public static readonly KeyController OutputDocumentKey = new KeyController("114C5C68-7A02-491D-8B52-43A27EC63BE4", "OutputDocument");
 
-        public DocumentAppendOperatorController() : base(new OperatorModel(OperatorType.DocumentAppend))
+        public DocumentAppendOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
         public DocumentAppendOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("4DAD9DE7-DAF8-4EB6-8EA4-8AA5F8D00121", "Document Append");
 
         public override FieldControllerBase GetDefaultController()
         {

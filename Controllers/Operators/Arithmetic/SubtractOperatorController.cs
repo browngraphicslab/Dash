@@ -9,9 +9,12 @@ namespace Dash
         public SubtractOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public SubtractOperatorController() : base(new OperatorModel(OperatorType.Subtract))
+        public SubtractOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D98C45BF-ADD3-4832-A627-ED7DDBB3B04E", "Subtract");
 
         //Input keys
         public static readonly KeyController AKey = new KeyController("AE143AA5-4959-4B17-9FB4-B7BAB045366F", "A");

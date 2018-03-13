@@ -48,12 +48,6 @@ namespace Dash
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); 
 
         /// <summary>
-        /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
-        /// // in case the collection is added to a compoundoperatorview
-        /// </summary>
-        public CompoundOperatorEditor CompoundFreeform   => this.GetFirstAncestorOfType<CompoundOperatorEditor>(); 
-
-        /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();

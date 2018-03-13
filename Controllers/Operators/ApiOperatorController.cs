@@ -43,7 +43,7 @@ namespace Dash
         public static readonly KeyController Test2Key = new KeyController("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
         public static readonly KeyController Test3Key = new KeyController("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
 
-        public ApiOperatorController() : base(new OperatorModel(OperatorType.Api))
+        public ApiOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -54,6 +54,9 @@ namespace Dash
         private ApiOperatorController(ApiOperatorController copy) : this()
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("F0A2B96E-65D9-4E1D-9D3A-2660C7C5C316", "Api");
 
         public override FieldControllerBase GetDefaultController()
         {

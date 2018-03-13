@@ -14,7 +14,7 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
 
-        public ZipOperatorController() : base(new OperatorModel(OperatorType.Zip))
+        public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -31,6 +31,9 @@ namespace Dash
         {
             [OutputKey] = TypeInfo.List
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("FA39D712-E1AA-4740-8CC9-C3201708A1F5", "Zip");
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 

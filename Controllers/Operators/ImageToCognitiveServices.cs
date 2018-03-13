@@ -19,9 +19,12 @@ namespace Dash.Controllers.Operators
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public ImageToCognitiveServices() : base(new OperatorModel(OperatorType.ImageRecognition))
+        public ImageToCognitiveServices() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("6910154D-3B22-4C3B-824A-D3E03F02B1E9", "Image Cog Services");
 
         public static readonly KeyController ImageKey = new KeyController("2HGGH89D-SH43-SDGF-25HD-DAFI9E8HF8HF", "Image");
         public static readonly KeyController DescriptorKey = new KeyController("HL3H9R8K-634H-FDHG-4HWH-RG5IORGPHS33", "Descriptor");

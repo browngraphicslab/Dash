@@ -42,13 +42,16 @@ namespace Dash
                 [OutputCollection] = TypeInfo.List
             };
 
-        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.SentenceAnalyzer))
+        public ExtractSentencesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
         public ExtractSentencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D9EE3561-0A30-4DA9-B11A-859CABCF237B", "Sentence Analyzer");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {

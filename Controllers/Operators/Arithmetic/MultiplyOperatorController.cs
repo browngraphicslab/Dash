@@ -8,7 +8,7 @@ namespace Dash
     public class MultiplyOperatorController : OperatorController
     {
 
-        public MultiplyOperatorController() : base(new OperatorModel(OperatorType.Multiply))
+        public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
 
         }
@@ -16,6 +16,9 @@ namespace Dash
         public MultiplyOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("518988DD-4C30-4AE6-AF7F-3532B7A71C7B", "Multiply");
 
         //Input keys
         public static readonly KeyController AKey = new KeyController("D0FF0175-F158-43CC-B2A3-CE7266BBA062", "A");

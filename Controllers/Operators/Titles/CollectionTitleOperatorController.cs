@@ -13,9 +13,12 @@ namespace Dash
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public CollectionTitleOperatorController() : base(new OperatorModel(OperatorType.CollectionTitle))
+        public CollectionTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE", "Collection Title");
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
@@ -63,9 +66,13 @@ namespace Dash
         public GroupTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public GroupTitleOperatorController() : base(new OperatorModel(OperatorType.GroupTitle))
+        public GroupTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("904B0A69-3A1D-4E58-92A4-B472EEACA8FC", "Group Title");
+
         public override FieldControllerBase GetDefaultController()
         {
             return new GroupTitleOperatorController();

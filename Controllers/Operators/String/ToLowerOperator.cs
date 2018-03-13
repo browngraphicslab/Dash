@@ -13,7 +13,7 @@ namespace Dash
         {
         }
 
-        public ToLowerOperator() : base(new OperatorModel(OperatorType.ToLower))
+        public ToLowerOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
 
         }
@@ -26,6 +26,10 @@ namespace Dash
         // output keys
         public static readonly KeyController OutputStringKey = new KeyController("C13CF242-F8CF-405E-BF85-6BE27A7E09BB", "Output String");
 
+
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("502F54E3-D2AF-46FF-91E9-42B9A00C7E9D", "ToLower");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {

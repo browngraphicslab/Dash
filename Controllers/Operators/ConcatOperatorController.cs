@@ -15,11 +15,14 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
 
-        public ConcatOperatorController() : base(new OperatorModel(OperatorType.Concat)) { }
+        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("F69DF9CF-5B51-482D-AE1E-40B3266930CB", "Concat");
 
         public override FieldControllerBase GetDefaultController()
         {

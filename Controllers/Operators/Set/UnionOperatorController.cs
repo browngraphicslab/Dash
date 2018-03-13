@@ -30,9 +30,12 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public UnionOperatorController() : base(new OperatorModel(OperatorType.Union))
+        public UnionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("CAEA115E-BE19-4796-B225-51AC4122C168", "Union");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {

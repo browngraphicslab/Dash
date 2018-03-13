@@ -13,9 +13,12 @@ namespace Dash
         {
         }
 
-        public SearchOperatorController() : base(new OperatorModel(OperatorType.Search))
+        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("EA5FD353-F99A-4F99-B0BC-5D2C88A51019", "Search");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
 

@@ -131,7 +131,6 @@
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
-    <Compile Include="Controllers\Operators\CompoundOperatorController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
@@ -141,7 +140,6 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\OperatorModels\CompoundOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
@@ -413,9 +411,6 @@
     <Compile Include="Converters\BezierConverter.cs" />
     <Compile Include="Views\Operators\ApiView.xaml.cs">
       <DependentUpon>ApiView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Operators\CompoundOperatorEditor.xaml.cs">
-      <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\DragOutDocIcon.xaml.cs">
       <DependentUpon>DragOutDocIcon.xaml</DependentUpon>
@@ -900,10 +895,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\ApiView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Operators\CompoundOperatorEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
