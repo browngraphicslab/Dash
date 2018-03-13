@@ -39,6 +39,8 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl
     {
+        public static Dash.CollectionView Instance { get; private set; }
+
         public int MaxZ { get; set; }
         Binding _visibilityBinding = null;
 

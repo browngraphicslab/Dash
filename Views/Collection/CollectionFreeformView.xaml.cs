@@ -67,10 +67,11 @@ namespace Dash
         public Dictionary<FieldReference, Path> RefToLine = new Dictionary<FieldReference, Path>();
         public Dictionary<Path, BezierConverter> LineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
-        private Canvas itemsPanelCanvas;
+
+        public Canvas itemsPanelCanvas;
 
         #endregion
-
+        
 
         public ManipulationControls ManipulationControls;
 
@@ -106,7 +107,6 @@ namespace Dash
 
         public CollectionFreeformView()
         {
-
             InitializeComponent();
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;

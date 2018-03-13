@@ -14,7 +14,8 @@
         <Ellipse x:Name="OperatorEllipse"  Style="{StaticResource xFieldLinkHandle}"
                  CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" 
                  PointerEntered="OperatorEllipse_OnPointerEntered"
-                 PointerExited="OperatorEllipse_OnPointerExited"/>
+                 PointerExited="OperatorEllipse_OnPointerExited"
+                 />
     </Border>
 
 </UserControl>

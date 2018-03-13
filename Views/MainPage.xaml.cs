@@ -155,16 +155,30 @@ namespace Dash
 
         public void AddInfoDot(DocumentViewModel dvm)
         {
-            var infod = new InfoDot();
-            infod.Margin = new Thickness(dvm.XPos + dvm.Width, dvm.YPos + dvm.Height, 0, 0); //dots are appearing to bottom left
+            
+         //   infod.Margin = new Thickness(dvm.XPos + dvm.Width, dvm.YPos + dvm.Height, 0, 0); //dots are appearing to bottom left
 
+            //TODO: GET CORD FROM MATRIX TRANS IN COLL FREEFORM VIEW
 
             //TODO: set DataContext to dvm
-            infod.DataContext = dvm;
-            Canvas.SetLeft(infod, dvm.XPos);
-            Canvas.SetTop(infod, dvm.YPos);
-            xCanvas.Children.Add(infod);
+            //This only works if I add binding to XAML
+            //infod.DataContext = dvm;
 
+            //change var back to private in ColFreView if not work and delete Instance
+            //this doesn't work for nesting
+            CollectionFreeformView freeview = (CollectionFreeformView)this.GetMainCollectionView().CurrentView;
+            if (freeview != null)
+            {
+                MatrixTransform _transBeAnim = freeview.itemsPanelCanvas?.RenderTransform as MatrixTransform;
+                Matrix m = _transBeAnim.Matrix;
+                //Matrix has zoomX, 0, 0, zoomY, posX, posY
+
+                var infod = new InfoDot();
+                Canvas.SetLeft(infod, (dvm.XPos + m.OffsetX)*m.M11);
+                Canvas.SetTop(infod, (dvm.YPos + m.OffsetY)*m.M22);
+                //can set event in Doc View to change pos when moved
+                xCanvas.Children.Add(infod);
+            }
 
         }
 
