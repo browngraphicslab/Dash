@@ -13,9 +13,8 @@
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
           BorderBrush="{ThemeResource WindowsBlue}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="40" /> <!--empty header space-->
-            <RowDefinition Height="7*" /> <!--column values-->
-            <RowDefinition Height="*" /> <!--random space-->
+            <RowDefinition Height="20" /> <!--empty header space-->
+            <RowDefinition Height="*" /> <!--column values-->
             <RowDefinition Height="Auto" /> <!--bottom button-->
         </Grid.RowDefinitions>
 
@@ -24,12 +23,13 @@
         <Grid Grid.Row="0">
             
             <!--header-->
-            <Rectangle VerticalAlignment="Stretch" Width="285" HorizontalAlignment="Stretch"
+            <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
-            <TextBlock Foreground="White" FontSize="20"  Margin="0,-2,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
+            <TextBlock Foreground="White" FontSize="12"  Margin="0,-6,0,0" FontWeight="Medium" TextAlignment="Center">Fields</TextBlock>
             
             <!--close button-->
-            <Button FontSize="18" Margin="265,0,0,0" Foreground="White" Background="Transparent"
+            <Button FontSize="18" Foreground="White" Background="Transparent" Margin="0 -2 4 0"
+                    HorizontalAlignment="Right"
                     Tapped="CloseButton_Tapped">
                 X
             </Button>
@@ -37,7 +37,7 @@
 
         
         <!--scrolling fields-->
-        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="500" VerticalAlignment="Top">
             <!--column values-->
             <ListView x:Name="xKeyValueListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}"
@@ -60,8 +60,8 @@
                         <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}" />
-                                <ColumnDefinition Width="200" MaxWidth="100" />
-                                <ColumnDefinition Width="145" />
+                                <ColumnDefinition Width="*" MinWidth="30" />
+                                <ColumnDefinition Width="4*" />
                                 <ColumnDefinition Width="{x:Bind TypeColumnWidth}" />
                                 <ColumnDefinition Width="25" />
                             </Grid.ColumnDefinitions>
@@ -75,7 +75,7 @@
                                            VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                             </ScrollViewer>
                             <ScrollViewer Grid.Column="2" MaxWidth="500" VerticalAlignment="Center"
-                                          HorizontalScrollMode="Enabled" MaxHeight="60"
+                                          HorizontalScrollMode="Enabled" MaxHeight="100"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                                 <Border Grid.Column="2" MaxWidth="500" VerticalAlignment="Center"
                                         HorizontalAlignment="Stretch"
@@ -97,36 +97,29 @@
         </ScrollViewer>
 
         <!--add field ui-->
-        <Grid Grid.Row="3" Background="AliceBlue">
-            <Button x:Name="xCreateFieldButton" Height="40" Background="SteelBlue" Foreground="White"
-                    HorizontalAlignment="Stretch" Click="ShowCreateFieldOptions">
+        <Grid Grid.Row="2" Background="AliceBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Button x:Name="xCreateFieldButton" VerticalAlignment="Stretch" Background="SteelBlue" Foreground="White" HorizontalAlignment="Stretch" Click="ShowCreateFieldOptions">
                 ADD FIELD
             </Button>
-            <StackPanel x:Name="xNewFieldPanel" HorizontalAlignment="Center" Background="Transparent"
-                        BorderBrush="DimGray" Visibility="Collapsed">
-                <Rectangle HorizontalAlignment="Stretch" Width="282" Height="1" Fill="LightGray" />
-                <TextBlock TextAlignment="Center" Margin="0,10,0,0" FontWeight="Medium">NEW FIELD</TextBlock>
-                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Center" Margin="5,10,5,0" Height="35" Width="270"
-                           KeyUp="XTypeComboBox_OnKeyUp"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBox x:Name="xNewKeyField" Width="90" Height="35"
-                             Margin="5,10,5,10" HorizontalAlignment="Stretch" PlaceholderText="Key"
-                             Foreground="{StaticResource MainText}" KeyUp="XNewKeyField_OnKeyUp"/>
-                    <TextBox x:Name="xNewValueField" Width="175" Height="35" PlaceholderText="Value"
-                             Foreground="{StaticResource MainText}" KeyUp="XNewValueField_OnKeyUp" />
-                </StackPanel>
-                <Grid HorizontalAlignment="Stretch" Width="270">
-                    <StackPanel>
-                        <Button Height="35" Margin="0,10,0,5" Background="SteelBlue" Foreground="White"
-                                HorizontalAlignment="Stretch" x:Name="xAddButton" Tapped="AddField_Tapped" KeyUp="XAddButton_OnKeyUp">
-                            ADD
-                        </Button>
-                        <Button Height="35" Margin="0,5,0,20" Background="SteelBlue" Foreground="White"
-                                HorizontalAlignment="Stretch" x:Name="xCancelButton" Tapped="CancelField_Tapped" KeyUp="XAddButton_OnKeyUp">
-                            CANCEL
-                        </Button>
-                    </StackPanel>
-
+            <StackPanel x:Name="xNewFieldPanel" HorizontalAlignment="Stretch" Background="Transparent" BorderBrush="DimGray" Visibility="Collapsed">
+                <Rectangle HorizontalAlignment="Stretch"  Height="1" Fill="LightGray" />
+                <TextBlock TextAlignment="Center" FontWeight="Medium">NEW FIELD</TextBlock>
+                <ComboBox x:Name="xTypeComboBox" HorizontalAlignment="Stretch" Height="35" MaxWidth="100" KeyUp="XTypeComboBox_OnKeyUp"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="xNewKeyField" Height="35" Grid.Column="0" HorizontalAlignment="Stretch" PlaceholderText="Key" Foreground="{StaticResource MainText}" KeyUp="XNewKeyField_OnKeyUp"/>
+                    <TextBox x:Name="xNewValueField"  Height="35" PlaceholderText="Value" Grid.Column="1" Foreground="{StaticResource MainText}" KeyUp="XNewValueField_OnKeyUp" />
+                </Grid>
+                <Grid Height="35" HorizontalAlignment="Center" Width="200">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Background="SteelBlue" Content="Add" Foreground="White" HorizontalAlignment="Stretch" Padding="3" Margin="0 0 5 0" Grid.Column="0" x:Name="xAddButton" Tapped="AddField_Tapped" KeyUp="XAddButton_OnKeyUp"/>
+                    <Button Background="SteelBlue" Content="Cancel" Foreground="White" HorizontalAlignment="Stretch" Padding="3" Margin="5 0 0 0" Grid.Column="1" x:Name="xCancelButton" Tapped="CancelField_Tapped" KeyUp="XAddButton_OnKeyUp"/>
                 </Grid>
             </StackPanel>
         </Grid>

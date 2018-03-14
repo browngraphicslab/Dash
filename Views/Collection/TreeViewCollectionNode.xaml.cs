@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -105,6 +106,17 @@ namespace Dash
                                                                                    dm.GetDraggedDocument().GetPositionField().Data.Y-start.Y), true)).ToList());
                 }
             }
+        }
+
+        private void TreeViewNode_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            }
+            else
+                e.AcceptedOperation = DataPackageOperation.None;
+            e.Handled = true;
         }
     }
 }

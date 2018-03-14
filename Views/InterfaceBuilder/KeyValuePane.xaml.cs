@@ -335,11 +335,11 @@ namespace Dash
             {
                 MaxHeight = 500,
                 MaxWidth = 500,
+                TextWrapping=Windows.UI.Xaml.TextWrapping.Wrap,
                 Text = srcText,
-                AcceptsReturn = false //!srcText.Contains("\r") // TODO make this a better heuristic
+                AcceptsReturn = true //!srcText.Contains("\r") // TODO make this a better heuristic
             };
-            
-            _tb.KeyDown += _tb_KeyDown;
+            _tb.BeforeTextChanging += _tb_BeforeTextChanging;
             _tb.LostFocus += _tb_LostFocus;
 
             //add textbox graphically
@@ -353,31 +353,31 @@ namespace Dash
 
         }
 
-        private void _tb_LostFocus(object sender, RoutedEventArgs e)
-        {
-            RemoveEditingTextBox();
-        }
-
-        private void _tb_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void _tb_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
             var shiftState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
             var enterState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Enter).HasFlag(CoreVirtualKeyStates.Down);
 
-            Debug.WriteLine($"{enterState}, {shiftState}");
-            if (enterState && shiftState)
+            if (shiftState && enterState)
             {
                 var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
                     _selectedKV.Key, new Context(_dataContextDocument));
                 FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
                 //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
                 RemoveEditingTextBox();
+                args.Cancel = true;
             }
+        }
+
+        private void _tb_LostFocus(object sender, RoutedEventArgs e)
+        {
+            RemoveEditingTextBox();
         }
 
         private void RemoveEditingTextBox()
         {
             _tb.LostFocus -= _tb_LostFocus;
-            _tb.KeyDown -= _tb_KeyDown;
+            _tb.BeforeTextChanging -= _tb_BeforeTextChanging;
             _selectedKV = null;
             _editKey = false;
             MainPage.Instance.xCanvas.Children.Remove(_tb);
