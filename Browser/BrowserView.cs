@@ -116,7 +116,7 @@ namespace Dash
                     await HandleIncomingMessage(read);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _initted = false;
                 _socket = null;
