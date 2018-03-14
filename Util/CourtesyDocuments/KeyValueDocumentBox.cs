@@ -36,7 +36,8 @@ namespace Dash
                 DataContext = documentfieldModelController
             };
             border.Child = keyValuePane;
-            
+            SetupBindings(border, docController, context);
+
             return border;
         }
 
