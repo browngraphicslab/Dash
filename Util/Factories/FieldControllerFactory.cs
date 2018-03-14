@@ -232,9 +232,6 @@ namespace Dash
                 case OperatorType.ExecuteHtmlJavaScript:
                     controller = new ExecuteHtmlJavaScriptController(model);
                     break;
-                case OperatorType.ImageToColorPalette:
-                    controller = new ImageToColorPalette(model);
-                    break;
                 case OperatorType.CollectionMap:
                     break;
                 case OperatorType.Quizlet:
