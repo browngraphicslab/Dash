@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -19,7 +20,10 @@ namespace Dash
             var operatorTypes = typeof(OperatorController).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(OperatorController)));
             foreach (var operatorType in operatorTypes)
             {
-                AddOperator(() => (OperatorController)Activator.CreateInstance(operatorType), operatorType.Name);
+                var title = ((KeyController) operatorType
+                    .GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Name;
+
+                AddOperator(() => (OperatorController)Activator.CreateInstance(operatorType), title);
             }
         }
 
