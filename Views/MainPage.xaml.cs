@@ -290,7 +290,7 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
@@ -319,7 +319,7 @@ namespace Dash
         }
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
-            if (collection?.ViewModel?.DocumentViewModels == null)
+            if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }

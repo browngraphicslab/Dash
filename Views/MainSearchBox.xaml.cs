@@ -113,7 +113,7 @@ namespace Dash
                             MainPage.Instance.SetCurrentWorkspaceAndNavigateToDocument(resultVM.DocumentCollection, resultVM.ViewDocument);
                         }
                     }
-                    MainPage.Instance.NavigateToDocumentInWorkspace(resultVM.ViewDocument);
+                    MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(resultVM.ViewDocument);
                 }
             }
             else

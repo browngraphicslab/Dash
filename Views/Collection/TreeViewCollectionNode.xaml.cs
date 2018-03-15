@@ -106,6 +106,7 @@ namespace Dash
                                                                                    dm.GetDraggedDocument().GetPositionField().Data.Y-start.Y), true)).ToList());
                 }
             }
+            e.Handled = true;
         }
 
         private void TreeViewNode_DragOver(object sender, DragEventArgs e)
