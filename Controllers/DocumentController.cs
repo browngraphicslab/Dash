@@ -391,7 +391,7 @@ namespace Dash
                         else SetField(key, new TextController(fieldStr), true, false);
                     }
                 }
-                else
+                else if (lookupOperator(strings[0]) != null)
                 {
                     var opModel = lookupOperator(strings[0]);
                     var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);

@@ -696,9 +696,7 @@ namespace Dash
 
             foreach (var nestedDocument in overlappedViews)
             {
-                CollectionView nestedCollection = null;
-                if (nestedDocument.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-                    nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
+                var nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
                 if (nestedCollection != null && !nestedCollection.GetAncestors().ToList().Contains(this))
                 {
                     if (!nestedCollection.Equals(collection))
@@ -798,5 +796,53 @@ namespace Dash
 
         #endregion
 
+        private void This_Drop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel.DraggedKey != null)
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+                var newField = dragModel.GetDropDocument(new Point());
+                newField.SetField(KeyStore.HeightFieldKey, new NumberController(30), true);
+                newField.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
+                var activeLayout = ViewModel.DocumentController?.GetActiveLayout();
+                if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+                {
+                    StackLayout.AddDocument(activeLayout, newField);
+                }
+                else  // no active layout or activeLayout is not a stack -- create a stack
+                {
+                    var oldLayout = activeLayout ?? ViewModel.LayoutDocument.Copy() as DocumentController;
+                    oldLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
+                    oldLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
+                    var docs = new DocumentController[] { newField, oldLayout };
+                    activeLayout = new StackLayout(docs).Document;
+                    activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(ViewModel.Position), true);
+                    activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(ViewModel.Width), true);
+                    activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(ViewModel.Height), true);
+                    ViewModel.LayoutDocument.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
+                }
+
+
+                ViewModel.OnActiveLayoutChanged(new Context(activeLayout));
+                e.Handled = true;
+            }
+        }
+
+        private void This_DragOver(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel.DraggedKey != null)
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+                e.DragUIOverride.IsContentVisible = true;
+
+                e.Handled = true;
+            }
+        }
     }
 }

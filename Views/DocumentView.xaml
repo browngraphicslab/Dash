@@ -10,6 +10,9 @@
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
     d:DesignHeight="400"
+    AllowDrop="True"
+    DragOver="This_DragOver"
+    Drop="This_Drop"
     xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">

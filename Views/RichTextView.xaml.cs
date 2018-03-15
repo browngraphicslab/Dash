@@ -362,9 +362,12 @@ namespace Dash
         /// <param name="e"></param>
         void UnLoaded(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
-            MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
-            DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
+            if (_pressedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
+            if (_releasedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
+            if (_selectedFieldUpdatedHdlr != null)
+                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
             this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated -= _scrollHandler; // bcz: don't know why we need to do this, but the events keep getting generated after 'this' is unloaded
         }
         #endregion
