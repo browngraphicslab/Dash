@@ -61,9 +61,9 @@ namespace Dash.Models.DragModels
             }
             else
             {
-                var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                    .HasFlag(CoreVirtualKeyStates.Down) || ShowViewModel || forceLayoutDoc;
-                return shiftState ? _documentController.GetViewCopy(where) : _documentController.GetKeyValueAlias(where);
+                var shiftState = MainPage.Instance.IsShiftPressed() || ShowViewModel || forceLayoutDoc;
+                var ctrlState = MainPage.Instance.IsCtrlPressed();
+                return ctrlState ? _documentController.GetDataInstance(where): shiftState ? _documentController.GetViewCopy(where) : _documentController.GetKeyValueAlias(where);
             }
         }
     }

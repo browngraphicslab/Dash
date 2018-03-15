@@ -360,9 +360,12 @@ namespace Dash
 
             if (shiftState && enterState)
             {
+                // bcz: make sure we are writing the field to this instance, and not a prototype.
+                //     so we are copying the field in case it came from the prototype.
                 var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
-                    _selectedKV.Key, new Context(_dataContextDocument));
+                    _selectedKV.Key, new Context(_dataContextDocument)).GetCopy();
                 FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
+                _dataContextDocument.SetField(_selectedKV.Key, field, true);
                 //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
                 RemoveEditingTextBox();
                 args.Cancel = true;

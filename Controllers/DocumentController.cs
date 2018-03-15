@@ -989,7 +989,7 @@ namespace Dash
         {
             // TODO this should cause an operator to execute and return the proper value
             var fieldController = GetField(key);
-            context = context ?? new Context();
+            context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
             context.AddDocumentContext(this);
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }

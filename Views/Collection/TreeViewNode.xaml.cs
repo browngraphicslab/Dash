@@ -53,7 +53,6 @@ namespace Dash
         {
             this.InitializeComponent();
         }
-
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -72,6 +71,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
+                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
                     Tag = "TreeViewNode text block binding"
                 };
 
@@ -81,6 +81,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.TwoWay,
+                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };

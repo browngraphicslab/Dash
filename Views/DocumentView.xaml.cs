@@ -822,6 +822,9 @@ namespace Dash
                     activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(ViewModel.Position), true);
                     activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(ViewModel.Width), true);
                     activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(ViewModel.Height), true);
+                    activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    if (!oldLayout.Equals(activeLayout)) // if we copied the viewmodel's layout document, then we copied the DocumentContext which we don't want --- need to reset it here
+                        oldLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     ViewModel.LayoutDocument.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
                 }
 

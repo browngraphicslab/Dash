@@ -160,6 +160,12 @@ namespace Dash
                     new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
                         true);
             }
+            // bcz: shouldn't have to explicitly mask the data field like this, but since it's probably
+            // in a binding, the binding would point to the prototype's field and not get overriden on a change.
+            var dataField = doc.GetDataDocument(null).GetField(KeyStore.DataKey);
+            if (dataField != null)
+                newDoc.GetDataDocument(null).SetField(KeyStore.DataKey, dataField.GetCopy(), true);
+
             return newDoc;
         }
         public static DocumentController GetSameCopy(this DocumentController doc, Point where)
