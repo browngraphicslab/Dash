@@ -809,7 +809,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel.DraggedKey != null)
+            if (dragModel?.DraggedKey != null)
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
@@ -845,18 +845,15 @@ namespace Dash
 
         private void This_DragOver(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.DraggedKey != null)
             {
-                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-                if (dragModel.DraggedKey != null)
-                {
-                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+                e.DragUIOverride.IsContentVisible = true;
 
-                    e.DragUIOverride.IsContentVisible = true;
-
-                    e.Handled = true;
-                }
+                e.Handled = true;
             }
         }
     }

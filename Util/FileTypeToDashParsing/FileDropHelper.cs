@@ -94,6 +94,7 @@ namespace Dash
             // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
+                var CollectionNoteOffset = 250;
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
@@ -112,11 +113,11 @@ namespace Dash
                             // place files in a grid 
                             if (count % 5 == 0)
                             {
-                                yPos += CollectionNote.Offset;
+                                yPos += CollectionNoteOffset;
                                 xPos = 0;
                             }
                             documentController.GetPositionField().Data = new Point(xPos, yPos); 
-                            xPos += CollectionNote.Offset;
+                            xPos += CollectionNoteOffset;
                             count++;
                         }
                     }

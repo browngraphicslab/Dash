@@ -211,9 +211,6 @@ namespace Dash
                     var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        var api = theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data;
-                        if (api == CollectionNote.APISignature)
-                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                         Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
                     }
                     else if (target.StartsWith("http"))
@@ -222,9 +219,6 @@ namespace Dash
                             MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target }) ?? new HtmlNote(target, target, pt).Document;
-                            if (theDoc != null && theDoc.GetPositionField() == null)
-                                theDoc = HtmlNote.CreateLayout(theDoc, new DocumentReferenceController(theDoc.GetId(), KeyStore.DataKey), pt);
                             Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
                         }
                     }
@@ -401,7 +395,7 @@ namespace Dash
                 }
                 else
                 {
-                    theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+                    theDoc = new NoteDocuments.RichTextNote().Document;
                     theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
                 }
             }

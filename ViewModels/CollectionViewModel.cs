@@ -380,7 +380,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
+                    var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -537,13 +537,13 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {

@@ -529,7 +529,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            return new NoteDocuments.RichTextNote().Document;
         }
 
         /// <summary>
