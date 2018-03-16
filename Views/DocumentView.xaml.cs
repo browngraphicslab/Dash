@@ -204,11 +204,8 @@ namespace Dash
                 d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
             });
 
-            //GotFocus += (s, e) => { Debug.WriteLine("focusss"); ViewModel.IsSelected = true; };
-            //LostFocus += (s, e) => { Debug.WriteLine("lostttt"); ViewModel.IsSelected = false; };
-
-            GotFocus += (s, e) => { Debug.WriteLine("focusss"); ViewModel.DataDocument.IsSelected = true; };
-            LostFocus += (s, e) => { Debug.WriteLine("lostttt"); ViewModel.DataDocument.IsSelected = false; };
+            GotFocus += (s, e) => { ViewModel.DataDocument.IsSelected = true; };
+            LostFocus += (s, e) => { ViewModel.DataDocument.IsSelected = false; };
 
             MenuFlyout = xMenuFlyout;
             

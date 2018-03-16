@@ -94,25 +94,15 @@ namespace Dash
                 //    FallbackValue = new SolidColorBrush(Colors.Transparent),
                 //    Mode = BindingMode.OneWay,
                 //    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
-                //    Tag = "TreeViewNode header binding", 
+                //    Tag = "TreeViewNode header binding",
                 //    Converter = new SelectedToColorConverter()
                 //};
                 //XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
 
                 dvm.DataDocument.OnSelectionChanged += (selected) =>
                 {
-                    Debug.WriteLine("trying to highlight");
-                    XHeader.Background = selected ? new SolidColorBrush(Colors.Red) : new SolidColorBrush(Colors.Transparent);
-                }; 
-
-                //var headerBinding = new Binding
-                //{
-                //    Source = dvm,
-                //    Path = new PropertyPath(nameof(dvm.IsSelected)),
-                //    Mode = BindingMode.OneWay,
-                //    Converter = new BoolToBrushConverter()
-                //};
-                //XHeader.SetBinding(Panel.BackgroundProperty, headerBinding);
+                    XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
+                };
 
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
 

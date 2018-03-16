@@ -34,14 +34,6 @@ namespace Dash
         public DocumentController DocumentController { get; set; }
         public DocumentController DataDocument { get => DocumentController.GetDataDocument(); }
 
-        //private bool _isSelected; 
-        //public bool IsSelected { get => _isSelected;
-        //    set {
-        //        SetProperty(ref _isSelected, value);
-        //        OnPropertyChanged();
-        //    }
-        //}
-
         bool _hasTitle;
         public bool HasTitle
         {
