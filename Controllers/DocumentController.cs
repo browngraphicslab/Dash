@@ -23,6 +23,19 @@ namespace Dash
 {
     public class DocumentController : FieldModelController<DocumentModel>
     {
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                OnSelectionChanged?.Invoke(value); 
+            }
+        }
+        public delegate void SelectedChangedHandler(bool value);
+        public event SelectedChangedHandler OnSelectionChanged; 
+
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
 
         public bool HasDelegates

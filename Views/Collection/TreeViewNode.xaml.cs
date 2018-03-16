@@ -52,6 +52,7 @@ namespace Dash
         public TreeViewNode()
         {
             this.InitializeComponent();
+            //XHeader.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;                                                           //TODO get rid of this 
         }
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -86,15 +87,33 @@ namespace Dash
                     Tag = "TreeViewNode text box binding"
                 };
 
-                var headerBinding = new FieldBinding<NumberController>
+                //var headerBinding = new FieldBinding<NumberController>
+                //{
+                //    Document = dvm.DocumentController,
+                //    Key = KeyStore.SelectedKey,
+                //    FallbackValue = new SolidColorBrush(Colors.Transparent),
+                //    Mode = BindingMode.OneWay,
+                //    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
+                //    Tag = "TreeViewNode header binding", 
+                //    Converter = new SelectedToColorConverter()
+                //};
+                //XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
+
+                dvm.DataDocument.OnSelectionChanged += (selected) =>
                 {
-                    Document = dvm.DocumentController,
-                    Key = KeyStore.SelectedKey,
-                    FallbackValue = new SolidColorBrush(Colors.Transparent),
-                    Mode = BindingMode.OneWay,
-                    Converter = new SelectedToColorConverter()
-                };
-                
+                    Debug.WriteLine("trying to highlight");
+                    XHeader.Background = selected ? new SolidColorBrush(Colors.Red) : new SolidColorBrush(Colors.Transparent);
+                }; 
+
+                //var headerBinding = new Binding
+                //{
+                //    Source = dvm,
+                //    Path = new PropertyPath(nameof(dvm.IsSelected)),
+                //    Mode = BindingMode.OneWay,
+                //    Converter = new BoolToBrushConverter()
+                //};
+                //XHeader.SetBinding(Panel.BackgroundProperty, headerBinding);
+
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
 
                 if (collection != null)
@@ -131,7 +150,6 @@ namespace Dash
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
-                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
             }
         }
 
@@ -141,6 +159,7 @@ namespace Dash
             private readonly SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
             public override Brush ConvertDataToXaml(double data, object parameter = null)
             {
+                Debug.WriteLine("data is: " + data); 
                 return data == 0 ? _unselectedBrush : _selectedBrush;
             }
 
