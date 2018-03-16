@@ -204,12 +204,17 @@ namespace Dash
                 d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
             });
 
-            GotFocus += (s, e) => { ViewModel.DataDocument.IsSelected = true; };
-            LostFocus += (s, e) => { ViewModel.DataDocument.IsSelected = false; };
+            GotFocus += (s, e) => { SetSelectionBorder(true); };
+            LostFocus += (s, e) => { SetSelectionBorder(false); };
 
             MenuFlyout = xMenuFlyout;
             
             xMenuFlyout.Opened += XMenuFlyout_Opened;
+        }
+
+        public void SetBorderThickness(int thickness)
+        {
+            xTargetContentGrid.BorderThickness = new Thickness(thickness); 
         }
 
         /// <summary> 
@@ -655,8 +660,8 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            ViewModel.DataDocument.IsSelected = selected;     //indicate them in treeview 
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
@@ -679,8 +684,10 @@ namespace Dash
         }
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+            if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+            {
                 ViewModel.DecorationState = false;
+            }
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {

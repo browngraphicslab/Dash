@@ -426,6 +426,7 @@ namespace Dash
             //TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
             //MyGrid.Children.Add(TreeMenu);
 
+            MainDocView.SetBorderThickness(0); 
         }
 
         public CollectionView GetMainCollectionView()
