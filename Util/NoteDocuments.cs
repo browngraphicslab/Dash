@@ -86,9 +86,7 @@ namespace Dash
 
             DocumentController CreateLayout(CollectionView.CollectionViewType viewType, Point where)
             {
-                var layout = new CollectionBox(getDataReference(_prototypeID), where.X, where.Y, double.NaN, double.NaN).Document;
-                layout.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
-                return layout;
+                return new CollectionBox(getDataReference(_prototypeID), where.X, where.Y, double.NaN, double.NaN, viewType).Document;
             }
 
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : 
