@@ -129,8 +129,6 @@ namespace Dash
             set { SetValue(TextProperty, value); }
         }
         public DocumentController  DataDocument { get; set; }
-        public RichTextController  TargetRTFController { get; set; } = null;
-        public ReferenceController TargetFieldReference { get; set; } = null;
         DocumentView       getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         DocumentController getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
