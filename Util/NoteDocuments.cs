@@ -96,7 +96,7 @@ namespace Dash
                 Document = initSharedLayout(CreateLayout(viewtype, where), dataDocument, new Size(width, height));
 
                 // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
-                Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
+                //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
                 SetDocuments(collectedDocuments);
             }
             public void SetDocuments(List<DocumentController> collectedDocuments)
@@ -121,18 +121,19 @@ namespace Dash
                 {
                     [KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
-                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey )
+                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey ),
+                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController(),
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
-                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-                {
-                    [RichTextTitleOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
-                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
-                }, DocumentType.DefaultType);
+                //var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                //{
+                //    [RichTextTitleOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
+                //    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
+                //}, DocumentType.DefaultType);
 
                 protoDoc.SetField(KeyStore.TitleKey,
-                    new DocumentReferenceController(titleDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+                    new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
 
                 return protoDoc;
             }

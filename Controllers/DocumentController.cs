@@ -605,6 +605,15 @@ namespace Dash
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
+                        var refSender = sender as ReferenceController;
+                        var proto = GetDataDocument(null). GetPrototypeWithFieldKey(reference.FieldKey) ??
+                                    this.GetPrototypeWithFieldKey(reference.FieldKey);
+                        if (!new Context(proto).IsCompatibleWith(c) &&
+                            GetDataDocument(null).GetId() != refSender?.GetDocumentId(null)) 
+                        {
+                            return;
+                        }
+
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
                         // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
@@ -854,14 +863,19 @@ namespace Dash
             {
                 return;
             }
-            if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
+         //   if (context.ContainsAncestorOf(this)) //TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(dargs.OldValue, dargs.NewValue, FieldUpdatedAction.Update, reference,
+                    new DocumentFieldUpdatedEventArgs(dargs.OldValue, dargs.NewValue, FieldUpdatedAction.Update,
+                        reference,
                         dargs.FieldArgs, false), c, true);
             }
+            //else
+            //{
+            //    Debug.WriteLine("");
+            //}
         }
 
         /// <summary>

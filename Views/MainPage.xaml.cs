@@ -273,7 +273,7 @@ namespace Dash
         {
             var dvm = xMainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-            if (coll != null)
+            if (coll != null && document !=  null)
             {
                 return NavigateToDocumentAnimated(coll, null, coll, document);
             }
