@@ -146,13 +146,20 @@ namespace Dash
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
             };
-            ResizeHandleBottomRight.ManipulationCompleted += (s, e) => restorePointerTracking();
-            ResizeHandleBottomRight.PointerReleased += (s, e) => restorePointerTracking();
-            ResizeHandleBottomRight.PointerPressed += (s, e) =>
+
+            var handles = new List<Ellipse>(){ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft,
+                ResizeHandleTopRight};
+
+            foreach (var handle in handles)
             {
-                ManipulationMode = ManipulationModes.None;
-                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            };
+                handle.ManipulationCompleted += (s, e) => restorePointerTracking();
+                handle.PointerReleased += (s, e) => restorePointerTracking();
+                handle.PointerPressed += (s, e) =>
+                {
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                };
+            }
 
             // setup OperatorEllipse 
             OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
