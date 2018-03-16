@@ -334,7 +334,6 @@
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="Util\FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\FontIcons\Attributes.cs" />
     <Compile Include="Util\FontIcons\FontAwesome.cs" />
     <Compile Include="Util\FontIcons\FontAwesomeIcon.cs" />
@@ -459,7 +458,6 @@
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\XampleDBTest.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />

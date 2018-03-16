@@ -96,7 +96,7 @@ namespace Dash
                     {
                         var layout =
                             new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -104,16 +104,14 @@ namespace Dash
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                        //[KeyStore.GroupingKey] = new ListController<DocumentController>()
+                        [KeyStore.DataKey] = new ListController<DocumentController>(),
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
 
-                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
-                //var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
@@ -417,7 +415,7 @@ namespace Dash
             };
 
             //TODO: do we need this if we aren't doing grouping?
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.CollectionKey));
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
             xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu
@@ -471,8 +469,8 @@ namespace Dash
             {
                 docModel.GetPositionField().Data = (Point)where;
             }
-            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
-            DBTest.ResetCycleDetection();
+            var children = MainDocument.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
+           // DBTest.ResetCycleDetection();
             children?.Add(docModel);
             //DBTest.DBDoc.AddChild(docModel);
         }

@@ -50,7 +50,7 @@ namespace Dash
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var dvm = e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) ? e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel : null;
             if (dvm != null)
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.Add(dvm.GetDraggedDocument());
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.GetDraggedDocument());
             e.Handled = true;
         }
 
@@ -58,7 +58,7 @@ namespace Dash
         {
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform);//, "New Workspace " + cvm.CollectionController.Count);
-            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.Add(documentController.Document);
+            ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController.Document);
             
         }
     }

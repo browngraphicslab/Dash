@@ -32,6 +32,10 @@ namespace Dash
             }
             protected DocumentController _prototype;
             protected abstract DocumentController createPrototype(string prototypeID);
+            protected DocumentReferenceController getDataReference(string prototypeID)
+            {
+                return new DocumentReferenceController(prototypeID, KeyStore.DataKey);
+            }
             protected DocumentController makeDataDelegate(FieldControllerBase controller)
             {
                 var dataDocument = _prototype.MakeDelegate();
@@ -62,7 +66,7 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
-                    [KeyStore.CollectionKey] = new ListController<DocumentController>(),
+                    [KeyStore.DataKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                     [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
                 };
@@ -70,7 +74,7 @@ namespace Dash
 
                 var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [CollectionTitleOperatorController.CollectionDocsKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.CollectionKey),
+                    [CollectionTitleOperatorController.CollectionDocsKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
                     [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
                 }, DocumentType.DefaultType);
 
@@ -82,7 +86,7 @@ namespace Dash
 
             DocumentController CreateLayout(CollectionView.CollectionViewType viewType, Point where)
             {
-                var layout = new CollectionBox(new DocumentReferenceController(_prototype.GetId(), KeyStore.CollectionKey), where.X, where.Y, double.NaN, double.NaN).Document;
+                var layout = new CollectionBox(getDataReference(_prototypeID), where.X, where.Y, double.NaN, double.NaN).Document;
                 layout.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
                 return layout;
             }
@@ -90,17 +94,17 @@ namespace Dash
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : 
                 base(_prototypeID)
             {
-                var dataDocument = _prototype.MakeDelegate();
+                var dataDocument = makeDataDelegate(new ListController<DocumentController>());
                 Document = initSharedLayout(CreateLayout(viewtype, where), dataDocument, new Size(width, height));
 
                 // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
-                Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.CollectionKey), true);
+                Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
                 SetDocuments(collectedDocuments);
             }
             public void SetDocuments(List<DocumentController> collectedDocuments)
             {
                 var listOfCollectedDocs = collectedDocuments ?? new List<DocumentController>();
-                Document.GetDataDocument().SetField(KeyStore.CollectionKey, new ListController<DocumentController>(listOfCollectedDocs), true);
+                Document.GetDataDocument().SetField(KeyStore.DataKey, new ListController<DocumentController>(listOfCollectedDocs), true);
 
                 if (listOfCollectedDocs?.Any() == true)
                 {
@@ -137,7 +141,7 @@ namespace Dash
 
             DocumentController CreateLayout(Point where)
             {
-                var richTextLayout = new RichTextBox(new DocumentReferenceController(_prototypeID, KeyStore.DataKey), 0, 0, double.NaN, double.NaN);
+                var richTextLayout = new RichTextBox(getDataReference(_prototypeID), 0, 0, double.NaN, double.NaN);
                 return new StackLayout(new DocumentController[] { richTextLayout.Document }, false, where).Document;
             }
             
@@ -180,7 +184,7 @@ namespace Dash
             
             DocumentController CreateLayout(Point where)
             {
-                var htmlLayout = new WebBox(new DocumentReferenceController(_prototypeID, KeyStore.DataKey), 0, 0, double.NaN, double.NaN);
+                var htmlLayout = new WebBox(getDataReference(_prototypeID), 0, 0, double.NaN, double.NaN);
                 return new StackLayout(new DocumentController[] {htmlLayout.Document }, false, where).Document;
             }
             
@@ -214,7 +218,7 @@ namespace Dash
 
             DocumentController CreateLayout(Point where)
             {
-                return new TextingBox(new DocumentReferenceController(_prototypeID, KeyStore.DataKey), where.X, where.Y, double.NaN, double.NaN).Document;
+                return new TextingBox(getDataReference(_prototypeID), where.X, where.Y, double.NaN, double.NaN).Document;
             }
 
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
