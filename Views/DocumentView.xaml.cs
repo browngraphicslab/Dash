@@ -156,6 +156,7 @@ namespace Dash
                 handle.PointerReleased += (s, e) => restorePointerTracking();
                 handle.PointerPressed += (s, e) =>
                 {
+                    CapturePointer(e.Pointer);
                     ManipulationMode = ManipulationModes.None;
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                 };
@@ -185,6 +186,7 @@ namespace Dash
 
             // setup Title Icon
             xTitleIcon.PointerPressed += (sender, e) =>  {
+                CapturePointer(e.Pointer);
                 ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
                 e.Handled = ManipulationMode == ManipulationModes.All;
             };
@@ -688,7 +690,6 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine("pointer entered");
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
         }
