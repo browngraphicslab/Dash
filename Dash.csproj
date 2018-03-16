@@ -142,6 +142,7 @@
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
+    <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />

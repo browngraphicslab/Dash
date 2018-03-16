@@ -835,6 +835,7 @@
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
         <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
         <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
