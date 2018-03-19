@@ -606,14 +606,14 @@ namespace Dash
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        //var refSender = sender as ReferenceController;
-                        //var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
-                        //            this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        //if (!new Context(proto).IsCompatibleWith(c) &&
-                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
-                        //{
-                        //    return;
-                        //}
+                        var refSender = sender as ReferenceController;
+                        var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                                    this.GetPrototypeWithFieldKey(reference.FieldKey);
+                        if (!new Context(proto).IsCompatibleWith(c) &&
+                            GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
+                        {
+                            return;
+                        }
 
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)

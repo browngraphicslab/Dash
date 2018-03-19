@@ -39,7 +39,7 @@ namespace Dash
             var doclist = stack.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
             doclist.Insert(0, doc);
             // bcz: didn't think I would need to call SetField explicitly but events don't seem to be generated otherwise.
-           // stack.SetField(KeyStore.DataKey, new ListController<DocumentController>(doclist), true);
+            stack.SetField(KeyStore.DataKey, new ListController<DocumentController>(doclist), true);
         }
 
         protected override DocumentController GetLayoutPrototype()
