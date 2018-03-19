@@ -266,7 +266,7 @@ namespace Dash
             {
                 if (_content == null)
                 {
-                    _content = LayoutDocument.MakeViewUI(null);
+                    _content = LayoutDocument.MakeViewUI(new Context(DataDocument));
                     //TODO: get mapping of key --> framework element
                 }
                 return _content;

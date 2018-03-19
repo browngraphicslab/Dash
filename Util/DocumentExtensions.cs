@@ -138,7 +138,7 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
-                activeLayout = GetViewCopy(doc, where);
+                activeLayout = doc.MakeDelegate();
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
             }
