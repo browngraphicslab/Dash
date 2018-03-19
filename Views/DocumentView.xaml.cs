@@ -103,7 +103,11 @@ namespace Dash
 
             Loaded += (sender, e) => {
                 updateBindings(null, null);
-                DataContextChanged += (s, a) => updateBindings(null, null);
+                DataContextChanged += (s, a) =>
+                {
+                    updateBindings(null, null);
+                    ViewModel.DataDocument.OnSelectionChanged += (selected) => { xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent); };
+                }; 
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
@@ -645,7 +649,6 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
         private void KeyValueViewDocument()
         {
@@ -670,7 +673,7 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            //xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
             ViewModel.DataDocument.IsSelected = selected;     //indicate them in treeview 
         }
         /// <summary>
