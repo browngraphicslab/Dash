@@ -153,31 +153,39 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
-        public void AddInfoDot(DocumentViewModel dvm)
+        public void AddInfoDot(DocumentView dv)
         {
-            
-         //   infod.Margin = new Thickness(dvm.XPos + dvm.Width, dvm.YPos + dvm.Height, 0, 0); //dots are appearing to bottom left
+            //TODO: MOVE dot when moved, call this in text/ image dragged commad (manipulation delta)
 
-            //TODO: GET CORD FROM MATRIX TRANS IN COLL FREEFORM VIEW
-
-            //TODO: set DataContext to dvm
-            //This only works if I add binding to XAML
-            //infod.DataContext = dvm;
-
-            //change var back to private in ColFreView if not work and delete Instance
             //this doesn't work for nesting
-            CollectionFreeformView freeview = (CollectionFreeformView)this.GetMainCollectionView().CurrentView;
+            CollectionFreeformView freeview = (CollectionFreeformView)GetMainCollectionView().CurrentView;
             if (freeview != null)
             {
-                MatrixTransform _transBeAnim = freeview.itemsPanelCanvas?.RenderTransform as MatrixTransform;
-                Matrix m = _transBeAnim.Matrix;
+               // MatrixTransform _transBeAnim = freeview.itemsPanelCanvas?.RenderTransform as MatrixTransform;
+               // Matrix m = _transBeAnim.Matrix;
                 //Matrix has zoomX, 0, 0, zoomY, posX, posY
 
                 var infod = new InfoDot();
-                Canvas.SetLeft(infod, (dvm.XPos + m.OffsetX)*m.M11);
-                Canvas.SetTop(infod, (dvm.YPos + m.OffsetY)*m.M22);
+                //the left is moved to the left by the width of the sidebar tab
+               // var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+
+                Point pos = new Point(dv.ViewModel.XPos + dv.ViewModel.Width, dv.ViewModel.YPos);
+                Point mainPagePos = freeview.itemsPanelCanvas.TransformToVisual(xCanvas).TransformPoint(pos);
+                //offset does not account for sidebar
+                Canvas.SetLeft(infod, mainPagePos.X);
+                Canvas.SetTop(infod, mainPagePos.Y);
                 //can set event in Doc View to change pos when moved
                 xCanvas.Children.Add(infod);
+            }
+
+        }
+
+        public void RemoveInfoDot()
+        {
+            var infods = xCanvas.Children.OfType<InfoDot>().ToList();
+            foreach (var infod in infods)
+            {
+                xCanvas.Children.Remove(infod);
             }
 
         }

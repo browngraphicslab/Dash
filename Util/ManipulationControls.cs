@@ -585,6 +585,9 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            //THIS IS USUALLY GRID, BUT SOMETIMES CONTENT PRESENTER
+             Debug.WriteLine(VisualTreeHelper.GetParent((DependencyObject)sender) as UIElement);
+
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
                 !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {

@@ -37,6 +37,7 @@ namespace Dash.Views
 
         private void OperatorEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            //TODO: ORANGE DOT DOESNT WORK
             if (sender is Ellipse ellipse)
             {
                 ellipse.Fill = new SolidColorBrush(Colors.Gold);

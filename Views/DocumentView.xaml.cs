@@ -341,6 +341,8 @@ namespace Dash
             var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
             var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
             if (f1State.HasFlag(CoreVirtualKeyStates.None)) ShowLocalContext(false);
+
+            MainPage.Instance.RemoveInfoDot();
         }
 
 
@@ -356,13 +358,17 @@ namespace Dash
             var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
             if (f1State.HasFlag(CoreVirtualKeyStates.Down)) ShowLocalContext(true);
             if (f2State.HasFlag(CoreVirtualKeyStates.Down)) ShowSelectedContext(); // TODO show selected row
+
+            MainPage.Instance.AddInfoDot(this);
         }
 
 
         public void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             if (sender is DocumentView docView)
+            {
                 CheckForDropOnLink(docView);
+            }
 
             ToggleGroupSelectionBorderColor(false);
         }
@@ -570,8 +576,6 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
-            //TODO: CALL METHOD TO REMOVE ELLIPSE IN MAIN USING DOC VIEW MODEL AND SEEING WHICH ELLIPSE HAS THAT DATA CONTEXT
-
             //Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
@@ -581,9 +585,7 @@ namespace Dash
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
-            //TODO: CALL METHOD TO ADD ELLIPSE IN MAIN
-            MainPage.Instance.AddInfoDot(this.ViewModel);
-
+            
             if (ViewModel != null && !ViewModel.Undecorated)
             {
                 xTitleIcon.Tapped += XTitleIcon_Tapped;
