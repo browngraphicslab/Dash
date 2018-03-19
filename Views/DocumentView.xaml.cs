@@ -40,6 +40,7 @@ namespace Dash
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
+        public bool IsResizing { get; set; }
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -160,6 +161,7 @@ namespace Dash
                     CapturePointer(e.Pointer);
                     ManipulationMode = ManipulationModes.None;
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                    IsResizing = true;
                 };
             }
 
@@ -212,6 +214,7 @@ namespace Dash
             {
                 d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                 d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+                d.IsResizing = false;
             });
 
             MenuFlyout = xMenuFlyout;
