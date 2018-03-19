@@ -86,6 +86,7 @@ namespace Dash
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            //LostFocus += (s, e) => DeselectAll(); 
         }
 
         #region data configuration
@@ -624,7 +625,7 @@ namespace Dash
             SelectionCanvas?.Children?.Clear();
             foreach (var doc in SelectedDocs)
             {
-                doc.SetSelectionBorder(false);
+                doc.SetSelected(false);
             }
             _selectedDocs.Clear();
             _marquee = null;
@@ -639,7 +640,7 @@ namespace Dash
             
             foreach (var doc in SelectedDocs)
             {
-                doc.SetSelectionBorder(true);
+                doc.SetSelected(true);
             }
         }
 

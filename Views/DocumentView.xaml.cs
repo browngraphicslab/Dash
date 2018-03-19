@@ -100,14 +100,13 @@ namespace Dash
                 // TODO: shouldn't this be covered by binding
                 ViewModel?.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
             }
-
+            DataContextChanged += (s, a) =>
+            {
+                ViewModel.DataDocument.OnSelectionChanged += (selected) => { xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent); };
+            };
             Loaded += (sender, e) => {
                 updateBindings(null, null);
-                DataContextChanged += (s, a) =>
-                {
-                    updateBindings(null, null);
-                    ViewModel.DataDocument.OnSelectionChanged += (selected) => { xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent); };
-                }; 
+                DataContextChanged += (s, a) => { updateBindings(null, null); };
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
@@ -218,8 +217,8 @@ namespace Dash
                 d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
             });
 
-            GotFocus += (s, e) => { SetSelectionBorder(true); };
-            LostFocus += (s, e) => { SetSelectionBorder(false); };
+            GotFocus += (s, e) => { SetSelected(true); };
+            LostFocus += (s, e) => { SetSelected(false); };
 
             MenuFlyout = xMenuFlyout;
             
@@ -671,10 +670,9 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public void SetSelected(bool selected)
         {
-            //xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
-            ViewModel.DataDocument.IsSelected = selected;     //indicate them in treeview 
+            ViewModel.DataDocument.IsSelected = selected;     //indicate them in treeview and workspace 
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected

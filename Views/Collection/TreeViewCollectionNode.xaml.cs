@@ -120,17 +120,12 @@ namespace Dash
             e.Handled = true;
         }
 
-        private DocumentController _lastSelected; 
         private void TreeViewNode_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Focus(FocusState.Programmatic); 
-            if (_lastSelected != null)
-                _lastSelected.IsSelected = false;
-
+            Focus(FocusState.Programmatic);
             var dc = (sender as TreeViewNode)?.ViewModel.DataDocument;
             if (dc != null)
-                dc.IsSelected = true;
-            _lastSelected = dc; 
+                dc.IsSelected = !dc.IsSelected;
         }
     }
 }
