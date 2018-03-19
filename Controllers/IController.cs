@@ -66,15 +66,25 @@ namespace Dash
         {
             return Model.Id;
         }
+         
+        public string Id => Model.Id; // TODO: this is the same as above, conslidate
 
-        public string Id => Model.Id;
-
+        /// <summary>
+        /// Pushes local changes in the controller's underlying model to the server.
+        /// </summary>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
         public virtual void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
         {
             error = error ?? ((e) => throw e);
             _serverEndpoint.UpdateDocument(Model, success, error);
         }
 
+        /// <summary>
+        /// Deletes the given controller's underlying model from the server.
+        /// </summary>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
         public virtual void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             error = error ?? ((e) => throw e);
@@ -82,6 +92,7 @@ namespace Dash
         }
 
         /// <summary>
+        /// Saves the given controllers' underlying model on the server.
         /// This should only be called the first time you make the model, otherwise use "UpdateOnServer" to save;
         /// </summary>
         public virtual void SaveOnServer(Action<T> success = null, Action<Exception> error = null)
