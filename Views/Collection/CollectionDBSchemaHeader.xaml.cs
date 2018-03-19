@@ -86,6 +86,7 @@ namespace Dash
         
         private void ResizeHandleManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            _startHeaderDragWidth = ViewModel.Width;
             e.Handled = true;
         }
 
@@ -97,7 +98,6 @@ namespace Dash
         {
             ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
             ViewModel.SchemaView.xHeaderView.CanDragItems = false;
-            _startHeaderDragWidth = ViewModel.Width;
         }
 
         private void ResizeHandle_PointerExited(object sender, PointerRoutedEventArgs e)
