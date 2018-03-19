@@ -933,8 +933,8 @@ namespace Dash
 
 
         /// <summary>
-        ///     Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
-        ///     and returns it if no delegates field existed
+        /// Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
+        /// and returns it if no delegates field existed
         /// </summary>
         /// <returns></returns>
         public ListController<DocumentController> GetDelegates()
@@ -954,6 +954,12 @@ namespace Dash
             return currentDelegates;
         }
 
+        // == FIELD MANAGEMENT ==
+        #region Fields
+        /// <summary>
+        /// Returns the Field at the given KeyController's key. If the field is a Reference to another
+        /// field, follows the regerences up until a non-reference field is found and returns that.
+        /// </summary>
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             // TODO this should cause an operator to execute and return the proper value
@@ -963,11 +969,61 @@ namespace Dash
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 
-        // TODO this should cause an operator to execute and return the proper value
+        /// <summary>
+        /// Returns the Field from stored from key within the given context.
+        /// </summary>
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
-        {
+        {        
+            // TODO: this should cause an operator to execute and return the proper value
             return GetDereferencedField(key, context) as T;
         }
+
+        /// <summary>
+        /// Gets a list of KewValuePairs for all Fields on the given Document.
+        /// </summary>
+        /// <param name="ignorePrototype">if false, will also include fields from prototype document</param>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of KeyValuePairs for all Fields on the given Document that can be displayed visually on the canvas.
+        /// </summary>
+        /// <param name="ignorePrototype">if false, will also include displayable fields from prototype document</param>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+        #endregion
+
+        // == OPERATOR MANAGEMENT ==
+        #region Operator Management
 
         /// <summary>
         /// Returns whether or not the current document should execute.
@@ -977,9 +1033,6 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="updatedKey"></param>
-        /// <returns></returns>
         public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
@@ -1065,7 +1118,6 @@ namespace Dash
             }
 
             // pass the updates along 
-            // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
                 if (needsToExecute)
@@ -1083,41 +1135,10 @@ namespace Dash
             }
             return context;
         }
+        #endregion
 
-        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
-        {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
-            {
-                yield return keyFieldPair;
-            }
-
-            if (!ignorePrototype)
-            {
-                var prototype = GetPrototype();
-                if (prototype != null)
-                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
-                        yield return field;
-            }
-        }
-
-        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
-        {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
-            {
-                if (!keyFieldPair.Key.Name.StartsWith("_"))
-                    yield return keyFieldPair;
-            }
-
-            if (!ignorePrototype)
-            {
-                var prototype = GetPrototype();
-                if (prototype != null)
-                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
-                        yield return field;
-            }
-        }
-
-
+        // == VIEW GENERATION ==
+        #region View Generation
         /// <summary>
         /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
         /// string key of the field and value is the rendered UI element representing the value.
@@ -1149,7 +1170,7 @@ namespace Dash
 #pragma warning restore CS4014
             return panel;
         }
-
+        
         private static FrameworkElement MakeAllViewUIForManyFields(
             List<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
@@ -1300,7 +1321,10 @@ namespace Dash
             return makeAllViewUI(context);
         }
 
+        #endregion
+
         // == OVERRIDEN from ICOLLECTION ==
+        #region ICollection Overrides
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
@@ -1343,8 +1367,10 @@ namespace Dash
             return StringSearchModel.False;
             //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
+        #endregion
 
         // == EVENT MANAGEMENT ==
+        #region Event Management
         /// <summary>
         /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
         /// listeners to <see cref="DocumentFieldUpdated"/>
@@ -1400,5 +1426,6 @@ namespace Dash
                 FromDelegate = fromDelegate;
             }
         }
+        #endregion
     }
 }
