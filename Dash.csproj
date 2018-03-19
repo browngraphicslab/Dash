@@ -1142,10 +1142,10 @@
       <Version>11.0.1</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.Pdf.UWP46">
-      <Version>16.1.0.26</Version>
+      <Version>16.1.0.24</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
-      <Version>16.1.0.26</Version>
+      <Version>16.1.0.24</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0-preview1-26216-02</Version>

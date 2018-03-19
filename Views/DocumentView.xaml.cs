@@ -470,6 +470,31 @@ namespace Dash
         {
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
             {
+/*
+<<<<<<< HEAD
+                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
+                {
+                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+                    var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
+                    var h = ViewModel.Height;
+
+
+                    // Important to pass in bounding box, not just change in w/h because resizing may change to using four corners
+                    var widthBeforeAlignment = Math.Max(w + dx, MinWidth);
+                    var heightBeforeAlignment = Math.Max(h + dy, MinHeight);
+
+                    var bbAfterAlignment = ManipulationControls.ResizeAlign(new Point(), new Point(widthBeforeAlignment - w, heightBeforeAlignment - h));
+
+                    ViewModel.XPos = bbAfterAlignment.X;
+                    ViewModel.YPos = bbAfterAlignment.Y;
+                    ViewModel.Width  = Math.Max(bbAfterAlignment.Width, MinWidth);
+                    ViewModel.Height = Math.Max(bbAfterAlignment.Height, MinHeight);
+
+                    return new Size(ViewModel.Width, ViewModel.Height);
+                }
+                return new Size();
+=======
+*/
                 e.Handled = true;
                 PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
             }
