@@ -10,6 +10,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.HockeyApp;
 
 namespace Dash
 {
@@ -29,6 +30,7 @@ namespace Dash
         /// </summary>
         public App()
         {
+            HockeyClient.Current.Configure("76a6328a3b574146b9d1a171d67f9af2");
             Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;

@@ -23,6 +23,7 @@ namespace Dash
 {
     public class DocumentController : FieldModelController<DocumentModel>
     {
+        public string DEBUGNAME = "";
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
 
         public bool HasDelegates
@@ -391,7 +392,7 @@ namespace Dash
                         else SetField(key, new TextController(fieldStr), true, false);
                     }
                 }
-                else
+                else if (lookupOperator(strings[0]) != null)
                 {
                     var opModel = lookupOperator(strings[0]);
                     var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
@@ -605,6 +606,15 @@ namespace Dash
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
+                        //var refSender = sender as ReferenceController;
+                        //var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                        //            this.GetPrototypeWithFieldKey(reference.FieldKey);
+                        //if (!new Context(proto).IsCompatibleWith(c) &&
+                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
+                        //{
+                        //    return;
+                        //}
+
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
                         // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
@@ -794,7 +804,7 @@ namespace Dash
 
             foreach (var field in array)
             {
-                if (SetFieldHelper(field.Key, field.Value, forceMask))
+                if (field.Key != null && SetFieldHelper(field.Key, field.Value, forceMask))
                 {
                     shouldSave = true;
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
@@ -854,14 +864,19 @@ namespace Dash
             {
                 return;
             }
-            if (context.ContainsAncestorOf(this))//TODO tfs: what was this doing and why do we need to comment it out?
+         //   if (context.ContainsAncestorOf(this)) //TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
                 OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(dargs.OldValue, dargs.NewValue, FieldUpdatedAction.Update, reference,
+                    new DocumentFieldUpdatedEventArgs(dargs.OldValue, dargs.NewValue, FieldUpdatedAction.Update,
+                        reference,
                         dargs.FieldArgs, false), c, true);
             }
+            //else
+            //{
+            //    Debug.WriteLine("");
+            //}
         }
 
         /// <summary>
@@ -989,7 +1004,7 @@ namespace Dash
         {
             // TODO this should cause an operator to execute and return the proper value
             var fieldController = GetField(key);
-            context = context ?? new Context();
+            context = new Context(context); //  context ?? new Context();  // bcz: THIS SHOULD BE SCRUTINIZED.  I don't think it's ever correct for a function to modify the context that's passed in.
             context.AddDocumentContext(this);
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }

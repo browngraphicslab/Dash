@@ -66,11 +66,11 @@ namespace Dash
             get => _parentDocument;
             set
             {
+                if (ParentDocument != null)
+                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                 _parentDocument = value;
                 if (value != null)
                 {
-                    //_parentDocument = _parentDocument.GetDataDocument(null);
-                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
                         ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
@@ -209,8 +209,6 @@ namespace Dash
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
-            if (ParentDocument != null)
-                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = null;
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
@@ -221,8 +219,7 @@ namespace Dash
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
-            if (ViewModel != null)
-                UpdateFields(new Context(ParentDocument));
+            CollectionDBView_DataContextChanged(null, null);
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
@@ -231,18 +228,15 @@ namespace Dash
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
-            if (ParentDocument != null)
-                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateFields(new Context(ParentDocument));
         }
 
 
-        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender,
-            FieldUpdatedEventArgs args, Context context)
+        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel.CollectionKey))
+            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel?.CollectionKey))
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -281,8 +275,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
-                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -384,23 +378,7 @@ namespace Dash
         }
 
         #region DragAndDrop
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("drop event from collection");
-
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
+        
 
         public void SetDropIndicationFill(Brush fill)
         {

@@ -26,24 +26,8 @@ namespace Dash
         private IServiceProvider RegisterServices()
         {
             var serviceCollection = new ServiceCollection();
-
-            // server endpoints
-            serviceCollection.AddSingleton<ServerEndpoint, ServerEndpoint>();
-            serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
-            serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
             serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalEverythingEndpoint>();
-            //serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalModelEndpoint<FieldModel>>();
-           // serviceCollection.AddSingleton<IModelEndpoint<KeyModel>, LocalModelEndpoint<KeyModel>>();
-
-
             serviceCollection.AddTransient<IController<FieldModel>, DocumentController>();
-
-
-            // view model services, these are here because they rely on access to server controllers in their constructors
-            serviceCollection.AddTransient<LoginViewModel>();
-
-            // initialize the connection to the hub, no more proxies can be added after this line
-            //hubConnection.Start().Wait();
             return serviceCollection.BuildServiceProvider();
         }
 

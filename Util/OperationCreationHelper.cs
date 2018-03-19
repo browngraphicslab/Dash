@@ -33,7 +33,6 @@ namespace Dash
             AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
             AddOperator(() => new ImageToCognitiveServices(), "ImageRecognition");
-            AddOperator(() => new ImageToColorPalette(), "Image To Palette");
             AddOperator(() => new SearchOperatorController(), "Search", rfmc => new SearchOperatorBox(rfmc));
             AddOperator(() => new QuizletOperator(), "Quizlet", rfmc => new QuizletOperatorBox(rfmc));
 

@@ -147,7 +147,7 @@ namespace Dash
                 OnFieldModelUpdated(args);
                 if (sender != null) InkUpdated?.Invoke(sender, args);
             }
-            catch (JsonSerializationException e)
+            catch (JsonSerializationException)
             {
                 Debug.Fail("Json failed to parse");
             }

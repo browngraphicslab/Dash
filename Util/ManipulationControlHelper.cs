@@ -62,12 +62,14 @@ namespace Dash
             _eventElement = eventElement;
             _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
             _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-            if (pointer != null)
+            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            if (!shiftState && pointer != null)
                 _eventElement.CapturePointer(pointer);
 
             var nestings = _eventElement.GetAncestorsOfType<CollectionView>().ToList();
             var manipTarget = nestings.Count() < 2 || drillDown ? _eventElement : nestings[nestings.Count - 2];
-            _manipulationDocumentTarget = manipTarget.GetFirstAncestorOfType<DocumentView>();
+            var docAncestors = manipTarget.GetAncestorsOfType<DocumentView>().ToList();
+            _manipulationDocumentTarget = docAncestors[docAncestors.Count > 3 ? 1 : 0];// manipTarget.GetFirstAncestorOfType<DocumentView>();
             freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
             _ancestorDocs = _eventElement.GetAncestorsOfType<DocumentView>().ToList();
             _ancestorDocs.AddRange(_eventElement.GetDescendantsOfType<DocumentView>());
@@ -99,6 +101,8 @@ namespace Dash
         /// <param name="e"></param>
         public void PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            if (e?.Pointer != null)
+                _eventElement.CapturePointer(e.Pointer);
             _numMovements++;
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;

@@ -21,7 +21,7 @@ namespace Dash
             if (refToOp.DereferenceToRoot<OperatorController>(null).IsCompound())
             {
                 DocumentController controller = refToOp.GetDocumentController(null);
-                controller.SetField(KeyStore.CollectionKey, new ListController<DocumentController>(), true);
+                controller.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
             }
         }
 

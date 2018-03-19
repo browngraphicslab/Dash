@@ -266,7 +266,7 @@ namespace Dash
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
-                else if (pair.Key == KeyStore.CollectionKey)
+                else if (pair.Value is ListController<DocumentController>)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
                     var collectionCont = pair.Value as ListController<DocumentController>;
@@ -500,9 +500,9 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController BlankDocWithPosition(Point pos)
+        public static DocumentController BlankDocWithPosition(Point pos, double width=200, double height=200)
         {
-            return new Dash.BackgroundBox(pos.X, pos.Y, 200, 200).Document;
+            //return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
             var docfields = new Dictionary<KeyController, FieldControllerBase>()
             {
                 [KeyStore.TitleKey] = new TextController("Document")
@@ -529,7 +529,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            return new NoteDocuments.RichTextNote().Document;
         }
 
         /// <summary>

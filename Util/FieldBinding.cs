@@ -109,7 +109,9 @@ namespace Dash
         }
         public bool ConvertFromXaml(object xamlData)
         {
-            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? Document.GetField(Key) : Document.GetDereferencedField<TField>(Key, Context);
+            var field = (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceOneLevel || 
+                         FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference) ? 
+                Document.GetField(Key) : Document.GetDereferencedField<TField>(Key, Context);
             if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference)
             {
                 field = field as TField;
@@ -219,7 +221,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context.DocContextList))
+                    if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
@@ -285,7 +287,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context.DocContextList))
+                    if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);

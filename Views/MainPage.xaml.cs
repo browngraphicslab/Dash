@@ -96,7 +96,7 @@ namespace Dash
                     {
                         var layout =
                             new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -104,16 +104,14 @@ namespace Dash
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                        //[KeyStore.GroupingKey] = new ListController<DocumentController>()
+                        [KeyStore.DataKey] = new ListController<DocumentController>(),
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
 
-                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
-                //var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
@@ -275,7 +273,7 @@ namespace Dash
         {
             var dvm = xMainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-            if (coll != null)
+            if (coll != null && document !=  null)
             {
                 return NavigateToDocumentAnimated(coll, null, coll, document);
             }
@@ -290,7 +288,7 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
@@ -319,7 +317,7 @@ namespace Dash
         }
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
-            if (collection?.ViewModel?.DocumentViewModels == null)
+            if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }
@@ -356,22 +354,17 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox ))
             {
-                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition.X - Window.Current.Bounds.X;
-                var y = pointerPosition.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
+                var pos = this.RootPointerPos();
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
-                if (topCollection == null)
+                if (topCollection != null)
                 {
-                    return;
+                    // add tabitemviewmodels that directs user to documentviews within the current collection 
+
+                    TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
+                    TabMenu.Instance?.AddGoToTabItems();
                 }
-
-                // add tabitemviewmodels that directs user to documentviews within the current collection 
-
-                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems();
             }
 
             // TODO propogate the event to the tab menu
@@ -380,14 +373,22 @@ namespace Dash
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
-
+            var coll = ((xMainDocView.DataContext as DocumentViewModel).Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (coll != null)
+            {
+                if (e.VirtualKey == VirtualKey.Delete)
+                {
+                    foreach (var d in coll.SelectedDocs)
+                        d.DeleteDocument();
+                }
+            }
+            
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (e.PointerDeviceType != PointerDeviceType.Touch) return;
-            var pointerPosition = e.GetPosition(this);
-            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
+            var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
                 .FirstOrDefault();
             if (topCollection == null)
@@ -414,7 +415,7 @@ namespace Dash
             };
 
             //TODO: do we need this if we aren't doing grouping?
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.CollectionKey));
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
             xMainTreeView.DataContext = collectionViewModel;
 
             //// add TreeMenu
@@ -468,8 +469,8 @@ namespace Dash
             {
                 docModel.GetPositionField().Data = (Point)where;
             }
-            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
-            DBTest.ResetCycleDetection();
+            var children = MainDocument.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
+           // DBTest.ResetCycleDetection();
             children?.Add(docModel);
             //DBTest.DBDoc.AddChild(docModel);
         }

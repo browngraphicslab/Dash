@@ -29,19 +29,6 @@ namespace Dash
 {
     public static class Actions
     {
-        
-
-        public static void AddSearch(object o, DragEventArgs e)
-        {
-
-            var where = Util.GetCollectionFreeFormPoint(
-                MainPage.Instance.xMainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
-
-                e.GetPosition(MainPage.Instance));
-            MainPage.Instance.AddGenericFilter(o, e);
-        }
-
-
         public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
         {
             MainPage.Instance.AddOperatorsFilter(collection, e);
@@ -63,7 +50,6 @@ namespace Dash
 
             //DBTest.DBDoc.AddChild(newDoc);
         }
-
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
@@ -74,61 +60,6 @@ namespace Dash
             
             collection.ViewModel.AddDocument(newDoc, null);
             //DBTest.DBDoc.AddChild(newDoc);
-        }
-
-        public static async void ImportFields(ICollectionView collection, DragEventArgs e)
-        {
-            FileOpenPicker openPicker = new FileOpenPicker();
-            openPicker.ViewMode = PickerViewMode.List;
-            openPicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            StorageFile storageFile = await openPicker.PickSingleFileAsync();
-            if (storageFile != null)
-            {
-                var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
-                    e.GetPosition(MainPage.Instance));
-                var fields = new Dictionary<KeyController, FieldControllerBase>()
-                {
-                    [KeyStore.ActiveLayoutKey] =
-                        new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document
-                };
-                var doc = new DocumentController(fields, DocumentType.DefaultType);
-                var key = new KeyController(Guid.NewGuid().ToString(), storageFile.DisplayName);
-                var layout = doc.GetActiveLayout();
-                var data =
-                    layout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
-                if (storageFile.IsOfType(StorageItemTypes.Folder))
-                {
-                    //Add collection of new documents?
-                }
-                else if (storageFile.IsOfType(StorageItemTypes.File))
-                {
-                    switch (storageFile.FileType)
-                    {
-                        case ".jpg":
-                        case ".png":
-                            var imgController = new ImageController();
-                            imgController.Data = new Uri(storageFile.Path, UriKind.Absolute);
-                            doc.SetField(key, imgController, true);
-                            var imgBox = new ImageBox(new DocumentReferenceController(doc.GetId(), key));
-                            data?.Add(imgBox.Document);
-                            break;
-                        case ".txt":
-                            var text = await FileIO.ReadTextAsync(storageFile);
-                            var txtController = new TextController(text);
-                            doc.SetField(key, txtController, true);
-                            var txtBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key), 0, 0, 200, 200);
-                            data?.Add(txtBox.Document);
-                            break;
-                        case ".doc":
-                            // TODO implement for more file types
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                collection.ViewModel.AddDocument(doc, null);
-            }
-            
         }
 
         public static void DisplayDocument(CollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
@@ -145,7 +76,6 @@ namespace Dash
             }
             collectionViewModel.AddDocument(docController, null);
         }
-
 
         /// <summary>
         /// Given a function that produces a document controller, visually displays the documents
@@ -178,38 +108,6 @@ namespace Dash
 
         }
 
-
-        public static void AddNote(ICollectionView collectionView, DragEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            AddNote(collectionView, where);
-        }
-
-        public static void AddNote(ICollectionView collectionView, TappedRoutedEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            AddNote(collectionView, where);
-        }
-
-        public static void AddNote(ICollectionView collectionView, Point mainPageCoord)
-        {
-            DocumentController postitNote = new RichTextNote(PostitNote.DocumentType).Document;
-            DisplayDocument(collectionView.ViewModel, postitNote, mainPageCoord);
-        }
-
-        public static async void OpenFilePickerForImport(ICollectionView collectionView, DragEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            FileOpenPicker picker = new FileOpenPicker();
-            picker.ViewMode = PickerViewMode.Thumbnail;
-            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".png");
-            var results = await picker.PickMultipleFilesAsync();
-            // TODO someone finish this method, sorry I had to remove deprecated code that added this to collections - LSM
-        }
-
         #region Ink Commands
 
         public static void SetTouchInput(object obj)
@@ -231,7 +129,6 @@ namespace Dash
         {
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.None;
         }
-
 
         public static void ToggleSelectionMode(object o)
         {
