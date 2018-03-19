@@ -123,6 +123,7 @@
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
