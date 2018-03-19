@@ -1,31 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using Windows.UI;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 using DashShared;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Controllers;
-using Dash.Controllers.Operators;
 using DashShared.Models;
 
 namespace Dash
 {
+    /// <summary>
+    /// Allows interactions with underlying DocumentModel.
+    /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        public string DEBUGNAME = "";
+        // == Special Properties ==
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-
         public bool HasDelegates
         {
             get
@@ -38,57 +31,18 @@ namespace Dash
                 return currentDelegates.Data.Any();
             }
         }
-        public bool HasPrototype
-        {
-            get
-            {
-                return _fields.ContainsKey(KeyStore.PrototypeKey) &&
+        public bool HasPrototype => _fields.ContainsKey(KeyStore.PrototypeKey) &&
                                         (_fields[KeyStore.PrototypeKey] as DocumentController)
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-            }
-        }
-
-
         public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
                                 _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
 
-        /// <summary>
-        /// Add: Used when a field is added to a document with a key that is didn't previously contain
-        /// Remove: Used when a field is removed from a document
-        /// Replace: Used when a field in the document is replaced with a different field
-        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
-        /// </summary>
-        public enum FieldUpdatedAction
-        {
-            Add,
-            Remove,
-            Replace,
-            Update
-        }
-
-        public class DocumentFieldUpdatedEventArgs : FieldUpdatedEventArgs
-        {
-            public readonly FieldControllerBase OldValue;
-            public readonly FieldControllerBase NewValue;
-            public readonly DocumentFieldReference Reference;
-            public readonly FieldUpdatedEventArgs FieldArgs;
-            public bool FromDelegate;
-
-            public DocumentFieldUpdatedEventArgs(FieldControllerBase oldValue, FieldControllerBase newValue,
-                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, bool fromDelegate) : base(TypeInfo.Document, action)
-            {
-                OldValue = oldValue;
-                NewValue = newValue;
-                Reference = reference;
-                FieldArgs = fieldArgs;
-                FromDelegate = fromDelegate;
-            }
-        }
 
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. TODO what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
         /// </summary>
-        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, FieldUpdatedHandler>();
+        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary
+            = new Dictionary<KeyController, FieldUpdatedHandler>();
         public event FieldUpdatedHandler PrototypeFieldUpdated;
 
         public event EventHandler DocumentDeleted;
@@ -617,7 +571,7 @@ namespace Dash
 
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
-                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                            // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
                             newContext.AddDocumentContext(this);
                         var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
                             reference, args, false);
@@ -864,7 +818,7 @@ namespace Dash
             {
                 return;
             }
-         //   if (context.ContainsAncestorOf(this)) //TODO tfs: what was this doing and why do we need to comment it out?
+            //   if (context.ContainsAncestorOf(this)) //TODO tfs: what was this doing and why do we need to comment it out?
             {
                 Context c = new Context(this);
                 var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
@@ -1215,13 +1169,21 @@ namespace Dash
             return sp;
         }
 
+        /// <summary>
+        /// Builds the underlying XAML Framework Element representation of this document.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="dataDocument"></param>
+        /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
+            // set up contexts information
             context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument(null));
 
-            // if document is not a known UI View, then see if it contains a Layout view field
+            // if the document has a layout already, use that underlying layout's data to generate
+            // the view
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
@@ -1235,7 +1197,10 @@ namespace Dash
 
                 return doc.MakeViewUI(context, GetDataDocument());
             }
-            //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
+
+            // otherwise, look through the list of "special" document type primitives and
+            // generate the view from the given courtesy document's static MakeView method
+            // to make the view
             if (DocumentType.Equals(TextingBox.DocumentType))
             {
                 return TextingBox.MakeView(this, context); //
@@ -1318,7 +1283,7 @@ namespace Dash
             }
             if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
-                return ApiOperatorBox.MakeView(this, context); //I set the framework element as the operator view for now
+                return ApiOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
             {
@@ -1335,32 +1300,7 @@ namespace Dash
             return makeAllViewUI(context);
         }
 
-        /// <summary>
-        /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
-        /// listeners to <see cref="DocumentFieldUpdated"/>
-        /// </summary>
-        /// <param name="sender">The <see cref="DocumentController"/> which is being updated</param>
-        /// <param name="args">Represents the behavior of the update</param>
-        /// <param name="updateDelegates"></param>
-        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
-        {
-            // this invokes listeners which have been added on a per key level of granularity
-            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
-            {
-                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
-            }
-            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
-            {
-                // this invokes listeners which have been added on a per doc level of granularity
-                OnFieldModelUpdated(args, c);
-            }
-
-            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
-            {
-                PrototypeFieldUpdated?.Invoke(sender, args, c);
-            }
-        }
-
+        // == OVERRIDEN from ICOLLECTION ==
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
@@ -1382,6 +1322,7 @@ namespace Dash
         }
 
         public override TypeInfo TypeInfo { get; }
+        
         public override bool SetValue(object value)
         {
             throw new NotImplementedException();
@@ -1401,6 +1342,63 @@ namespace Dash
         {
             return StringSearchModel.False;
             //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
+        }
+
+        // == EVENT MANAGEMENT ==
+        /// <summary>
+        /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
+        /// listeners to <see cref="DocumentFieldUpdated"/>
+        /// </summary>
+        /// <param name="updateDelegates">whether to bubble event down to delegates</param>
+        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
+        {
+            // this invokes listeners which have been added on a per key level of granularity
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
+            
+            // this invokes listeners which have been added on a per doc level of granularity
+            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
+                OnFieldModelUpdated(args, c);
+
+            // bubbles event down to delegates
+            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
+                PrototypeFieldUpdated?.Invoke(sender, args, c);
+        }
+
+        /// <summary>
+        /// Add: Used when a field is added to a document with a key that is didn't previously contain
+        /// Remove: Used when a field is removed from a document
+        /// Replace: Used when a field in the document is replaced with a different field
+        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
+        /// </summary>
+        public enum FieldUpdatedAction
+        {
+            Add,
+            Remove,
+            Replace,
+            Update
+        }
+        
+        /// <summary>
+        /// Encompasses the different type of events triggers by changing document data.
+        /// </summary>
+        public class DocumentFieldUpdatedEventArgs : FieldUpdatedEventArgs
+        {
+            public readonly FieldControllerBase OldValue;
+            public readonly FieldControllerBase NewValue;
+            public readonly DocumentFieldReference Reference;
+            public readonly FieldUpdatedEventArgs FieldArgs;
+            public bool FromDelegate;
+
+            public DocumentFieldUpdatedEventArgs(FieldControllerBase oldValue, FieldControllerBase newValue,
+                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, bool fromDelegate) : base(TypeInfo.Document, action)
+            {
+                OldValue = oldValue;
+                NewValue = newValue;
+                Reference = reference;
+                FieldArgs = fieldArgs;
+                FromDelegate = fromDelegate;
+            }
         }
     }
 }
