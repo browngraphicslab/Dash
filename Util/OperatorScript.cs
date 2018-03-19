@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,6 +12,7 @@ namespace Dash
     {
         public static OperatorScript Instance = new OperatorScript();
         private static Dictionary<string, Type> _functionMap;
+        private static Dictionary<Type, string> _reverseFunctionMap;
 
         private OperatorScript()
         {
@@ -20,11 +22,16 @@ namespace Dash
         private void Init()
         {
             _functionMap = new Dictionary<string, Type>();
+            _reverseFunctionMap = new Dictionary<Type, string>();
             foreach (var operatorType in GetTypesWithOperatorAttribute(Assembly.GetExecutingAssembly()))
             {
                 //IF YOU CRASHED ON THIS LINE THEN YOU PROBABLY ADDED A NEW OPERATOR WITHOUT AN EMPTY CONSTRUCTOR. 
-                //OperatorController op = (OperatorController)Activator.CreateInstance(operatorType);
-                _functionMap[operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetType()] = operatorType;
+                OperatorController op = (OperatorController)Activator.CreateInstance(operatorType);
+
+                var typeName = operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetType();
+
+                _functionMap[typeName] = operatorType;
+                _reverseFunctionMap[operatorType] = typeName;
             }
         }
 
@@ -37,6 +44,22 @@ namespace Dash
         {
             return GetOrderedKeyControllersForFunction(funcName).ToDictionary(k => k.Name, v => v);
         }
+
+        /// <summary>
+        /// returns the dish function name for a given operator
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static string GetDishOperatorName<T>() where T : OperatorController
+        {
+            var t = typeof(T);
+
+            //if this fails then the function name doens't exist for the given controller
+            Debug.Assert(_reverseFunctionMap.ContainsKey(t));
+
+            return _reverseFunctionMap.ContainsKey(t) ? _reverseFunctionMap[t] : null;
+        }
+
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function

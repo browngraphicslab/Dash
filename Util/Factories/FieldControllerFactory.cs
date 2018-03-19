@@ -147,7 +147,8 @@ namespace Dash
                     controller = new ListController<KeyController>(model);
                     break;
                 case TypeInfo.Any:
-                    Debug.Fail("idk why you got here");
+                    //Debug.Fail("idk why you got here");
+                    controller = new ListController<FieldControllerBase>(model);
                     break;
                 default:
                     break;

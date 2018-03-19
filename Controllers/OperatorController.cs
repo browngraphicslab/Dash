@@ -41,6 +41,7 @@ namespace Dash
             return _name;
         }
     }
+
     public abstract class OperatorController : FieldModelController<OperatorModel>
     {
         /// <summary>
