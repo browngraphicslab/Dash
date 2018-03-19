@@ -102,8 +102,8 @@ namespace Dash
                 {
                     var start = data.First().GetDraggedDocument().GetPositionField().Data;
                     coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.GetDraggedDocument())).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X-start.X,
-                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y-start.Y), true)).ToList());
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X,
+                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y), true)).ToList());
                 }
             }
             e.Handled = true;
@@ -118,6 +118,19 @@ namespace Dash
             else
                 e.AcceptedOperation = DataPackageOperation.None;
             e.Handled = true;
+        }
+
+        private DocumentController _lastSelected; 
+        private void TreeViewNode_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Focus(FocusState.Programmatic); 
+            if (_lastSelected != null)
+                _lastSelected.IsSelected = false;
+
+            var dc = (sender as TreeViewNode)?.ViewModel.DataDocument;
+            if (dc != null)
+                dc.IsSelected = true;
+            _lastSelected = dc; 
         }
     }
 }
