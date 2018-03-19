@@ -442,10 +442,12 @@ namespace Dash
                     var widthBeforeAlignment = Math.Max(w + dx, MinWidth);
                     var heightBeforeAlignment = Math.Max(h + dy, MinHeight);
 
-                    ManipulationControls.ResizeAlign(widthBeforeAlignment, heightBeforeAlignment);
+                    var bbAfterAlignment = ManipulationControls.ResizeAlign(new Point(), new Point(widthBeforeAlignment - w, heightBeforeAlignment - h));
 
-                    ViewModel.Width  = Math.Max(w + dx, MinWidth);
-                    ViewModel.Height = Math.Max(h + dy, MinHeight);
+                    ViewModel.XPos = bbAfterAlignment.X;
+                    ViewModel.YPos = bbAfterAlignment.Y;
+                    ViewModel.Width  = Math.Max(bbAfterAlignment.Width, MinWidth);
+                    ViewModel.Height = Math.Max(bbAfterAlignment.Height, MinHeight);
 
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }

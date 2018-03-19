@@ -104,13 +104,13 @@ namespace Dash
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
 
             var pointerPosition = MainPage.Instance.TransformToVisual(_manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
+            var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
-            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translation, 1.0f);
 
-            //Only preview a snap if the grouping only includes the current node. 
-            _manipulationDocumentTarget.ManipulationControls.SimpleAlign(true);
+            var translationAfterAlignment = _manipulationDocumentTarget.ManipulationControls.SimpleAlign(translationBeforeAlignment);
+
+            _manipulationDocumentTarget.ManipulationControls.TranslateAndScale(new Point(pointerPosition.X, pointerPosition.Y), translationAfterAlignment, 1.0f);
 
             if (e != null)
                 e.Handled = true;
