@@ -222,17 +222,23 @@ namespace Dash
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
             var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
 
-            double thresh = 2;
+            double distanceThreshold = 500;
+            double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
             foreach(var documentView in listOfSiblings)
             {
                 var documentBounds = InteractiveBounds(documentView);
                 var documentAxes = AlignmentAxes(documentBounds);
+                //To avoid the visual clutter of aligning to document views in a large workspace, we currently ignore any document views that are further than some threshold
+
+                if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold|| Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
+                    continue;
 
                 //For every axis in the ParentDocument
                 for(int parentAxis = 0; parentAxis < 6; parentAxis++)
                 {
                     for(int otherAxis = 3 * (parentAxis/3); otherAxis < 3* (parentAxis/3) + 3; otherAxis++)
                     {
+
                         var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
                         var distance = Math.Abs(delta);
                         
@@ -251,11 +257,11 @@ namespace Dash
                             if ((translate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((translate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
                                 break;
 
-                            Debug.WriteLine("Delta is " + delta.ToString());
-                            Debug.WriteLine("Translate is: " + translate.ToString());
-                            Debug.WriteLine("Parent Axis is " + parentDocumentAxesAfter[parentAxis]);
-                            Debug.WriteLine("Other Axis is  " + documentAxes[otherAxis]);
-                            Debug.WriteLine("");
+                            //Debug.WriteLine("Delta is " + delta.ToString());
+                            //Debug.WriteLine("Translate is: " + translate.ToString());
+                            //Debug.WriteLine("Parent Axis is " + parentDocumentAxesAfter[parentAxis]);
+                            //Debug.WriteLine("Other Axis is  " + documentAxes[otherAxis]);
+                            //Debug.WriteLine("");
 
                             ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translate.X, delta));
                             return new Point(translate.X, delta);
