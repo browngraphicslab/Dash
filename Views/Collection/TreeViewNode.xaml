@@ -19,7 +19,7 @@
             <MenuFlyoutItem Text="Delete" Icon="Delete" Click="Delete_OnClick"></MenuFlyoutItem>
         </MenuFlyout>
     </StackPanel.ContextFlyout>
-        <Grid x:Name="XHeader" >
+        <Grid x:Name="XHeader">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="30"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>

@@ -50,7 +50,7 @@
 
         <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
 
-        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Visibility="{Binding DecorationState}" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
+        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
             <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
                                Foreground="{StaticResource TitleText}"           
@@ -64,24 +64,10 @@
         <Grid Name="xTargetContentGrid" BorderThickness ="3">
             <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-            <!-- Dragger Button
-            <Grid x:Name="DraggerButton"
-                        x:FieldModifier="public"
-                        Margin="0,0,-20,-20"
-                        HorizontalAlignment="Right"
-                        AllowFocusOnInteraction="False"
-                        AllowFocusWhenDisabled="False"
-                        VerticalAlignment="Bottom"
-                        ManipulationMode="TranslateX, TranslateY"
-                        Visibility="{Binding DecorationState}">
-                <Border Padding="10,10,20,20" Background="Transparent">
-                    <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
-                                HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                </Border>
-            </Grid> -->
+            
         </Grid>
 
-        <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Visibility="{Binding DecorationState}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+        <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
             <Grid  >
                 <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
                 <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"

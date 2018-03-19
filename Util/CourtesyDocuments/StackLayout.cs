@@ -26,10 +26,10 @@ namespace Dash
 
         public bool Horizontal;
 
-        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false)
+        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point())
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(new Point(), new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
+            var fields = DefaultLayoutFields(where, new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
             fields.Add(StyleKey, new TextController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
         }

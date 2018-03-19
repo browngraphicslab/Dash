@@ -103,9 +103,7 @@ namespace Dash
                 {
                     XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
                 };
-
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.CollectionKey) as ListController<DocumentController>;
-
+                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;
@@ -119,8 +117,7 @@ namespace Dash
                         XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                            KeyStore.CollectionKey));
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.DataKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
@@ -184,7 +181,7 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
             {
-                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null);
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 if (docsInGroup != null)
                 {
                     docToFocus = docsInGroup.TypedData.FirstOrDefault();
@@ -239,7 +236,7 @@ namespace Dash
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
             cvm.RemoveDocument(doc);
-            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)
+            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
                 ?.Remove(doc);//TODO Kind of a hack
         }
 

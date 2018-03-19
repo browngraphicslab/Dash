@@ -492,7 +492,7 @@ namespace Dash
                     var title = docController.Title;
 
                     if (documentTree.GetNodeFromViewId(docController.Id) != null && documentTree.GetNodeFromViewId(docController.Id).DataDocument
-                            .GetField<ListController<DocumentController>>(KeyStore.CollectionKey) != null)
+                            .GetField<ListController<DocumentController>>(KeyStore.DataKey) != null)
                     {
                         title = GetTitleOfCollection(documentTree, docController) ?? "?";
                     }

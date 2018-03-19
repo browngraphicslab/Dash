@@ -91,6 +91,7 @@ namespace Dash
                         new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
                                                                new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
                         Converter = new TransformGroupMultiConverter(),
+                        Context = new Context(doc),
                         Mode = BindingMode.OneWay
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
@@ -146,13 +147,21 @@ namespace Dash
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
             };
-            ResizeHandleBottomRight.ManipulationCompleted += (s, e) => restorePointerTracking();
-            ResizeHandleBottomRight.PointerReleased += (s, e) => restorePointerTracking();
-            ResizeHandleBottomRight.PointerPressed += (s, e) =>
+
+            var handles = new List<Ellipse>(){ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft,
+                ResizeHandleTopRight};
+
+            foreach (var handle in handles)
             {
-                ManipulationMode = ManipulationModes.None;
-                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            };
+                handle.ManipulationCompleted += (s, e) => restorePointerTracking();
+                handle.PointerReleased += (s, e) => restorePointerTracking();
+                handle.PointerPressed += (s, e) =>
+                {
+                    CapturePointer(e.Pointer);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                };
+            }
 
             // setup OperatorEllipse 
             OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
@@ -178,6 +187,7 @@ namespace Dash
 
             // setup Title Icon
             xTitleIcon.PointerPressed += (sender, e) =>  {
+                CapturePointer(e.Pointer);
                 ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
                 e.Handled = ManipulationMode == ManipulationModes.All;
             };
@@ -810,7 +820,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel.DraggedKey != null)
+            if (dragModel?.DraggedKey != null)
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
@@ -848,7 +858,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel.DraggedKey != null)
+            if (dragModel?.DraggedKey != null)
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 

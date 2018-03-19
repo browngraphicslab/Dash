@@ -266,7 +266,7 @@ namespace Dash
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
-                else if (pair.Key == KeyStore.CollectionKey)
+                else if (pair.Value is ListController<DocumentController>)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
                     var collectionCont = pair.Value as ListController<DocumentController>;
@@ -529,7 +529,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            return new NoteDocuments.RichTextNote().Document;
         }
 
         /// <summary>

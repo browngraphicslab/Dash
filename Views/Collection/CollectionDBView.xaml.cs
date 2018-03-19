@@ -50,7 +50,7 @@ namespace Dash
                     if (key != null)
                     {
                         var derefField = d.GetDataDocument(null).GetDereferencedField<TextController>(key, null)?.Data;
-                        var rnote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType, derefField ?? "<empty>").Document;
+                        var rnote = new NoteDocuments.RichTextNote(derefField ?? "<empty>").Document;
                         rnote.GetDataDocument(null).SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }

@@ -47,7 +47,7 @@ namespace Dash
 
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
         public KeyController OutputKey { get; set; }
-        public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.CollectionKey;
+        public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
@@ -314,7 +314,7 @@ namespace Dash
                     {
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
-                    DBTest.DBDoc.AddChild(pivotDoc);
+                    //DBTest.DBDoc.AddChild(pivotDoc);
                     d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
@@ -380,7 +380,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
+                    var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -537,13 +537,13 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {
@@ -586,7 +586,7 @@ namespace Dash
                     var cnote = new CollectionNote(where, dragData.ViewType);
                     if (subDocs != null)
                         cnote.SetDocuments(new List<DocumentController>(subDocs));
-                    else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
+                    else cnote.Document.GetDataDocument(null).SetField(KeyStore.DataKey, dragData.CollectionReference, true);
                     cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
                     AddDocument(cnote.Document, null);
                 }
@@ -654,7 +654,7 @@ namespace Dash
         private void HandleTemplateLayoutDrop(DragDocumentModel dragModel)
         {
             var template = dragModel.GetDraggedDocument();
-            var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.TypedData;
             foreach (var dvm in DocumentViewModels.ToArray())
             {
                 var listOfFields = new List<DocumentController>();

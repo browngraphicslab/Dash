@@ -75,7 +75,7 @@ namespace Dash
             doc = doc.GetDataDocument();
             var text = doc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? string.Empty;
             var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) || text.ToLower().Contains(FilterString.ToLower()) ||
-                                (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
+                                (doc.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.TypedData
                                      .Any(MatchesFilter) ?? false);
             return matchesFilter;
             throw new NotImplementedException();
@@ -87,7 +87,7 @@ namespace Dash
             {
                 var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && !doc.Equals(data.GetDraggedDocument()))
                 {
                     coll.Add(data.GetDropDocument(new Point(), true));
@@ -97,7 +97,7 @@ namespace Dash
             {
                 var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && data.Count > 0)
                 {
                     var start = data.First().GetDraggedDocument().GetPositionField().Data;

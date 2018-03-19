@@ -138,9 +138,8 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
-                activeLayout = GetViewCopy(doc, where);
+                activeLayout = doc.MakeDelegate();
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
-                docContext = copiedData;
                 newDoc = activeLayout;
             }
             else if (docContext == null && activeLayout != null) // has a layout
@@ -152,6 +151,14 @@ namespace Dash
                 activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data), true);
 
                 newDoc = docContext;
+            } else if (docContext != null && activeLayout != null)
+            {
+                newDoc = doc.MakeDelegate();
+                var copiedData = docContext.MakeDelegate(); // instance the data
+                activeLayout = activeLayout.MakeDelegate();
+                activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
+                newDoc.SetField(KeyStore.DocumentContextKey, copiedData, true);
+                newDoc.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
