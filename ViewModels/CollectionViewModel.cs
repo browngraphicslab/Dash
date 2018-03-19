@@ -118,9 +118,7 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    var documentViewModel = new DocumentViewModel(documentController, c);
-                    if (!DocumentViewModels.Contains(documentViewModel))
-                        DocumentViewModels.Add(documentViewModel);
+                    DocumentViewModels.Add(new DocumentViewModel(documentController, c));
                 }
             }
         }

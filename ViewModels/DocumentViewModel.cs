@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Globalization;
 using Dash.Models.DragModels;
+using static Dash.DocumentController;
 
 namespace Dash
 {
@@ -303,6 +304,7 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
 
+
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
             InteractiveManipulationScale = Scale;
 
@@ -342,26 +344,14 @@ namespace Dash
             iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
         }
 
-        private void DocumentController_LayoutUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
-        {
-            if (fieldUpdatedEventArgs.Action != DocumentController.FieldUpdatedAction.Replace)
-            {
-                return;
-            }
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)fieldUpdatedEventArgs;
-            Debug.Assert(dargs.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey));
-            Debug.WriteLine(dargs.Action);
-            OnActiveLayoutChanged(new Context(LayoutDocument));
-            if (dargs.OldValue == null) return;
-            var oldLayoutDoc = (DocumentController)dargs.OldValue;
-            RemoveListenersFromLayout(oldLayoutDoc);
-        }
 
         private void RemoveListenersFromLayout(DocumentController oldLayoutDoc)
         {
-            if (oldLayoutDoc == null) return;
-            oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
-            oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
+            if (oldLayoutDoc != null)
+            {
+                oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
+                oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
+            }
         }
 
         private void RemoveControllerListeners()
@@ -378,29 +368,46 @@ namespace Dash
                 return DocumentController?.GetActiveLayout() ?? DocumentController;
             }
         }
-        public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
 
-        public event OnLayoutChangedHandler LayoutChanged;
-
-        public void OnActiveLayoutChanged(Context context)
+        DocumentController _lastLayout = null;
+        public void OnActiveLayoutChanged(Context context, bool force = false)
         {
-            UpdateContent();
-            LayoutChanged?.Invoke(this, context);
-
+            if (!force && _lastLayout?.Equals(LayoutDocument) == true)
+                return;
+            if (_lastLayout != null)
+            {
+                _lastLayout.FieldModelUpdated -= LayoutDocument_FieldModelUpdated;
+                RemoveListenersFromLayout(_lastLayout);
+            }
+            _lastLayout = LayoutDocument;
+            
+            LayoutDocument.FieldModelUpdated += LayoutDocument_FieldModelUpdated;
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(LayoutDocument);
             Context = newContext;
+
+            UpdateContent();
+        }
+        private void DocumentController_LayoutUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        {
+            OnActiveLayoutChanged(new Context(LayoutDocument));
         }
 
-        public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
+        private void LayoutDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var max = actualWidth > actualHeight ? actualWidth : actualHeight;
-            var translate = new TranslateTransform { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
-            var scale = new ScaleTransform { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
-            var group = new TransformGroup();
-            group.Children.Add(translate);
-            group.Children.Add(scale);
+            var dargs = args as DocumentFieldUpdatedEventArgs;
+            var fargs = (dargs?.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            if (dargs != null && dargs.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey)) {
+                if (dargs.NewValue.Equals(_lastLayout) == false)
+                {
+                    OnActiveLayoutChanged(context);
+                }
+            }
+            else if (dargs != null && fargs != null && (fargs.Equals(KeyStore.DataKey) == true))
+                OnActiveLayoutChanged(context);
+            else if (dargs != null && dargs.Reference.FieldKey.Equals(KeyStore.DataKey) == true && dargs.FieldArgs == null)
+                OnActiveLayoutChanged(context, true);
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 

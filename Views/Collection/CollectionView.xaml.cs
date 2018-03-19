@@ -272,7 +272,9 @@ namespace Dash
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
+            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data;
+            if (curViewType != _viewType.ToString())
+                ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
         private void GetJson()
         {

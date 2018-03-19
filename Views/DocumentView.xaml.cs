@@ -817,29 +817,26 @@ namespace Dash
                 var newField = dragModel.GetDropDocument(new Point());
                 newField.SetField(KeyStore.HeightFieldKey, new NumberController(30), true);
                 newField.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
-                var activeLayout = ViewModel.DocumentController?.GetActiveLayout();
+                var activeLayout = ViewModel.DocumentController?.GetActiveLayout() ?? ViewModel.LayoutDocument;
                 if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
                 {
                     StackLayout.AddDocument(activeLayout, newField);
                 }
-                else  // no active layout or activeLayout is not a stack -- create a stack
+                else  // need to wrap activeLayout into a new stack layout
                 {
-                    var oldLayout = activeLayout ?? ViewModel.LayoutDocument.Copy() as DocumentController;
-                    oldLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
-                    oldLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
-                    var docs = new DocumentController[] { newField, oldLayout };
-                    activeLayout = new StackLayout(docs).Document;
+                    var curLayout = activeLayout.Copy() as DocumentController;
+                    curLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
+                    curLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
+                    activeLayout = new StackLayout(new DocumentController[] { newField, curLayout }).Document;
                     activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(ViewModel.Position), true);
                     activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(ViewModel.Width), true);
                     activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(ViewModel.Height), true);
                     activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    if (!oldLayout.Equals(activeLayout)) // if we copied the viewmodel's layout document, then we copied the DocumentContext which we don't want --- need to reset it here
-                        oldLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    if (!curLayout.Equals(activeLayout))  // if we copied the viewmodel's layout document, then we copied the DocumentContext which we don't want --- need to reset it here
+                        curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     ViewModel.LayoutDocument.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
                 }
-
-
-                ViewModel.OnActiveLayoutChanged(new Context(activeLayout));
+                
                 e.Handled = true;
             }
         }

@@ -23,6 +23,7 @@ namespace Dash
 {
     public class DocumentController : FieldModelController<DocumentModel>
     {
+        public string DEBUGNAME = "";
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
 
         public bool HasDelegates
@@ -606,10 +607,10 @@ namespace Dash
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         //var refSender = sender as ReferenceController;
-                        //var proto = GetDataDocument(null). GetPrototypeWithFieldKey(reference.FieldKey) ??
+                        //var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
                         //            this.GetPrototypeWithFieldKey(reference.FieldKey);
                         //if (!new Context(proto).IsCompatibleWith(c) &&
-                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null)) 
+                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
                         //{
                         //    return;
                         //}

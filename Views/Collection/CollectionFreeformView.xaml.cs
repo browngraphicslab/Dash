@@ -127,7 +127,7 @@ namespace Dash
                 MakeInkCanvas();
             }
             
-            if (ParentDocument.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            if (ParentDocument?.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
             {
                 ViewManipulationControls.FitToParent();
             }

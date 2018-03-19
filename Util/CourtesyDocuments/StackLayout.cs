@@ -26,10 +26,10 @@ namespace Dash
 
         public bool Horizontal;
 
-        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point())
+        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point(), Size size = new Size())
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(where, new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
+            var fields = DefaultLayoutFields(where, size != new Size() ? size : new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
             fields.Add(StyleKey, new TextController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
@@ -37,7 +37,9 @@ namespace Dash
         public static void AddDocument(DocumentController stack, DocumentController doc)
         {
             var doclist = stack.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-            doclist.Insert(0,doc);
+            doclist.Insert(0, doc);
+            // bcz: didn't think I would need to call SetField explicitly but events don't seem to be generated otherwise.
+           // stack.SetField(KeyStore.DataKey, new ListController<DocumentController>(doclist), true);
         }
 
         protected override DocumentController GetLayoutPrototype()
