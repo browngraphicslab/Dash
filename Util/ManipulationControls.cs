@@ -415,7 +415,7 @@ namespace Dash
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (e == null || !e.Handled)
+            if (e == null || !e.Handled && !ParentDocument.IsResizing)
             {
                 Snap(false); //Snap if you're dragging the element body and it's not a part of the group
 
@@ -426,6 +426,7 @@ namespace Dash
                 var pos = docRoot.RootPointerPos();
                 var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
                 
+
                 docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                         () => docRoot.MoveToContainingCollection(overlappedViews)));
 

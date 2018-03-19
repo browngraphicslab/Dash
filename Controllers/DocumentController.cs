@@ -519,7 +519,7 @@ namespace Dash
             return false;
         }
 
-
+        
 
         /// <summary>
         ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
@@ -1288,6 +1288,9 @@ namespace Dash
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
+        /// <summary>
+        /// Adds listeners to the field model updated event which fire the document model updated event
+        /// </summary>
         private void SetupNewFieldListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
         {
             // fire document field updated if the field has been replaced or if it did not exist before
@@ -1300,14 +1303,14 @@ namespace Dash
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        //var refSender = sender as ReferenceController;
-                        //var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
-                        //            this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        //if (!new Context(proto).IsCompatibleWith(c) &&
-                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
-                        //{
-                        //    return;
-                        //}
+                        var refSender = sender as ReferenceController;
+                        var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                                    this.GetPrototypeWithFieldKey(reference.FieldKey);
+                        if (!new Context(proto).IsCompatibleWith(c) &&
+                            GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
+                        {
+                            return;
+                        }
 
                         var newContext = new Context(c);
                         if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
