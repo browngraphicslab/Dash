@@ -31,8 +31,7 @@ namespace Dash
         public ManipulationControls ManipulationControls { get; set; }
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
-
-        public bool IsResizing { get; set; }
+        
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -42,12 +41,10 @@ namespace Dash
         /// The width of the context preview
         /// </summary>
         const double _contextPreviewActualWidth = 255;
-
         /// <summary>
         /// The height of the context preview
         /// </summary>
         const double _contextPreviewActualHeight = 330;
-
         /// <summary>
         /// A reference to the actual context preview
         /// </summary>
@@ -132,39 +129,33 @@ namespace Dash
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                 }
             }
-            ResizeHandleTopLeft.ManipulationDelta += (s,e) => Resize(s as FrameworkElement, e, true, true); 
-            ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
-            ResizeHandleBottomLeft.ManipulationDelta += (s, e) =>  Resize(s as FrameworkElement, e, false, true);
-            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
-            ResizeHandleTopLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-            ResizeHandleTopRight.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-            ResizeHandleBottomLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-            ResizeHandleBottomRight.ManipulationStarted += ResizeHandles_OnManipulationStarted;
-
-            void restorePointerTracking() {
+            void ResizeHandles_restorePointerTracking()
+            {
                 ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
+                
             };
-
-            var handles = new List<Ellipse>(){ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft,
-                ResizeHandleTopRight};
-
-            foreach (var handle in handles)
+            ResizeHandleTopLeft.ManipulationDelta     += (s, e) => Resize(s as FrameworkElement, e, true,  true); 
+            ResizeHandleTopRight.ManipulationDelta    += (s, e) => Resize(s as FrameworkElement, e, true,  false);
+            ResizeHandleBottomLeft.ManipulationDelta  += (s, e) => Resize(s as FrameworkElement, e, false, true);
+            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+            
+            foreach (var handle in new Ellipse[] { ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft, ResizeHandleTopRight })
             {
-                handle.ManipulationCompleted += (s, e) => restorePointerTracking();
-                handle.PointerReleased += (s, e) => restorePointerTracking();
-                handle.PointerPressed += (s, e) =>
+                handle.ManipulationStarted   += ResizeHandles_OnManipulationStarted;
+                handle.ManipulationCompleted += (s, e) => { ResizeHandles_restorePointerTracking(); e.Handled = true; }; // call Snap() if resizing should snap
+                handle.PointerReleased       += (s, e) => ResizeHandles_restorePointerTracking();
+                handle.PointerPressed        += (s, e) =>
                 {
                     CapturePointer(e.Pointer);
                     ManipulationMode = ManipulationModes.None;
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                    IsResizing = true;
                 };
             }
 
             // setup OperatorEllipse 
-            OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
+            OperatorEllipseHighlight.PointerExited    += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
             OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
             xOperatorEllipseBorder.PointerPressed += (sender, e) => {
                 this.ManipulationMode = ManipulationModes.None;
@@ -212,7 +203,6 @@ namespace Dash
             {
                 d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                 d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-                d.IsResizing = false;
             });
 
             MenuFlyout = xMenuFlyout;
@@ -244,18 +234,16 @@ namespace Dash
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
         
-
-        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
-        {
-            if (!this.IsF1Pressed())
-                ShowLocalContext(false);
-        }
-        
         /// <summary>
         /// Handles keypress events.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            if (!this.IsF1Pressed())
+                ShowLocalContext(false);
+        }
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
             if (this.IsF1Pressed() && this.IsPointerOver())
@@ -443,7 +431,6 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
 
