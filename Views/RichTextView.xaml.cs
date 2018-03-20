@@ -172,7 +172,7 @@ namespace Dash
                 {
                     foreach (var item in relative.Children)
                         if (item != this)
-                            pad = (item as FrameworkElement).ActualHeight;
+                            pad += (item as FrameworkElement).ActualHeight;
                     relative.Height = xRichEditBox.DesiredSize.Height + pad;
                 }
                 else

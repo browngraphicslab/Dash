@@ -22,19 +22,16 @@ namespace Dash
 
     public class DocumentViewModel : ViewModelBase, IDisposable
     {
-
+        public IconTypeEnum IconType => iconType;
         // == MEMBERS, GETTERS, SETTERS ==
         private double _groupMargin = 25;
         private TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         private Brush _backgroundBrush = new SolidColorBrush(Colors.Transparent);
         private Brush _borderBrush;
-        private IconTypeEnum iconType;
+        private IconTypeEnum iconType => (IconTypeEnum)IconTypeController.Data;
         private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         public string DebugName = "";
-        public DocumentController DocumentController { get; set; }
-        public DocumentController DataDocument { get => DocumentController.GetDataDocument(); }
-
         bool _hasTitle;
         public bool HasTitle
         {
@@ -72,24 +69,11 @@ namespace Dash
             get { return _actualWidth; }
         }
 
-        public struct WidthAndMenuOpenWrapper
-        {
-            public double Width { get; set; }
-            public bool MenuOpen { get; set; }
-            public WidthAndMenuOpenWrapper(double width, bool menuOpen)
-            {
-                Width = width;
-                MenuOpen = menuOpen;
-            }
-        }
-
         public bool MenuOpen
         {
             get => _menuOpen;
             set => SetProperty(ref _menuOpen, value);
         }
-
-        public IconTypeEnum IconType => iconType;
 
         /// <summary>
         /// The cached Position of the document **during** a ManipulationControls interaction.
@@ -101,6 +85,11 @@ namespace Dash
         /// When not interacting, use Scale instead
         /// </summary>
         public Point InteractiveManipulationScale;
+
+        public DocumentController DocumentController { get; set; }
+        public DocumentController DataDocument => DocumentController.GetDataDocument();
+        public DocumentController LayoutDocument => DocumentController?.GetActiveLayout() ?? DocumentController;
+        public NumberController IconTypeController => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
 
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
@@ -304,6 +293,7 @@ namespace Dash
         {
             DocumentController = documentController;//TODO This would be useful but doesn't work//.GetField(KeyStore.PositionFieldKey) == null ? documentController.GetViewCopy(null) :  documentController;
 
+            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
 
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
             InteractiveManipulationScale = Scale;
@@ -311,8 +301,8 @@ namespace Dash
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             SetUpSmallIcon();
             OnActiveLayoutChanged(context);
-
-            DocumentController.GetDataDocument(context).AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
+            
+            DataDocument.AddFieldUpdatedListener(KeyStore.TitleKey, titleChanged);
             titleChanged(null, null, null);
 
 
@@ -334,14 +324,10 @@ namespace Dash
 
         private void SetUpSmallIcon()
         {
-            var iconFieldModelController = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
-            if (iconFieldModelController == null)
+            if (IconTypeController == null)
             {
-                iconFieldModelController = new NumberController((int)(IconTypeEnum.Document));
-                LayoutDocument.SetField(KeyStore.IconTypeFieldKey, iconFieldModelController, true);
+                LayoutDocument.SetField(KeyStore.IconTypeFieldKey, new NumberController((int)(IconTypeEnum.Document)), true);
             }
-            iconType = (IconTypeEnum)iconFieldModelController.Data;
-            iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
         }
 
 
@@ -349,51 +335,46 @@ namespace Dash
         {
             if (oldLayoutDoc != null)
             {
-                oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
-                oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
-            }
-        }
-
-        private void RemoveControllerListeners()
-        {
-            LayoutDocument.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
-            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
-            var icon = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
-            icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
-        }
-
-        public DocumentController LayoutDocument
-        {
-            get
-            {
-                return DocumentController?.GetActiveLayout() ?? DocumentController;
+                oldLayoutDoc.FieldModelUpdated -= LayoutDocument_FieldModelUpdated;
             }
         }
 
         DocumentController _lastLayout = null;
         public void OnActiveLayoutChanged(Context context, bool force = false)
         {
-            if (!force && _lastLayout?.Equals(LayoutDocument) == true)
-                return;
-            if (_lastLayout != null)
+            if (force || _lastLayout?.Equals(LayoutDocument) != true)
             {
-                _lastLayout.FieldModelUpdated -= LayoutDocument_FieldModelUpdated;
-                RemoveListenersFromLayout(_lastLayout);
-            }
-            _lastLayout = LayoutDocument;
-            
-            LayoutDocument.FieldModelUpdated += LayoutDocument_FieldModelUpdated;
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
-            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
-            var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
-            newContext.AddDocumentContext(LayoutDocument);
-            Context = newContext;
+                if (_lastLayout != null)
+                    _lastLayout.FieldModelUpdated -= LayoutDocument_FieldModelUpdated;
+                _lastLayout = LayoutDocument;
+                LayoutDocument.FieldModelUpdated += LayoutDocument_FieldModelUpdated;
 
-            UpdateContent();
+                var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
+                newContext.AddDocumentContext(LayoutDocument);
+                Context = newContext;
+
+                UpdateContent();
+            }
         }
         private void DocumentController_LayoutUpdated(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
-            OnActiveLayoutChanged(new Context(LayoutDocument));
+            var dargs = fieldUpdatedEventArgs as DocumentFieldUpdatedEventArgs;
+            var fargs = (dargs?.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            if (dargs?.Reference.FieldKey == KeyStore.ActiveLayoutKey && fargs == null)
+            {
+                if (_lastLayout != LayoutDocument)
+                {
+                    var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
+                    if (curActive == null)
+                    {
+                        curActive = LayoutDocument.GetViewInstance(_lastLayout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController)).Data);
+                        curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+                        DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
+                        return;
+                    }
+                }
+            }
+            OnActiveLayoutChanged(new Context(DocumentController));
         }
 
         private void LayoutDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -415,45 +396,12 @@ namespace Dash
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
 
-        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-        {
-            var heightFieldModelController = sender as NumberController;
-            if (heightFieldModelController != null)
-            {
-                Height = heightFieldModelController.Data;
-            }
-        }
-
-        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-        {
-            var widthFieldModelController = sender as NumberController;
-            if (widthFieldModelController != null)
-            {
-                Width = widthFieldModelController.Data;
-            }
-        }
-
-        private void IconFieldModelController_FieldModelUpdatedEvent(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-        {
-            var iconFieldModelController = sender as NumberController;
-            if (iconFieldModelController != null)
-            {
-                iconType = (IconTypeEnum)iconFieldModelController.Data;
-            }
-        }
-
-        public void OnCollectionSelectedChanged(bool isCollectionSelected)
-        {
-
-        }
-
+            
         public void Dispose()
         {
-            if (LayoutDocument != null)
-            {
-                RemoveListenersFromLayout(LayoutDocument);
-            }
-            RemoveControllerListeners();
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
+            if (_lastLayout != null)
+                _lastLayout.FieldModelUpdated -= LayoutDocument_FieldModelUpdated;
         }
     }
 }

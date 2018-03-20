@@ -840,6 +840,7 @@ namespace Dash
                         curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
                         curLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
                         curLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
+                        curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     }
                     activeLayout = new StackLayout(new DocumentController[] { newField, curLayout }).Document;
                     activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(ViewModel.Position), true);

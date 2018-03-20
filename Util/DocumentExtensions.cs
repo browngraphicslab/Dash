@@ -121,7 +121,22 @@ namespace Dash
                         true);
             }
             return newDoc;
-        } 
+        }
+
+        /// <summary>
+        /// Creates an instance of a document's activeLayout and overrides width/height/and position
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static DocumentController GetViewInstance(this DocumentController doc, Point? where=null)
+        {
+            var activeLayout = (doc.GetActiveLayout() ?? doc).MakeDelegate();
+            activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
+            activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data), true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data), true);
+            return activeLayout;
+        }
         /// <summary>
         /// Creates an instance of a document's data and copies the documents view.
         /// </summary>
