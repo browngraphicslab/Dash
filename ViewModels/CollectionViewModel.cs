@@ -221,8 +221,8 @@ namespace Dash
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
                 if (fieldDict == null)
                     continue;
-                foreach (var f in d.EnumFields())
-                    if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
+                foreach (var f in d.EnumDisplayableFields())
+                    if (!f.Key.Equals(pivotKey))
                     {
                         if (!fieldDict.ContainsKey(f.Key))
                         {
@@ -286,7 +286,7 @@ namespace Dash
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
-                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+                if (d.GetDataDocument(null).GetAllPrototypes().Contains(pivotDoc) || pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
                     {

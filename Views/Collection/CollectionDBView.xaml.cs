@@ -40,7 +40,7 @@ namespace Dash
 
         void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
             var pattern = ParentDocument.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
             if (dbDocs != null && pattern != null && !string.IsNullOrEmpty(pattern.Name))
             {
@@ -183,7 +183,7 @@ namespace Dash
 
         void updateChart(Context context, bool updateViewOnly=false)
         {
-            var dbDocs  = ParentDocument?.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
             var buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(CollectionDBView.BucketsKey, context)?.Data;
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, context);
             var autofit = ParentDocument?.GetDereferencedField<NumberController>(CollectionDBView.AutoFitKey, context)?.Data != 0;

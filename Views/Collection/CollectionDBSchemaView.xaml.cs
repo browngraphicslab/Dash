@@ -253,7 +253,7 @@ namespace Dash
         KeyController _lastFieldSortKey = null;
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
-            var dbDocs = ParentDocument
+            var dbDocs = ParentDocument.GetDataDocument()
                    .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
@@ -456,13 +456,14 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
-                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(), collectionViewModel.CollectionKey);
+                var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
                     new DragCollectionFieldModel(
-                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
-                    collectionReference,
-                    viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB
+                        collectionData,
+                        collectionReference,
+                        viewModel.FieldKey,
+                        CollectionView.CollectionViewType.DB
                     ));
             }
         }
