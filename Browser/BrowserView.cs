@@ -93,7 +93,7 @@ namespace Dash
 
             _dataMessageWriter = new DataWriter(_socket.OutputStream);
 
-            //await _socket.ConnectAsync(new Uri("ws://dashchromewebapp.azurewebsites.net/api/values"));
+            await _socket.ConnectAsync(new Uri("ws://dashchromewebapp.azurewebsites.net/api/values"));
         }
 
         private static void SocketClosed(IWebSocket sender, WebSocketClosedEventArgs args)
@@ -271,7 +271,7 @@ namespace Dash
         public static void ForceInit()
         {
             var r = new PingBrowserRequest();
-            //SendToServer(r.Serialize());
+            SendToServer(r.Serialize());
         }
 
 
@@ -279,7 +279,7 @@ namespace Dash
         {
             var r = new NewTabBrowserRequest();
             r.url = url;
-           // SendToServer(r.Serialize());
+            SendToServer(r.Serialize());
         }
 
         private string _url;
