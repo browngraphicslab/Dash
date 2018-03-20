@@ -682,7 +682,7 @@ namespace Dash
                 }
                 var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
                 doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
-                dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
+               // dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
             }
         }
 

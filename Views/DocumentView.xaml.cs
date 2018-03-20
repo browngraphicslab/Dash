@@ -1,11 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -14,14 +10,10 @@ using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
-using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 
@@ -116,13 +108,11 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
-                var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
                 var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
-                ManipulationMode = right && parentFreeform != null && (shiftState || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+                ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
             };
-            //ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
@@ -134,10 +124,18 @@ namespace Dash
             };
 
             // setup ResizeHandles
-            ResizeHandleTopLeft.ManipulationDelta += ResizeHandleTopLeft_OnManipulationDelta;
-            ResizeHandleTopRight.ManipulationDelta += ResizeHandleTopRight_OnManipulationDelta;
-            ResizeHandleBottomLeft.ManipulationDelta += ResizeHandleBottomLeft_OnManipulationDelta;
-            ResizeHandleBottomRight.ManipulationDelta += ResizeHandleBottomRight_OnManipulationDelta;
+            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+            {
+                if (!this.IsRightBtnPressed()) // ignore right button drags
+                {
+                    e.Handled = true;
+                    PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
+                }
+            }
+            ResizeHandleTopLeft.ManipulationDelta += (s,e) => Resize(s as FrameworkElement, e, true, true); 
+            ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
+            ResizeHandleBottomLeft.ManipulationDelta += (s, e) =>  Resize(s as FrameworkElement, e, false, true);
+            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
             ResizeHandleTopLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
             ResizeHandleTopRight.ManipulationStarted += ResizeHandles_OnManipulationStarted;
             ResizeHandleBottomLeft.ManipulationStarted += ResizeHandles_OnManipulationStarted;
@@ -218,8 +216,12 @@ namespace Dash
             });
 
             MenuFlyout = xMenuFlyout;
-            
-            xMenuFlyout.Opened += XMenuFlyout_Opened;
+
+            xMenuFlyout.Opened += (s, e) =>
+            {
+                if (this.IsShiftPressed())
+                    xMenuFlyout.Hide();
+            };
         }
 
         /// <summary> 
@@ -241,21 +243,12 @@ namespace Dash
             ViewModel.InteractiveManipulationScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
-
-        private void XMenuFlyout_Opened(object sender, object e)
-        {
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            if (shiftState)
-                xMenuFlyout.Hide();
-        }
+        
 
         private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
         {
-            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            if (!f1.HasFlag(CoreVirtualKeyStates.Down))
-            {
+            if (!this.IsF1Pressed())
                 ShowLocalContext(false);
-            }
         }
         
         /// <summary>
@@ -265,39 +258,24 @@ namespace Dash
         /// <param name="e"></param>
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            // gets the states of various keys
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-
-            if (f1State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
+            if (this.IsF1Pressed() && this.IsPointerOver())
             {
                 ShowLocalContext(true);
             }
-            if (f2State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
+            if (this.IsF2Pressed() && this.IsPointerOver())
             {
                 ShowSelectedContext();
             }
             
             var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
 
-            if (ViewModel != null && ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
-
-                                      e.VirtualKey.Equals(VirtualKey.Enter))
+            if (ViewModel != null && ViewModel.Equals(focused) && 
+                this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift) && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
             {
                 // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
-                    ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                    return;
-
-                HandleShiftEnter();
+                if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                    !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                    HandleShiftEnter();
             }
         }
 
@@ -466,35 +444,6 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
 
-        public void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
-            {
-                e.Handled = true;
-                PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
-            }
-        }
-
-        public void ResizeHandleTopLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Resize(sender as FrameworkElement, e, true, true);
-        }
-
-        public void ResizeHandleTopRight_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Resize(sender as FrameworkElement, e, true, false);
-        }
-
-        public void ResizeHandleBottomLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Resize(sender as FrameworkElement, e, false, true);
-        }
-
-        public void ResizeHandleBottomRight_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            Resize(sender as FrameworkElement, e, false, false);
-        }
-
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
 
@@ -516,7 +465,7 @@ namespace Dash
                 */
             }
 
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
+            if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
@@ -531,8 +480,8 @@ namespace Dash
             int cursorYDirection = shiftTop ? -1 : 1;
             int moveXScale = shiftLeft ? 1 : 0;
             int moveYScale = shiftTop ? 1 : 0;
-            
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+
+            if (this.IsCtrlPressed())
             {
                 // proportional resizing
                 var diffX = cursorXDirection * p.X;
@@ -577,7 +526,7 @@ namespace Dash
 
             e.Handled = true;
 
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            if (!this.IsShiftPressed())
             {
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
