@@ -357,6 +357,7 @@ namespace Dash
         private void RemoveControllerListeners()
         {
             LayoutDocument.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var icon = LayoutDocument.GetDereferencedField<NumberController>(KeyStore.IconTypeFieldKey, null);
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
@@ -383,6 +384,7 @@ namespace Dash
             
             LayoutDocument.FieldModelUpdated += LayoutDocument_FieldModelUpdated;
             LayoutDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
+            DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_LayoutUpdated);
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(LayoutDocument);
             Context = newContext;

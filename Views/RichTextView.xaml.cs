@@ -164,16 +164,19 @@ namespace Dash
         {
             if (!_isPointerPressed)
             {
+                xRichEditBox.Height = double.NaN;
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                var relative = this. GetFirstAncestorOfType<RelativePanel>();
+                var relative = Parent as RelativePanel;
                 var pad = 0.0;
                 if (relative != null)
                 {
                     foreach (var item in relative.Children)
                         if (item != this)
                             pad = (item as FrameworkElement).ActualHeight;
-                    relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height + pad);
+                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
                 }
+                else
+                    this.Height = xRichEditBox.DesiredSize.Height;
             }
         }
 
