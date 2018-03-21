@@ -42,8 +42,7 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance { get; private set; }
-
-        public RadialMenuView       RadialMenu {get;set;}
+        
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
@@ -63,8 +62,8 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            RadialMenu = new RadialMenuView(xCanvas);
-            RadialMenu.Loaded += (s,e) => RadialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
+            var radialMenu = new RadialMenuView(xCanvas);
+            radialMenu.Loaded += (s,e) => radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
 
             Loaded += (s, e) =>
             {
