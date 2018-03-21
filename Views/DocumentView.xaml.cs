@@ -85,10 +85,6 @@ namespace Dash
                         Mode = BindingMode.OneWay
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
-
-                // binds the display title of the document to the back end representation
-                // TODO: shouldn't this be covered by binding
-                ViewModel?.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
             }
 
             Loaded += (sender, e) => {
@@ -278,7 +274,6 @@ namespace Dash
                 xContextCanvas.Children.Remove(_localContextPreview);
                 _localContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
                 if (_selectedContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -295,10 +290,7 @@ namespace Dash
                 if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
                 var context = ViewModel.DocumentController.GetFirstContext();
-                if (context == null) return;
-                ViewModel.SetHasTitle(true);
-
-                if (_localContextPreview == null)
+                if (context != null && _localContextPreview == null)
                 {
                     _localContextPreview = new ContextPreview(context)
                     {
@@ -324,7 +316,6 @@ namespace Dash
                 xContextCanvas.Children.Remove(_selectedContextPreview);
                 _selectedContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
                 if (_localContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -341,7 +332,6 @@ namespace Dash
                 var context = ViewModel.DataDocument
                     .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext();
                 if (context == null) return;
-                ViewModel.SetHasTitle(true);
 
                 if (_selectedContextPreview == null)
                 {
