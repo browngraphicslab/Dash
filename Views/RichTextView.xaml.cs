@@ -175,8 +175,7 @@ namespace Dash
                             pad += (item as FrameworkElement).ActualHeight;
                     relative.Height = xRichEditBox.DesiredSize.Height + pad;
                 }
-                else
-                    this.Height = xRichEditBox.DesiredSize.Height;
+                this.Height = xRichEditBox.DesiredSize.Height;
             }
         }
 

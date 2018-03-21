@@ -1308,8 +1308,8 @@ namespace Dash
                         var refSender = sender as ReferenceController;
                         var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
                                     this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        if (!new Context(proto).IsCompatibleWith(c) &&
-                            GetDataDocument(null).GetId() != refSender?.GetDocumentId(null))
+                        if (GetDataDocument(null).GetId() != refSender?.GetDocumentId(null) &&
+                            !new Context(proto).IsCompatibleWith(c))
                         {
                             return;
                         }
