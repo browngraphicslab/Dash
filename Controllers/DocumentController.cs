@@ -207,40 +207,41 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-                {
-                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
-                    if (primaryKeys != null)
-                    {
-                        bool found = true;
-                        foreach (var value in primaryKeyValues)
-                        {
-                            bool foundValue = false;
-                            foreach (var key in primaryKeys.Data)
-                            {
-                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
-                                if (derefValue != null)
-                                {
-                                    if (value == derefValue)
-                                    {
-                                        foundValue = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!foundValue)
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            return dmc;
-                        }
-                    }
-                }
+            // Replace this method with a proper search function
+            //foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
+            //    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+            //    {
+            //        var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
+            //        if (primaryKeys != null)
+            //        {
+            //            bool found = true;
+            //            foreach (var value in primaryKeyValues)
+            //            {
+            //                bool foundValue = false;
+            //                foreach (var key in primaryKeys.Data)
+            //                {
+            //                    var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
+            //                    if (derefValue != null)
+            //                    {
+            //                        if (value == derefValue)
+            //                        {
+            //                            foundValue = true;
+            //                            break;
+            //                        }
+            //                    }
+            //                }
+            //                if (!foundValue)
+            //                {
+            //                    found = false;
+            //                    break;
+            //                }
+            //            }
+            //            if (found)
+            //            {
+            //                return dmc;
+            //            }
+            //        }
+            //    }
             return null;
         }
         DocumentController lookupOperator(string opname)
@@ -490,8 +491,9 @@ namespace Dash
                 {
                     FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
+                        var dargs = (DocumentFieldUpdatedEventArgs)args;
+                        dargs.FromDelegate = true;
+                        prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
                     };
                     prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
                     prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;

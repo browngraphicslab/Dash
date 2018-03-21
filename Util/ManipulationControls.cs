@@ -32,7 +32,6 @@ namespace Dash
         public double MaxScale { get; set; } = 5.0;
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
-        public List<DocumentViewModel> Grouping { get; set; }
 
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();

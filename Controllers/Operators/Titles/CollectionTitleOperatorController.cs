@@ -67,20 +67,4 @@ namespace Dash
         }
 
     }
-    public class GroupTitleOperatorController : CollectionTitleOperatorController
-    {
-
-        protected override string Prefix() { return "GROUP: "; }
-        public GroupTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
-        public GroupTitleOperatorController() : base(new OperatorModel(OperatorType.GroupTitle))
-        {
-        }
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            return new GroupTitleOperatorController();
-        }
-
-    }
 }

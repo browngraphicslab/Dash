@@ -290,7 +290,6 @@ namespace Dash
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
                     {
-                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                     }, DocumentType.DefaultType);
                     if (obj is string)
                     {

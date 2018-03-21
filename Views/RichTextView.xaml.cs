@@ -390,25 +390,6 @@ namespace Dash
                 xRichEditBox.Document.Selection.SetRange(s1, s2);
             return target;
         }
-        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
-        {
-            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
-            if (theDoc == null && createIfNeeded)
-            {
-                if (refText.StartsWith("http"))
-                {
-                    theDoc = new HtmlNote(refText).Document;
-                }
-                else
-                {
-                    theDoc = new NoteDocuments.RichTextNote().Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
-                }
-            }
-
-            return theDoc;
-        }
 
         void linkDocumentToSelection(DocumentController theDoc, bool forceLocal)
         {
