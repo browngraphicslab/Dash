@@ -17,26 +17,6 @@ namespace Dash
     /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        // == Special Properties ==
-        public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-        public bool HasDelegates
-        {
-            get
-            {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ?
-                    _fields[KeyStore.DelegatesKey] as ListController<DocumentController> : null;
-
-                if (currentDelegates == null)
-                    return false;
-                return currentDelegates.Data.Any();
-            }
-        }
-        public bool HasPrototype => _fields.ContainsKey(KeyStore.PrototypeKey) &&
-                                        (_fields[KeyStore.PrototypeKey] as DocumentController)
-                                        ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
-                                _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
-        
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
@@ -67,8 +47,6 @@ namespace Dash
             }
         }
 
-        public bool IsConnected { get; set; }
-
         public bool HasMatchingKey(string keyName)
         {
             if (string.IsNullOrWhiteSpace(keyName))
@@ -89,7 +67,6 @@ namespace Dash
         {
             return Title;
         }
-
 
 
         /// <summary>
