@@ -731,10 +731,10 @@ namespace Dash
                 proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 // fire document field updated if the field has been replaced or if it did not exist before
-                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(GetId(), key);
-                generateDocumentFieldUpdatedEvents(field,
-                    new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false), reference, new Context(proto));
+                var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference  = new DocumentFieldReference(GetId(), key);
+                var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
+                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                 {
