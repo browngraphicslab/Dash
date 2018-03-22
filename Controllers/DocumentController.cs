@@ -457,93 +457,6 @@ namespace Dash
         }
 
 
-        /// <summary>
-        /// Returns whether or not the field has changed that is associated with the passed in key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="field"></param>
-        /// <param name="forceMask"></param>
-        /// <returns></returns>
-        private bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
-        {
-            // get the prototype with the desired key or just get ourself
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
-
-            // get the old value of the field
-            FieldControllerBase oldField;
-            proto._fields.TryGetValue(key, out oldField);
-
-            // if the old and new field reference the exact same controller then we're done
-            if (!ReferenceEquals(oldField, field))
-            {
-                //if (proto.CheckCycle(key, field))
-                //{
-                //    return false;
-                //}
-
-                field.SaveOnServer();
-                oldField?.DisposeField();
-
-                proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
-
-                // fire document field updated if the field has been replaced or if it did not exist before
-                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(GetId(), key);
-                OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false), new Context(proto), true);
-
-                if (key.Equals(KeyStore.PrototypeKey))
-                {
-                    setupPrototypeFieldChangedListeners(field);
-                }
-                else if (key.Equals(KeyStore.DocumentContextKey))
-                    ; // do we need to watch anything when the DocumentContext field is set?
-                else
-                {
-                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
-                }
-
-                return true;
-            }
-            return false;
-        }
-
-        
-
-        /// <summary>
-        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
-        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
-        ///     created in this <see cref="DocumentController" />.
-        ///     <para>
-        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
-        ///         any prototype that might exist by setting the field on this
-        ///     </para>
-        /// </summary>
-        /// <param name="key">key index of field to update</param>
-        /// <param name="field">FieldModel to update to</param>
-        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
-        {
-            // TODO check field type compatibility
-            var context = new Context(this);
-            var shouldExecute = false;
-            var fieldChanged = false;
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (fieldChanged = SetFieldHelper(key, field, forceMask))
-            {
-                shouldExecute = ShouldExecute(context, key);
-                UpdateOnServer();
-                // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-            }
-            if (shouldExecute)
-            {
-                Execute(context, true);
-            }
-
-            return fieldChanged;
-        }
-
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
@@ -653,8 +566,6 @@ namespace Dash
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
-
-            //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = this;
@@ -790,34 +701,120 @@ namespace Dash
         }
 
         /// <summary>
+        /// Returns whether or not the field has changed that is associated with the passed in key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="field"></param>
+        /// <param name="forceMask"></param>
+        /// <returns></returns>
+        bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        {
+            // get the prototype with the desired key or just get ourself
+            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+
+            // get the old value of the field
+            FieldControllerBase oldField;
+            proto._fields.TryGetValue(key, out oldField);
+
+            // if the old and new field reference the exact same controller then we're done
+            if (!ReferenceEquals(oldField, field))
+            {
+                //if (proto.CheckCycle(key, field))
+                //{
+                //    return false;
+                //}
+
+                field.SaveOnServer();
+                oldField?.DisposeField();
+
+                proto._fields[key] = field;
+                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+
+                // fire document field updated if the field has been replaced or if it did not exist before
+                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference = new DocumentFieldReference(GetId(), key);
+                generateDocumentFieldUpdatedEvents(field,
+                    new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false), reference, new Context(proto));
+
+                if (key.Equals(KeyStore.PrototypeKey))
+                {
+                    setupPrototypeFieldChangedListeners(field);
+                }
+                else if (key.Equals(KeyStore.DocumentContextKey))
+                    ; // do we need to watch anything when the DocumentContext field is set?
+                else
+                {
+                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
+        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
+        ///     created in this <see cref="DocumentController" />.
+        ///     <para>
+        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
+        ///         any prototype that might exist by setting the field on this
+        ///     </para>
+        /// </summary>
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
+        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
+        {
+            var fieldChanged = SetFieldHelper(key, field, forceMask);
+            if (fieldChanged)
+            {
+                UpdateOnServer();
+            }
+
+            return fieldChanged;
+        }
+        public bool SetField<TDefault,V>(KeyController key, V v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        {
+            var field = GetField<TDefault>(key, forceMask);
+            if (field != null)
+            {
+                if (field.SetValue(v))
+                {
+                    UpdateOnServer();
+                    return true;
+                }
+            }
+            else
+            {
+                var f = new TDefault();
+                if (f.SetValue(v))
+                    return SetField(key, f, forceMask, enforceTypeCheck);
+            }
+
+            return false;
+        }
+
+        /// <summary>
         ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
         ///     pairs. If <paramref name="forceMask" /> is true, all the fields are set on this <see cref="DocumentController" />
         ///     otherwise each
         ///     field is written on the first prototype in the hierarchy which contains it
         /// </summary>
-        public bool SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
         {
-            // set up context
-            Context c = new Context(this);
-            bool shouldExecute = false;
             bool shouldSave = false;
-            var array = fields.ToArray();
-
             // update with each of the new fields
-            foreach (var field in array)
+            foreach (var field in fields.ToArray().Where((f) => f.Key != null))
             {
-                if (field.Key != null && SetFieldHelper(field.Key, field.Value, forceMask))
+                if (SetFieldHelper(field.Key, field.Value, forceMask))
                 {
                     shouldSave = true;
-                    shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                 }
             }
-
-            // update or execute as needed
-            if (shouldExecute)  Execute(c, true);
-            if (shouldSave) UpdateOnServer();
-
-            return shouldExecute;
+            if (shouldSave)
+                UpdateOnServer();
         }
 
         /// <summary>
@@ -1296,16 +1293,22 @@ namespace Dash
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-                    var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,  reference, args, false);
-                    if (ShouldExecute(newContext, reference.FieldKey))
-                    {
-                        newContext = Execute(newContext, true, updateArgs);
-                    }
-                    OnDocumentFieldUpdated(this, updateArgs, newContext, true);
+
+                    var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
+                    generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
                 }
             };
             if (newField != null)
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+        }
+
+        void generateDocumentFieldUpdatedEvents(FieldControllerBase sender, DocumentFieldUpdatedEventArgs args, DocumentFieldReference reference, Context newContext)
+        {
+            if (ShouldExecute(newContext, reference.FieldKey))
+            {
+                newContext = Execute(newContext, true, args);
+            }
+            OnDocumentFieldUpdated(this, args, newContext, true);
         }
 
         /// <summary>
