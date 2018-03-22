@@ -27,7 +27,6 @@ namespace Dash
                 if (_prototype == null)
                 {
                     _prototype = createPrototype(prototypeID);
-                    _prototype.SetField(KeyStore.ThisKey, _prototype, true);
                 }
             }
             protected DocumentController _prototype;
@@ -45,7 +44,6 @@ namespace Dash
 
             protected DocumentController initSharedLayout(DocumentController layout, DocumentController dataDocument, Size size, string title = null)
             {
-                dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
                 if (!string.IsNullOrEmpty(title))
                     dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 layout.SetField(KeyStore.WidthFieldKey, new NumberController(size.Width == 0 ? 400 : size.Width), true);

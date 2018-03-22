@@ -275,7 +275,7 @@ namespace Dash
             {
                 if (path.Length == 1)
                 {
-                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
+                    return refDoc; // found <DocName=a>
                 }
                 else
                     foreach (var e in refDoc.EnumFields())
@@ -1300,7 +1300,7 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
 
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey) && !key.Equals(KeyStore.DocumentContextKey))
+            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.DocumentContextKey))
             {
                 FieldControllerBase.FieldUpdatedHandler handler =
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)

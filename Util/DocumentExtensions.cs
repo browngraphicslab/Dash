@@ -601,8 +601,6 @@ namespace Dash
             {
                 if (excludeKeys != null && excludeKeys.Contains(kvp.Key))
                     continue;
-                else if (kvp.Key.Equals(KeyStore.ThisKey))
-                    fields[kvp.Key] = copy;
                 else if (dontCopyKeys != null && dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
                     fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)

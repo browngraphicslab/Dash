@@ -74,9 +74,7 @@ namespace Dash
             var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);

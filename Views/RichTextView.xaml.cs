@@ -109,7 +109,7 @@ namespace Dash
             setText(getRtfText());
 
             var allText = getReadableText();
-            var curText = DataDocument.GetField<TextController>(KeyStore.DocumentTextKey);
+            var curText = DataDocument.GetField<TextController>(KeyStore.DocumentTextKey, true);
             if (curText != null)
                 curText.Data = allText;
             else
