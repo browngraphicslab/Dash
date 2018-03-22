@@ -1298,7 +1298,8 @@ namespace Dash
                  newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
             }
 
-            if (key.Equals(KeyStore.PrototypeKey) && newField is DocumentController prototype)
+            var prototype = newField as DocumentController;
+            if (key.Equals(KeyStore.PrototypeKey) && prototype != null)
             {
                 void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                 {

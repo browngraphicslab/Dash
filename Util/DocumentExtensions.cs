@@ -124,7 +124,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Creates an instance of a document's activeLayout and overrides width/height/and position
+        /// Creates an instance of a document's activeLayout and overrides data/width/height/and position
         /// </summary>
         /// <param name="doc"></param>
         /// <param name="where"></param>
@@ -133,8 +133,11 @@ namespace Dash
         {
             var activeLayout = (doc.GetActiveLayout() ?? doc).MakeDelegate();
             activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
-            activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data), true);
-            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data), true);
+            activeLayout.SetField(KeyStore.WidthFieldKey,  activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Copy(), true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Copy(), true);
+            var data = activeLayout.GetDereferencedField(KeyStore.DataKey, null);
+            if (data != null)
+                activeLayout.SetField(KeyStore.DataKey, data.GetCopy(), true);
             return activeLayout;
         }
         /// <summary>
