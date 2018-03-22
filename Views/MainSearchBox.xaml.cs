@@ -45,10 +45,54 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteSearch(sender);
+                ExecuteDishSearch(sender);
 
             }
             _currentSearch = sender.Text.ToLower(); ;
+        }
+
+
+        private void ExecuteDishSearch(AutoSuggestBox searchBox)
+        {
+            if (searchBox == null)
+            {
+                return;
+            }
+
+
+            var text = searchBox.Text.ToLower();
+            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
+
+            var maxSearchResultSize = 75;
+
+            var interpreted = DSL.Interpret(DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(" + text + ")");
+            var resultDict = interpreted as DocumentController;
+
+            Debug.Assert(resultDict != null);
+
+            var vms = new List<SearchResultViewModel>();
+            var lists = new List<List<DocumentController>>();
+
+            foreach (var kvp in resultDict.EnumFields(true))
+            {
+                var list = kvp.Value as ListController<DocumentController>;
+                if (list != null)
+                {
+                    lists.Add(list.TypedData);
+                }
+            }
+
+            foreach (var list in lists.OrderBy(i => i.Count))
+            {
+                vms.Add(SearchHelper.DocumentSearchResultToViewModel(list.First()));
+            }
+
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+            }
         }
 
         private void ExecuteSearch(AutoSuggestBox searchBox)
@@ -242,6 +286,29 @@ namespace Dash
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             }
 
+            public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
+            {
+                var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
+                var helpText = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey);
+
+                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, null, null, true);
+            }
+
+            public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string search)
+            {
+                var srmvs = LocalSearch(search);
+                List<DocumentController> list = new List<DocumentController>();
+                foreach (var srvm in srmvs)
+                {
+                    var doc = new DocumentController();
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ViewDocument.Id), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(srvm.Title), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.ContextualText), true);
+                    list.Add(doc);
+                }
+                return list;
+            }
 
             private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
             {

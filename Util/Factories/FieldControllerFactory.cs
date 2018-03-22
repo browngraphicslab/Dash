@@ -194,6 +194,9 @@ namespace Dash
                 case OperatorType.ExecDish:
                     controller = new ExecDishOperatorController(model);
                     break;
+                case OperatorType.ParseSearchStringToDish:
+                    controller = new ParseSearchStringToDishOperatorController(model);
+                    break;
                 case OperatorType.ExecuteDishToString:
                     controller = new GetScriptValueAsStringOperatorController(model);
                     break;

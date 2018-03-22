@@ -65,6 +65,8 @@ namespace DashShared
         IntersectByValue,
         ExecuteDishToString,
         SimplifiedSearch,
-        GetKeys
+        GetKeys,
+        PutSearchResultsIntoDictionary,
+        IntersectSearch
     }
 }

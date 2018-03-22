@@ -54,8 +54,7 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+"(Term:{" + searchTerm + "})";
+            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "("+OperatorScript.GetDishOperatorName<SearchOperatorController>()+"({" + searchTerm + "}))";
         }
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
@@ -66,8 +65,7 @@ namespace Dash
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return OperatorScript.GetDishOperatorName<IntersectByValueOperatorController>() + "(A:" + search1 + ",B:" + search2 + ")";
+            return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
@@ -80,6 +78,7 @@ namespace Dash
                 outputs[ScriptKey] = new TextController("");
                 return;
             }
+
             var searches = new Stack<string>(parts.Select(WrapSearchTermInFunction));
             while (searches.Count() > 1)
             {

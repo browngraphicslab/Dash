@@ -54,7 +54,8 @@ namespace Dash
             string result;
             try
             {
-                result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "").GetValue(null).ToString();
+                var controller = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
+                result = controller is BaseListController ? string.Join("      " ,(controller as BaseListController).Data.Select(i => i.ToString())) : controller.GetValue(null).ToString();
             }
             catch (OperatorScriptParser.InvalidDishScriptException e)
             {
