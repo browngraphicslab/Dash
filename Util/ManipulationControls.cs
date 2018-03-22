@@ -141,7 +141,7 @@ namespace Dash
             }
         }
         
-        public Rect ResizeAlign(Point translate, Point sizeChange)
+        public Rect ResizeAlign(Point translate, Point sizeChange, bool shiftTop, bool shiftLeft)
         {
             MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
@@ -150,42 +150,61 @@ namespace Dash
                 return ParentDocument.ViewModel.Bounds;
 
             var parentDocumentBoundsBefore = ParentDocument.ViewModel.Bounds;
-            var parentDocumentBoundsAfter = new Rect(parentDocumentBoundsBefore.X + translate.X, parentDocumentBoundsBefore.Y + translate.Y, parentDocumentBoundsBefore.Width, parentDocumentBoundsBefore.Height);
-            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
-
+            var parentDocumentBoundsAfter = new Rect(parentDocumentBoundsBefore.X + translate.X, parentDocumentBoundsBefore.Y + translate.Y,
+                                                                                        Math.Max(ParentDocument.MinWidth, parentDocumentBoundsBefore.Width + sizeChange.X), 
+                                                                                        Math.Max(ParentDocument.MinHeight, parentDocumentBoundsBefore.Height + sizeChange.Y));
+            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels; //.Where(vm => vm != ParentDocument.ViewModel);
             var parentAxesBefore = AlignmentAxes(ParentDocument.ViewModel.Bounds);
-
             var parentAxesAfter = AlignmentAxes(parentDocumentBoundsAfter);
+            double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
+
             //Find the document we will snap to when resized - optionally resize 
             foreach (var document in listOfSiblings)
             {
+                if (document == ParentDocument.ViewModel) continue;
                 var documentBounds = InteractiveBounds(document);
                 var documentAxes = AlignmentAxes(documentBounds);
                 //Check four sides of the document view (hopefully, we can resize from multiple places one day!) 
-                //AlignmentAxis[] relevantAxes = { AlignmentAxis.XMin, AlignmentAxis.XMax, AlignmentAxis.YMin, AlignmentAxis.YMax};
-                AlignmentAxis[] relevantAxes = {AlignmentAxis.XMax};
+                AlignmentAxis[] relevantAxes = ReleventAxes(shiftTop, shiftLeft);
 
                 foreach (var parentDocumentAxis in relevantAxes)
                 {
+                    bool axisPos = parentAxesAfter[(int)parentDocumentAxis] >= parentAxesBefore[(int)parentDocumentAxis];
                     foreach (var otherDocumentAxis in getAlignableAxis(parentDocumentAxis))
                     {
                         var deltaBefore = documentAxes[(int)otherDocumentAxis] - parentAxesBefore[(int)parentDocumentAxis];
-                        var deltaAfter = documentAxes[(int)otherDocumentAxis] - parentAxesAfter[(int)parentDocumentAxis];
+                        var distance = Math.Abs(deltaBefore);
 
-                        if (Math.Abs(deltaBefore) > 50)
+                        if ((distance > 15) ||
+                            (!axisPos && parentAxesAfter[(int) parentDocumentAxis] <= documentAxes[(int) otherDocumentAxis] - thresh) || 
+                            ((axisPos && parentAxesAfter[(int) parentDocumentAxis] >= documentAxes[(int) otherDocumentAxis] + thresh)))
                             continue;
 
-                        if (deltaBefore >= 0 && documentAxes[(int)otherDocumentAxis] > parentAxesBefore[(int)parentDocumentAxis]||
-                            (deltaBefore <= 0 && documentAxes[(int)otherDocumentAxis] < parentAxesBefore[(int)parentDocumentAxis]))
-                        {
-                            ShowPreviewLine(parentDocumentBoundsBefore, documentAxes, parentDocumentAxis, otherDocumentAxis, new Point(deltaBefore, translate.Y));
-                            return BoundsAfterResizeAligningAxis(parentDocumentAxis, deltaBefore);
-                        }
+
+                        ShowPreviewLine(parentDocumentBoundsBefore, documentAxes, parentDocumentAxis, otherDocumentAxis, new Point(deltaBefore, translate.Y));
+                        return BoundsAfterResizeAligningAxis(parentDocumentAxis, deltaBefore);
+                        
 
                     }
                 }
             }
-            return parentDocumentBoundsBefore;
+            return parentDocumentBoundsAfter;
+        }
+
+        private AlignmentAxis[] ReleventAxes(bool shiftTop, bool shiftLeft)
+        {
+            List<AlignmentAxis> axes = new List<AlignmentAxis>();
+            if (shiftTop)
+                axes.Add(AlignmentAxis.YMin);
+            else
+                axes.Add(AlignmentAxis.YMax);
+
+            if (shiftLeft)
+                axes.Add(AlignmentAxis.XMin);
+            else
+                axes.Add(AlignmentAxis.XMax);
+
+            return axes.ToArray();
         }
 
         private Rect BoundsAfterResizeAligningAxis(AlignmentAxis axisBeingAligned, double deltaBefore)
@@ -246,7 +265,7 @@ namespace Dash
                         if(parentAxis < 3 && distance < 15)
                         {
                             if((translate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((translate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                break;
+                                continue;
 
                             ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, translate.Y));
                             return new Point(delta, translate.Y);
@@ -255,13 +274,7 @@ namespace Dash
                         {
 
                             if ((translate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((translate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                break;
-
-                            //Debug.WriteLine("Delta is " + delta.ToString());
-                            //Debug.WriteLine("Translate is: " + translate.ToString());
-                            //Debug.WriteLine("Parent Axis is " + parentDocumentAxesAfter[parentAxis]);
-                            //Debug.WriteLine("Other Axis is  " + documentAxes[otherAxis]);
-                            //Debug.WriteLine("");
+                                continue;
 
                             ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translate.X, delta));
                             return new Point(translate.X, delta);

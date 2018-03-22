@@ -467,31 +467,6 @@ namespace Dash
         {
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
             {
-/*
-<<<<<<< HEAD
-                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
-                {
-                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
-                    var h = ViewModel.Height;
-
-
-                    // Important to pass in bounding box, not just change in w/h because resizing may change to using four corners
-                    var widthBeforeAlignment = Math.Max(w + dx, MinWidth);
-                    var heightBeforeAlignment = Math.Max(h + dy, MinHeight);
-
-                    var bbAfterAlignment = ManipulationControls.ResizeAlign(new Point(), new Point(widthBeforeAlignment - w, heightBeforeAlignment - h));
-
-                    ViewModel.XPos = bbAfterAlignment.X;
-                    ViewModel.YPos = bbAfterAlignment.Y;
-                    ViewModel.Width  = Math.Max(bbAfterAlignment.Width, MinWidth);
-                    ViewModel.Height = Math.Max(bbAfterAlignment.Height, MinHeight);
-
-                    return new Size(ViewModel.Width, ViewModel.Height);
-                }
-                return new Size();
-=======
-*/
                 e.Handled = true;
                 PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
             }
@@ -516,6 +491,36 @@ namespace Dash
         {
             Resize(sender as FrameworkElement, e, false, false);
         }
+
+
+
+        /*
+<<<<<<< HEAD
+if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
+{
+    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+    var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
+    var h = ViewModel.Height;
+
+
+    // Important to pass in bounding box, not just change in w/h because resizing may change to using four corners
+    var widthBeforeAlignment = Math.Max(w + dx, MinWidth);
+    var heightBeforeAlignment = Math.Max(h + dy, MinHeight);
+
+    var bbAfterAlignment = ManipulationControls.ResizeAlign(new Point(), new Point(widthBeforeAlignment - w, heightBeforeAlignment - h));
+
+    ViewModel.XPos = bbAfterAlignment.X;
+    ViewModel.YPos = bbAfterAlignment.Y;
+    ViewModel.Width  = Math.Max(bbAfterAlignment.Width, MinWidth);
+    ViewModel.Height = Math.Max(bbAfterAlignment.Height, MinHeight);
+
+    return new Size(ViewModel.Width, ViewModel.Height);
+}
+return new Size();
+=======
+*/
+
+
 
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
@@ -546,14 +551,63 @@ namespace Dash
             // set old and new sizes for change in height/width comparisons
             Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
             oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth * oldSize.Width : oldSize.Height;
-            Size newSize = new Size();
+//            Size newSize = new Size();
+
+
 
             // sets directions/weights depending on which handle was dragged as mathematical manipulations
             int cursorXDirection = shiftLeft ? -1 : 1;
             int cursorYDirection = shiftTop ? -1 : 1;
             int moveXScale = shiftLeft ? 1 : 0;
             int moveYScale = shiftTop ? 1 : 0;
-            
+
+
+            Rect oldBoundingBox = new Rect(ViewModel.Position, oldSize);
+         
+            Point deltaSize;
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var diffX = cursorXDirection * p.X;
+                deltaSize = new Point(diffX, ViewModel.ActualHeight / ViewModel.ActualWidth * diffX);
+            }
+            else
+            {
+                deltaSize = new Point(cursorXDirection * p.X, cursorYDirection * p.Y);
+            }
+
+
+            Point oldPoint = ViewModel.Position;
+
+            double deltaX = shiftLeft ? p.X : 0;
+            double deltaY = shiftTop ? p.Y : 0;
+            /*
+            Point deltaPosition = new Point(
+                 (oldPoint.X - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                 (oldPoint.Y - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
+            */
+
+            Point deltaPosition = new Point(deltaX, deltaY);
+
+            //Debug.WriteLine("Change in position: " + deltaPosition);
+            //Debug.WriteLine("Change in size: " + deltaSize);
+
+            Rect boundingBoxAfterAlignment = ManipulationControls.ResizeAlign(deltaPosition, deltaSize, shiftTop, shiftLeft);
+            //Debug.WriteLine("Old position: " + ViewModel.Position);
+            ViewModel.Position = new Point(boundingBoxAfterAlignment.X, boundingBoxAfterAlignment.Y);
+            //Debug.WriteLine("New position: " + ViewModel.Position);
+
+            //Debug.WriteLine("Old width: " + ViewModel.Width);
+            //Debug.WriteLine("Old height: " + ViewModel.Height);
+
+            ViewModel.Width = Math.Max(boundingBoxAfterAlignment.Width, MinWidth);
+            ViewModel.Height = Math.Max(boundingBoxAfterAlignment.Height, MinHeight);
+            //Debug.WriteLine("New width: " + ViewModel.Width);
+            //Debug.WriteLine("New height: " + ViewModel.Height);
+
+
+            /*
+
+
             if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
                 // proportional resizing
@@ -570,7 +624,18 @@ namespace Dash
                     ? ViewModel.ActualHeight / ViewModel.ActualWidth * newSize.Width
                     : newSize.Height;
             }
+            
+            Rect Resize()
+            {
+                ManipulationControls.ResizeAlign(new Point(), new Point());
+                return new Rect();
+            }
 
+            ViewModel.Position = new Point(newRect.X, newRect.Y);
+
+            */
+
+            /*
             /// <summary>
             /// Resizes the CollectionView according to the increments in width and height. 
             /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -585,17 +650,22 @@ namespace Dash
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
                     var h = ViewModel.Height;
+                   
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
+                   
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
             }
 
+
+
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
                  (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
                  (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
+            */
 
             e.Handled = true;
 
@@ -606,6 +676,93 @@ namespace Dash
             }
         }
 
+
+
+        /*
+         
+            public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
+            {
+
+                /// <summary>
+                /// Resizes the document while keeping its original width/height ratio.
+                /// </summary>
+                /// <param name="e"></param>
+                void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
+                {
+
+      
+    }
+
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
+                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+
+            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+
+    // set old and new sizes for change in height/width comparisons
+    Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
+    oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth* oldSize.Width : oldSize.Height;
+    Size newSize = new Size();
+
+    // sets directions/weights depending on which handle was dragged as mathematical manipulations
+    int cursorXDirection = shiftLeft ? -1 : 1;
+    int cursorYDirection = shiftTop ? -1 : 1;
+    int moveXScale = shiftLeft ? 1 : 0;
+    int moveYScale = shiftTop ? 1 : 0;
+            
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                // proportional resizing
+                var diffX = cursorXDirection * p.X;
+    newSize = Resize(diffX, ViewModel.ActualHeight / ViewModel.ActualWidth* diffX);
+}
+            else
+            {
+                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
+                newSize = Resize(cursorXDirection* p.X, cursorYDirection* p.Y);
+
+// can't have undefined heights for calculating delta-h for adjusting XPos and YPos
+newSize.Height = double.IsNaN(newSize.Height)
+                    ? ViewModel.ActualHeight / ViewModel.ActualWidth* newSize.Width
+                    : newSize.Height;
+            }
+
+            /// <summary>
+            /// Resizes the CollectionView according to the increments in width and height. 
+            /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
+            /// the Grid must change size to accomodate the height of the ListView.
+            /// </summary>
+            /// <param name="dx"></param>
+            /// <param name="dy"></param>
+            Size Resize(double dx = 0, double dy = 0)
+{
+    if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
+    {
+        // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+        var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
+        var h = ViewModel.Height;
+
+        ViewModel.Width = Math.Max(w + dx, MinWidth);
+        ViewModel.Height = Math.Max(h + dy, MinHeight);
+
+        return new Size(ViewModel.Width, ViewModel.Height);
+    }
+    return new Size();
+}
+
+// if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
+ViewModel.Position = new Point(
+     (ViewModel.XPos - moveXScale* (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                 (ViewModel.YPos - moveYScale* (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
+
+            e.Handled = true;
+
+            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                //uncomment to make children in collection stretch
+                fitFreeFormChildrenToTheirLayouts();
+            }
+        }
+*/
         /// <summary>
         /// If the documentView contains a FreeformCollection, resizes the (TODO: is this right) first
         /// DocumentVIew in that collection to be the size of the FreeformCollection.
