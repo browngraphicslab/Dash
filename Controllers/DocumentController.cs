@@ -487,7 +487,21 @@ namespace Dash
                 proto._fields[key] = field;
                 proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
-                SetupNewFieldListeners(key, field, oldField, new Context(proto));
+                // fire document field updated if the field has been replaced or if it did not exist before
+                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference = new DocumentFieldReference(GetId(), key);
+                OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false), new Context(proto), true);
+
+                if (key.Equals(KeyStore.PrototypeKey))
+                {
+                    setupPrototypeFieldChangedListeners(field);
+                }
+                else if (key.Equals(KeyStore.DocumentContextKey))
+                    ; // do we need to watch anything when the DocumentContext field is set?
+                else
+                {
+                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
+                }
 
                 return true;
             }
@@ -1266,41 +1280,46 @@ namespace Dash
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
-        private void SetupNewFieldListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
+        void setupFieldChangedListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
         {
-            // fire document field updated if the field has been replaced or if it did not exist before
-            var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
-
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.DocumentContextKey) && newField != null)
+            ///<summary>
+            /// Generates a DocumentFieldUpdated event when a fieldModelUpdated event has been fired for a field in this document.
+            ///</summary>
+            void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
-                void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                var refSender = sender as ReferenceController;
+                var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                            this.GetPrototypeWithFieldKey(reference.FieldKey);
+                if (GetDataDocument(null).GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
+                {
+                    var newContext = new Context(c);
+                    if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
+                        newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                    var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,  reference, args, false);
+                    if (ShouldExecute(newContext, reference.FieldKey))
                     {
-                        var refSender = sender as ReferenceController;
-                        var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
-                                    this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        if (GetDataDocument(null).GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
-                        {
-                            var newContext = new Context(c);
-                            if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
-                                // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-                                newContext.AddDocumentContext(this);
-                            var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
-                                reference, args, false);
-                            if (ShouldExecute(newContext, reference.FieldKey))
-                            {
-                                newContext = Execute(newContext, true, updateArgs);
-                            }
-                            OnDocumentFieldUpdated(this, updateArgs, newContext, true);
-                        }
-                    };
-                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
-            }
+                        newContext = Execute(newContext, true, updateArgs);
+                    }
+                    OnDocumentFieldUpdated(this, updateArgs, newContext, true);
+                }
+            };
+            if (newField != null)
+                newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+        }
 
+        /// <summary>
+        /// converts fieldModelEvents on this document to fieldModelEvents on its prototype.
+        /// Also generates fieldModelEvents on this document when a prototype's field changes
+        /// </summary>
+        void setupPrototypeFieldChangedListeners(FieldControllerBase newField)
+        {
             var prototype = newField as DocumentController;
-            if (key.Equals(KeyStore.PrototypeKey) && prototype != null)
+            if (prototype != null)
             {
+                /// <summary>
+                /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
+                /// </summary>
                 void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                 {
                     var dargs = (DocumentFieldUpdatedEventArgs)args;
@@ -1308,30 +1327,32 @@ namespace Dash
                     prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
                 };
                 FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
-                prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
+
+                /// <summary>
+                /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
+                /// the field that was modified on the prototype
+                /// </summary>
+                void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+                {
+                    var updateArgs = (DocumentFieldUpdatedEventArgs)args;
+                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                    {
+                        OnDocumentFieldUpdated(this,
+                            new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
+                                new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
+                                updateArgs.FieldArgs, false), new Context(this), true);
+                    }
+                }
+                prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
+                prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
             }
         }
 
         /// <summary>
-        /// Private handler for Update events triggered from the Prototype document.
-        /// </summary>
-        private void OnPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-            //if this document overrides its prototypes value, then no event occurs since the field doesn't change
-            if (!_fields.ContainsKey(updateArgs.Reference.FieldKey)) { 
-                Context c = new Context(this);
-                var reference = new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey);
-                OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
-                        reference,
-                        updateArgs.FieldArgs, false), c, true);
-            }
-        }
-
-        /// <summary>
-        /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
+        /// Called whenever a field on this document has been modified directly or indirectly 
+        /// (by an operator, prototype, or delegate).
+        /// 
+        /// This then invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
         /// listeners to <see cref="DocumentFieldUpdated"/>
         /// </summary>
         /// <param name="updateDelegates">whether to bubble event down to delegates</param>
