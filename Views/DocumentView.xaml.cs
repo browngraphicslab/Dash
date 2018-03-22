@@ -735,7 +735,7 @@ namespace Dash
 
         #endregion
 
-        private void This_Drop(object sender, DragEventArgs e)
+        void This_Drop(object sender, DragEventArgs e)
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
@@ -780,8 +780,9 @@ namespace Dash
             }
         }
 
-        private void This_DragOver(object sender, DragEventArgs e)
+        void This_DragOver(object sender, DragEventArgs e)
         {
+            ViewModel.DecorationState = ViewModel?.Undecorated == false;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
             if (dragModel?.DraggedKey != null)
@@ -792,6 +793,11 @@ namespace Dash
 
                 e.Handled = true;
             }
+        }
+
+        void This_DragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.DecorationState = false;
         }
     }
 }
