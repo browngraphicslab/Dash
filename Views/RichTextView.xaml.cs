@@ -109,11 +109,7 @@ namespace Dash
             setText(getRtfText());
 
             var allText = getReadableText();
-            var curText = DataDocument.GetField<TextController>(KeyStore.DocumentTextKey, true);
-            if (curText != null)
-                curText.Data = allText;
-            else
-                DataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            DataDocument.SetField<TextController, string>(KeyStore.DocumentTextKey, allText, true);
 
             // auto-generate key/value pairs by scanning the text
             var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");

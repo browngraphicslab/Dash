@@ -744,8 +744,8 @@ namespace Dash
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
                 var newField = dragModel.GetDropDocument(new Point());
-                newField.SetField(KeyStore.HeightFieldKey, new NumberController(30), true);
-                newField.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
+                newField.SetField<NumberController,double>(KeyStore.HeightFieldKey, 30, true);
+                newField.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
                 var activeLayout = ViewModel.DocumentController?.GetActiveLayout() ?? ViewModel.LayoutDocument;
                 if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
                 {
@@ -758,20 +758,20 @@ namespace Dash
                     {
                         curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                         curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
-                        curLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
-                        curLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
+                        curLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                        curLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, double.NaN, true);
                     }
                     else  // need to create a stackPanel activeLayout and add the document to it
                     {
                         curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
-                        curLayout.SetField(KeyStore.WidthFieldKey, new NumberController(double.NaN), true);
-                        curLayout.SetField(KeyStore.HeightFieldKey, new NumberController(double.NaN), true);
+                        curLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                        curLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, double.NaN, true);
                         curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     }
                     activeLayout = new StackLayout(new DocumentController[] { newField, curLayout }).Document;
-                    activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(ViewModel.Position), true);
-                    activeLayout.SetField(KeyStore.WidthFieldKey, new NumberController(ViewModel.ActualWidth), true);
-                    activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(ViewModel.ActualHeight), true);
+                    activeLayout.SetField<PointController, Point>(KeyStore.PositionFieldKey, ViewModel.Position, true);
+                    activeLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, ViewModel.ActualWidth, true);
+                    activeLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, ViewModel.ActualHeight, true);
                     activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
                 }
