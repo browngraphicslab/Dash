@@ -23,7 +23,7 @@ namespace Dash
         public string Id { get; private set; }
         public string ContextualText { get; set; }
         public DocumentController ViewDocument { get; }
-        public DocumentController DocumentCollection { get; }
+        public DocumentController DocumentCollection { get; set; }
         public bool IsLikelyUsefulContextText { get; }
 
     }

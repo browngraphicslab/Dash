@@ -63,6 +63,12 @@ namespace Dash
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                ExecuteSearch(searchBox);
+                return;
+            }
+
             var maxSearchResultSize = 75;
 
             var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>()+ "("+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(" + text + "))");
@@ -82,9 +88,13 @@ namespace Dash
                 }
             }
 
+            var tree = DocumentTree.MainPageTree;
+
             foreach (var list in lists.OrderBy(i => i.Count))
             {
-                vms.Add(SearchHelper.DocumentSearchResultToViewModel(list.First()));
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(list.First());
+                newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
+                vms.Add(newVm);
             }
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
@@ -176,7 +186,7 @@ namespace Dash
         {
             if (!string.IsNullOrEmpty(_currentSearch))
             {
-                ExecuteSearch(sender as AutoSuggestBox);
+                ExecuteDishSearch(sender as AutoSuggestBox);
             }
         }
 
@@ -295,6 +305,7 @@ namespace Dash
                 return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, null, null, true);
             }
 
+            /*
             public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string search)
             {
                 var srmvs = LocalSearch(search);
@@ -308,6 +319,29 @@ namespace Dash
                     list.Add(doc);
                 }
                 return list;
+            }
+            */
+            public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string singleTerm)
+            {
+                var tree = DocumentTree.MainPageTree;
+                var srmvs = GetRatedSearchResultsForSingleTermSearch(singleTerm);
+                List<DocumentController> list = new List<DocumentController>();
+                foreach (var srvm in srmvs)
+                {
+                    var node = tree.GetNodeFromViewId(srvm.ResultDocumentViewId);
+                    var doc = new DocumentController();
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ResultDocumentViewId), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title + " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.HelpfulText), true);
+                    list.Add(doc);
+                }
+                return list;
+            }
+
+            private static IEnumerable<RatedSearchResult> GetRatedSearchResultsForSingleTermSearch(string singleTerm)
+            {
+                //TODO TFS fill this in from scratch
+                return LocalSearch(singleTerm).Select(i => new RatedSearchResult(){HelpfulText =  i.ContextualText, ResultDocumentViewId = i.ViewDocument.Id, Rating = 1});
             }
 
             private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)

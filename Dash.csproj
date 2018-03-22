@@ -152,6 +152,7 @@
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
+    <Compile Include="Models\RatedSearchResult.cs" />
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
