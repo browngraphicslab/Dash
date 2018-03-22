@@ -86,7 +86,6 @@ namespace Dash
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
-            //LostFocus += (s, e) => DeselectAll(); 
         }
 
         #region data configuration
