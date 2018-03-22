@@ -690,7 +690,7 @@ namespace Dash
         List<DocumentView> SelectedDocuments()
         {
             var marqueeDocs = _parentCollectionFreeform?.SelectedDocs; 
-            if (marqueeDocs != null)                                                                                                                                 
+            if (marqueeDocs != null && marqueeDocs.Contains(this))                                                                                                                                 
                 return marqueeDocs.ToList();
             return new List<DocumentView>(new DocumentView[] { this });
         }

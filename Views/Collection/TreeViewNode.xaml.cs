@@ -101,9 +101,6 @@ namespace Dash
 
                 dvm.DataDocument.OnSelectionChanged += (selected) =>
                 {
-                    if (!selected)                                                                                                                                         //KBTODO 
-                    {
-                    }
                     XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
                 };
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
