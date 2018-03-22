@@ -65,7 +65,7 @@ namespace Dash
 
             var maxSearchResultSize = 75;
 
-            var interpreted = DSL.Interpret(DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(" + text + ")");
+            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>()+ "("+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(" + text + "))");
             var resultDict = interpreted as DocumentController;
 
             Debug.Assert(resultDict != null);
