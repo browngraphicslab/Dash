@@ -109,7 +109,7 @@ namespace Dash
             setText(getRtfText());
 
             var allText = getReadableText();
-            DataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            DataDocument.SetField<TextController, string>(KeyStore.DocumentTextKey, allText, true);
 
             // auto-generate key/value pairs by scanning the text
             var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
@@ -164,10 +164,18 @@ namespace Dash
         {
             if (!_isPointerPressed)
             {
+                xRichEditBox.Height = double.NaN;
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                var relative = this.GetFirstAncestorOfType<RelativePanel>();
+                var relative = Parent as RelativePanel;
+                var pad = 0.0;
                 if (relative != null)
-                    relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
+                {
+                    foreach (var item in relative.Children)
+                        if (item != this)
+                            pad += (item as FrameworkElement).ActualHeight;
+                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                }
+                this.Height = xRichEditBox.DesiredSize.Height;
             }
         }
 
@@ -380,25 +388,6 @@ namespace Dash
             if (xRichEditBox.Document.Selection.EndPosition != s2)
                 xRichEditBox.Document.Selection.SetRange(s1, s2);
             return target;
-        }
-        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
-        {
-            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
-            if (theDoc == null && createIfNeeded)
-            {
-                if (refText.StartsWith("http"))
-                {
-                    theDoc = new HtmlNote(refText).Document;
-                }
-                else
-                {
-                    theDoc = new NoteDocuments.RichTextNote().Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
-                }
-            }
-
-            return theDoc;
         }
 
         void linkDocumentToSelection(DocumentController theDoc, bool forceLocal)

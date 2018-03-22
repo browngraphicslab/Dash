@@ -57,6 +57,7 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
+            element.ManipulationCompleted += (sender, args) => args.Handled = true;
         }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)

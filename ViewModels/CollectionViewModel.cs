@@ -118,9 +118,7 @@ namespace Dash
             {
                 foreach (var documentController in documents)
                 {
-                    var documentViewModel = new DocumentViewModel(documentController, c);
-                    if (!DocumentViewModels.Contains(documentViewModel))
-                        DocumentViewModels.Add(documentViewModel);
+                    DocumentViewModels.Add(new DocumentViewModel(documentController, c));
                 }
             }
         }
@@ -223,8 +221,8 @@ namespace Dash
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
                 if (fieldDict == null)
                     continue;
-                foreach (var f in d.EnumFields())
-                    if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
+                foreach (var f in d.EnumDisplayableFields())
+                    if (!f.Key.Equals(pivotKey))
                     {
                         if (!fieldDict.ContainsKey(f.Key))
                         {
@@ -288,11 +286,10 @@ namespace Dash
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
-                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+                if (d.GetDataDocument(null).GetAllPrototypes().Contains(pivotDoc) || pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
                     {
-                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                     }, DocumentType.DefaultType);
                     if (obj is string)
                     {
@@ -684,7 +681,7 @@ namespace Dash
                 }
                 var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
                 doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
-                dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
+               // dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
             }
         }
 

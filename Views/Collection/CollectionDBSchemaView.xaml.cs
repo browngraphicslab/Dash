@@ -253,7 +253,7 @@ namespace Dash
         KeyController _lastFieldSortKey = null;
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
-            var dbDocs = ParentDocument
+            var dbDocs = ParentDocument.GetDataDocument()
                    .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
@@ -427,10 +427,7 @@ namespace Dash
                 ?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc =
-                    new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
@@ -456,13 +453,14 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
-                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(), collectionViewModel.CollectionKey);
+                var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
                     new DragCollectionFieldModel(
-                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
-                    collectionReference,
-                    viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB
+                        collectionData,
+                        collectionReference,
+                        viewModel.FieldKey,
+                        CollectionView.CollectionViewType.DB
                     ));
             }
         }

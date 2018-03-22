@@ -121,7 +121,25 @@ namespace Dash
                         true);
             }
             return newDoc;
-        } 
+        }
+
+        /// <summary>
+        /// Creates an instance of a document's activeLayout and overrides data/width/height/and position
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static DocumentController GetViewInstance(this DocumentController doc, Point? where=null)
+        {
+            var activeLayout = (doc.GetActiveLayout() ?? doc).MakeDelegate();
+            activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
+            activeLayout.SetField(KeyStore.WidthFieldKey,  activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Copy(), true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Copy(), true);
+            var data = activeLayout.GetDereferencedField(KeyStore.DataKey, null);
+            if (data != null)
+                activeLayout.SetField(KeyStore.DataKey, data.GetCopy(), true);
+            return activeLayout;
+        }
         /// <summary>
         /// Creates an instance of a document's data and copies the documents view.
         /// </summary>
@@ -586,8 +604,6 @@ namespace Dash
             {
                 if (excludeKeys != null && excludeKeys.Contains(kvp.Key))
                     continue;
-                else if (kvp.Key.Equals(KeyStore.ThisKey))
-                    fields[kvp.Key] = copy;
                 else if (dontCopyKeys != null && dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
                     fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)

@@ -58,7 +58,7 @@ namespace Dash
                 if(PointFieldModel.Data != value)
                 {
                     PointFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+                    OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), null);
                 }
             }
         }

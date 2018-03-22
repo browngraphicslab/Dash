@@ -1,93 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using Windows.UI;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 using DashShared;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Controllers;
-using Dash.Controllers.Operators;
 using DashShared.Models;
 
 namespace Dash
 {
+    /// <summary>
+    /// Allows interactions with underlying DocumentModel.
+    /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-
-        public bool HasDelegates
-        {
-            get
-            {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ?
-                    _fields[KeyStore.DelegatesKey] as ListController<DocumentController> : null;
-
-                if (currentDelegates == null)
-                    return false;
-                return currentDelegates.Data.Any();
-            }
-        }
-        public bool HasPrototype
-        {
-            get
-            {
-                return _fields.ContainsKey(KeyStore.PrototypeKey) &&
-                                        (_fields[KeyStore.PrototypeKey] as DocumentController)
-                                        ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-            }
-        }
-
-
-        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
-                                _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
-
         /// <summary>
-        /// Add: Used when a field is added to a document with a key that is didn't previously contain
-        /// Remove: Used when a field is removed from a document
-        /// Replace: Used when a field in the document is replaced with a different field
-        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
+        /// Dictionary mapping Key's to field updated event handlers. 
+        /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
         /// </summary>
-        public enum FieldUpdatedAction
-        {
-            Add,
-            Remove,
-            Replace,
-            Update
-        }
-
-        public class DocumentFieldUpdatedEventArgs : FieldUpdatedEventArgs
-        {
-            public readonly FieldControllerBase OldValue;
-            public readonly FieldControllerBase NewValue;
-            public readonly DocumentFieldReference Reference;
-            public readonly FieldUpdatedEventArgs FieldArgs;
-            public bool FromDelegate;
-
-            public DocumentFieldUpdatedEventArgs(FieldControllerBase oldValue, FieldControllerBase newValue,
-                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, bool fromDelegate) : base(TypeInfo.Document, action)
-            {
-                OldValue = oldValue;
-                NewValue = newValue;
-                Reference = reference;
-                FieldArgs = fieldArgs;
-                FromDelegate = fromDelegate;
-            }
-        }
-
-        /// <summary>
-        /// Dictionary mapping Key's to field updated event handlers. TODO what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
-        /// </summary>
-        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, FieldUpdatedHandler>();
+        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary
+            = new Dictionary<KeyController, FieldUpdatedHandler>();
         public event FieldUpdatedHandler PrototypeFieldUpdated;
 
         public event EventHandler DocumentDeleted;
@@ -112,7 +47,6 @@ namespace Dash
             }
         }
 
-        public bool IsConnected { get; set; }
         public bool HasMatchingKey(string keyName)
         {
             if (string.IsNullOrWhiteSpace(keyName))
@@ -134,33 +68,6 @@ namespace Dash
             return Title;
         }
 
-
-        /// <summary>
-        /// Adds a field updated listener which is only fired when the field associated with the passed in key
-        /// has changed
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="handler"></param>
-        public void AddFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
-        {
-            if (_fieldUpdatedDictionary.ContainsKey(key))
-            {
-                _fieldUpdatedDictionary[key] += handler;
-            }
-            else
-            {
-                _fieldUpdatedDictionary[key] = handler;
-            }
-        }
-
-        public void RemoveFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
-        {
-            if (_fieldUpdatedDictionary.ContainsKey(key))
-            {
-                // ReSharper disable once DelegateSubtraction
-                _fieldUpdatedDictionary[key] -= handler;
-            }
-        }
 
         /// <summary>
         ///     A wrapper for <see cref="" />. Change this to propogate changes
@@ -277,40 +184,41 @@ namespace Dash
         /// <returns></returns>
         public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
         {
-            foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-                {
-                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
-                    if (primaryKeys != null)
-                    {
-                        bool found = true;
-                        foreach (var value in primaryKeyValues)
-                        {
-                            bool foundValue = false;
-                            foreach (var key in primaryKeys.Data)
-                            {
-                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
-                                if (derefValue != null)
-                                {
-                                    if (value == derefValue)
-                                    {
-                                        foundValue = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!foundValue)
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            return dmc;
-                        }
-                    }
-                }
+            // Replace this method with a proper search function
+            //foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
+            //    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+            //    {
+            //        var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
+            //        if (primaryKeys != null)
+            //        {
+            //            bool found = true;
+            //            foreach (var value in primaryKeyValues)
+            //            {
+            //                bool foundValue = false;
+            //                foreach (var key in primaryKeys.Data)
+            //                {
+            //                    var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
+            //                    if (derefValue != null)
+            //                    {
+            //                        if (value == derefValue)
+            //                        {
+            //                            foundValue = true;
+            //                            break;
+            //                        }
+            //                    }
+            //                }
+            //                if (!foundValue)
+            //                {
+            //                    found = false;
+            //                    break;
+            //                }
+            //            }
+            //            if (found)
+            //            {
+            //                return dmc;
+            //            }
+            //        }
+            //    }
             return null;
         }
         DocumentController lookupOperator(string opname)
@@ -344,7 +252,7 @@ namespace Dash
             {
                 if (path.Length == 1)
                 {
-                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
+                    return refDoc; // found <DocName=a>
                 }
                 else
                     foreach (var e in refDoc.EnumFields())
@@ -369,7 +277,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// parses text input into a field controller
+        /// Parses text input into a field controller
         /// </summary>
         public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
         {
@@ -452,7 +360,7 @@ namespace Dash
                     {
                         //TODO tfs: fix this
                         throw new NotImplementedException();
-                        curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
+                        //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is ListController<DocumentController> lc)
                         lc.TypedData =
@@ -526,174 +434,6 @@ namespace Dash
         }
 
 
-        /// <summary>
-        /// Returns whether or not the field has changed that is associated with the passed in key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="field"></param>
-        /// <param name="forceMask"></param>
-        /// <returns></returns>
-        private bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
-        {
-            // get the prototype with the desired key or just get ourself
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
-
-            // get the old value of the field
-            FieldControllerBase oldField;
-            proto._fields.TryGetValue(key, out oldField);
-
-            if (key.Equals(KeyStore.PrototypeKey))
-            {
-                var oldPrototype = oldField as DocumentController;
-                if (oldPrototype != null)
-                {
-                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)//TODO This doesnt do anything
-                    {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                    };
-                    oldPrototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                }
-
-                var prototype = field as DocumentController;
-                if (prototype != null)
-                {
-                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                    };
-                    prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                    prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
-                }
-            }
-
-            // if the old and new field reference the exact same controller then we're done
-            if (!ReferenceEquals(oldField, field))
-            {
-                //if (proto.CheckCycle(key, field))
-                //{
-                //    return false;
-                //}
-
-                field.SaveOnServer();
-                oldField?.DisposeField();
-
-                proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
-
-                SetupNewFieldListeners(key, field, oldField, new Context(proto));
-
-                return true;
-            }
-            return false;
-        }
-
-
-        /// <summary>
-        /// Adds listeners to the field model updated event which fire the document model updated event
-        /// </summary>
-        private void SetupNewFieldListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
-        {
-            // fire document field updated if the field has been replaced or if it did not exist before
-            var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            var reference = new DocumentFieldReference(GetId(), key);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
-
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.ThisKey) && !key.Equals(KeyStore.DocumentContextKey))
-            {
-                FieldControllerBase.FieldUpdatedHandler handler =
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        //var refSender = sender as ReferenceController;
-                        //var proto = GetDataDocument(null). GetPrototypeWithFieldKey(reference.FieldKey) ??
-                        //            this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        //if (!new Context(proto).IsCompatibleWith(c) &&
-                        //    GetDataDocument(null).GetId() != refSender?.GetDocumentId(null)) 
-                        //{
-                        //    return;
-                        //}
-
-                        var newContext = new Context(c);
-                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
-                        // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-                            newContext.AddDocumentContext(this);
-                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
-                            reference, args, false);
-                        if (ShouldExecute(newContext, reference.FieldKey))
-                        {
-                            newContext = Execute(newContext, true, updateArgs);
-                        }
-                        OnDocumentFieldUpdated(this,
-                            updateArgs,
-                            newContext, true);
-                    };
-                if (oldField != null)
-                {
-                    oldField.FieldModelUpdated -=
-                        handler; // TODO does this even work, isn't it removing the new reference to handler not the old one (Yes it is, this needs to be fixed)
-                }
-                if (newField != null)
-                {
-                    newField.FieldModelUpdated += handler;
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
-        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
-        ///     created in this <see cref="DocumentController" />.
-        ///     <para>
-        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
-        ///         any prototype that might exist by setting the field on this
-        ///     </para>
-        /// </summary>
-        /// <param name="key">key index of field to update</param>
-        /// <param name="field">FieldModel to update to</param>
-        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
-        {
-            // TODO check field type compatibility
-            var context = new Context(this);
-            var shouldExecute = false;
-            var fieldChanged = false;
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (fieldChanged = SetFieldHelper(key, field, forceMask))
-            {
-                shouldExecute = ShouldExecute(context, key);
-                UpdateOnServer();
-                // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-            }
-            if (shouldExecute)
-            {
-                Execute(context, true);
-            }
-
-            return fieldChanged;
-        }
-
-        /// <summary>
-        /// Removes the field mapped to by <paramref name="key"/> from the document
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public bool RemoveField(KeyController key)
-        {
-            var proto = GetPrototypeWithFieldKey(key);
-
-            if (proto._fields.ContainsKey(key))
-            {
-                return false;
-            }
-
-            //TODO Remove fieldUpdated listener
-            //var field = proto._fields[key];
-            //field.FieldModelUpdated -= 
-
-            return proto._fields.Remove(key);
-        }
 
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
@@ -707,175 +447,17 @@ namespace Dash
             return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
 
-        /// <summary>
-        /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
-        /// </summary>
-        /// <param name="key">key that field is mapped to</param>
-        /// <param name="field">reference field model that references the field to connect</param>
-        private bool IsOperatorTypeCompatible(KeyController key, FieldControllerBase field)
+        
+        // == CYCLE CHECKING ==
+        #region Cycle Checking
+        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
         {
-            var opCont = GetField(KeyStore.OperatorKey) as OperatorController;
-            if (opCont == null) return true;
-            if (!opCont.Inputs.ContainsKey(key)) return true;
-
-            var rawField = field.DereferenceToRoot(null);
-            return rawField == null || (opCont.Inputs[key].Type & rawField.TypeInfo) != 0;
-        }
-
-
-        /// <summary>
-        ///     returns the <see cref="Controller" /> for the specified <see cref="KeyControllerGeneric{T}" /> by looking first in this
-        ///     <see cref="DocumentController" />
-        ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
-        ///     key is not found then it returns null.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="context"></param>
-        /// <param name="ignorePrototype"></param>
-        /// <returns></returns>
-        public FieldControllerBase GetField(KeyController key, bool ignorePrototype = false)
-        {
-            // TODO this should cause an operator to execute and return the proper value
-
-
-            // search up the hiearchy starting at this for the first DocumentController which has the passed in key
-            var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
-
-            FieldControllerBase field = null;
-            firstProtoWithKeyOrNull?._fields.TryGetValue(key, out field);
-            return field;
-        }
-
-        public T GetField<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase
-        {
-            return GetField(key, ignorePrototype) as T;
-        }
-
-        public T GetFieldOrCreateDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
-        {
-            var field = GetField(key, ignorePrototype);
-            if (field != null)
+            var opField = GetDereferencedField(KeyStore.OperatorKey, c) as OperatorController;
+            if (opField == null)
             {
-                return field as T;
+                return new List<KeyController> { key };
             }
-            T t = new T();
-            SetField(key, t, true);
-            return t;
-        }
-
-        public TypeInfo GetFieldType(KeyController key)
-        {
-            var operatorController = GetField<OperatorController>(key);
-            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
-            {
-                return operatorController.Outputs[key];
-            }
-
-            return GetField(key)?.TypeInfo ?? TypeInfo.Any;
-        }
-
-        public TypeInfo GetRootFieldType(KeyController key)
-        {
-            var operatorController = GetField<OperatorController>(KeyStore.OperatorKey);
-            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
-            {
-                return operatorController.Outputs[key];
-            }
-
-            return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
-        }
-
-        /// <summary>
-        ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
-        ///     pairs. If <paramref name="forceMask" /> is true, all the fields are set on this <see cref="DocumentController" />
-        ///     otherwise each
-        ///     field is written on the first prototype in the hierarchy which contains it
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="forceMask"></param>
-        public bool SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
-        {
-            Context c = new Context(this);
-            bool shouldExecute = false;
-            bool shouldSave = false;
-
-            var array = fields.ToArray();
-
-            foreach (var field in array)
-            {
-                if (field.Key != null && SetFieldHelper(field.Key, field.Value, forceMask))
-                {
-                    shouldSave = true;
-                    shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
-                }
-                //TODO tfs: This shouldn't be necessary, it should get handled in SetFieldHelper
-                //if (field.Key.Equals(KeyStore.PrototypeKey))
-                //{
-                //    (field.Value as DocumentController).PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                //    (field.Value as DocumentController).PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
-                //}
-            }
-
-            if (shouldExecute)
-            {
-                Execute(c, true);
-            }
-
-            if (shouldSave)
-            {
-                UpdateOnServer();
-            }
-
-            return shouldExecute;
-        }
-
-
-        /// <summary>
-        ///     Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
-        /// </summary>
-        /// <returns></returns>
-        public DocumentController MakeDelegate()
-        {
-            var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
-
-            // create a controller for the child
-            var delegateController = new DocumentController(delegateModel);
-
-            //delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType);
-
-            // create and set a prototype field on the child, pointing to ourself
-            var prototypeFieldController = this;
-            delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
-
-            // add the delegate to our delegates field
-            var currentDelegates = GetDelegates();
-            currentDelegates.Add(delegateController);
-
-            // return the now fully populated delegate
-            return delegateController;
-        }
-
-
-        private void OnPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var dargs = (DocumentFieldUpdatedEventArgs)args;
-            if (_fields.ContainsKey(dargs.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
-            {
-                return;
-            }
-         //   if (context.ContainsAncestorOf(this)) //TODO tfs: what was this doing and why do we need to comment it out?
-            {
-                Context c = new Context(this);
-                var reference = new DocumentFieldReference(GetId(), dargs.Reference.FieldKey);
-                OnDocumentFieldUpdated(this,
-                    new DocumentFieldUpdatedEventArgs(dargs.OldValue, dargs.NewValue, FieldUpdatedAction.Update,
-                        reference,
-                        dargs.FieldArgs, false), c, true);
-            }
-            //else
-            //{
-            //    Debug.WriteLine("");
-            //}
+            return new List<KeyController>(opField.Inputs.Keys);
         }
 
         /// <summary>
@@ -903,10 +485,7 @@ namespace Dash
                 var t = rfms.Dequeue();
                 var fm = t.Item1;
                 var c = t.Item2;
-                if (!(fm is ReferenceController))
-                {
-                    continue;
-                }
+                if (!(fm is ReferenceController)) continue;
                 var rfm = (ReferenceController)fm;
                 var fieldRef = rfm.GetFieldReference().Resolve(c);
                 var doc = rfm.GetDocumentController(c);
@@ -914,21 +493,17 @@ namespace Dash
                 if (c.DocContextList.Contains(doc))
                 {
                     c2 = c;
-                }
-                else
-                {
+                } else { 
                     c2 = new Context(c);
                     c2.AddDocumentContext(doc);
                 }
-                foreach (var fieldReference in visitedFields)
-                {
-                    if (fieldReference.Resolve(c2).Equals(fieldRef))
-                    {
-                        return true;
-                    }
-                }
-                visitedFields.Add(fieldRef);
 
+                foreach (var fieldReference in visitedFields)
+                    if (fieldReference.Resolve(c2).Equals(fieldRef))
+                        return true;
+
+                visitedFields.Add(fieldRef);
+               
                 var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
                 foreach (var keyController in keys)
                 {
@@ -952,15 +527,33 @@ namespace Dash
             }
             return false;
         }
+        #endregion
 
-        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
+        // == DELEGATE MANAGEMENT ==
+        #region Delegate Management
+
+        /// <summary>
+        ///  Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
+        /// </summary>
+        /// <returns></returns>
+        public DocumentController MakeDelegate()
         {
-            var opField = GetDereferencedField(KeyStore.OperatorKey, c) as OperatorController;
-            if (opField == null)
-            {
-                return new List<KeyController> { key };
-            }
-            return new List<KeyController>(opField.Inputs.Keys);
+            var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
+                DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+
+            // create a controller for the child
+            var delegateController = new DocumentController(delegateModel);
+
+            // create and set a prototype field on the child, pointing to ourself
+            var prototypeFieldController = this;
+            delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
+
+            // add the delegate to our delegates field
+            var currentDelegates = GetDelegates();
+            currentDelegates.Add(delegateController);
+
+            // return the now fully populated delegate
+            return delegateController;
         }
 
         /// <summary>
@@ -978,8 +571,8 @@ namespace Dash
 
 
         /// <summary>
-        ///     Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
-        ///     and returns it if no delegates field existed
+        /// Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
+        /// and returns it if no delegates field existed
         /// </summary>
         /// <returns></returns>
         public ListController<DocumentController> GetDelegates()
@@ -998,7 +591,213 @@ namespace Dash
             }
             return currentDelegates;
         }
+        #endregion
 
+        // == FIELD MANAGEMENT ==
+        #region Field Management
+
+        /// <summary>
+        /// Returns the TypeInfo type of the field mapped to by key. If document contains an OperatorFieldController,
+        /// checks that operator's outputs for the desired key.
+        /// </summary>
+        public TypeInfo GetFieldType(KeyController key)
+        {
+            var operatorController = GetField<OperatorController>(key);
+            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            {
+                return operatorController.Outputs[key];
+            }
+
+            return GetField(key)?.TypeInfo ?? TypeInfo.Any;
+        }
+
+        /// <summary>
+        /// Returns the root (highest prototype level) TypeInfo type of the field mapped to by key. If document 
+        /// contains an OperatorFieldController, checks that operator's outputs for the desired key.
+        /// </summary>
+        public TypeInfo GetRootFieldType(KeyController key)
+        {
+            var operatorController = GetField<OperatorController>(KeyStore.OperatorKey);
+            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            {
+                return operatorController.Outputs[key];
+            }
+
+            return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
+        }
+        /// <summary>
+        /// Removes the field mapped to by <paramref name="key"/> from the document. Fails if the
+        /// field exists in the document's Prototype, since documents cannot remove inherited fields
+        /// (only the owner of a field can remove it.)
+        /// </summary>
+        public bool RemoveField(KeyController key)
+        {
+            var proto = GetPrototypeWithFieldKey(key);
+
+            if (proto._fields.ContainsKey(key))
+                return false;
+
+            return proto._fields.Remove(key);
+        }
+
+        /// <summary>
+        /// returns the <see cref="Controller" /> for the specified <see cref="KeyControllerGeneric{T}" /> by looking first in this
+        /// <see cref="DocumentController" />
+        /// and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
+        /// key is not found then it returns null.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="ignorePrototype">if false, check in </param>
+        /// <returns></returns>
+        public FieldControllerBase GetField(KeyController key, bool ignorePrototype = false)
+        {
+            // TODO this should cause an operator to execute and return the proper value
+            // search up the hiearchy starting at this for the first DocumentController which has the passed in key
+            var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
+
+            FieldControllerBase field = null;
+            firstProtoWithKeyOrNull?._fields.TryGetValue(key, out field);
+            return field;
+        }
+
+        public T GetField<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase
+        {
+            return GetField(key, ignorePrototype) as T;
+        }
+
+        public T GetFieldOrCreateDefault<T>(KeyController key, bool ignorePrototype = false) where T : FieldControllerBase, new()
+        {
+            var field = GetField(key, ignorePrototype);
+            if (field != null)
+            {
+                return field as T;
+            }
+            T t = new T();
+            SetField(key, t, true);
+            return t;
+        }
+
+        /// <summary>
+        /// Returns whether or not the field has changed that is associated with the passed in key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="field"></param>
+        /// <param name="forceMask"></param>
+        /// <returns></returns>
+        bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        {
+            // get the prototype with the desired key or just get ourself
+            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+
+            // get the old value of the field
+            FieldControllerBase oldField;
+            proto._fields.TryGetValue(key, out oldField);
+
+            // if the old and new field reference the exact same controller then we're done
+            if (!ReferenceEquals(oldField, field))
+            {
+                //if (proto.CheckCycle(key, field))
+                //{
+                //    return false;
+                //}
+
+                field.SaveOnServer();
+                oldField?.DisposeField();
+
+                proto._fields[key] = field;
+                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+
+                // fire document field updated if the field has been replaced or if it did not exist before
+                var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference  = new DocumentFieldReference(GetId(), key);
+                var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
+                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
+
+                if (key.Equals(KeyStore.PrototypeKey))
+                {
+                    setupPrototypeFieldChangedListeners(field);
+                }
+                else if (key.Equals(KeyStore.DocumentContextKey))
+                    ; // do we need to watch anything when the DocumentContext field is set?
+                else
+                {
+                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
+        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
+        ///     created in this <see cref="DocumentController" />.
+        ///     <para>
+        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
+        ///         any prototype that might exist by setting the field on this
+        ///     </para>
+        /// </summary>
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
+        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
+        {
+            var fieldChanged = SetFieldHelper(key, field, forceMask);
+            if (fieldChanged)
+            {
+                UpdateOnServer();
+            }
+
+            return fieldChanged;
+        }
+        public bool SetField<TDefault,V>(KeyController key, V v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        {
+            var field = GetField<TDefault>(key, forceMask);
+            if (field != null)
+            {
+                if (field.SetValue(v))
+                {
+                    UpdateOnServer();
+                    return true;
+                }
+            }
+            else
+            {
+                var f = new TDefault();
+                if (f.SetValue(v))
+                    return SetField(key, f, forceMask, enforceTypeCheck);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
+        ///     pairs. If <paramref name="forceMask" /> is true, all the fields are set on this <see cref="DocumentController" />
+        ///     otherwise each
+        ///     field is written on the first prototype in the hierarchy which contains it
+        /// </summary>
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
+        {
+            bool shouldSave = false;
+            // update with each of the new fields
+            foreach (var field in fields.ToArray().Where((f) => f.Key != null))
+            {
+                if (SetFieldHelper(field.Key, field.Value, forceMask))
+                {
+                    shouldSave = true;
+                }
+            }
+            if (shouldSave)
+                UpdateOnServer();
+        }
+
+        /// <summary>
+        /// Returns the Field at the given KeyController's key. If the field is a Reference to another
+        /// field, follows the regerences up until a non-reference field is found and returns that.
+        /// </summary>
         public FieldControllerBase GetDereferencedField(KeyController key, Context context)
         {
             // TODO this should cause an operator to execute and return the proper value
@@ -1008,10 +807,74 @@ namespace Dash
             return fieldController?.DereferenceToRoot(context ?? new Context(this));
         }
 
-        // TODO this should cause an operator to execute and return the proper value
+        /// <summary>
+        /// Returns the Field from stored from key within the given context.
+        /// </summary>
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
-        {
+        {        
+            // TODO: this should cause an operator to execute and return the proper value
             return GetDereferencedField(key, context) as T;
+        }
+
+        /// <summary>
+        /// Gets a list of KewValuePairs for all Fields on the given Document.
+        /// </summary>
+        /// <param name="ignorePrototype">if false, will also include fields from prototype document</param>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of KeyValuePairs for all Fields on the given Document that can be displayed visually on the canvas.
+        /// </summary>
+        /// <param name="ignorePrototype">if false, will also include displayable fields from prototype document</param>
+        /// <returns></returns>
+        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            {
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    yield return keyFieldPair;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
+                        yield return field;
+            }
+        }
+        #endregion
+
+        // == OPERATOR MANAGEMENT ==
+        #region Operator Management
+        /// <summary>
+        /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
+        /// </summary>
+        /// <param name="key">key that field is mapped to</param>
+        /// <param name="field">reference field model that references the field to connect</param>
+        private bool IsOperatorTypeCompatible(KeyController key, FieldControllerBase field)
+        {
+            var opCont = GetField(KeyStore.OperatorKey) as OperatorController;
+            if (opCont == null) return true;
+            if (!opCont.Inputs.ContainsKey(key)) return true;
+
+            var rawField = field.DereferenceToRoot(null);
+            return rawField == null || (opCont.Inputs[key].Type & rawField.TypeInfo) != 0;
         }
 
         /// <summary>
@@ -1022,9 +885,6 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="updatedKey"></param>
-        /// <returns></returns>
         public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
@@ -1110,7 +970,6 @@ namespace Dash
             }
 
             // pass the updates along 
-            // TODO comment how this works
             foreach (var fieldModel in outputs)
             {
                 if (needsToExecute)
@@ -1128,41 +987,10 @@ namespace Dash
             }
             return context;
         }
+        #endregion
 
-        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
-        {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
-            {
-                yield return keyFieldPair;
-            }
-
-            if (!ignorePrototype)
-            {
-                var prototype = GetPrototype();
-                if (prototype != null)
-                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
-                        yield return field;
-            }
-        }
-
-        public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
-        {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
-            {
-                if (!keyFieldPair.Key.Name.StartsWith("_"))
-                    yield return keyFieldPair;
-            }
-
-            if (!ignorePrototype)
-            {
-                var prototype = GetPrototype();
-                if (prototype != null)
-                    foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
-                        yield return field;
-            }
-        }
-
-
+        // == VIEW GENERATION ==
+        #region View Generation
         /// <summary>
         /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
         /// string key of the field and value is the rendered UI element representing the value.
@@ -1194,7 +1022,7 @@ namespace Dash
 #pragma warning restore CS4014
             return panel;
         }
-
+        
         private static FrameworkElement MakeAllViewUIForManyFields(
             List<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
@@ -1214,13 +1042,21 @@ namespace Dash
             return sp;
         }
 
+        /// <summary>
+        /// Builds the underlying XAML Framework Element representation of this document.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="dataDocument"></param>
+        /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
+            // set up contexts information
             context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument(null));
 
-            // if document is not a known UI View, then see if it contains a Layout view field
+            // if the document has a layout already, use that underlying layout's data to generate
+            // the view
             var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
@@ -1234,7 +1070,10 @@ namespace Dash
 
                 return doc.MakeViewUI(context, GetDataDocument());
             }
-            //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
+
+            // otherwise, look through the list of "special" document type primitives and
+            // generate the view from the given courtesy document's static MakeView method
+            // to make the view
             if (DocumentType.Equals(TextingBox.DocumentType))
             {
                 return TextingBox.MakeView(this, context); //
@@ -1317,7 +1156,7 @@ namespace Dash
             }
             if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
-                return ApiOperatorBox.MakeView(this, context); //I set the framework element as the operator view for now
+                return ApiOperatorBox.MakeView(this, context);
             }
             if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
             {
@@ -1334,32 +1173,10 @@ namespace Dash
             return makeAllViewUI(context);
         }
 
-        /// <summary>
-        /// Invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
-        /// listeners to <see cref="DocumentFieldUpdated"/>
-        /// </summary>
-        /// <param name="sender">The <see cref="DocumentController"/> which is being updated</param>
-        /// <param name="args">Represents the behavior of the update</param>
-        /// <param name="updateDelegates"></param>
-        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
-        {
-            // this invokes listeners which have been added on a per key level of granularity
-            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
-            {
-                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
-            }
-            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
-            {
-                // this invokes listeners which have been added on a per doc level of granularity
-                OnFieldModelUpdated(args, c);
-            }
+        #endregion
 
-            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
-            {
-                PrototypeFieldUpdated?.Invoke(sender, args, c);
-            }
-        }
-
+        // == OVERRIDEN from ICOLLECTION ==
+        #region ICollection Overrides
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
@@ -1381,6 +1198,7 @@ namespace Dash
         }
 
         public override TypeInfo TypeInfo { get; }
+        
         public override bool SetValue(object value)
         {
             throw new NotImplementedException();
@@ -1401,5 +1219,173 @@ namespace Dash
             return StringSearchModel.False;
             //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
+        #endregion
+
+        // == EVENT MANAGEMENT ==
+        #region Event Management
+
+        /// <summary>
+        /// Adds a field updated listener which is only fired when the field associated with the passed in key
+        /// has changed
+        /// </summary>
+        public void AddFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+                _fieldUpdatedDictionary[key] += handler;
+            else
+                _fieldUpdatedDictionary[key] = handler;
+        }
+
+        /// <summary>
+        /// Removes a field listener associated with the given key's update event.
+        /// </summary>
+        public void RemoveFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                // ReSharper disable once DelegateSubtraction
+                _fieldUpdatedDictionary[key] -= handler;
+            }
+        }
+
+        /// <summary>
+        /// Adds listeners to the field model updated event which fire the document model updated event
+        /// </summary>
+        /// <summary>
+        /// Adds listeners to the field model updated event which fire the document model updated event
+        /// </summary>
+        void setupFieldChangedListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
+        {
+            var reference = new DocumentFieldReference(GetId(), key);
+            ///<summary>
+            /// Generates a DocumentFieldUpdated event when a fieldModelUpdated event has been fired for a field in this document.
+            ///</summary>
+            void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            {
+                var refSender = sender as ReferenceController;
+                var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                            this.GetPrototypeWithFieldKey(reference.FieldKey);
+                if (GetDataDocument(null).GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
+                {
+                    var newContext = new Context(c);
+                    if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
+                        newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+
+                    var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
+                    generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
+                }
+            };
+            if (newField != null)
+                newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+        }
+
+        void generateDocumentFieldUpdatedEvents(FieldControllerBase sender, DocumentFieldUpdatedEventArgs args, DocumentFieldReference reference, Context newContext)
+        {
+            if (ShouldExecute(newContext, reference.FieldKey))
+            {
+                newContext = Execute(newContext, true, args);
+            }
+            OnDocumentFieldUpdated(this, args, newContext, true);
+        }
+
+        /// <summary>
+        /// converts fieldModelEvents on this document to fieldModelEvents on its prototype.
+        /// Also generates fieldModelEvents on this document when a prototype's field changes
+        /// </summary>
+        void setupPrototypeFieldChangedListeners(FieldControllerBase newField)
+        {
+            var prototype = newField as DocumentController;
+            if (prototype != null)
+            {
+                /// <summary>
+                /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
+                /// </summary>
+                void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                {
+                    var dargs = (DocumentFieldUpdatedEventArgs)args;
+                    dargs.FromDelegate = true;
+                    prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
+                };
+                FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+
+                /// <summary>
+                /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
+                /// the field that was modified on the prototype
+                /// </summary>
+                void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+                {
+                    var updateArgs = (DocumentFieldUpdatedEventArgs)args;
+                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                    {
+                        OnDocumentFieldUpdated(this,
+                            new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
+                                new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
+                                updateArgs.FieldArgs, false), new Context(this), true);
+                    }
+                }
+                prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
+                prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
+            }
+        }
+
+        /// <summary>
+        /// Called whenever a field on this document has been modified directly or indirectly 
+        /// (by an operator, prototype, or delegate).
+        /// 
+        /// This then invokes the listeners added in <see cref="AddFieldUpdatedListener"/> as well as the
+        /// listeners to <see cref="DocumentFieldUpdated"/>
+        /// </summary>
+        /// <param name="updateDelegates">whether to bubble event down to delegates</param>
+        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context c, bool updateDelegates)
+        {
+            // this invokes listeners which have been added on a per key level of granularity
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
+            
+            // this invokes listeners which have been added on a per doc level of granularity
+            if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
+                OnFieldModelUpdated(args, c);
+
+            // bubbles event down to delegates
+            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
+                PrototypeFieldUpdated?.Invoke(sender, args, c);
+        }
+
+        /// <summary>
+        /// Add: Used when a field is added to a document with a key that is didn't previously contain
+        /// Remove: Used when a field is removed from a document
+        /// Replace: Used when a field in the document is replaced with a different field
+        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
+        /// </summary>
+        public enum FieldUpdatedAction
+        {
+            Add,
+            Remove,
+            Replace,
+            Update
+        }
+        
+        /// <summary>
+        /// Encompasses the different type of events triggers by changing document data.
+        /// </summary>
+        public class DocumentFieldUpdatedEventArgs : FieldUpdatedEventArgs
+        {
+            public readonly FieldControllerBase OldValue;
+            public readonly FieldControllerBase NewValue;
+            public readonly DocumentFieldReference Reference;
+            public readonly FieldUpdatedEventArgs FieldArgs;
+            public bool FromDelegate;
+
+            public DocumentFieldUpdatedEventArgs(FieldControllerBase oldValue, FieldControllerBase newValue,
+                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, bool fromDelegate) : base(TypeInfo.Document, action)
+            {
+                OldValue = oldValue;
+                NewValue = newValue;
+                Reference = reference;
+                FieldArgs = fieldArgs;
+                FromDelegate = fromDelegate;
+            }
+        }
+        #endregion
     }
 }

@@ -182,6 +182,14 @@ namespace Dash
         {
             return Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
         }
+        public static bool IsF1Pressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.F1).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsF2Pressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.F2).HasFlag(CoreVirtualKeyStates.Down);
+        }
         public static bool IsShiftPressed(this FrameworkElement f)
         {
             return Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
@@ -193,6 +201,14 @@ namespace Dash
         public static bool IsTabPressed(this FrameworkElement f)
         {
             return Window.Current.CoreWindow.GetKeyState(VirtualKey.Tab).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsRightBtnPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsLeftBtnPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down);
         }
     }
 }

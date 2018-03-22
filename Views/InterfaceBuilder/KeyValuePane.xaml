@@ -59,35 +59,32 @@
                     <DataTemplate x:DataType="local:KeyFieldContainer">
                         <Grid x:Name="xContentGrid" Tapped="Grid_Tapped">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="{x:Bind PrimaryKeyColumnWidth}" />
                                 <ColumnDefinition Width="*" MinWidth="30" />
                                 <ColumnDefinition Width="4*" />
                                 <ColumnDefinition Width="{x:Bind TypeColumnWidth}" />
                                 <ColumnDefinition Width="25" />
                             </Grid.ColumnDefinitions>
-                            <CheckBox Tag="{Binding}" IsChecked="{x:Bind Path=IsPrimary}" Width="20"
-                                      Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" />
-                            <ScrollViewer VerticalAlignment="Center" Grid.Column="1" HorizontalScrollMode="Enabled"
+                            <ScrollViewer VerticalAlignment="Center" Grid.Column="0" HorizontalScrollMode="Enabled"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
                                           VerticalScrollMode="Enabled">
                                 <TextBlock Text="{x:Bind Path=Key.Name}"
                                            Style="{StaticResource xForceTextBlockDefault}" FontWeight="Medium"
                                            VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                             </ScrollViewer>
-                            <ScrollViewer Grid.Column="2" MaxWidth="500" VerticalAlignment="Center"
+                            <ScrollViewer Grid.Column="1" MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" MaxHeight="100"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                                <Border Grid.Column="2" MaxWidth="500" VerticalAlignment="Center"
+                                <Border MaxWidth="500" VerticalAlignment="Center"
                                         HorizontalAlignment="Stretch"
                                         Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
                             </ScrollViewer>
-                            <ScrollViewer Grid.Column="3" VerticalAlignment="Center" HorizontalScrollMode="Enabled"
+                            <ScrollViewer Grid.Column="2" VerticalAlignment="Center" HorizontalScrollMode="Enabled"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
                                           VerticalScrollMode="Disabled">
                                 <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}"
                                            VerticalAlignment="Stretch" HorizontalAlignment="Left" />
                             </ScrollViewer>
-                            <FontIcon Grid.Column="4" Width="25" VerticalAlignment="Center" Margin="0,0,0,0"
+                            <FontIcon Grid.Column="3" Width="25" VerticalAlignment="Center" Margin="0,0,0,0"
                                       DragStarting="Icon_OnDragStarting" CanDrag="True" PointerPressed="FontIcon_PointerPressed"  
                                       FontSize="20" FontFamily="Segoe MDL2 Assets" Glyph="&#xE78B;" />
                         </Grid>
