@@ -473,33 +473,6 @@ namespace Dash
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
 
-            if (key.Equals(KeyStore.PrototypeKey))
-            {
-                var oldPrototype = oldField as DocumentController;
-                if (oldPrototype != null)
-                {
-                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)//TODO This doesnt do anything
-                    {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                    };
-                    oldPrototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                }
-
-                var prototype = field as DocumentController;
-                if (prototype != null)
-                {
-                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        var dargs = (DocumentFieldUpdatedEventArgs)args;
-                        dargs.FromDelegate = true;
-                        prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
-                    };
-                    prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                    prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
-                }
-            }
-
             // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
             {
@@ -1300,43 +1273,42 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, false), context, true);
 
-            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.DocumentContextKey))
+            if (!key.Equals(KeyStore.PrototypeKey) && !key.Equals(KeyStore.DocumentContextKey) && newField != null)
             {
-                FieldControllerBase.FieldUpdatedHandler handler =
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
                         var refSender = sender as ReferenceController;
                         var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
                                     this.GetPrototypeWithFieldKey(reference.FieldKey);
-                        if (GetDataDocument(null).GetId() != refSender?.GetDocumentId(null) &&
-                            !new Context(proto).IsCompatibleWith(c))
+                        if (GetDataDocument(null).GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
                         {
-                            return;
+                            var newContext = new Context(c);
+                            if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
+                                // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
+                                newContext.AddDocumentContext(this);
+                            var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
+                                reference, args, false);
+                            if (ShouldExecute(newContext, reference.FieldKey))
+                            {
+                                newContext = Execute(newContext, true, updateArgs);
+                            }
+                            OnDocumentFieldUpdated(this, updateArgs, newContext, true);
                         }
-
-                        var newContext = new Context(c);
-                        if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)
-                            // don't add This if a delegate of This is already in the Context. // TODO lsm don't we get deepest delegate anyway, why would we not add it???
-                            newContext.AddDocumentContext(this);
-                        var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update,
-                            reference, args, false);
-                        if (ShouldExecute(newContext, reference.FieldKey))
-                        {
-                            newContext = Execute(newContext, true, updateArgs);
-                        }
-                        OnDocumentFieldUpdated(this,
-                            updateArgs,
-                            newContext, true);
                     };
-                if (oldField != null)
+                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
+            }
+
+            if (key.Equals(KeyStore.PrototypeKey) && newField is DocumentController prototype)
+            {
+                void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                 {
-                    oldField.FieldModelUpdated -=
-                        handler; // TODO does this even work, isn't it removing the new reference to handler not the old one (Yes it is, this needs to be fixed)
-                }
-                if (newField != null)
-                {
-                    newField.FieldModelUpdated += handler;
-                }
+                    var dargs = (DocumentFieldUpdatedEventArgs)args;
+                    dargs.FromDelegate = true;
+                    prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
+                };
+                FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+                prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
             }
         }
 
