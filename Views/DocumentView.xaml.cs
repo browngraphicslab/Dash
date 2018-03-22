@@ -70,6 +70,8 @@ namespace Dash
             set { SetValue(BindRenderTransformProperty, value); }
         }
 
+        private CollectionFreeformView _parentCollectionFreeform; 
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -101,12 +103,20 @@ namespace Dash
                 ViewModel?.SetHasTitle(ResizeHandleBottomRight.Visibility == Visibility.Visible);
             }
             DataContextChanged += (s, a) =>
-            {
-                ViewModel.DataDocument.OnSelectionChanged += (selected) => { xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent); };
+            { 
+                ViewModel.DataDocument.OnSelectionChanged += (selected) => {
+                    xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+                    if (selected) _parentCollectionFreeform?.AddToSelection(this);
+                    else _parentCollectionFreeform?.RemoveFromSelection(this); 
+                };
             };
             Loaded += (sender, e) => {
+                _parentCollectionFreeform = ParentCollection?.CurrentView as CollectionFreeformView;
                 updateBindings(null, null);
-                DataContextChanged += (s, a) => { updateBindings(null, null); };
+                DataContextChanged += (s, a) => {
+                    _parentCollectionFreeform = ParentCollection?.CurrentView as CollectionFreeformView;
+                    updateBindings(null, null);
+                };
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
@@ -176,7 +186,7 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                var selected = _parentCollectionFreeform?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
                 if (selected?.Count() > 0)
                 {
                     args.Data.Properties[nameof(List<DragDocumentModel>)] =
@@ -679,10 +689,10 @@ namespace Dash
         /// </summary>
         List<DocumentView> SelectedDocuments()
         {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Contains(this))
+            var marqueeDocs = _parentCollectionFreeform?.SelectedDocs; 
+            if (marqueeDocs != null)                                                                                                                                 
                 return marqueeDocs.ToList();
-            return new List<DocumentView>(new DocumentView[] { this } );
+            return new List<DocumentView>(new DocumentView[] { this });
         }
 
         #endregion

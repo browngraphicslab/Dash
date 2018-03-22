@@ -120,12 +120,19 @@ namespace Dash
             e.Handled = true;
         }
 
+        /// <summary>
+        /// Highlight the tapped node on treeview and border highlight the note on workspace 
+        /// </summary>
+        private DocumentController _lastTreeNode; 
         private void TreeViewNode_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Focus(FocusState.Programmatic);
             var dc = (sender as TreeViewNode)?.ViewModel.DataDocument;
             if (dc != null)
+            {
+                if (_lastTreeNode != null) _lastTreeNode.IsSelected = false;  
                 dc.IsSelected = !dc.IsSelected;
+                _lastTreeNode = dc;
+            }
         }
     }
 }
