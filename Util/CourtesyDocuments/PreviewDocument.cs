@@ -48,7 +48,7 @@ namespace Dash
             FrameworkElement innerContent = null;
             if (layout != null)
             {
-                foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
+                foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
                 innerContent = layout.MakeViewUI(context);
             }
@@ -73,7 +73,7 @@ namespace Dash
                 layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 var innerLayout = dargs.NewValue.DereferenceToRoot<DocumentController>(c);
-                foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
+                foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
                 var innerCont = innerLayout.MakeViewUI(c);
                 returnContent.Content = innerCont;

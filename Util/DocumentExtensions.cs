@@ -187,9 +187,9 @@ namespace Dash
             }
             // bcz: shouldn't have to explicitly mask the data field like this, but since it's probably
             // in a binding, the binding would point to the prototype's field and not get overriden on a change.
-            var dataField = doc.GetDataDocument(null).GetField(KeyStore.DataKey);
+            var dataField = doc.GetDataDocument().GetField(KeyStore.DataKey);
             if (dataField != null)
-                newDoc.GetDataDocument(null).SetField(KeyStore.DataKey, dataField.GetCopy(), true);
+                newDoc.GetDataDocument().SetField(KeyStore.DataKey, dataField.GetCopy(), true);
 
             return newDoc;
         }
@@ -335,7 +335,7 @@ namespace Dash
         }*/
         public static void RestoreNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -350,7 +350,7 @@ namespace Dash
 
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             dataDocument.SetField(KeyStore.ModifiedTimestampKey, new NumberController(DateTime.Now.ToFileTime()), true);
             if (MainPage.Instance.WebContext == null)
             {
@@ -385,7 +385,7 @@ namespace Dash
 
         public static DocumentContext GetLongestViewedContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -399,7 +399,7 @@ namespace Dash
 
         public static string GetLongestViewedContextUrl(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -415,7 +415,7 @@ namespace Dash
 
         public static DocumentContext GetLastContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -426,7 +426,7 @@ namespace Dash
 
         public static DocumentContext GetFirstContext(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -437,7 +437,7 @@ namespace Dash
 
         public static List<DocumentContext> GetAllContexts(this DocumentController doc)
         {
-            var dataDocument = doc.GetDataDocument(null);
+            var dataDocument = doc.GetDataDocument();
             var neighboring = dataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
             if (neighboring != null && neighboring.TypedData.Count > 0)
             {
@@ -492,10 +492,10 @@ namespace Dash
             deepestPrototype.SetActiveLayout(activeLayout, forceMask: true, addToLayoutList: true);
         }
 
-        public static TextController GetTitleFieldOrSetDefault(this DocumentController doc, Context context = null)
+        public static TextController GetTitleFieldOrSetDefault(this DocumentController doc)
         {
-            var dataDoc = doc.GetDataDocument(context);
-            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var dataDoc = doc.GetDataDocument();
+            var context = new Context(dataDoc);
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {
@@ -505,10 +505,10 @@ namespace Dash
             return titleKey;
         }
 
-        public static void SetTitleField(this DocumentController doc, string newTitle, Context context = null)
+        public static void SetTitleField(this DocumentController doc, string newTitle)
         {
-            var dataDoc = doc.GetDataDocument(context);
-            context = Context.SafeInitAndAddDocument(context, dataDoc);
+            var dataDoc = doc.GetDataDocument();
+            var context = new Context(dataDoc);
             var titleKey = dataDoc.GetField(KeyStore.TitleKey) as TextController ?? dataDoc.GetDereferencedField<TextController>(KeyStore.TitleKey, context);
             if (titleKey == null)
             {

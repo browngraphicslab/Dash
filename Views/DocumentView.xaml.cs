@@ -386,7 +386,7 @@ namespace Dash
             xTitleIcon.Text = Application.Current.Resources["OperatorIcon"] as string;
             if (ParentCollection != null)
             {
-                var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
+                var dataDoc = ViewModel.DocumentController.GetDataDocument();
                 dataDoc.SetTitleField(title);
             }
         }

@@ -568,7 +568,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.TypedData)
             {
-                var actualDoc = docController.GetDataDocument(null);
+                var actualDoc = docController.GetDataDocument();
 
                 foreach (var field in actualDoc.EnumFields())
                 {

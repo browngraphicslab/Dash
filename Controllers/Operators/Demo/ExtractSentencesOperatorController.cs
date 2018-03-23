@@ -57,7 +57,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data;
                 if (textInput != null)
                 {
