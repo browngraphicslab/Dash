@@ -34,7 +34,7 @@ namespace Dash
         {
             DocumentController = documentController;
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-           // LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
 
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
@@ -178,7 +178,11 @@ namespace Dash
         void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
-                Content = null; // forces layout to be recomputed by listeners who will access Content
+                // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
+                //   bcz: need some better mechanism than this....
+                if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
+                    LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                    Content = null; // forces layout to be recomputed by listeners who will access Content
         }
         /// <summary>
         /// Called when the ActiveLayout field of the Layout document has changed (or a field on the ActiveLayout).
