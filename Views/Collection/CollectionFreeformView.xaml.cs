@@ -127,7 +127,7 @@ namespace Dash
                 MakeInkCanvas();
             }
             
-            if (ParentDocument.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            if (ParentDocument?.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
             {
                 ViewManipulationControls.FitToParent();
             }
@@ -518,14 +518,22 @@ namespace Dash
                 xOuterGrid.PointerMoved += OnPointerMoved;
             }
         }
-        
+
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee != null && (e.Key == VirtualKey.C  || e.Key == VirtualKey.Back || e.Key == VirtualKey.G))
+            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
             {
                 var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
-                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.C)
+                if (e.Key == VirtualKey.A)
+                {
+                    var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                    
+                    ViewModel.AddDocument(
+                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                }
+                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C)
                 {
                     var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                     var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
@@ -683,25 +691,24 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
-                .HasFlag(CoreVirtualKeyStates.Down);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (text is null) return;
-            if (previewTextbox.Visibility == Visibility.Collapsed)
-                return;
-            e.Handled = true;
-            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-            if (text == "v" && ctrlState)
+            if (previewTextbox.Visibility != Visibility.Collapsed)
             {
-                ViewModel.Paste(Clipboard.GetContent(), where);
-                previewTextbox.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                previewTextBuffer += text;
-                if (text.Length > 0)
-                    LoadNewActiveTextBox(text, where);
+                e.Handled = true;
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+                if (text == "v" && this.IsCtrlPressed())
+                {
+                    ViewModel.Paste(Clipboard.GetContent(), where);
+                    previewTextbox.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    previewTextBuffer += text;
+                    if (text.Length > 0)
+                        LoadNewActiveTextBox(text, where);
+                }
             }
         }
 
@@ -712,7 +719,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
+                var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }

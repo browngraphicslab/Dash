@@ -38,7 +38,7 @@ namespace Dash
 
             FieldControllerBase controller = null;
 
-            switch (type.GetType())
+            switch (type.GetFieldType())
             {
                 case TypeInfo.Point:
                     controller = new PointController(model as PointModel);
@@ -50,7 +50,7 @@ namespace Dash
                     controller = MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentController(model as DocumentModel, false);
+                    controller = new DocumentController(model as DocumentModel);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkController(model as InkModel);

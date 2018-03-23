@@ -64,7 +64,7 @@ namespace Dash
             foreach (var inputDoc in collection.TypedData)
             {
                 // get the data from it if it exists
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 // get the text and add it to allText if the text exists
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
@@ -84,7 +84,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
                 {

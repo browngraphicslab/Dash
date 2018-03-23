@@ -17,9 +17,12 @@ using Windows.Data.Pdf;
 
 namespace Dash
 {
+    /// <summary>
+    /// Controls data represeting an image in a Document.
+    /// </summary>
     public class ImageController : FieldModelController<ImageModel>
     {
-
+        // == CONSTRUCTORS ==
         public ImageController() : base(new ImageModel()) { }
 
         public ImageController(Uri path, string data = null) : base(new ImageModel(path, data)) { }
@@ -29,9 +32,10 @@ namespace Dash
 
         }
 
+        // == METHODS ==
         public override void Init()
         {
-
+            // TODO: put init code here
         }
 
         /// <summary>
@@ -56,6 +60,14 @@ namespace Dash
             }
         }
 
+        public Uri Data
+        {
+            get => ImageSource;
+            set => ImageSource = value;
+        }
+
+        // == OVERRIDEN FROM PARENT ==
+
         public override StringSearchModel SearchForString(string searchString)
         {
             var data = (Model as ImageModel)?.Data;
@@ -65,25 +77,6 @@ namespace Dash
             }
             return StringSearchModel.False;
         }
-
-        //public override FrameworkElement GetTableCellView(Context context)
-        //{
-        //    var image = new Image
-        //    {
-        //        HorizontalAlignment = HorizontalAlignment.Stretch,
-        //        VerticalAlignment = VerticalAlignment.Stretch
-        //    };
-
-        //    var imageSourceBinding = new Binding
-        //    {
-        //        Source = this,
-        //        Path = new PropertyPath(nameof(Data)),
-        //        Mode = BindingMode.OneWay
-        //    };
-        //    image.SetBinding(Image.SourceProperty, imageSourceBinding);
-
-        //    return image;
-        //}
 
         public override FieldControllerBase GetDefaultController()
         {
@@ -104,12 +97,6 @@ namespace Dash
                 return true;
             }
             return false;
-        }
-
-        public Uri Data
-        {
-            get => ImageSource;
-            set => ImageSource = value;
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Image;

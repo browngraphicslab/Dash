@@ -111,14 +111,10 @@ namespace Dash
             ListItemSource.Clear();
             if (_dataContextDocument != null)
             {
-                var keys = _dataContextDocument
-                               .GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                               ?.TypedData?.ToList() ?? new List<KeyController>();
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-                            new BoundController(keyFieldPair.Value, _dataContextDocument),
-                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+                            new BoundController(keyFieldPair.Value, _dataContextDocument), TypeColumnWidth));
             }
         }
 
@@ -138,13 +134,10 @@ namespace Dash
 
         private void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
-            var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                           ?.TypedData?.ToList() ?? new List<KeyController>();
-
             for (var i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
+                        new BoundController(fieldValue, _dataContextDocument), TypeColumnWidth);
         }
 
         /// <summary>
@@ -227,14 +220,7 @@ namespace Dash
                 }
                 _dataContextDocument.SetField(key, fmController, true);
             }
-
-
-            var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                           ?.TypedData?.ToList() ?? new List<KeyController>();
-
-            //ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
-            //    keys.Contains(key), TypeColumnWidth));
-
+            
             // TODO check if adding was succesful
             // reset the fields to the empty values
             xNewKeyField.Text = "";
@@ -265,36 +251,7 @@ namespace Dash
                 xTypeComboBox.SelectedIndex = 2;
             }
         }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            if (kf == null)
-                return;
-            var primaryKeys =
-                _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-            if (primaryKeys == null)
-            {
-                _dataContextDocument.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(kf.Key), false);
-            }
-            else
-            {
-                if (!primaryKeys.TypedData.Contains(kf.Key))
-                    primaryKeys.Add(kf.Key);
-            }
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            if (kf == null)
-                return;
-            var primaryKeys =
-                _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-            if (primaryKeys != null)
-                if (primaryKeys.TypedData.Contains(kf.Key))
-                    primaryKeys.Remove(kf.Key);
-        }
+        
 
         /// <summary>
         ///     when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position
@@ -317,9 +274,8 @@ namespace Dash
             {
                 return;
             }
-            var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
-            var keyColumnWidth = columnDefinitions[1].ActualWidth;
-            if (posInKvPane.X > checkboxColumnWidth && posInKvPane.X < keyColumnWidth)
+            var keyColumnWidth = columnDefinitions[0].ActualWidth;
+            if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
                 _editKey = true;
             else
                 _editKey = false;
@@ -335,11 +291,11 @@ namespace Dash
             {
                 MaxHeight = 500,
                 MaxWidth = 500,
+                TextWrapping=Windows.UI.Xaml.TextWrapping.Wrap,
                 Text = srcText,
-                AcceptsReturn = false //!srcText.Contains("\r") // TODO make this a better heuristic
+                AcceptsReturn = true //!srcText.Contains("\r") // TODO make this a better heuristic
             };
-            
-            _tb.KeyDown += _tb_KeyDown;
+            _tb.BeforeTextChanging += _tb_BeforeTextChanging;
             _tb.LostFocus += _tb_LostFocus;
 
             //add textbox graphically
@@ -353,31 +309,34 @@ namespace Dash
 
         }
 
+        private void _tb_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+            var shiftState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var enterState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Enter).HasFlag(CoreVirtualKeyStates.Down);
+
+            if (shiftState && enterState)
+            {
+                // bcz: make sure we are writing the field to this instance, and not a prototype.
+                //     so we are copying the field in case it came from the prototype.
+                var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
+                    _selectedKV.Key, new Context(_dataContextDocument)).GetCopy();
+                FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
+                _dataContextDocument.SetField(_selectedKV.Key, field, true);
+                //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
+                RemoveEditingTextBox();
+                args.Cancel = true;
+            }
+        }
+
         private void _tb_LostFocus(object sender, RoutedEventArgs e)
         {
             RemoveEditingTextBox();
         }
 
-        private void _tb_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            var shiftState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var enterState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Enter).HasFlag(CoreVirtualKeyStates.Down);
-
-            Debug.WriteLine($"{enterState}, {shiftState}");
-            if (enterState && shiftState)
-            {
-                var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
-                    _selectedKV.Key, new Context(_dataContextDocument));
-                FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
-                //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
-                RemoveEditingTextBox();
-            }
-        }
-
         private void RemoveEditingTextBox()
         {
             _tb.LostFocus -= _tb_LostFocus;
-            _tb.KeyDown -= _tb_KeyDown;
+            _tb.BeforeTextChanging -= _tb_BeforeTextChanging;
             _selectedKV = null;
             _editKey = false;
             MainPage.Instance.xCanvas.Children.Remove(_tb);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -15,8 +16,6 @@ namespace Dash
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
-        public static KeyController PrimaryKeyKey = new KeyController(DashConstants.KeyStore.PrimaryKeyKey);
-        public static KeyController ThisKey = new KeyController(DashConstants.KeyStore.ThisKey);
         public static KeyController PrototypeKey = new KeyController(DashConstants.KeyStore.PrototypeKey);
         public static KeyController DelegatesKey = new KeyController(DashConstants.KeyStore.DelegatesKey);
         public static KeyController WidthFieldKey = new KeyController(DashConstants.KeyStore.WidthFieldKey);
@@ -41,7 +40,6 @@ namespace Dash
         public static KeyController ModifiedTimestampKey = new KeyController(DashConstants.KeyStore.ModifiedTimestampKey);
         public static KeyController LastWorkspaceKey = new KeyController(DashConstants.KeyStore.LastWorkspaceKey);
         public static KeyController WorkspaceHistoryKey = new KeyController(DashConstants.KeyStore.WorkspaceHistoryKey);
-        //public static KeyController GroupingKey = new KeyController(DashConstants.KeyStore.GroupingKey);
         public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
         public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
@@ -49,11 +47,6 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
 
-        /// <summary>
-        /// Key for collection data
-        /// TODO This might be better in a different class
-        /// </summary>
-        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
         public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "_CollectionFitToParent");
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "_Horizontal Alignment");
@@ -63,7 +56,10 @@ namespace Dash
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
+        public static object RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc func) { return TypeRenderer[type] = func; }
 
+        public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
+        public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
 
     }
 }

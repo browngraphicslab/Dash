@@ -29,7 +29,7 @@ namespace Dash
         private static string PrototypeId = "88A3B7F5-7828-4251-ACFC-E56428316203";
 
         public BackgroundBox( double x = 0, double y = 0, double w = 200, double h = 200)
-        {  
+        {
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), null);
             

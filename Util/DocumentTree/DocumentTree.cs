@@ -75,7 +75,7 @@ namespace Dash
         private void Parse(DocumentNode node)
         {
             _parsed.Add(node);
-            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
+            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
             //var groups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)
                 //?.TypedData ?? new List<DocumentController>();
             var groupDict = new Dictionary<string, DocumentNodeGroup>();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -91,7 +92,7 @@ namespace DashShared
 
         public override int GetHashCode()
         {
-            throw new NotImplementedException();
+            return Id.GetHashCode();
         }
     }
 }

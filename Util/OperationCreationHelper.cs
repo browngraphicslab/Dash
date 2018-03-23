@@ -20,7 +20,6 @@ namespace Dash
             var operatorTypes = typeof(OperatorController).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(OperatorController)));
             foreach (var operatorType in operatorTypes)
             {
-
                 var title = ((KeyController) operatorType
                     .GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null))?.KeyModel?.Name;
 

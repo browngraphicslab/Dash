@@ -109,7 +109,7 @@ namespace Dash
             setText(getRtfText());
 
             var allText = getReadableText();
-            DataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            DataDocument.SetField<TextController, string>(KeyStore.DocumentTextKey, allText, true);
 
             // auto-generate key/value pairs by scanning the text
             var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
@@ -129,8 +129,6 @@ namespace Dash
             set { SetValue(TextProperty, value); }
         }
         public DocumentController  DataDocument { get; set; }
-        public RichTextController  TargetRTFController { get; set; } = null;
-        public ReferenceController TargetFieldReference { get; set; } = null;
         DocumentView       getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         DocumentController getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
@@ -166,10 +164,18 @@ namespace Dash
         {
             if (!_isPointerPressed)
             {
+                xRichEditBox.Height = double.NaN;
                 xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                var relative = this.GetFirstAncestorOfType<RelativePanel>();
+                var relative = Parent as RelativePanel;
+                var pad = 0.0;
                 if (relative != null)
-                    relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
+                {
+                    foreach (var item in relative.Children)
+                        if (item != this)
+                            pad += (item as FrameworkElement).ActualHeight;
+                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                }
+                this.Height = xRichEditBox.DesiredSize.Height;
             }
         }
 
@@ -199,7 +205,7 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(null), this.IsCtrlPressed());
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
                 if (nearest != null)
                 {
                     if (this.IsCtrlPressed())
@@ -211,9 +217,6 @@ namespace Dash
                     var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        var api = theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data;
-                        if (api == CollectionNote.APISignature)
-                            theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
                         Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
                     }
                     else if (target.StartsWith("http"))
@@ -222,9 +225,6 @@ namespace Dash
                             MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target }) ?? new HtmlNote(target, target, pt).Document;
-                            if (theDoc != null && theDoc.GetPositionField() == null)
-                                theDoc = HtmlNote.CreateLayout(theDoc, new DocumentReferenceController(theDoc.GetId(), KeyStore.DataKey), pt);
                             Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
                         }
                     }
@@ -362,9 +362,12 @@ namespace Dash
         /// <param name="e"></param>
         void UnLoaded(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
-            MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
-            DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
+            if (_pressedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
+            if (_releasedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
+            if (_selectedFieldUpdatedHdlr != null)
+                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
             this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated -= _scrollHandler; // bcz: don't know why we need to do this, but the events keep getting generated after 'this' is unloaded
         }
         #endregion
@@ -386,25 +389,6 @@ namespace Dash
                 xRichEditBox.Document.Selection.SetRange(s1, s2);
             return target;
         }
-        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
-        {
-            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
-            if (theDoc == null && createIfNeeded)
-            {
-                if (refText.StartsWith("http"))
-                {
-                    theDoc = new HtmlNote(refText).Document;
-                }
-                else
-                {
-                    theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
-                }
-            }
-
-            return theDoc;
-        }
 
         void linkDocumentToSelection(DocumentController theDoc, bool forceLocal)
         {
@@ -424,9 +408,9 @@ namespace Dash
             Point startPt;
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
             string link = "\"" + theDoc.GetId() + "\"";
-            if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+            if (!forceLocal && theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+                link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }
 
             if (xRichEditBox.Document.Selection.Link != link)

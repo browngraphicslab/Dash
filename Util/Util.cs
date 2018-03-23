@@ -266,7 +266,7 @@ namespace Dash
                     data = cont.Data;
                 }
                 // TODO refactor the CollectionKey here into DashConstants
-                else if (pair.Key == KeyStore.CollectionKey)
+                else if (pair.Value is ListController<DocumentController>)
                 {
                     var collectionList = new List<Dictionary<string, object>>();
                     var collectionCont = pair.Value as ListController<DocumentController>;
@@ -520,16 +520,21 @@ namespace Dash
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
+        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
+        {
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
+            return cnote.Document;
+        }
+        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
+            return BlankCollectionWithPosition(new Point());
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            return new NoteDocuments.RichTextNote().Document;
         }
 
         /// <summary>
@@ -563,7 +568,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.TypedData)
             {
-                var actualDoc = docController.GetDataDocument(null);
+                var actualDoc = docController.GetDataDocument();
 
                 foreach (var field in actualDoc.EnumFields())
                 {

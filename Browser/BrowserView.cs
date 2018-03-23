@@ -116,7 +116,7 @@ namespace Dash
                     await HandleIncomingMessage(read);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 _initted = false;
                 _socket = null;
@@ -237,23 +237,26 @@ namespace Dash
 
         private static async Task SendToServer(string message)
         {
-            if (_socket == null)
-            {
-                await InitSocket();
-                var ip = "123";
-                _dataMessageWriter.WriteString("dash:"+ ip);
-                await _dataMessageWriter.StoreAsync();
-                _ready = true;
-            }
-
-            while (!_ready)
-            {
-                Debug.WriteLine("Awaiting connection to web server");
-                await Task.Delay(50);
-            }
-
             try
             {
+
+                if (_socket == null)
+                {
+                    await InitSocket();
+                    var ip = "123";
+                    _dataMessageWriter.WriteString("dash:" + ip);
+                    await _dataMessageWriter.StoreAsync();
+                    _ready = true;
+                }
+
+                while (!_ready)
+                {
+                    Debug.WriteLine("Awaiting connection to web server");
+                    await Task.Delay(50);
+                }
+
+
+
                 _dataMessageWriter.WriteString(message);
                 await _dataMessageWriter.StoreAsync();
             }
