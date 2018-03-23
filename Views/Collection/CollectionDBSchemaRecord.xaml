@@ -16,10 +16,10 @@
                     ItemsSource="{Binding RecordFields}"
                     SelectionMode="None"
                   Height="50"
-                    CanDrag="False">
+                    CanDrag="False" AllowDrop="False" CanReorderItems="False" >
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <ItemsStackPanel CanDrag="False" Orientation="Horizontal"  Margin="0"/>
+                <ItemsStackPanel CanDrag="False" AllowDrop="False" Orientation="Horizontal"  Margin="0"/>
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>

@@ -52,6 +52,8 @@
                   SelectionMode="Extended"
                   Background="#CCDDDDDD"
                   CanDragItems="True"
+                  CanReorderItems="True"
+                  AllowDrop="True"
                   Height="100"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
                   PointerPressed="xRecordsView_PointerPressed"  
@@ -59,7 +61,7 @@
                   DragItemsStarting="XRecordsView_OnDragItemsStarting">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Vertical"/>
+                    <ItemsStackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
@@ -68,5 +70,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <Button HorizontalAlignment="Right" Margin="0,0,300,0" Tapped="UIElement_OnTapped">New Document</Button>
     </Grid>
 </UserControl>

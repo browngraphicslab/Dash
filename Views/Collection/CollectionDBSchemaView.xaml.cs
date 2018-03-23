@@ -36,6 +36,12 @@ namespace Dash
             MinWidth = MinHeight = 50;
             xHeaderView.ItemsSource = SchemaHeaders;
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
+            Drop += CollectionDBSchemaView_Drop;
+        }
+
+        private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
 
         private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -468,6 +474,12 @@ namespace Dash
         private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            ViewModel.AddDocument(new DocumentController(), null);
+            e.Handled = true;
         }
     }
 }
