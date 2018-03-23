@@ -10,11 +10,13 @@
     d:DesignWidth="400">
 
 
-    <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30">
-        <Ellipse x:Name="OperatorEllipse"  Style="{StaticResource xFieldLinkHandle}"
+    <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" Background="Transparent" 
+            HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" 
+            PointerEntered="XOperatorEllipseBorder_OnPointerEntered" PointerExited="XOperatorEllipseBorder_OnPointerExited">
+        <Ellipse x:Name="OperatorEllipse" x:FieldModifier="public"  Style="{StaticResource xFieldLinkHandle}"
                  CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" 
                  PointerEntered="OperatorEllipse_OnPointerEntered"
-                 PointerExited="OperatorEllipse_OnPointerExited"
+                 PointerExited="OperatorEllipse_OnPointerExited"            
                  />
     </Border>
 

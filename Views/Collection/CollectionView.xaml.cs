@@ -391,7 +391,6 @@ namespace Dash
                             bit.SetSource(thumbnailStream);
                             Uri uri = bit.UriSource;
                             //uri is null
-                            Debug.Print("bit: " + uri.ToString());
 
                             //need to convert thumbnailStream to uri!
                             

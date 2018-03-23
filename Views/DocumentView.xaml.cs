@@ -650,7 +650,7 @@ namespace Dash
                 var dataDoc = ViewModel.DocumentController.GetDataDocument(null);
                 dataDoc.SetTitleField(title);
             }
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            MainPage.Instance.RemoveInfoDot();
         }
 
         /// <summary>
@@ -665,7 +665,7 @@ namespace Dash
 
         public void StyleKeyValuePane()
         {
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            MainPage.Instance.RemoveInfoDot();
 
         }
 
@@ -791,6 +791,10 @@ namespace Dash
             if (!_draggerButtonBeingManipulated) Debug.WriteLine("Dragger Manipulation Started");
 
             _draggerButtonBeingManipulated = true;
+
+            //move the location of the infoDot with the document view element
+            MainPage.Instance.RemoveInfoDot();
+            MainPage.Instance.AddInfoDot(this);
         }
 
         void fitFreeFormChildrenToTheirLayouts()
@@ -1081,13 +1085,22 @@ namespace Dash
         {
             if (_draggerButtonBeingManipulated)
             {
-                OperatorEllipse.Visibility = DraggerButton.Visibility = Visibility.Visible;
+                DraggerButton.Visibility = Visibility.Visible;
+                MainPage.Instance.AddInfoDot(this);
                 xSelectionBorder.BorderThickness = new Thickness(3);
                 xTitleIcon.Foreground = (SolidColorBrush) Application.Current.Resources["TitleText"];
             }
             else
             {
-                OperatorEllipse.Visibility = DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
+                DraggerButton.Visibility = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false ? Visibility.Visible : Visibility.Collapsed;
+                if (DraggerButton.Visibility == Visibility.Visible)
+                {
+                    MainPage.Instance.AddInfoDot(this);
+                }
+                else
+                {
+                    MainPage.Instance.RemoveInfoDot();
+                }
                 xSelectionBorder.BorderThickness = isBorderOn ? new Thickness(3) : new Thickness(0);
                 xTitleIcon.Foreground = isBorderOn && isOtherChromeVisible && ViewModel?.Undecorated == false
                     ? (SolidColorBrush)Application.Current.Resources["TitleText"]

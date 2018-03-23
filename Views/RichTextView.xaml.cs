@@ -534,7 +534,6 @@ namespace Dash
 
             var docParent = this.GetFirstAncestorOfType<DocumentView>();
             docParent.ViewModel.DocumentController.GetDataDocument(null).AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
-            docParent.xOperatorEllipseBorder.PointerPressed += XOperatorEllipseBorder_PointerPressed;
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }

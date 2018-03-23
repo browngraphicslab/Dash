@@ -29,6 +29,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using Windows.UI.Xaml.Shapes;
+using Dash.Annotations;
 using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
@@ -85,7 +86,6 @@ namespace Dash
 
             SearchVisible = false;
 
-            //TODO: GET CORD FROM MATRIX TRANS IN COLL FREEFORM VIEW
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -153,29 +153,38 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
-        public void AddInfoDot(DocumentView dv)
+        public void AddInfoDot(DocumentView dv, [CanBeNull] InfoDot infod = null)
         {
-            //TODO: MOVE dot when moved, call this in text/ image dragged commad (manipulation delta)
-
-            //this doesn't work for nesting
-            CollectionFreeformView freeview = (CollectionFreeformView)GetMainCollectionView().CurrentView;
-            if (freeview != null)
+            if (!dv.ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType))
             {
-               // MatrixTransform _transBeAnim = freeview.itemsPanelCanvas?.RenderTransform as MatrixTransform;
-               // Matrix m = _transBeAnim.Matrix;
-                //Matrix has zoomX, 0, 0, zoomY, posX, posY
 
-                var infod = new InfoDot();
-                //the left is moved to the left by the width of the sidebar tab
-               // var bounds = ApplicationView.GetForCurrentView().VisibleBounds;
+                //TODO: this doesn't work for nesting
+                CollectionFreeformView freeview = dv.GetFirstAncestorOfType<CollectionFreeformView>();
+                //CollectionFreeformView freeview = (CollectionFreeformView) GetMainCollectionView().CurrentView;
+                if ((freeview != null) && (freeview.itemsPanelCanvas != null))
+                {
+                    bool newDot = false;
+                    //if this function was called with just the first parameter, a new InfoDot is created
+                    if (infod == null)
+                    {
+                        infod = new InfoDot(dv);
+                        newDot = true;
+                    }
 
-                Point pos = new Point(dv.ViewModel.XPos + dv.ViewModel.Width, dv.ViewModel.YPos);
-                Point mainPagePos = freeview.itemsPanelCanvas.TransformToVisual(xCanvas).TransformPoint(pos);
-                //offset does not account for sidebar
-                Canvas.SetLeft(infod, mainPagePos.X);
-                Canvas.SetTop(infod, mainPagePos.Y);
-                //can set event in Doc View to change pos when moved
-                xCanvas.Children.Add(infod);
+                    Point pos = new Point(dv.ViewModel.XPos + dv.ViewModel.Width, dv.ViewModel.YPos);
+                    Point mainPagePos = freeview.itemsPanelCanvas.TransformToVisual(xCanvas).TransformPoint(pos);
+
+                    Canvas.SetLeft(infod, mainPagePos.X);
+                    Canvas.SetTop(infod, mainPagePos.Y);
+                    if (newDot)
+                    {
+                        xCanvas.Children.Add(infod);
+                    }
+                    else
+                    {
+                        infod.OperatorEllipse.Visibility = Visibility.Visible;
+                    }
+                }
             }
 
         }
@@ -185,7 +194,8 @@ namespace Dash
             var infods = xCanvas.Children.OfType<InfoDot>().ToList();
             foreach (var infod in infods)
             {
-                xCanvas.Children.Remove(infod);
+                //infod.Background = new SolidColorBrush(Colors.Red);
+                infod.OperatorEllipse.Visibility = Visibility.Collapsed;
             }
 
         }
@@ -236,7 +246,7 @@ namespace Dash
         {
             RoutedEventHandler handler = null;
             handler =
-                delegate(object sender, RoutedEventArgs args)
+                delegate (object sender, RoutedEventArgs args)
                 {
                     xMainDocView.xContentPresenter.Loaded -= handler;
 
@@ -250,7 +260,7 @@ namespace Dash
                             if (vm.DocumentController.Equals(document))
                             {
                                 RoutedEventHandler finalHandler = null;
-                                finalHandler = delegate(object finalSender, RoutedEventArgs finalArgs)
+                                finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
                                     NavigateToDocumentInWorkspace(document);
@@ -269,7 +279,7 @@ namespace Dash
                             if (coll == null)
                             {
                                 RoutedEventHandler contentHandler = null;
-                                contentHandler = delegate(object contentSender, RoutedEventArgs contentArgs)
+                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
                                     if (!NavigateToDocumentInWorkspace(document))
@@ -343,7 +353,7 @@ namespace Dash
                             containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
                             containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
 
-                    
+
 
                     var pt = canvas.TransformToVisual(xMainDocView).TransformPoint(new Point(0, 0));
                     var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
