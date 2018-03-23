@@ -314,7 +314,7 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+            var keyString = dragModel.DraggedDocument.GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
@@ -342,7 +342,7 @@ namespace Dash
             }
             else
             {
-                var keyString = dragModel.GetDraggedDocument().GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+                var keyString = dragModel.DraggedDocument.GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
                 if (keyString?.StartsWith("#") == true)
                 {
                     var key = keyString.Substring(1);

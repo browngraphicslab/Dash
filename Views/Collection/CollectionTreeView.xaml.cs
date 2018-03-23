@@ -50,7 +50,7 @@ namespace Dash
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var dvm = e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) ? e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel : null;
             if (dvm != null)
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.GetDraggedDocument());
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.DraggedDocument);
             e.Handled = true;
         }
 

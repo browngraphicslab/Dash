@@ -700,7 +700,7 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.GetDraggedDocument();
+                var doc = dragData.DraggedDocument;
                 var listKeys = doc.EnumDisplayableFields()
                     .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)

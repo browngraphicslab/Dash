@@ -610,10 +610,10 @@ namespace Dash
                 var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
                 foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
                 {
-                    var start = dragModel.First().GetDraggedDocument().GetPositionField().Data;
+                    var start = dragModel.First().DraggedDocument.GetPositionField().Data;
                     AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X + where.X,
-                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y + where.Y), true)).ToList(), null);
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
+                                                                                   dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList(), null);
                 }
             }
             // if the user drags a data document
@@ -647,7 +647,7 @@ namespace Dash
         /// <param name="dragModel"></param>
         private void HandleTemplateLayoutDrop(DragDocumentModel dragModel)
         {
-            var template = dragModel.GetDraggedDocument();
+            var template = dragModel.DraggedDocument;
             var templateFields = template.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.TypedData;
             foreach (var dvm in DocumentViewModels.ToArray())
             {
