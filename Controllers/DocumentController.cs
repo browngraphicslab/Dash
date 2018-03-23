@@ -1041,7 +1041,6 @@ namespace Dash
             }
             return sp;
         }
-
         /// <summary>
         /// Builds the underlying XAML Framework Element representation of this document.
         /// </summary>
@@ -1070,106 +1069,11 @@ namespace Dash
 
                 return doc.MakeViewUI(context, GetDataDocument());
             }
+            if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
+            {
+                return KeyStore.TypeRenderer[DocumentType](this, context);
+            } else
 
-            // otherwise, look through the list of "special" document type primitives and
-            // generate the view from the given courtesy document's static MakeView method
-            // to make the view
-            if (DocumentType.Equals(TextingBox.DocumentType))
-            {
-                return TextingBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(ImageBox.DocumentType))
-            {
-                return ImageBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(PdfBox.DocumentType))
-            {
-                return PdfBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(KeyValueDocumentBox.DocumentType))
-            {
-                return KeyValueDocumentBox.MakeView(this, context, dataDocument);//
-            }
-            if (DocumentType.Equals(StackLayout.DocumentType))
-            {
-                return StackLayout.MakeView(this, context, dataDocument); //
-            }
-            if (DocumentType.Equals(WebBox.DocumentType))
-            {
-                return WebBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-            {
-                return CollectionBox.MakeView(this, context, dataDocument);//
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.OperatorBoxType))
-            {
-                return OperatorBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
-            {
-                return FreeFormDocument.MakeView(this, context, dataDocument); //
-            }
-            if (DocumentType.Equals(InkBox.DocumentType))
-            {
-                return InkBox.MakeView(this, context, dataDocument);
-            }
-            if (DocumentType.Equals(GridViewLayout.DocumentType))
-            {
-                return GridViewLayout.MakeView(this, context, dataDocument); //
-            }
-            if (DocumentType.Equals(ListViewLayout.DocumentType))
-            {
-                return ListViewLayout.MakeView(this, context, dataDocument); //
-            }
-            if (DocumentType.Equals(ExecuteHtmlOperatorBox.DocumentType))
-            {
-                return ExecuteHtmlOperatorBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(RichTextBox.DocumentType))
-            {
-                return RichTextBox.MakeView(this, context); //
-            }
-            if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
-            {
-                return GridLayout.MakeView(this, context, dataDocument); //
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.MeltOperatorBoxDocumentType))
-            {
-                return MeltOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.QuizletOperatorType))
-            {
-                return QuizletOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.ExtractSentencesDocumentType))
-            {
-                return ExtractSentencesOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(DashConstants.TypeStore.SearchOperatorType))
-            {
-                return SearchOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
-            {
-                return DBSearchOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(ApiOperatorBox.DocumentType))
-            {
-                return ApiOperatorBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(PreviewDocument.PreviewDocumentType))
-            {
-                return PreviewDocument.MakeView(this, context);
-            }
-            if (DocumentType.Equals(BackgroundBox.DocumentType))
-            {
-                return BackgroundBox.MakeView(this, context);
-            }
-            if (DocumentType.Equals(DataBox.DocumentType))
-            {
-                return DataBox.MakeView(this, context);
-            }
             return makeAllViewUI(context);
         }
 

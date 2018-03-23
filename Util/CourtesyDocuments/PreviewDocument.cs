@@ -18,7 +18,7 @@ namespace Dash
     public class PreviewDocument : CourtesyDocument
     {
 
-        public static DocumentType PreviewDocumentType = new DocumentType("26367A6B-2DDE-4ADF-8CD7-30A8AE354FB5", "Preview Doc");
+        public static DocumentType DocumentType = new DocumentType("26367A6B-2DDE-4ADF-8CD7-30A8AE354FB5", "Preview Doc");
 
         public readonly string PrototypeId = "D6FF4388-DB02-41F0-AD52-C895A5C07265";
 
@@ -92,7 +92,7 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var prototypeDocument = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), PreviewDocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, PrototypeId);
             return prototypeDocument;
         }
     }

@@ -23,8 +23,7 @@ namespace Dash
      /// </summary>
     public class WebBox : CourtesyDocument
     {
-        public static DocumentType DocumentType =
-            new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
+        public static DocumentType DocumentType = new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
         public WebBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);

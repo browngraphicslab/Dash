@@ -61,9 +61,8 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <param name="context"></param>
-        /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var stack = new RelativePanel();
             var stackFieldData =

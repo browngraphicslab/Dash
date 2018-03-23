@@ -34,7 +34,7 @@ namespace Dash
         {
             DocumentController = documentController;
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+           // LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
 
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
