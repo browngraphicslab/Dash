@@ -28,6 +28,8 @@ namespace Dash
         public static readonly KeyController OutputDocumentKey =
             new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
+
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
@@ -58,7 +60,7 @@ namespace Dash
         }
         
 
-        public ExecuteHtmlJavaScriptController() : base(new OperatorModel(OperatorType.ExecuteHtmlJavaScript))
+        public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
         
@@ -66,6 +68,9 @@ namespace Dash
         public ExecuteHtmlJavaScriptController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D0286E73-D9F6-4341-B901-5ECC27AC76BC", "Execute html javascript");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -116,7 +121,7 @@ namespace Dash
                 if (id == Id)
                 {
                     var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
-                    var children = Cnote.DataDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
+                    var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
                             foreach (var d in (f.Value as ListController<DocumentController>).TypedData)
@@ -138,19 +143,9 @@ namespace Dash
                 }
             }
         };
-        
+       
 
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            return null;
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ExecuteHtmlJavaScriptController();
         }

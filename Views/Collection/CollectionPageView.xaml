@@ -105,7 +105,10 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <local:DocumentView  IsHitTestVisible="False"/>
+
+                        <Grid Background="#01000000" PointerPressed="xThumbs_PointerPressed">
+                            <local:DocumentView IsHitTestVisible="False"/>
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

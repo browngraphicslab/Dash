@@ -1,4 +1,5 @@
 ﻿using Windows.UI;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -7,7 +8,7 @@ namespace Dash
     {
         public override SolidColorBrush ConvertDataToXaml(bool data, object parameter = null)
         {
-            return data ? new SolidColorBrush(Colors.Transparent) : new SolidColorBrush(Colors.Gray);
+            return data ? Application.Current.Resources["WindowsBlue"] as SolidColorBrush : new SolidColorBrush(Colors.Transparent);
         }
 
         public override bool ConvertXamlToData(SolidColorBrush xaml, object parameter = null)

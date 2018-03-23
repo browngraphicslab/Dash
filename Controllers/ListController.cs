@@ -65,7 +65,7 @@ namespace Dash
             return TypedData.ToList();
         }
 
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var list = value as List<T>;
             if (list != null)

@@ -28,8 +28,7 @@ namespace Dash
             SetLayoutForDocument(Document, Document, true, true);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
 
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;

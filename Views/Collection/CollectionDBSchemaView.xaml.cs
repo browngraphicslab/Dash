@@ -117,7 +117,7 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            var field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
             var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
             xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
@@ -201,8 +201,8 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            dc.Document.GetDataDocument(null).ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
-            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument(null).GetId(), dc.HeaderViewModel.FieldKey);
+            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -253,13 +253,13 @@ namespace Dash
         KeyController _lastFieldSortKey = null;
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
-            var dbDocs = ParentDocument
+            var dbDocs = ParentDocument.GetDataDocument()
                    .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
             {
-                var str = d.GetDataDocument(null).GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
@@ -275,8 +275,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
-                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -427,10 +427,7 @@ namespace Dash
                 ?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc =
-                    new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
@@ -456,13 +453,14 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
-                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(), collectionViewModel.CollectionKey);
+                var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
                     new DragCollectionFieldModel(
-                        collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData,
-                    collectionReference,
-                    viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB
+                        collectionData,
+                        collectionReference,
+                        viewModel.FieldKey,
+                        CollectionView.CollectionViewType.DB
                     ));
             }
         }

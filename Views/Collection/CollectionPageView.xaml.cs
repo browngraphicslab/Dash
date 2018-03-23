@@ -157,7 +157,7 @@ namespace Dash
             captionKey = captionKey ?? KeyStore.TitleKey;
             if (captionKey != null && CurPage != null)
             {
-                var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument(null);
+                var bodyDoc = CurPage.DataDocument.GetDereferencedField<DocumentController>(DisplayKey, null)?.GetDataDocument();
                 xDocTitle.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 CaptionKey = captionKey;
 
@@ -204,7 +204,7 @@ namespace Dash
                         }
                     }
                     var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DataDocument);
-                    if (img != null && (!(data is DocumentController) || !img.GetDataDocument(null).Equals((data as DocumentController).GetDataDocument(null))))
+                    if (img != null && (!(data is DocumentController) || !img.GetDataDocument().Equals((data as DocumentController).GetDataDocument())))
                     {
                         var imgView = img.GetViewCopy();
                         imgView.GetWidthField().NumberFieldModel.Data = double.NaN;
@@ -314,19 +314,15 @@ namespace Dash
             if (!e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 return;
             var dragModel = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-            var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+            var keyString = dragModel.DraggedDocument.GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
             if (keyString?.StartsWith("#") == true)
             {
                 var key = keyString.Substring(1);
                 var splits = key.Split("=");
                 var keyName = splits.Length > 0 ? splits[0] : key;
-                var k = KeyController.LookupKeyByName(keyName);
                 var keyasgn = splits.Length > 1 ? splits[1] : "";
-                if (k == null)
-                {
-                    k = new KeyController(UtilShared.GenerateNewId(), keyName);
-                }
-                SetHackBodyDoc(k, keyasgn);
+
+                SetHackBodyDoc(KeyController.LookupKeyByName(keyName, true), keyasgn);
                 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }
@@ -346,7 +342,7 @@ namespace Dash
             }
             else
             {
-                var keyString = dragModel.GetDraggedDocument().GetDataDocument(null)?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
+                var keyString = dragModel.DraggedDocument.GetDataDocument()?.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
                 if (keyString?.StartsWith("#") == true)
                 {
                     var key = keyString.Substring(1);
@@ -486,6 +482,11 @@ namespace Dash
                 var ind = ViewModel.ThumbDocumentViewModels.IndexOf(m as DocumentViewModel);
                 e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(PageDocumentViewModels[ind].DocumentController, true);
             }
+        }
+
+        private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
     }
 }

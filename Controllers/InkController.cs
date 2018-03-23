@@ -87,7 +87,7 @@ namespace Dash
         {
             throw new System.NotImplementedException();
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             return false;
         }
@@ -147,7 +147,7 @@ namespace Dash
                 OnFieldModelUpdated(args);
                 if (sender != null) InkUpdated?.Invoke(sender, args);
             }
-            catch (JsonSerializationException e)
+            catch (JsonSerializationException)
             {
                 Debug.Fail("Json failed to parse");
             }
@@ -158,6 +158,10 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        /// <summary>
+        /// Redoes the last action.
+        /// </summary>
+        /// <param name="sender"></param>
         public void Redo(InkCanvas sender)
         {
             if (_redoStack.Count > 0)
@@ -168,6 +172,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Undos the last ink action.
+        /// </summary>
+        /// <param name="sender"></param>
         public void Undo(InkCanvas sender)
         {
             if (_undoStack.Count > 1)

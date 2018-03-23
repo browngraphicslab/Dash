@@ -32,9 +32,15 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
+            AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
             //Unloaded += CollectionGridView_Unloaded;
 
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
+        }
+
+        private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)

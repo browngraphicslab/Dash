@@ -37,12 +37,11 @@ namespace Dash
         {
             return Data;
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             if (value is string)
             {
                 Data = value as string;
-                _lowerData = Data.ToLower();
                 return true;
             }
             return false;
@@ -54,6 +53,7 @@ namespace Dash
             {
                 if (TextFieldModel.Data != value)
                 {
+                    _lowerData = value.ToLower();
                     TextFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                 }

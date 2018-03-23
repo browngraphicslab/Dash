@@ -39,12 +39,7 @@ namespace Dash
         public WindowTemplate()
         {
             this.DefaultStyleKey = typeof(WindowTemplate);
-            DataContextChanged += WindowTemplate_DataContextChanged;
-        }
-
-        private void WindowTemplate_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            args.Handled = true;
+            DataContextChanged += (s,e) => e.Handled = true; 
         }
 
         public double HeaderHeight
@@ -102,7 +97,7 @@ namespace Dash
             // apply close button events
             var closeButton = GetTemplateChild(CloseButtonName) as UIElement;
             Debug.Assert(closeButton != null);
-            closeButton.Tapped += CloseButton_Tapped;
+            closeButton.Tapped += (s,e)=> CloseWindow();
 
             var fadeAnimation = GetTemplateChild(FadeOutAnimationName) as Storyboard;
             Debug.Assert(fadeAnimation != null);
@@ -175,15 +170,7 @@ namespace Dash
             }
             return translate;
         }
-
-        /// <summary>
-        /// Called whenever the close button is tapped; closes window 
-        /// </summary>
-        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            CloseWindow();
-        }
-
+        
         protected void CloseWindow()
         {
             var fadeAnimation = GetTemplateChild(FadeOutAnimationName) as Storyboard;

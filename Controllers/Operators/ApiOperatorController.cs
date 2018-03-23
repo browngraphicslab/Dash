@@ -43,7 +43,7 @@ namespace Dash
         public static readonly KeyController Test2Key = new KeyController("A2A60489-5E39-4E12-B886-EFA7A79870D9", "Output Test1");
         public static readonly KeyController Test3Key = new KeyController("FCFEB979-7842-41FA-89FB-3CFC67358B8F", "Output Test2");
 
-        public ApiOperatorController() : base(new OperatorModel(OperatorType.Api))
+        public ApiOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -55,17 +55,12 @@ namespace Dash
         {
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("F0A2B96E-65D9-4E1D-9D3A-2660C7C5C316", "Api");
+
+        public override FieldControllerBase GetDefaultController()
         {
             return new ApiOperatorController(this);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
@@ -82,6 +77,9 @@ namespace Dash
         {
             [OutputKey] = TypeInfo.Document
         };
+
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =
+            rfmc => new ApiOperatorBox(rfmc);
 
         public ObservableDictionary<KeyController, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
         public ObservableDictionary<KeyController, ApiParameter> Headers { get; } = new ObservableDictionary<KeyController, ApiParameter>();

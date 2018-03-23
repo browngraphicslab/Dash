@@ -17,6 +17,7 @@ namespace Dash
         /// </summary>
         public bool IsPrimary { get; }
 
+
         public BoundController Controller { get; set; }
 
         // Type of field, ex) Text, Image, Number  
@@ -33,15 +34,13 @@ namespace Dash
         /// </summary>
         /// <param name="key"></param>
         /// <param name="controller"></param>
-        /// <param name="isPrimary"></param>
         /// <param name="typeColumnWidth"></param>
-        public KeyFieldContainer(KeyController key, BoundController controller, bool isPrimary,
+        public KeyFieldContainer(KeyController key, BoundController controller,
             GridLength typeColumnWidth)
         {
             Key = key;
             Controller = controller;
             Type = controller.FieldModelController.TypeInfo.ToString();
-            IsPrimary = isPrimary;
             TypeColumnWidth = typeColumnWidth;
             PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
         }

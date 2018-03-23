@@ -40,7 +40,7 @@ namespace Dash
             else if (data is ListController<DocumentController> docList)
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
-                return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+                return CollectionBox.MakeView(documentController, context);
             } else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document

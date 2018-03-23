@@ -93,21 +93,20 @@ namespace Dash
             }
             return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
             var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
-            if (refValue.Item2 is string)
-                return doc.ParseDocField(FieldKey, refValue.Item2 as string, field);
-            else if (refValue.Item2 is RichTextModel.RTD)
+            if (refValue.Item2 is string s)
+                return doc.ParseDocField(FieldKey, s, field);
+            if (refValue.Item2 is RichTextModel.RTD rtd)
             {
                 var rtfield = doc.GetFieldOrCreateDefault<RichTextController>(FieldKey);
-                rtfield.Data = refValue.Item2 as RichTextModel.RTD;
+                rtfield.Data = rtd;
                 return true;
             }
-            else
-                ;
+
             return false;
         }
 

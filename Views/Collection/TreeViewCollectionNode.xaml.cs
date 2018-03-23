@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
+using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -74,7 +75,7 @@ namespace Dash
             doc = doc.GetDataDocument();
             var text = doc.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? string.Empty;
             var matchesFilter = doc.Title.ToLower().Contains(FilterString.ToLower()) || text.ToLower().Contains(FilterString.ToLower()) ||
-                                (doc.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData
+                                (doc.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.TypedData
                                      .Any(MatchesFilter) ?? false);
             return matchesFilter;
             throw new NotImplementedException();
@@ -86,8 +87,8 @@ namespace Dash
             {
                 var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
-                if (coll != null && !doc.Equals(data.GetDraggedDocument()))
+                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                if (coll != null && !doc.Equals(data.DraggedDocument))
                 {
                     coll.Add(data.GetDropDocument(new Point(), true));
                 }
@@ -96,15 +97,27 @@ namespace Dash
             {
                 var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
+                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && data.Count > 0)
                 {
-                    var start = data.First().GetDraggedDocument().GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.GetDraggedDocument())).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X-start.X,
-                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y-start.Y), true)).ToList());
+                    var start = data.First().DraggedDocument.GetPositionField().Data;
+                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
+                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
                 }
             }
+            e.Handled = true;
+        }
+
+        private void TreeViewNode_DragOver(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            }
+            else
+                e.AcceptedOperation = DataPackageOperation.None;
+            e.Handled = true;
         }
     }
 }
