@@ -52,7 +52,11 @@ namespace Dash
         public TreeViewNode()
         {
             this.InitializeComponent();
-            //XHeader.Background = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;                                                           //TODO get rid of this 
+        }
+
+        public void ChangeHeaderColor(bool selected)
+        {
+            XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
         }
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -99,10 +103,11 @@ namespace Dash
                 //};
                 //XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
 
-                dvm.DataDocument.OnSelectionChanged += (selected) =>
-                {
-                    XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
-                };
+                dvm.DataDocument.TreeViewNode = this; 
+                //dvm.DataDocument.OnSelectionChanged += (selected) =>          //KBTODO 
+                //{
+                //    XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
+                //};
                 var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
                 if (collection != null)
                 {

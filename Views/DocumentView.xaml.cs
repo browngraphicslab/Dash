@@ -107,7 +107,9 @@ namespace Dash
                 ViewModel.DataDocument.OnSelectionChanged += (selected) => {
                     xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
                     if (selected) _parentCollectionFreeform?.AddToSelection(this);
-                    else _parentCollectionFreeform?.RemoveFromSelection(this); 
+                    else _parentCollectionFreeform?.RemoveFromSelection(this);
+
+                    ViewModel.DataDocument.TreeViewNode?.ChangeHeaderColor(selected); 
                 };
             };
             Loaded += (sender, e) => {

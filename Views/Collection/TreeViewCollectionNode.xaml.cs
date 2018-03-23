@@ -126,10 +126,11 @@ namespace Dash
         private DocumentController _lastTreeNode; 
         private void TreeViewNode_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            Debug.WriteLine("node tapped"); 
             var dc = (sender as TreeViewNode)?.ViewModel.DataDocument;
             if (dc != null)
             {
-                if (_lastTreeNode != null) _lastTreeNode.IsSelected = false;  
+                if (_lastTreeNode != null) _lastTreeNode.IsSelected = false;
                 dc.IsSelected = !dc.IsSelected;
                 _lastTreeNode = dc;
             }

@@ -34,7 +34,10 @@ namespace Dash
             }
         }
         public delegate void SelectedChangedHandler(bool value);
-        public event SelectedChangedHandler OnSelectionChanged; 
+        public event SelectedChangedHandler OnSelectionChanged;
+
+        public TreeViewNode TreeViewNode { get; set; }          //KBTODO 
+
 
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
 
