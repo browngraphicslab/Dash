@@ -1,11 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -14,14 +10,10 @@ using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
-using Newtonsoft.Json;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 
@@ -39,30 +31,26 @@ namespace Dash
         public ManipulationControls ManipulationControls { get; set; }
 
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
-
+        
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
-        bool _multiSelected;
 
         /// <summary>
         /// The width of the context preview
         /// </summary>
         const double _contextPreviewActualWidth = 255;
-
         /// <summary>
         /// The height of the context preview
         /// </summary>
         const double _contextPreviewActualHeight = 330;
-
         /// <summary>
         /// A reference to the actual context preview
         /// </summary>
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
-
-        private long _bindRenderTransformToken = -1;
+        
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
 
@@ -84,7 +72,7 @@ namespace Dash
             MinWidth = 100;
             MinHeight = 25;
 
-            _bindRenderTransformToken = RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
+            RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
             void updateBindings(object sender, DependencyProperty dp)
             {
@@ -93,26 +81,31 @@ namespace Dash
                         new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
                                                                new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
                         Converter = new TransformGroupMultiConverter(),
+                        Context = new Context(doc),
                         Mode = BindingMode.OneWay
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
-
-                // binds the display title of the document to the back end representation
-                // TODO: shouldn't this be covered by binding
-                ViewModel?.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
             }
 
             Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
+                Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+                Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
             Unloaded += (sender, e) =>
             {
                 Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp -= CoreWindow_KeyUp;
+                Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
             };
 
-            PointerPressed += (sender, e) =>  ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            PointerPressed += (sender, e) =>
+            {
+                var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
+                ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+            };
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
@@ -123,34 +116,42 @@ namespace Dash
                 PositionContextPreview();
             };
 
-            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-            Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
-
-            // setup DraggerButton
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationStarted += (object s, ManipulationStartedRoutedEventArgs e) =>
+            // setup ResizeHandles
+            void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
-                if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down)) // ignore right button drags
-                {  
+                if (!this.IsRightBtnPressed()) // ignore right button drags
+                {
                     e.Handled = true;
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                 }
-            };
-            void restorePointerTracking() {
-                ViewModel.DecorationState = DraggerButton.IsPointerOver();
+            }
+            void ResizeHandles_restorePointerTracking()
+            {
+                ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
+                
             };
-            DraggerButton.ManipulationCompleted += (s, e) => restorePointerTracking();
-            DraggerButton.PointerReleased += (s, e) => restorePointerTracking();
-            DraggerButton.PointerPressed += (s, e) =>
+            ResizeHandleTopLeft.ManipulationDelta     += (s, e) => Resize(s as FrameworkElement, e, true,  true); 
+            ResizeHandleTopRight.ManipulationDelta    += (s, e) => Resize(s as FrameworkElement, e, true,  false);
+            ResizeHandleBottomLeft.ManipulationDelta  += (s, e) => Resize(s as FrameworkElement, e, false, true);
+            ResizeHandleBottomRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, false, false);
+            
+            foreach (var handle in new Ellipse[] { ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft, ResizeHandleTopRight })
             {
-                ManipulationMode = ManipulationModes.None;
-                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            };
+                handle.ManipulationStarted   += ResizeHandles_OnManipulationStarted;
+                handle.ManipulationCompleted += (s, e) => { ResizeHandles_restorePointerTracking(); e.Handled = true; }; // call Snap() if resizing should snap
+                handle.PointerReleased       += (s, e) => ResizeHandles_restorePointerTracking();
+                handle.PointerPressed        += (s, e) =>
+                {
+                    CapturePointer(e.Pointer);
+                    ManipulationMode = ManipulationModes.None;
+                    e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                };
+            }
 
             // setup OperatorEllipse 
-            OperatorEllipseHighlight.PointerExited += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
+            OperatorEllipseHighlight.PointerExited    += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
             OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
             xOperatorEllipseBorder.PointerPressed += (sender, e) => {
                 this.ManipulationMode = ManipulationModes.None;
@@ -159,13 +160,21 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
+                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                if (selected?.Count() > 0)
+                {
+                    args.Data.Properties[nameof(List<DragDocumentModel>)] =
+                            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
+                }
+                else
+                    args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
             };
 
             // setup Title Icon
             xTitleIcon.PointerPressed += (sender, e) =>  {
+                CapturePointer(e.Pointer);
                 ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.None : ManipulationModes.All;
                 e.Handled = ManipulationMode == ManipulationModes.All;
             };
@@ -177,22 +186,48 @@ namespace Dash
             // setup Context Title
             xContextTitle.Tapped += (sender, e) => ShowContext();
             xContextTitle.SizeChanged += (sender, e) =>  Canvas.SetLeft(xContextTitle, -xContextTitle.ActualWidth - 1);
-
+            
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => 
-                SelectedDocuments().ForEach((d) => d.ViewModel?.TransformDelta(delta));
+            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorStarted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
+            });
+            ManipulationControls.OnManipulatorCompleted += () => SelectedDocuments().ForEach((d) =>
+            {
+                d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+            });
 
             MenuFlyout = xMenuFlyout;
+
+            xMenuFlyout.Opened += (s, e) =>
+            {
+                if (this.IsShiftPressed())
+                    xMenuFlyout.Hide();
+            };
         }
 
-        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        /// <summary> 
+        /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
+        /// At the end of the interaction, the caches are copied to the viewModel.
+        /// </summary>
+        /// <param name="delta"></param>
+        public void TransformDelta(TransformGroupData delta)
         {
-            var f1 = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            if (!f1.HasFlag(CoreVirtualKeyStates.Down))
-            {
-                ShowLocalContext(false);
-            }
+            var currentTranslate = ViewModel.InteractiveManipulationPosition;  
+            var currentScaleAmount = ViewModel.InteractiveManipulationScale;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+
+            ViewModel.InteractiveManipulationPosition = translate;
+            ViewModel.InteractiveManipulationScale = scaleAmount; 
+            RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
         
         /// <summary>
@@ -200,61 +235,32 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            if (!this.IsF1Pressed())
+                ShowLocalContext(false);
+        }
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            // gets the states of various keys
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var f1State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F1);
-            var f2State = Window.Current.CoreWindow.GetKeyState(VirtualKey.F2);
-
-            if (f1State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
+            if (this.IsF1Pressed() && this.IsPointerOver())
             {
                 ShowLocalContext(true);
             }
-            if (f2State.HasFlag(CoreVirtualKeyStates.Down) && this.IsPointerOver())
+            if (this.IsF2Pressed() && this.IsPointerOver())
             {
                 ShowSelectedContext();
             }
             
             var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
 
-            if (ViewModel != null && ViewModel.Equals(focused) && (shiftState && !e.VirtualKey.Equals(VirtualKey.Shift)) &&
-
-                                      e.VirtualKey.Equals(VirtualKey.Enter))
+            if (ViewModel != null && ViewModel.Equals(focused) && 
+                this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift) && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
             {
                 // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                if (ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) ||
-                    ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                    return;
-
-                HandleShiftEnter();
+                if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                    !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                    HandleShiftEnter();
             }
-        }
-
-        public void ToggleMultiSelected(bool isMultiSelected)
-        {
-            var freeformView = ParentCollection?.CurrentView as CollectionFreeformView;
-            if (isMultiSelected == _multiSelected || freeformView == null)
-                return;
-            if (!isMultiSelected)
-            {
-                this.CanDrag = false;
-                xTargetContentGrid.BorderThickness = new Thickness(0);
-            }
-            else
-            {
-                this.CanDrag = true;
-                xTargetContentGrid.BorderBrush = new SolidColorBrush(Colors.DodgerBlue);
-                xTargetContentGrid.BorderThickness = new Thickness(2);
-            }
-            _multiSelected = isMultiSelected;
         }
 
         public void ShowLocalContext(bool showContext)
@@ -268,7 +274,6 @@ namespace Dash
                 xContextCanvas.Children.Remove(_localContextPreview);
                 _localContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_selectedContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -285,10 +290,7 @@ namespace Dash
                 if (ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType)) return;
 
                 var context = ViewModel.DocumentController.GetFirstContext();
-                if (context == null) return;
-                ViewModel.SetHasTitle(true);
-
-                if (_localContextPreview == null)
+                if (context != null && _localContextPreview == null)
                 {
                     _localContextPreview = new ContextPreview(context)
                     {
@@ -314,7 +316,6 @@ namespace Dash
                 xContextCanvas.Children.Remove(_selectedContextPreview);
                 _selectedContextPreview = null;
                 GC.Collect();
-                ViewModel.SetHasTitle(DraggerButton.Visibility == Visibility.Visible);
                 if (_localContextPreview == null)
                 {
                     xContextTitle.Visibility = Visibility.Collapsed;
@@ -331,7 +332,6 @@ namespace Dash
                 var context = ViewModel.DataDocument
                     .GetDereferencedField<DocumentController>(KeyStore.SelectedSchemaRow, null)?.GetFirstContext();
                 if (context == null) return;
-                ViewModel.SetHasTitle(true);
 
                 if (_selectedContextPreview == null)
                 {
@@ -399,11 +399,12 @@ namespace Dash
         {
             xTitleIcon.Text = Application.Current.Resources["CollectionIcon"] as string;
             xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
-            // TODO remove this arbtirary styling here
-            if (this == MainPage.Instance.MainDocView) // special styling for the Main collection
-            {
-                view.xOuterGrid.BorderThickness = new Thickness(0);
-            }
+            if (this != MainPage.Instance.MainDocView) return;
+            view.xOuterGrid.BorderThickness = new Thickness(0);
+            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -415,13 +416,65 @@ namespace Dash
         #endregion
 
         /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.  The contents will adjust to fit the bounding box
+        /// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
+
+            /// <summary>
+            /// Resizes the document while keeping its original width/height ratio.
+            /// </summary>
+            /// <param name="e"></param>
+            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
+            {
+
+                /*
+                var curScale = ViewModel.Scale;
+                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
+                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
+                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
+                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
+                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
+                ViewModel.Scale = new Point(scale, scale);
+                */
+            }
+
+            if (this.IsRightBtnPressed())
+                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+
+            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+
+            // set old and new sizes for change in height/width comparisons
+            Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
+            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth * oldSize.Width : oldSize.Height;
+            Size newSize = new Size();
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            int cursorXDirection = shiftLeft ? -1 : 1;
+            int cursorYDirection = shiftTop ? -1 : 1;
+            int moveXScale = shiftLeft ? 1 : 0;
+            int moveYScale = shiftTop ? 1 : 0;
+
+            if (this.IsCtrlPressed())
+            {
+                // proportional resizing
+                var diffX = cursorXDirection * p.X;
+                newSize = Resize(diffX, ViewModel.ActualHeight / ViewModel.ActualWidth * diffX);
+            }
+            else
+            {
+                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
+                newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
+                
+                // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
+                newSize.Height = double.IsNaN(newSize.Height)
+                    ? ViewModel.ActualHeight / ViewModel.ActualWidth * newSize.Width
+                    : newSize.Height;
+            }
+
             /// <summary>
             /// Resizes the CollectionView according to the increments in width and height. 
             /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -436,42 +489,21 @@ namespace Dash
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
                     var h = ViewModel.Height;
-                    ViewModel.Width  = Math.Max(w + dx, MinWidth);
+                    ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
             }
 
-            /// <summary>
-            /// Resizes the document while keeping its original width/height ratio.
-            /// </summary>
-            /// <param name="e"></param>
-            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
-            {
-                var curScale = ViewModel.Scale;
-                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
-                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-                ViewModel.Scale = new Point(scale, scale);
-            }
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down))
-                return; // let the manipulation fall through to an ancestor when Rightbutton dragging
+            // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
+            ViewModel.Position = new Point(
+                 (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                 (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
 
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                ProportionalResize(e);
-            }
-            else
-            {
-                var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-                Resize(p.X, p.Y);
-            }
             e.Handled = true;
 
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            if (!this.IsShiftPressed())
             {
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
@@ -507,10 +539,7 @@ namespace Dash
         }
         public void ForceRightTapContextMenu()
         {
-            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var pos = new Point(pointerPosition2.X - Window.Current.Bounds.X, pointerPosition2.Y - Window.Current.Bounds.Y);
-
-            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(pos));
+            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
         }
         public void DeleteDocument(bool addTextBox=false)
         {
@@ -560,7 +589,7 @@ namespace Dash
 
         #region Activation
 
-        public void MarqueeSelectBorder(bool selected)
+        public void SetSelectionBorder(bool selected)
         {
             xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
@@ -572,7 +601,7 @@ namespace Dash
         {
             var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Contains(this))
-                return marqueeDocs;
+                return marqueeDocs.ToList();
             return new List<DocumentView>(new DocumentView[] { this } );
         }
 
@@ -598,37 +627,30 @@ namespace Dash
         #region UtilityFuncions
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            var grouped = SelectedDocuments();
+            var selectedDocs = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
-            if (collection == null || ViewModel == null)
+            if (collection == null || ViewModel == null || selectedDocs == null)
                 return false;
 
             foreach (var nestedDocument in overlappedViews)
             {
-                CollectionView nestedCollection = null;
-                if (nestedDocument.ViewModel.LayoutDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-                    nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
-                if (nestedCollection != null)
+                var nestedCollection = nestedDocument.GetFirstDescendantOfType<CollectionView>();
+                if (nestedCollection != null && !nestedCollection.GetAncestors().ToList().Contains(this))
                 {
-                    if (nestedCollection.GetAncestors().ToList().Contains(this))
-                        continue;
                     if (!nestedCollection.Equals(collection))
                     {
-                        if (grouped != null)
+                        foreach (var selDoc in selectedDocs)
                         {
-                            foreach (var g in grouped)
-                            {
-                                var pos = g.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                                var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                                    new Point();
-                                nestedCollection.ViewModel.AddDocument(g.ViewModel.DocumentController.GetSameCopy(where), null);
-                                collection.ViewModel.RemoveDocument(g.ViewModel.DocumentController);
+                            var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                                new Point();
+                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
+                            collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
 
-                            }
-                            return true;
                         }
+                        return true;
                     }
                     else break;
                 }
@@ -713,5 +735,69 @@ namespace Dash
 
         #endregion
 
+        void This_Drop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.DraggedKey != null)
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+                var newField = dragModel.GetDropDocument(new Point());
+                newField.SetField<NumberController,double>(KeyStore.HeightFieldKey, 30, true);
+                newField.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                var activeLayout = ViewModel.DocumentController?.GetActiveLayout() ?? ViewModel.LayoutDocument;
+                if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+                {
+                    StackLayout.AddDocument(activeLayout, newField);
+                }
+                else
+                {
+                    var curLayout = activeLayout;
+                    if (ViewModel.DocumentController?.GetActiveLayout() != null) // wrap existing activeLayout into a new StackPanel activeLayout
+                    {
+                        curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                        curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
+                        curLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                        curLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, double.NaN, true);
+                    }
+                    else  // need to create a stackPanel activeLayout and add the document to it
+                    {
+                        curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
+                        curLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                        curLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, double.NaN, true);
+                        curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    }
+                    activeLayout = new StackLayout(new DocumentController[] { newField, curLayout }).Document;
+                    activeLayout.SetField<PointController, Point>(KeyStore.PositionFieldKey, ViewModel.Position, true);
+                    activeLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, ViewModel.ActualWidth, true);
+                    activeLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, ViewModel.ActualHeight, true);
+                    activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                    ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
+                }
+                
+                e.Handled = true;
+            }
+        }
+
+        void This_DragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.DraggedKey != null)
+            {
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+                e.DragUIOverride.IsContentVisible = true;
+
+                e.Handled = true;
+            }
+        }
+
+        void This_DragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.DecorationState = false;
+        }
     }
 }

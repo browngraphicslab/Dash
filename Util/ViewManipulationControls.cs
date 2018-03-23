@@ -37,7 +37,7 @@ namespace Dash
         public PointerDeviceType BlockedInputType { get; set; }
         public bool FilterInput { get; set; }
 
-        public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
+        public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
         /// <summary>
@@ -57,6 +57,7 @@ namespace Dash
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.ManipulationInertiaStarting += (sender, args) => args.TranslationBehavior.DesiredDeceleration = 0.02;
+            element.ManipulationCompleted += (sender, args) => args.Handled = true;
         }
 
         private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -74,13 +75,13 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position), false);
             }
             else
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
                 var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ? scrollAmount : 0;
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(x, scrollAmount-x), new Point(1,1)));
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(x, scrollAmount-x), new Point(1,1)), false);
             }
         }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -111,41 +112,34 @@ namespace Dash
                     if (!ClampScale(e.Delta.Scale))
                     {
                         OnManipulatorTranslatedOrScaled?.Invoke(
-                            new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position));
+                            new TransformGroupData(delta, new Point(e.Delta.Scale, e.Delta.Scale), e.Position), false);
                     }
                 }
                 e.Handled = true;
             }
         }
-        
+
         public void FitToParent()
         {
-            var ff = _freeformView as CollectionFreeformView;
-            var par = ff?.Parent as FrameworkElement;
-            if (par == null || ff == null)
-                return;
-
-            var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight)); //  par.GetBoundingRect();
-
-            
-            var r = Rect.Empty;
-            foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
+            var par = _freeformView.Parent as FrameworkElement;
+            if (par != null)
             {
-                r.Union(dvm?.Content?.GetBoundingRect(par) ?? r);
-            }
+                var r = Rect.Empty;
+                foreach (var dvm in _freeformView.ViewModel.DocumentViewModels)
 
-            if (r != Rect.Empty)
-            {
-                var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
-                var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
-                if (rect.Width / rect.Height > r.Width / r.Height)
                 {
-                    scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
+                    r.Union(dvm.Bounds);
                 }
-                else
-                    trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
+                if (r != Rect.Empty)
+                {
+                    var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var scale    = new Point(scaleAmt, scaleAmt);
+                    var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt));
+                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
+                }
             }
         }
         public void Dispose()

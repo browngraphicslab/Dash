@@ -10,6 +10,7 @@
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
+    AllowDrop="True"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All">
 

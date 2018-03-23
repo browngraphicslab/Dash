@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
@@ -115,18 +117,23 @@ namespace Dash
             return Window.Current.Content != null && dob.GetAncestors().Contains(Window.Current.Content);
         }
 
+        public static Point RootPointerPos(this UIElement dob)
+        {
+            var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
+            var x = pointerPosition.X - Window.Current.Bounds.X;
+            var y = pointerPosition.Y - Window.Current.Bounds.Y;
+            var pos = new Point(x, y);
+            return pos;
+        }
+
         public static bool IsPointerOver(this UIElement dob)
         {
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, dob).ToList();
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), dob).ToList();
             return overlappedViews.Count > 0;
         }
         public static bool IsTopmost(this UIElement dob)
         {
-            var mousePos = CoreWindow.GetForCurrentThread().PointerPosition;
-            mousePos = new Point(mousePos.X - Window.Current.Bounds.X, mousePos.Y - Window.Current.Bounds.Y);
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(mousePos, MainPage.Instance).ToList();
+            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(dob.RootPointerPos(), MainPage.Instance).ToList();
             return dob == overlappedViews.FirstOrDefault();
         }
 
@@ -165,6 +172,43 @@ namespace Dash
                             dob.ActualHeight));
 
             return new Rect(pos, pos2);
+        }
+
+        public static bool IsRightPressed(this PointerRoutedEventArgs e)
+        {
+            return e.GetCurrentPoint(null).Properties.IsRightButtonPressed;
+        }
+        public static bool IsCtrlPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsF1Pressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.F1).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsF2Pressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.F2).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsShiftPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsAltPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsTabPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.Tab).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsRightBtnPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsLeftBtnPressed(this FrameworkElement f)
+        {
+            return Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down);
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Accord.Math;
 using DashShared;
 
 namespace Dash
@@ -15,14 +14,20 @@ namespace Dash
         private static char FunctionOpeningCharacter = '(';
         private static char FunctionClosingCharacter = ')';
 
-        private static char[] StringOpeningCharacters = new char[]{'{', '<'};
-        private static char[] StringClosingCharacters = new char[] { '}', '>'};
+        private static char[] StringOpeningCharacters = {'{', '<'};
+        private static char[] StringClosingCharacters = { '}', '>'};
 
         private static char ParameterDelimiterCharacter = ',';
 
-        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>(
-            StringOpeningCharacters.Select(i => new KeyValuePair<char, char>(i, StringClosingCharacters[StringOpeningCharacters.IndexOf(i)]))
-            );
+        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>();
+
+        static OperatorScriptParser()
+        {
+            for (int i = 0; i < StringOpeningCharacters.Length; ++i)
+            {
+                EncapsulatingCharacterPairsIgnoringInternals.Add(new KeyValuePair<char, char>(StringOpeningCharacters[i], StringClosingCharacters[i]));
+            }
+        }
 
         private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsTrackingInternals = new List<KeyValuePair<char, char>>()
         {

@@ -56,7 +56,7 @@ namespace Dash
             {
                 var allDocs =
                     inputCollection.Data.SelectMany(
-                        i => (i as DocumentController)?.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.Data
+                        i => (i as DocumentController)?.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Data
                             ?? new List<FieldControllerBase>() {i}).ToArray();
 
                 var allKeys = allDocs.SelectMany(i => ((i as DocumentController)?.GetDataDocument().EnumDisplayableFields() ?? new List<KeyValuePair<KeyController, FieldControllerBase>>())).ToArray();

@@ -19,24 +19,17 @@ namespace Dash
 
         public string Title { get => _title; set => _title = value; }
 
-
         void ITabItemViewModel.ExecuteFunc()
         {
-            if (TabMenu.Instance == null) return; 
-
-            var opController = _function?.Invoke();
-            var p = TabMenu.Instance.GetRelativePoint(); 
-            
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
+            if (TabMenu.Instance != null)
             {
-                Position = p
-            };
-
-            if (opController != null)
-            {
-                //freeForm.ViewModel.AddDocument(opController, null);
-                TabMenu.Instance.AddToFreeform(opController); 
+                var opController = _function?.Invoke();
+                if (opController != null)
+                {
+                    (opController.GetActiveLayout() ?? opController).SetField(KeyStore.PositionFieldKey,
+                        new PointController(TabMenu.Instance.GetRelativePoint()), true);
+                    TabMenu.Instance.AddToFreeform(opController);
+                }
             }
         }
     }

@@ -57,7 +57,6 @@ namespace Dash
 
             { // dictionary of fields to set on the prototype document
                 [KeyStore.AbstractInterfaceKey] = new TextController(protoDoc.DocumentType.Id),
-                [KeyStore.PrimaryKeyKey] = new ListController<KeyController>()
             };
             var headerToFieldMap = new Dictionary<string, FieldControllerBase>();
             var headerToKeyMap = new Dictionary<string, KeyController>();
@@ -107,10 +106,10 @@ namespace Dash
         /// Get all the headers form a csv reader
         /// </summary>
         /// <param name="csv"></param>
-        private static string[] GetHeadersFromCsv(ICsvReader csv)
+        private static string[] GetHeadersFromCsv(CsvReader csv)
         {
             csv.ReadHeader(); // TODO can we check to see if the csv has a header or not? otherwise this fails, what happens when it doesn't
-            var headers = csv.FieldHeaders;
+            var headers = csv.Context.HeaderRecord;
             return headers;
         }
     }

@@ -28,12 +28,12 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase, ICollectionViewModel
+    public class CollectionViewModel : ViewModelBase
     {
         static UserControl _previousDragEntered;
         FieldReference _collectionRef;
         Context        _context;
-        bool           _canDragItems;
+        bool           _canDragItems = true;
         double         _cellSize;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => _collectionRef.DereferenceToRoot<ListController<DocumentController>>(_context);
@@ -46,21 +46,17 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
-
-        // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModel> SelectionGroup { get; set; }
         public KeyController OutputKey { get; set; }
-        public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.CollectionKey;
+        public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
-            SelectionGroup = new List<DocumentViewModel>();
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             Debug.Assert(refToCollection != null);
             _collectionRef = refToCollection;
             _context = context;
-            AddViewModels(CollectionController.TypedData, context);
+            addViewModels(CollectionController.TypedData, context);
 
             var copiedContext = new Context(context);
 
@@ -71,7 +67,7 @@ namespace Dash
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                     if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                     {
-                        UpdateViewModels(cargs, copiedContext);
+                        updateViewModels(cargs, copiedContext);
                     }
                     else
                     {
@@ -81,7 +77,7 @@ namespace Dash
                         var documents = collectionFieldModelController.GetElements();
                         DocumentViewModels.Clear();
 
-                        AddViewModels(documents, context);
+                        addViewModels(documents, context);
                     }
 
                 });
@@ -94,18 +90,18 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private void UpdateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args, Context c)
         {
             switch (args.ListAction)
             {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    AddViewModels(args.ChangedDocuments, c);
+                    addViewModels(args.ChangedDocuments, c);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    RemoveViewModels(args.ChangedDocuments);
+                    removeViewModels(args.ChangedDocuments);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
@@ -116,19 +112,18 @@ namespace Dash
             }
         }
 
-        private void AddViewModels(List<DocumentController> documents, Context c)
+        void addViewModels(List<DocumentController> documents, Context c)
         {
-            using (BindableDocumentViewModels.DeferRefresh())
+            using (BindableDocumentViewModels.DeferRefresh())   
             {
                 foreach (var documentController in documents)
                 {
-                    var documentViewModel = new DocumentViewModel(documentController, c);
-                    DocumentViewModels.Add(documentViewModel);
+                    DocumentViewModels.Add(new DocumentViewModel(documentController, c));
                 }
             }
         }
 
-        private void RemoveViewModels(List<DocumentController> documents)
+        void removeViewModels(List<DocumentController> documents)
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
@@ -213,26 +208,6 @@ namespace Dash
 
         #endregion
 
-        #region Event Handlers
-
-        /// <summary>
-        /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
-        /// **Note that this removes the DocumentModel as well, and any other associated DocumentViewModels.
-        /// </summary>
-        /// <param name="sender">The "Delete" menu option</param>
-        /// <param name="e"></param>
-        public void DeleteSelected_Tapped()
-        {
-            var itemsToDelete = SelectionGroup.ToList();
-            SelectionGroup.Clear();
-            foreach (var vmp in itemsToDelete)
-            {
-                CollectionController.Remove(vmp.DocumentController);
-            }
-        }
-
-        #endregion
-
 
         #region DragAndDrop
 
@@ -246,8 +221,8 @@ namespace Dash
                 var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
                 if (fieldDict == null)
                     continue;
-                foreach (var f in d.EnumFields())
-                    if (!f.Key.Equals(pivotKey) && !f.Key.IsUnrenderedKey())
+                foreach (var f in d.EnumDisplayableFields())
+                    if (!f.Key.Equals(pivotKey))
                     {
                         if (!fieldDict.ContainsKey(f.Key))
                         {
@@ -311,11 +286,10 @@ namespace Dash
             {
                 var pivotField = d.GetDataDocument(null).GetField(pivotKey);
                 pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
-                if (pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+                if (d.GetDataDocument(null).GetAllPrototypes().Contains(pivotDoc) || pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
                 {
                     pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
                     {
-                        [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(pivotKey)
                     }, DocumentType.DefaultType);
                     if (obj is string)
                     {
@@ -337,7 +311,7 @@ namespace Dash
                     {
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
-                    DBTest.DBDoc.AddChild(pivotDoc);
+                    //DBTest.DBDoc.AddChild(pivotDoc);
                     d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
@@ -392,7 +366,7 @@ namespace Dash
         {
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
-                FileDropHelper.HandleDrop(dvp, where, this);
+                FileDropHelper.HandleDrop(where, dvp, this);
             }
             else if (dvp.Contains(StandardDataFormats.Bitmap))
             {
@@ -403,7 +377,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(PostitNote.DocumentType, text: text, size: new Size(400, 40)).Document;
+                    var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -428,7 +402,7 @@ namespace Dash
             await encoder.FlushAsync();
             var dp = new DataPackage();
             dp.SetStorageItems(new IStorageItem[] { savefile });
-            FileDropHelper.HandleDrop(dp.GetView(), where, this);
+            FileDropHelper.HandleDrop(where, dp.GetView(), this);
         }
 
         /// <summary>
@@ -449,9 +423,16 @@ namespace Dash
 
             RemoveDragDropIndication(sender as UserControl);
 
-            var where = sender is CollectionFreeformView ?
-                Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
-                new Point();
+            var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
+            var where = new Point();
+            if (senderView is CollectionFreeformView)
+                where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            else if (DocumentViewModels.Count > 0)
+            {
+                var lastPos = DocumentViewModels.Last().Position;
+                where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
+            }
+
 
             // if we are dragging and dropping from the radial menu
             if (e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) == true)
@@ -459,14 +440,14 @@ namespace Dash
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
                         Action<ICollectionView, DragEventArgs>;
-                action?.Invoke(sender as ICollectionView, e);
+                action?.Invoke(senderView, e);
             }
             // if we drag from the file system
             else if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
             {
                 try
                 {
-                    FileDropHelper.HandleDropOnCollectionAsync(sender, e, this);
+                    FileDropHelper.HandleDrop(where, e.DataView, this);
                 }
                 catch (Exception exception)
                 {
@@ -553,13 +534,13 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(PostitNote.DocumentType, text);
+                var t = new RichTextNote(text);
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {
@@ -602,7 +583,7 @@ namespace Dash
                     var cnote = new CollectionNote(where, dragData.ViewType);
                     if (subDocs != null)
                         cnote.SetDocuments(new List<DocumentController>(subDocs));
-                    else cnote.Document.GetDataDocument(null).SetField(KeyStore.CollectionKey, dragData.CollectionReference, true);
+                    else cnote.Document.GetDataDocument(null).SetField(KeyStore.DataKey, dragData.CollectionReference, true);
                     cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
                     AddDocument(cnote.Document, null);
                 }
@@ -624,6 +605,18 @@ namespace Dash
                         return newDoc;
                     });
                     AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document, null);
+                }
+            }
+            // if the user drags a data document
+            else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
+            {
+                var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
+                foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                {
+                    var start = dragModel.First().GetDraggedDocument().GetPositionField().Data;
+                    AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X + where.X,
+                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y + where.Y), true)).ToList(), null);
                 }
             }
             // if the user drags a data document
@@ -658,7 +651,7 @@ namespace Dash
         private void HandleTemplateLayoutDrop(DragDocumentModel dragModel)
         {
             var template = dragModel.GetDraggedDocument();
-            var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)?.TypedData;
+            var templateFields = template.GetDataDocument(null).GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)?.TypedData;
             foreach (var dvm in DocumentViewModels.ToArray())
             {
                 var listOfFields = new List<DocumentController>();
@@ -688,7 +681,7 @@ namespace Dash
                 }
                 var cbox = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, maxW, maxH, listOfFields).Document;
                 doc.SetField(KeyStore.ActiveLayoutKey, cbox, true);
-                dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
+               // dvm.OnActiveLayoutChanged(new Context(dvm.LayoutDocument));
             }
         }
 
@@ -697,7 +690,19 @@ namespace Dash
         /// </summary>
         public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("CollectionViewOnDragEnter Base");
+            this.HighlightPotentialDropTarget(sender as UserControl);
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.DragUIOverride.IsContentVisible = true;
+
+            e.Handled = true;
+        }
+        /// <summary>
+        /// Fired by a collection when an item is dragged over it
+        /// </summary>
+        public void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
             this.HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
@@ -714,9 +719,10 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
         {
-            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one 
-            var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
-            parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
+            // bcz: this fix causes a hard crash sometimes -- just call HighlightPotentialDropTarget instead?
+            // fix the problem of CollectionViewOnDragEnter not firing when leaving a collection to the outside one -
+            //var parentCollection = (sender as DependencyObject).GetFirstAncestorOfType<CollectionView>();
+            //parentCollection?.ViewModel?.CollectionViewOnDragEnter(parentCollection.CurrentView, e);
 
             var element = sender as UserControl;
             if (element != null)
@@ -766,19 +772,6 @@ namespace Dash
         {
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
-        }
-
-        #endregion
-
-        #region Selection
-
-        public void ToggleSelectAllItems(ListViewBase listView)
-        {
-            var isAllItemsSelected = listView.SelectedItems.Count == DocumentViewModels.Count;
-            if (!isAllItemsSelected)
-                listView.SelectAll();
-            else
-                listView.SelectedItems.Clear();
         }
 
         #endregion

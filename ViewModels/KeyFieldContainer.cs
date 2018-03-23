@@ -11,7 +11,6 @@ namespace Dash
     public class KeyFieldContainer
     {
         public KeyController Key { get; }
-        public bool IsPrimary { get; }
 
         public BoundController Controller { get; set; }
 
@@ -21,13 +20,12 @@ namespace Dash
         public GridLength TypeColumnWidth { get; set; }
         public GridLength PrimaryKeyColumnWidth { get; set; }
 
-        public KeyFieldContainer(KeyController key, BoundController controller, bool isPrimary,
+        public KeyFieldContainer(KeyController key, BoundController controller,
             GridLength typeColumnWidth)
         {
             Key = key;
             Controller = controller;
             Type = controller.FieldModelController.TypeInfo.ToString();
-            IsPrimary = isPrimary;
             TypeColumnWidth = typeColumnWidth;
             PrimaryKeyColumnWidth = typeColumnWidth == new GridLength(0) ? typeColumnWidth : new GridLength(20);
         }

@@ -121,7 +121,25 @@ namespace Dash
                         true);
             }
             return newDoc;
-        } 
+        }
+
+        /// <summary>
+        /// Creates an instance of a document's activeLayout and overrides data/width/height/and position
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="where"></param>
+        /// <returns></returns>
+        public static DocumentController GetViewInstance(this DocumentController doc, Point? where=null)
+        {
+            var activeLayout = (doc.GetActiveLayout() ?? doc).MakeDelegate();
+            activeLayout.SetField(KeyStore.PositionFieldKey, new PointController(where ?? new Point()), true);
+            activeLayout.SetField(KeyStore.WidthFieldKey,  activeLayout.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Copy(), true);
+            activeLayout.SetField(KeyStore.HeightFieldKey, activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Copy(), true);
+            var data = activeLayout.GetDereferencedField(KeyStore.DataKey, null);
+            if (data != null)
+                activeLayout.SetField(KeyStore.DataKey, data.GetCopy(), true);
+            return activeLayout;
+        }
         /// <summary>
         /// Creates an instance of a document's data and copies the documents view.
         /// </summary>
@@ -138,9 +156,8 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
-                activeLayout = GetViewCopy(doc, where);
+                activeLayout = doc.MakeDelegate();
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
-                docContext = copiedData;
                 newDoc = activeLayout;
             }
             else if (docContext == null && activeLayout != null) // has a layout
@@ -152,6 +169,14 @@ namespace Dash
                 activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(activeLayout.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data), true);
 
                 newDoc = docContext;
+            } else if (docContext != null && activeLayout != null)
+            {
+                newDoc = doc.MakeDelegate();
+                var copiedData = docContext.MakeDelegate(); // instance the data
+                activeLayout = activeLayout.MakeDelegate();
+                activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
+                newDoc.SetField(KeyStore.DocumentContextKey, copiedData, true);
+                newDoc.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate need a new one -- just offset it
@@ -160,6 +185,12 @@ namespace Dash
                     new PointController(new Point(where?.X ?? oldPosition.Data.X + 15, where?.Y ?? oldPosition.Data.Y + 15)),
                         true);
             }
+            // bcz: shouldn't have to explicitly mask the data field like this, but since it's probably
+            // in a binding, the binding would point to the prototype's field and not get overriden on a change.
+            var dataField = doc.GetDataDocument(null).GetField(KeyStore.DataKey);
+            if (dataField != null)
+                newDoc.GetDataDocument(null).SetField(KeyStore.DataKey, dataField.GetCopy(), true);
+
             return newDoc;
         }
         public static DocumentController GetSameCopy(this DocumentController doc, Point where)
@@ -573,8 +604,6 @@ namespace Dash
             {
                 if (excludeKeys != null && excludeKeys.Contains(kvp.Key))
                     continue;
-                else if (kvp.Key.Equals(KeyStore.ThisKey))
-                    fields[kvp.Key] = copy;
                 else if (dontCopyKeys != null && dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
                     fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)

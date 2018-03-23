@@ -32,9 +32,15 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
+            AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
             //Unloaded += CollectionGridView_Unloaded;
 
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
+        }
+
+        private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -69,22 +75,6 @@ namespace Dash
         }
 
         #region DragAndDrop
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
-
         public void SetDropIndicationFill(Brush fill)
         {
             XDropIndicationRectangle.Fill = fill;

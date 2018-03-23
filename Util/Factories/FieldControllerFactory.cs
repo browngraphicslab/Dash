@@ -38,7 +38,7 @@ namespace Dash
 
             FieldControllerBase controller = null;
 
-            switch (type.GetType())
+            switch (type.GetFieldType())
             {
                 case TypeInfo.Point:
                     controller = new PointController(model as PointModel);
@@ -167,9 +167,6 @@ namespace Dash
                 case OperatorType.CollectionTitle:
                     controller = new CollectionTitleOperatorController(model);
                     break;
-                case OperatorType.GroupTitle:
-                    controller = new GroupTitleOperatorController(model);
-                    break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);
                     break;
@@ -244,9 +241,6 @@ namespace Dash
                     break;
                 case OperatorType.ExecuteHtmlJavaScript:
                     controller = new ExecuteHtmlJavaScriptController(model);
-                    break;
-                case OperatorType.ImageToColorPalette:
-                    controller = new ImageToColorPalette(model);
                     break;
                 case OperatorType.CollectionMap:
                     break;

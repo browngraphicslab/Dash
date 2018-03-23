@@ -1,50 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml.Controls.Primitives;
-using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
-
-using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using System.Numerics;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views.Document_Menu;
 using Windows.System;
-using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class CollectionView : UserControl
+    public sealed partial class CollectionView : UserControl, ICollectionView
     {
         public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
         public UserControl CurrentView { get; set; }
-        public CollectionViewModel ViewModel
-        {
-            get => DataContext as CollectionViewModel;
-            set => DataContext = value;
-        }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel;  }
 
         /// <summary>
         /// The <see cref="CollectionView"/> that this <see cref="CollectionView"/> is nested in. Can be null
@@ -67,33 +42,35 @@ namespace Dash
             Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = viewType;
-            ViewModel = vm;
+            DataContext = vm;
 
             Unloaded += CollectionView_Unloaded;
+            DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
+            DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
+            DragOver += (sender, e) => ViewModel.CollectionViewOnDragOver(sender, e);
+            Drop += (sender, e) => ViewModel.CollectionViewOnDrop(sender, e);
 
             PointerPressed += OnPointerPressed;
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var forceDrag = (args.KeyModifiers & VirtualKeyModifiers.Shift) == 0 && (args.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
-                                   .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down));
-            if (forceDrag && this.GetFirstAncestorOfType<CollectionFreeformView>() != null)
+            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
+            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            if (parentFreeform != null && rightBtn)
             {
-                new ManipulationControlHelper(this, args.Pointer, false); // manipulate the top-most collection view
-                
-                args.Handled = true;
+                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
+                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
+                if (!grabbed && (shifted || parentParentFreeform == null))
+                {
+                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
+
+                    args.Handled = true;
+                } else 
+                    if (parentParentFreeform != null)
+                        CurrentView.ManipulationMode = ManipulationModes.None;
             }
-        }
-        
-        public DocumentViewModel GetDocumentViewModel(DocumentController document)
-        {
-            foreach (var dv in ViewModel.DocumentViewModels)
-            {
-                if (dv.DocumentController.Equals(document))
-                    return dv;
-            }
-            return null;
         }
 
         #region Load And Unload Initialization and Cleanup
@@ -126,7 +103,11 @@ namespace Dash
 
                 // add the item to create a new collection
                 var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
-                newCollection.Click += (sender, e) => addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
+                newCollection.Click += (sender, e) =>
+                {
+                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
+                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt), null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
+                };
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);
 
@@ -201,29 +182,7 @@ namespace Dash
         }
         
         #endregion
-
-        /// <summary>
-        /// Helper function to add a document controller to the main freeform layout.
-        /// </summary>
-        /// <param name="screenPoint"></param>
-        /// <param name="opController"></param>
-        void addElement(Point screenPoint, DocumentController opController)
-        {
-            var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                Position = Util.GetCollectionFreeFormPoint(mp, screenPoint)
-            };
-
-            if (opController != null)
-            {
-                //freeForm.ViewModel.AddDocument(opController, null);
-                mp?.ViewModel.AddDocument(opController, null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
-            }
-        }
-
+        
         #region ClickHandlers for collection context menu items
 
         /// <summary>
@@ -274,7 +233,9 @@ namespace Dash
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
             xContentControl.Content = CurrentView;
-            ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
+            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data;
+            if (curViewType != _viewType.ToString())
+                ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
         private void GetJson()
         {
