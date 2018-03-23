@@ -71,7 +71,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
+                    Context = new Context(dvm.DocumentController.GetDataDocument()),
                     Tag = "TreeViewNode text block binding"
                 };
 
@@ -81,7 +81,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.TwoWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
+                    Context = new Context(dvm.DocumentController.GetDataDocument()),
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };
@@ -95,7 +95,7 @@ namespace Dash
                     Converter = new SelectedToColorConverter()
                 };
                 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
+                var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
 
                 if (collection != null)
                 {
@@ -110,10 +110,10 @@ namespace Dash
                         XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.DataKey));
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument().Id, KeyStore.DataKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
-                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
+                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                     XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
 
                     XArrowBlock.Visibility = Visibility.Visible;

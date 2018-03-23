@@ -12,6 +12,7 @@
     d:DesignHeight="400"
     AllowDrop="True"
     DragOver="This_DragOver"
+    DragLeave="This_DragLeave"
     Drop="This_Drop"
     xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>

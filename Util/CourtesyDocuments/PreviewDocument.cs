@@ -18,7 +18,7 @@ namespace Dash
     public class PreviewDocument : CourtesyDocument
     {
 
-        public static DocumentType PreviewDocumentType = new DocumentType("26367A6B-2DDE-4ADF-8CD7-30A8AE354FB5", "Preview Doc");
+        public static DocumentType DocumentType = new DocumentType("26367A6B-2DDE-4ADF-8CD7-30A8AE354FB5", "Preview Doc");
 
         public readonly string PrototypeId = "D6FF4388-DB02-41F0-AD52-C895A5C07265";
 
@@ -48,7 +48,7 @@ namespace Dash
             FrameworkElement innerContent = null;
             if (layout != null)
             {
-                foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
+                foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
                 innerContent = layout.MakeViewUI(context);
             }
@@ -73,7 +73,7 @@ namespace Dash
                 layout = layout ?? docController.GetDereferencedField<DocumentController>(KeyStore.DataKey, context);
                 var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
                 var innerLayout = dargs.NewValue.DereferenceToRoot<DocumentController>(c);
-                foreach (var field in layout.GetDataDocument(null).EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
+                foreach (var field in layout.GetDataDocument().EnumFields().Where((F) => !F.Key.IsUnrenderedKey() && !F.Key.Equals(KeyStore.DataKey)))
                     docController.SetField(field.Key, field.Value, true);
                 var innerCont = innerLayout.MakeViewUI(c);
                 returnContent.Content = innerCont;
@@ -92,7 +92,7 @@ namespace Dash
 
         protected override DocumentController InstantiatePrototypeLayout()
         {
-            var prototypeDocument = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), PreviewDocumentType, PrototypeId);
+            var prototypeDocument = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, PrototypeId);
             return prototypeDocument;
         }
     }

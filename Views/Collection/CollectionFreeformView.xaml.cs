@@ -691,25 +691,24 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
-                .HasFlag(CoreVirtualKeyStates.Down);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (text is null) return;
-            if (previewTextbox.Visibility == Visibility.Collapsed)
-                return;
-            e.Handled = true;
-            var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
-            if (text == "v" && ctrlState)
+            if (previewTextbox.Visibility != Visibility.Collapsed)
             {
-                ViewModel.Paste(Clipboard.GetContent(), where);
-                previewTextbox.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                previewTextBuffer += text;
-                if (text.Length > 0)
-                    LoadNewActiveTextBox(text, where);
+                e.Handled = true;
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+                if (text == "v" && this.IsCtrlPressed())
+                {
+                    ViewModel.Paste(Clipboard.GetContent(), where);
+                    previewTextbox.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    previewTextBuffer += text;
+                    if (text.Length > 0)
+                        LoadNewActiveTextBox(text, where);
+                }
             }
         }
 

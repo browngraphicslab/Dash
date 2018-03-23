@@ -27,7 +27,6 @@ namespace Dash
                 if (_prototype == null)
                 {
                     _prototype = createPrototype(prototypeID);
-                    _prototype.SetField(KeyStore.ThisKey, _prototype, true);
                 }
             }
             protected DocumentController _prototype;
@@ -45,7 +44,6 @@ namespace Dash
 
             protected DocumentController initSharedLayout(DocumentController layout, DocumentController dataDocument, Size size, string title = null)
             {
-                dataDocument.SetField(KeyStore.ThisKey, dataDocument, true);
                 if (!string.IsNullOrEmpty(title))
                     dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 layout.SetField(KeyStore.WidthFieldKey, new NumberController(size.Width == 0 ? 400 : size.Width), true);
@@ -68,7 +66,6 @@ namespace Dash
                 {
                    // [KeyStore.DataKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
-                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
@@ -119,9 +116,8 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                  //  [KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
+                    [KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
-                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>( KeyStore.TitleKey ),
                     [KeyStore.OperatorKey] = new RichTextTitleOperatorController(),
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
@@ -158,7 +154,6 @@ namespace Dash
                   //  [KeyStore.DataKey] = new TextController("Prototype Content"),
                     [KeyStore.DocumentTextKey] = new TextController("Prototype Html Text"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
-                    [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey),
                     [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
@@ -198,7 +193,6 @@ namespace Dash
                     [KeyStore.TitleKey]             = new TextController("Prototype Title"),
                   //  [KeyStore.DataKey]              = new TextController("Prototype Content"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("PostIt Note Data API"),
-                    [KeyStore.PrimaryKeyKey]        = new ListController<KeyController>(KeyStore.TitleKey)
                 };
                 return new DocumentController(fields, DocumentType, prototypeID);
             }

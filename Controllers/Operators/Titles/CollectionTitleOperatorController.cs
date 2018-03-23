@@ -42,9 +42,9 @@ namespace Dash
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
                 var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
-                    .FirstOrDefault(dc => dc.GetDataDocument(null).GetField(KeyStore.TitleKey) != null);
+                    .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
-                output = firstDoc?.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
 
@@ -64,22 +64,6 @@ namespace Dash
         public override object GetValue(Context context)
         {
             throw new NotImplementedException();
-        }
-
-    }
-    public class GroupTitleOperatorController : CollectionTitleOperatorController
-    {
-
-        protected override string Prefix() { return "GROUP: "; }
-        public GroupTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
-        public GroupTitleOperatorController() : base(new OperatorModel(OperatorType.GroupTitle))
-        {
-        }
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            return new GroupTitleOperatorController();
         }
 
     }

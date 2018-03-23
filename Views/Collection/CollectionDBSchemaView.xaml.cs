@@ -117,7 +117,7 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            var field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
             var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
             xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
@@ -201,8 +201,8 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            dc.Document.GetDataDocument(null).ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
-            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument(null).GetId(), dc.HeaderViewModel.FieldKey);
+            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -259,7 +259,7 @@ namespace Dash
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
             {
-                var str = d.GetDataDocument(null).GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);
@@ -427,10 +427,7 @@ namespace Dash
                 ?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc =
-                    new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);

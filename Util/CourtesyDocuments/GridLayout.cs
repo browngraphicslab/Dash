@@ -14,23 +14,18 @@ namespace Dash
 {
     class GridLayout : CourtesyDocument
     {
-        public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
+        public static readonly DocumentType DocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
 
         public static readonly KeyController GridRowsTypeKey = new KeyController("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
         public static readonly KeyController GridRowsValueKey = new KeyController("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
         public static readonly KeyController GridColumnsTypeKey = new KeyController("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
         public static readonly KeyController GridColumnsValueKey = new KeyController("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
 
-        public GridLayout() : this(new Point(0, 0), new Size(double.NaN, double.NaN))
-        {
-            
-        }
-
         public GridLayout(Point position, Size size)
         {
             var fields = DefaultLayoutFields(position, size,
                 new ListController<DocumentController>());
-            Document = new DocumentController(fields, GridPanelDocumentType);
+            Document = new DocumentController(fields, DocumentType);
         }
 
         public GridLayout(Point position) : this(position, new Size(double.NaN, double.NaN))
@@ -50,7 +45,7 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null);
+            return MakeView(docController, context);
         }
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,
@@ -107,7 +102,7 @@ namespace Dash
         }
 
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
 
         {
             context = context ?? new Context();
@@ -132,7 +127,7 @@ namespace Dash
     {
         public static void SetGridRowDefinitions(this DocumentController document, List<RowDefinition> rows)
         {
-            Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
+            Debug.Assert(document.DocumentType.Equals(GridLayout.DocumentType));
             ListController<NumberController> types = new ListController<NumberController>();
             ListController<NumberController> values = new ListController<NumberController>();
             foreach (var row in rows)
@@ -148,7 +143,7 @@ namespace Dash
 
         public static void SetGridColumnDefinitions(this DocumentController document, List<ColumnDefinition> columns)
         {
-            Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
+            Debug.Assert(document.DocumentType.Equals(GridLayout.DocumentType));
             ListController<NumberController> types = new ListController<NumberController>();
             ListController<NumberController> values = new ListController<NumberController>();
             foreach (var column in columns)

@@ -77,37 +77,6 @@ namespace Dash
             collectionViewModel.AddDocument(docController, null);
         }
 
-        /// <summary>
-        /// Given a function that produces a document controller, visually displays the documents
-        /// on the selected FreeFormView, defaulting to the main canvas.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="opController"></param>
-        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
-        {
-            // default to MainPage collection view
-            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-            // fetch the coordinates of the caller on canvas
-            var searchView = sender;
-            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-            Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point());
-            translate = new Point(translate.X + 300, translate.Y + 100);
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                Position = translate
-            };
-
-            if (opController != null)
-            {
-                freeForm.ViewModel.AddDocument(opController, null);
-            }
-
-        }
-
         #region Ink Commands
 
         public static void SetTouchInput(object obj)

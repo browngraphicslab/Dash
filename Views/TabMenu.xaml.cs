@@ -186,6 +186,12 @@ namespace Dash
             }*/
         }
 
+        public bool DocHasMatchingKey(DocumentController doc, string keyName)
+        {
+            return string.IsNullOrWhiteSpace(keyName) ? false:
+                doc.EnumDisplayableFields().Any((k) => k.Key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()));
+        }
+
         /// <summary>
         /// Updates items source of the current listview to diplay results relevant to the passed in query
         /// </summary>
@@ -217,8 +223,8 @@ namespace Dash
                         if (!nameMatches)
                             continue;
 
-                        var data = (item as GoToTabItemViewModel).Document.GetDataDocument(null);
-                        var containsField = data.HasMatchingKey(fieldName);
+                        var data = (item as GoToTabItemViewModel).Document.GetDataDocument();
+                        var containsField = DocHasMatchingKey(data, fieldName);
                         if (containsField)
                             newTabItems.Add(item);
                     }

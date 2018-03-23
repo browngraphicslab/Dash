@@ -520,10 +520,15 @@ namespace Dash
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
+        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
+        {
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
+            return cnote.Document;
+        }
+        // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
+            return BlankCollectionWithPosition(new Point());
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -563,7 +568,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.TypedData)
             {
-                var actualDoc = docController.GetDataDocument(null);
+                var actualDoc = docController.GetDataDocument();
 
                 foreach (var field in actualDoc.EnumFields())
                 {

@@ -109,7 +109,7 @@ namespace Dash
             setText(getRtfText());
 
             var allText = getReadableText();
-            DataDocument.SetField(KeyStore.DocumentTextKey, new TextController(allText), true);
+            DataDocument.SetField<TextController, string>(KeyStore.DocumentTextKey, allText, true);
 
             // auto-generate key/value pairs by scanning the text
             var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
@@ -175,8 +175,7 @@ namespace Dash
                             pad += (item as FrameworkElement).ActualHeight;
                     relative.Height = xRichEditBox.DesiredSize.Height + pad;
                 }
-                else
-                    this.Height = xRichEditBox.DesiredSize.Height;
+                this.Height = xRichEditBox.DesiredSize.Height;
             }
         }
 
@@ -206,7 +205,7 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(null), this.IsCtrlPressed());
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
                 if (nearest != null)
                 {
                     if (this.IsCtrlPressed())
@@ -390,25 +389,6 @@ namespace Dash
                 xRichEditBox.Document.Selection.SetRange(s1, s2);
             return target;
         }
-        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
-        {
-            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
-            if (theDoc == null && createIfNeeded)
-            {
-                if (refText.StartsWith("http"))
-                {
-                    theDoc = new HtmlNote(refText).Document;
-                }
-                else
-                {
-                    theDoc = new NoteDocuments.RichTextNote().Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
-                }
-            }
-
-            return theDoc;
-        }
 
         void linkDocumentToSelection(DocumentController theDoc, bool forceLocal)
         {
@@ -428,9 +408,9 @@ namespace Dash
             Point startPt;
             this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
             string link = "\"" + theDoc.GetId() + "\"";
-            if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+            if (!forceLocal && theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+                link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
             }
 
             if (xRichEditBox.Document.Selection.Link != link)

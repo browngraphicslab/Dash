@@ -50,7 +50,7 @@ namespace Dash
                     controller = MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentController(model as DocumentModel, false);
+                    controller = new DocumentController(model as DocumentModel);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkController(model as InkModel);
@@ -165,9 +165,6 @@ namespace Dash
                     break;
                 case OperatorType.CollectionTitle:
                     controller = new CollectionTitleOperatorController(model);
-                    break;
-                case OperatorType.GroupTitle:
-                    controller = new GroupTitleOperatorController(model);
                     break;
                 case OperatorType.Add:
                     controller = new AddOperatorController(model);

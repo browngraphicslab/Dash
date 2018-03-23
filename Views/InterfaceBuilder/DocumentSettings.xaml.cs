@@ -143,10 +143,8 @@ namespace Dash
                     new Size(currWidth, currHeight)).Document;
             }
             else if (layout == "⊶ Key Value")
-            {
-                if (_dataDocument.GetField(KeyStore.ThisKey) == null)
-                    _dataDocument.SetField(KeyStore.ThisKey, _dataDocument, true);
-                newLayout = new KeyValueDocumentBox(new DocumentReferenceController(_dataDocument.GetId(), KeyStore.ThisKey), currPos.X, currPos.Y, currWidth, currHeight).Document;
+            {   
+                newLayout = new KeyValueDocumentBox(_dataDocument, currPos.X, currPos.Y, currWidth, currHeight).Document;
             }
             else
             {

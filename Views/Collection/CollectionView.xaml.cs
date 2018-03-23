@@ -1,33 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Windows.Foundation.Collections;
-using Windows.UI.Xaml.Controls.Primitives;
-using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
-
-using System.Threading.Tasks;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using System.Numerics;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views.Document_Menu;
 using Windows.System;
-using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -124,7 +103,11 @@ namespace Dash
 
                 // add the item to create a new collection
                 var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
-                newCollection.Click += (sender, e) => addElement(GetFlyoutOriginCoordinates(), Util.BlankCollection());
+                newCollection.Click += (sender, e) =>
+                {
+                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
+                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt), null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
+                };
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);
 
@@ -199,29 +182,7 @@ namespace Dash
         }
         
         #endregion
-
-        /// <summary>
-        /// Helper function to add a document controller to the main freeform layout.
-        /// </summary>
-        /// <param name="screenPoint"></param>
-        /// <param name="opController"></param>
-        void addElement(Point screenPoint, DocumentController opController)
-        {
-            var mp = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                Position = Util.GetCollectionFreeFormPoint(mp, screenPoint)
-            };
-
-            if (opController != null)
-            {
-                //freeForm.ViewModel.AddDocument(opController, null);
-                mp?.ViewModel.AddDocument(opController, null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
-            }
-        }
-
+        
         #region ClickHandlers for collection context menu items
 
         /// <summary>
