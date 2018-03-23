@@ -23,63 +23,27 @@ using Windows.ApplicationModel.Core;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using System.Text.RegularExpressions;
+using Dash.Models.DragModels;
+using static Dash.FieldControllerBase;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
     public sealed partial class RichTextView : UserControl
     {
-
-        #region instance variables
-
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD)));
-        
-        public RichTextModel.RTD Text
-        {
-            get { return (RichTextModel.RTD)GetValue(TextProperty); }
-            set{ SetValue(TextProperty, value); }
-        }
 
-        public DocumentController DataDocument { get; set; }
-
-        public RichTextController  TargetRTFController = null;
-        public ReferenceController TargetFieldReference = null;
-        public Context TargetDocContext = null;
-
-        private RichTextFormattingHelper _rtfHelper;
-
-        public static bool HasFocus = false;
-
-        private SolidColorBrush highlightNotFocused = new SolidColorBrush(Colors.Gray) {Opacity=0.5};
-        private bool CanSizeToFit = false;
-        long TextChangedCallbackToken;
-        
-        private bool _rightPressed = false;
-        PointerEventHandler moveHdlr = null, releasedHdlr = null;
-
-        private Point _rightDragLastPosition, _rightDragStartPosition;
-
-
-        // for manipulation movement
-        ScrollBar Scroll = null;
-
-        // for rich edit box
-        private int LastS1 = 0, LastS2 = 0;
+        bool  _isPointerPressed = false;
+        long  _textChangedCallbackToken;
+        int   _prevQueryLength;// The length of the previous search query
+        int   _nextMatch = 0;// Index of the next highlighted search result
 
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
         /// </summary>
-        private Dictionary<int, ITextCharacterFormat> originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
-
-        /// <summary>
-        /// The length of the previous search query
-        /// </summary>
-        private int prevQueryLength;
-
-        #endregion
-
-    
+        Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -88,464 +52,307 @@ namespace Dash
             this.InitializeComponent();
             Loaded   += OnLoaded;
             Unloaded += UnLoaded;
+            
+            AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) => 
+            {
+                if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
+                    new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+            }), true);
+            AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+            _textChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
+
+            xSearchDelete.Click += (s, e) =>
+            {
+                setSelected("");
+                xSearchBoxPanel.Visibility = Visibility.Collapsed;
+            };
+
+            xSearchBox.QuerySubmitted += (s,e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
+
+            xSearchBox.QueryChanged += (s,e) => setSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
+
             xRichEditBox.AddHandler(KeyDownEvent, new KeyEventHandler(XRichEditBox_OnKeyDown), true);
 
-            _rtfHelper = new RichTextFormattingHelper(this, xRichEditBox);
-
-            //xRichEditBox.Document.Selection.CharacterFormat.Name = "Calibri";
-            xRichEditBox.SelectionChanged += delegate(object sender, RoutedEventArgs args)
+            xRichEditBox.Drop += (s, e) =>
             {
-                var freeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                if (freeform == null)
-                {
-                    return;
-                }
-
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                if(docView== null)
-                {
-                    return ;
-                }
-
-                if (freeform.TagNote(xRichEditBox.Document.Selection.Text, docView))
-                {
-                    //var start = xRichEditBox.Document.Selection.StartPosition;
-                    //xRichEditBox.Document.Selection.SetRange(start, start);
-                }
+                e.Handled = true;
+                xRichEditBox_Drop(s, e);
             };
+
+            xRichEditBox.GotFocus += (s,e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+
+            xRichEditBox.TextChanged += (s,e) => UpdateDocument();
+
+            xRichEditBox.KeyUp += (s, e) => {
+                if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
+                    getDocView().DeleteDocument(true);
+                e.Handled = true;
+            };
+
+            xRichEditBox.ContextMenuOpening += (s,e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
+
+            xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
 
             // store a clone of character format after initialization as default format
             xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
             // store a clone of paragraph format after initialization as default format
             xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-
-        }
-
-
-        #region main functionality
-
-        private void SizeToFit()
-        {
-            if (!this.IsInVisualTree() || !CanSizeToFit)
-                return;
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-           
-            xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-            var relative = this.GetFirstAncestorOfType<RelativePanel>();
-            if (relative != null)
-                relative.Height = Math.Max(ActualHeight, xRichEditBox.DesiredSize.Height);
-
-            if (false)
-            {
-                int count = 0;
-                float lastMax = 20;
-                float lastMin = 6;
-                float lastGoodSize = 0;
-                var selectedText = xRichEditBox.Document.Selection;
-
-                while (Math.Abs(xRichEditBox.DesiredSize.Height - xRichEditBox.ActualHeight) > 0 && selectedText != null && count++ < 10)
-                {
-                    var charFormatting = selectedText.CharacterFormat;
-                    var curSize = charFormatting.Size < 0 ? 10 : charFormatting.Size;
-                    float delta = (float)(xRichEditBox.DesiredSize.Height > xRichEditBox.ActualHeight ? (lastMin - curSize) : (lastMax - curSize));
-                    if (curSize > lastGoodSize && Scroll.Visibility == Visibility.Collapsed)
-                        lastGoodSize = curSize;
-                    if (delta < 0)
-                    {
-                        lastMax = curSize;
-                        delta = (float)Math.Ceiling(delta);
-                    }
-                    else
-                    {
-                        lastMin = curSize;
-                        if (delta < 1)
-                            break;
-                        else delta = (float)Math.Floor(delta);
-                    }
-                    try
-                    {
-                        charFormatting.Size = curSize + delta / 2;
-                        selectedText.CharacterFormat = charFormatting;
-                    }
-                    catch (Exception) { }
-                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                }
-                if (Scroll.Visibility == Visibility.Visible && lastGoodSize > 0)
-                {
-                    var charFormatting = selectedText.CharacterFormat;
-                    charFormatting.Size = lastGoodSize;
-                    selectedText.CharacterFormat = charFormatting;
-                    xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                }
-            }
-            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
-        }
-
-        private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
-        {
-            var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
-            var newstr = reg.Replace(Text.RtfFormatString, "}\r\n\0");
-            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr);
-            var selected = GetSelected();
-            if (selected != null)
-            {
-                prevQueryLength = selected.Length;
-                var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
-
-                var s = xRichEditBox.Document.Selection.StartPosition;
-                originalCharFormat.Add(s, this.xRichEditBox.Document.Selection.CharacterFormat.GetClone());
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
-                UpdateDocument();
-            }
-            xRichEditBox.Document.Selection.SetRange(LastS1, LastS2);
-        }
-
-        public void UpdateDocument()
-        {
-            string allText;
-            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
-            string allRtfText = GetRtfText();
-            UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-            if (!allRtfText.Equals(Text.RtfFormatString) || !allText.Equals(Text.ReadableString))
-                Text = new RichTextModel.RTD(allText, allRtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
-            TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-        }
-
-
-        #region eventhandlers
-        private void Scroll_LayoutUpdated(object sender, object e)
-        {
-            if (Scroll.Visibility == Visibility.Visible)
-                released(null, null);
-        }
-
-        private void tapped(object sender, TappedRoutedEventArgs e)
-        {
-            string target = null;
-            var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (true || ctrlDown)
-            {
-                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-                if (s1 == s2)
-                {
-                    this.xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
-                }
-                if (this.xRichEditBox.Document.Selection.Link.Length > 1)
-                {
-                    target = this.xRichEditBox.Document.Selection.Link.Split('\"')[1];
-                }
-                this.xRichEditBox.Document.Selection.SetRange(s1, s2);
-            }
-            if (target != null)
-            {
-                var doc = GetDoc();
-                var point = doc.GetPositionField().Data;
-
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), ContentController<FieldModel>.GetController<DocumentController>(target), ctrlDown);
-                if (nearest != null)
-                {
-                    if (ctrlDown)
-                        nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
-                    return;
-                }
-
-                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-                if (theDoc != null && !theDoc.Equals(DBTest.DBNull))
-                {
-                    var pt = point;
-                    pt.X += doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? 150.0;
-                    pt.X += 80;
-                    pt.Y += 0;
-                    if (theDoc.GetDereferencedField<TextController>(KeyStore.AbstractInterfaceKey, null)?.Data == CollectionNote.APISignature)
-                        theDoc = new CollectionNote(theDoc, pt, CollectionView.CollectionViewType.Schema, 200, 100).Document;
-                    var collection = this.GetFirstAncestorOfType<CollectionView>();
-                    if (collection != null)
-                    {
-                        Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
-                    }
-                }
-                else if (target.StartsWith("http"))
-                {
-                    theDoc = DocumentController.FindDocMatchingPrimaryKeys(new string[] { target });
-                    if (theDoc != null && theDoc != DBTest.DBNull)
-                    {
-                        var pt = point;
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        var collection = this.GetFirstAncestorOfType<CollectionView>();
-                        if (collection != null)
-                        {
-                            Actions.DisplayDocument(collection.ViewModel, theDoc.GetViewCopy(pt));
-                        }
-                    }
-                    else
-                    {
-                        MainPage.Instance.WebContext.SetUrl(target);
-                    }
-                }
-                this.xRichEditBox.Document.Selection.SetRange(this.xRichEditBox.Document.Selection.StartPosition, this.xRichEditBox.Document.Selection.StartPosition);
-            }
-        }
-
-        private DocumentView FindNearestDisplayedTarget(Point where, DocumentController target, bool onlyOnPage=true)
-        {
-            double dist = double.MaxValue;
-            DocumentView nearest = null;
-            var targetData = target?.GetDataDocument(null);
-            foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            {
-                var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                if (dvm.ViewModel.DocumentController.GetDataDocument().GetId().ToString() == targetData.Id)
-                {
-                    var mprect = dvm.GetBoundingRect(MainPage.Instance);
-                    var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-                    if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-                    {
-                        var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-                        if (d < dist)
-                        {
-                            d = dist;
-                            nearest = dvm;
-                        }
-                    }
-                }
-            }
-
-            return nearest;
-        }
-
-        private void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            CanSizeToFit = true;
-            var ctrl = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control);
-            if (!(ctrl.HasFlag(CoreVirtualKeyStates.Down) && e.Key == VirtualKey.H))
-            {
-                if (e.Key == VirtualKey.Back)
-                {
-                    string docText;
-                    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out docText);
-                    if (docText == "")
-                    {
-
-                        var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-                        parentDoc.DeleteDocument(true);
-                    }
-                    return;
-                }
-            }
-            e.Handled = true;
-            return;
-            string allText;
-            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
-
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-
-            // try to get last typed character based on the current selection position 
-            this.xRichEditBox.Document.Selection.SetRange(Math.Max(0, s1 - 1), s1);
-            string lastTypedCharacter;
-            this.xRichEditBox.Document.Selection.GetText(TextGetOptions.None, out lastTypedCharacter);
-
-            // if the last lastTypedCharacter is white space, then we check to see if it terminates a hyperlink
-            if (lastTypedCharacter == " " || lastTypedCharacter == "\r" || lastTypedCharacter == "^")
-            {
-                // search through all the text for the nearest '@' indicating the start of a possible hyperlink
-                int atPos = findPreviousHyperlinkStartMarker(allText, s1);
-
-                // we found the nearest '@'
-                if (atPos != -1)
-                {
-                    // get the text between the '@' and the current input position 
-                    var refText = getHyperlinkText(atPos, s2);
-
-                    if (!refText.StartsWith("HYPERLINK")) // @HYPERLINK means we've already created the hyperlink
-                    {
-                        // see if we can find a document whose primary keys match the text
-                        var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
-
-                        var startPt = new Point();
-                        try
-                        {
-                            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.WriteLine(exception);
-                        }
-                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
-                    }
-                }
-            }
-
-            this.xRichEditBox.Document.Selection.SetRange(s1, s2);
-        }
-
-        private async void released(object sender, PointerRoutedEventArgs e)
-        {
-            //if (e != null && (e.KeyModifiers & VirtualKeyModifiers.Control) != 0)
-            //{
-            //    var c = DataDocument.GetField(KeyStore.WebContextKey) as ListController<TextController>;
-            //    if (c != null)
-            //    {
-            //        BrowserView.OpenTab((c.Data.First()as TextController).Data);
-            //    }
-            //}
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => SizeToFit());
-        }
-        
-        private async void xRichEditBox_Drop(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-            DocumentController theDoc = null;
-            if (e.DataView.Properties.ContainsKey("DocumentControllerList"))
-            {
-                var docCtrls = e.DataView.Properties["DocumentControllerList"] as List<DocumentController>;
-                theDoc = docCtrls.First();
-            }
-            if (e.DataView.Properties.ContainsKey("Operator Document"))
-            {
-                theDoc = e.DataView.Properties["Operator Document"] as DocumentController;
-            }
-            var forceLocal = true;
-            var sourceIsFileSystem = e.DataView.Contains(StandardDataFormats.StorageItems);
-            if (sourceIsFileSystem)
-            {
-                theDoc = await FileDropHelper.GetDroppedFile(e);
-                forceLocal = false;
-            }
-
-
-            string allText;
-            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
-
-            var startPt = new Point();
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
-
-            createRTFHyperlink(theDoc, startPt, ref s1, ref s2, false, forceLocal);
-
-            if (allText.TrimEnd('\r') != GetText()?.ReadableString?.TrimEnd('\r'))
-            {
-                string allRtfText = GetRtfText();
-                UnregisterPropertyChangedCallback(TextProperty, TextChangedCallbackToken);
-                Text = new RichTextModel.RTD(allText, allRtfText);
-                TextChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
-            }
-            xRichEditBox.Document.Selection.SetRange(s1, s2);
-            e.Handled = true;
-            if (DocumentView.DragDocumentView != null)
-            {
-                DocumentView.DragDocumentView.OuterGrid.BorderThickness = new Thickness(0);
-                DocumentView.DragDocumentView.IsHitTestVisible = true;
-                DocumentView.DragDocumentView = null;
-            }
-        }
-
-        void xRichEditBox_SelectionChanged(object sender, RoutedEventArgs e)
-        {
-            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
-            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
-            if (LastS1 != s1 || LastS2 != s2)  // test if the selection has actually changed... seem to get in here when nothing has happened perhaps because of losing focus?
-            {
-            }
-            LastS1 = s1;
-            LastS2 = s2;
-            // format and update the tooltip to reflect the properties of the current selection
-            //if(xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition) this.FormatToolTipInfo(xRichEditBox.Document.Selection);
-            // set to display font size of the current selection on the lower left hand corner
-            //WC.Size = xRichEditBox.Document.Selection.CharacterFormat.Size;
-            //if (WC.Size < 0) WC.Size = 0;
-        }
-        
-        #endregion
-
-        #region getters
-        RichTextModel.RTD GetText()
-        {
-            if (TargetRTFController != null)
-                return TargetRTFController.Data;
-            return TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext) as RichTextModel.RTD;
-        }
-
-        string GetSelected()
-        {
-            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-            if (parentDoc != null)
-            {
-                return parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
-                       parentDoc.ViewModel?.DocumentController?.GetActiveLayout(null)?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
-            }
-            return null;
-        }
-        void SetSelected(string query)
-        {
-            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-            if (parentDoc != null)
-            {
-                parentDoc.ViewModel?.DocumentController?.GetDataDocument(null)?.SetField(CollectionDBView.SelectedKey, new TextController(query), true);
-            }
-        }
-
-        DocumentController GetDoc()
-        {
-            var parentDoc = this.GetFirstAncestorOfType<DocumentView>();
-            if (parentDoc != null)
-            {
-                var doc = parentDoc.ViewModel.DocumentController;
-                return doc.GetActiveLayout() ?? doc;
-            }
-            return null;
-        }
-
-        private string GetRtfText()
-        {
-            string allRtfText;
-            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-            var newtext = allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
-            return newtext;
-        }
-        #endregion
-
-        #region load/unload
-        private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
-            
-            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-
-            // Set up dictionaries and bindings to set up rich text formatting functionalities 
-            //SetUpEnumDictionaries();
-            //SetFontSizeBinding();
-
-            xRichEditBox.KeyUp += XRichEditBox_KeyUp;
-            MainPage.Instance.AddHandler(PointerReleasedEvent, new PointerEventHandler(released), true);
-            this.AddHandler(PointerPressedEvent, new PointerEventHandler(RichTextView_PointerPressed), true);
-            this.AddHandler(TappedEvent, new TappedEventHandler(tapped), true);
-            this.xRichEditBox.ContextMenuOpening += XRichEditBox_ContextMenuOpening;
-            Scroll = this.GetFirstDescendantOfType<ScrollBar>();
-            Scroll.LayoutUpdated += Scroll_LayoutUpdated;
-
-            var docParent = this.GetFirstAncestorOfType<DocumentView>();
-            docParent.ViewModel.DocumentController.GetDataDocument(null).AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldChanged);
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
 
-        void selectedFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        public void UpdateDocument()
         {
-            MatchQuery(GetSelected());
+            if (DataContext == null || Text == null)
+                return;
+            setText(getRtfText());
+
+            var allText = getReadableText();
+            DataDocument.SetField<TextController, string>(KeyStore.DocumentTextKey, allText, true);
+
+            // auto-generate key/value pairs by scanning the text
+            var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+            var matches = reg.Matches(allText);
+            foreach (var str in matches)
+            {
+                var split = str.ToString().Split(':');
+                var key   = split.FirstOrDefault().Trim(' ');
+                var value = split.LastOrDefault().Trim(' ');
+                
+                DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+            }
+        }
+        public RichTextModel.RTD   Text
+        {
+            get { return (RichTextModel.RTD)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
+        }
+        public DocumentController  DataDocument { get; set; }
+        DocumentView       getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
+        DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
+        DocumentController getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
+        string             getSelected()
+        {
+            return getDataDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
+                   getLayoutDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
+        }
+        void               setSelected(string query)
+        {
+            getDataDoc().SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+        }
+        string             getReadableText()
+        {
+            string allText;
+            xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+            return allText;
+        }
+        string             getRtfText()
+        {
+            string allRtfText;
+            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+            return allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+        }
+        void               setText(string rtfText)
+        {
+            UnregisterPropertyChangedCallback(TextProperty, _textChangedCallbackToken);
+            if (!rtfText.Equals(Text.RtfFormatString))
+                Text = new RichTextModel.RTD(rtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            _textChangedCallbackToken = RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
+        }
+        void               sizeToFit()
+        {
+            if (!_isPointerPressed)
+            {
+                xRichEditBox.Height = double.NaN;
+                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                var relative = Parent as RelativePanel;
+                var pad = 0.0;
+                if (relative != null)
+                {
+                    foreach (var item in relative.Children)
+                        if (item != this)
+                            pad += (item as FrameworkElement).ActualHeight;
+                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                }
+                this.Height = xRichEditBox.DesiredSize.Height;
+            }
         }
 
-        private void XOperatorEllipseBorder_PointerPressed(object sender, PointerRoutedEventArgs e)
+        #region eventhandlers
+
+        void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            UpdateDocument();
+            var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
+            var newstr = reg.Replace(Text.RtfFormatString, "}\r\n\0");
+            xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr);
+            var selected = getSelected();
+            if (selected != null)
+            {
+                _prevQueryLength = selected.Length;
+                var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
+
+                var s = xRichEditBox.Document.Selection.StartPosition;
+                _originalCharFormat.Add(s, this.xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
+                this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
+                UpdateDocument();
+            }
+        }
+        void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var target = getHyperlinkTargetForSelection();
+            if (target != null)
+            {
+                var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(null), this.IsCtrlPressed());
+                if (nearest != null)
+                {
+                    if (this.IsCtrlPressed())
+                        nearest.DeleteDocument();
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                }
+                else
+                {
+                    var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
+                    if (theDoc != null)
+                    {
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                    }
+                    else if (target.StartsWith("http"))
+                    {
+                        if (MainPage.Instance.WebContext != null)
+                            MainPage.Instance.WebContext.SetUrl(target);
+                        else
+                        {
+                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
+                        }
+                    }
+                }
+            }
+            DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
+
+                return nearest;
+            }
+        }
+
+        async void xRichEditBox_Drop(object sender, DragEventArgs e)
+        {
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).GetDropDocument(new Point(), true), true);
+            }
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                linkDocumentToSelection(await FileDropHelper.GetDroppedFile(e), false);
+            }
+
+            e.Handled = true;
+        }
+        /// <summary>
+        /// Create short cuts for the xRichEditBox (ctrl+I creates indentation by default, ctrl-Z will get rid of the indentation, showing only the italized text)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (!this.IsCtrlPressed() && !this.IsAltPressed())
+            {
+                getDataDoc().CaptureNeighboringContext();
+            }
+            else if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
+            {
+                getDocView().HandleShiftEnter();
+                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+            }
+            else if (this.IsAltPressed()) // opens the format options flyout 
+            {
+                FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
+                FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
+            }
+            else if (this.IsTabPressed())
+            {
+                xRichEditBox.Document.Selection.TypeText("\t");
+                e.Handled = true;
+            }
+            else if (this.IsCtrlPressed())   // ctrl-B, ctrl-I, ctrl-U handled natively by the text editor
+            {
+                switch (e.Key)
+                {
+                    case VirtualKey.N:
+                        xRichEditBox.Document.Redo();
+                        break;
+                    case VirtualKey.H:
+                        this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
+                        break;
+                    case VirtualKey.F:
+                        xSearchBoxPanel.Visibility = Visibility.Visible;
+                        xSearchBox.Focus(FocusState.Programmatic);
+                        break;
+                    case VirtualKey.L:
+                        if (this.IsShiftPressed())
+                        {
+                            if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.None)
+                            {
+                                xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.Bullet;
+                            }
+                            else if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
+                            {
+                                xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        #endregion
+
+        #region load/unload
+        PointerEventHandler  _pressedHdlr = null;
+        PointerEventHandler  _releasedHdlr = null;
+        FieldUpdatedHandler  _selectedFieldUpdatedHdlr = null;
+        EventHandler<object> _scrollHandler = null;
+        void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            _pressedHdlr = new PointerEventHandler(async (s, e) => _isPointerPressed = true);
+
+            _releasedHdlr = new PointerEventHandler(async (s, e) => {
+                _isPointerPressed = false;
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
+            });
+            _selectedFieldUpdatedHdlr = new FieldUpdatedHandler((FieldControllerBase s, FieldUpdatedEventArgs e, Context c) => MatchQuery(getSelected()));
+            _scrollHandler            = async (object s, object e) => {
+                if (this.GetFirstDescendantOfType<ScrollBar>().Visibility == Visibility.Visible)
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
+            };
+
+            MainPage.Instance.AddHandler(PointerPressedEvent, _pressedHdlr, true);
+            MainPage.Instance.AddHandler(PointerReleasedEvent, _releasedHdlr, true);
+            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
+            this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated += _scrollHandler;
         }
 
         /// <summary>
@@ -553,159 +360,76 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void UnLoaded(object sender, RoutedEventArgs e)
+        void UnLoaded(object sender, RoutedEventArgs e)
         {
-            xRichEditBox.KeyUp -= XRichEditBox_KeyUp;
-            MainPage.Instance.RemoveHandler(PointerReleasedEvent, new PointerEventHandler(released));
+            if (_pressedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
+            if (_releasedHdlr != null)
+                MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
+            if (_selectedFieldUpdatedHdlr != null)
+                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
+            this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated -= _scrollHandler; // bcz: don't know why we need to do this, but the events keep getting generated after 'this' is unloaded
         }
-        #endregion
-
-        #region DocView manipulation on right click
-
-        /// <summary>
-        /// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RichTextView_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            _rightPressed = e.GetCurrentPoint(this).Properties.IsRightButtonPressed || Window.Current.CoreWindow
-                                .GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            if (_rightPressed)
-            {
-                if (moveHdlr == null)
-                    moveHdlr = RichTextView_PointerMoved;
-                if (releasedHdlr == null)
-                    releasedHdlr = RichTextView_PointerReleased;
-                this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-                this.AddHandler(PointerReleasedEvent, releasedHdlr, true);
-                this.RemoveHandler(PointerMovedEvent, moveHdlr);
-                this.AddHandler(PointerMovedEvent, moveHdlr, true);
-                var docView = this.GetFirstAncestorOfType<DocumentView>();
-                docView?.ToFront();
-                var parent = this.GetFirstAncestorOfType<DocumentView>();
-                var pointerPosition = MainPage.Instance
-                    .TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
-                        .CoreWindow.GetForCurrentThread().PointerPosition);
-                _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-                this.CapturePointer(e.Pointer);
-                parent.ManipulationControls?.ElementOnManipulationStarted(null, null);
-                parent.DocumentView_PointerEntered(null, null);
-
-            }
-        }
-
-
-        /// <summary>
-        /// Move view around if right mouse button is held down
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void RichTextView_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            var parentCollectionTransform =
-                ((this.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas)?.RenderTransform as MatrixTransform;
-            if (parentCollectionTransform == null) return;
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            if (parent.ManipulationControls == null)
-                return;
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
-
-            var translation = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
-
-            translation.X *= parentCollectionTransform.Matrix.M11;
-            translation.Y *= parentCollectionTransform.Matrix.M22;
-
-            _rightDragLastPosition = pointerPosition;
-            parent.ManipulationControls.TranslateAndScale(new
-                ManipulationDeltaData(new Point(pointerPosition.X, pointerPosition.Y),
-                    translation,
-                    1.0f), parent.ManipulationControls._grouping);
-
-            //Only preview a snap if the grouping only includes the current node. TODO: Why is _grouping public?
-            if (parent.ManipulationControls._grouping == null || parent.ManipulationControls._grouping.Count < 2)
-                parent.ManipulationControls.Snap(true);
-        }
-
-        private void RichTextView_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            this.RemoveHandler(PointerReleasedEvent, releasedHdlr);
-            this.RemoveHandler(PointerMovedEvent, moveHdlr);
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            var pointerPosition = MainPage.Instance.TransformToVisual(parent.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
-
-            //if (parent != null)
-            //    parent.MoveToContainingCollection();
-            if (_rightPressed)
-            {
-                var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
-                var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
-                if (dist < 100)
-                    parent.OnTapped(sender, new TappedRoutedEventArgs());
-                else
-                    parent.ManipulationControls?.ElementOnManipulationCompleted(null, null);
-                var dvm = parent.ViewModel;
-                parent.DocumentView_PointerExited(null, null);
-                parent.DocumentView_ManipulationCompleted(null, null);
-
-            }
-        }
-
         #endregion
 
         #region hyperlink
-
-        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
+        
+        string getHyperlinkTargetForSelection()
         {
-            var primaryKeys = refText.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(primaryKeys));
-            if (theDoc == null && createIfNeeded)
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            if (s1 == s2)
             {
-                if (refText.StartsWith("http"))
-                {
-                    theDoc = new HtmlNote(refText).Document;
-                }
-                else if (primaryKeys.Count() == 2 && primaryKeys[0] == "Filter")
-                {
-                    //theDoc = DBFilterOperatorController.CreateFilter(new DocumentReferenceFieldController(DBTest.DBDoc.GetId(), KeyStore.DataKey), primaryKeys.Last());
-                }
-                else
-                {
-                    theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                    theDoc.GetDataDocument(null).SetField(KeyStore.TitleKey, new TextController(refText), true);
-                }
+                xRichEditBox.Document.Selection.SetRange(s1, s2 + 1);
             }
 
-            return theDoc;
+            string target = xRichEditBox.Document.Selection.Link.Length > 1 ? xRichEditBox.Document.Selection.Link.Split('\"')[1] : null;
+
+            if (xRichEditBox.Document.Selection.EndPosition != s2)
+                xRichEditBox.Document.Selection.SetRange(s1, s2);
+            return target;
         }
 
-        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
+        void linkDocumentToSelection(DocumentController theDoc, bool forceLocal)
         {
+            var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+
             if (theDoc != null)
+                createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
 
+            setText(getRtfText());
+
+            xRichEditBox.Document.Selection.SetRange(s1, s2);
+        }
+
+        void createRTFHyperlink(DocumentController theDoc, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
+        {
+            Point startPt;
+            this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+            string link = "\"" + theDoc.GetId() + "\"";
+            if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
             {
-                string link = "\"" + theDoc.GetId() + "\"";
-                if (!forceLocal && theDoc.GetDataDocument(null).DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null)?.Data?.StartsWith("http"))
+                link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+            }
+
+            if (xRichEditBox.Document.Selection.Link != link)
+            {
+                if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
                 {
-                    link = "\"" + theDoc.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.HtmlTextKey, null).Data + "\"";
+                    xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
                 }
 
-                if (xRichEditBox.Document.Selection.StartPosition != xRichEditBox.Document.Selection.EndPosition && xRichEditBox.Document.Selection.Link != link)
-                {
-                    // set the hyperlink for the matched text
-                    this.xRichEditBox.Document.Selection.Link = link;
-                    // advance the end selection past the RTF embedded HYPERLINK keyword
-                    s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                    s1 = s2;
-                    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                    this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
-                }
+                // set the hyperlink for the matched text
+                this.xRichEditBox.Document.Selection.Link = link;
+                // advance the end selection past the RTF embedded HYPERLINK keyword
+                s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                s1 = s2;
+                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
             }
         }
         
-
         string getHyperlinkText(int atPos, int s2)
         {
             this.xRichEditBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
@@ -732,52 +456,14 @@ namespace Dash
         }
 
         #endregion
-
-        #region focus
-
-        /// <summary>
-        /// Closes format options flyout and sets HasFocus to true (tab indents in this case instead of invoking the tab menu)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void xRichEditBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide();
-            HasFocus = true;
-        }
-
-
-        /// <summary>
-        /// Sets HasFocus to false (allows tab to invoke tab menu when richeditbox does not have focus)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XRichEditBox_OnLostFocus(object sender, RoutedEventArgs e)
-        {
-            HasFocus = false;
-            UpdateDocument();
-        }
-
-        #endregion
-
+        
         #region search
-
-        /// <summary>
-        /// Searches content of the xRichEditBox, highlights all results
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void XSearchBox_OnQueryChanged(SearchBox sender, SearchBoxQueryChangedEventArgs args)
-        {
-            var query = args.QueryText;
-            SetSelected(query);
-        }
 
         private void MatchQuery(string query)
         {
             this.ClearSearchHighlights();
-            nextMatch = 0;
-            prevQueryLength = query == null ? 0 : query.Length;
+            _nextMatch = 0;
+            _prevQueryLength = query == null ? 0 : query.Length;
             string text;
             xRichEditBox.Document.GetText(TextGetOptions.None, out text);
             var length = text.Length;
@@ -792,7 +478,7 @@ namespace Dash
                 var selectedText = xRichEditBox.Document.Selection;
                 if (i > 0)
                 {
-                    originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
+                    _originalCharFormat.Add(s, selectedText.CharacterFormat.GetClone());
                 }
                 if (selectedText != null)
                 {
@@ -804,36 +490,21 @@ namespace Dash
         }
 
         /// <summary>
-        /// Index of the next highlighted search result
-        /// </summary>
-        private int nextMatch = 0;
-
-        /// <summary>
-        /// Selects the next highlighted search result on enter in the xRichEditBox
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void XSearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
-        {
-            this.NextResult();
-        }
-
-        /// <summary>
         /// Selects the next highlighted search result on enter in the xRichEditBox
         /// </summary>
         private void NextResult()
         {
-            var keys = originalCharFormat.Keys;
+            var keys = _originalCharFormat.Keys;
             if (keys.Count != 0)
             {
-                var start = keys.ElementAt(nextMatch);
+                var start = keys.ElementAt(_nextMatch);
                 xRichEditBox.Document.Selection.StartPosition = start;
-                xRichEditBox.Document.Selection.EndPosition = start + prevQueryLength;
+                xRichEditBox.Document.Selection.EndPosition = start + _prevQueryLength;
                 xRichEditBox.Document.Selection.ScrollIntoView(PointOptions.None);
-                if (nextMatch < keys.Count - 1)
-                    nextMatch++;
+                if (_nextMatch < keys.Count - 1)
+                    _nextMatch++;
                 else
-                    nextMatch = 0;
+                    _nextMatch = 0;
             }
         }
 
@@ -844,18 +515,16 @@ namespace Dash
         private void ClearSearchHighlights()
         {
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
-            var keys = originalCharFormat.Keys;
+            var keys = _originalCharFormat.Keys;
             foreach (var key in keys)
             {
                 xRichEditBox.Document.Selection.StartPosition = key;
-                xRichEditBox.Document.Selection.EndPosition = key + prevQueryLength;
-                xRichEditBox.Document.Selection.CharacterFormat.SetClone(originalCharFormat[key]);
-
-                this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
+                xRichEditBox.Document.Selection.EndPosition = key + _prevQueryLength;
+                xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
+                xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
             UpdateDocument();
-            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-            originalCharFormat.Clear();
+            _originalCharFormat.Clear();
         }
 
         /// <summary>
@@ -870,216 +539,129 @@ namespace Dash
                 xRichEditBox.Document.Selection.SetText(TextSetOptions.None, (sender as TextBox).Text);
                 var start = xRichEditBox.Document.Selection.StartPosition;
                 ITextCharacterFormat clone;
-                originalCharFormat.TryGetValue(start, out clone);
+                _originalCharFormat.TryGetValue(start, out clone);
                 if (clone != null)
                 {
                     xRichEditBox.Document.Selection.CharacterFormat.SetClone(clone);
-                    originalCharFormat.Remove(start);
-                    if (nextMatch >= originalCharFormat.Keys.Count || nextMatch == 0)
-                        nextMatch = 0;
+                    _originalCharFormat.Remove(start);
+                    if (_nextMatch >= _originalCharFormat.Keys.Count || _nextMatch == 0)
+                        _nextMatch = 0;
                     else
-                        nextMatch--;
+                        _nextMatch--;
                     this.NextResult();
                 }
             }
         }
         #endregion
-
-        #endregion
-
-        #region text formatting
-
-        /// <summary>
-        /// Create short cuts for the xRichEditBox (ctrl+I creates indentation by default, ctrl-Z will get rid of the indentation, showing only the italized text)
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            var ctrlState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Control)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var altState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Menu)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var tabState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Tab)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
-
-            if (shiftState && !e.Key.Equals(VirtualKey.Shift))
-            {
-                if (e.Key.Equals(VirtualKey.Enter))
-                {
-                    this.GetFirstAncestorOfType<DocumentView>().HandleShiftEnter();
-                    xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
-                    xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
-
-                }
-            }
-            if (tabState)
-            {
-                xRichEditBox.Document.Selection.TypeText("\t");
-                e.Handled = true;
-            }
-            if (ctrlState)
-            {
-                handleControlPressed(sender, e);
-            }
-            if (altState)
-            {
-                OpenContextMenu(sender);
-            }
-
-            if (ctrlState && shiftState && e.Key.Equals(VirtualKey.L))
-            {
-                if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.None)
-                {
-                    xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.Bullet;
-                }
-                else if (xRichEditBox.Document.Selection.ParagraphFormat.ListType == MarkerType.Bullet)
-                {
-                    xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
-                }
-            }
-
-            if (!ctrlState && !altState)
-            {
-                var parent = this.GetFirstAncestorOfType<DocumentView>();
-                parent.ViewModel.DocumentController.CaptureNeighboringContext();
-            }
-        }
-
-        private void handleControlPressed(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key.Equals(VirtualKey.B))
-            {
-                //xRichEditBox.Document.Selection.CharacterFormat.Bold = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
-                //UpdateDocument();
-            }
-            else if (e.Key.Equals(VirtualKey.I))
-            {
-                //xRichEditBox.Document.Selection.CharacterFormat.Italic = xRichEditBox.Document.Selection.CharacterFormat.Bold == FormatEffect.On ? FormatEffect.Off : FormatEffect.On;
-                //UpdateDocument();
-            }
-            else if (e.Key.Equals(VirtualKey.U))
-            {
-                //xRichEditBox.Document.Selection.CharacterFormat.Underline = xRichEditBox.Document.Selection.CharacterFormat.Underline == UnderlineType.None ? UnderlineType.Single : UnderlineType.None;
-                //UpdateDocument();
-            }
-            else if (e.Key.Equals(VirtualKey.F))
-            {
-                xSearchBoxPanel.Visibility = Visibility.Visible;
-                xSearchBox.Focus(FocusState.Programmatic);
-            }
-            else if (e.Key.Equals(VirtualKey.N))
-            {
-                xRichEditBox.Document.Redo();
-            }
-            else if (e.Key.Equals(VirtualKey.H))
-            {
-                _rtfHelper.Highlight(Colors.Yellow, true);
-                UpdateDocument();
-            }
-            else if (e.Key.Equals(VirtualKey.O))
-            {
-                OpenContextMenu(sender);
-            }
-
-            e.Handled = true;
-        }
-
-        private void xSearchDelete_Click(object sender, RoutedEventArgs e)
-        {
-            SetSelected("");
-            //ClearSearchHighlights();
-            xSearchBoxPanel.Visibility = Visibility.Collapsed;
-        }
-
-        #region opening
-        /// <summary>
-        /// Opens the format options flyout
-        /// </summary>
-        /// <param name="sender"></param>
-        private void OpenContextMenu(object sender)
-        {
-            var element = sender as FrameworkElement;
-            if (element != null)
-            {
-                FlyoutBase.ShowAttachedFlyout(element);
-                FlyoutBase.GetAttachedFlyout(element)?.ShowAt(element);
-            }
-            //currentCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-            xRichEditBox.SelectionHighlightColorWhenNotFocused = highlightNotFocused;
-        }
-
-
-
-        private void XRichEditBox_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-        {
-            e.Handled = true;
-
-            var parent = this.GetFirstAncestorOfType<DocumentView>();
-            parent?.OnTapped(null, null);
-        }
-        #endregion
-
-        #endregion
         
         #region commented out code
-    /// <summary>
-    /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
-    /// </summary>
-    /// <param name="range"></param>
-    //private async void FormatToolTipInfo(ITextRange range)
-    //{
-    //    // TODO: show tooltip at position of the mouse (horizontal & vertical offset (alone) do not work)
-    //    xFormatTipText.Inlines.Clear();
-    //    AddPropertyRun("Alignment", range.ParagraphFormat.Alignment.ToString());
-    //    AddPropertyRun("Font", range.CharacterFormat.Name);
-    //    AddPropertyRun("Size", range.CharacterFormat.Size.ToString(CultureInfo.InvariantCulture));
-    //    AddPropertyRun("Bold", range.CharacterFormat.Bold.ToString());
-    //    AddPropertyRun("Italic", range.CharacterFormat.Italic.ToString());
-    //    AddPropertyRun("Underline", range.CharacterFormat.Underline.ToString());
-    //    AddPropertyRun("Strikethrough", range.CharacterFormat.Strikethrough.ToString());
-    //    AddPropertyRun("Superscript", range.CharacterFormat.Superscript.ToString());
-    //    AddPropertyRun("Subscript", range.CharacterFormat.Subscript.ToString());
-    //    AddPropertyRun("ListType", range.ParagraphFormat.ListType.ToString());
-    //    // show tooltip at mouse position, does not work
-    //    //xFormatTip.Placement = PlacementMode.Mouse;
-    //    //Point point;
-    //    //xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Left, VerticalCharacterAlignment.Baseline, PointOptions.ClientCoordinates, out point);
-    //    //xFormatTip.HorizontalOffset = point.X;
-    //    //xFormatTip.VerticalOffset = -point.Y;
-    //    //xFormatTip.PlacementTarget = xRichEditBox;
-    //    xFormatTip.Placement = PlacementMode.Left;
-    //    xFormatTip.IsOpen = false; //TO use the tool tip again, set this to true
-    //                               //await Task.Delay(3000);
-    //    if (!isFlyoutOpen)
-    //        xFormatTip.IsOpen = false;
-    //}
 
-    ///// <summary>
-    ///// Adds format property to the tooltip if it is not None, Undefined, or Off
-    ///// </summary>
-    ///// <param name="key"></param>
-    ///// <param name="value"></param>
-    //private void AddPropertyRun(string key, string value)
-    //{
-    //    if (!value.Equals("None") && !value.Equals("Undefined") && !value.Equals("Off"))
-    //    {
-    //        var keyRun = new Run();
-    //        keyRun.Text = key + ": ";
-    //        var valRun = new Run();
-    //        if (value.StartsWith("-"))
-    //            valRun.Text = "-";
-    //        else
-    //            valRun.Text = value;
-    //        var lineBreak = new LineBreak();
-    //        xFormatTipText.Inlines.Add(keyRun);
-    //        xFormatTipText.Inlines.Add(valRun);
-    //        xFormatTipText.Inlines.Add(lineBreak);
-    //    }
-    //}
-    #endregion
+        //void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        //{
+        //    e.Handled = true;
+        //    if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(GetAllText()))
+        //        GetDocView().DeleteDocument(true);
+        //    string allText;
+        //    xRichEditBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+
+        //    var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+        //    var s2 = this.xRichEditBox.Document.Selection.EndPosition;
+
+        //    // try to get last typed character based on the current selection position 
+        //    this.xRichEditBox.Document.Selection.SetRange(Math.Max(0, s1 - 1), s1);
+        //    string lastTypedCharacter;
+        //    this.xRichEditBox.Document.Selection.GetText(TextGetOptions.None, out lastTypedCharacter);
+
+        //    // if the last lastTypedCharacter is white space, then we check to see if it terminates a hyperlink
+        //    if (lastTypedCharacter == " " || lastTypedCharacter == "\r" || lastTypedCharacter == "^")
+        //    {
+        //        // search through all the text for the nearest '@' indicating the start of a possible hyperlink
+        //        int atPos = findPreviousHyperlinkStartMarker(allText, s1);
+
+        //        // we found the nearest '@'
+        //        if (atPos != -1)
+        //        {
+        //            // get the text between the '@' and the current input position 
+        //            var refText = getHyperlinkText(atPos, s2);
+
+        //            if (!refText.StartsWith("HYPERLINK")) // @HYPERLINK means we've already created the hyperlink
+        //            {
+        //                // see if we can find a document whose primary keys match the text
+        //                var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
+
+        //                var startPt = new Point();
+        //                try
+        //                {
+        //                    this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+        //                }
+        //                catch (Exception exception)
+        //                {
+        //                    Debug.WriteLine(exception);
+        //                }
+        //                createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^", false);
+        //            }
+        //        }
+        //    }
+
+        //    this.xRichEditBox.Document.Selection.SetRange(s1, s2);
+        //}
+
+
+        /// <summary>
+        /// Sets up and shows tooltip, which lists some main formatting properties of the current selection
+        /// </summary>
+        /// <param name="range"></param>
+        //private async void FormatToolTipInfo(ITextRange range)
+        //{
+        //    // TODO: show tooltip at position of the mouse (horizontal & vertical offset (alone) do not work)
+        //    xFormatTipText.Inlines.Clear();
+        //    AddPropertyRun("Alignment", range.ParagraphFormat.Alignment.ToString());
+        //    AddPropertyRun("Font", range.CharacterFormat.Name);
+        //    AddPropertyRun("Size", range.CharacterFormat.Size.ToString(CultureInfo.InvariantCulture));
+        //    AddPropertyRun("Bold", range.CharacterFormat.Bold.ToString());
+        //    AddPropertyRun("Italic", range.CharacterFormat.Italic.ToString());
+        //    AddPropertyRun("Underline", range.CharacterFormat.Underline.ToString());
+        //    AddPropertyRun("Strikethrough", range.CharacterFormat.Strikethrough.ToString());
+        //    AddPropertyRun("Superscript", range.CharacterFormat.Superscript.ToString());
+        //    AddPropertyRun("Subscript", range.CharacterFormat.Subscript.ToString());
+        //    AddPropertyRun("ListType", range.ParagraphFormat.ListType.ToString());
+        //    // show tooltip at mouse position, does not work
+        //    //xFormatTip.Placement = PlacementMode.Mouse;
+        //    //Point point;
+        //    //xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Left, VerticalCharacterAlignment.Baseline, PointOptions.ClientCoordinates, out point);
+        //    //xFormatTip.HorizontalOffset = point.X;
+        //    //xFormatTip.VerticalOffset = -point.Y;
+        //    //xFormatTip.PlacementTarget = xRichEditBox;
+        //    xFormatTip.Placement = PlacementMode.Left;
+        //    xFormatTip.IsOpen = false; //TO use the tool tip again, set this to true
+        //                               //await Task.Delay(3000);
+        //    if (!isFlyoutOpen)
+        //        xFormatTip.IsOpen = false;
+        //}
+
+        ///// <summary>
+        ///// Adds format property to the tooltip if it is not None, Undefined, or Off
+        ///// </summary>
+        ///// <param name="key"></param>
+        ///// <param name="value"></param>
+        //private void AddPropertyRun(string key, string value)
+        //{
+        //    if (!value.Equals("None") && !value.Equals("Undefined") && !value.Equals("Off"))
+        //    {
+        //        var keyRun = new Run();
+        //        keyRun.Text = key + ": ";
+        //        var valRun = new Run();
+        //        if (value.StartsWith("-"))
+        //            valRun.Text = "-";
+        //        else
+        //            valRun.Text = value;
+        //        var lineBreak = new LineBreak();
+        //        xFormatTipText.Inlines.Add(keyRun);
+        //        xFormatTipText.Inlines.Add(valRun);
+        //        xFormatTipText.Inlines.Add(lineBreak);
+        //    }
+        //}
+        #endregion
     }
 }
 

@@ -28,7 +28,7 @@ namespace Dash
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-            if (type.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
+            if (type.Equals(DashConstants.TypeStore.FreeFormDocumentType))
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }

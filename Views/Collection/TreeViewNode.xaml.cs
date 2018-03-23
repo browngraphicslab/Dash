@@ -53,7 +53,6 @@ namespace Dash
         {
             this.InitializeComponent();
         }
-
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -68,19 +67,21 @@ namespace Dash
 
                 var textBlockBinding = new FieldBinding<TextController>
                 {
-                    Document = dvm.DocumentController.GetDataDocument(null),
+                    Document = dvm.DataDocument,
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
+                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
                     Tag = "TreeViewNode text block binding"
                 };
 
                 var textBoxBinding = new FieldBinding<TextController>
                 {
-                    Document = dvm.DocumentController.GetDataDocument(null),
+                    Document = dvm.DataDocument,
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.TwoWay,
+                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };
@@ -93,13 +94,14 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                     Converter = new SelectedToColorConverter()
                 };
+                
+                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.GroupingKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;
                     XIconBox.Visibility = Visibility.Visible;
-                    if (dvm.DocumentController.LayoutName.ToLower().Contains("group"))//tfs: Hack
+                    if (dvm.LayoutDocument.LayoutName.ToLower().Contains("group"))//tfs: Hack
                     {
                         XIconBox.Symbol = Symbol.Copy;
                     }
@@ -108,12 +110,12 @@ namespace Dash
                         XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id,
-                            KeyStore.GroupingKey));
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.DataKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
-                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                    XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+
                     XArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeCol";
                 }
@@ -172,7 +174,7 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
             {
-                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.GroupingKey, null);
+                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                 if (docsInGroup != null)
                 {
                     docToFocus = docsInGroup.TypedData.FirstOrDefault();
@@ -227,7 +229,7 @@ namespace Dash
             var cvm = collTreeView.ViewModel;
             var doc = ViewModel.DocumentController;
             cvm.RemoveDocument(doc);
-            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.CollectionKey, null)
+            cvm.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null)
                 ?.Remove(doc);//TODO Kind of a hack
         }
 
@@ -239,6 +241,7 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Visible;
+            XTextBox.Focus(FocusState.Keyboard);
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
@@ -257,6 +260,12 @@ namespace Dash
             {
                 XTextBlock.Focus(FocusState.Programmatic);
             }
+        }
+
+        private void XTextBox_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+        {
+            if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
+                args.Cancel = true;
         }
     }
 }

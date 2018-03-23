@@ -36,26 +36,18 @@ namespace Dash
             }
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             RichTextView rtv = null;
-            var refToRichText =
-                docController.GetField(KeyStore.DataKey) as ReferenceController;
-            Debug.Assert(refToRichText != null);
-            var fieldModelController = refToRichText.DereferenceToRoot(context);
-            var referenceToText = GetTextReference(docController);
-            if (fieldModelController is RichTextController)
+            var dataField = docController.GetField(KeyStore.DataKey);
+            var refToRichText = dataField as ReferenceController;
+            var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as RichTextController;
+            if (fieldModelController != null)
             {
-
-                var richText = new RichTextView()
+                rtv = new RichTextView()
                 {
-                    TargetFieldReference = referenceToText,
-                    TargetDocContext = context,
-                    DataDocument = refToRichText.GetDocumentController(context)
-                    
+                    DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
                 };
-                rtv = richText;
                 rtv.ManipulationMode = ManipulationModes.All;
                 rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
                 rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
@@ -67,15 +59,6 @@ namespace Dash
             SetupTextBinding(rtv, docController, context);
             SetupBindings(rtv, docController, context);
 
-
-            //add to key to framework element dictionary
-            var reference = docController.GetField(KeyStore.DataKey) as ReferenceController;
-            if (keysToFrameworkElementsIn != null) keysToFrameworkElementsIn[reference?.FieldKey] = rtv;
-
-            if (isInterfaceBuilderLayout)
-            {
-                return new SelectableContainer(rtv, docController);
-            }
             return rtv;
         }
 

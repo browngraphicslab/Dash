@@ -21,22 +21,6 @@ using System.Collections.ObjectModel;
 namespace Dash
 {
 
-    public struct ManipulationDeltaData
-    {
-        public ManipulationDeltaData(Point position, Point translation, float scale)
-        {
-            Position = position;
-            Translation = translation;
-            Scale = scale;
-        }
-
-        public Point Position { get; }
-        public Point Translation { get; }
-        public float Scale { get; }
-    }
-
-
-
     /// <summary>
     /// Instantiations of this class in a UserControl element will give that
     /// control's selected UIElement the ability to be moved and zoomed based on
@@ -46,46 +30,15 @@ namespace Dash
     {
         public double MinScale { get; set; } = .2;
         public double MaxScale { get; set; } = 5.0;
-        private bool _disabled;
-        private FrameworkElement _element;
-        private readonly bool _doesRespondToManipulationDelta;
-        private readonly bool _doesRespondToPointerWheel;
-        private bool _handle;
-        public double ElementScale = 1.0;
+        public DocumentView ParentDocument { get; set; }
+        public double ElementScale { get; set; } = 1.0;
 
-
+        public delegate void OnManipulationCompletedHandler();
+        public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
-
-        public PointerDeviceType BlockedInputType;
-        public bool FilterInput;
-        private bool _processManipulation;
-        private bool _isManipulating;
-
-        /// <summary>
-        /// Ensure pointerwheel only changes size of documents when it's selected 
-        /// </summary>
-        private bool PointerWheelEnabled
-        {
-            get
-            {
-                // if we're on the lowest selecting document view then we can resize it with pointer wheel
-                var docView = _element as DocumentView;
-                if (docView != null) return docView.IsLowestSelected;
-
-                /*
-                var colView = _element as CollectionFreeformView;
-
-                // hack to see if we're in the interface builder or in the compound operator editor
-                // these are outside of the normal selection hierarchy so we always return true
-                if (colView?.ViewModel is SimpleCollectionViewModel) return true;
-
-                // if the collection view is a free form view, or it is the lowest
-                // selected element then use the pointer
-                return colView != null || colView.IsLowestSelected;*/
-                return _element is CollectionFreeformView;
-            }
-        }
+        public event OnManipulationCompletedHandler OnManipulatorCompleted;
+        public event OnManipulationStartedHandler OnManipulatorStarted;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -95,44 +48,18 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel, List<FrameworkElement> borderRegions = null)
+        public ManipulationControls(DocumentView element)
         {
-            _element = element;
-            _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
-            _doesRespondToPointerWheel = doesRespondToPointerWheel;
-            _processManipulation = true;
+            ParentDocument = element;
 
-            if (_doesRespondToManipulationDelta)
-            {
-                element.ManipulationDelta += ElementOnManipulationDelta;
-            }
-            if (_doesRespondToPointerWheel)
-            {
-                element.PointerWheelChanged += ElementOnPointerWheelChanged;
-            }
-            if (borderRegions != null)
-            {
-                foreach (var borderRegion in borderRegions)
-                {
-                    borderRegion.ManipulationMode = ManipulationModes.All;
-                    borderRegion.ManipulationDelta += BorderManipulateDeltaMove;
-                    borderRegion.ManipulationStarted += ElementOnManipulationStarted;
-                    borderRegion.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(BorderOnManipulationCompleted), true);
-                }
-            }
+            element.ManipulationDelta += ElementOnManipulationDelta;
+            element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
             element.ManipulationStarted += ElementOnManipulationStarted;
-            element.ManipulationInertiaStarting += ElementOnManipulationInertiaStarting;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }
 
-        private void ElementOnManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
-        {
-            e.TranslationBehavior.DesiredDeceleration = 0.02;
-        }
-
         #region Snapping Layouts
-
 
         /// <summary>
         /// Enum used for snapping.
@@ -156,58 +83,71 @@ namespace Dash
         /// </summary>
         private const double ALIGNMENT_THRESHOLD = .2;
 
+        /// <summary>
+        /// copmutes the Bounds of the ViewModel during interaction.  This uses the cached position and scale values 
+        /// that bypass the ViewModel's persistent data. When not manipulating the document, use DocumentViewModel's Bounds property.
+        /// </summary>
+        /// <param name="dvm"></param>
+        /// <returns></returns>
+        public static Rect InteractiveBounds(DocumentViewModel dvm)
+        {
+            return new TranslateTransform
+            {
+                X = dvm.InteractiveManipulationPosition.X,
+                Y = dvm.InteractiveManipulationPosition.Y
+            }.TransformBounds(new Rect(0, 0, dvm.ActualWidth * dvm.InteractiveManipulationScale.X, dvm.ActualHeight * dvm.InteractiveManipulationScale.Y));
+        }
 
         /// <summary>
         /// Previews the new location/position of the element
         /// </summary>
         public void Snap(bool preview)
         {
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var docRoot = ParentDocument;
+            var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
-            if (parent == null || _element.Equals(parent))
+            if (parent == null || ParentDocument.Equals(parent))
             {
                 return;
             }
 
             MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
-            var currentBoundingBox = docRoot.ViewModel.Bounds;
+
+            var currentBoundingBox = InteractiveBounds(docRoot.ViewModel);
+
             var closest = GetClosestDocumentView(currentBoundingBox);
             if (preview)
                 PreviewSnap(currentBoundingBox, closest);
             else
-                SnapToDocumentView(docRoot, closest);
+                SnapToDocumentView(docRoot.ViewModel, closest);
         }
 
         /// <summary>
         /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
         /// </summary>
         /// <param name="closestDocumentView"></param>
-        private void SnapToDocumentView(DocumentView currrentDoc, Tuple<DocumentView, Side, double> closestDocumentView)
+        private void SnapToDocumentView(DocumentViewModel currrentDocModel, Tuple<DocumentViewModel, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null)
             {
                 return;
             }
 
-            var documentView = closestDocumentView.Item1;
+            var documentViewModel = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
-            var currentScaleAmount = currrentDoc.ViewModel.GroupTransform.ScaleAmount;
 
-            var topLeftPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X,
-                documentView.ViewModel.GroupTransform.Translate.Y);
-            var bottomRightPoint = new Point(documentView.ViewModel.GroupTransform.Translate.X + documentView.ActualWidth,
-                documentView.ViewModel.GroupTransform.Translate.Y + documentView.ActualHeight);
+            var topLeftPoint = documentViewModel.Position;
+            var bottomRightPoint = new Point(documentViewModel.XPos + documentViewModel.ActualWidth * documentViewModel.Scale.X,
+                documentViewModel.YPos + documentViewModel.ActualHeight * documentViewModel.Scale.Y);
 
-            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDoc.ActualWidth, currrentDoc.ActualHeight);
+            var newBoundingBox = CalculateAligningRectangleForSide(~side, topLeftPoint, bottomRightPoint, currrentDocModel.ActualWidth * currrentDocModel.Scale.X, currrentDocModel.ActualHeight * currrentDocModel.Scale.Y);
 
             var translate = new Point(newBoundingBox.X, newBoundingBox.Y);
 
-            currrentDoc.ViewModel.GroupTransform = new TransformGroupData(translate, currentScaleAmount);
-
-            currrentDoc.ViewModel.Width = newBoundingBox.Width;
-            currrentDoc.ViewModel.Height = newBoundingBox.Height;
+            currrentDocModel.Position = translate;
+            currrentDocModel.Width = newBoundingBox.Width / currrentDocModel.Scale.X;
+            currrentDocModel.Height = newBoundingBox.Height / currrentDocModel.Scale.Y;
         }
 
 
@@ -216,18 +156,18 @@ namespace Dash
         /// </summary>
         /// <param name="currentBoundingBox"></param>
         /// <param name="closestDocumentView"></param>
-        private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentView, Side, double> closestDocumentView)
+        private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentViewModel, Side, double> closestDocumentView)
         {
             if (closestDocumentView == null) return;
 
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
-            var documentView = closestDocumentView.Item1;
+            var documentViewModel = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
 
-            var closestBoundsInCollectionSpace = documentView.ViewModel.Bounds;
+            var closestBoundsInCollectionSpace = InteractiveBounds(documentViewModel);
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
@@ -240,7 +180,7 @@ namespace Dash
         }
 
 
-        private Tuple<DocumentView, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
+        private Tuple<DocumentViewModel, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
         {
             //List of all DocumentViews hit, along with a double representing how close they are
             var allDocumentViewsHit = HitTestFromSides(currentBoundingBox);
@@ -256,16 +196,16 @@ namespace Dash
         /// <param name="topLeftScreenPoint"></param>
         /// <param name="bottomRightScreenPoint"></param>
         /// <returns></returns>
-        private List<Tuple<DocumentView, Side, double>> HitTestFromSides(Rect currentBoundingBox)
+        private List<Tuple<DocumentViewModel, Side, double>> HitTestFromSides(Rect currentBoundingBox)
         {
 
-            var documentViewsAboveThreshold = new List<Tuple<DocumentView, Side, double>>();
-            var parent = _element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var documentViewsAboveThreshold = new List<Tuple<DocumentViewModel, Side, double>>();
+            var parent = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             Debug.Assert(parent != null);
 
-            var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
+            var docRoot = ParentDocument;
 
-            var listOfSiblings = parent.DocumentViews.Where(docView => docView != docRoot);
+            var listOfSiblings = parent.ViewModel.DocumentViewModels;
             Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
 
             foreach (var side in sides)
@@ -274,12 +214,12 @@ namespace Dash
                 foreach (var sibling in listOfSiblings)
                 {
                     Rect intersection = sideRect;
-                    intersection.Intersect(sibling.ViewModel.Bounds); //Mutates intersection
+                    intersection.Intersect(InteractiveBounds(sibling)); //Mutates intersection
 
                     var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
                     if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
                     {
-                        documentViewsAboveThreshold.Add(new Tuple<DocumentView, Side, double>(sibling, side, confidence));
+                        documentViewsAboveThreshold.Add(new Tuple<DocumentViewModel, Side, double>(sibling, side, confidence));
                     }
                 }
             }
@@ -287,9 +227,9 @@ namespace Dash
             return documentViewsAboveThreshold;
         }
 
-        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentView otherDocumentView)
+        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentViewModel otherDocumentView)
         {
-            Rect otherDocumentViewBoundingBox = otherDocumentView.ViewModel.Bounds; // otherDocumentView.GetBoundingBoxScreenSpace();
+            Rect otherDocumentViewBoundingBox = InteractiveBounds(otherDocumentView); // otherDocumentView.GetBoundingBoxScreenSpace();
 
             var midX = hitTestRect.X + hitTestRect.Width / 2;
             var midY = hitTestRect.Y + hitTestRect.Height / 2;
@@ -394,415 +334,113 @@ namespace Dash
 
         #endregion
 
-
-
-        public void BorderOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            Snap(false); //Always snap if done manipulating the "border"
-            ManipulationCompleted(manipulationCompletedRoutedEventArgs, true);
-        }
-
-        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
-        {
-            if (manipulationCompletedRoutedEventArgs == null || !manipulationCompletedRoutedEventArgs.Handled)
-            {
-                if (_grouping == null || _grouping.Count < 2) Snap(false); //Snap if you're dragging the element body and it's not a part of the group
-
-                ManipulationCompleted(manipulationCompletedRoutedEventArgs, false);
-            }
-        }
-
-        public void ManipulationCompleted(ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs, bool canSplitupDragGroup)
-        {
-            MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
-
-            _isManipulating = false;
-            var docRoot = ParentDocument;
-
-            var groupViews = GroupViews(_grouping);
-           
-            var pointerPosition2 = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-            var x = pointerPosition2.X - Window.Current.Bounds.X;
-            var y = pointerPosition2.Y - Window.Current.Bounds.Y;
-            var pos = new Point(x, y);
-            var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-
-            var pc = docRoot.GetFirstAncestorOfType<CollectionView>();
-            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () =>
-                    {
-                        var group = pc?.GetDocumentGroup(docRoot.ViewModel.DocumentController) ?? docRoot?.ViewModel?.DocumentController;
-                        if (docRoot.MoveToContainingCollection(overlappedViews, canSplitupDragGroup ? new List<DocumentView>(new DocumentView[] { docRoot }) : groupViews))
-                            GroupManager.RemoveGroup(pc, group);
-                        if (canSplitupDragGroup)
-                            GroupManager.SplitupGroupings(docRoot, canSplitupDragGroup);
-                    }));
-
-            if (manipulationCompletedRoutedEventArgs != null)
-            {
-                manipulationCompletedRoutedEventArgs.Handled = true;
-            }
-        }
-        public List<DocumentView> GroupViews(List<DocumentViewModel> groups)
-        {
-            var collectionFreeFormChildren = (_element.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl?.ItemsPanelRoot?.Children;
-            // TODO why is _grouping null at the end of this line.. null check to save demo but probably a real bug
-            var groupings = collectionFreeFormChildren?.Select((c) => (c as ContentPresenter).GetFirstDescendantOfType<DocumentView>())?.Where((dv) => _grouping != null && _grouping.Contains(dv?.ViewModel));
-            return groupings?.ToList() ?? new List<DocumentView>();
-        }
-        public DocumentView ParentDocument { get => _element.GetFirstAncestorOfType<DocumentView>(); }
-        public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (e != null && _isManipulating)
-            {
-                e.Complete();
-                return;
-            }
-            if (e != null && e.PointerDeviceType == BlockedInputType && FilterInput)
-            {
-                e.Complete();
-                _processManipulation = false;
-                e.Handled = true;
-                return;
-            }
-            var docRoot = ParentDocument;
-
-            _grouping = GroupManager.SetupGroupings(docRoot.ViewModel, docRoot.ParentCollection, false);
-            var groupViews = GroupViews(_grouping);
-            foreach (var gv in groupViews)
-                gv.ToFront();
-
-            _isManipulating = true;
-            _processManipulation = true;
-
-            _numberOfTimesDirChanged = 0;
-            if (e != null) // && (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton) & CoreVirtualKeyStates.Down) == CoreVirtualKeyStates.Down)
-                e.Handled = true;
-        }
-
-        public Windows.UI.Color ColorConvert(string colorStr)
-        {
-            colorStr = colorStr.Replace("#", string.Empty);
-
-            var a = (byte)System.Convert.ToUInt32(colorStr.Substring(0, 2), 16);
-            var r = (byte)System.Convert.ToUInt32(colorStr.Substring(2, 2), 16);
-            var g = (byte)System.Convert.ToUInt32(colorStr.Substring(4, 2), 16);
-            var b = (byte)System.Convert.ToUInt32(colorStr.Substring(6, 2), 16);
-
-            return Windows.UI.Color.FromArgb(a, r, g, b);
-        }
-
-        public void AddAllAndHandle()
-        {
-            if (!_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= EmptyManipulationDelta;
-                _element.ManipulationDelta += ElementOnManipulationDelta;
-            }
-
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= EmptyPointerWheelChanged;
-                _element.PointerWheelChanged += ElementOnPointerWheelChanged;
-            }
-            _disabled = false;
-        }
-
-        public void RemoveAllButHandle()
-        {
-            RemoveAllSetHandle(true);
-        }
-
-        public void RemoveAllAndDontHandle()
-        {
-            RemoveAllSetHandle(false);
-        }
-
-        private void RemoveAllSetHandle(bool handle)
-        {
-            if (_disabled) return;
-
-            if (_doesRespondToManipulationDelta)
-            {
-                _element.ManipulationDelta -= ElementOnManipulationDelta;
-                _element.ManipulationDelta += EmptyManipulationDelta;
-            }
-            if (_doesRespondToPointerWheel)
-            {
-                _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
-                _element.PointerWheelChanged += EmptyPointerWheelChanged;
-            }
-            _handle = handle;
-            _disabled = true;
-        }
-
-        // == METHODS ==
-
-        private void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            if (PointerWheelEnabled)
-            {
-                _processManipulation = true;
-                TranslateAndScale(e);
-            }
-
-        }
-
-        private void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = _handle;
-        }
-
-        private void EmptyPointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = _handle;
-        }
-
-
-        /// <summary>
-        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
-        /// </summary>
-        private void BorderManipulateDeltaMove(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            if (e.PointerDeviceType == PointerDeviceType.Mouse &&
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.LeftButton).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                return;
-            }
-
-            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale));
-            Snap(true);
-
-            e.Handled = true;
-        }
-
-
-        /// <summary>
-        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
-        /// </summary>
-        private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            //THIS IS USUALLY GRID, BUT SOMETIMES CONTENT PRESENTER
-             Debug.WriteLine(VisualTreeHelper.GetParent((DependencyObject)sender) as UIElement);
-
-            if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) &&
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
-            {
-                return;
-            }
-
-            TranslateAndScale(new ManipulationDeltaData(e.Position, e.Delta.Translation, e.Delta.Scale), _grouping);
-            //DetectShake(sender, e);
-
-            if (_grouping == null || _grouping.Count < 2)
-                Snap(true);
-            e.Handled = true;
-        }
-
-        // keeps track of whether the node has been shaken hard enough
-        private static int _numberOfTimesDirChanged = 0;
-        private static double _direction;
-        private static DispatcherTimer _dispatcherTimer;
-
-        // these constants adjust the sensitivity of the shake
-        private static int _millisecondsToShake = 600;
-        private static int _sensitivity = 4;
-        public List<DocumentViewModel> _grouping;
-
-        /// <summary>
-        /// Determines whether a shake manipulation has occured based on the velocity and direction of the translation.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void DetectShake(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            // get the document view that's being manipulated
-            var grid = sender as Grid;
-            var docView = grid?.GetFirstAncestorOfType<DocumentView>();
-
-            if (docView != null)
-            {
-                // calculate the speed of the translation from the velocities property of the eventargs
-                var speed = Math.Sqrt(Math.Pow(e.Velocities.Linear.X, 2) + Math.Pow(e.Velocities.Linear.Y, 2));
-
-                // calculate the direction of the velocity
-                var dir = Math.Atan2(e.Velocities.Linear.Y, e.Velocities.Linear.X);
-
-                // checks if a certain number of direction changes occur in a specified time span
-                if (_numberOfTimesDirChanged == 0)
-                {
-                    StartTimer();
-                    _numberOfTimesDirChanged++;
-                    _direction = dir;
-                }
-                else if (_numberOfTimesDirChanged < _sensitivity)
-                {
-                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
-                    {
-                        _numberOfTimesDirChanged++;
-                        _direction = dir;
-                    }
-                }
-                else
-                {
-                    if (Math.Abs(Math.Abs(dir - _direction) - 3.14) < 1)
-                    {
-                        // if we've reached enough direction changes, break the connection
-                        docView.DisconnectFromLink();
-                        _numberOfTimesDirChanged = 0;
-                    }
-                }
-            }
-        }
-
-        private static void StartTimer()
-        {
-            if (_dispatcherTimer != null)
-            {
-                _dispatcherTimer.Stop();
-            }
-            else
-            {
-                _dispatcherTimer = new DispatcherTimer();
-                _dispatcherTimer.Tick += dispatcherTimer_Tick;
-            }
-            _dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, _millisecondsToShake);
-
-            _dispatcherTimer.Start();
-
-        }
-
-        private static void dispatcherTimer_Tick(object sender, object e)
-        {
-            _numberOfTimesDirChanged = 0;
-            _dispatcherTimer.Stop();
-        }
-
-        private void TranslateAndScale(PointerRoutedEventArgs e)
-        {
-            if (!_processManipulation) return;
-            e.Handled = true;
-
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {
+                e.Handled = true;
 
-                //Get mousepoint in canvas space 
-                var point = e.GetCurrentPoint(_element);
+                var point = e.GetCurrentPoint(ParentDocument);
 
-                // get the scale amount
-                float scaleAmount = point.Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
+                // get the scale amount from the mousepoint in canvas space
+                float scaleAmount = e.GetCurrentPoint(ParentDocument).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
 
                 //Clamp the scale factor 
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
+                {
+                    OnManipulatorStarted.Invoke();  // have to update the cached values before calling translate or scale (which uses the caches)
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position));
-            }
-            else
-            {
-                var scrollAmount = e.GetCurrentPoint(_element).Properties.MouseWheelDelta / 3.0f;
-                if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
-                {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(scrollAmount, 0), new Point(1, 1)));
+                    OnManipulatorCompleted.Invoke(); // then have to flush the caches to the viewmodel since we have to assume this is the end of the interaction.
                 }
-                else
-                {
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, scrollAmount), new Point(1, 1)));
-                }
-
             }
         }
 
-        public void FitToParent()
+        public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            var ff = _element as CollectionFreeformView;
-            var par = ff?.Parent as FrameworkElement;
-            if (par == null || ff == null)
-                return;
-
-            var rect = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight)); //  par.GetBoundingRect();
-
-            //if (ff.ViewModel.DocumentViewModels.Count == 1)
-            //{
-            //    ff.ViewModel.DocumentViewModels[0].GroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
-            //    var aspect = rect.Width / rect.Height;
-            //    var ffHeight = ff.ViewModel.DocumentViewModels[0].Height;
-            //    var ffwidth = ff.ViewModel.DocumentViewModels[0].Width;
-            //    var ffAspect = ffwidth / ffHeight;
-            //    ff.ViewModel.DocumentViewModels[0].Width  = aspect > ffAspect ? rect.Height * ffAspect : rect.Width;
-            //    ff.ViewModel.DocumentViewModels[0].Height = aspect < ffAspect ? rect.Width / ffAspect : rect.Height;
-            //    return;
-            //}
-
-            var r = Rect.Empty;
-            foreach (var dvm in ff.xItemsControl.ItemsPanelRoot.Children.Select((ic) => (ic as ContentPresenter)?.Content as DocumentViewModel))
+            if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
-                r.Union(dvm?.Content?.GetBoundingRect(par) ?? r);
+                e.Complete();
+                return;
             }
 
-            if (r != Rect.Empty)
-            {
-                var trans = new Point(-r.Left - r.Width / 2 + rect.Width / 2, -r.Top);
-                var scaleAmt = new Point(rect.Width / r.Width, rect.Width / r.Width);
-                if (rect.Width / rect.Height > r.Width / r.Height)
-                {
-                    scaleAmt = new Point(rect.Height / r.Height, rect.Height / r.Height);
-                }
-                else
-                    trans = new Point(-r.Left + (rect.Width - r.Width) / 2, -r.Top + (rect.Height - r.Height) / 2);
+            OnManipulatorStarted?.Invoke();
 
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scaleAmt));
+            if (e != null)
+            {
+                e.Handled = true;
             }
         }
+        /// <summary>
+        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
+        /// </summary>
+        void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
+            {
+                e.Complete();
+                return;
+            }
+            if (ParentDocument.IsRightBtnPressed() || ParentDocument.IsLeftBtnPressed())
+            {
+                var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
+                var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
+                var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
 
+                TranslateAndScale(e.Position, delta, e.Delta.Scale);
+                //DetectShake(sender, e);
+
+                Snap(true);
+                e.Handled = true;
+            }
+        }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
-        public void TranslateAndScale(ManipulationDeltaData e, List<DocumentViewModel> grouped = null)
+        public void TranslateAndScale(Point position, Point translate, double scaleFactor)
         {
-            if (!_processManipulation) return;
-            var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
-
-            var scaleFactor = e.Scale;
             ElementScale *= scaleFactor;
-
-            // set up translation transform
-            var translate = Util.TranslateInCanvasSpace(e.Translation, handleControl);
-
-
 
             //Clamp the scale factor 
             if (!ClampScale(scaleFactor))
             {
-                // translate the entire group except for
-                var transformGroup = new TransformGroupData(new Point(translate.X, translate.Y),
-                    new Point(scaleFactor, scaleFactor), e.Position);
-                if (grouped != null && grouped.Any())
-                {
-                    var docRoot = _element.GetFirstAncestorOfType<DocumentView>();
-                    foreach (var g in grouped.Except(new List<DocumentViewModel> { docRoot.ViewModel }))
-                    {
-                        g?.TransformDelta(transformGroup);
-                    }
-                }
-
-                OnManipulatorTranslatedOrScaled?.Invoke(transformGroup);
+                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position));
             }
         }
 
+        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (e == null || !e.Handled)
+            {
+                Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+
+                MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
+
+                var docRoot = ParentDocument;
+                
+                var pos = docRoot.RootPointerPos();
+                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
+                
+                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+                        () => docRoot.MoveToContainingCollection(overlappedViews)));
+
+                OnManipulatorCompleted?.Invoke();
+
+                if (e != null)
+                {
+                    e.Handled = true;
+                }
+            }
+        }
+        
         public void Dispose()
         {
-            _element.ManipulationDelta -= ElementOnManipulationDelta;
-            _element.ManipulationDelta -= EmptyManipulationDelta;
-            _element.PointerWheelChanged -= ElementOnPointerWheelChanged;
-            _element.PointerWheelChanged -= EmptyPointerWheelChanged;
+            ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;
+            ParentDocument.PointerWheelChanged -= ElementOnPointerWheelChanged;
         }
-
         private bool ClampScale(double scaleFactor)
         {
             if (ElementScale > MaxScale)

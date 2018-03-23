@@ -1,4 +1,4 @@
-﻿<local:SelectionElement
+﻿<UserControl
     x:Name="This"
     x:Class="Dash.DocumentView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,115 +10,88 @@
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
     d:DesignHeight="400"
-    xmlns:localConverters="using:Dash.Converters"
-    AllowDrop="True" DragOver="DocumentView_OnDragOver"
-    DragEnter="DocumentView_OnDragOver" RightTapped="DocumentView_OnRightTapped"
-    PointerPressed="DocumentView_OnPointerPressed"
-    SizeChanged="DocumentView_OnSizeChanged">
+    AllowDrop="True"
+    DragOver="This_DragOver"
+    DragLeave="This_DragLeave"
+    Drop="This_Drop"
+    xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
-        <localConverters:DocumentViewModelToStringConverter x:Key="DocumentViewModelToStringConverter" />
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}">
+    <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0">
         <!-- Main document view -->
-        <Grid x:Name="OuterGrid" x:FieldModifier="public">
-            <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
-            <Grid.ContextFlyout>
-                <MenuFlyout x:Name ="xMenuFlyout">
-                    <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-                    <MenuFlyoutItem Text="Open" Click="MenuFlyoutItemOpen_OnClick" />
-                    <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
-                    <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Fields" Click="MenuFlyoutItemFields_Click"/>
-                    <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
-                    <MenuFlyoutItem Text="Copy history to clipboard" Click="CopyHistory_Click"/>
-                    <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Copy" Icon="Copy" Click="MenuFlyoutItemCopy2_OnClick" />
-                </MenuFlyout>
-            </Grid.ContextFlyout>
 
-            <!--Used to render the drop shadow and provide a background to the document-->
-            <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-            <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
+        <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
+        <Grid.ContextFlyout>
+            <MenuFlyout x:Name = "xMenuFlyout">
+                <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
+                <MenuFlyoutItem Text="Open" Click="MenuFlyoutItemOpen_OnClick" />
+                <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
+                <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Fields" Click="MenuFlyoutItemFields_Click"/>
+                <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
+                <MenuFlyoutItem Text="Launch app" Click="MenuFlyoutLaunch_Click"/>
+                <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
+            </MenuFlyout>
+        </Grid.ContextFlyout>
 
-            <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
-            <RelativePanel x:Name="xMetadataPanel" 
-                  VerticalAlignment="Top"
-                  HorizontalAlignment="Left" SizeChanged="XMetadataPanel_OnSizeChanged"
-                  >
-                <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Background="Transparent" >
-                    <TextBlock x:Name="xTitleIcon" 
+
+        <!--Used to render the drop shadow and provide a background to the document-->
+        <Canvas x:Name="xShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Rectangle x:Name="xDocumentBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Transparent"/>
+
+        <!--TODO this relative panel no longer needs to exist its original reason for existing is gone-->
+
+        <Border x:Name="xTitleBorder" RelativePanel.AlignRightWithPanel="True" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" Background="Transparent" HorizontalAlignment="Left" Margin="-32 0 0 0" VerticalAlignment="Top" >
+            <TextBlock x:Name="xTitleIcon" 
                                FontFamily="{StaticResource FontAwesome}" 
-                               Foreground="Transparent"
+                               Foreground="{StaticResource TitleText}"           
                                Text="{StaticResource DocumentPlainIcon}" 
                                HorizontalAlignment="Stretch"
                                Height="32"
                     />
-                </Border>
-            </RelativePanel>
+        </Border>
 
-            <!--grid to hold the inner content of the document-->
-            <Grid Name="xTargetContentGrid">
+        <!--grid to hold the inner content of the document-->
+        <Grid Name="xTargetContentGrid">
+            <!-- Container for document fields view -->
+            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
+
+        </Grid>
 
 
-                <!-- Container for document fields view -->
-                <Grid x:Name="xFieldContainer" x:FieldModifier="public">
-                    <FlyoutBase.AttachedFlyout >
-                        <Flyout Placement="Bottom">
-                            <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
-                        </Flyout>
-                    </FlyoutBase.AttachedFlyout>
-                    <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Grid.Row="0" Content="{Binding Content}" />
-                </Grid>
-                <!-- Dragger Button-->
-                <Button x:Name="DraggerButton"
-                        x:FieldModifier="public"
-                        Margin="0,0,-20,-20"
-                        HorizontalAlignment="Right"
-                        AllowFocusOnInteraction="False"
-                        AllowFocusWhenDisabled="False"
-                        VerticalAlignment="Bottom"
-                        ManipulationMode="TranslateX, TranslateY"
-                        Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                        </ControlTemplate>
-                    </Button.Template>
-                    <Border Padding="10,10,20,20" Background="Transparent">
-                        <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Opacity=".25" Margin="0,0,2,2" Stretch="None"
-                                HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                    </Border>
-                </Button>
-            </Grid>
-
-            <!--The selection border-->
-            <Border Name="xSelectionBorder"/>
-
-            <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <HyperlinkButton                              
+        <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <HyperlinkButton   
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     Foreground="CornflowerBlue"
                     Content=""
-                    Tapped="xContextLinkTapped"
                     VerticalContentAlignment="Center"
                     x:Name="xContextTitle"
                     Margin="0, 0, 15, 0"
-                    Visibility="Collapsed"
-                    SizeChanged="xContextHyperLinkSizechanged"/>
-            </Canvas>
-            
-            <ProgressRing x:Name="xProgressRing" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
-        </Grid>
+                    Visibility="Collapsed"/>
+        </Canvas>
 
+        <Ellipse x:Name="ResizeHandleTopLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleTopRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Top" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomLeft" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Left" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}" 
+                 x:FieldModifier="public"/>
+        <Ellipse x:Name="ResizeHandleBottomRight" Style="{StaticResource ResizeHandleEllipseStyle}"
+                 HorizontalAlignment="Right" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}"
+                 x:FieldModifier="public"/>
     </Grid>
-</local:SelectionElement>
+</UserControl>

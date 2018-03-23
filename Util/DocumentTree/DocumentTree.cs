@@ -71,32 +71,32 @@ namespace Dash
             }
         }
         
-
+        //TODO: no longer using groups to search by nearness
         private void Parse(DocumentNode node)
         {
             _parsed.Add(node);
-            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
-            var groups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)
-                ?.TypedData ?? new List<DocumentController>();
+            var childDocuments = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.TypedData?.Where(i => i != null)?.ToList() ?? new List<DocumentController>();
+            //var groups = node.DataDocument.GetField<ListController<DocumentController>>(KeyStore.GroupingKey)
+                //?.TypedData ?? new List<DocumentController>();
             var groupDict = new Dictionary<string, DocumentNodeGroup>();
 
-            foreach (var group in groups)
-            {
-                var groupList = group.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-                if (groupList == null) //Group of 1
-                {
-                    var documentNodeGroup = new DocumentNodeGroup();
-                    groupDict[group.Id] = documentNodeGroup;
-                }
-                else
-                {
-                    var groupNode = new DocumentNodeGroup();
-                    foreach (var documentController in groupList.TypedData)
-                    {
-                        groupDict[documentController.Id] = groupNode;
-                    }
-                }
-            }
+            //foreach (var group in groups)
+            //{
+            //    var groupList = group.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
+            //    if (groupList == null) //Group of 1
+            //    {
+            //        var documentNodeGroup = new DocumentNodeGroup();
+            //        groupDict[group.Id] = documentNodeGroup;
+            //    }
+            //    else
+            //    {
+            //        var groupNode = new DocumentNodeGroup();
+            //        foreach (var documentController in groupList.TypedData)
+            //        {
+            //            groupDict[documentController.Id] = groupNode;
+            //        }
+            //    }
+            //}
 
             //childDocuments.AddRange(node.ViewDocument.GetField<ListController<DocumentController>>(KeyStore.CollectionKey)?.TypedData?.Where(i => i != null) ?? new List<DocumentController>());
 
@@ -106,12 +106,12 @@ namespace Dash
             //create document nodes and add child-parent relationships
             foreach (var childDoc in childDocuments)
             {
-                if (!groupDict.ContainsKey(childDoc.Id))
-                {
-                    //Debug.WriteLine("FIX ME: DocumentTree has document without group");
-                    continue;
-                }
-                var childNode = CreateNode(childDoc, groupDict[childDoc.Id]);
+                //if (!groupDict.ContainsKey(childDoc.Id))
+                //{
+                //    //Debug.WriteLine("FIX ME: DocumentTree has document without group");
+                //    continue;
+                //}
+                var childNode = CreateNode(childDoc, new DocumentNodeGroup());
                 Debug.Assert(childNode != null);
                 node.AddChild(childNode);
                 childNodes.Add(childDoc.Id, childNode);

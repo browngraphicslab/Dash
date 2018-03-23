@@ -45,19 +45,11 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance { get; private set; }
-
-        private RadialMenuView _radialMenu;
-        private static CollectionView _mainCollectionView;
-        private Flyout OperatorMenuFlyout;
-        public DocumentView MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
-        public RadialMenuView RadialMenu => _radialMenu;
-        public DocumentController MainDocument { get; private set; }
-        public static InkController InkController = new InkController();
-        public BrowserView WebContext => BrowserView.Current;
-
-        public bool SearchVisible { get; private set; }
-
-
+        
+        public BrowserView          WebContext => BrowserView.Current;
+        public DocumentController   MainDocument { get; private set; }
+        public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
+        public static InkController InkController { get; set; } = new InkController();
 
         public MainPage()
         {
@@ -73,19 +65,25 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            _radialMenu = new RadialMenuView(xCanvas);
+            var radialMenu = new RadialMenuView(xCanvas);
+            radialMenu.Loaded += (s,e) => radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
 
-            _radialMenu.Loaded += delegate
+            Loaded += (s, e) =>
             {
-                _radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
-            };
-            Loaded += OnLoaded;
+                GlobalInkSettings.Hue = 200;
+                GlobalInkSettings.Brightness = 30;
+                GlobalInkSettings.Size = 4;
+                GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
+                GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+                GlobalInkSettings.Opacity = 1;
 
+                xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
+            };
+
+            xSplitter.Tapped += (s,e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
+            xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
-
-            SearchVisible = false;
-
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -98,9 +96,8 @@ namespace Dash
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout =
-                            new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                        var layout = new CollectionBox(
+                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -108,27 +105,22 @@ namespace Dash
                 {
                     var fields = new Dictionary<KeyController, FieldControllerBase>
                     {
-                        [KeyStore.CollectionKey] = new ListController<DocumentController>(),
-                        [KeyStore.GroupingKey] = new ListController<DocumentController>()
+                        [KeyStore.DataKey] = new ListController<DocumentController>(),
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.CollectionKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
 
-                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.CollectionKey);
-                var grouped = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.GroupingKey);
+                var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
                     MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    //var documentController = new CollectionNote(new Point(0, 0),
-                    //    CollectionView.CollectionViewType.Freeform, "New Workspace").Document;
                     var documentController = new NoteDocuments.CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
-                    grouped.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
                     lastWorkspace = documentController;
                 }
@@ -138,14 +130,13 @@ namespace Dash
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
-                xMainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+                MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-
-
+            
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -161,7 +152,7 @@ namespace Dash
                 //TODO: this doesn't work for nesting
                 CollectionFreeformView freeview = dv.GetFirstAncestorOfType<CollectionFreeformView>();
                 //CollectionFreeformView freeview = (CollectionFreeformView) GetMainCollectionView().CurrentView;
-                if ((freeview != null) && (freeview.itemsPanelCanvas != null))
+                if ((freeview != null))
                 {
                     bool newDot = false;
                     //if this function was called with just the first parameter, a new InfoDot is created
@@ -172,7 +163,7 @@ namespace Dash
                     }
 
                     Point pos = new Point(dv.ViewModel.XPos + dv.ViewModel.Width, dv.ViewModel.YPos);
-                    Point mainPagePos = freeview.itemsPanelCanvas.TransformToVisual(xCanvas).TransformPoint(pos);
+                    Point mainPagePos = freeview.TransformToVisual(xCanvas).TransformPoint(pos);
 
                     Canvas.SetLeft(infod, mainPagePos.X);
                     Canvas.SetTop(infod, mainPagePos.Y);
@@ -216,8 +207,7 @@ namespace Dash
             workspace.SetWidth(double.NaN);
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
-            xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
+            MainDocView.DataContext = documentViewModel;
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -227,19 +217,17 @@ namespace Dash
         {
             var history =
                 MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey);
-            if (history.Count == 0)
+            if (history.Count != 0)
             {
-                return;
+                var workspace = history.TypedData.Last();
+                history.Remove(workspace);
+                workspace = workspace.MakeDelegate();
+                workspace.SetWidth(double.NaN);
+                workspace.SetHeight(double.NaN);
+                var documentViewModel = new DocumentViewModel(workspace);
+                MainDocView.DataContext = documentViewModel;
+                MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
-            var workspace = history.TypedData.Last();
-            history.Remove(workspace);
-            workspace = workspace.MakeDelegate();
-            workspace.SetWidth(double.NaN);
-            workspace.SetHeight(double.NaN);
-            var documentViewModel = new DocumentViewModel(workspace);
-            xMainDocView.DataContext = documentViewModel;
-            documentViewModel.SetSelected(null, true);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
         }
 
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
@@ -248,10 +236,10 @@ namespace Dash
             handler =
                 delegate (object sender, RoutedEventArgs args)
                 {
-                    xMainDocView.xContentPresenter.Loaded -= handler;
+                    MainDocView.xContentPresenter.Loaded -= handler;
 
 
-                    var dvm = xMainDocView.DataContext as DocumentViewModel;
+                    var dvm = MainDocView.DataContext as DocumentViewModel;
                     var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
                     if (coll?.ViewModel?.DocumentViewModels != null)
                     {
@@ -306,16 +294,16 @@ namespace Dash
 
                     }
                 };
-            xMainDocView.xContentPresenter.Loaded += handler;
+            MainDocView.xContentPresenter.Loaded += handler;
             if (!SetCurrentWorkspace(workspace))
             {
-                xMainDocView.xContentPresenter.Loaded -= handler;
+                MainDocView.xContentPresenter.Loaded -= handler;
             }
         }
 
         public bool NavigateToDocumentInWorkspace(DocumentController document)
         {
-            var dvm = xMainDocView.DataContext as DocumentViewModel;
+            var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null)
             {
@@ -326,9 +314,9 @@ namespace Dash
 
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
         {
-            var dvm = xMainDocView.DataContext as DocumentViewModel;
+            var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-            if (coll != null)
+            if (coll != null && document !=  null)
             {
                 return NavigateToDocumentAnimated(coll, null, coll, document);
             }
@@ -343,19 +331,19 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
-                    var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
+                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
 
 
 
-                    var pt = canvas.TransformToVisual(xMainDocView).TransformPoint(new Point(0, 0));
+                    var pt = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(0, 0));
                     var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
                     var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
 
@@ -372,7 +360,7 @@ namespace Dash
         }
         public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
         {
-            if (collection?.ViewModel?.DocumentViewModels == null)
+            if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }
@@ -381,11 +369,11 @@ namespace Dash
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
-                    var center = new Point((xMainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, xMainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(xMainDocView).TransformPoint(
+                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.GroupTransform.Translate.X + containerViewModel.ActualWidth / 2,
-                            containerViewModel.GroupTransform.Translate.Y + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
+                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -409,77 +397,41 @@ namespace Dash
         {
             if (e.Handled)
                 return;
-            if (e.VirtualKey == VirtualKey.Tab && !RichTextView.HasFocus)
+            if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
-                var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
-                var x = pointerPosition.X - Window.Current.Bounds.X;
-                var y = pointerPosition.Y - Window.Current.Bounds.Y;
-                var pos = new Point(x, y);
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>().FirstOrDefault();
-                if (topCollection == null)
-                {
-                    return;
-                }
-
-                // add tabitemviewmodels that directs user to documentviews within the current collection 
-
-                TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas);
-                TabMenu.Instance?.AddGoToTabItems();
+                MainDocView_OnDoubleTapped(null, null);
             }
 
-            // TODO propogate the event to the tab menu
+            // TODO propagate the event to the tab menu
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
-
+            if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
+            {
+                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
+                foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
+                    if (c.SelectedDocs.Count() > 0)
+                    {
+                        foreach (var d in c.SelectedDocs)
+                            d.DeleteDocument();
+                        break;
+                    }
+            }
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (e.PointerDeviceType != PointerDeviceType.Touch) return;
-            var pointerPosition = e.GetPosition(this);
-            var pos = new Point(pointerPosition.X - 20, pointerPosition.Y - 20);
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<ICollectionView>()
-                .FirstOrDefault();
-            if (topCollection == null)
+            var pos = this.RootPointerPos();
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos,this).OfType<CollectionView>().ToList();
+            if (topCollection.First().CurrentView is CollectionFreeformView)
             {
-                return;
+                TabMenu.ConfigureAndShow(topCollection.First().CurrentView as CollectionFreeformView, pos, xCanvas, true);
+                TabMenu.Instance?.AddGoToTabItems();
+                if (e != null)
+                    e.Handled = true;
             }
-            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true);
-            e.Handled = true;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            GlobalInkSettings.Hue = 200;
-            GlobalInkSettings.Brightness = 30;
-            GlobalInkSettings.Size = 4;
-            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.Opacity = 1;
-
-            OperatorMenuFlyout = new Flyout
-            {
-                Content = TabMenu.Instance,
-
-            };
-
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.GroupingKey));
-            xMainTreeView.DataContext = collectionViewModel;
-
-            //// add TreeMenu
-            //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
-            //TreeMenu.Width = 300;
-            //TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
-            //MyGrid.Children.Add(TreeMenu);
-
-        }
-
-        public CollectionView GetMainCollectionView()
-        {
-            return _mainCollectionView ?? (_mainCollectionView = xMainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
@@ -497,61 +449,10 @@ namespace Dash
                 Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
         }
-
-        /// <summary>
-        /// Used to set the top-level options menu. Generally, this is envoked when
-        /// the selected document changes & the options needs to be updated.
-        /// </summary>
-        /// <param name="menu"></param>
-        public void SetOptionsMenu(OverlayMenu menu)
-        {
-            //            menu.CreateAndRunInstantiationAnimation(true);
-            //xMenuCanvas.Content = menu;
-        }
-
-        /// <summary>
-        ///     Adds new documents to the MainView document. New documents are added as children of the Main document.
-        /// </summary>
-        /// <param name="docModel"></param>
-        /// <param name="where"></param>
-        public void DisplayDocument(DocumentController docModel, Point? where = null)
-        {
-            if (where != null)
-            {
-                docModel.GetPositionField().Data = (Point)where;
-            }
-            var children = MainDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
-            DBTest.ResetCycleDetection();
-            children?.Add(docModel);
-            //DBTest.DBDoc.AddChild(docModel);
-        }
-
-        public void DisplayElement(FrameworkElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
-        {
-            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas);
-            // make sure elementToDisplay is never cut from screen 
-            if (dropPoint.X > (xCanvas.ActualWidth - elementToDisplay.Width))
-            {
-                dropPoint.X = xCanvas.ActualWidth - elementToDisplay.Width - 50;
-            }
-            if (dropPoint.Y > (xCanvas.ActualHeight - elementToDisplay.Height))
-            {
-                dropPoint.Y = xCanvas.ActualHeight - elementToDisplay.Height - 10;
-            }
-            xCanvas.Children.Add(elementToDisplay);
-            Canvas.SetLeft(elementToDisplay, dropPoint.X);
-            Canvas.SetTop(elementToDisplay, dropPoint.Y);
-        }
-
+        
         public void ThemeChange()
         {
             this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
-        }
-
-
-        private void CollapseButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -564,21 +465,14 @@ namespace Dash
             }
             else
             {
-                SearchVisible = true;
                 xSearchBoxGrid.Visibility = Visibility.Visible;
                 xShowHideSearchIcon.Text = "\uE8BB"; // close button in segoe
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-
         private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
             args.Cancel = true;
-        }
-
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            GoBack();
         }
     }
 }

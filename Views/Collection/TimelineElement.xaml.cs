@@ -1,28 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using Windows.UI;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Dash
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// The TimelineElement component displays a document in the CollectionTimelineView.
     /// </summary>
     public sealed partial class TimelineElement : UserControl, INotifyPropertyChanged
     {
@@ -32,31 +23,17 @@ namespace Dash
         /// <summary>
         /// The width and height of the context preview
         /// </summary>
-        private const double ContextPreviewActualHeight = 160;
-        private const double ContextPreviewActualWidth = 250;
+        private const double ContextPreviewActualHeight = 250;
+        private const double ContextPreviewActualWidth = 200;
+
         /// <summary>
         /// A reference to the context preview
         /// </summary>
         private UIElement _contextPreview;
 
-
-        private bool _localContextVisible;
         private double _ellipseSize = 18;
-
-        private int _displayState = 0;
-
-        private bool LocalContextVisible
-        {
-            get => _localContextVisible;
-            set
-            {
-                if (_localContextVisible != value)
-                {
-                    _localContextVisible = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        private double _offsetX = 200;
+        private double _offsetY = 492;
 
         private double EllipseSize
         {
@@ -69,6 +46,10 @@ namespace Dash
             }
         }
 
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public TimelineElement()
         {
             this.InitializeComponent();
@@ -76,86 +57,34 @@ namespace Dash
             Loaded += TimelineElement_Loaded;
         }
 
+
+        #region loading
+
         private void TimelineElement_Loaded(object sender, RoutedEventArgs e)
         {
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
-            //DisplayBelow(true);
+            xTimeBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortDateString();
+            xDateBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortTimeString();
+
 
             UpdateTimelinePosition();
-
-            LocalContextVisible = true;
-        }
-
-        public static double LastDisplayedPosition= 0;
-
-        private double _minGap = 30;
-        private double _maxGap = 300;
-
-        private void UpdateTimelinePosition()
-        {
-            var x = CalculateXPosition(ViewModel, ParentTimeline.Metadata);
-            var y = CalculateYPosition(ViewModel, ParentTimeline.Metadata);
-
-            var gapDistance = x - ParentTimeline.CurrentXPosition;
-            if (gapDistance < _minGap)
-            {
-                x = ParentTimeline.CurrentXPosition + _minGap;
-            }
-            else if (gapDistance > _maxGap)
-            {
-                x = ParentTimeline.CurrentXPosition + _maxGap;
-            }
-
-
-            RenderTransform = new TranslateTransform()
-            {
-                X = x,
-                Y = y
-            };
-
-            ParentTimeline.CurrentXPosition = x;
-
-            if(DisplayElement(x))
-            {
-                LastDisplayedPosition = x;
-                _displayState = 0;
-                ParentTimeline.DisplayedXPositions.Add(x);
-            } else
-            {
-                _displayState = 0;
-                UpdateView();
-                _displayState = 1;
-            }
-            UpdateView();
+            LoadContext();
 
         }
 
-        private bool DisplayElement(double x)
+        private void LoadContext()
         {
-            foreach(var pos in ParentTimeline.DisplayedXPositions)
+            if (_contextPreview == null)
             {
-                if(Math.Abs(x - pos) < 200)
+                _contextPreview = new ContextPreview(ViewModel.DocumentContext)
                 {
-                    return false;
-                }
+                    Width = ContextPreviewActualWidth,
+                    Height = ContextPreviewActualHeight,
+                };
+                xDocHolder.Children.Add(_contextPreview);
             }
-            return true;
-        }
-
-        private double CalculateYPosition(TimelineElementViewModel context, TimelineMetadata metadata)
-        {
-            return metadata.ActualHeight / 2 - EllipseSize / 2;
-        }
-
-        private double CalculateXPosition(TimelineElementViewModel context, TimelineMetadata metadata)
-        {
-            var totalTime = metadata.MaxTime - metadata.MinTime;
-            Debug.Assert(totalTime != 0);
-            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - metadata.MinTime) / totalTime;
-            var offset = normOffset * (metadata.ActualWidth - 2 * metadata.LeftRightMargin) + metadata.LeftRightMargin - EllipseSize / 2;
-            return offset;
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -163,122 +92,91 @@ namespace Dash
             var vm = DataContext as TimelineElementViewModel;
             Debug.Assert(vm != null);
             ViewModel = vm;
+            
+            DocumentController thumbnailImageViewDoc = null;
+            var richText = vm.DocumentViewModel.DataDocument.GetDereferencedField<RichTextController>(KeyStore.DataKey, null)?.Data; //NoteDocuments.RichTextNote.RTFieldKey
+            var docText = vm.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? richText?.ToString() ?? null;
+
+            if (docText != null)
+            {
+                thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText).Document;
+            }
+            else
+            {
+                thumbnailImageViewDoc = (vm.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? vm.DocumentViewModel.DocumentController).GetViewCopy();
+            }
+            thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
+            ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc) { Width= 220, BackgroundBrush = new SolidColorBrush(Colors.Transparent) };
         }
 
-        public void DisplayBelow(bool showContext)
+        #endregion
+
+
+        #region Update Elements
+
+        private void UpdateTimelinePosition()
         {
-            if (!showContext)
+            var vm = DataContext as TimelineElementViewModel;
+
+            // set vertical stacking height
+            xTopY.Height = new GridLength(vm.TitleY);
+
+            // find x and y position
+            var x = vm.PositionX - _offsetX;
+            var y = _offsetY;
+
+            RenderTransform = new TranslateTransform()
             {
-                // TODO hide the context
-                xDocHolder.Children.Remove(_contextPreview);
-                _contextPreview = null;
-                GC.Collect();
+                X = x,
+                Y = y
+            };
 
-                xLowerLine.Visibility = Visibility.Collapsed;
-                xUpperLine.Visibility = Visibility.Visible;
-                Thickness margin = xWebHolderTop.Margin;
-                margin.Top = -40;
-                xWebHolderTop.Margin = margin;
-                xDocumentPreview.Width = 80;
-                xDocumentPreview.Height = 30;
-                Thickness margin2 = xDocGrid.Margin;
-                margin.Left = -40;
-                xDocGrid.Margin = margin;
-            }
-
-            if (showContext)
-            {
-                if (ViewModel == null) return;
-
-                if (_contextPreview == null)
-                {
-                    _contextPreview = new ContextPreview(ViewModel.DocumentContext)
-                    {
-                        Width = ContextPreviewActualWidth,
-                        Height = ContextPreviewActualHeight,
-                    };
-                    xDocHolder.Children.Add(_contextPreview);
-                    Canvas.SetLeft(_contextPreview, - ContextPreviewActualWidth / 2 - EllipseSize / 2);
-                    if (xDocumentPreview != null) Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
-                }
-
-                xLowerLine.Visibility = Visibility.Visible;
-                xUpperLine.Visibility = Visibility.Collapsed;
-                Thickness margin = xWebHolderTop.Margin;
-                margin.Top = 40;
-                xWebHolderTop.Margin = margin;
-                xDocumentPreview.Width = 250;
-                xDocumentPreview.Height = 160;
-                Thickness margin2 = xDocGrid.Margin;
-                margin.Left = -120;
-                xDocGrid.Margin = margin;
-            }
+            UpdateView();
         }
+
+
 
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //LocalContextVisible = !LocalContextVisible;
-            _displayState = (_displayState + 1) % 3;
+            // toggle view and update
+            if(ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above)
+            {
+                ViewModel.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
+            }
+            else
+            {
+                ViewModel.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
+            }
 
             UpdateView();
-            
         }
+
 
         private void UpdateView()
         {
-            var displayBelow = false;
-            if (_displayState == 0)
+            if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Below)
             {
-                displayBelow = true;
+                xTopViewGrid.Visibility = Visibility.Collapsed;
+                xBottomViewGrid.Visibility = Visibility.Visible;
+                xDateTimeStackPanel.Visibility = Visibility.Visible;
             }
-
-            bool displayAll = true;
-            if (_displayState == 2)
+            else if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above)
             {
-                displayAll = false;
+                xTopViewGrid.Visibility = Visibility.Visible;
+                xBottomViewGrid.Visibility = Visibility.Collapsed;
+                xDateTimeStackPanel.Visibility = Visibility.Collapsed;
             }
-            DisplayAll(displayAll);
-
-            //_localContextVisible = !_localContextVisible;
-            DisplayBelow(displayBelow);
-        }
-
-        private void DisplayAll(bool display)
-        {
-            if(display)
+            else if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Hidden)
             {
-                xDisplay.Visibility = Visibility.Visible;
-                Thickness margin = xEllipse.Margin;
-                margin.Top = -200;
-                xEllipse.Margin = margin;
-            } else
-            {
-                xDisplay.Visibility = Visibility.Collapsed;
-                Thickness margin = xEllipse.Margin;
-                margin.Top = 0;
-                xEllipse.Margin = margin;
+                xTopViewGrid.Visibility = Visibility.Collapsed;
+                xBottomViewGrid.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void DocumentPreviewSizeChanged(object sender, SizeChangedEventArgs e)
-        {
+        #endregion
 
-            try
-            {
-                if(_contextPreview != null)
-                {
-                    Canvas.SetTop(_contextPreview, xDocumentPreview.ActualHeight);
 
-                }
-                Canvas.SetLeft(xDocumentPreview, -xDocumentPreview.ActualWidth / 2 - EllipseSize / 2);
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-                throw;
-            }
-
-        }
+        #region property changed
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -288,6 +186,7 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        #endregion
 
     }
 }

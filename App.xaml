@@ -535,6 +535,21 @@
             </Setter>
         </Style>
 
+        <!-- remove transparent gloss on listviewitem roll over-->
+        <Style TargetType="ListViewItem" x:Key="xNoGlossListViewItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border Name="Border" BorderBrush="Transparent" BorderThickness="2">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- app Titles -->
         <Style TargetType="TextBox" x:Key="xTitleStyle">
             <Setter Property="TextAlignment" Value="Left" />
@@ -656,6 +671,8 @@
         <!-- Operator View (& Links)-->
         <x:Double x:Key="InputHandleWidth">20</x:Double>
         <x:Double x:Key="InputHandleHeight">20</x:Double>
+        <x:Double x:Key="InputHandleWidthHighlighted">25</x:Double>
+        <x:Double x:Key="InputHandleHeightHighlighted">25</x:Double>
         <Style TargetType="Ellipse" x:Key="xOutputLinkHandle">
             <Setter Property="Fill" Value="{StaticResource OutputHandleColor}" />
             <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
@@ -669,6 +686,14 @@
             <Setter Property="Fill" Value="{StaticResource FieldHandleColor}" />
             <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
             <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+            <Setter Property="ManipulationMode" Value="All"></Setter>
+            <Setter Property="Stroke" Value="Transparent"></Setter>
+            <Setter Property="AllowDrop" Value="True"/>
+        </Style>
+        <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
+            <Setter Property="Fill" Value="Gold" />
+            <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
+            <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
             <Setter Property="AllowDrop" Value="True"/>
@@ -809,6 +834,8 @@
         <!-- CONVERTERS-->
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <local:BoolToBoldConverter x:Key="BoolToBoldConverter"/>
+        <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
+        <local:BoolToOpacityConverter x:Key="BoolToOpacityConverter"/>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"/>
         <local:BoundControllerToFrameworkElementConverter x:Key="BoundFieldModelControllerToFrameworkElementConverter"/>
         <local:ReferenceFieldModelControllerToFrameworkElementConverter x:Key="ReferenceFieldModelControllerToFrameworkElementConverter"/>
@@ -821,8 +848,19 @@
         <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">
             <Setter Property="Height" Value="20"/>
             <Setter Property="Width" Value="20"/>
-            <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
-            <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
+            <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"/>
+            <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"/>
+        </Style>
+
+        <Style TargetType="Ellipse" x:Key="ResizeHandleEllipseStyle">
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"/>
+            <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"/>
+            <Setter Property="Margin" Value="-5"/>
+            <Setter Property="AllowFocusOnInteraction" Value="False"/>
+            <Setter Property="AllowFocusWhenDisabled" Value="False"/>
+            <Setter Property="ManipulationMode" Value="TranslateX, TranslateY"/>
         </Style>
 
         <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="White"/>

@@ -1,4 +1,6 @@
-﻿using Dash.Models.DragModels;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
@@ -23,6 +25,13 @@ namespace Dash.Views
 
         private void OperatorEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            var selected = (dotDocView.GetFirstAncestorOfType<CollectionFreeformView>())?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+            if (selected?.Count() > 0)
+            {
+                args.Data.Properties[nameof(List<DragDocumentModel>)] =
+                    new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
+            }
+            else
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dotDocView.ViewModel.DocumentController, false);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -56,6 +65,17 @@ namespace Dash.Views
         private void XOperatorEllipseBorder_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             OperatorEllipse.Visibility = Visibility.Collapsed;
+        }
+
+        private void XOperatorEllipseBorder_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.ManipulationMode = ManipulationModes.None;
+            e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+        }
+
+        private void OperatorEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            ManipulationMode = ManipulationModes.All;
         }
     }
 }

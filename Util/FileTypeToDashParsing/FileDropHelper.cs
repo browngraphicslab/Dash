@@ -53,48 +53,6 @@ namespace Dash
 
     public static class FileDropHelper
     {
-
-        public static DocumentController CreateFieldLayoutDocumentFromReference(ReferenceController reference,
-            double x = 0, double y = 0, double w = 200, double h = 200, TypeInfo listType = TypeInfo.None)
-        {
-            var type = reference.DereferenceToRoot(null).TypeInfo;
-            switch (type)
-            {
-                case TypeInfo.Text:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.Number:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.Image:
-                    return new ImageBox(reference, x, y, w, h).Document;
-                case TypeInfo.List:
-                    if (listType == TypeInfo.Document)
-                    {
-                        return new CollectionBox(reference, x, y, w, h).Document;
-                    }
-                    throw new NotImplementedException();
-                case TypeInfo.Document:
-                    return new DocumentBox(reference, x, y, w, h).Document;
-                case TypeInfo.Point:
-                    return new TextingBox(reference, x, y, w, h).Document;
-                case TypeInfo.RichText:
-                    return new RichTextBox(reference, x, y, w, h).Document;
-                default:
-                    return null;
-            }
-        }
-
-        public static DocumentController AddFieldFromData(object data, DocumentController document, KeyController key,
-            Point position, TypeInfo type, ListController<DocumentController> activeLayout)
-        {
-            var fmc = FieldControllerFactory.CreateFromModel(TypeInfoHelper.CreateFieldModelHelper(type, data));
-            document.SetField(key, fmc, true);
-            var layoutDoc =
-                CreateFieldLayoutDocumentFromReference(new DocumentReferenceController(document.GetId(), key),
-                    position.X, position.Y);
-            activeLayout?.Add(layoutDoc);
-            return layoutDoc;
-        }
-
         public static async Task<DocumentController> GetDroppedFile(DragEventArgs e)
         {
             var files = (await e.DataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -112,20 +70,10 @@ namespace Dash
         ///     Handles the situation where a file is dropped on a collection. The DragEventArgs are assumed
         ///     to have StorageItems, and the DragEventArgs should have been handled
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="where"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static void HandleDropOnCollectionAsync(object sender, DragEventArgs e,
-            ICollectionViewModel collectionViewModel)
-        {
-            // the point where the items will be dropped
-            var where = sender is CollectionFreeformView
-                ? Util.GetCollectionFreeFormPoint((CollectionFreeformView)sender, e.GetPosition(MainPage.Instance))
-                : new Point();
-            HandleDrop(e.DataView, where, collectionViewModel);
-        }
-
-        public static async void HandleDrop(DataPackageView dataView, Point where, ICollectionViewModel collectionViewModel)
+        public static async void HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -137,7 +85,7 @@ namespace Dash
                 var fileType = await GetFileData(files.First(), dataView);
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
-                {
+                { 
                     documentController.GetPositionField().Data = where;
                     collectionViewModel.AddDocument(documentController, null);
                 }
@@ -146,10 +94,12 @@ namespace Dash
             // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
+                var CollectionNoteOffset = 250;
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                // for each file, get it's type, parse it, and add it to the output collection
+                int xPos = 0, yPos = 0, count = 0;  
+                // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
                     FileData fileType;
@@ -160,6 +110,15 @@ namespace Dash
                         if (documentController != null)
                         {
                             outputCollection.Add(documentController);
+                            // place files in a grid 
+                            if (count % 5 == 0)
+                            {
+                                yPos += CollectionNoteOffset;
+                                xPos = 0;
+                            }
+                            documentController.GetPositionField().Data = new Point(xPos, yPos); 
+                            xPos += CollectionNoteOffset;
+                            count++;
                         }
                     }
                     catch (ArgumentException e)
@@ -167,10 +126,8 @@ namespace Dash
                         Debug.WriteLine(e);
                     }
                 }
-
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
                 collectionViewModel.AddDocument(cnote.Document, null);
-
             }
             else
             {
@@ -204,14 +161,14 @@ namespace Dash
             }
         }
 
-        
+
         /// <summary>
         /// Gets all the file data for a storage item that is coming from a drag event args
         /// </summary>
         /// <param name="storageItem"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        private static async Task<FileData> GetFileData(IStorageFile storageItem,  DataPackageView dataView)
+        private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
             if (storageItem.FileType.EndsWith(".url"))
@@ -226,16 +183,22 @@ namespace Dash
                 };
             }
 
-            // otherwise the file is a local file so check the storage file path and file type
+            // otherwise the file is a local file so check the storage file path and file type 
             var fileType = GetFileType(storageItem.Path) ??
-                           GetFileType(storageItem.FileType) ??
-                           throw new ArgumentException(
-                               $"We do not support the file type for the passed in file: {storageItem.Path}");
+                           GetFileType(storageItem.FileType);
+
+            if (fileType == null)
+            {
+
+                Debug.WriteLine(
+                     $"We do not support the file type for the passed in file: {storageItem.Path}");
+                return new FileData();
+            }
 
             return new FileData()
             {
                 File = storageItem,
-                Filetype = fileType,
+                Filetype = (FileType)fileType,
                 FileUri = string.IsNullOrWhiteSpace(storageItem.Path) ? null : new Uri(storageItem.Path)
             };
         }
@@ -255,9 +218,9 @@ namespace Dash
             if (filepath.EndsWith(".pptx"))
                 return FileType.Ppt;
             if (filepath.EndsWith(".jpg") ||
-                filepath.EndsWith(".jpeg") || 
-                filepath.EndsWith(".png") || 
-                filepath.EndsWith(".bmp") || 
+                filepath.EndsWith(".jpeg") ||
+                filepath.EndsWith(".png") ||
+                filepath.EndsWith(".bmp") ||
                 filepath.EndsWith(".gif")) // PRODUCTION READY! Is this all of them? who knows?
                 return FileType.Image;
             if (filepath.EndsWith(".txt"))
@@ -265,36 +228,6 @@ namespace Dash
 
             return null;
 
-        }
-
-
-        // TODO remove this method
-        public static async void HandleDropOnCollection(object sender, DragEventArgs e,
-            BaseCollectionViewModel collection)
-        {
-            var items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count > 0)
-            {
-                var elem = sender as UIElement;
-                var dropPoint = e.GetPosition(elem);
-                foreach (var item in items)
-                {
-                    var storageFile = item as StorageFile;
-                    var fields = new Dictionary<KeyController, FieldControllerBase>
-                    {
-                        [KeyStore.SystemUriKey] = new TextController(storageFile.Path + storageFile.Name)
-                    };
-                    var doc = new DocumentController(fields, DashConstants.TypeStore.FileLinkDocument);
-                    var tb = new TextingBox(new DocumentReferenceController(doc.GetId(), KeyStore.SystemUriKey))
-                        .Document;
-                    doc.SetActiveLayout(new FreeFormDocument(new List<DocumentController> {tb}, dropPoint).Document,
-                        false, true);
-                    collection.AddDocument(doc, null);
-                    dropPoint.X += 20;
-                    dropPoint.Y += 20;
-                }
-            }
-            e.Handled = true;
         }
     }
 }

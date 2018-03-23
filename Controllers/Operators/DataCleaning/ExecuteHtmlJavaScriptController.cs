@@ -67,7 +67,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var html    = (inputs[HtmlInputKey] as TextController).Data;
             var script  = (inputs[ScriptKey] as TextController).Data;
@@ -116,7 +116,7 @@ namespace Dash
                 if (id == Id)
                 {
                     var jsonlist = new JsonToDashUtil().ParseJsonString(res, "HtmlExec");
-                    var children = Cnote.DataDocument.GetDereferencedField(KeyStore.CollectionKey, null) as ListController<DocumentController>;
+                    var children = Cnote.Document.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
                     foreach (var f in jsonlist.EnumFields(true))
                         if (f.Value is ListController<DocumentController>)
                             foreach (var d in (f.Value as ListController<DocumentController>).TypedData)

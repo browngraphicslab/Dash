@@ -23,7 +23,7 @@ using Dash.Models.DragModels;
 
 namespace Dash
 {
-    public sealed partial class CollectionDBSchemaView : SelectionElement, ICollectionView
+    public sealed partial class CollectionDBSchemaView : ICollectionView
     {
         private DocumentController _parentDocument;
 
@@ -66,11 +66,11 @@ namespace Dash
             get => _parentDocument;
             set
             {
+                if (ParentDocument != null)
+                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                 _parentDocument = value;
                 if (value != null)
                 {
-                    //_parentDocument = _parentDocument.GetDataDocument(null);
-                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
                     if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
                         ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
                     ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
@@ -78,7 +78,7 @@ namespace Dash
             }
         }
 
-        public BaseCollectionViewModel ViewModel { get; private set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
         #region ItemSelection
 
@@ -170,6 +170,7 @@ namespace Dash
                     var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                     if (column < 0) return;
                     var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    this.xRecordsView.SelectedItem = recordViewModel;
                     updateEditBox(recordViewModel.RecordFields[column]);
                 }
 
@@ -208,8 +209,6 @@ namespace Dash
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
-            if (ParentDocument != null)
-                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = null;
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
@@ -219,30 +218,25 @@ namespace Dash
         private void CollectionDBSchemaView_Loaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged += CollectionDBView_DataContextChanged;
-            ViewModel = DataContext as BaseCollectionViewModel;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
-            if (ViewModel != null)
-                UpdateFields(new Context(ParentDocument));
+            CollectionDBView_DataContextChanged(null, null);
 
+            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel = DataContext as BaseCollectionViewModel;
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
-            if (ParentDocument != null)
-                ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateFields(new Context(ParentDocument));
         }
 
 
-        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender,
-            FieldUpdatedEventArgs args, Context context)
+        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel.CollectionKey))
+            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel?.CollectionKey))
                 UpdateFields(new Context(ParentDocument));
         }
 
@@ -259,7 +253,7 @@ namespace Dash
         KeyController _lastFieldSortKey = null;
         public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
         {
-            var dbDocs = ParentDocument
+            var dbDocs = ParentDocument.GetDataDocument()
                    .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
             var records = new SortedList<string, DocumentController>();
@@ -281,8 +275,8 @@ namespace Dash
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
-                         ParentDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                         ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
                 .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
             if (dbDocs != null)
@@ -384,23 +378,7 @@ namespace Dash
         }
 
         #region DragAndDrop
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
-
-        private void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            Debug.WriteLine("drop event from collection");
-
-            ViewModel.CollectionViewOnDrop(sender, e);
-        }
-
-        private void CollectionViewOnDragLeave(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragLeave(sender, e);
-        }
+        
 
         public void SetDropIndicationFill(Brush fill)
         {
@@ -409,23 +387,11 @@ namespace Dash
         #endregion
 
         #region Activation
-
-        protected override void OnActivated(bool isSelected)
-        {
-            ViewModel.SetSelected(this, isSelected);
-        }
-
-        protected override void OnLowestActivated(bool isLowestSelected)
-        {
-            ViewModel.SetLowestSelected(this, isLowestSelected);
-        }
+        
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInterfaceBuilder)
-                return;
-            OnSelected();
         }
 
         #endregion
@@ -450,7 +416,7 @@ namespace Dash
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
             var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
 
         // TODO lsm wrote this here it's a hack we should definitely remove this
@@ -461,10 +427,7 @@ namespace Dash
                 ?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc =
-                    new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
@@ -490,11 +453,21 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(), collectionViewModel.CollectionKey);
+                var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
-                    new DragCollectionFieldModel(new DocumentReferenceController(viewModel.SchemaDocument.GetId(), collectionViewModel.CollectionKey),
-                    viewModel.FieldKey,
-                    CollectionView.CollectionViewType.DB));
+                    new DragCollectionFieldModel(
+                        collectionData,
+                        collectionReference,
+                        viewModel.FieldKey,
+                        CollectionView.CollectionViewType.DB
+                    ));
             }
+        }
+
+        private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+           this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
     }
 }

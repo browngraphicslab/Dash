@@ -16,17 +16,12 @@ namespace Dash
     {
         public class RTD {
             public string RtfFormatString { get; set; }
-            public string ReadableString { get; set; }
 
             // default constructor for json deserialization
-            public RTD()
-            {
-                
-            }
+            public RTD() { }
 
-            public RTD(string readableString) { ReadableString = readableString; RtfFormatString = readableString;  }
-            public RTD(string readableString, string rtfstring) { ReadableString = readableString; RtfFormatString = rtfstring;  }
-            public override string ToString() { return ReadableString; }
+            public RTD(string rtfFormatString) { RtfFormatString = rtfFormatString;  }
+            public override string ToString() { return RtfFormatString; }
         }
 
         public RTD Data;

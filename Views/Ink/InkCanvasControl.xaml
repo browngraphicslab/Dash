@@ -1,4 +1,4 @@
-﻿<dash:SelectionElement
+﻿<UserControl
     x:Class="Dash.InkCanvasControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -71,5 +71,5 @@
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,400,300"></RectangleGeometry>
         </Grid.Clip>
     </Grid>
-</dash:SelectionElement>
+</UserControl>
 

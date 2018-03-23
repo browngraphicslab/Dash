@@ -29,7 +29,7 @@ namespace Dash
         private static string PrototypeId = "88A3B7F5-7828-4251-ACFC-E56428316203";
 
         public BackgroundBox( double x = 0, double y = 0, double w = 200, double h = 200)
-        {  
+        {
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), null);
             
@@ -64,14 +64,12 @@ namespace Dash
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             return prototypeDocument;
         }
-        public override FrameworkElement makeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the  view
             var background = new Grid();
@@ -79,14 +77,7 @@ namespace Dash
 
             // make the pdf respond to resizing, interactions etc...
             SetupBindings(background, docController, context);
-
-            if (isInterfaceBuilderLayout)
-            {
-                background.IsHitTestVisible = false;
-                var selectableContainer = new SelectableContainer(background, docController);
-                //SetupBindings(selectableContainer, docController, context);
-                return selectableContainer;
-            }
+            
             return background;
         }
 

@@ -26,7 +26,6 @@ namespace Dash
             AddOperator(() => new ConcatOperatorController(), "Concat");
             AddOperator(() => new DocumentAppendOperatorController(), "Append");
             AddOperator(() => new ImageOperatorController(), "UriToImage");
-            AddOperator(() => new FilterOperatorController(), "Filter", rfmc => new FilterOperatorBox(rfmc));
             AddOperator(() => new ApiOperatorController(), "Api", rfmc => new ApiOperatorBox(rfmc));
             AddOperator(() => new CompoundOperatorController(), "Compound");
             AddOperator(() => new ExecuteHtmlJavaScriptController(), "HtmlScript", rfmc => new ExecuteHtmlOperatorBox(rfmc));
@@ -34,7 +33,6 @@ namespace Dash
             AddOperator(() => new ExtractSentencesOperatorController(), "Sentence Analyzer", rfmc => new ExtractSentencesOperatorBox(rfmc));
             AddOperator(() => new ExtractKeywordsOperatorController(), "Extract KeyWords");
             AddOperator(() => new ImageToCognitiveServices(), "ImageRecognition");
-            AddOperator(() => new ImageToColorPalette(), "Image To Palette");
             AddOperator(() => new SearchOperatorController(), "Search", rfmc => new SearchOperatorBox(rfmc));
             AddOperator(() => new QuizletOperator(), "Quizlet", rfmc => new QuizletOperatorBox(rfmc));
 

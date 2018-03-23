@@ -38,6 +38,8 @@ namespace Dash
         {
             if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
             {
+                var parent = this.GetFirstAncestorOfType<CollectionDBSchemaView>();
+                parent.xRecordsView.SelectedItem = this.DataContext;
                 _downPt = e.GetCurrentPoint(null);
                 e.Handled = true;
             }
@@ -61,11 +63,7 @@ namespace Dash
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-
-            //var dataDoc = (DataContext as CollectionDBSchemaRecordViewModel).Document;
-            //args.Data.Properties.Add("DocumentControllerList", new List<DocumentController>(new DocumentController[] { dataDoc }));
-            //args.Data.Properties.Add("View", true);
-            //args.Data.RequestedOperation = DataPackageOperation.Link;
+            
             GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
         }
 
@@ -76,9 +74,7 @@ namespace Dash
             var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)?.DocumentType;
             if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
             {
-                if (dataDoc.GetField(KeyStore.ThisKey) == null)
-                    dataDoc.SetField(KeyStore.ThisKey, dataDoc, true);
-                var layoutDoc = new KeyValueDocumentBox(new DocumentReferenceController(dataDoc.GetId(), KeyStore.ThisKey));
+                var layoutDoc = new KeyValueDocumentBox(dataDoc);
 
                 layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
                 layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);

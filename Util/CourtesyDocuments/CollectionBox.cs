@@ -23,13 +23,11 @@ namespace Dash
         /// If the view type is unassigned this is the default view displayed to the user
         /// </summary>
         private static readonly string DefaultCollectionView = CollectionView.CollectionViewType.Grid.ToString();
-
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
             fields[KeyStore.InkDataKey] = new InkController();
-
 
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
@@ -56,21 +54,19 @@ namespace Dash
             return new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
         }
 
-        public override FrameworkElement makeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null, null, isInterfaceBuilderLayout);
+            return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument, Dictionary<KeyController, FrameworkElement> keysToFrameworkElementsIn = null, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
 
             // get a collection and collection view model from the data
             var data = docController.GetField(KeyStore.DataKey);
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), isInterfaceBuilderLayout, context)
+            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), context)
             { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
 
             // set the view type (i.e. list, grid, freeform)
@@ -78,24 +74,8 @@ namespace Dash
             var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
             var view       = new CollectionView(collectionViewModel,  viewType);
 
-            //add to key to framework element dictionary
-            //var reference = data as ReferenceController;
-            //if (keysToFrameworkElementsIn != null)
-            //{
-            //    keysToFrameworkElementsIn[reference.FieldKey] = view.ConnectionEllipseInput;
-            //    keysToFrameworkElementsIn[KeyStore.CollectionOutputKey] = view.ConnectionEllipseOutput;
-            //    docController.SetField(KeyStore.CollectionOutputKey,
-            //        new DocumentReferenceController(docController.GetId(), reference.FieldKey), true);
-            //}
-
             SetupBindings(view, docController, context);
-
-            if (isInterfaceBuilderLayout)
-            {
-                SelectableContainer container = new SelectableContainer(view, docController, dataDocument);
-                //SetupBindings(container, docController, context);
-                return container;
-            }
+            
             return view;
         }
     }

@@ -29,13 +29,12 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceController);
@@ -78,8 +77,7 @@ namespace Dash
             stack.HorizontalAlignment = HorizontalAlignment.Stretch;
             stack.VerticalAlignment = VerticalAlignment.Top;
             opView.OperatorContent = stack;
-
-            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
+            
             return opView;
         }
     }

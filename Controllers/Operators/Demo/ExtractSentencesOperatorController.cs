@@ -48,7 +48,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;
@@ -58,8 +58,7 @@ namespace Dash
             foreach (var inputDoc in collection.TypedData)
             {
                 var dataDoc = inputDoc.GetDataDocument(null);
-                var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data ??
-                                (dataDoc.GetDereferencedField(textFieldKey, null) as RichTextController)?.Data?.ReadableString;
+                var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data;
                 if (textInput != null)
                 {
                     var sentences = Regex.Split(textInput, @"(?<=[\.!\?])\s+");

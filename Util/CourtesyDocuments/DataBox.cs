@@ -21,23 +21,14 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-
-            // try to apply a data document to the databox if the passed in refToData was actualyl a reference
-            //var dataDoc = (refToData as ReferenceController)?.GetDocumentController(null);
-            //if (dataDoc != null)
-            //{
-            //    Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
-            //}
         }
 
-        public override FrameworkElement makeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public override FrameworkElement makeView(DocumentController documentController, Context context)
         {
-            return MakeView(documentController, context, isInterfaceBuilderLayout);
+            return MakeView(documentController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController documentController, Context context,
-            bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
@@ -49,24 +40,29 @@ namespace Dash
             else if (data is ListController<DocumentController> docList)
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
-                return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+                return CollectionBox.MakeView(documentController, context);
             } else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document
+                FrameworkElement view = null;
                 if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
                 {
-                    return dc.MakeViewUI(context, isInterfaceBuilderLayout);
+                    view =  dc.MakeViewUI(context);
                 }
                 else
                 {
-                    return dc.GetKeyValueAlias().MakeViewUI(context, isInterfaceBuilderLayout);
+                    view = dc.GetKeyValueAlias().MakeViewUI(context);
                 }
+                //bcz: this is odd -- the DocumentViewModel is bound to the DataBox, so we have to transfer the
+                //   "container-like" bindings from the contained data view to the DataBox
+                SetupBindings(view, documentController, context);
+                return view;
             }
-            else if (data is TextController)
+            else if (data is TextController || data is NumberController)
             {
                 return TextingBox.MakeView(documentController, context);
             }
-            else
+            else if (data is RichTextController)
             {
                 return RichTextBox.MakeView(documentController, context);
             }

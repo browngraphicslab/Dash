@@ -22,13 +22,14 @@ namespace Dash
     public sealed partial class CompoundOperatorEditor : UserControl
     {
 
-        private SimpleCollectionViewModel _collectionViewModel;
+        private CollectionViewModel _collectionViewModel;
 
         public CompoundOperatorEditor(FieldControllerBase collectionField = null, Context context = null)
         {
-            this.InitializeComponent();
-            _collectionViewModel = new SimpleCollectionViewModel(false);
-            xFreeFormEditor.DataContext = _collectionViewModel;
+            throw new NotImplementedException();
+            //this.InitializeComponent();
+            //_collectionViewModel = new SimpleCollectionViewModel();
+            //xFreeFormEditor.DataContext = _collectionViewModel;
         }
         
         private void XFreeFormEditor_OnDragOver(object sender, DragEventArgs e)

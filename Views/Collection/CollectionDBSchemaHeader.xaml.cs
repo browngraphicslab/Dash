@@ -74,7 +74,7 @@ namespace Dash
             if (ParentCollection != null)
             {
                 ViewModel.SchemaDocument.SetField(CollectionDBView.FilterFieldKey, ViewModel.FieldKey, true);
-                ParentCollection.SetDBView();
+                ParentCollection.SetView(CollectionView.CollectionViewType.DB);
             }
         }
 
@@ -104,6 +104,11 @@ namespace Dash
         {
             ViewModel.SchemaView.xHeaderView.CanReorderItems = true;
             ViewModel.SchemaView.xHeaderView.CanDragItems = true;
+        }
+
+        private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
         }
     }
 }

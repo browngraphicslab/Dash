@@ -28,14 +28,6 @@ namespace Dash
             
         }
 
-        /// <summary>
-        ///     Returns the <see cref="EntityBase.Id" /> for the entity which the controller encapsulates
-        /// </summary>
-        public string GetId()
-        {
-            return Model.Id;
-        }
-
         public override bool Equals(object obj)
         {
             var cont = obj as FieldModelController<T>;
