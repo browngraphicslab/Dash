@@ -248,7 +248,7 @@ namespace Dash
             var activeLayout = doc.GetActiveLayout();
             var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc));
             var newDoc = doc;
-            if (activeLayout == null && docContext != null)  // has DocumentContext
+            if (activeLayout == null && (docContext != null || doc.GetField(KeyStore.PositionFieldKey) != null))  // has DocumentContext
             {
                 activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }), // skip layout & delegates
                                             new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
@@ -274,10 +274,10 @@ namespace Dash
                 newDoc = activeLayout;
             }
             var oldPosition = doc.GetPositionField();
-            if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
+            if (oldPosition != null)  // if original had a position field, then delegate needs a new one
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
-                    new PointController(new Point((where == null ? oldPosition.Data.X + 15 : ((Point)where).X), (where == null ? oldPosition.Data.Y + 15 : ((Point)where).Y))),
+                    new PointController(new Point((where == null ? oldPosition.Data.X : ((Point)where).X), (where == null ? oldPosition.Data.Y : ((Point)where).Y))),
                         true);
             }
 

@@ -88,6 +88,16 @@ namespace Dash
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        public DocumentController Snapshot()
+        {
+            var controllers = new List<DocumentController>();
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                controllers.Add(dvm.DocumentController.GetViewCopy());
+            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
+            return snap;
+        }
+
         #region data configuration
 
         void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -127,11 +137,12 @@ namespace Dash
                 MakeInkCanvas();
             }
             
-            if (ParentDocument?.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            if (ParentDocument?.ViewModel.LayoutDocument?.GetField<TextController>(KeyStore.CollectionFitToParentKey)?.Data == "true")
             {
                 ViewManipulationControls.FitToParent();
             }
         }
+
         #endregion
 
         #region Manipulation

@@ -130,8 +130,7 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
-                if (xMapDocumentView != null)
-                    xMapDocumentView.DataContext = new DocumentViewModel(lastWorkspace);
+                setupMapView(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
@@ -162,7 +161,7 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             MainDocView.DataContext = documentViewModel;
-            xMapDocumentView.DataContext = documentViewModel;
+            setupMapView(documentViewModel.DocumentController);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -181,7 +180,7 @@ namespace Dash
                 workspace.SetHeight(double.NaN);
                 var documentViewModel = new DocumentViewModel(workspace);
                 MainDocView.DataContext = documentViewModel;
-                xMapDocumentView.DataContext = documentViewModel;
+                setupMapView(documentViewModel.DocumentController);
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
         }
@@ -460,35 +459,41 @@ namespace Dash
             args.Cancel = true;
         }
 
-        private void xMapDocumentView_Loaded(object sender, RoutedEventArgs e)
+        DispatcherTimer mapTimer = new DispatcherTimer();
+        private void setupMapView(DocumentController context)
         {
-        }
-
-        private void xMainDocView_Loaded(object sender, RoutedEventArgs e)
-        {
-            // bcz: UGHHHH -- I needed to make this timer because I get Win32 exceptions on loading if I just make the MapDocumentView in the Xaml file or anywhere else!
+            mapTimer.Stop();
+            if (xMapDocumentView != null)
+            {
+                xLeftStack.Children.Remove(xMapDocumentView);
+            }
             var dt = new DispatcherTimer();
             dt.Interval = new TimeSpan(0, 0, 5);
             dt.Tick += (s, a) =>
             {
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(MainDocView.ViewModel.DocumentController), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                Grid.SetRow(xMapDocumentView, 2);
-                xLeftGrid.Children.Add(xMapDocumentView);
-                var dt2 = new DispatcherTimer();
-                dt2.Interval = new TimeSpan(0, 0, 1);
-                dt2.Tick += Dt_Tick;
-                dt2.Start();
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xLeftStack.Children.Add(xMapDocumentView);
+                mapTimer.Interval = new TimeSpan(0, 0, 1);
+                mapTimer.Tick += (ss,aa) => {
+                    if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
+                    {
+                        freeformView.ViewManipulationControls.FitToParent();
+                    }
+                };
+                mapTimer.Start();
                 dt.Stop();
             };
             dt.Start();
         }
 
-        private void Dt_Tick(object sender, object e)
+        private void xMainDocView_Loaded(object sender, RoutedEventArgs e)
         {
-            if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
-            {
-                freeformView.ViewManipulationControls.FitToParent();
-            }
+
+        }
+        private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+                xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
     }
 }
