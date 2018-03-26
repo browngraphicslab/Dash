@@ -156,12 +156,8 @@ namespace Dash
             {
                 return true;
             }
-            workspace = workspace.MakeDelegate();
-            workspace.SetWidth(double.NaN);
-            workspace.SetHeight(double.NaN);
-            var documentViewModel = new DocumentViewModel(workspace);
-            MainDocView.DataContext = documentViewModel;
-            setupMapView(documentViewModel.DocumentController);
+            MainDocView.DataContext = new DocumentViewModel(workspace);
+            setupMapView(workspace);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -175,12 +171,8 @@ namespace Dash
             {
                 var workspace = history.TypedData.Last();
                 history.Remove(workspace);
-                workspace = workspace.MakeDelegate();
-                workspace.SetWidth(double.NaN);
-                workspace.SetHeight(double.NaN);
-                var documentViewModel = new DocumentViewModel(workspace);
-                MainDocView.DataContext = documentViewModel;
-                setupMapView(documentViewModel.DocumentController);
+                MainDocView.DataContext = new DocumentViewModel(workspace);
+                setupMapView(workspace);
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
         }
@@ -471,7 +463,7 @@ namespace Dash
             dt.Interval = new TimeSpan(0, 0, 5);
             dt.Tick += (s, a) =>
             {
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss,aa) => {
