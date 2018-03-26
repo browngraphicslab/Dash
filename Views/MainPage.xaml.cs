@@ -48,6 +48,8 @@ namespace Dash
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
         public static InkController InkController { get; set; } = new InkController();
 
+        public DocumentView xMapDocumentView;
+
         public MainPage()
         {
             ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
@@ -128,6 +130,8 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+                if (xMapDocumentView != null)
+                    xMapDocumentView.DataContext = new DocumentViewModel(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
@@ -158,6 +162,7 @@ namespace Dash
             workspace.SetHeight(double.NaN);
             var documentViewModel = new DocumentViewModel(workspace);
             MainDocView.DataContext = documentViewModel;
+            xMapDocumentView.DataContext = documentViewModel;
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
             MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             return true;
@@ -176,6 +181,7 @@ namespace Dash
                 workspace.SetHeight(double.NaN);
                 var documentViewModel = new DocumentViewModel(workspace);
                 MainDocView.DataContext = documentViewModel;
+                xMapDocumentView.DataContext = documentViewModel;
                 MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
             }
         }
@@ -452,6 +458,29 @@ namespace Dash
         private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
         {
             args.Cancel = true;
+        }
+
+        private void xMapDocumentView_Loaded(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void xMainDocView_Loaded(object sender, RoutedEventArgs e)
+        {
+            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(MainDocView.ViewModel.DocumentController), HorizontalAlignment=HorizontalAlignment.Stretch, VerticalAlignment=VerticalAlignment.Stretch };
+            Grid.SetRow(xMapDocumentView, 2);
+            xLeftGrid.Children.Add(xMapDocumentView);
+                              var dt = new DispatcherTimer();
+            dt.Interval = new TimeSpan(0, 0, 1);
+            dt.Tick += Dt_Tick;
+            dt.Start();
+        }
+
+        private void Dt_Tick(object sender, object e)
+        {
+            if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
+            {
+                freeformView.ViewManipulationControls.FitToParent();
+            }
         }
     }
 }

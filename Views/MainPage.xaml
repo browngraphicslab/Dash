@@ -42,7 +42,7 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" Loaded="xMainDocView_Loaded" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
@@ -76,11 +76,38 @@
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
         <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
-        
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>
         </Canvas>
-        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0"/>
+        <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="15" x:Name="xTreeSplitter"/>
+                <RowDefinition Height="50" />
+            </Grid.RowDefinitions>
+            <local:CollectionTreeView x:Name="xMainTreeView"/>
+            <localMicrosoft:GridSplitter 
+                GettingFocus="TextBlock_GettingFocus" 
+                x:Name="xLeftSplitter"
+                Grid.Row="1" Height="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
+                ResizeDirection="Auto"
+                Background="LightGray"
+                Foreground="White" 
+                FontSize="13">
+                <localMicrosoft:GridSplitter.Element>
+                    <Grid GettingFocus="TextBlock_GettingFocus">
+                        <TextBlock HorizontalAlignment="Center" 
+                                   IsHitTestVisible="False"
+                                   VerticalAlignment="Center"  
+                                    GettingFocus="TextBlock_GettingFocus"
+                                    Text="&#xE784;"
+                                   Foreground="Black" 
+                                   FontFamily="Segoe MDL2 Assets">
+                        </TextBlock>
+                    </Grid>
+                </localMicrosoft:GridSplitter.Element>
+            </localMicrosoft:GridSplitter>
+          </Grid>
     </Grid>
 </Page>
