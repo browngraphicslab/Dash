@@ -375,12 +375,41 @@ namespace Dash
         {
             var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos,this).OfType<CollectionView>().ToList();
-            if (topCollection.First().CurrentView is CollectionFreeformView)
+            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
             {
-                TabMenu.ConfigureAndShow(topCollection.First().CurrentView as CollectionFreeformView, pos, xCanvas, true);
-                TabMenu.Instance?.AddGoToTabItems();
                 if (e != null)
-                    e.Handled = true;
+                {
+                    foreach (var d in freeformView.xItemsControl.ItemsPanelRoot.Children)
+                    {
+                        if (d is ContentPresenter presenter)
+                        {
+                            if (presenter.Content is DocumentViewModel dvm)
+                            {
+                                if (dvm.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                                {
+                                    var dv = d.GetFirstDescendantOfType<DocumentView>();
+                                    var hit = dv.IsHitTestVisible;
+                                    dv.IsHitTestVisible = true;
+                                    var hits = VisualTreeHelper.FindElementsInHostCoordinates(pos, dv).ToList();
+                                    e.Handled = hits.Count > 0;
+                                    dv.IsHitTestVisible = hits.Count > 0 ? !hit : hit;
+                                    if (!dv.IsHitTestVisible)
+                                        dvm.DecorationState = dv.IsHitTestVisible;
+                                    if (e.Handled)
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (e == null || !e.Handled)
+                {
+                    TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
+                    TabMenu.Instance?.AddGoToTabItems();
+                    if (e != null)
+                        e.Handled = true;
+                }
             }
         }
 

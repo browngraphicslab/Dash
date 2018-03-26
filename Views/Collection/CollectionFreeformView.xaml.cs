@@ -549,7 +549,7 @@ namespace Dash
                 }
                 if (e.Key == VirtualKey.G)
                 {
-                    ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
+                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height), null);
                 }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
@@ -557,13 +557,13 @@ namespace Dash
             }
         }
 
-        List<DocumentView> DocsInMarquee(Rect marquee)
+        public List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 var docs = xItemsControl.ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null))
+                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null && d.IsHitTestVisible))
                 {
                     var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));

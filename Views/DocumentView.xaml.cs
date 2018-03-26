@@ -190,16 +190,35 @@ namespace Dash
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
-            ManipulationControls.OnManipulatorStarted += () => SelectedDocuments().ForEach((d) =>
+            ManipulationControls.OnManipulatorStarted += () => {
+                if (!this.IsShiftPressed() && ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                {
+                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    {
+                        cview.SelectDocs(cview.DocsInMarquee(new Rect(ViewModel.Position, new Size(ActualWidth, ActualHeight))));
+                    }
+                }
+                SelectedDocuments().ForEach((d) =>
+                {
+                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                        d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
+                });
+            };
+            ManipulationControls.OnManipulatorCompleted += () =>
             {
-                d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
-                d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
-            });
-            ManipulationControls.OnManipulatorCompleted += () => SelectedDocuments().ForEach((d) =>
-            {
-                d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
-                d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-            });
+                SelectedDocuments().ForEach((d) =>
+                {
+                    d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                    d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+                });
+                if (ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                {
+                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    {
+                        cview.DeselectAll();
+                    }
+                }
+            };
 
             MenuFlyout = xMenuFlyout;
 

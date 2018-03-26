@@ -72,16 +72,16 @@ namespace Dash
         {
             get
             {
-                var backgroundStr = LayoutDocument.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
+                //var backgroundStr = LayoutDocument.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
 
-                if (!string.IsNullOrEmpty(backgroundStr) && backgroundStr.Length == 9)
-                {
-                    byte a = byte.Parse(backgroundStr.Substring(1, 2), NumberStyles.HexNumber);
-                    byte r = byte.Parse(backgroundStr.Substring(3, 2), NumberStyles.HexNumber);
-                    byte g = byte.Parse(backgroundStr.Substring(5, 2), NumberStyles.HexNumber);
-                    byte b = byte.Parse(backgroundStr.Substring(7, 2), NumberStyles.HexNumber);
-                    return new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                }
+                //if (!string.IsNullOrEmpty(backgroundStr) && backgroundStr.Length == 9)
+                //{
+                //    byte a = byte.Parse(backgroundStr.Substring(1, 2), NumberStyles.HexNumber);
+                //    byte r = byte.Parse(backgroundStr.Substring(3, 2), NumberStyles.HexNumber);
+                //    byte g = byte.Parse(backgroundStr.Substring(5, 2), NumberStyles.HexNumber);
+                //    byte b = byte.Parse(backgroundStr.Substring(7, 2), NumberStyles.HexNumber);
+                //    return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+                //}
                 return new SolidColorBrush(Colors.Transparent);
             }
             set => LayoutDocument.SetField<TextController,string>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
