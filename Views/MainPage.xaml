@@ -84,7 +84,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="15" x:Name="xTreeSplitter"/>
-                <RowDefinition Height="50" />
+                <RowDefinition Height="300" />
             </Grid.RowDefinitions>
             <local:CollectionTreeView x:Name="xMainTreeView"/>
             <localMicrosoft:GridSplitter 

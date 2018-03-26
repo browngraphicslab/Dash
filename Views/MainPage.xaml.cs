@@ -466,12 +466,20 @@ namespace Dash
 
         private void xMainDocView_Loaded(object sender, RoutedEventArgs e)
         {
-            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(MainDocView.ViewModel.DocumentController), HorizontalAlignment=HorizontalAlignment.Stretch, VerticalAlignment=VerticalAlignment.Stretch };
-            Grid.SetRow(xMapDocumentView, 2);
-            xLeftGrid.Children.Add(xMapDocumentView);
-                              var dt = new DispatcherTimer();
-            dt.Interval = new TimeSpan(0, 0, 1);
-            dt.Tick += Dt_Tick;
+            // bcz: UGHHHH -- I needed to make this timer because I get Win32 exceptions on loading if I just make the MapDocumentView in the Xaml file or anywhere else!
+            var dt = new DispatcherTimer();
+            dt.Interval = new TimeSpan(0, 0, 5);
+            dt.Tick += (s, a) =>
+            {
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(MainDocView.ViewModel.DocumentController), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                Grid.SetRow(xMapDocumentView, 2);
+                xLeftGrid.Children.Add(xMapDocumentView);
+                var dt2 = new DispatcherTimer();
+                dt2.Interval = new TimeSpan(0, 0, 1);
+                dt2.Tick += Dt_Tick;
+                dt2.Start();
+                dt.Stop();
+            };
             dt.Start();
         }
 
