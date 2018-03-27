@@ -467,7 +467,7 @@ namespace Dash
             var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
 
             // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
+            Size oldSize = new Size(ViewModel.ActualWidth, ViewModel.ActualHeight);
             oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth * oldSize.Width : oldSize.Height;
             Size newSize = new Size();
 
@@ -507,7 +507,7 @@ namespace Dash
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
-                    var h = ViewModel.Height;
+                    var h = double.IsNaN(ViewModel.Height) && ViewModel.Content is CollectionView ? ViewModel.ActualHeight : ViewModel.Height;
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
                     return new Size(ViewModel.Width, ViewModel.Height);
@@ -636,11 +636,13 @@ namespace Dash
         {
             if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
                 ViewModel.DecorationState = false;
+            MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
         }
 
         #region UtilityFuncions

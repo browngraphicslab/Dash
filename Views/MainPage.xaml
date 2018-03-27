@@ -93,7 +93,7 @@
                 </Grid.RowDefinitions>
                 <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
             </Grid>
-            <local:CollectionTreeView x:Name="xMainTreeView"/>
+            <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
             <localMicrosoft:GridSplitter 
                 GettingFocus="TextBlock_GettingFocus" 
                 x:Name="xLeftSplitter"

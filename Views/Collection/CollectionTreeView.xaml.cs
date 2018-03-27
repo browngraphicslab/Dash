@@ -61,5 +61,11 @@ namespace Dash
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController.Document);
             
         }
+
+
+        public void Highlight(DocumentController document, bool? flag)
+        {
+            xTreeRoot.Highlight(document, flag);
+        }
     }
 }

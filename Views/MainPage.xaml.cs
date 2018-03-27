@@ -259,6 +259,39 @@ namespace Dash
             return false;
         }
 
+        public void HighlightTreeView(DocumentController document, bool ?flag)
+        {
+            xMainTreeView.Highlight(document, flag);
+        }
+
+        public void HighlightDoc(DocumentController document, bool ?flag)
+        {
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            if (collection != null && document != null)
+            {
+                highlightDoc(collection, document, flag);
+            }
+        }
+
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
+        {
+            foreach (var dm in collection.ViewModel.DocumentViewModels)
+                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                {
+                    if (flag == null)
+                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
+                    else if (flag == true)
+                        dm.DecorationState = (dm.Undecorated == false);
+                    else if (flag == false)
+                        dm.DecorationState = false;
+                }
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
+                {
+                    highlightDoc(freeformView, document, flag);
+                }
+        }
+
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
