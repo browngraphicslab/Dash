@@ -492,28 +492,16 @@ namespace Dash
             {
                 xLeftStack.Children.Remove(xMapDocumentView);
             }
-            var dt = new DispatcherTimer();
-            dt.Interval = new TimeSpan(0, 0, 5);
-            dt.Tick += (s, a) =>
-            {
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xLeftStack.Children.Add(xMapDocumentView);
-                mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss,aa) => {
-                    if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
-                    {
-                        freeformView.ViewManipulationControls.FitToParent();
-                    }
-                };
-                mapTimer.Start();
-                dt.Stop();
+            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            xLeftStack.Children.Add(xMapDocumentView);
+            mapTimer.Interval = new TimeSpan(0, 0, 1);
+            mapTimer.Tick += (ss,aa) => {
+                if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
+                {
+                    freeformView.ViewManipulationControls.FitToParent();
+                }
             };
-            dt.Start();
-        }
-
-        private void xMainDocView_Loaded(object sender, RoutedEventArgs e)
-        {
-
+            mapTimer.Start();
         }
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
         {

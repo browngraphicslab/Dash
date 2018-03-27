@@ -49,8 +49,7 @@ namespace Dash
             this.RegisterPropertyChangedCallback(FilterStringProperty,
                 (sender, dp) => ViewModel?.BindableDocumentViewModels.RefreshFilter());
         }
-
-
+        
         public void Highlight(DocumentController document, bool? flag)
         {
             if (xListView.ItemsPanelRoot != null)

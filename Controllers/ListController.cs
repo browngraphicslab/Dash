@@ -11,6 +11,11 @@ using DashShared.Models;
 
 namespace Dash
 {
+    public static class ListContainedFieldFlag
+    {
+        public static bool Enabled = false;
+    }
+
     public class ListController<T> : BaseListController where T : FieldControllerBase
     {
         private List<T> _typedData = new List<T>();
@@ -44,20 +49,21 @@ namespace Dash
                 _typedData = value;
             }
         }
-
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
-            //if (dargs != null)
-            //{
-            //    Debug.Assert(sender is T);
-            //    var fieldKey = dargs.Reference.FieldKey;
-            //    if (fieldKey.Equals(KeyStore.TitleKey) ||
-            //        fieldKey.Equals(KeyStore.PositionFieldKey))
-            //    {
-            //        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
-            //    }
-            //}
+            if (ListContainedFieldFlag.Enabled)
+            {
+                var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+                if (dargs != null)
+                {
+                    Debug.Assert(sender is T);
+                    var fieldKey = dargs.Reference.FieldKey;
+                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey))
+                    {
+                        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T> { (T)sender }), context);
+                    }
+                }
+            }
         }
         
         public override object GetValue(Context context)

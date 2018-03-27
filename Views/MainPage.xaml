@@ -42,7 +42,7 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" Loaded="xMainDocView_Loaded"     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
