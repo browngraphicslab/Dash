@@ -767,7 +767,7 @@ namespace Dash
                 var newField = dragModel.GetDropDocument(new Point());
                 newField.SetField<NumberController,double>(KeyStore.HeightFieldKey, 30, true);
                 newField.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
-                var activeLayout = ViewModel.DocumentController?.GetActiveLayout() ?? ViewModel.LayoutDocument;
+                var activeLayout = ViewModel.LayoutDocument;
                 if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
                 {
                     StackLayout.AddDocument(activeLayout, newField);

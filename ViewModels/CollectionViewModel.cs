@@ -63,6 +63,8 @@ namespace Dash
             refToCollection.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey,
                 delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
                 {
+                    if (!context1.IsCompatibleWith(new Context(ContainerDocument)))
+                        return;
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                     if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
@@ -164,7 +166,7 @@ namespace Dash
                 return;
             }
             doc.CaptureNeighboringContext();
-
+            
             // just update the collection, the colllection will update our view automatically
             CollectionController.Add(doc);
         }

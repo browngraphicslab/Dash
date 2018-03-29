@@ -415,9 +415,6 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
-      <DependentUpon>FreeformSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
@@ -565,9 +562,6 @@
     <Compile Include="Views\Collection\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\DocumentSettings.xaml.cs">
-      <DependentUpon>DocumentSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -583,7 +577,6 @@
     <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\SettingsPaneFromDocumentControllerFactory.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -923,10 +916,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InterfaceBuilder\FreeformSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1002,10 +991,6 @@
     <Page Include="Views\Collection\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\DocumentSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>

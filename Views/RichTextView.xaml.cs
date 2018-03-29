@@ -277,7 +277,7 @@ namespace Dash
         /// <param name="e"></param>
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsAltPressed())
+            if (!this.IsCtrlPressed() && !this.IsAltPressed() && !e.Key.Equals(VirtualKey.Shift))
             {
                 getDataDoc().CaptureNeighboringContext();
             }
