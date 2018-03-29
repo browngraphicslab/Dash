@@ -65,19 +65,22 @@ namespace Dash
                 {
                     var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
                     var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                    if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
                     {
-                        updateViewModels(cargs, copiedContext);
-                    }
-                    else
-                    {
+                        if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                        {
+                            updateViewModels(cargs, copiedContext);
+                        }
+                        else
+                        {
 
-                        var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
-                        if (collectionFieldModelController == null) return;
-                        var documents = collectionFieldModelController.GetElements();
-                        DocumentViewModels.Clear();
+                            var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
+                            if (collectionFieldModelController == null) return;
+                            var documents = collectionFieldModelController.GetElements();
+                            DocumentViewModels.Clear();
 
-                        addViewModels(documents, context);
+                            addViewModels(documents, context);
+                        }
                     }
 
                 });

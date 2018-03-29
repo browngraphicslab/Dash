@@ -60,7 +60,7 @@ namespace Dash
                     var fieldKey = dargs.Reference.FieldKey;
                     if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey))
                     {
-                        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T> { (T)sender }), context);
+                        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }), context);
                     }
                 }
             }
@@ -289,7 +289,8 @@ namespace Dash
                 Remove, //Items were removed from the list
                 Replace, //Items in the list were replaced with other items
                 Clear, //The list was cleared
-                Update //An item in the list was updated
+                Update, //An item in the list was updated
+                Content
             }
 
             public readonly List<T> ChangedDocuments;

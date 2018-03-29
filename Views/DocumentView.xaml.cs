@@ -30,7 +30,7 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
-        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+        public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
         
         public MenuFlyout MenuFlyout { get; set; }
 
@@ -59,7 +59,6 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
-
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -77,6 +76,7 @@ namespace Dash
             void updateBindings(object sender, DependencyProperty dp)
             {
                 var doc = ViewModel?.LayoutDocument;
+
                 var binding =  !BindRenderTransform || doc == null ? null :
                         new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
                                                                new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
