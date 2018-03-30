@@ -78,6 +78,7 @@ namespace Dash
             {
                 e.Handled = true;
                 xRichEditBox_Drop(s, e);
+                this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
             xRichEditBox.GotFocus += (s,e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
@@ -206,7 +207,7 @@ namespace Dash
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
                 var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
-                if (nearest != null)
+                if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
                 {
                     if (this.IsCtrlPressed())
                         nearest.DeleteDocument();

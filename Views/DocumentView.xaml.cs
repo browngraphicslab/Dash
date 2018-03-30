@@ -86,7 +86,7 @@ namespace Dash
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
-
+            
             Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
@@ -758,6 +758,8 @@ namespace Dash
 
         void This_Drop(object sender, DragEventArgs e)
         {
+            var footer = sender == this.xFooter;
+            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
             if (dragModel?.DraggedKey != null)
@@ -774,10 +776,18 @@ namespace Dash
                     if (activeLayout.GetField(KeyStore.DataKey, true) == null)
                     {
                         var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
-                        fields.Insert(0, newField);
+                        if (!footer)
+                            fields.Insert(0, newField);
+                        else fields.Add(newField);
                         activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
                     }
-                    else activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(newField, 0);
+                    else
+                    {
+                        var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                        if (!footer)
+                            listCtrl.Add(newField, 0);
+                        else listCtrl.Add(newField);
+                    }
                 }
                 else
                 {
@@ -796,7 +806,7 @@ namespace Dash
                         curLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, double.NaN, true);
                         curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     }
-                    activeLayout = new StackLayout(new DocumentController[] { newField, curLayout }).Document;
+                    activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newField, footer ? newField : curLayout }).Document;
                     activeLayout.SetField<PointController, Point>(KeyStore.PositionFieldKey, ViewModel.Position, true);
                     activeLayout.SetField<NumberController, double>(KeyStore.WidthFieldKey, ViewModel.ActualWidth, true);
                     activeLayout.SetField<NumberController, double>(KeyStore.HeightFieldKey, ViewModel.ActualHeight, true);
@@ -810,6 +820,7 @@ namespace Dash
 
         void This_DragOver(object sender, DragEventArgs e)
         {
+            xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
@@ -823,8 +834,9 @@ namespace Dash
             }
         }
 
-        void This_DragLeave(object sender, DragEventArgs e)
+        public void This_DragLeave(object sender, DragEventArgs e)
         {
+            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
     }
