@@ -109,7 +109,7 @@ namespace Dash
                     // parameter
                     //TODO Navigate to a prelogged in page if we can!
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
-                    ListContainedFieldFlag.Enabled = false; // works but slows things down A LOT!
+                    ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
                 }
 
                 // Ensure the current window is active

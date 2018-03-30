@@ -767,10 +767,17 @@ namespace Dash
                 var newField = dragModel.GetDropDocument(new Point());
                 newField.SetField<NumberController,double>(KeyStore.HeightFieldKey, 30, true);
                 newField.SetField<NumberController, double>(KeyStore.WidthFieldKey, double.NaN, true);
+                newField.SetField<NumberController, Point>(KeyStore.PositionFieldKey, new Point(100,100), true);
                 var activeLayout = ViewModel.LayoutDocument;
                 if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
                 {
-                    StackLayout.AddDocument(activeLayout, newField);
+                    if (activeLayout.GetField(KeyStore.DataKey, true) == null)
+                    {
+                        var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
+                        fields.Insert(0, newField);
+                        activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
+                    }
+                    else activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).Add(newField, 0);
                 }
                 else
                 {

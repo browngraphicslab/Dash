@@ -117,14 +117,22 @@ namespace Dash
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
-        private bool AddHelper(T element)
+        private bool AddHelper(T element, int where = -1)
         {
             if (TypedData.Contains(element))
                 return false;
             element.FieldModelUpdated += ContainedFieldUpdated;
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
-            TypedData.Add(element);
-            ListFieldModel.Data.Add(element.GetId());
+            if (where == -1)
+            {
+                TypedData.Add(element);
+                ListFieldModel.Data.Add(element.GetId());
+            }
+            else
+            {
+                TypedData.Insert(where, element);
+                ListFieldModel.Data.Insert(where, element.GetId());
+            }
             return true;
         }
 
@@ -136,9 +144,9 @@ namespace Dash
             return removed;
         }
 
-        public void Add(T element)
+        public void Add(T element, int where = -1)
         {
-            if (AddHelper(element))
+            if (AddHelper(element, where))
             {
                 UpdateOnServer();
 

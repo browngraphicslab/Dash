@@ -856,6 +856,7 @@ namespace Dash
             var richEditBox = sender as RichEditBox;
             richEditBox.GotFocus -= RichEditBox_GotFocus;
             previewTextbox.Text = string.Empty;
+            richEditBox.Document.Selection.SetRange(0, 0);
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
