@@ -718,7 +718,7 @@ namespace Dash
 
             return fieldChanged;
         }
-        public bool SetField<TDefault,V>(KeyController key, V v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
@@ -1135,7 +1135,7 @@ namespace Dash
                 var refSender = sender as ReferenceController;
                 var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
                             this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
+                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || this.GetField(KeyStore.AbstractInterfaceKey,true) != null)
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.

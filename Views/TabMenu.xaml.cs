@@ -137,7 +137,7 @@ namespace Dash
         {
             var list = new List<ITabItemViewModel>
             {
-                new CreateOpTabItemViewModel("Document", Util.BlankDoc),
+                new CreateOpTabItemViewModel("Document", Util.AdornmentDoc),
                 new CreateOpTabItemViewModel("Collection", Util.BlankCollection),
                 new CreateOpTabItemViewModel("Note", Util.BlankNote)
             };

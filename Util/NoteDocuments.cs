@@ -66,17 +66,12 @@ namespace Dash
                 {
                    // [KeyStore.DataKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
+                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
-                var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-                {
-                    [CollectionTitleOperatorController.CollectionDocsKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
-                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
-                }, DocumentType.DefaultType);
-
                 protoDoc.SetField(KeyStore.TitleKey,
-                    new DocumentReferenceController(titleDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
+                    new DocumentReferenceController(protoDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
 
                 return protoDoc;
             }

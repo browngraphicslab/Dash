@@ -11,6 +11,11 @@ using DashShared.Models;
 
 namespace Dash
 {
+    public static class ListContainedFieldFlag
+    {
+        public static bool Enabled = false;
+    }
+
     public class ListController<T> : BaseListController where T : FieldControllerBase
     {
         private List<T> _typedData = new List<T>();
@@ -44,20 +49,21 @@ namespace Dash
                 _typedData = value;
             }
         }
-
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
-            //if (dargs != null)
-            //{
-            //    Debug.Assert(sender is T);
-            //    var fieldKey = dargs.Reference.FieldKey;
-            //    if (fieldKey.Equals(KeyStore.TitleKey) ||
-            //        fieldKey.Equals(KeyStore.PositionFieldKey))
-            //    {
-            //        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Update, new List<T>{(T) sender}), context);
-            //    }
-            //}
+            if (ListContainedFieldFlag.Enabled)
+            {
+                var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+                if (dargs != null)
+                {
+                    Debug.Assert(sender is T);
+                    var fieldKey = dargs.Reference.FieldKey;
+                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey))
+                    {
+                        OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }), context);
+                    }
+                }
+            }
         }
         
         public override object GetValue(Context context)
@@ -111,14 +117,22 @@ namespace Dash
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
-        private bool AddHelper(T element)
+        private bool AddHelper(T element, int where = -1)
         {
             if (TypedData.Contains(element))
                 return false;
             element.FieldModelUpdated += ContainedFieldUpdated;
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
-            TypedData.Add(element);
-            ListFieldModel.Data.Add(element.GetId());
+            if (where == -1)
+            {
+                TypedData.Add(element);
+                ListFieldModel.Data.Add(element.GetId());
+            }
+            else
+            {
+                TypedData.Insert(where, element);
+                ListFieldModel.Data.Insert(where, element.GetId());
+            }
             return true;
         }
 
@@ -130,9 +144,9 @@ namespace Dash
             return removed;
         }
 
-        public void Add(T element)
+        public void Add(T element, int where = -1)
         {
-            if (AddHelper(element))
+            if (AddHelper(element, where))
             {
                 UpdateOnServer();
 
@@ -283,7 +297,8 @@ namespace Dash
                 Remove, //Items were removed from the list
                 Replace, //Items in the list were replaced with other items
                 Clear, //The list was cleared
-                Update //An item in the list was updated
+                Update, //An item in the list was updated
+                Content
             }
 
             public readonly List<T> ChangedDocuments;

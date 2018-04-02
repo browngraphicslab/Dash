@@ -148,9 +148,17 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-
-        private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void Highlight(bool ? flag)
         {
+            if (flag == null)
+                ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
+            else if (flag == true)
+                ViewModel.DecorationState = (ViewModel.Undecorated == false);
+            else if (flag == false)
+                ViewModel.DecorationState = false;
+        }
+        private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        { 
             if (_isCollection)
             {
                 e.Handled = true;
@@ -166,6 +174,25 @@ namespace Dash
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                 }
             }
+        }
+
+        private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            MainPage.Instance.HighlightDoc(docTapped, true);
+
+        }
+
+        private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            MainPage.Instance.HighlightDoc(docTapped, false);
+        }
+
+        private void XTextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            //var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            //MainPage.Instance.HighlightDoc(docTapped);
         }
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
