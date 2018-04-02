@@ -80,9 +80,13 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            xRichEditBox.GotFocus += (s,e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+            xRichEditBox.GotFocus += (s, e) =>
+            {
+                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+                bindWidthCalculator();
+            };
 
-            xRichEditBox.TextChanged += (s,e) => UpdateDocument();
+            xRichEditBox.TextChanged += (s, e) => { UpdateDocument();  };
 
             xRichEditBox.KeyUp += (s, e) => {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
@@ -100,6 +104,32 @@ namespace Dash
             xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+        }
+
+        DocumentView lastSrc = null;
+        private void bindWidthCalculator()
+        {
+            if (lastSrc != null)
+                lastSrc.SizeChanged -= Src_SizeChanged;
+            var src = this.GetFirstAncestorOfType<DocumentView>();
+            var userWidth = src.ViewModel.LayoutDocument.GetField(KeyStore.UserSetWidthKey);
+            if (userWidth != null)
+            {
+                src.SizeChanged += Src_SizeChanged;
+                lastSrc = src;
+                MainPage.Instance.HackRichText.TextWrapping = TextWrapping.Wrap;
+                MainPage.Instance.HackRichText.Width = src.ActualWidth;
+            }
+            else
+            {
+                MainPage.Instance.HackRichText.Width = double.NaN;
+                MainPage.Instance.HackRichText.TextWrapping = TextWrapping.NoWrap;
+            }
+        }
+
+        private void Src_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            MainPage.Instance.HackRichText.Width = e.NewSize.Width;
         }
 
         public void UpdateDocument()
@@ -122,6 +152,7 @@ namespace Dash
                 
                 DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
             }
+            sizeToFit();
         }
         public RichTextModel.RTD   Text
         {
@@ -160,19 +191,19 @@ namespace Dash
         }
         void               sizeToFit()
         {
-            if (!_isPointerPressed)
+            if (!_isPointerPressed && FocusManager.GetFocusedElement() == xRichEditBox)
             {
-                xRichEditBox.Height = double.NaN;
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
+                var rtfText = getRtfText();
+                MainPage.Instance.HackRichText.Document.Selection.SetRange(0, rtfText.Length);
+                MainPage.Instance.HackRichText.Document.SetText(TextSetOptions.FormatRtf, getRtfText());
+                var userWidth = this.GetFirstAncestorOfType<DocumentView>().ViewModel.LayoutDocument.GetField(KeyStore.UserSetWidthKey);
+                Width = MainPage.Instance.HackRichText.DesiredSize.Width + (userWidth == null ? 25 : 0);
+                Height = MainPage.Instance.HackRichText.DesiredSize.Height;
                 if (Parent is RelativePanel relative)
                 {
-                    var pad = 0.0;
-                    foreach (var item in relative.Children)
-                        if (item != this)
-                            pad += (item as FrameworkElement).ActualHeight;
-                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                    var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                    relative.Height = Height + pad;
                 }
-                Height = xRichEditBox.DesiredSize.Height;
             }
         }
 
@@ -341,7 +372,9 @@ namespace Dash
 
             _releasedHdlr = new PointerEventHandler(async (s, e) => {
                 _isPointerPressed = false;
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
+                //if (FocusManager.GetFocusedElement() == this.xRichEditBox)
+                //    bindWidthCalculator();
+                // await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
             });
             _selectedFieldUpdatedHdlr = new FieldUpdatedHandler((FieldControllerBase s, FieldUpdatedEventArgs e, Context c) => MatchQuery(getSelected()));
             _scrollHandler            = async (object s, object e) => {
@@ -352,7 +385,7 @@ namespace Dash
             MainPage.Instance.AddHandler(PointerPressedEvent, _pressedHdlr, true);
             MainPage.Instance.AddHandler(PointerReleasedEvent, _releasedHdlr, true);
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
-            this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated += _scrollHandler;
+            //this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated += _scrollHandler;
         }
 
         /// <summary>
