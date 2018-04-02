@@ -56,8 +56,7 @@ namespace Dash
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-
-            //xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
+            
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
         }
@@ -77,7 +76,6 @@ namespace Dash
         private void KeyValuePane_Loaded(object sender, RoutedEventArgs e)
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
-            //docView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             docView?.StyleKeyValuePane();
         }
 
@@ -111,18 +109,6 @@ namespace Dash
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
-            //ListItemSource.Clear();
-            //if (_dataContextDocument != null)
-            //{
-            //    var keys = _dataContextDocument
-            //                   .GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-            //                   ?.TypedData?.ToList() ?? new List<KeyController>();
-            //    foreach (var keyFieldPair in _dataContextDocument.EnumFields())
-            //        if (!keyFieldPair.Key.Name.StartsWith("_"))
-            //            ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-            //                new BoundController(keyFieldPair.Value, _dataContextDocument),
-            //                keys.Contains(keyFieldPair.Key), TypeColumnWidth));
-            //}
 
             ListItemSource.Clear();
             if (_dataContextDocument != null)
@@ -190,8 +176,6 @@ namespace Dash
 
             if (!UserInputIsValid()) return;
 
-
-            //var item = (TypeInfo) xTypeComboBox.SelectedItem;
             var key = KeyController.LookupKeyByName(xNewKeyText.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyText.Text);
             FieldControllerBase fmController = new TextController("something went wrong");
             var stringValue = xNewValueText.Text;
@@ -229,14 +213,12 @@ namespace Dash
 
             // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
             var posInKvPane = e.GetPosition(xOuterGrid);
-            //var columnDefinitions = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem)?.ContentTemplateRoot as Grid)?.ColumnDefinitions;
             var columnDefinitions = xKeyValueGrid.ColumnDefinitions;
             if (columnDefinitions == null)
             {
                 return;
             }
-
-            //var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
+            
             var keyColumnWidth = columnDefinitions[0].ActualWidth;
             if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
             {
@@ -288,7 +270,6 @@ namespace Dash
                     _selectedKV.Key, new Context(_dataContextDocument)).GetCopy();
                 FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
                 _dataContextDocument.SetField(_selectedKV.Key, field, true);
-                //_dataContextDocument.ParseDocField(_selectedKV.Key, _tb.Text, field);
                 RemoveEditingTextBox();
                 args.Cancel = true;
             }
