@@ -29,9 +29,12 @@ namespace Dash
         {
         }
 
-        public IntersectionOperatorController() : base(new OperatorModel(OperatorType.Intersection))
+        public IntersectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("5B93D353-AE02-4E20-9E2D-D38C01BC5F20", "Intersection");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -48,18 +51,9 @@ namespace Dash
             //(doc.GetField(IntersectionKey) as ListController<DocumentController>).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            //return new IntersectionOperatorModelController(OperatorFieldModel);
             return new IntersectionOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Dash
             Document        = document;
             HeaderViewModel = headerViewModel;
             Row             = row;
-            DataReference   = new DocumentReferenceController(Document.GetDataDocument(null).GetId(), headerViewModel.FieldKey);
+            DataReference   = new DocumentReferenceController(Document.GetDataDocument().GetId(), headerViewModel.FieldKey);
 
             // hack to expand headers if they contain alot of text
             var tfmc = DataReference.DereferenceToRoot(null);

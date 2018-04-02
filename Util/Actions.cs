@@ -46,7 +46,7 @@ namespace Dash
             //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
             //collection.ViewModel.AddDocument(newDoc, null);
-            collection.ViewModel.AddDocument(Util.BlankDocWithPosition(where), null);
+            collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, where), null);
 
             //DBTest.DBDoc.AddChild(newDoc);
         }
@@ -75,37 +75,6 @@ namespace Dash
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionViewModel.AddDocument(docController, null);
-        }
-
-        /// <summary>
-        /// Given a function that produces a document controller, visually displays the documents
-        /// on the selected FreeFormView, defaulting to the main canvas.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="opController"></param>
-        public static void AddDocFromFunction(UserControl sender, DocumentController opController)
-        {
-            // default to MainPage collection view
-            CollectionFreeformView freeForm = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
-
-            // fetch the coordinates of the caller on canvas
-            var searchView = sender;
-            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-            Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point());
-            translate = new Point(translate.X + 300, translate.Y + 100);
-
-            // using this as a setter for the transform massive hack - LM
-            var _ = new DocumentViewModel(opController)
-            {
-                Position = translate
-            };
-
-            if (opController != null)
-            {
-                freeForm.ViewModel.AddDocument(opController, null);
-            }
-
         }
 
         #region Ink Commands

@@ -12,15 +12,23 @@ using DashShared.Models;
 using System.Globalization;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
+using Dash.Converters;
 
 namespace Dash
 { 
-    class BackgroundBox : CourtesyDocument
+    public class BackgroundBox : CourtesyDocument
     {
         /// <summary>
      /// The document type which is uniquely associated with pdf boxes
      /// </summary>
         public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Box");
+
+        public enum AdornmentShape {
+            Elliptical,
+            Rectangular,
+            Rounded
+        }
 
        
         /// <summary>
@@ -28,8 +36,8 @@ namespace Dash
         /// </summary>
         private static string PrototypeId = "88A3B7F5-7828-4251-ACFC-E56428316203";
 
-        public BackgroundBox( double x = 0, double y = 0, double w = 200, double h = 200)
-        {  
+        public BackgroundBox(AdornmentShape shape, double x = 0, double y = 0, double w = 200, double h = 200)
+        {
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), null);
             
@@ -38,11 +46,27 @@ namespace Dash
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
             Document.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
+            Document.SetField(KeyStore.AdornmentShapeKey, new TextController(shape.ToString()), true);
 
             // replace any of the default fields on the prototype delegate with the new fields
             Document.SetFields(fields, true);
-           // Document.SetField(KeyStore.DocumentContextKey, Document, true);
+        }
 
+
+
+        protected static void BindBackgroundColor(Windows.UI.Xaml.Shapes.Shape element, DocumentController docController,
+            Context context)
+        {
+            var binding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.BackgroundColorKey,
+                Converter = new StringToBrushConverter(),
+                Context = context
+            };
+
+            element.AddFieldBinding(Shape.FillProperty, binding);
         }
         /// <summary>
         /// Returns the prototype layout if it exists, otherwise creates a new prototype layout
@@ -72,21 +96,35 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the  view
-            var background = new Grid();
-            background.Loaded += Background_Loaded;
-
-            // make the pdf respond to resizing, interactions etc...
-            SetupBindings(background, docController, context);
+            Shape shape = null;
+            AdornmentShape ashape = AdornmentShape.Rectangular;
+            Enum.TryParse<AdornmentShape>(docController.GetDereferencedField<TextController>(KeyStore.AdornmentShapeKey, context)?.Data ?? AdornmentShape.Rounded.ToString(), out ashape);
+            switch (ashape) {
+                case AdornmentShape.Elliptical:
+                    shape = new Ellipse();
+                    break;
+                case AdornmentShape.Rectangular:
+                    shape = new Rectangle();
+                    break;
+                case AdornmentShape.Rounded:
+                    shape = new Rectangle();
+                    (shape as Rectangle).RadiusX = (shape as Rectangle).RadiusY = 40;
+                    break;
+            }
             
-            return background;
+            shape.Loaded += Background_Loaded;
+
+            SetupBindings(shape, docController, context);
+            BindBackgroundColor(shape, docController, context);
+            
+            return shape;
         }
 
         private static void Background_Loaded(object sender, RoutedEventArgs e)
         {
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
+            var docView = (sender as UIElement).GetFirstAncestorOfType<DocumentView>();
             var cp = docView.GetFirstAncestorOfType<ContentPresenter>();
             Canvas.SetZIndex(cp, -100);
-
         }
     }
 }

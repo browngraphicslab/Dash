@@ -59,12 +59,13 @@ namespace Dash
         }
 
         /// <summary>
-        /// Sets the value on the field. Basically an untyped data setter
+        /// Try to set the value on a field, return true if the value was set to the passed in object
+        /// and false if the value fails to be set
         /// </summary>
-        public abstract bool SetValue(object value);
+        public abstract bool TrySetValue(object value);
 
         /// <summary>
-        /// Sets the value from the field. Basically an untyped data getter
+        /// Gets the value from the field as an object. 
         /// </summary>
         public abstract object GetValue(Context context);
 
@@ -76,7 +77,6 @@ namespace Dash
 
         public abstract FieldControllerBase GetCopy();
 
-
         public virtual bool CheckType(FieldControllerBase fmc)
         {
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
@@ -87,10 +87,16 @@ namespace Dash
         /// string displays.
         /// </summary>
         /// <returns></returns>
-        public virtual String GetTypeAsString()
+        public virtual string GetTypeAsString()
         {
             return TypeInfo.ToString();
         }
+
+        /// <summary>
+        /// Gets the default representation of this fieldcontroller. For example with a number
+        /// the default value could be 0. With a string the default value could be an empty string.
+        /// </summary>
+        /// <returns></returns>
         public abstract FieldControllerBase GetDefaultController();
 
         /// <summary>
@@ -103,8 +109,8 @@ namespace Dash
             tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(1), true);
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
-            tb.Document.SetHeight(Double.NaN);
-            tb.Document.SetWidth(Double.NaN);
+            tb.Document.SetHeight(double.NaN);
+            tb.Document.SetWidth(double.NaN);
             return tb.makeView(tb.Document, context);
         }
 

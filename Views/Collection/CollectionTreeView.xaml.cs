@@ -50,16 +50,22 @@ namespace Dash
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var dvm = e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) ? e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel : null;
             if (dvm != null)
-                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.GetDraggedDocument());
+                ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(dvm.DraggedDocument);
             e.Handled = true;
         }
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             Debug.Assert(ViewModel != null, "ViewModel != null");
-            var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform);//, "New Workspace " + cvm.CollectionController.Count);
+            var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN);//, "New Workspace " + cvm.CollectionController.Count);
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController.Document);
             
+        }
+
+
+        public void Highlight(DocumentController document, bool? flag)
+        {
+            xTreeRoot.Highlight(document, flag);
         }
     }
 }
