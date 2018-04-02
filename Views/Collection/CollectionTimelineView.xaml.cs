@@ -83,7 +83,7 @@ namespace Dash
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
 
         public TimelineMetadata Metadata { get; }
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
+        public CollectionViewModel ViewModel { get; set; }
         public event Action MetadataUpdated;
 
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
@@ -319,6 +319,8 @@ namespace Dash
 
         private void UpdateMetadataMinAndMax()
         {
+            // if context list is empty we can't update anything
+            if (!_contextList.Any()) return;
             try
             {
                 Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
@@ -330,6 +332,7 @@ namespace Dash
             {
                 Debug.WriteLine(e);
             }
+
         }
 
         #endregion
@@ -345,6 +348,8 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            RemoveViewModelEvents(ViewModel);
+            ViewModel = DataContext as CollectionViewModel;;
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
@@ -352,27 +357,35 @@ namespace Dash
 
         private void Initialize(CollectionViewModel viewModel)
         {
-            foreach (var dvm in viewModel.DocumentViewModels)
+            if (viewModel != null)
             {
-                var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
-                    .Select(i => i.Data.CreateObject<DocumentContext>());
-                if (docContexts != null)
-                    foreach (var dc in docContexts)
-                        _contextList.Add(new TimelineElementViewModel(dc, dvm));
+                foreach (var dvm in viewModel.DocumentViewModels)
+                {
+                    var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
+                        .Select(i => i.Data.CreateObject<DocumentContext>());
+                    if (docContexts != null)
+                        foreach (var dc in docContexts)
+                            _contextList.Add(new TimelineElementViewModel(dc, dvm));
+                }
+                UpdateMetadataMinAndMax();
             }
-            UpdateMetadataMinAndMax();
         }
 
         private void AddViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
+            {
+                viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
                 viewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
+            }
         }
 
         private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
+            {
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
+            }
         }
 
         private void DocumentViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

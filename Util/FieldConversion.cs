@@ -50,7 +50,7 @@ namespace Dash
             bool converted = false;
             if (controller is DocumentController dc)
             {
-                dc.SetValue(new DocumentControllerToStringConverter(context).ConvertXamlToData(data));
+                dc.TrySetValue(new DocumentControllerToStringConverter(context).ConvertXamlToData(data));
                 converted = true;
             }
             else if (controller is ListController<DocumentController> ldc)

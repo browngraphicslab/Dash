@@ -34,14 +34,6 @@ namespace Dash
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
 
-        public static void AddDocument(DocumentController stack, DocumentController doc)
-        {
-            var doclist = stack.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-            doclist.Insert(0, doc);
-            // bcz: didn't think I would need to call SetField explicitly but events don't seem to be generated otherwise.
-           // stack.SetField(KeyStore.DataKey, new ListController<DocumentController>(doclist), true);
-        }
-
         protected override DocumentController GetLayoutPrototype()
         {
             throw new NotImplementedException();
@@ -62,9 +54,8 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <param name="context"></param>
-        /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var stack = new RelativePanel();
             var stackFieldData =

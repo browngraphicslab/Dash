@@ -500,30 +500,27 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController BlankDocWithPosition(Point pos, double width=200, double height=200)
+        public static DocumentController AdornmentWithPosition(BackgroundBox.AdornmentShape shape, Point pos, double width=200, double height=200)
         {
-            //return new Dash.BackgroundBox(pos.X, pos.Y, width, height).Document;
-            var docfields = new Dictionary<KeyController, FieldControllerBase>()
-            {
-                [KeyStore.TitleKey] = new TextController("Document")
-            };
-            var blankDocument = new DocumentController(docfields, DocumentType.DefaultType);
-            var layout = new FreeFormDocument(new List<DocumentController>(), pos, new Size(200, 200)).Document;
-            blankDocument.SetActiveLayout(layout, true, true);
-            return blankDocument;
+            return new BackgroundBox(shape, pos.X, pos.Y, width, height).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
-        public static DocumentController BlankDoc()
+        public static DocumentController AdornmentDoc()
         {
-            return BlankDocWithPosition(new Point(0, 0));
+            return AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, new Point(0, 0));
         }
 
+        // TODO remove this method or match it up with the methods in Actions.cs
+        public static DocumentController BlankCollectionWithPosition(Point where = new Point())
+        {
+            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
+            return cnote.Document;
+        }
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankCollection()
         {
-            var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform);
-            return cnote.Document;
+            return BlankCollectionWithPosition(new Point());
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -563,7 +560,7 @@ namespace Dash
             // and associated types
             foreach (var docController in collection.TypedData)
             {
-                var actualDoc = docController.GetDataDocument(null);
+                var actualDoc = docController.GetDataDocument();
 
                 foreach (var field in actualDoc.EnumFields())
                 {

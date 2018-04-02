@@ -125,7 +125,7 @@ namespace Dash
 
             // return an image box, by setting the height to NaN the image height automatically sizes
             // based on the width according to the aspect ratio
-            return new StackLayout(new DocumentController[] { new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), w:double.NaN, h: double.NaN).Document }, false, new Point(), new Size(300,200)).Document;
+            return new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
         }
 
         /// <summary>

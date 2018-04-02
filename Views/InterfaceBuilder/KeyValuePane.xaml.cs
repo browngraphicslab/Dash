@@ -111,14 +111,10 @@ namespace Dash
             ListItemSource.Clear();
             if (_dataContextDocument != null)
             {
-                var keys = _dataContextDocument
-                               .GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                               ?.TypedData?.ToList() ?? new List<KeyController>();
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-                            new BoundController(keyFieldPair.Value, _dataContextDocument),
-                            keys.Contains(keyFieldPair.Key), TypeColumnWidth));
+                            new BoundController(keyFieldPair.Value, _dataContextDocument), TypeColumnWidth));
             }
         }
 
@@ -138,13 +134,10 @@ namespace Dash
 
         private void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
         {
-            var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                           ?.TypedData?.ToList() ?? new List<KeyController>();
-
             for (var i = 0; i < ListItemSource.Count; i++)
                 if (ListItemSource[i].Key.Equals(fieldKey))
                     ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, _dataContextDocument), keys.Contains(fieldKey), TypeColumnWidth);
+                        new BoundController(fieldValue, _dataContextDocument), TypeColumnWidth);
         }
 
         /// <summary>
@@ -227,14 +220,7 @@ namespace Dash
                 }
                 _dataContextDocument.SetField(key, fmController, true);
             }
-
-
-            var keys = _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null)
-                           ?.TypedData?.ToList() ?? new List<KeyController>();
-
-            //ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument),
-            //    keys.Contains(key), TypeColumnWidth));
-
+            
             // TODO check if adding was succesful
             // reset the fields to the empty values
             xNewKeyField.Text = "";
@@ -265,36 +251,7 @@ namespace Dash
                 xTypeComboBox.SelectedIndex = 2;
             }
         }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            if (kf == null)
-                return;
-            var primaryKeys =
-                _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-            if (primaryKeys == null)
-            {
-                _dataContextDocument.SetField(KeyStore.PrimaryKeyKey, new ListController<KeyController>(kf.Key), false);
-            }
-            else
-            {
-                if (!primaryKeys.TypedData.Contains(kf.Key))
-                    primaryKeys.Add(kf.Key);
-            }
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var kf = (sender as CheckBox).Tag as KeyFieldContainer;
-            if (kf == null)
-                return;
-            var primaryKeys =
-                _dataContextDocument.GetDereferencedField<ListController<KeyController>>(KeyStore.PrimaryKeyKey, null);
-            if (primaryKeys != null)
-                if (primaryKeys.TypedData.Contains(kf.Key))
-                    primaryKeys.Remove(kf.Key);
-        }
+        
 
         /// <summary>
         ///     when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position
@@ -317,9 +274,8 @@ namespace Dash
             {
                 return;
             }
-            var checkboxColumnWidth = columnDefinitions[0].ActualWidth;
-            var keyColumnWidth = columnDefinitions[1].ActualWidth;
-            if (posInKvPane.X > checkboxColumnWidth && posInKvPane.X < keyColumnWidth)
+            var keyColumnWidth = columnDefinitions[0].ActualWidth;
+            if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
                 _editKey = true;
             else
                 _editKey = false;

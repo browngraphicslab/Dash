@@ -114,7 +114,7 @@ namespace Dash
         }
 
         public override TypeInfo TypeInfo { get; }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var name = value as string;
             if (name != null)

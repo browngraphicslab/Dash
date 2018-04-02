@@ -40,18 +40,18 @@ namespace Dash
 
         void XTagCloud_TermDragStarting(string term, DragStartingEventArgs args)
         {
-            var dbDocs = ParentDocument.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null).TypedData;
             var pattern = ParentDocument.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, null);
             if (dbDocs != null && pattern != null && !string.IsNullOrEmpty(pattern.Name))
             {
                 var collection = dbDocs.Select((d) =>
                 {
-                    var key =  testPatternMatch(d.GetDataDocument(null), pattern, term);
+                    var key =  testPatternMatch(d.GetDataDocument(), pattern, term);
                     if (key != null)
                     {
-                        var derefField = d.GetDataDocument(null).GetDereferencedField<TextController>(key, null)?.Data;
+                        var derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
                         var rnote = new NoteDocuments.RichTextNote(derefField ?? "<empty>").Document;
-                        rnote.GetDataDocument(null).SetField(CollectionDBView.SelectedKey, new TextController(term), true);
+                        rnote.GetDataDocument().SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }
                     return null;
@@ -183,7 +183,7 @@ namespace Dash
 
         void updateChart(Context context, bool updateViewOnly=false)
         {
-            var dbDocs  = ParentDocument?.GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
+            var dbDocs  = ParentDocument?.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData;
             var buckets = ParentDocument?.GetDereferencedField<ListController<NumberController>>(CollectionDBView.BucketsKey, context)?.Data;
             var pattern = ParentDocument?.GetDereferencedField<KeyController>(CollectionDBView.FilterFieldKey, context);
             var autofit = ParentDocument?.GetDereferencedField<NumberController>(CollectionDBView.AutoFitKey, context)?.Data != 0;
@@ -192,7 +192,7 @@ namespace Dash
             {
                 if (autofit)
                 {
-                    buckets = autoFitBuckets(dbDocs.Select((d) => d.GetDataDocument(null)).ToList(), pattern, buckets.Count) ?? buckets;
+                    buckets = autoFitBuckets(dbDocs.Select((d) => d.GetDataDocument()).ToList(), pattern, buckets.Count) ?? buckets;
                 }
 
                 string rawText   = "";
@@ -296,7 +296,7 @@ namespace Dash
                     }
                     else if (pvalue is ListController<DocumentController>)
                     {
-                        foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument(null)))
+                        foreach (var nestedDoc in (pvalue as ListController<DocumentController>).TypedData.Select((d) => d.GetDataDocument()))
                             if (testPatternMatch(nestedDoc, null, term) != null)
                                 return pfield.Key;
                     }
@@ -358,7 +358,7 @@ namespace Dash
 
         void inspectField(List<FieldControllerBase> bars, ReferenceController refField, List<FieldControllerBase> selectedBars, bool updateViewOnly, ref string rawText, bool keepAll, List<DocumentController> collection, List<double> countBars, ref double sumOfFields, DocumentController dmc, List<DocumentController> visited)
         {
-            var dataDoc = dmc.GetDataDocument(null);
+            var dataDoc = dmc.GetDataDocument();
             var field = refField?.GetDocumentController(new Context(dataDoc)).GetDereferencedField(refField.FieldKey, new Context(dataDoc));
             if (field is ListController<DocumentController>)
             {
@@ -396,7 +396,7 @@ namespace Dash
 
         static ReferenceController searchInDocumentForNamedField(KeyController pattern, DocumentController srcDoc, List<DocumentController> visited)
         {
-            var dmc = srcDoc.GetDataDocument(null);
+            var dmc = srcDoc.GetDataDocument();
             if (string.IsNullOrEmpty(pattern?.Name) || dmc == null || dmc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return null;
             // loop through each field to find on that matches the field name pattern 
