@@ -18,7 +18,7 @@ namespace Dash
         //Output keys
         public static readonly KeyController IntersectionKey = new KeyController("5B7CA95F-9DE7-4884-9827-F1E8A22DB48F", "Intersection");
 
-        public IntersectByValueOperatorController() : base(new OperatorModel(OperatorType.IntersectByValue))
+        public IntersectByValueOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -26,19 +26,9 @@ namespace Dash
         {
         }
 
-        public override bool SetValue(object value)
+        public override FieldControllerBase GetDefaultController()
         {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            throw new NotImplementedException();
+            return new IntersectByValueOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -50,6 +40,12 @@ namespace Dash
         {
             [IntersectionKey] = TypeInfo.List
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+
+        private static readonly KeyController TypeKey =
+            new KeyController("9B073C2B-8B11-4939-818F-903A067D412E", "Intersect by value");
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>(new ListModel(){SubTypeInfo = TypeInfo.Any})).Data;

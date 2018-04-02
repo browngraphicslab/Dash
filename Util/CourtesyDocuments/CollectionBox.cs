@@ -23,7 +23,6 @@ namespace Dash
         /// If the view type is unassigned this is the default view displayed to the user
         /// </summary>
         private static readonly string DefaultCollectionView = CollectionView.CollectionViewType.Grid.ToString();
-
         public CollectionBox(FieldControllerBase refToCollection, double x = 0, double y = 0, double w = double.NaN, double h = double.NaN, CollectionView.CollectionViewType viewType = CollectionView.CollectionViewType.Freeform)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
@@ -57,11 +56,10 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context)
         {
-            return MakeView(docController, context, null);
+            return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController,
-            Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
 
             // get a collection and collection view model from the data

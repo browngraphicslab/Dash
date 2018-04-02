@@ -19,7 +19,7 @@ namespace Dash
         //Output keys
         public static readonly KeyController ScriptKey = new KeyController("EE6A6F8A-D0EF-48FC-89FD-87EBB91F8C77", "Script");
 
-        public ParseSearchStringToDishOperatorController() : base(new OperatorModel(OperatorType.ParseSearchStringToDish))
+        public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
 
         }
@@ -28,19 +28,9 @@ namespace Dash
         {
         }
 
-        public override bool SetValue(object value)
+        public override FieldControllerBase GetDefaultController()
         {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            throw new NotImplementedException();
+            return new ParseSearchStringToDishOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -51,6 +41,9 @@ namespace Dash
         {
             [ScriptKey] = TypeInfo.Text
         };
+
+        public override KeyController OperatorType { get; }
+        private static readonly KeyController TypeKey = new KeyController("91CBB332-871B-4289-B639-ABB4C93D755D", "Parse Search String");
 
         private string WrapSearchTermInFunction(string searchTerm)
         {

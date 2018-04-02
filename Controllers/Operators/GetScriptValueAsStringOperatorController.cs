@@ -18,7 +18,7 @@ namespace Dash
         public static readonly KeyController ResultKey = new KeyController("D56D3217-88ED-4BB2-A192-A3DB3F6427C2", "Result");
 
 
-        public GetScriptValueAsStringOperatorController() : base(new OperatorModel(OperatorType.ExecuteDishToString))
+        public GetScriptValueAsStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -26,19 +26,9 @@ namespace Dash
         {
         }
 
-        public override bool SetValue(object value)
+        public override FieldControllerBase GetDefaultController()
         {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            throw new NotImplementedException();
+            return new GetScriptValueAsStringOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -49,6 +39,10 @@ namespace Dash
         {
             [ResultKey] = TypeInfo.Text
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("99E9328B-7341-403F-819B-26CDAB2F9A51", "Get Script Value as String");
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             string result;

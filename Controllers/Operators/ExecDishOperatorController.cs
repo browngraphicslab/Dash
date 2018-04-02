@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 
 namespace Dash
 {
@@ -21,28 +22,13 @@ namespace Dash
         //Output keys
         public static readonly KeyController ResultKey = new KeyController("5006A73E-2466-4301-9A95-78083000603E", "Result");
 
-        public ExecDishOperatorController() : base(new OperatorModel(OperatorType.ExecDish))
+        public ExecDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
 
         public ExecDishOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            throw new NotImplementedException();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -53,6 +39,10 @@ namespace Dash
         {
             [ResultKey] = TypeInfo.Any
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("F2AF66A0-81D0-42CD-ADD3-35EC2A949AB0", "Exec");
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             try
@@ -64,6 +54,11 @@ namespace Dash
             {
                 outputs[ResultKey] = new TextController(dishScriptException.ScriptErrorModel.GetHelpfulString());
             }
+        }
+
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new ExecDishOperatorController();
         }
     }
 }

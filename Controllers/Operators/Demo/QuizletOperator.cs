@@ -14,9 +14,14 @@ namespace Dash
         {
         }
 
-        public QuizletOperator() : base(new OperatorModel(OperatorType.Quizlet))
+        public QuizletOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("B1F174E7-64C3-4DB7-9D67-67F9DB24BB54", "Quizlet");
+
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new QuizletOperatorBox(rfmc);
 
         //Input keys
         public static readonly KeyController TermKey = new KeyController("CC94FF84-09E5-4DB8-B962-C5ECF8EE9AE9", "Answer");
@@ -41,17 +46,7 @@ namespace Dash
 
         }
 
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return "QuizletOperator()";
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new QuizletOperator();
         }

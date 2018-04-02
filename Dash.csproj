@@ -18,8 +18,8 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>DA2B2A617AB2EB88616DD827D82FA2D9200E5DAB</PackageCertificateThumbprint>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <PackageCertificateThumbprint>A3FA76D63FE60CF2E9D707810C7E95C976F1FCE9</PackageCertificateThumbprint>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
@@ -141,12 +141,12 @@
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
-    <Compile Include="Controllers\Operators\CompoundOperatorController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
@@ -157,7 +157,6 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\OperatorModels\CompoundOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
@@ -380,9 +379,6 @@
     <Compile Include="Views\Operators\ApiView.xaml.cs">
       <DependentUpon>ApiView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Operators\CompoundOperatorEditor.xaml.cs">
-      <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\DragOutDocIcon.xaml.cs">
       <DependentUpon>DragOutDocIcon.xaml</DependentUpon>
     </Compile>
@@ -426,9 +422,6 @@
     <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
-      <DependentUpon>FreeformSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
@@ -577,9 +570,6 @@
     <Compile Include="Views\Collection\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\DocumentSettings.xaml.cs">
-      <DependentUpon>DocumentSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -595,7 +585,6 @@
     <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\SettingsPaneFromDocumentControllerFactory.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -895,10 +884,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Operators\CompoundOperatorEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Document Menu\DragOutDocIcon.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -936,10 +921,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\FreeformSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1018,10 +999,6 @@
     <Page Include="Views\Collection\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\DocumentSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>

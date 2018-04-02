@@ -11,6 +11,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.HockeyApp;
+using DashShared;
 
 namespace Dash
 {
@@ -79,11 +80,36 @@ namespace Dash
             {
                 if (rootFrame.Content == null)
                 {
+                    KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(BackgroundBox.DocumentType, BackgroundBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DBSearchOperatorBox.DocumentType, DBSearchOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(GridViewLayout.DocumentType, GridViewLayout.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(GridLayout.DocumentType, GridLayout.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView);
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
                     //TODO Navigate to a prelogged in page if we can!
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    ListContainedFieldFlag.Enabled = true; // works but slows things down A LOT!
                 }
 
                 // Ensure the current window is active

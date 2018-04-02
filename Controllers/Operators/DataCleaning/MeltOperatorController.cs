@@ -63,13 +63,16 @@ namespace Dash
             };
 
 
-        public MeltOperatorController() : base(new OperatorModel(OperatorType.Melt))
+        public MeltOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
         public MeltOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("871A8ADC-5D15-4B31-9BE7-6256D9C961EE", "Melt");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
@@ -120,17 +123,7 @@ namespace Dash
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
 
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new MeltOperatorController();
         }

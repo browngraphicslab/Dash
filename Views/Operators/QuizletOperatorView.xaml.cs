@@ -87,7 +87,7 @@ namespace Dash
             // iterate over all the docs
             foreach (var doc in collection.TypedData)
             { 
-                var dataDoc = doc?.GetDataDocument(null);
+                var dataDoc = doc?.GetDataDocument();
 
                 if (dataDoc == null) continue;
 
@@ -100,7 +100,7 @@ namespace Dash
                 }
                 if (imageKey != null)
                 {
-                    image = dataDoc.GetField<DocumentController>(imageKey)?.GetDataDocument(null)?.GetField<ImageController>(KeyStore.DataKey)?.Data?.ToString() ?? dataDoc.GetField<ImageController>(imageKey)?.Data?.ToString() ?? string.Empty;
+                    image = dataDoc.GetField<DocumentController>(imageKey)?.GetDataDocument()?.GetField<ImageController>(KeyStore.DataKey)?.Data?.ToString() ?? dataDoc.GetField<ImageController>(imageKey)?.Data?.ToString() ?? string.Empty;
                 }
 
                 data.Add((term, definition, image));

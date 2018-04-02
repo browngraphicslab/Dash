@@ -113,7 +113,7 @@ namespace Dash
             AddBinding(listview, docController, SpacingKey, context, BindSpacing);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
 
             var grid = new Grid();

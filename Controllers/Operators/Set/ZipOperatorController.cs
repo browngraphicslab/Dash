@@ -15,27 +15,12 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("24AC6CAE-F977-450F-9658-35B36C53001D", "Output");
 
-        public ZipOperatorController() : base(new OperatorModel(OperatorType.Zip))
+        public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
         public ZipOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            //return new ZipOperatorFieldController(OperatorFieldModel);
-            return new ZipOperatorController();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -47,6 +32,9 @@ namespace Dash
         {
             [OutputKey] = TypeInfo.List
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("FA39D712-E1AA-4740-8CC9-C3201708A1F5", "Zip");
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
@@ -78,6 +66,16 @@ namespace Dash
                 if (ExcludedKeys.Contains(field.Key)) continue;
                 fields[field.Key] = field.Value;
             }
+        }
+
+        public override void Init()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override FieldControllerBase GetDefaultController()
+        {
+            return new ZipOperatorController();
         }
     }
 }

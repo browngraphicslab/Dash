@@ -51,7 +51,7 @@ namespace Dash
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 // we pass a view document, so we get the data document
-                _refDoc = dragData.GetDraggedDocument()?.GetDataDocument();
+                _refDoc = dragData.DraggedDocument?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
                 var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
@@ -106,7 +106,7 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                _refDoc = dragData.GetDraggedDocument();
+                _refDoc = dragData.DraggedDocument;
                 if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
                 {
                     // the operator controller the input is going to

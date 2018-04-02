@@ -14,9 +14,12 @@ namespace Dash
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public CollectionTitleOperatorController() : base(new OperatorModel(OperatorType.CollectionTitle))
+        public CollectionTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE", "Collection Title");
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
@@ -43,28 +46,18 @@ namespace Dash
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
                 var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
-                    .FirstOrDefault(dc => dc.GetDataDocument(null).GetField(KeyStore.TitleKey) != null);
+                    .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
-                output = firstDoc?.GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
 
             outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new CollectionTitleOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
         }
 
     }

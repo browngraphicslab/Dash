@@ -17,7 +17,7 @@ namespace Dash
         //Output keys
         public static readonly KeyController ResultDocumentKey = new KeyController("C3F0663C-3797-4F90-BD9E-0F2DC9908C5B", "ResultDocument");
 
-        public GetKeysOperatorController() : base(new OperatorModel(OperatorType.GetKeys))
+        public GetKeysOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -25,19 +25,9 @@ namespace Dash
         {
         }
 
-        public override bool SetValue(object value)
+        public override FieldControllerBase GetDefaultController()
         {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
-        {
-            throw new NotImplementedException();
+            return new GetKeysOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -48,6 +38,10 @@ namespace Dash
         {
             [ResultDocumentKey] = TypeInfo.Document
         };
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static KeyController TypeKey = new KeyController("0FE2858F-CB94-4163-B4CD-CA84F99438E4", "Get Keys");
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var inputCollection = inputs[CollectionKey] as BaseListController;

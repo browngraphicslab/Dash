@@ -15,9 +15,14 @@ namespace Dash
         {
         }
 
-        public SearchOperatorController() : base(new OperatorModel(OperatorType.Search))
+        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("EA5FD353-F99A-4F99-B0BC-5D2C88A51019", "Search");
+
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
 
         //Input keys
         public static readonly KeyController TextKey = new KeyController("69DDED67-894A-41F0-81B2-FF6A8357B0DA", /*"Search Text"*/"Term");
@@ -45,17 +50,7 @@ namespace Dash
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new SearchOperatorController();
         }

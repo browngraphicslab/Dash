@@ -14,9 +14,12 @@ namespace Dash
         {
         }
 
-        public RegexOperatorController() : base(new OperatorModel(OperatorType.Regex))
+        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("434B2CBC-003A-4DAD-8E8B-7F759A39B37C", "Regex");
 
         //Input keys
         public static readonly KeyController ExpressionKey      = new KeyController("0FA9226F-35BB-4AEE-A830-C81FF9611F3E", "Expression");
@@ -70,17 +73,9 @@ namespace Dash
             outputs[MatchesKey] = new ListController<TextController>(collected);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new AddOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new RegexOperatorController(OperatorFieldModel);
         }
     }
 }

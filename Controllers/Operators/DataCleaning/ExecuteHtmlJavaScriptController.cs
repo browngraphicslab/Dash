@@ -29,6 +29,8 @@ namespace Dash
         public static readonly KeyController OutputDocumentKey =
             new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
+
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
@@ -59,7 +61,7 @@ namespace Dash
         }
         
 
-        public ExecuteHtmlJavaScriptController() : base(new OperatorModel(OperatorType.ExecuteHtmlJavaScript))
+        public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
         
@@ -67,6 +69,9 @@ namespace Dash
         public ExecuteHtmlJavaScriptController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D0286E73-D9F6-4341-B901-5ECC27AC76BC", "Execute html javascript");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -139,19 +144,9 @@ namespace Dash
                 }
             }
         };
-        
+       
 
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            return null;
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ExecuteHtmlJavaScriptController();
         }
