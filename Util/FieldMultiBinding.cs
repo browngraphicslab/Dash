@@ -115,13 +115,13 @@ namespace Dash
                 {
                     for (int i = 0; i < fieldData.Count; ++i)
                     {
-                        _references[i].Dereference(Context).SetValue(fieldData[i]);
+                        _references[i].Dereference(Context).TrySetValue(fieldData[i]);
                     }
                 } else if (FieldAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceToRoot)
                 {
                     for (int i = 0; i < fieldData.Count; ++i)
                     {
-                        _references[i].DereferenceToRoot(Context).SetValue(fieldData[i]);
+                        _references[i].DereferenceToRoot(Context).TrySetValue(fieldData[i]);
                     }
                 }
                 return true;

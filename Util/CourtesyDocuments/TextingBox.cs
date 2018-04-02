@@ -28,8 +28,7 @@ namespace Dash
         public static KeyController FontSizeKey = new KeyController("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
         public static KeyController TextAlignmentKey = new KeyController("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
         public static KeyController BackgroundColorKey = new KeyController("CBD8E5E1-6E5A-48C5-AFEA-8A4515FC3DFE", "Background Color");
-        public static DocumentType DocumentType =
-            new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
+        public static DocumentType  DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
         public static string DefaultText = "Default Text";
         public static string DefaultFontWeight = "Normal"; // 100;
@@ -146,7 +145,7 @@ namespace Dash
             {
                 Key = BackgroundColorKey,
                 Document = docController,
-                Converter = new StringToColorConverter(),
+                Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,
                 Context = context
             };

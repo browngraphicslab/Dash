@@ -42,7 +42,7 @@ namespace Dash
         {
             var layoutDocCollection = new ListController<DocumentController>(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.FreeFormDocumentLayout, PrototypeId);
+            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.FreeFormDocumentType, PrototypeId);
             return prototypeDocument;
         }
 
@@ -51,7 +51,7 @@ namespace Dash
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
 
             var grid = new Grid();

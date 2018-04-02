@@ -123,7 +123,7 @@ namespace Dash
         private void updateEditBox(CollectionDBSchemaRecordFieldViewModel dc)
         {
             xEditTextBox.Tag = dc;
-            var field = dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            var field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
             xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
             var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
             xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
@@ -207,8 +207,8 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            dc.Document.GetDataDocument(null).ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument(null).GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
-            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument(null).GetId(), dc.HeaderViewModel.FieldKey);
+            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -265,7 +265,7 @@ namespace Dash
             var records = new SortedList<string, DocumentController>();
             foreach (var d in dbDocs)
             {
-                var str = d.GetDataDocument(null).GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+                var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
                 if (records.ContainsKey(str))
                     records.Add(str + Guid.NewGuid(), d);
                 else records.Add(str, d);

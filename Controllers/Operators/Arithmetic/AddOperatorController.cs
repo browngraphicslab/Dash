@@ -10,9 +10,12 @@ namespace Dash
         {
         }
 
-        public AddOperatorController() : base(new OperatorModel(OperatorType.Add))
+        public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("5C121004-6C32-4BB7-9CBF-C4A6573376EF", "Add");
 
         //Input keys
         public static readonly KeyController AKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
@@ -44,17 +47,9 @@ namespace Dash
             outputs[SumKey] = new NumberController(sum);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new AddOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
