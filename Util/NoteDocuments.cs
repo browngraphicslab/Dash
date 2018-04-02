@@ -125,12 +125,13 @@ namespace Dash
 
             DocumentController CreateLayout(Point where)
             {
-                return new RichTextBox(getDataReference(_prototypeID), 0, 0, 100, 25).Document;
+                return new RichTextBox(getDataReference(_prototypeID), 0, 0, 25, 25).Document;
             }
             
             public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size=new Size()) : 
                 base(_prototypeID)
             {
+                size.Width = double.NaN;
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
                 dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text), true); // should be an operator to extract from RichText...
                 Document = initSharedLayout(CreateLayout(where), dataDocument, size == new Size() ?  new Size(100,25)  :size);
