@@ -118,7 +118,7 @@ namespace Dash
         {
             var field = docController.GetDereferencedField<TextController>(TextingBox.BackgroundColorKey, context);
             var col = (xBackgroundColorComboBox.SelectedItem as NamedColor).Color;
-            field.SetValue(col.ToString());
+            field.TrySetValue(col.ToString());
         }
 
 

@@ -25,36 +25,9 @@ namespace Dash.Converters
             _returnCount = returnCount;
         }
 
-        string GetPrimaryKeyString(DocumentController data)
+        public static string DocumentToParseableString(DocumentController data)
         {
-            var keys = data.GetDereferencedField< ListController<KeyController>>(KeyStore.PrimaryKeyKey, _context);
-            var context = _context;
-            if (keys == null)
-            {
-                var docContext = data.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(data));
-                if (docContext != null)
-                {
-                    context = new Context(docContext);
-                    keys = docContext.GetDereferencedField< ListController<KeyController>>(KeyStore.PrimaryKeyKey, context);
-                    data = docContext;
-                }
-            }
-            if (keys != null)
-            {
-                var docString = "<";
-                foreach (var k in keys.Data)
-                {
-                    var keyField = data.GetDereferencedField(k as KeyController, context);
-                    if (keyField is TextController)
-                        docString += (keyField as TextController).Data + " ";
-                    else if (keyField is DocumentController)
-                    {
-                        docString += GetPrimaryKeyString(keyField as DocumentController);
-                    }
-                }
-                return docString.TrimEnd(' ') + ">";
-            }
-            return "";
+            return "<" + data.GetId() + ">";
         }
 
         public override string ConvertDataToXaml(List<DocumentController> dataList, object parameter = null)
@@ -64,7 +37,7 @@ namespace Dash.Converters
             var docListString = "{";
             foreach (var data in dataList)
             {
-                docListString += GetPrimaryKeyString(data) + ",";
+                docListString += DocumentToParseableString(data) + ",";
             }
             docListString = docListString.Trim(',');
             docListString += "}";
@@ -102,65 +75,13 @@ namespace Dash.Converters
         public override string ConvertDataToXaml(DocumentController data, object parameter = null)
         {
             _doc = data;
-            var keyList = data.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
-            var keys = keyList as ListController<TextController>;
-            if (keys != null)
-            {
-                var docString = "<";
-                foreach (var k in keys.Data)
-                {
-                    var keyField = data.GetDereferencedField(new KeyController((k as TextController).Data), _context);
-                    if (keyField is TextController)
-                        docString += (keyField as TextController).Data + " ";
-                }
-                return docString.TrimEnd(' ') + ">";
-            }
-            return data.GetId();
+            return DocumentCollectionToStringConverter.DocumentToParseableString(data);
         }
 
         public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
         {
-            var values = xaml.TrimStart('<').TrimEnd('>').Split(' ');
-            var keyList = _doc?.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
-            var keys = keyList as ListController<KeyController>;
-            if (keys != null)
-            {
-                foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-                    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-                    {
-                        bool found = true;
-                        foreach (var k in keys.Data)
-                        {
-                            var index = keys.Data.IndexOf(k);
-                            var derefValue = (dmc.GetDereferencedField(k as KeyController, _context) as TextController)?.Data;
-                            if (derefValue != null)
-                            {
-                                if (values[index] != derefValue)
-                                {
-                                    found = false;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            _doc = dmc;
-                            return dmc;
-                        }
-                    }
-            }
-            var doc = DocumentController.FindDocMatchingPrimaryKeys(values);
-            if (doc != null)
-            {
-                _doc = doc;
-                return _doc;
-            }
-            return null;
+            var values = xaml.TrimStart('<').TrimEnd('>').Trim();
+            return ContentController<FieldModel>.GetController<DocumentController>(values);
         }
     }
 }

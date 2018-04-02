@@ -27,6 +27,8 @@ namespace Dash
         public static readonly KeyController SentenceLengthKey = new KeyController("D668A5C4-C41B-4802-B9B1-918C40D3012E", "Sentence Length");
         public static readonly KeyController SentenceScoreKey = new KeyController("C20594BD-C087-483B-9A35-E450EE36DFE1", "Sentence Score");
 
+        public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } =  rfmc => new ExtractSentencesOperatorBox(rfmc);
+
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
             new ObservableDictionary<KeyController, IOInfo>()
             {
@@ -40,13 +42,16 @@ namespace Dash
                 [OutputCollection] = TypeInfo.List
             };
 
-        public ExtractSentencesOperatorController() : base(new OperatorModel(OperatorType.SentenceAnalyzer))
+        public ExtractSentencesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
         public ExtractSentencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D9EE3561-0A30-4DA9-B11A-859CABCF237B", "Sentence Analyzer");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -57,7 +62,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 var textInput = (dataDoc.GetDereferencedField(textFieldKey,null) as TextController)?.Data;
                 if (textInput != null)
                 {
@@ -86,19 +91,9 @@ namespace Dash
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new ExtractSentencesOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
         }
 
     }

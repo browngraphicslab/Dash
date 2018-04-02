@@ -15,11 +15,14 @@ namespace Dash
 
         public static KeyController OutputKey = new KeyController("C7CF634D-B8FA-4E0C-A6C0-2FAAEA6B8114", "Output Collection");
 
-        public MapOperatorController() : base(new OperatorModel(OperatorType.Map)) { }
+        public MapOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public MapOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("A8A3732F-FADE-4504-BC51-4CCF23165E8A", "Map");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
@@ -32,17 +35,9 @@ namespace Dash
             [OutputKey] = TypeInfo.List
         };
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new MapOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new MapOperatorController();
         }
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)

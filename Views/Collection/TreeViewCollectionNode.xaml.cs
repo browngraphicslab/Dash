@@ -49,6 +49,31 @@ namespace Dash
             this.RegisterPropertyChangedCallback(FilterStringProperty,
                 (sender, dp) => ViewModel?.BindableDocumentViewModels.RefreshFilter());
         }
+        
+        public void Highlight(DocumentController document, bool? flag)
+        {
+            if (xListView.ItemsPanelRoot != null)
+            {
+                foreach (var noda in xListView.ItemsPanelRoot.Children.OfType<ListViewItem>())
+                {
+                    var cp = noda.GetFirstDescendantOfType<ContentPresenter>();
+                    var d = (cp.DataContext as DocumentViewModel)?.DataDocument;
+                    if (d != null)
+                    {
+                        var tv = noda.GetFirstDescendantOfType<TreeViewNode>();
+                        var tc = noda.GetFirstDescendantOfType<TreeViewCollectionNode>();
+                        if (d.DocumentType.Equals(NoteDocuments.CollectionNote.DocumentType))
+                        {
+                            tc.Highlight(document, flag);
+                        }
+                        if (tv.ViewModel.DocumentController.Equals(document))
+                        {
+                            tv.Highlight(flag);
+                        }
+                    }
+                }
+            }
+        }
 
         private void TreeViewCollectionNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -88,7 +113,7 @@ namespace Dash
                 var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
                 var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && !doc.Equals(data.GetDraggedDocument()))
+                if (coll != null && !doc.Equals(data.DraggedDocument))
                 {
                     coll.Add(data.GetDropDocument(new Point(), true));
                 }
@@ -100,10 +125,17 @@ namespace Dash
                 var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && data.Count > 0)
                 {
+<<<<<<< HEAD
                     var start = data.First().GetDraggedDocument().GetPositionField().Data;
                     coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.GetDraggedDocument())).
                                        Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X,
                                                                                    dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y), true)).ToList());
+=======
+                    var start = data.First().DraggedDocument.GetPositionField().Data;
+                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
+                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
+>>>>>>> master
                 }
             }
             e.Handled = true;

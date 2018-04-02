@@ -17,7 +17,7 @@ namespace Dash
         /// the optional function normally takes the form (rfmc => new CourtesyDocument(rfmc)) where the courtesy document is defining
         /// a custom view for the operator
         /// </summary>
-        public static DocumentController CreateOperatorDocument(OperatorController opController, string title=null, Func<ReferenceController, CourtesyDocument> layoutFunc = null)
+        public static DocumentController CreateOperatorDocument(OperatorController opController, string title = null)
         {
             // set the operator and title field
             var fields = new Dictionary<KeyController, FieldControllerBase>
@@ -28,6 +28,10 @@ namespace Dash
 
             // create a new document to hold the operator
             var doc = new DocumentController(fields, DashConstants.TypeStore.OperatorType);
+
+            var layoutPropertyInfo = typeof(OperatorController).GetProperty(nameof(OperatorController.LayoutFunc));
+
+            var layoutFunc = (Func<ReferenceController, CourtesyDocument>) layoutPropertyInfo.GetValue(opController);
 
             // set the layout on the operator using the passed in func or a default OperatorBox with no custom content
             SetOperatorLayout(layoutFunc ?? (rfmc => new OperatorBox(rfmc)), doc);
