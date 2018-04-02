@@ -145,7 +145,7 @@ namespace Dash
             {
                 Key = BackgroundColorKey,
                 Document = docController,
-                Converter = new StringToColorConverter(),
+                Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,
                 Context = context
             };

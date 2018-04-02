@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash.Converters
 {
-    class StringToColorConverter : SafeDataToXamlConverter<string, Brush>
+    class StringToBrushConverter : SafeDataToXamlConverter<string, Brush>
     {
         public override Brush ConvertDataToXaml(string data, object parameter = null)
         {

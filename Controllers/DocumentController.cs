@@ -27,42 +27,6 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
-        public string Title
-        {
-            get
-            {
-                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
- GetDataDocument(null).GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
-                if (titleController != null)
-                {
-                    return titleController;
-                }
-                return DocumentType.Type;
-            }
-            set
-            {
-                var textFieldModelController = GetField(KeyStore.TitleKey) as TextController;
-                if (textFieldModelController != null)
-                    textFieldModelController.Data = value;
-            }
-        }
-
-        public bool HasMatchingKey(string keyName)
-        {
-            if (string.IsNullOrWhiteSpace(keyName))
-                return false;
-            foreach (KeyController key in _fields.Keys)
-            {
-                if (key.Name.StartsWith("_"))
-                    continue;
-                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public override string ToString()
         {
             return Title;
@@ -75,26 +39,25 @@ namespace Dash
         /// </summary>
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
-        public DocumentController(DocumentModel model, bool setFields = true, bool saveOnServer = true) : base(model)
+        public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
+        public DocumentController(DocumentModel model, bool saveOnServer = true) : base(model)
         {
-            if (setFields)
-            {
-                LoadFields();
-            }
-
             if (saveOnServer)
             {
                 SaveOnServer();
             }
         }
-
-        public override void Init()
+        public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
+            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
         {
-            LoadFields();
-            DocumentType = DocumentType;
+            if (saveOnServer)
+            {
+                SaveOnServer();
+            }
+            Init();
         }
 
-        public void LoadFields()
+        public override void Init()
         {
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
@@ -104,18 +67,7 @@ namespace Dash
                     ContentController<FieldModel>.GetController<FieldControllerBase>(kvp.Value))).ToList();
 
             SetFields(fields, true);
-        }
-
-        public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
-
-        public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
-            string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
-        {
-            if (saveOnServer)
-            {
-                SaveOnServer();
-            }
-            Init();
+            DocumentType = DocumentType;
         }
 
         /// <summary>
@@ -148,6 +100,20 @@ namespace Dash
 
         public DocumentModel DocumentModel => Model as DocumentModel;
 
+        public string Title
+        {
+            get
+            {
+                var titleController = GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ??
+                    GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data;
+                if (titleController != null)
+                {
+                    return titleController;
+                }
+                return DocumentType.Type;
+            }
+        }
+
 
         public override bool Equals(object obj)
         {
@@ -163,9 +129,9 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
-        public DocumentController GetDataDocument(Context context = null)
+        public DocumentController GetDataDocument()
         {
-            return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
+            return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? this;
         }
         public override int GetHashCode()
         {
@@ -752,12 +718,12 @@ namespace Dash
 
             return fieldChanged;
         }
-        public bool SetField<TDefault,V>(KeyController key, V v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
             {
-                if (field.SetValue(v))
+                if (field.TrySetValue(v))
                 {
                     UpdateOnServer();
                     return true;
@@ -766,7 +732,7 @@ namespace Dash
             else
             {
                 var f = new TDefault();
-                if (f.SetValue(v))
+                if (f.TrySetValue(v))
                     return SetField(key, f, forceMask, enforceTypeCheck);
             }
 
@@ -1052,7 +1018,7 @@ namespace Dash
             // set up contexts information
             context = new Context(context);
             context.AddDocumentContext(this);
-            context.AddDocumentContext(GetDataDocument(null));
+            context.AddDocumentContext(GetDataDocument());
 
             // if the document has a layout already, use that underlying layout's data to generate
             // the view
@@ -1102,8 +1068,8 @@ namespace Dash
         }
 
         public override TypeInfo TypeInfo { get; }
-        
-        public override bool SetValue(object value)
+
+        public override bool TrySetValue(object value)
         {
             throw new NotImplementedException();
         }
@@ -1167,9 +1133,9 @@ namespace Dash
             void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
                 var refSender = sender as ReferenceController;
-                var proto = GetDataDocument(null).GetPrototypeWithFieldKey(reference.FieldKey) ??
+                var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
                             this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument(null).GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))
+                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || this.GetField(KeyStore.AbstractInterfaceKey,true) != null)
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.

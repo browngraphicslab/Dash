@@ -34,7 +34,7 @@ namespace Dash
         {
             DocumentController = documentController;
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
-           // LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+            LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
 
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
@@ -72,19 +72,19 @@ namespace Dash
         {
             get
             {
-                var backgroundStr = LayoutDocument.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
+                //var backgroundStr = LayoutDocument.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
 
-                if (!string.IsNullOrEmpty(backgroundStr) && backgroundStr.Length == 9)
-                {
-                    byte a = byte.Parse(backgroundStr.Substring(1, 2), NumberStyles.HexNumber);
-                    byte r = byte.Parse(backgroundStr.Substring(3, 2), NumberStyles.HexNumber);
-                    byte g = byte.Parse(backgroundStr.Substring(5, 2), NumberStyles.HexNumber);
-                    byte b = byte.Parse(backgroundStr.Substring(7, 2), NumberStyles.HexNumber);
-                    return new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                }
+                //if (!string.IsNullOrEmpty(backgroundStr) && backgroundStr.Length == 9)
+                //{
+                //    byte a = byte.Parse(backgroundStr.Substring(1, 2), NumberStyles.HexNumber);
+                //    byte r = byte.Parse(backgroundStr.Substring(3, 2), NumberStyles.HexNumber);
+                //    byte g = byte.Parse(backgroundStr.Substring(5, 2), NumberStyles.HexNumber);
+                //    byte b = byte.Parse(backgroundStr.Substring(7, 2), NumberStyles.HexNumber);
+                //    return new SolidColorBrush(Color.FromArgb(a, r, g, b));
+                //}
                 return new SolidColorBrush(Colors.Transparent);
             }
-            set => LayoutDocument.SetField<TextController,string>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
+            set => LayoutDocument.SetField<TextController>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
@@ -92,7 +92,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
-            set => LayoutDocument.SetField<PointController, Point>(KeyStore.PositionFieldKey, InteractiveManipulationPosition = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.PositionFieldKey, InteractiveManipulationPosition = value, true);
         }
         public double XPos
         {
@@ -107,17 +107,17 @@ namespace Dash
         public double Width
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController, double>(KeyStore.WidthFieldKey, value, true);
+            set => LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
         }
         public double Height
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController, double>(KeyStore.HeightFieldKey, value, true);
+            set => LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, value, true);
         }
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController, Point>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualWidth * Scale.X, ActualHeight * Scale.Y));
         public double ActualHeight { get; private set; }
@@ -126,8 +126,8 @@ namespace Dash
         {
             ActualWidth = actualwidth;
             ActualHeight = actualheight;
-            LayoutDocument.SetField<NumberController,double>(KeyStore.ActualWidthKey, ActualWidth, true);
-            LayoutDocument.SetField<NumberController,double>(KeyStore.ActualHeightKey, ActualHeight, true);
+            LayoutDocument.SetField<NumberController>(KeyStore.ActualWidthKey, ActualWidth, true);
+            LayoutDocument.SetField<NumberController>(KeyStore.ActualHeightKey, ActualHeight, true);
         }
 
         protected bool Equals(DocumentViewModel other)
@@ -178,7 +178,11 @@ namespace Dash
         void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
-                Content = null; // forces layout to be recomputed by listeners who will access Content
+                // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
+                //   bcz: need some better mechanism than this....
+                if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
+                    LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                    Content = null; // forces layout to be recomputed by listeners who will access Content
         }
         /// <summary>
         /// Called when the ActiveLayout field of the Layout document has changed (or a field on the ActiveLayout).

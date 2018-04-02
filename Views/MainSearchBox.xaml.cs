@@ -244,13 +244,13 @@ namespace Dash
             {
                 Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
-                    var type = vm.ViewDocument.GetDataDocument(null).DocumentType?.Type?.ToLower();
+                    var type = vm.ViewDocument.GetDataDocument().DocumentType?.Type?.ToLower();
                     if (vm.IsLikelyUsefulContextText|| type == null)
                     {
                         return vm;
                     }
 
-                    var docType = vm.ViewDocument.GetDataDocument(null).DocumentType;
+                    var docType = vm.ViewDocument.GetDataDocument().DocumentType;
                     if (docType.Type == null)
                         return vm;
 
@@ -403,7 +403,7 @@ namespace Dash
                 var tree = DocumentTree.MainPageTree;
                 var local = LocalSearch(criteria.SearchText).ToArray();
                 return local
-                    .SelectMany(i => (tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0]).Concat(tree.GetNodesFromDataDocumentId(i.ViewDocument.GetDataDocument(null).Id)?.SelectMany(k => k.GroupPeers) ?? new DocumentNode[0]))
+                    .SelectMany(i => (tree.GetNodeFromViewId(i.ViewDocument.Id)?.GroupPeers ?? new DocumentNode[0]).Concat(tree.GetNodesFromDataDocumentId(i.ViewDocument.GetDataDocument().Id)?.SelectMany(k => k.GroupPeers) ?? new DocumentNode[0]))
                     .DistinctBy(d => d.Id).SelectMany(i => MakeAdjacentSearchResultViewModels(i, criteria, tree, null));
                 /*
                 var tree = DocumentTree.MainPageTree;
@@ -700,7 +700,7 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                var doc = dragData.GetDraggedDocument();
+                var doc = dragData.DraggedDocument;
                 var listKeys = doc.EnumDisplayableFields()
                     .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)

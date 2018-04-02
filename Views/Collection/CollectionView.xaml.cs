@@ -27,12 +27,6 @@ namespace Dash
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>(); 
 
         /// <summary>
-        /// The <see cref="CompoundOperatorEditor"/> that this <see cref="CollectionView"/> is nested in. Can be null
-        /// // in case the collection is added to a compoundoperatorview
-        /// </summary>
-        public CompoundOperatorEditor CompoundFreeform   => this.GetFirstAncestorOfType<CompoundOperatorEditor>(); 
-
-        /// <summary>
         /// The <see cref="DocumentView"/> that this <see cref="CollectionView"/> is nested in. Can be null
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
@@ -232,7 +226,7 @@ namespace Dash
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
             xContentControl.Content = CurrentView;
-            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data;
+            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data;
             if (curViewType != _viewType.ToString())
                 ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }

@@ -46,7 +46,7 @@ namespace Dash
             //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
             //collection.ViewModel.AddDocument(newDoc, null);
-            collection.ViewModel.AddDocument(Util.BlankDocWithPosition(where), null);
+            collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, where), null);
 
             //DBTest.DBDoc.AddChild(newDoc);
         }

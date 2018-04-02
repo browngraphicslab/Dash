@@ -87,7 +87,7 @@ namespace Dash
         {
             throw new System.NotImplementedException();
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             return false;
         }
