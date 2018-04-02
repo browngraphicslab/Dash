@@ -153,7 +153,8 @@ namespace DashShared
             public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
             public static KeyModel SourceUriKey = new KeyModel("26594498-FF15-438D-A577-2C8506F4ECEF", "SourceUriKeys");
             public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text");
-            public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "_Background Color");
+            public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "Background Color");
+            public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");
             public static KeyModel ScaleCenterFieldKey = new KeyModel("FE4IMA9J-NOE9-3NGS-G09Q-JFOE9038S82S" , "_Scale Center");
             public static KeyModel ScaleAmountFieldKey = new KeyModel("AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE", "_Scale Amount");

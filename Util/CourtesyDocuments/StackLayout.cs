@@ -34,13 +34,6 @@ namespace Dash
             Document = new DocumentController(fields, StackPanelDocumentType);
         }
 
-        public static void AddDocument(DocumentController stack, DocumentController doc)
-        {
-            var doclist = new List<DocumentController>(stack.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray());
-            doclist.Insert(0, doc);
-            stack.SetField<ListController<DocumentController>, List<DocumentController>>(KeyStore.DataKey, doclist, true);
-        }
-
         protected override DocumentController GetLayoutPrototype()
         {
             throw new NotImplementedException();

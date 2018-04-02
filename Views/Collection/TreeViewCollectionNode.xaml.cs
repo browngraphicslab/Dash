@@ -49,6 +49,31 @@ namespace Dash
             this.RegisterPropertyChangedCallback(FilterStringProperty,
                 (sender, dp) => ViewModel?.BindableDocumentViewModels.RefreshFilter());
         }
+        
+        public void Highlight(DocumentController document, bool? flag)
+        {
+            if (xListView.ItemsPanelRoot != null)
+            {
+                foreach (var noda in xListView.ItemsPanelRoot.Children.OfType<ListViewItem>())
+                {
+                    var cp = noda.GetFirstDescendantOfType<ContentPresenter>();
+                    var d = (cp.DataContext as DocumentViewModel)?.DataDocument;
+                    if (d != null)
+                    {
+                        var tv = noda.GetFirstDescendantOfType<TreeViewNode>();
+                        var tc = noda.GetFirstDescendantOfType<TreeViewCollectionNode>();
+                        if (d.DocumentType.Equals(NoteDocuments.CollectionNote.DocumentType))
+                        {
+                            tc.Highlight(document, flag);
+                        }
+                        if (tv.ViewModel.DocumentController.Equals(document))
+                        {
+                            tv.Highlight(flag);
+                        }
+                    }
+                }
+            }
+        }
 
         private void TreeViewCollectionNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
