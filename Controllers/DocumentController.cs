@@ -17,7 +17,7 @@ namespace Dash
     /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
-        // == Special Properties ==
+        // == Properties ==
         public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
         public bool HasDelegates
         {
@@ -36,7 +36,9 @@ namespace Dash
                                         ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
         public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
                                 _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
-        
+
+        // == Fields ==
+        public DocumentModel DocumentModel => Model as DocumentModel;
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
@@ -46,7 +48,6 @@ namespace Dash
         public event FieldUpdatedHandler PrototypeFieldUpdated;
 
         public event EventHandler DocumentDeleted;
-
         public string Title
         {
             get
@@ -66,29 +67,9 @@ namespace Dash
                     textFieldModelController.Data = value;
             }
         }
-
         public bool IsConnected { get; set; }
 
-        public bool HasMatchingKey(string keyName)
-        {
-            if (string.IsNullOrWhiteSpace(keyName))
-                return false;
-            foreach (KeyController key in _fields.Keys)
-            {
-                if (key.Name.StartsWith("_"))
-                    continue;
-                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
 
-        public override string ToString()
-        {
-            return Title;
-        }
 
 
 
@@ -129,6 +110,27 @@ namespace Dash
             SetFields(fields, true);
         }
 
+        public string LayoutName => DocumentModel.DocumentType.Type;
+
+        public DocumentType DocumentType
+        {
+            get => DocumentModel.DocumentType;
+            set
+            {
+                // update the underlying DocumentType field
+                // If you're here because 'enforceTypeCheck', do NOT change enforceTypeCheck to true.
+                DocumentModel.DocumentType = value;
+                this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
+            }
+        }
+
+        public DocumentController GetDataDocument(Context context = null)
+        {
+            return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
+        }
+
+        // == CONSTRUCTORS ==
+        #region constructors
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
 
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
@@ -140,268 +142,17 @@ namespace Dash
             }
             Init();
         }
+        #endregion
+        
+        // == PROTOTYPE/DELEGATE MANAGEMENT ==
+        #region Prototype/Delegate Management
 
-        /// <summary>
-        ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
-        ///     You should only set values on the controller, never directly on the model!
-        /// </summary>
-
-        public string LayoutName => DocumentModel.DocumentType.Type;
-
-        /// <summary>
-        ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
-        ///     to the server and across the client
-        /// </summary>
-        public DocumentType DocumentType
-        {
-            get => DocumentModel.DocumentType;
-            set
-            {
-                DocumentModel.DocumentType = value;
-                //Dear future coder,
-                //
-                //I knew you'd eventually find this line, probably because I set 'enforceTypeCheck' to false.
-                //Before you change it, remember that Types Really Only Lessen Loads in the short term.
-                //
-                //Enjoy your day,
-                //-Tyler
-                this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
-            }
-        }
-
-        public DocumentModel DocumentModel => Model as DocumentModel;
-
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(obj, this))
-            {
-                return true;
-            }
-            DocumentController controller = obj as DocumentController;
-            if (controller == null)
-            {
-                return false;
-            }
-            return GetId().Equals(controller.GetId());
-        }
-
-        public DocumentController GetDataDocument(Context context = null)
-        {
-            return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, context) ?? this;
-        }
-        public override int GetHashCode()
-        {
-            return GetId().GetHashCode();
-        }
-
-        public override FieldModelController<DocumentModel> Copy()
-        {
-            return this.MakeCopy();
-        }
-
-        /// <summary>
-        /// looks up a document that whose primary keys match input keys
-        /// </summary>
-        /// <param name="fieldContents"></param>
-        /// <returns></returns>
-        public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
-        {
-            foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
-                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
-                {
-                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
-                    if (primaryKeys != null)
-                    {
-                        bool found = true;
-                        foreach (var value in primaryKeyValues)
-                        {
-                            bool foundValue = false;
-                            foreach (var key in primaryKeys.Data)
-                            {
-                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
-                                if (derefValue != null)
-                                {
-                                    if (value == derefValue)
-                                    {
-                                        foundValue = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!foundValue)
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            return dmc;
-                        }
-                    }
-                }
-            return null;
-        }
-        DocumentController lookupOperator(string opname)
-        {
-            if (opname == "Add")
-                return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorController());
-            if (opname == "Subtract")
-            {
-                return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorController());
-            }
-            if (opname == "Divide")
-            {
-                return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorController());
-            }
-            if (opname == "Multiply")
-            {
-                return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorController());
-            }
-
-            return null;
-        }
-
-        public FieldControllerBase ParseDocumentReference(string textInput, bool searchAllDocsIfFail)
-        {
-            var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]
-
-            var docName = path[0];                       //search for <DocName=a>[.<FieldName=b>]
-            var fieldName = (path.Length > 1 ? path[1] : "");
-            var refDoc = docName == "Proto" ? GetPrototype() : docName == "This" ? this : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
-            if (refDoc != null)
-            {
-                if (path.Length == 1)
-                {
-                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
-                }
-                else
-                    foreach (var e in refDoc.EnumFields())
-                        if (e.Key.Name == path[1])
-                        {
-                            return new DocumentReferenceController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
-                        }
-            }
-
-            foreach (var e in this.EnumFields())
-                if (e.Key.Name == path[0])
-                {
-                    return new DocumentReferenceController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
-                }
-
-            //if (searchAllDocsIfFail)
-            //{
-            //    var searchDoc = DBSearchOperatorController.CreateSearch(this, DBTest.DBDoc, path[0], "");
-            //    return new ReferenceController(searchDoc.GetId(), KeyStore.CollectionOutputKey); // return  {AllDocs}.<FieldName=a> = this
-            //}
-            return null;
-        }
-
-        /// <summary>
-        /// Parses text input into a field controller
-        /// </summary>
-        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
-        {
-            textInput = textInput.Trim(' ');
-            if (textInput.StartsWith("="))
-            {
-                var fieldStr = textInput.Substring(1, textInput.Length - 1);
-                var strings = fieldStr.Split('(');
-                if (strings.Count() == 1)  //  a document from input <DocName>[.<FieldName>]  if no document matches DocName, search for This.<FieldName>  if still no document, search for {AllDocs}.<FieldName> = this
-                {
-                    var parse = ParseDocumentReference(strings[0], true);
-                    if (parse != null)
-                        SetField(key, parse, true, false);
-                    else
-                    {
-                        double num;
-                        if (double.TryParse(fieldStr, out num))
-                            SetField(key, new NumberController(num), true, false);
-                        else SetField(key, new TextController(fieldStr), true, false);
-                    }
-                }
-                else if (lookupOperator(strings[0]) != null)
-                {
-                    var opModel = lookupOperator(strings[0]);
-                    var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
-                    var args = strings[1].TrimEnd(')').Split(',');
-                    int count = 0;
-                    foreach (var a in args)
-                    {
-                        var docRef = ParseDocumentReference(a, false);
-                        if (docRef != null)
-                        {
-                            opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
-                        }
-                        else
-                        {
-                            var target = opFieldController.Inputs[count++];
-                            if (target.Value.Type == TypeInfo.Number)
-                            {
-                                var res = 0.0;
-                                if (double.TryParse(a.Trim(' '), out res))
-                                    opModel.SetField(target.Key, new NumberController(res), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Text)
-                            {
-                                opModel.SetField(target.Key, new TextController(a), true);
-                            }
-                            else if (target.Value.Type == TypeInfo.Image)
-                            {
-                                opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
-                            }
-                        }
-                    }
-                    SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
-                }
-            }
-            else
-            {
-                if (curField != null && !(curField is ReferenceController))
-                {
-                    if (curField is NumberController nc)
-                    {
-                        double num;
-                        if (double.TryParse(textInput, out num))
-                            nc.Data = num;
-                        else return false;
-                    }
-                    else if (curField is TextController tc)
-                        tc.Data = textInput;
-                    else if (curField is ImageController ic)
-                        try
-                        {
-                            ic.Data = new Uri(textInput);
-                        }
-                        catch (Exception)
-                        {
-                            ic.Data = null;
-                        }
-                    else if (curField is DocumentController)
-                    {
-                        //TODO tfs: fix this
-                        throw new NotImplementedException();
-                        //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
-                    }
-                    else if (curField is ListController<DocumentController> lc)
-                        lc.TypedData =
-                            new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
-                    else if (curField is RichTextController rtc)
-                        rtc.Data = new RichTextModel.RTD(textInput);
-                    else return false;
-                }
-            }
-            return true;
-        }
-
+        // == Prototypes ==
         /// <summary>
         ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
         ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
         ///     <see cref="KeyControllerGeneric{T}" />
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
         public DocumentController GetPrototypeWithFieldKey(KeyController key)
         {
             if (key == null)
@@ -416,8 +167,7 @@ namespace Dash
             // keep searching through prototypes until we find one with the key, if we never found one return null
             return proto?.GetPrototypeWithFieldKey(key);
         }
-
-
+        
         /// <summary>
         ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
         ///     and returns null if no prototype exists
@@ -436,10 +186,9 @@ namespace Dash
             // if the field contained a DocumentController return its data, otherwise return null
             return documentController;
         }
-
-
+        
         /// <summary>
-        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// Method that returns a list of prototypes' DocumentControllers and itself, in hierarchical order 
         /// </summary>
         public LinkedList<DocumentController> GetAllPrototypes()
         {
@@ -455,204 +204,7 @@ namespace Dash
             return result;
         }
 
-
-        /// <summary>
-        /// Returns whether or not the field has changed that is associated with the passed in key
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="field"></param>
-        /// <param name="forceMask"></param>
-        /// <returns></returns>
-        private bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
-        {
-            // get the prototype with the desired key or just get ourself
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
-
-            // get the old value of the field
-            FieldControllerBase oldField;
-            proto._fields.TryGetValue(key, out oldField);
-
-            if (key.Equals(KeyStore.PrototypeKey))
-            {
-                var oldPrototype = oldField as DocumentController;
-                if (oldPrototype != null)
-                {
-                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)//TODO This doesnt do anything
-                    {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                    };
-                    oldPrototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                }
-
-                var prototype = field as DocumentController;
-                if (prototype != null)
-                {
-                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
-                        prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
-                    };
-                    prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
-                    prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
-                }
-            }
-
-            // if the old and new field reference the exact same controller then we're done
-            if (!ReferenceEquals(oldField, field))
-            {
-                //if (proto.CheckCycle(key, field))
-                //{
-                //    return false;
-                //}
-
-                field.SaveOnServer();
-                oldField?.DisposeField();
-
-                proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
-
-                SetupNewFieldListeners(key, field, oldField, new Context(proto));
-
-                return true;
-            }
-            return false;
-        }
-
-        
-
-        /// <summary>
-        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
-        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
-        ///     created in this <see cref="DocumentController" />.
-        ///     <para>
-        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
-        ///         any prototype that might exist by setting the field on this
-        ///     </para>
-        /// </summary>
-        /// <param name="key">key index of field to update</param>
-        /// <param name="field">FieldModel to update to</param>
-        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
-        {
-            // TODO check field type compatibility
-            var context = new Context(this);
-            var shouldExecute = false;
-            var fieldChanged = false;
-            // ReSharper disable once AssignmentInConditionalExpression
-            if (fieldChanged = SetFieldHelper(key, field, forceMask))
-            {
-                shouldExecute = ShouldExecute(context, key);
-                UpdateOnServer();
-                // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
-                //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-            }
-            if (shouldExecute)
-            {
-                Execute(context, true);
-            }
-
-            return fieldChanged;
-        }
-
-
-        private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
-        {
-            if (!IsOperatorTypeCompatible(key, field))
-                return false;
-            var cont = GetField(key);
-            if (cont is ReferenceController) cont = cont.DereferenceToRoot(null);
-            if (cont == null) return true;
-            var rawField = field.DereferenceToRoot(null);
-
-            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
-        }
-
-        
-        // == CYCLE CHECKING ==
-        #region Cycle Checking
-        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
-        {
-            var opField = GetDereferencedField(KeyStore.OperatorKey, c) as OperatorController;
-            if (opField == null)
-            {
-                return new List<KeyController> { key };
-            }
-            return new List<KeyController>(opField.Inputs.Keys);
-        }
-
-        /// <summary>
-        /// Checks if adding the given field at the given key would cause a cycle
-        /// </summary>
-        /// <param name="key">The key that the given field would be inserted at</param>
-        /// <param name="field">The field that would be inserted into the document</param>
-        /// <returns>True if the field would cause a cycle, false otherwise</returns>
-        /// TODO Make cycle detection work with two operator inputs going to the same field
-        private bool CheckCycle(KeyController key, FieldControllerBase field)
-        {
-            if (!(field is ReferenceController))
-            {
-                return false;
-            }
-            var visitedFields = new HashSet<FieldReference>();
-            visitedFields.Add(new DocumentFieldReference(GetId(), key));
-            var rfms = new Queue<Tuple<FieldControllerBase, Context>>();
-
-            //TODO If this is a DocPointerFieldReference this might not work
-            rfms.Enqueue(Tuple.Create(field, new Context(this)));
-
-            while (rfms.Count > 0)
-            {
-                var t = rfms.Dequeue();
-                var fm = t.Item1;
-                var c = t.Item2;
-                if (!(fm is ReferenceController)) continue;
-                var rfm = (ReferenceController)fm;
-                var fieldRef = rfm.GetFieldReference().Resolve(c);
-                var doc = rfm.GetDocumentController(c);
-                Context c2;
-                if (c.DocContextList.Contains(doc))
-                {
-                    c2 = c;
-                } else { 
-                    c2 = new Context(c);
-                    c2.AddDocumentContext(doc);
-                }
-
-                foreach (var fieldReference in visitedFields)
-                    if (fieldReference.Resolve(c2).Equals(fieldRef))
-                        return true;
-
-                visitedFields.Add(fieldRef);
-               
-                var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
-                foreach (var keyController in keys)
-                {
-                    var f = doc.GetField(keyController);
-                    if (f != null)
-                    {
-                        rfms.Enqueue(Tuple.Create(f, c2));
-                    }
-                }
-            }
-
-            var delegates = GetField(KeyStore.DelegatesKey, true) as ListController<DocumentController>;
-            if (delegates != null)
-            {
-                bool cycle = false;
-                foreach (var documentController in delegates.TypedData)
-                {
-                    cycle = cycle || documentController.CheckCycle(key, field);
-                }
-                return cycle;
-            }
-            return false;
-        }
-        #endregion
-
-        // == DELEGATE MANAGEMENT ==
-        #region Delegate Management
-
+        // == Delegates ==
         /// <summary>
         ///  Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>
@@ -692,7 +244,6 @@ namespace Dash
             return proto.GetId() == id || proto.IsDelegateOf(id);
         }
 
-
         /// <summary>
         /// Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
         /// and returns it if no delegates field existed
@@ -718,6 +269,59 @@ namespace Dash
 
         // == FIELD MANAGEMENT ==
         #region Field Management
+
+        /// <summary>
+        /// Returns true if this document has a field whose Key's name is keyName.
+        /// </summary>
+        public bool HasMatchingKey(string keyName)
+        {
+            if (string.IsNullOrWhiteSpace(keyName))
+                return false;
+            foreach (KeyController key in _fields.Keys)
+            {
+                if (key.Name.StartsWith("_"))
+                    continue;
+                if (key.Name.ToLowerInvariant().Contains(keyName.ToLowerInvariant()))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        ///     Sets the <see cref="Controller" /> associated with the passed in <see cref="KeyControllerGeneric{T}" /> at the first
+        ///     prototype in the hierarchy that contains it. If the <see cref="KeyControllerGeneric{T}" /> is not used at any level then it is
+        ///     created in this <see cref="DocumentController" />.
+        ///     <para>
+        ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
+        ///         any prototype that might exist by setting the field on this
+        ///     </para>
+        /// </summary>
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
+        /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
+        {
+            // TODO check field type compatibility
+            var context = new Context(this);
+            var shouldExecute = false;
+            var fieldChanged = false;
+            // ReSharper disable once AssignmentInConditionalExpression
+            if (fieldChanged = SetFieldHelper(key, field, forceMask))
+            {
+                shouldExecute = ShouldExecute(context, key);
+                UpdateOnServer();
+                // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
+                //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+            }
+            if (shouldExecute)
+            {
+                Execute(context, true);
+            }
+
+            return fieldChanged;
+        }
 
         /// <summary>
         /// Returns the TypeInfo type of the field mapped to by key. If document contains an OperatorFieldController,
@@ -894,6 +498,78 @@ namespace Dash
                     foreach (var field in prototype.EnumDisplayableFields().Where(f => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
+        }
+
+        /// <summary>
+        /// Returns whether or not the field has changed that is associated with the passed in key
+        /// </summary>
+        /// <returns></returns>
+        private bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
+        {
+            // get the prototype with the desired key or just get ourself
+            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+
+            // get the old value of the field
+            FieldControllerBase oldField;
+            proto._fields.TryGetValue(key, out oldField);
+
+            if (key.Equals(KeyStore.PrototypeKey))
+            {
+                var oldPrototype = oldField as DocumentController;
+                if (oldPrototype != null)
+                {
+                    FieldModelUpdated -= delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)//TODO This doesnt do anything
+                    {
+                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
+                        oldPrototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
+                    };
+                    oldPrototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                }
+
+                var prototype = field as DocumentController;
+                if (prototype != null)
+                {
+                    FieldModelUpdated += delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                    {
+                        ((DocumentFieldUpdatedEventArgs)args).FromDelegate = true;
+                        prototype.OnDocumentFieldUpdated((DocumentController)sender, (DocumentFieldUpdatedEventArgs)args, c, false);
+                    };
+                    prototype.PrototypeFieldUpdated -= this.OnPrototypeDocumentFieldUpdated;
+                    prototype.PrototypeFieldUpdated += this.OnPrototypeDocumentFieldUpdated;
+                }
+            }
+
+            // if the old and new field reference the exact same controller then we're done
+            if (!ReferenceEquals(oldField, field))
+            {
+                //if (proto.CheckCycle(key, field))
+                //{
+                //    return false;
+                //}
+
+                field.SaveOnServer();
+                oldField?.DisposeField();
+
+                proto._fields[key] = field;
+                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+
+                SetupNewFieldListeners(key, field, oldField, new Context(proto));
+
+                return true;
+            }
+            return false;
+        }
+
+        private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
+        {
+            if (!IsOperatorTypeCompatible(key, field))
+                return false;
+            var cont = GetField(key);
+            if (cont is ReferenceController) cont = cont.DereferenceToRoot(null);
+            if (cont == null) return true;
+            var rawField = field.DereferenceToRoot(null);
+
+            return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
         #endregion
 
@@ -1212,8 +888,218 @@ namespace Dash
 
         #endregion
 
+        // == TEXT PARSING ==
+        #region Text Parsing
+        /// <summary>
+        /// Looks up a document that whose primary keys match input keys
+        /// </summary>
+        public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
+        {
+            foreach (var dmc in ContentController<FieldModel>.GetControllers<DocumentController>())
+                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+                {
+                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListController<KeyController>;
+                    if (primaryKeys != null)
+                    {
+                        bool found = true;
+                        foreach (var value in primaryKeyValues)
+                        {
+                            bool foundValue = false;
+                            foreach (var key in primaryKeys.Data)
+                            {
+                                var derefValue = (dmc.GetDereferencedField(key as KeyController, null) as TextController)?.Data;
+                                if (derefValue != null)
+                                {
+                                    if (value == derefValue)
+                                    {
+                                        foundValue = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!foundValue)
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            return dmc;
+                        }
+                    }
+                }
+            return null;
+        }
+
+        /// <summary>
+        /// Generates an OperatorDocument from the given opname string. If not possible, returns null.
+        /// Otherwise, returns the new document.
+        /// </summary>
+        DocumentController lookupOperator(string opname)
+        {
+            if (opname == "Add")
+                return OperatorDocumentFactory.CreateOperatorDocument(new AddOperatorController());
+            if (opname == "Subtract")
+            {
+                return OperatorDocumentFactory.CreateOperatorDocument(new SubtractOperatorController());
+            }
+            if (opname == "Divide")
+            {
+                return OperatorDocumentFactory.CreateOperatorDocument(new DivideOperatorController());
+            }
+            if (opname == "Multiply")
+            {
+                return OperatorDocumentFactory.CreateOperatorDocument(new MultiplyOperatorController());
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Parses text input into a given DocumentReferenceController.
+        /// </summary>
+        public FieldControllerBase ParseDocumentReference(string textInput, bool searchAllDocsIfFail)
+        {
+            var path = textInput.Trim(' ').Split('.');  // input has format <a>[.<b>]
+
+            var docName = path[0];                       //search for <DocName=a>[.<FieldName=b>]
+            var fieldName = (path.Length > 1 ? path[1] : "");
+            var refDoc = docName == "Proto" ? GetPrototype() : docName == "This" ? this : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+            if (refDoc != null)
+            {
+                if (path.Length == 1)
+                {
+                    return refDoc.GetField(KeyStore.ThisKey); // found <DocName=a>
+                }
+                else
+                    foreach (var e in refDoc.EnumFields())
+                        if (e.Key.Name == path[1])
+                        {
+                            return new DocumentReferenceController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
+                        }
+            }
+
+            foreach (var e in this.EnumFields())
+                if (e.Key.Name == path[0])
+                {
+                    return new DocumentReferenceController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
+                }
+
+            //if (searchAllDocsIfFail)
+            //{
+            //    var searchDoc = DBSearchOperatorController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+            //    return new ReferenceController(searchDoc.GetId(), KeyStore.CollectionOutputKey); // return  {AllDocs}.<FieldName=a> = this
+            //}
+            return null;
+        }
+
+        /// <summary>
+        /// Parses text input into a field controller.
+        /// </summary>
+        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
+        {
+            textInput = textInput.Trim(' ');
+            if (textInput.StartsWith("="))
+            {
+                var fieldStr = textInput.Substring(1, textInput.Length - 1);
+                var strings = fieldStr.Split('(');
+                if (strings.Count() == 1)  //  a document from input <DocName>[.<FieldName>]  if no document matches DocName, search for This.<FieldName>  if still no document, search for {AllDocs}.<FieldName> = this
+                {
+                    var parse = ParseDocumentReference(strings[0], true);
+                    if (parse != null)
+                        SetField(key, parse, true, false);
+                    else
+                    {
+                        double num;
+                        if (double.TryParse(fieldStr, out num))
+                            SetField(key, new NumberController(num), true, false);
+                        else SetField(key, new TextController(fieldStr), true, false);
+                    }
+                }
+                else if (lookupOperator(strings[0]) != null)
+                {
+                    var opModel = lookupOperator(strings[0]);
+                    var opFieldController = (opModel.GetField(KeyStore.OperatorKey) as OperatorController);
+                    var args = strings[1].TrimEnd(')').Split(',');
+                    int count = 0;
+                    foreach (var a in args)
+                    {
+                        var docRef = ParseDocumentReference(a, false);
+                        if (docRef != null)
+                        {
+                            opModel.SetField(opFieldController.Inputs[count++].Key, docRef, true);
+                        }
+                        else
+                        {
+                            var target = opFieldController.Inputs[count++];
+                            if (target.Value.Type == TypeInfo.Number)
+                            {
+                                var res = 0.0;
+                                if (double.TryParse(a.Trim(' '), out res))
+                                    opModel.SetField(target.Key, new NumberController(res), true);
+                            }
+                            else if (target.Value.Type == TypeInfo.Text)
+                            {
+                                opModel.SetField(target.Key, new TextController(a), true);
+                            }
+                            else if (target.Value.Type == TypeInfo.Image)
+                            {
+                                opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
+                            }
+                        }
+                    }
+                    SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
+                }
+            }
+            else
+            {
+                if (curField != null && !(curField is ReferenceController))
+                {
+                    if (curField is NumberController nc)
+                    {
+                        double num;
+                        if (double.TryParse(textInput, out num))
+                            nc.Data = num;
+                        else return false;
+                    }
+                    else if (curField is TextController tc)
+                        tc.Data = textInput;
+                    else if (curField is ImageController ic)
+                        try
+                        {
+                            ic.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            ic.Data = null;
+                        }
+                    else if (curField is DocumentController)
+                    {
+                        //TODO tfs: fix this
+                        throw new NotImplementedException();
+                        //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
+                    }
+                    else if (curField is ListController<DocumentController> lc)
+                        lc.TypedData =
+                            new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    else if (curField is RichTextController rtc)
+                        rtc.Data = new RichTextModel.RTD(textInput);
+                    else return false;
+                }
+            }
+            return true;
+        }
+
+        #endregion
+
         // == OVERRIDEN from ICOLLECTION ==
         #region ICollection Overrides
+        public override FieldModelController<DocumentModel> Copy()
+        {
+            return this.MakeCopy();
+        }
+
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
             if (_fields.ContainsKey(KeyStore.DelegatesKey))
@@ -1257,6 +1143,32 @@ namespace Dash
             //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
         }
         #endregion
+
+        // == OVERRIDEN from OBJECT ==
+        #region Object Overrides
+        public override string ToString()
+        {
+            return Title;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
+            DocumentController controller = obj as DocumentController;
+            if (controller == null)
+            {
+                return false;
+            }
+            return GetId().Equals(controller.GetId());
+        }
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
+        }
+        #endregion 
 
         // == EVENT MANAGEMENT ==
         #region Event Management
@@ -1411,5 +1323,89 @@ namespace Dash
             }
         }
         #endregion
+
+        // == CYCLE CHECKING ==
+        #region Cycle Checking
+        private List<KeyController> GetRelevantKeys(KeyController key, Context c)
+        {
+            var opField = GetDereferencedField(KeyStore.OperatorKey, c) as OperatorController;
+            if (opField == null)
+            {
+                return new List<KeyController> { key };
+            }
+            return new List<KeyController>(opField.Inputs.Keys);
+        }
+
+        /// <summary>
+        /// Checks if adding the given field at the given key would cause a cycle
+        /// </summary>
+        /// <param name="key">The key that the given field would be inserted at</param>
+        /// <param name="field">The field that would be inserted into the document</param>
+        /// <returns>True if the field would cause a cycle, false otherwise</returns>
+        /// TODO Make cycle detection work with two operator inputs going to the same field
+        private bool CheckCycle(KeyController key, FieldControllerBase field)
+        {
+            if (!(field is ReferenceController))
+            {
+                return false;
+            }
+            var visitedFields = new HashSet<FieldReference>();
+            visitedFields.Add(new DocumentFieldReference(GetId(), key));
+            var rfms = new Queue<Tuple<FieldControllerBase, Context>>();
+
+            //TODO If this is a DocPointerFieldReference this might not work
+            rfms.Enqueue(Tuple.Create(field, new Context(this)));
+
+            while (rfms.Count > 0)
+            {
+                var t = rfms.Dequeue();
+                var fm = t.Item1;
+                var c = t.Item2;
+                if (!(fm is ReferenceController)) continue;
+                var rfm = (ReferenceController)fm;
+                var fieldRef = rfm.GetFieldReference().Resolve(c);
+                var doc = rfm.GetDocumentController(c);
+                Context c2;
+                if (c.DocContextList.Contains(doc))
+                {
+                    c2 = c;
+                }
+                else
+                {
+                    c2 = new Context(c);
+                    c2.AddDocumentContext(doc);
+                }
+
+                foreach (var fieldReference in visitedFields)
+                    if (fieldReference.Resolve(c2).Equals(fieldRef))
+                        return true;
+
+                visitedFields.Add(fieldRef);
+
+                var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
+                foreach (var keyController in keys)
+                {
+                    var f = doc.GetField(keyController);
+                    if (f != null)
+                    {
+                        rfms.Enqueue(Tuple.Create(f, c2));
+                    }
+                }
+            }
+
+            var delegates = GetField(KeyStore.DelegatesKey, true) as ListController<DocumentController>;
+            if (delegates != null)
+            {
+                bool cycle = false;
+                foreach (var documentController in delegates.TypedData)
+                {
+                    cycle = cycle || documentController.CheckCycle(key, field);
+                }
+                return cycle;
+            }
+            return false;
+        }
+        #endregion
+
     }
 }
