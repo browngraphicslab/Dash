@@ -59,6 +59,7 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -527,7 +528,9 @@ namespace Dash
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
             }
+
         }
+  
 
         /// <summary>
         /// If the documentView contains a FreeformCollection, resizes the (TODO: is this right) first

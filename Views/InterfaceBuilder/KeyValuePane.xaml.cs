@@ -1,21 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
+using Windows.UI;
 using Windows.UI.Core;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using DashShared;
-using static Windows.ApplicationModel.Core.CoreApplication;
-using Visibility = DashShared.Visibility;
-using Dash.Models.DragModels;
 using Windows.UI.Xaml.Media;
-using Windows.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -56,7 +49,7 @@ namespace Dash
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
                 this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
-            
+
             Loaded += KeyValuePane_Loaded;
             Unloaded += KeyValuePane_Unloaded;
         }
@@ -187,11 +180,9 @@ namespace Dash
                 fmController = new TextController(xNewValueText.Text);
 
             _dataContextDocument.SetField(key, fmController, true);
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument), TypeColumnWidth));
             // reset the fields to the empty values
             xNewKeyText.Text = "";
             xNewValueText.Text = "";
-            xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
 
             return;

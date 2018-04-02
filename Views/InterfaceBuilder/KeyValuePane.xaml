@@ -11,7 +11,7 @@
 
 
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
-          BorderBrush="{ThemeResource WindowsBlue}">
+          BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <!--empty header space-->
@@ -40,98 +40,95 @@
         </Grid>
 
         <!--scrolling fields-->
-        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" MaxHeight="200" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!--key value lists-->
+            <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"></ColumnDefinition>
+                    <ColumnDefinition Width="5*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <!--key listview-->
+                <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
+                    MaxHeight="500" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
+                    ItemsSource="{x:Bind ListItemSource}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="BorderThickness" Value="0,0,.01,.01" />
+                            <Setter Property="BorderBrush" Value="LightGray" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:KeyFieldContainer">
+                            <Grid x:Name="xKeyContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited"
+                                DragStarting="Icon_OnDragStarting" CanDrag="True">
+                                <ScrollViewer VerticalAlignment="Center" HorizontalScrollMode="Enabled"
+                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
+                                        VerticalScrollMode="Disabled">
+                                    <TextBlock Text="{x:Bind Path=Key.Name}"
+                                        Style="{StaticResource xForceTextBlockDefault}" FontWeight="Medium"
+                                        VerticalAlignment="Stretch" HorizontalAlignment="Left" />
+                                </ScrollViewer>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
-            <StackPanel Orientation="Vertical">
-                <!--key value lists-->
-                <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" Width="350">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="3*"></ColumnDefinition>
-                        <ColumnDefinition Width="5*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <!--key listview-->
-                    <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                      MaxHeight="500" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
-                      ItemsSource="{x:Bind ListItemSource}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                <Setter Property="VerticalContentAlignment" Value="Center" />
-                                <Setter Property="Padding" Value="0" />
-                                <Setter Property="Margin" Value="0" />
-                                <Setter Property="BorderThickness" Value="0,0,.01,.01" />
-                                <Setter Property="BorderBrush" Value="LightGray" />
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="local:KeyFieldContainer">
-                                <Grid x:Name="xKeyContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited"
-                                  DragStarting="Icon_OnDragStarting" CanDrag="True">
-                                    <ScrollViewer VerticalAlignment="Center" HorizontalScrollMode="Enabled"
-                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
-                                          VerticalScrollMode="Disabled">
-                                        <TextBlock Text="{x:Bind Path=Key.Name}"
-                                           Style="{StaticResource xForceTextBlockDefault}" FontWeight="Medium"
-                                           VerticalAlignment="Stretch" HorizontalAlignment="Left" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                <!--field listview-->
+                <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
+                        Name="xFieldListView" MaxHeight="500" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                        SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="BorderThickness" Value="0,0,.01,.01" />
+                            <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="MaxHeight" Value="60"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:KeyFieldContainer">
+                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" CanDrag="True" DragStarting="Icon_OnDragStarting"
+                                PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited">
+                                <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
+                                        HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
+                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                                    <Border MaxWidth="500" VerticalAlignment="Center"
+                                    HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
+                                </ScrollViewer>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
 
-                    <!--field listview-->
-                    <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                          Name="xFieldListView" MaxHeight="500" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                          SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                <Setter Property="VerticalContentAlignment" Value="Center" />
-                                <Setter Property="Padding" Value="0" />
-                                <Setter Property="Margin" Value="0" />
-                                <Setter Property="BorderThickness" Value="0,0,.01,.01" />
-                                <Setter Property="BorderBrush" Value="LightGray" />
-                                <Setter Property="MaxHeight" Value="60"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="local:KeyFieldContainer">
-                                <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" CanDrag="True" DragStarting="Icon_OnDragStarting"
-                                  PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited">
-                                    <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
-                                          HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
-                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                                        <Border MaxWidth="500" VerticalAlignment="Center"
-                                        HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
-                                    </ScrollViewer>
-                                </Grid>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-
-                    </ListView>
-                </Grid>
-                <!-- add field line -->
-                <Grid x:Name="xNewKeyValuePair" HorizontalAlignment="Stretch" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="3*"></ColumnDefinition>
-                        <ColumnDefinition Width="5*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" Height="60" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
-                        <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
-                                          HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
-                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                            <TextBox x:Name="xNewKeyText" PlaceholderText="Key..." BorderThickness="0" TextWrapping="Wrap" KeyUp="TextFocus_KeyUp"></TextBox>
-                        </ScrollViewer>
-                    </Grid>
-                    <Grid Grid.Column="1" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
-                        <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
-                                          HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
-                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                            <TextBox x:Name="xNewValueText" PlaceholderForeground="LightGray" BorderThickness="0" PlaceholderText="Value..." KeyUp="TextFocus_KeyUp" TextWrapping="Wrap" KeyDown="AddKeyValueFieldOnEnter"></TextBox>
-                        </ScrollViewer>
-                    </Grid>
-                </Grid>
-            </StackPanel>
+                </ListView>
+            </Grid>
         </ScrollViewer>
+        <!-- add field line -->
+        <Grid x:Name="xNewKeyValuePair" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" BorderThickness="0,1,0,0" Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
+                <ColumnDefinition Width="5*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Height="Auto" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
+                <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
+                                          HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                    <TextBox x:Name="xNewKeyText" PlaceholderText="Key..." BorderThickness="0" TextWrapping="Wrap" KeyUp="TextFocus_KeyUp"></TextBox>
+                </ScrollViewer>
+            </Grid>
+            <Grid Grid.Column="1" Height="Auto" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
+                <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
+                                          HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                    <TextBox x:Name="xNewValueText" PlaceholderForeground="LightGray" BorderThickness="0" PlaceholderText="Value..." KeyUp="TextFocus_KeyUp" TextWrapping="Wrap" KeyDown="AddKeyValueFieldOnEnter"></TextBox>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>
