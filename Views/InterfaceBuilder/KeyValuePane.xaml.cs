@@ -177,13 +177,15 @@ namespace Dash
             fmController = _dataContextDocument.GetField(key);
 
             if (fmController == null)
+            {
                 fmController = new TextController(xNewValueText.Text);
-
-            _dataContextDocument.SetField(key, fmController, true);
+                _dataContextDocument.SetField(key, fmController, true);
+            }
+            
             // reset the fields to the empty values
             xNewKeyText.Text = "";
             xNewValueText.Text = "";
-
+            xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
             return;
         }
