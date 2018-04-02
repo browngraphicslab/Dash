@@ -9,7 +9,7 @@ namespace Dash
     public class RichTextDocumentOperatorController : OperatorController
     {
 
-        public RichTextDocumentOperatorController() : base(new OperatorModel(OperatorType.RichTextDocument))
+        public RichTextDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
@@ -33,6 +33,9 @@ namespace Dash
             [ReadableTextKey] = TypeInfo.Text
         };
 
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static KeyController TypeKey = new KeyController("82672A36-7441-43E1-B9A3-602E722AFD8D", "Doc Text");
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             var richTextController = inputs[RichTextKey] as RichTextController;
@@ -45,19 +48,9 @@ namespace Dash
             }
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RichTextDocumentOperatorController();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
         }
     }
 }

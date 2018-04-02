@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using Windows.UI.Xaml;
 
 namespace Dash
 {
@@ -15,16 +16,16 @@ namespace Dash
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
-        public static KeyController PrimaryKeyKey = new KeyController(DashConstants.KeyStore.PrimaryKeyKey);
-        public static KeyController ThisKey = new KeyController(DashConstants.KeyStore.ThisKey);
         public static KeyController PrototypeKey = new KeyController(DashConstants.KeyStore.PrototypeKey);
         public static KeyController DelegatesKey = new KeyController(DashConstants.KeyStore.DelegatesKey);
+        public static KeyController UserSetWidthKey = new KeyController(DashConstants.KeyStore.UserSetWidthKey);
         public static KeyController WidthFieldKey = new KeyController(DashConstants.KeyStore.WidthFieldKey);
         public static KeyController HeightFieldKey = new KeyController(DashConstants.KeyStore.HeightFieldKey);
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
+        public static KeyController AdornmentShapeKey = new KeyController(DashConstants.KeyStore.AdornmentShapeKey);
         public static KeyController PositionFieldKey = new KeyController(DashConstants.KeyStore.PositionFieldKey);
         public static KeyController ScaleAmountFieldKey = new KeyController(DashConstants.KeyStore.ScaleAmountFieldKey);
         public static KeyController IconTypeFieldKey = new KeyController(DashConstants.KeyStore.IconTypeFieldKey);
@@ -57,7 +58,10 @@ namespace Dash
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
+        public static object RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc func) { return TypeRenderer[type] = func; }
 
+        public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
+        public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
 
     }
 }

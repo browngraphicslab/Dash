@@ -26,18 +26,12 @@ namespace Dash
 
         public bool Horizontal;
 
-        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point())
+        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point(), Size size = new Size())
         {
             Horizontal = horizontal;
-            var fields = DefaultLayoutFields(where, new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
+            var fields = DefaultLayoutFields(where, size != new Size() ? size : new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
             fields.Add(StyleKey, new TextController(horizontal ? "Horizontal" : "Vertical"));
             Document = new DocumentController(fields, StackPanelDocumentType);
-        }
-
-        public static void AddDocument(DocumentController stack, DocumentController doc)
-        {
-            var doclist = stack.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-            doclist.Insert(0,doc);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -60,9 +54,8 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <param name="context"></param>
-        /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var stack = new RelativePanel();
             var stackFieldData =

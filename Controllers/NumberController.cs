@@ -46,7 +46,7 @@ namespace Dash
         {
             return Data;
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var data = value as double?;
             if (data != null)

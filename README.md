@@ -1,3 +1,7 @@
+### Dash Features
+*Before you merge into master, update this list with whatever new features or changes you implemented. This will ensure everyone is aware of what features they need to be testing against when they add new functionality.
+Also, be sure that new features do not break any of the existing ones in this list.*
+
 ### Instructions for installing SyncFusion Nuget Packages
 
 1. Go to *Tools* > *Options* and scroll to *NuGet Package Manager*

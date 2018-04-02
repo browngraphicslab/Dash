@@ -18,11 +18,6 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(), new Size(250,100), refToOp);
             Document = new DocumentController(fields, DashConstants.TypeStore.OperatorBoxType);
-            if (refToOp.DereferenceToRoot<OperatorController>(null).IsCompound())
-            {
-                DocumentController controller = refToOp.GetDocumentController(null);
-                controller.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
-            }
         }
 
         protected override DocumentController GetLayoutPrototype()

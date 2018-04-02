@@ -10,9 +10,13 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public ImageOperatorController( ) : base(new OperatorModel(OperatorType.ImageToUri))
+        public ImageOperatorController( ) : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("58032D3F-2B09-475B-8A56-F455DC809229", "Image");
+
 
         public static readonly KeyController URIKey = new KeyController("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
 
@@ -32,18 +36,10 @@ namespace Dash
         {
 
         }
-        
-        public override FieldModelController<OperatorModel> Copy()
+
+        public override FieldControllerBase GetDefaultController()
         {
             return new ImageOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

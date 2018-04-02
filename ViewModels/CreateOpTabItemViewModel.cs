@@ -26,7 +26,7 @@ namespace Dash
                 var opController = _function?.Invoke();
                 if (opController != null)
                 {
-                    opController.GetActiveLayout().SetField(KeyStore.PositionFieldKey,
+                    (opController.GetActiveLayout() ?? opController).SetField(KeyStore.PositionFieldKey,
                         new PointController(TabMenu.Instance.GetRelativePoint()), true);
                     TabMenu.Instance.AddToFreeform(opController);
                 }

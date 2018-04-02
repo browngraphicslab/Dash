@@ -18,7 +18,6 @@ namespace Dash
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.PrimaryKeyKey] = new ListController<KeyController>(KeyStore.TitleKey)
             };
             return new DocumentController(fields, ImageDocType);
         }
