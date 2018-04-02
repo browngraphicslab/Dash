@@ -718,7 +718,7 @@ namespace Dash
 
             return fieldChanged;
         }
-        public bool SetField<TDefault,V>(KeyController key, V v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)

@@ -84,7 +84,7 @@ namespace Dash
                 //}
                 return new SolidColorBrush(Colors.Transparent);
             }
-            set => LayoutDocument.SetField<TextController,string>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
+            set => LayoutDocument.SetField<TextController>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
@@ -92,7 +92,7 @@ namespace Dash
         public Point Position
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
-            set => LayoutDocument.SetField<PointController, Point>(KeyStore.PositionFieldKey, InteractiveManipulationPosition = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.PositionFieldKey, InteractiveManipulationPosition = value, true);
         }
         public double XPos
         {
@@ -107,17 +107,17 @@ namespace Dash
         public double Width
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController, double>(KeyStore.WidthFieldKey, value, true);
+            set => LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
         }
         public double Height
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController, double>(KeyStore.HeightFieldKey, value, true);
+            set => LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, value, true);
         }
         public Point Scale
         {
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
-            set => LayoutDocument.SetField<PointController, Point>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
+            set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualWidth * Scale.X, ActualHeight * Scale.Y));
         public double ActualHeight { get; private set; }
@@ -126,8 +126,8 @@ namespace Dash
         {
             ActualWidth = actualwidth;
             ActualHeight = actualheight;
-            LayoutDocument.SetField<NumberController,double>(KeyStore.ActualWidthKey, ActualWidth, true);
-            LayoutDocument.SetField<NumberController,double>(KeyStore.ActualHeightKey, ActualHeight, true);
+            LayoutDocument.SetField<NumberController>(KeyStore.ActualWidthKey, ActualWidth, true);
+            LayoutDocument.SetField<NumberController>(KeyStore.ActualHeightKey, ActualHeight, true);
         }
 
         protected bool Equals(DocumentViewModel other)
