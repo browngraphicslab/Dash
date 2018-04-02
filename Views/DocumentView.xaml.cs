@@ -59,12 +59,9 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
-<<<<<<< HEAD
 
         private CollectionFreeformView _parentCollectionFreeform; 
 
-=======
->>>>>>> master
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -92,8 +89,7 @@ namespace Dash
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
-<<<<<<< HEAD
-            DataContextChanged += (s, a) =>
+            DataContextChanged += (s, a) =>                                                                 // KBTODO 
             { 
                 ViewModel.DataDocument.OnSelectionChanged += (selected) => {
                     xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
@@ -103,9 +99,6 @@ namespace Dash
                     ViewModel.DataDocument.TreeViewNode?.ChangeHeaderColor(selected); 
                 };
             };
-=======
-            
->>>>>>> master
             Loaded += (sender, e) => {
                 _parentCollectionFreeform = ParentCollection?.CurrentView as CollectionFreeformView;
                 updateBindings(null, null);
@@ -666,11 +659,8 @@ namespace Dash
             if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
             {
                 ViewModel.DecorationState = false;
-<<<<<<< HEAD
             }
-=======
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
->>>>>>> master
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {

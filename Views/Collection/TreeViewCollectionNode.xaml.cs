@@ -125,17 +125,11 @@ namespace Dash
                 var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && data.Count > 0)
                 {
-<<<<<<< HEAD
-                    var start = data.First().GetDraggedDocument().GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.GetDraggedDocument())).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.GetDraggedDocument().GetPositionField().Data.X - start.X,
-                                                                                   dm.GetDraggedDocument().GetPositionField().Data.Y - start.Y), true)).ToList());
-=======
+
                     var start = data.First().DraggedDocument.GetPositionField().Data;
                     coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
                                        Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
                                                                                    dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
->>>>>>> master
                 }
             }
             e.Handled = true;

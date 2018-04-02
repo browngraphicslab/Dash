@@ -17,7 +17,6 @@ namespace Dash
     /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
-<<<<<<< HEAD
         private bool _isSelected;
         public bool IsSelected
         {
@@ -32,71 +31,7 @@ namespace Dash
         public event SelectedChangedHandler OnSelectionChanged;
 
         public TreeViewNode TreeViewNode { get; set; }          //KBTODO 
-
-
-        public bool HasDelegatesOrPrototype => HasDelegates || HasPrototype;
-
-        public bool HasDelegates
-        {
-            get
-            {
-                var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey) ?
-                    _fields[KeyStore.DelegatesKey] as ListController<DocumentController> : null;
-
-                if (currentDelegates == null)
-                    return false;
-                return currentDelegates.Data.Any();
-            }
-        }
-        public bool HasPrototype
-        {
-            get
-            {
-                return _fields.ContainsKey(KeyStore.PrototypeKey) &&
-                                        (_fields[KeyStore.PrototypeKey] as DocumentController)
-                                        ?.GetField(KeyStore.AbstractInterfaceKey, true) == null;
-            }
-        }
-
-
-        public bool HasTitle => _fields.ContainsKey(KeyStore.TitleKey) &&
-                                _fields[KeyStore.TitleKey].DereferenceToRoot<TextController>(null)?.Data != "Title";
-
-        /// <summary>
-        /// Add: Used when a field is added to a document with a key that is didn't previously contain
-        /// Remove: Used when a field is removed from a document
-        /// Replace: Used when a field in the document is replaced with a different field
-        /// Update: Used when the value of a field in a document changes, instead of the field being replaced
-        /// </summary>
-        public enum FieldUpdatedAction
-        {
-            Add,
-            Remove,
-            Replace,
-            Update
-        }
-
-        public class DocumentFieldUpdatedEventArgs : FieldUpdatedEventArgs
-        {
-            public readonly FieldControllerBase OldValue;
-            public readonly FieldControllerBase NewValue;
-            public readonly DocumentFieldReference Reference;
-            public readonly FieldUpdatedEventArgs FieldArgs;
-            public bool FromDelegate;
-
-            public DocumentFieldUpdatedEventArgs(FieldControllerBase oldValue, FieldControllerBase newValue,
-                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, bool fromDelegate) : base(TypeInfo.Document, action)
-            {
-                OldValue = oldValue;
-                NewValue = newValue;
-                Reference = reference;
-                FieldArgs = fieldArgs;
-                FromDelegate = fromDelegate;
-            }
-        }
-
-=======
->>>>>>> master
+        
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key

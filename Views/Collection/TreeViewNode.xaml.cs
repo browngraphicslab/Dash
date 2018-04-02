@@ -91,37 +91,18 @@ namespace Dash
                     Tag = "TreeViewNode text box binding"
                 };
 
-<<<<<<< HEAD
-                //var headerBinding = new FieldBinding<NumberController>
+                //var headerBinding = new FieldBinding<NumberController>            //KBTODO 
                 //{
                 //    Document = dvm.DocumentController,
                 //    Key = KeyStore.SelectedKey,
                 //    FallbackValue = new SolidColorBrush(Colors.Transparent),
                 //    Mode = BindingMode.OneWay,
-                //    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
-                //    Tag = "TreeViewNode header binding",
                 //    Converter = new SelectedToColorConverter()
                 //};
-                //XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
-=======
-                var headerBinding = new FieldBinding<NumberController>
-                {
-                    Document = dvm.DocumentController,
-                    Key = KeyStore.SelectedKey,
-                    FallbackValue = new SolidColorBrush(Colors.Transparent),
-                    Mode = BindingMode.OneWay,
-                    Converter = new SelectedToColorConverter()
-                };
                 
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
->>>>>>> master
 
                 dvm.DataDocument.TreeViewNode = this; 
-                //dvm.DataDocument.OnSelectionChanged += (selected) =>          //KBTODO 
-                //{
-                //    XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
-                //};
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
                 if (collection != null)
                 {
                     _isCollection = true;

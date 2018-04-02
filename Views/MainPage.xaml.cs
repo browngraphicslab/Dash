@@ -407,41 +407,6 @@ namespace Dash
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos,this).OfType<CollectionView>().ToList();
             if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
             {
-<<<<<<< HEAD
-                return;
-            }
-            TabMenu.ConfigureAndShow(topCollection as CollectionFreeformView, pos, xCanvas, true);
-            e.Handled = true;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
-        {
-            GlobalInkSettings.Hue = 200;
-            GlobalInkSettings.Brightness = 30;
-            GlobalInkSettings.Size = 4;
-            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.Opacity = 1;
-
-            OperatorMenuFlyout = new Flyout
-            {
-                Content = TabMenu.Instance,
-
-            };
-
-            //TODO: do we need this if we aren't doing grouping?
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
-            xMainTreeView.DataContext = collectionViewModel;
-
-            //// add TreeMenu
-            //TreeNode TreeMenu = new TreeNode(_mainCollectionView.ViewModel.CollectionController,null);
-            //TreeMenu.Width = 300;
-            //TreeMenu.HorizontalAlignment = HorizontalAlignment.Left;
-            //MyGrid.Children.Add(TreeMenu);
-
-            MainDocView.SetBorderThickness(0); 
-        }
-=======
                 if (e != null)
                 {
                     foreach (var d in freeformView.xItemsControl.ItemsPanelRoot.Children)
@@ -467,7 +432,6 @@ namespace Dash
                         }
                     }
                 }
->>>>>>> master
 
                 if (e == null || !e.Handled)
                 {

@@ -27,14 +27,9 @@
             <TextBlock TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}"  Foreground="#EEFFFF" Padding="0,7">My Workspaces</TextBlock>
         </Grid>
         <TextBox x:Name="XFilterBox" FontSize="16" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
-<<<<<<< HEAD
-        <local:TreeViewCollectionNode HorizontalAlignment="Left" Width="{Binding ElementName=xOuterGrid, Path=ActualWidth}" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
-        <Button Grid.Row="3"  HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace</Button>
-=======
         <local:TreeViewCollectionNode x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
         <Button Grid.Row="3"  HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
             </Button>
->>>>>>> master
     </Grid>
 </UserControl>
 

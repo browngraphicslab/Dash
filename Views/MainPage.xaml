@@ -80,9 +80,6 @@
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>
         </Canvas>
-<<<<<<< HEAD
-        <local:CollectionTreeView x:Name="xMainTreeView" Grid.Column="0" />
-=======
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -119,6 +116,5 @@
                 </localMicrosoft:GridSplitter.Element>
             </localMicrosoft:GridSplitter>
           </Grid>
->>>>>>> master
     </Grid>
 </Page>
