@@ -241,7 +241,7 @@ namespace Dash
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
             var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
 
-            double distanceThreshold = 500;
+            double distanceThreshold = 1000;
             double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
             foreach(var documentView in listOfSiblings)
             {
@@ -249,7 +249,7 @@ namespace Dash
                 var documentAxes = AlignmentAxes(documentBounds);
                 //To avoid the visual clutter of aligning to document views in a large workspace, we currently ignore any document views that are further than some threshold
 
-                if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold|| Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
+                if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold || Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
                     continue;
 
                 //For every axis in the ParentDocument
@@ -329,46 +329,6 @@ namespace Dash
 
         }
 
-        /*
-        private void SnapToDocument(Tuple<DocumentView, Side, double> closest, bool preview)
-        { 
-            var currentBoundingBox = InteractiveBounds(docRoot.ViewModel);
-
-            var closest = GetClosestDocumentView(currentBoundingBox);
-            if (preview)
-                PreviewSnap(currentBoundingBox, closest);
-            else
-                SnapToDocumentView(docRoot.ViewModel, closest);
-        }
-        */
-        
-        /*
-        /// <summary>
-        /// Snaps location of this DocumentView to the DocumentView passed in, also inheriting its width or height dimensions.
-        /// </summary>
-        /// <param name="closestDocumentView"></param>
-        private void SnapToDocumentView(DocumentViewModel currrentDocModel, Tuple<DocumentViewModel, Side, double> closestDocumentView)
-        {
-            if (closest == null)
-            {
-                return;
-            }
-            var closestDocumentView = closest.Item1;
-            var side = closest.Item2;
-
-            ParentDocument.ViewModel.Position = SimpleSnapPoint(closestDocumentView.ViewModel.Bounds, ~side);
-
-            if (preview)
-            {
-                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                var line = PreviewLine(closestDocumentView.ViewModel.Bounds, ~side);
-                MainPage.Instance.AlignmentLine.X1 = line.p1.X;
-                MainPage.Instance.AlignmentLine.Y1 = line.p1.Y;
-                MainPage.Instance.AlignmentLine.X2 = line.p2.X;
-                MainPage.Instance.AlignmentLine.Y2 = line.p2.Y;
-            }
-        }
-        */
 
         private (Point p1, Point p2) PreviewLine(Rect snappingTo, Side snappingToSide)
         {
