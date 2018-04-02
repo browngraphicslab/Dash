@@ -126,6 +126,14 @@ namespace Dash
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
+                var docTextDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
+                {
+                    [KeyStore.OperatorKey] = new RichTextDocumentOperatorController(),
+                    [RichTextDocumentOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
+                }, DocumentType.DefaultType);
+                protoDoc.SetField(KeyStore.DocumentTextKey,
+                    new DocumentReferenceController(docTextDoc.Id, RichTextDocumentOperatorController.ReadableTextKey),
+                    true);
                 //var titleDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 //{
                 //    [RichTextTitleOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DocumentTextKey),
@@ -148,7 +156,6 @@ namespace Dash
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
-                dataDocument.SetField(KeyStore.DocumentTextKey, new TextController(text), true); // should be an operator to extract from RichText...
                 Document = initSharedLayout(CreateLayout(where), dataDocument, size == new Size() ?  new Size(100,25)  :size);
             }
         }
