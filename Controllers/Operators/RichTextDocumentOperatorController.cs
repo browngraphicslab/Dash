@@ -7,7 +7,7 @@ using DashShared;
 using Windows.UI.Text;
 using System.Text.RegularExpressions;
 using Windows.UI.Xaml.Documents;
-using System.Windows.Documents.TextPointer;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -26,7 +26,7 @@ namespace Dash
         public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;
 
         //Output key
-        public static readonly KeyController ReadableTextKey = new KeyController("INSERT GUID", "ReadableText"); //"     "
+        public static readonly KeyController ReadableTextKey = new KeyController("AAAA064D-C4BC-4623-AAD3-402077433C46", "ReadableText");
 
         public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
         {
@@ -40,14 +40,14 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
-            //Missing reference to System.Windows.Documents
             var richTextController = inputs[RichTextKey] as RichTextController;
-            RichTextBox rtb = new RichTextBox(richTextController, 0, 0, 0, 0);
-            TextRange textRange = new TextRange(
-                rtb.Document.ContentStart, 
-                rtb.Document.ContentEnd
-            );
-            outputs[ReadableTextKey] = textRange.Text;
+            if (richTextController != null)
+            {
+                var richEditBox = new RichEditBox();
+                richEditBox.Document.SetText(TextSetOptions.FormatRtf, richTextController.RichTextFieldModel.Data.RtfFormatString);
+                richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
+                outputs[ReadableTextKey] = new TextController(readableText ?? "");
+            }
         }
 
         public override FieldModelController<OperatorModel> Copy()
