@@ -96,7 +96,7 @@ namespace Dash
                     if (selected) _parentCollectionFreeform?.AddToSelection(this);
                     else _parentCollectionFreeform?.RemoveFromSelection(this);
 
-                    ViewModel.DataDocument.TreeViewNode?.ChangeHeaderColor(selected); 
+                    ViewModel.DataDocument.ChangeTreeViewHeader(selected); 
                 };
             };
             Loaded += (sender, e) => {

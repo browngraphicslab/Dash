@@ -30,7 +30,14 @@ namespace Dash
         public delegate void SelectedChangedHandler(bool value);
         public event SelectedChangedHandler OnSelectionChanged;
 
-        public TreeViewNode TreeViewNode { get; set; }          //KBTODO 
+        private TreeViewNode _treeviewNode; 
+        public void SetTreeViewNode(TreeViewNode tv) {
+            _treeviewNode = tv;
+        }
+        public void ChangeTreeViewHeader(bool selected)
+        {
+            _treeviewNode?.ChangeHeaderColor(selected); 
+        }
         
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 

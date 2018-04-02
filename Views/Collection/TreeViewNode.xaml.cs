@@ -69,6 +69,7 @@ namespace Dash
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
+                dvm.DataDocument.SetTreeViewNode(this); 
 
                 var textBlockBinding = new FieldBinding<TextController>
                 {
@@ -90,19 +91,8 @@ namespace Dash
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };
-
-                //var headerBinding = new FieldBinding<NumberController>            //KBTODO 
-                //{
-                //    Document = dvm.DocumentController,
-                //    Key = KeyStore.SelectedKey,
-                //    FallbackValue = new SolidColorBrush(Colors.Transparent),
-                //    Mode = BindingMode.OneWay,
-                //    Converter = new SelectedToColorConverter()
-                //};
                 
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
-
-                dvm.DataDocument.TreeViewNode = this; 
                 if (collection != null)
                 {
                     _isCollection = true;
