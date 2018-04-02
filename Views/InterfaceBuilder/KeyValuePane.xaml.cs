@@ -202,14 +202,11 @@ namespace Dash
             if (fmController == null)
                 fmController = new TextController(xNewValueText.Text);
 
-
+            _dataContextDocument.SetField(key, fmController, true);
             ListItemSource.Add(new KeyFieldContainer(key, new BoundController(fmController, _dataContextDocument), TypeColumnWidth));
-            // TODO check if adding was succesful
             // reset the fields to the empty values
             xNewKeyText.Text = "";
             xNewValueText.Text = "";
-            //xTypeComboBox.SelectedIndex = 0;
-            //ToggleAddKVPane(false);
             xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
 
