@@ -207,7 +207,65 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            var field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            if (field == null)
+            {
+
+
+                var key = dc.HeaderViewModel.FieldKey;
+                FieldControllerBase fmController = new TextController("something went wrong");
+                var stringValue = xEditTextBox.Text;
+
+                dc.Document.GetDataDocument().ParseDocField(key, xEditTextBox.Text);
+                dc.Document.GetDataDocument().ParseDocField(key, xEditTextBox.Text);
+
+                fmController = dc.Document.GetDataDocument().GetField(key);
+
+                var ke = key.GetTypeAsString();
+
+                if (fmController == null)
+                {
+                    //switch (key.GetTypeAsString())
+                    //{
+                    //    //case TypeInfo.Number:
+                    //    //    fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
+                    //    //    break;
+                    //    //case TypeInfo.Image:
+                    //    //    // TODO check to see if the uri is valid
+                    //    //    fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
+                    //    //    break;
+                    //    //case TypeInfo.Text:
+                    //    //    fmController = new TextController(xEditTextBox.Text);
+                    //    //    break;
+                    //    //case TypeInfo.List:
+                    //    //    //TODO tfs: this can only create lists of docs(collections), not lists of other things
+                    //    //    fmController = new ListController<DocumentController>();
+                    //    //    break;
+                    //    //case TypeInfo.Point:
+                    //    //    fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
+                    //    //    break;
+                    //    //case TypeInfo.Document:
+                    //    //    fmController = new Converters.DocumentControllerToStringConverter(null).ConvertXamlToData(stringValue);
+                    //    //    break;
+                    //    case TypeInfo.None:
+                    //    //case TypeInfo.PointerReference:
+                    //    //case TypeInfo.DocumentReference:
+                    //    //case TypeInfo.Operator:
+                    //    //case TypeInfo.Ink:
+                    //    //case TypeInfo.RichText:
+                    //    //case TypeInfo.Rectangle:
+                    //    //case TypeInfo.Key:
+                    //    //case TypeInfo.Reference:
+                    //    //case TypeInfo.Any:
+                    //    default:
+                    //        throw new ArgumentOutOfRangeException();
+                    //}
+                    dc.Document.GetDataDocument().SetField(key, new TextController(xEditTextBox.Text), true);
+                }
+            }
+            field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+
+            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, field);
             dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
@@ -478,7 +536,9 @@ namespace Dash
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            ViewModel.AddDocument(new DocumentController(), null);
+            //var doc = ParentDocument.GetDataDocument();
+            ViewModel.AddDocument(Util.BlankNote(), null);
+            // ViewModel.AddDocument(ViewModel., null);
             e.Handled = true;
         }
     }

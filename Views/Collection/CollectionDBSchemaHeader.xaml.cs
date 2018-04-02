@@ -41,6 +41,8 @@ namespace Dash
         }
         double _startHeaderDragWidth = 0;
 
+        private double _storedWidth = 0;
+
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
@@ -109,6 +111,19 @@ namespace Dash
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+        }
+
+        private void ResizeHandle_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ViewModel.Width > 0)
+            {
+                _storedWidth = ViewModel.Width;
+                ViewModel.Width = 0;
+            } else
+            {
+                ViewModel.Width = _storedWidth;
+            }
+            
         }
     }
 }
