@@ -268,7 +268,9 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Visible;
+            XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
+            XTextBox.SelectAll();
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
@@ -279,6 +281,7 @@ namespace Dash
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Collapsed;
+            XTextBlock.Visibility = Visibility.Visible;
         }
 
         private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
