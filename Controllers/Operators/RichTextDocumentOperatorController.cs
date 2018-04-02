@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DashShared;
 using Windows.UI.Text;
+using System.Text.RegularExpressions;
+using Windows.UI.Xaml.Documents;
+using System.Windows.Documents.TextPointer;
 
 namespace Dash
 {
@@ -37,20 +40,14 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
-            //INCOMPLETE - efficiently exctact readable text from RTF string - make a new Rich Textbox? Strip the code, as done in RichTextTitleOperator seen below?
-            var value = inputs[RichTextKey] as RichTextController;
-            if (value is RichTextController rtc)
-            {
-                computedTitle = rtc.Data.Split(
-                    new[] { "\r\n", "\r", "\n" },
-                    StringSplitOptions.None
-                ).FirstOrDefault();
-                var regex = new Regex("HYPERLINK \"[^\"].*\"");
-                computedTitle = regex.Replace(computedTitle, "");
-            }
-            value.Data.RtfFormatString
-            outputs.
-            outputs[ReadableTextKey] = 
+            //Missing reference to System.Windows.Documents
+            var richTextController = inputs[RichTextKey] as RichTextController;
+            RichTextBox rtb = new RichTextBox(richTextController, 0, 0, 0, 0);
+            TextRange textRange = new TextRange(
+                rtb.Document.ContentStart, 
+                rtb.Document.ContentEnd
+            );
+            outputs[ReadableTextKey] = textRange.Text;
         }
 
         public override FieldModelController<OperatorModel> Copy()
