@@ -1,13 +1,22 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Dash.Models.DragModels;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,88 +25,101 @@ namespace Dash
     public sealed partial class OperatorInputEntry : UserControl
     {
         public static readonly DependencyProperty OperatorFieldReferenceProperty = DependencyProperty.Register(
-            "OperatorFieldReference", typeof(FieldReference), typeof(OperatorInputEntry),
-            new PropertyMetadata(default(FieldReference)));
+            "OperatorFieldReference", typeof(FieldReference), typeof(OperatorInputEntry), new PropertyMetadata(default(FieldReference)));
 
-
-        /// <summary>
-        ///     The key this input is associated with on the OperatorController
-        /// </summary>
-        private KeyController _inputKey;
-
-        /// <summary>
-        ///     The data type of this input
-        /// </summary>
-        private TypeInfo _inputType;
-
-        /// <summary>
-        ///     The document the input is linked to (not the operator, the input doc)
-        /// </summary>
-        private DocumentController _refDoc;
-
-
-        /// <summary>
-        ///     A reference to the field on the operator document this input is associated with
-        /// </summary>
         public FieldReference OperatorFieldReference
         {
-            get => (FieldReference) GetValue(OperatorFieldReferenceProperty);
-            set
-            {
-                SetValue(OperatorFieldReferenceProperty, value);
-                TrySetInputTypeAndKey();
-            }
+            get { return (FieldReference)GetValue(OperatorFieldReferenceProperty); }
+            set { SetValue(OperatorFieldReferenceProperty, value); }
         }
+
+        private DocumentController _refDoc;
+
+        /// <summary>
+        /// The type of this input
+        /// </summary>
+        private TypeInfo _inputType; // TODO currently this only is initialized in dragevents someone else should make this initialized in other places (datacontext changed) if they want...
 
         public OperatorInputEntry()
         {
-            InitializeComponent();
-            DataContextChanged += OperatorInputEntry_DataContextChanged;
+            this.InitializeComponent();
         }
 
-        /// <summary>
-        ///     Try to set the input type and input key based on the DataContext and OperatorFieldReference
-        /// </summary>
-        private void TrySetInputTypeAndKey()
+        private void UIElement_OnDrop(object sender, DragEventArgs e)
         {
-            var opField = OperatorFieldReference?.DereferenceToRoot<OperatorController>(null);
-            _inputKey = ((DictionaryEntry?) DataContext)?.Key as KeyController;
-
-            if (opField != null && _inputKey != null) _inputType = opField.Inputs[_inputKey].Type;
-        }
-
-        private void OperatorInputEntry_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            TrySetInputTypeAndKey();
-        }
-
-        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
-        {
-            // if the user dragged from the orange dot, or a search result, basically most cases
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                if (e.DataView.Properties[nameof(DragDocumentModel)] is DragDocumentModel dragData)
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                // we pass a view document, so we get the data document
+                _refDoc = dragData.DraggedDocument?.GetDataDocument();
+                var opDoc = OperatorFieldReference.GetDocumentController(null);
+                var el = sender as FrameworkElement;
+                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                if (dragData.DraggedKey != null)
                 {
-                    _refDoc = dragData.DraggedDocument.GetDataDocument();
-
-                    // if there is a key check to see if it has the same type as the input type
-                    if (dragData.DraggedKey != null)
+                    opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
+                }
+                else
+                {
+                    // if only one field on the input has the correct type then connect that field
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key)) || _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
+                    if (fieldsWithCorrectType.Count == 1)
                     {
-                        var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
-                        e.AcceptedOperation = fieldType.HasFlag(_inputType)
-                            ? DataPackageOperation.Link
-                            : DataPackageOperation.None;
+                        var refKey = fieldsWithCorrectType[0];
+                        opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, refKey), true);
                     }
-
-                    // if there is no key check to see if any of the fields have the correct type
-                    else
+                    else // otherwise display the autosuggest box
                     {
-                        var anyFieldsWithCorrectType = _refDoc.EnumDisplayableFields()
-                            .Any(kv => _refDoc.GetRootFieldType(kv.Key).HasFlag(_inputType));
-                        e.AcceptedOperation = anyFieldsWithCorrectType
-                            ? DataPackageOperation.None
-                            : DataPackageOperation.Link;
+                        SuggestBox.Visibility = Visibility.Visible;
+                        SuggestBox.Focus(FocusState.Programmatic);
                     }
+                }
+            }
+            // if the user dragged from the header of a schema view
+            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
+            {
+                var opDoc = OperatorFieldReference.GetDocumentController(null);
+                var el = sender as FrameworkElement;
+                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
+                var fieldKey = dragData.FieldKey;
+                opDoc.SetField(key, new TextController(fieldKey.Id), true);
+            }
+
+
+            e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
+        }
+
+
+        private void Ellipse_DragOver(object sender, DragEventArgs e)
+        {
+            UIElement_OnDragEnter(sender, e);
+        }
+        private void UIElement_OnDragEnter(object sender, DragEventArgs e)
+        {
+            // set the input type
+            var el = sender as FrameworkElement;
+            var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
+            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+            _inputType = opField.Inputs[key].Type;
+
+            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                _refDoc = dragData.DraggedDocument;
+                if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
+                {
+                    // the operator controller the input is going to
+                    // the key we're dropping on
+                    // the type of the field we're dragging
+                    var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
+                    // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
+                    e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
+                }
+                else //There's just a document, and a key needs to be chosen later, so accept for now
+                {
+                    var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                    e.AcceptedOperation = fieldsWithCorrectType.Count == 0 ? DataPackageOperation.None : DataPackageOperation.Link;
                 }
             }
 
@@ -106,74 +128,26 @@ namespace Dash
             {
                 e.AcceptedOperation = DataPackageOperation.Link;
             }
-
+            System.Diagnostics.Debug.WriteLine("Accpeted = " + e.AcceptedOperation);
             e.Handled = true;
         }
 
-        private void UIElement_OnDrop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                if (e.DataView.Properties[nameof(DragDocumentModel)] is DragDocumentModel dragData)
-                    if (dragData.DraggedKey != null)
-                    {
-                        OperatorFieldReference.GetDocumentController(null)?.SetField(_inputKey,
-                            new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
-                    }
-                    else
-                    {
-                        // if only one field on the input has the correct type then connect that field
-                        var fieldsWithCorrectType = _refDoc.EnumDisplayableFields()
-                            .Where(kv =>
-                                _refDoc.GetRootFieldType(kv.Key).HasFlag(_inputType) ||
-                                _refDoc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
-                        if (fieldsWithCorrectType.Count == 1)
-                        {
-                            var refKey = fieldsWithCorrectType[0];
-                            OperatorFieldReference.GetDocumentController(null)?.SetField(_inputKey,
-                                new DocumentReferenceController(_refDoc.Id, refKey), true);
-                        }
-                        else // otherwise display the autosuggest box
-                        {
-                            SuggestBox.Visibility = Visibility.Visible;
-                            SuggestBox.Focus(FocusState.Programmatic);
-                            SuggestBox.Text = string.Empty;
-                        }
-                    }
-            }
-            // if the user dragged from the header of a schema view
-            else if (e.DataView.Properties.ContainsKey(nameof(DragCollectionFieldModel)))
-            {
-                if (e.DataView.Properties[nameof(DragCollectionFieldModel)] is DragCollectionFieldModel dragData)
-                {
-                    var fieldKey = dragData.FieldKey;
-                    OperatorFieldReference.GetDocumentController(null)
-                        ?.SetField(_inputKey, new TextController(fieldKey.Id), true);
-                }
-            }
-
-            e.Handled = true; // have to hit handled otherwise the event bubbles to the collection
-        }
-
-        private void AutoSuggestBox_OnSuggestionChosen(AutoSuggestBox sender,
-            AutoSuggestBoxSuggestionChosenEventArgs args)
+        private void AutoSuggestBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             sender.Text = args.SelectedItem.ToString();
         }
 
         private void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput || args.Reason == AutoSuggestionBoxTextChangeReason.ProgrammaticChange)
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var queryText = sender.Text;
 
                 // get the fields that have the same type as the key the user is suggesting for
-                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields()
-                    .Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
+                var fieldsWithCorrectType = _refDoc.EnumDisplayableFields().Where(kv => _inputType.HasFlag(_refDoc.GetRootFieldType(kv.Key))).Select(kv => kv.Key).ToList();
 
                 // add all the fields with the correct type to the list of suggestions
-                var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController))
-                    .ToList();
+                var suggestions = fieldsWithCorrectType.Select(keyController => new CollectionKeyPair(keyController)).ToList();
 
                 // get all the fields from the connecting document that are collections
                 var collections = _refDoc.EnumDisplayableFields()
@@ -182,6 +156,8 @@ namespace Dash
                 // if the user has entered dot syntax we want to parse that as <collection>.<field>
                 // unfortunatley we don't parse anything nested beyond that
                 if (queryText.Contains("."))
+                {
+                    // iterate over all collections
                     foreach (var collectionKey in collections)
                     {
                         // make sure it is a collection of documents (not numbers or strings)
@@ -197,13 +173,13 @@ namespace Dash
                                 validHeaderKeys.Select(fieldKey => new CollectionKeyPair(fieldKey, collectionKey)));
                         }
                     }
+                }
                 // if the user hasn't used a "." then we at least let them autocomplete collections of documents
                 else
-                    suggestions.AddRange(collections
-                        .Where(collectionKey =>
-                            _refDoc.GetDereferencedField<ListController<DocumentController>>(collectionKey, null) !=
-                            null).Select(collectionKey => new CollectionKeyPair(collectionKey)));
-
+                {
+                    suggestions.AddRange(collections.Where(collectionKey => _refDoc.GetDereferencedField<ListController<DocumentController>>(collectionKey, null) != null).Select(collectionKey => new CollectionKeyPair(collectionKey)));
+                }
+                
                 // set the itemsource to either filtered or unfiltered suggestions
                 if (queryText == string.Empty)
                 {
@@ -219,16 +195,37 @@ namespace Dash
 
         private void AutoSuggestBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            if (_refDoc == null) return;
-            var key = ((DictionaryEntry?) DataContext)?.Key as KeyController;
+            if (_refDoc == null)
+            {
+                return;
+            }
+            var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
             if (args.ChosenSuggestion is CollectionKeyPair chosen)
             {
                 if (chosen.CollectionKey == null)
+                {
                     OperatorFieldReference.GetDocumentController(null).SetField(key,
                         new DocumentReferenceController(_refDoc.Id, chosen.FieldKey), true);
+                }
                 else
+                {
                     OperatorFieldReference.GetDocumentController(null)
                         .SetField(key, new TextController(chosen.FieldKey.Id), true);
+                }
+            }
+            else
+            {
+                // TODO LSM made it so the user has to unambiguously select a key. this can be changed
+                // TODO when we have more robust key parsing
+
+
+                //KeyController refKey = _refDoc.EnumDisplayableFields()
+                //    .Select(kv => kv.Key).FirstOrDefault(k => k.Name == args.QueryText);
+                //if (refKey != null)
+                //{
+                //    OperatorFieldReference.GetDocumentController(null).SetField(key,
+                //        new DocumentReferenceController(_refDoc.Id, refKey), true);
+                //}
             }
 
             // hide the suggestion box
@@ -279,7 +276,10 @@ namespace Dash
             public override string ToString()
             {
                 var collectionString = CollectionKey?.ToString();
-                if (collectionString != null) return collectionString + "." + FieldKey;
+                if (collectionString != null)
+                {
+                    return collectionString + "." + FieldKey;
+                }
                 return FieldKey.ToString();
             }
         }
