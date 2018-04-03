@@ -49,14 +49,19 @@ namespace Dash
         public override bool TrySetValue(object value)
         {
             var data = value as double?;
-            if (data != null)
+            if (value is double?)
             {
                 Data = (double)data.Value;
                 return true;
             }
-            if (value is double)
+            if (value is double dub)
             {
-                Data = (double)data;
+                Data = dub;
+                return true;
+            }
+            if (value is int intn)
+            {
+                Data = intn;
                 return true;
             }
             return false;

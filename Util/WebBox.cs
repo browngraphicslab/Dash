@@ -70,12 +70,6 @@ namespace Dash
                 element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
 
-
-        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
-        {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            SetupTextBinding(element, docController, context);
-        }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
@@ -106,8 +100,9 @@ namespace Dash
             else web.Source = new Uri(textfieldModelController.Data);
             web.LoadCompleted += Web_LoadCompleted;
 
+            SetupBindings(web, docController, context);
             if (html == null)
-                SetupBindings(web, docController, context);
+                SetupTextBinding(web, docController, context);
             
             return web;
         }

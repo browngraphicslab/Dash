@@ -3,40 +3,36 @@ using DashShared;
 
 namespace Dash.Converters
 {
-    public class TextWrappingToTextWrappingConverter : SafeDataToXamlConverter<TextWrapping, Windows.UI.Xaml.TextWrapping>
+    public class StringToTextWrappingConverter : SafeDataToXamlConverter<string, Windows.UI.Xaml.TextWrapping>
     {
-        public static TextWrappingToTextWrappingConverter Instance;
+        public static StringToTextWrappingConverter Instance;
 
-        static TextWrappingToTextWrappingConverter()
+        static StringToTextWrappingConverter()
         {
-            Instance = new TextWrappingToTextWrappingConverter();
+            Instance = new StringToTextWrappingConverter();
         }
 
-        public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(TextWrapping data, object parameter = null)
+        public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(string data, object parameter = null)
         {
-            switch (data)
-            {
-                case TextWrapping.NoWrap:
-                    return Windows.UI.Xaml.TextWrapping.NoWrap;
-                case TextWrapping.Wrap:
-                    return Windows.UI.Xaml.TextWrapping.Wrap;
-                case TextWrapping.WrapWholeWords:
-                    return Windows.UI.Xaml.TextWrapping.WrapWholeWords;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(data), data, null);
-            }
+            if (data ==  TextWrapping.NoWrap.ToString())
+                return Windows.UI.Xaml.TextWrapping.NoWrap;
+            if (data ==  TextWrapping.Wrap.ToString())
+                return Windows.UI.Xaml.TextWrapping.Wrap;
+            if (data == TextWrapping.WrapWholeWords.ToString())
+                return Windows.UI.Xaml.TextWrapping.WrapWholeWords;
+            throw new ArgumentOutOfRangeException(nameof(data), data, null);
         }
 
-        public override TextWrapping ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
+        public override string ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
         {
             switch (xaml)
             {
                 case Windows.UI.Xaml.TextWrapping.NoWrap:
-                    return TextWrapping.NoWrap;
+                    return TextWrapping.NoWrap.ToString();
                 case Windows.UI.Xaml.TextWrapping.Wrap:
-                    return TextWrapping.Wrap;
+                    return TextWrapping.Wrap.ToString();
                 case Windows.UI.Xaml.TextWrapping.WrapWholeWords:
-                    return TextWrapping.WrapWholeWords;
+                    return TextWrapping.WrapWholeWords.ToString();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(xaml), xaml, null);
             }

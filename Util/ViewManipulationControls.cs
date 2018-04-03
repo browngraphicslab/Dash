@@ -130,7 +130,7 @@ namespace Dash
                 {
                     r.Union(dvm.Bounds);
                 }
-                if (r != Rect.Empty)
+                if (r.Width != 0 && r.Height != 0)
                 {
                     var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
