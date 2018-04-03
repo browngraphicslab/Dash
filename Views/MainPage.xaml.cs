@@ -277,7 +277,7 @@ namespace Dash
         private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     if (flag == null)
                         dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
@@ -311,7 +311,7 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;

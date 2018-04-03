@@ -179,12 +179,14 @@ namespace Dash
         private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            Highlight(true);
             MainPage.Instance.HighlightDoc(docTapped, true);
 
         }
 
         private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            Highlight(false);
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
