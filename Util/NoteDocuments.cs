@@ -109,7 +109,7 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
+                    //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                     [KeyStore.OperatorKey]          = new RichTextTitleOperatorController(),
                 };
@@ -117,8 +117,8 @@ namespace Dash
 
                 var docTextDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
                 {
+                    [KeyStore.DataKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
                     [KeyStore.OperatorKey] = new RichTextDocumentOperatorController(),
-                    [RichTextDocumentOperatorController.RichTextKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
                 }, DocumentType.DefaultType);
                 protoDoc.SetField(KeyStore.DocumentTextKey,
                     new DocumentReferenceController(docTextDoc.Id, RichTextDocumentOperatorController.ReadableTextKey),
@@ -126,7 +126,6 @@ namespace Dash
                 
                 protoDoc.SetField(KeyStore.TitleKey,
                     new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
-
                 return protoDoc;
             }
 
