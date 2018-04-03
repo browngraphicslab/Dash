@@ -140,7 +140,7 @@ namespace Dash
             {
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
                 Document = initSharedLayout(CreateLayout(where, size), dataDocument);
-                Document.SetField(KeyStore.TextWrappingKey, new TextController(size.Width != double.NaN ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
+                Document.SetField(KeyStore.TextWrappingKey, new TextController(double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
             }
         }
 
