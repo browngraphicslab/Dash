@@ -1,31 +1,22 @@
-﻿using Dash.Controllers.Operators;
+﻿using Dash.Models.DragModels;
+using DashShared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Visibility = Windows.UI.Xaml.Visibility;
-using System.ComponentModel;
-using System.Globalization;
-using Windows.UI.Xaml.Documents;
-using DashShared.Models;
-using static Dash.NoteDocuments;
-using Windows.ApplicationModel.Core;
-using System.Diagnostics;
-using Windows.ApplicationModel.DataTransfer;
-using System.Text.RegularExpressions;
-using Dash.Models.DragModels;
 using static Dash.FieldControllerBase;
-using Dash.Converters;
+using static Dash.NoteDocuments;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -81,12 +72,7 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            xRichEditBox.GotFocus += (s, e) =>
-            {
-                MainPage.Instance.HackRichText.Width = (Parent is RelativePanel relative) ? relative.Width : Width;
-                MainPage.Instance.HackRichText.TextWrapping = xRichEditBox.TextWrapping;
-                FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
-            };
+            xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocument();
 
@@ -111,23 +97,22 @@ namespace Dash
 
         public void UpdateDocument()
         {
-            if (DataContext == null || Text == null)
-                return;
-            setHeightIfTextWrapping();
-            setText(getRtfText());
-
-            var allText = getReadableText();
-
-            // auto-generate key/value pairs by scanning the text
-            var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
-            var matches = reg.Matches(allText);
-            foreach (var str in matches)
+            if (DataContext != null && Text != null)
             {
-                var split = str.ToString().Split(':');
-                var key   = split.FirstOrDefault().Trim(' ');
-                var value = split.LastOrDefault().Trim(' ');
-                
-                DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                setText(getRtfText());
+                setContainerHeight();
+
+                // auto-generate key/value pairs by scanning the text
+                var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+                var matches = reg.Matches(getReadableText());
+                foreach (var str in matches)
+                {
+                    var split = str.ToString().Split(':');
+                    var key = split.FirstOrDefault().Trim(' ');
+                    var value = split.LastOrDefault().Trim(' ');
+
+                    DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                }
             }
         }
         public RichTextModel.RTD   Text
@@ -167,21 +152,15 @@ namespace Dash
             if (!rtfText.Equals(Text.RtfFormatString))
                 Text = new RichTextModel.RTD(rtfText);
         }
-        void               setHeightIfTextWrapping()
+        void               setContainerHeight()
         {
-            if (xRichEditBox.TextWrapping != TextWrapping.NoWrap && FocusManager.GetFocusedElement() == xRichEditBox)
+            if (Parent is RelativePanel relative && FocusManager.GetFocusedElement() == xRichEditBox)
             {
-                var rtfText = getRtfText();
-                MainPage.Instance.HackRichText.Document.Selection.SetRange(0, rtfText.Length);
-                MainPage.Instance.HackRichText.Document.SetText(TextSetOptions.FormatRtf, rtfText);
-                if (Parent is RelativePanel relative)
-                {
-                    var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
-                    relative.Height = MainPage.Instance.HackRichText.DesiredSize.Height + pad;
-                    Height = double.NaN;
-                }
-                else
-                    Height = MainPage.Instance.HackRichText.DesiredSize.Height;
+                if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
+                    LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
+                xRichEditBox.Measure(new Size(ActualWidth, 1000));
+                var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                relative.Height = xRichEditBox.DesiredSize.Height + pad;
             }
         }
 
@@ -338,30 +317,16 @@ namespace Dash
         #region load/unload
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            var docAncestor = this.GetFirstAncestorOfType<DocumentView>();
             var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
-            var textWrappingFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => {
-                if (FocusManager.GetFocusedElement() == xRichEditBox)
-                    MainPage.Instance.HackRichText.TextWrapping = xRichEditBox.TextWrapping;
-            });
-            
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-            LayoutDocument.AddFieldUpdatedListener(KeyStore.TextWrappingKey, textWrappingFieldUpdatedHdlr);
-            docAncestor.SizeChanged += SizeChangedHandler;
-            Unloaded += UnLoaded;
-
-            void SizeChangedHandler(object s, SizeChangedEventArgs e)
-            {
-                MainPage.Instance.HackRichText.Width = e.NewSize.Width;
-                setHeightIfTextWrapping();
-            }
+            
             void UnLoaded(object s, RoutedEventArgs e)
             {
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-                DataDocument.RemoveFieldUpdatedListener(KeyStore.TextWrappingKey, textWrappingFieldUpdatedHdlr);
-                docAncestor.SizeChanged -= SizeChangedHandler;
                 Unloaded -= UnLoaded;
             }
+
+            Unloaded += UnLoaded;
         }
 
         #endregion

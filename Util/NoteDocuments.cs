@@ -131,7 +131,7 @@ namespace Dash
 
             DocumentController CreateLayout(Point where, Size size)
             {
-                size = size == new Size() ? new Size(double.NaN, double.NaN) : size;
+                size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
                 return new RichTextBox(getDataReference(_prototypeID), where.X, where.Y, size.Width, size.Height).Document;
             }
             
@@ -140,7 +140,7 @@ namespace Dash
             {
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
                 Document = initSharedLayout(CreateLayout(where, size), dataDocument);
-                Document.SetField(KeyStore.TextWrappingKey, new TextController(size.Width != double.NaN ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
+                Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
             }
         }
 

@@ -42,13 +42,6 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
 
-        <RichEditBox x:Name="HackRichText" x:FieldModifier="public" 
-                     Foreground="Black" BorderThickness="0" 
-                     Background="Yellow" Grid.Column="2" 
-                     Opacity="0.02" VerticalAlignment="Top" 
-                     HorizontalAlignment="Left" 
-                     TextWrapping="NoWrap" 
-                     IsHitTestVisible="false"/>
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
