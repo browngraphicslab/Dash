@@ -43,13 +43,21 @@ namespace Dash
         {
             TextController output = null;
 
+            DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
+                firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
+
+            // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;
+            //      however, if something's position changed, then we need to update no matter what since we don't know if the sort ordering has changed.
+            //var listArgs = ((args as DocumentController.DocumentFieldUpdatedEventArgs)?.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs);
+            //if (listArgs?.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content &&
+            //    listArgs?.ChangedDocuments.Contains(firstDoc) == false)
+            //    return;
 
 
             outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);

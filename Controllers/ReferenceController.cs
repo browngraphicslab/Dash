@@ -87,7 +87,7 @@ namespace Dash
             {
                 var str = "=" + (opField.Model as OperatorModel).Type + "(";
                 foreach (var input in opField.Inputs)
-                    str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
+                    str += refDoc.GetField(input.Key)?.ToString().TrimStart('=') + ",";
                 str = str.TrimEnd(',') + ")";
                 return str;
             }

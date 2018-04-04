@@ -413,7 +413,7 @@ namespace Dash
             return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
 
-        
+
         // == CYCLE CHECKING ==
         #region Cycle Checking
         private List<KeyController> GetRelevantKeys(KeyController key, Context c)
@@ -459,7 +459,9 @@ namespace Dash
                 if (c.DocContextList.Contains(doc))
                 {
                     c2 = c;
-                } else { 
+                }
+                else
+                {
                     c2 = new Context(c);
                     c2.AddDocumentContext(doc);
                 }
@@ -469,7 +471,7 @@ namespace Dash
                         return true;
 
                 visitedFields.Add(fieldRef);
-               
+
                 var keys = doc.GetRelevantKeys(rfm.FieldKey, c2);
                 foreach (var keyController in keys)
                 {
@@ -674,8 +676,8 @@ namespace Dash
                 proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 // fire document field updated if the field has been replaced or if it did not exist before
-                var action     = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference  = new DocumentFieldReference(GetId(), key);
+                var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+                var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
 
@@ -777,7 +779,7 @@ namespace Dash
         /// Returns the Field from stored from key within the given context.
         /// </summary>
         public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldControllerBase
-        {        
+        {
             // TODO: this should cause an operator to execute and return the proper value
             return GetDereferencedField(key, context) as T;
         }
@@ -989,7 +991,7 @@ namespace Dash
 #pragma warning restore CS4014
             return panel;
         }
-        
+
         private static FrameworkElement MakeAllViewUIForManyFields(
             List<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
@@ -1039,9 +1041,10 @@ namespace Dash
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
                 return KeyStore.TypeRenderer[DocumentType](this, context);
-            } else
+            }
+            else
 
-            return makeAllViewUI(context);
+                return makeAllViewUI(context);
         }
 
         #endregion
@@ -1118,7 +1121,7 @@ namespace Dash
                 _fieldUpdatedDictionary[key] -= handler;
             }
         }
-
+        static string spaces = "";
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
@@ -1136,17 +1139,20 @@ namespace Dash
                 var refSender = sender as ReferenceController;
                 var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
                             this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || this.GetField(KeyStore.AbstractInterfaceKey,true) != null)
+                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || (this.GetField(KeyStore.AbstractInterfaceKey, true) != null))
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
+                    //try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
+                    spaces += "  ";
                     generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
+                    spaces = spaces.Substring(2);
                 }
             };
-            if (newField != null)
+            if (newField != null && key != KeyStore.DelegatesKey && key.Name != "_Cache Access Key")
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
         }
 
@@ -1186,7 +1192,7 @@ namespace Dash
                 void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
                 {
                     var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                     {
                         OnDocumentFieldUpdated(this,
                             new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
@@ -1212,7 +1218,7 @@ namespace Dash
             // this invokes listeners which have been added on a per key level of granularity
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args, c);
-            
+
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
                 OnFieldModelUpdated(args, c);
@@ -1235,7 +1241,7 @@ namespace Dash
             Replace,
             Update
         }
-        
+
         /// <summary>
         /// Encompasses the different type of events triggers by changing document data.
         /// </summary>
