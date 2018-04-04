@@ -679,6 +679,7 @@ namespace Dash
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
                 var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
+                if (key.Name != "_Cache Access Key")
                 generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
 
                 if (key.Equals(KeyStore.PrototypeKey))
@@ -1145,7 +1146,7 @@ namespace Dash
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                    //try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
+                    // try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
                     spaces += "  ";
                     generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
                     spaces = spaces.Substring(2);
@@ -1191,7 +1192,7 @@ namespace Dash
                 void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
                 {
                     var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                     {
                         OnDocumentFieldUpdated(this,
                             new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
@@ -1202,6 +1203,35 @@ namespace Dash
                 prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
                 prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
             }
+        }
+
+        bool doesAnythingMaskThisField(KeyController field, Context c)
+        {
+            var ret = false;
+            var myProtos = GetAllPrototypes().ToArray().ToList();
+            if (c?.DocContextList != null)
+            {
+                foreach (var doc in c.DocContextList)
+                {
+                    var protos = doc.GetAllPrototypes().ToArray().ToList();
+                    if (protos.First().Equals(myProtos.First())) {
+                        if (protos.Count > myProtos.Count)
+                            ret = true;
+                        else if (protos.Count <= myProtos.Count) {
+                            for (int dd = 0; dd < protos.Count; dd++)
+                                if (!protos[dd].Equals(myProtos[dd]))
+                                    ret = true;
+                        }
+                        for (int d = protos.Count; d < myProtos.Count; d++)
+                            if (myProtos[d].GetField(field, true) != null)
+                                ret = true;
+                    }
+                }
+            }
+            //var oldtest = c.IsCompatibleWith(new Context(this));
+            //if (!ret !=  oldtest)
+            //    ;
+            return ret;
         }
 
         /// <summary>
