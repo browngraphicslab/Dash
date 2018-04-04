@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using DashShared;
 
 namespace Dash
 {
+    [OperatorType("add")]
     public class AddOperatorController : OperatorController
     {
         public AddOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -24,10 +26,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController SumKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [AKey] = new IOInfo(TypeInfo.Number, true),
-            [BKey] = new IOInfo(TypeInfo.Number, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true))
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

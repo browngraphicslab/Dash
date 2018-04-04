@@ -19,9 +19,14 @@ namespace Dash
         {
             Data = new List<string>(l);
             SubTypeInfo = subTypeInfo;
+
+            if (SubTypeInfo.Equals(TypeInfo.None))
+            {
+
+            }
         }
 
-        public List<string> Data;
+        public List<string> Data= new List<string>();
 
         public TypeInfo SubTypeInfo;
     }

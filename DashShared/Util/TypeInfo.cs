@@ -29,38 +29,4 @@ namespace DashShared
         Reference = PointerReference | DocumentReference,
         Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key
     }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum OperatorType
-    {
-        Add,
-        Zip,
-        Filter,
-        CollectionMap,
-        Intersection,
-        Union,
-        Map,
-        ImageToUri,
-        DocumentAppend,
-        Concat,
-        Divide,
-        Search,
-        Api,
-        Compound,
-        Subtract,
-        Multiply,
-        Regex,
-        Melt,
-        ExecuteHtmlJavaScript,
-        SentenceAnalyzer,
-        ExtractKeywords,
-        ImageRecognition,
-        RichTextTitle,
-        CollectionTitle,
-        ImageToColorPalette,
-        GroupTitle,
-        Quizlet,
-        RichTextDocument
-    }
-
 }

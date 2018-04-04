@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using DashShared;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Controls;
@@ -22,9 +23,9 @@ namespace Dash
         //Output key
         public static readonly KeyController ReadableTextKey = new KeyController("AAAA064D-C4BC-4623-AAD3-402077433C46", "ReadableText");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>>  Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [KeyStore.DataKey] = new IOInfo(TypeInfo.RichText, true)
+            new KeyValuePair<KeyController, IOInfo>(KeyStore.DataKey, new IOInfo(TypeInfo.RichText, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
