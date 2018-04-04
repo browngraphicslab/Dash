@@ -1120,7 +1120,7 @@ namespace Dash
                 _fieldUpdatedDictionary[key] -= handler;
             }
         }
-
+        static string spaces = "";
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
@@ -1138,18 +1138,20 @@ namespace Dash
                 var refSender = sender as ReferenceController;
                 var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
                             this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))// || this.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || (this.GetField(KeyStore.AbstractInterfaceKey, true) != null))
                 {
-                    // Debug.WriteLine("" + this.Title + " -> " + key);// + " + " + newField.GetValue(context));
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
+                    //try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
+                    spaces += "  ";
                     generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
+                    spaces = spaces.Substring(2);
                 }
             };
-            if (newField != null)
+            if (newField != null && key != KeyStore.DelegatesKey && key.Name != "_Cache Access Key")
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
         }
 
@@ -1189,7 +1191,7 @@ namespace Dash
                 void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
                 {
                     var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                     {
                         OnDocumentFieldUpdated(this,
                             new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,

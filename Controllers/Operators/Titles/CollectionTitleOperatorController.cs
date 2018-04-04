@@ -42,13 +42,18 @@ namespace Dash
         {
             TextController output = null;
 
+            DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
+                firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
+            var listArgs = ((args as DocumentController.DocumentFieldUpdatedEventArgs)?.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs);
+            if (listArgs?.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content &&
+                listArgs?.ChangedDocuments.Contains(firstDoc) == false)
+                return;
 
 
             outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);
