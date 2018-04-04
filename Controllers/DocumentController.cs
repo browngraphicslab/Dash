@@ -1138,8 +1138,9 @@ namespace Dash
                 var refSender = sender as ReferenceController;
                 var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
                             this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || this.GetField(KeyStore.AbstractInterfaceKey, true) != null)
+                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c))// || this.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 {
+                    // Debug.WriteLine("" + this.Title + " -> " + key);// + " + " + newField.GetValue(context));
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???

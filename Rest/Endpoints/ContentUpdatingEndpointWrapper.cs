@@ -67,8 +67,8 @@ namespace Dash
             //modelList.OfType<FieldModel>().ToList().ForEach(i => i.GetController().CreateReferences());
             //modelList.OfType<FieldModel>().ToList().ForEach(i => i.GetController().Init());
             var refs = modelList.OfType<ReferenceModel>().ToList();
-            modelList.OfType<FieldModel>().Except(refs).ToList().ForEach(i => i.GetController().Init());
             refs.ForEach(i => i.GetController().Init());
+            modelList.OfType<FieldModel>().Except(refs).ToList().ForEach(i => i.GetController().Init());
             //modelList.OfType<DocumentModel>().ToList().ForEach(i => i.GetController().Init());
         }
 

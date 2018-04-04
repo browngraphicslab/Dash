@@ -74,7 +74,7 @@ namespace Dash
 
             xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
-            xRichEditBox.TextChanged += (s, e) => UpdateDocument();
+            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
             xRichEditBox.KeyUp += (s, e) => {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
@@ -95,11 +95,11 @@ namespace Dash
         }
         
 
-        public void UpdateDocument()
+        public void UpdateDocumentFromXaml()
         {
             if (DataContext != null && Text != null)
             {
-                setText(getRtfText());
+                convertTextFromXamlRTF();
                 setContainerHeight();
 
                 // auto-generate key/value pairs by scanning the text
@@ -147,10 +147,15 @@ namespace Dash
             var strippedRtf = allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
             return new Regex("\\\\par[\r\n}\\\\]*\0").Replace(strippedRtf, "}\r\n\0");
         }
-        void               setText(string rtfText)
+        /// <summary>
+        /// Retrieves the Xaml RTF of this view and stores it in the Dash document's Text field model.
+        /// </summary>
+        void               convertTextFromXamlRTF()
         {
-            if (!rtfText.Equals(Text.RtfFormatString))
-                Text = new RichTextModel.RTD(rtfText);
+            var xamlRTF = getRtfText();
+            if (!xamlRTF.Equals(_lastXamlRTFText))  // don't update if the Text is the same as what we last set it to
+                Text = new RichTextModel.RTD(xamlRTF);
+            _lastXamlRTFText = xamlRTF;
         }
         void               setContainerHeight()
         {
@@ -165,12 +170,16 @@ namespace Dash
         }
 
         #region eventhandlers
-
+        string _lastXamlRTFText = "";
         void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             if (FocusManager.GetFocusedElement() != xRichEditBox)
             {
-                xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString);
+                if (Text.RtfFormatString != _lastXamlRTFText)
+                {
+                    xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                    _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+                }
                 if (getSelected() is string selected)
                 {
                     _prevQueryLength = selected.Length;
@@ -357,7 +366,7 @@ namespace Dash
             if (theDoc != null)
                 createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
 
-            setText(getRtfText());
+            convertTextFromXamlRTF();
 
             xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
@@ -482,7 +491,7 @@ namespace Dash
                 xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
-            UpdateDocument();
+            UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
         }
 
