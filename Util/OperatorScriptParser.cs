@@ -158,6 +158,7 @@ namespace Dash
 
         private static ScriptExpression ParseToExpression(string script)
         {
+            script = script?.Trim(' ');
             ScriptExpression toReturn;
             if (script.Length == 0)
             {
