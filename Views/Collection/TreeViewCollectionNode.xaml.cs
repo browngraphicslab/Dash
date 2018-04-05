@@ -125,6 +125,7 @@ namespace Dash
                 var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 if (coll != null && data.Count > 0)
                 {
+
                     var start = data.First().DraggedDocument.GetPositionField().Data;
                     coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
                                        Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
@@ -143,6 +144,22 @@ namespace Dash
             else
                 e.AcceptedOperation = DataPackageOperation.None;
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Highlight the tapped node on treeview and border highlight the note on workspace 
+        /// </summary>
+        private DocumentController _lastTreeNode; 
+        private void TreeViewNode_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("node tapped"); 
+            var dc = (sender as TreeViewNode)?.ViewModel.DataDocument;
+            if (dc != null)
+            {
+                if (_lastTreeNode != null) _lastTreeNode.IsSelected = false;
+                dc.IsSelected = !dc.IsSelected;
+                _lastTreeNode = dc;
+            }
         }
     }
 }

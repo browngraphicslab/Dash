@@ -62,7 +62,7 @@
         </Border>
 
         <!--grid to hold the inner content of the document-->
-        <Grid Name="xTargetContentGrid">
+        <Grid Name="xTargetContentGrid" BorderThickness ="3">
             <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
             

@@ -629,15 +629,24 @@ namespace Dash
         #endregion
 
         #region SELECTION
+
+        public void AddToSelection(DocumentView view)
+        {
+            if (!_selectedDocs.Contains(view))
+                _selectedDocs.Add(view); 
+        }
+        public void RemoveFromSelection(DocumentView view)
+        {
+            _selectedDocs.Remove(view); 
+        }
         
         public void DeselectAll()
         {
             SelectionCanvas?.Children?.Clear();
             foreach (var doc in SelectedDocs)
             {
-                doc.SetSelectionBorder(false);
+                doc.SetSelected(false);
             }
-            _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
         }
@@ -646,11 +655,9 @@ namespace Dash
         {
             SelectionCanvas.Children.Clear();
 
-            _selectedDocs.AddRange(selected);
-            
-            foreach (var doc in SelectedDocs)
+            foreach (var doc in selected)
             {
-                doc.SetSelectionBorder(true);
+                doc.SetSelected(true);
             }
         }
 

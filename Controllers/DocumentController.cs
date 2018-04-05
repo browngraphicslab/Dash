@@ -17,6 +17,28 @@ namespace Dash
     /// </summary>
     public class DocumentController : FieldModelController<DocumentModel>
     {
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                OnSelectionChanged?.Invoke(value); 
+            }
+        }
+        public delegate void SelectedChangedHandler(bool value);
+        public event SelectedChangedHandler OnSelectionChanged;
+
+        private TreeViewNode _treeviewNode; 
+        public void SetTreeViewNode(TreeViewNode tv) {
+            _treeviewNode = tv;
+        }
+        public void ChangeTreeViewHeader(bool selected)
+        {
+            _treeviewNode?.ChangeHeaderColor(selected); 
+        }
+        
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
         /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key

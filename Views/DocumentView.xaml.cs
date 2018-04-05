@@ -59,6 +59,9 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
+        private CollectionFreeformView _parentCollectionFreeform; 
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -86,10 +89,23 @@ namespace Dash
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
-            
+            DataContextChanged += (s, a) =>                                                                 // KBTODO 
+            { 
+                ViewModel.DataDocument.OnSelectionChanged += (selected) => {
+                    xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+                    if (selected) _parentCollectionFreeform?.AddToSelection(this);
+                    else _parentCollectionFreeform?.RemoveFromSelection(this);
+
+                    ViewModel.DataDocument.ChangeTreeViewHeader(selected); 
+                };
+            };
             Loaded += (sender, e) => {
+                _parentCollectionFreeform = ParentCollection?.CurrentView as CollectionFreeformView;
                 updateBindings(null, null);
-                DataContextChanged += (s, a) => updateBindings(null, null);
+                DataContextChanged += (s, a) => {
+                    _parentCollectionFreeform = ParentCollection?.CurrentView as CollectionFreeformView;
+                    updateBindings(null, null);
+                };
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
             };
@@ -160,7 +176,7 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                var selected = _parentCollectionFreeform?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
                 if (selected?.Count() > 0)
                 {
                     args.Data.Properties[nameof(List<DragDocumentModel>)] =
@@ -220,6 +236,9 @@ namespace Dash
                 }
             };
 
+            GotFocus += (s, e) => { SetSelected(true); };
+            LostFocus += (s, e) => { SetSelected(false); };
+
             MenuFlyout = xMenuFlyout;
 
             xMenuFlyout.Opened += (s, e) =>
@@ -227,6 +246,11 @@ namespace Dash
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
+        }
+
+        public void SetBorderThickness(int thickness)
+        {
+            xTargetContentGrid.BorderThickness = new Thickness(thickness); 
         }
 
         /// <summary> 
@@ -585,7 +609,6 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
-            //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
         private void KeyValueViewDocument()
         {
@@ -608,20 +631,19 @@ namespace Dash
 
         #region Activation
 
-        public void SetSelectionBorder(bool selected)
+        public void SetSelected(bool selected)
         {
-            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            ViewModel.DataDocument.IsSelected = selected;     //indicate them in treeview and workspace 
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
         /// </summary>
         List<DocumentView> SelectedDocuments()
         {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Contains(this))
+            var marqueeDocs = _parentCollectionFreeform?.SelectedDocs; 
+            if (marqueeDocs != null && marqueeDocs.Contains(this))                                                                                                                                 
                 return marqueeDocs.ToList();
-            return new List<DocumentView>(new DocumentView[] { this } );
+            return new List<DocumentView>(new DocumentView[] { this });
         }
 
         #endregion
@@ -634,8 +656,10 @@ namespace Dash
         }
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+            if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+            {
                 ViewModel.DecorationState = false;
+            }
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)

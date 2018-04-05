@@ -9,6 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="White"
+    x:Name="xOuterGrid"
     d:DataContext="{d:DesignInstance local:CollectionViewModel}">
     <UserControl.Resources>
         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#686868</SolidColorBrush>
@@ -24,10 +25,12 @@
         <Rectangle Fill="White"></Rectangle>
         <Grid Background="{StaticResource WindowsBlue}" Grid.Row="0">
             <TextBlock TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}"  Foreground="#EEFFFF" Padding="0,7">My Workspaces</TextBlock>
-    </Grid>
+        </Grid>
         <TextBox x:Name="XFilterBox" FontSize="16" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
         <local:TreeViewCollectionNode x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
         <Button Grid.Row="3"  HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
             </Button>
     </Grid>
 </UserControl>
+
+

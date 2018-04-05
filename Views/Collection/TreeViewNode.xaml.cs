@@ -53,6 +53,11 @@ namespace Dash
         {
             this.InitializeComponent();
         }
+
+        public void ChangeHeaderColor(bool selected)
+        {
+            XHeader.Background = selected ? new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF)) : new SolidColorBrush(Colors.Transparent);
+        }
         private DocumentViewModel oldViewModel = null;
         private void TreeViewNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -64,6 +69,7 @@ namespace Dash
             {
                 var dvm = (DocumentViewModel) args.NewValue;
                 oldViewModel = dvm;
+                dvm.DataDocument.SetTreeViewNode(this); 
 
                 var textBlockBinding = new FieldBinding<TextController>
                 {
@@ -85,18 +91,8 @@ namespace Dash
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };
-
-                var headerBinding = new FieldBinding<NumberController>
-                {
-                    Document = dvm.DocumentController,
-                    Key = KeyStore.SelectedKey,
-                    FallbackValue = new SolidColorBrush(Colors.Transparent),
-                    Mode = BindingMode.OneWay,
-                    Converter = new SelectedToColorConverter()
-                };
                 
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
-
                 if (collection != null)
                 {
                     _isCollection = true;
@@ -130,7 +126,6 @@ namespace Dash
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
-                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
             }
         }
 
@@ -140,6 +135,7 @@ namespace Dash
             private readonly SolidColorBrush _selectedBrush = new SolidColorBrush(Color.FromArgb(0x35, 0xFF, 0xFF, 0xFF));
             public override Brush ConvertDataToXaml(double data, object parameter = null)
             {
+                Debug.WriteLine("data is: " + data); 
                 return data == 0 ? _unselectedBrush : _selectedBrush;
             }
 
