@@ -37,6 +37,10 @@ namespace Dash
             {
                 return ImageBox.MakeView(documentController, context);
             }
+			if (data is VideoController)
+			{
+				return VideoBox.MakeView(documentController, context);
+			}
             else if (data is ListController<DocumentController> docList)
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();

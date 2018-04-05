@@ -329,7 +329,11 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
                             }
-                        }
+							else if (target.Value.Type == TypeInfo.Video)
+							{
+								opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
+							}
+						}
                     }
                     SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
@@ -356,7 +360,16 @@ namespace Dash
                         {
                             ic.Data = null;
                         }
-                    else if (curField is DocumentController)
+					else if (curField is VideoController vc)
+						try
+						{
+							vc.Data = new Uri(textInput);
+						}
+						catch (Exception)
+						{
+							vc.Data = null;
+						}
+					else if (curField is DocumentController)
                     {
                         //TODO tfs: fix this
                         throw new NotImplementedException();
@@ -1050,8 +1063,11 @@ namespace Dash
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
-            // set up contexts information
-            context = new Context(context);
+			Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
+			Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+
+			// set up contexts information
+			context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument(null));
 
@@ -1067,9 +1083,10 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-
                 return doc.MakeViewUI(context, GetDataDocument());
             }
+
+			
 
             // otherwise, look through the list of "special" document type primitives and
             // generate the view from the given courtesy document's static MakeView method
@@ -1080,9 +1097,13 @@ namespace Dash
             }
             if (DocumentType.Equals(ImageBox.DocumentType))
             {
-                return ImageBox.MakeView(this, context); //
+				return ImageBox.MakeView(this, context); //
             }
-            if (DocumentType.Equals(PdfBox.DocumentType))
+			if (DocumentType.Equals(VideoBox.DocumentType))
+			{
+				return VideoBox.MakeView(this, context); //
+			}
+			if (DocumentType.Equals(PdfBox.DocumentType))
             {
                 return PdfBox.MakeView(this, context);
             }
@@ -1386,6 +1407,8 @@ namespace Dash
                 FromDelegate = fromDelegate;
             }
         }
+
+
         #endregion
     }
 }
