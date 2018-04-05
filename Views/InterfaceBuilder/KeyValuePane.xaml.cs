@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using static Dash.OperatorScriptParser;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -137,27 +138,7 @@ namespace Dash
                         new BoundController(fieldValue, _dataContextDocument), TypeColumnWidth);
         }
 
-        /// <summary>
-        /// Button tapped to add a new key value pair to the document and the list
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AddField_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            AddKeyValuePair();
-        }
 
-
-        /// <summary>
-        /// Returns true if the user input for the new key value pair is valid. 
-        /// Should be called before any yser input is processed.
-        /// </summary>
-        /// <returns></returns>
-        private bool UserInputIsValid()
-        {
-            return xNewKeyText.Text != "" &&
-                   xNewValueText.Text != "" ;
-        }
 
         /// <summary>
         ///     Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is
@@ -167,21 +148,22 @@ namespace Dash
         /// </summary>
         private void AddKeyValuePair()
         {
-
-            if (!UserInputIsValid()) return;
-
             var key = KeyController.LookupKeyByName(xNewKeyText.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyText.Text);
-            FieldControllerBase fmController = new TextController("something went wrong");
             var stringValue = xNewValueText.Text;
 
-            _dataContextDocument.ParseDocField(key, xNewValueText.Text);
-            fmController = _dataContextDocument.GetField(key);
+            FieldControllerBase fmController;
 
-            if (fmController == null)
+            try
             {
-                fmController = new TextController(xNewValueText.Text);
-                _dataContextDocument.SetField(key, fmController, true);
+                fmController = Interpret(stringValue);
+
             }
+            catch (InvalidDishScriptException e)
+            {
+                fmController = new TextController(e.ScriptErrorModel.GetHelpfulString());
+            }
+
+            _dataContextDocument.SetField(key, fmController, true);
             
             // reset the fields to the empty values
             xNewKeyText.Text = "";
