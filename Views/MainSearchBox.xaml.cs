@@ -71,9 +71,13 @@ namespace Dash
 
             var maxSearchResultSize = 75;
 
-            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "("+DSL.GetFuncName<ExecDishOperatorController>()+ "({"+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(" + text + ")}))");
+            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "("+DSL.GetFuncName<ExecDishOperatorController>()+ "({"+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
             var resultDict = interpreted as DocumentController;
 
+            if (resultDict == null)
+            {
+                return;
+            }
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();

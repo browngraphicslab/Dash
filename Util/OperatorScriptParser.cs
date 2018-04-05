@@ -350,11 +350,13 @@ namespace Dash
 
         private static KeyValuePair<string, string> ParseKeyValue(string s, List<KeyController> functionKeys, int parameterIndex, string functionName)
         {
+            s = s.Trim();
             int index = s.IndexOf(':');
 
             KeyValuePair<string, string> kvp;
 
             bool hasProvidedParamName = (index != -1);//TODO im not certain that this is foolproof 
+            var isStringLiteral = StringOpeningCharacters.Contains(s[0]) && StringClosingCharacters[StringOpeningCharacters.IndexOf(s[0])] == s.Last();
             if (hasProvidedParamName)
             {
                 var funcOpeningCharIndex = s.IndexOf(FunctionOpeningCharacter);

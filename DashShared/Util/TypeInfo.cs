@@ -67,6 +67,7 @@ namespace DashShared
         SimplifiedSearch,
         GetKeys,
         PutSearchResultsIntoDictionary,
-        IntersectSearch
+        IntersectSearch,
+        GetDocumentsInCollection
     }
 }

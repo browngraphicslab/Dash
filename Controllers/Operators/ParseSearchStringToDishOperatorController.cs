@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,7 +55,12 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
-            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "("+OperatorScript.GetDishOperatorName<SearchOperatorController>()+"({" + searchTerm + "}))";
+            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+"({" + searchTerm + "})";
+        }
+
+        private string WrapInDictifyFunc(string resultsString)
+        {
+            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "("+resultsString+")";
         }
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
@@ -68,6 +74,26 @@ namespace Dash
             return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
+        private string WrapInParameterizedFunction(string funcName, string paramName)
+        {
+            return funcName + "(" + paramName + ")";
+        }
+
+        private string GetBasicSearchResultsFromSearchPart(string searchPart)
+        {
+            searchPart = searchPart?.ToLower() ?? " ";
+            if (searchPart.Contains(":"))
+            {
+                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
+                return WrapInParameterizedFunction(parts[0], parts[1]);
+            }
+            else
+            {
+                return WrapSearchTermInFunction(searchPart);
+            }
+        }
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
             //very simple for now, can only join with intersections
@@ -79,7 +105,7 @@ namespace Dash
                 return;
             }
 
-            var searches = new Stack<string>(parts.Select(WrapSearchTermInFunction));
+            var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
             while (searches.Count() > 1)
             {
                 var search1 = searches.Pop();
