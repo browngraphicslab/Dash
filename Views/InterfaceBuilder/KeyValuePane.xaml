@@ -99,7 +99,7 @@
                                 <ScrollViewer VerticalAlignment="Center"
                                         HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" 
                                         HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
-                                    <Border VerticalAlignment="Center"
+                                    <Border VerticalAlignment="Center" Width="500"
                                     HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
                                 </ScrollViewer>
                             </Grid>
