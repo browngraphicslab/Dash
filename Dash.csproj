@@ -180,6 +180,7 @@
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
+    <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
@@ -187,6 +188,7 @@
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
+    <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
@@ -196,6 +198,7 @@
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
     <Compile Include="Models\StringSearchModel.cs" />
+    <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
@@ -220,6 +223,7 @@
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
@@ -231,6 +235,7 @@
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\OperatorScript.cs" />
@@ -703,6 +708,7 @@
     <Content Include="Assets\Store\StoreLogo.scale-200.png" />
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
+    <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-150.png" />

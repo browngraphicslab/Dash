@@ -76,6 +76,9 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ImageController(model as ImageModel);
                     break;
+				case TypeInfo.Video:
+					controller = new VideoController(model as VideoModel);
+					break;
                 case TypeInfo.Key:
                     controller = new KeyController(model as KeyModel);
                     break;
@@ -113,6 +116,9 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ListController<ImageController>(model);
                     break;
+				case TypeInfo.Video:
+					controller = new ListController<VideoController>(model);
+					break;
                 case TypeInfo.Document:
                     controller = new ListController<DocumentController>(model);
                     break;
@@ -304,7 +310,10 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ImageController(new Uri("DEFAULT URI"));
                     break;
-                case TypeInfo.None:
+				case TypeInfo.Video:
+					controller = new VideoController(new Uri("ms - appx://Dash/Assets/DefaultVideo.mp4"));
+					break;
+				case TypeInfo.None:
                 case TypeInfo.Reference:
                 case TypeInfo.Any:
                     throw new NotImplementedException("Shouldn't get here");
@@ -333,6 +342,9 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ListController<ImageController>();
                     break;
+				case TypeInfo.Video:
+					controller = new ListController<VideoController>();
+					break;
                 case TypeInfo.Document:
                     controller = new ListController<DocumentController>();
                     break;

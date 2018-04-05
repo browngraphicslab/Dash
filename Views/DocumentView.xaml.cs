@@ -627,10 +627,15 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
                 ToFront();
             }
+			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
+			{
+				//ViewModel.DocumentController.GetVideo().Pause();
+			}
         }
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
