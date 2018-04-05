@@ -208,7 +208,7 @@ namespace Dash
             var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc)) ?? doc;
             var activeLayout =  new KeyValueDocumentBox(null).Document;
             activeLayout.SetField(KeyStore.DocumentContextKey, docContext, true);
-            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(200), false);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(500), false);
             if (where != null)
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey, new PointController((Point)where), true);
