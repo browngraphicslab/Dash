@@ -16,6 +16,7 @@
             <MenuFlyout>
                 <MenuFlyoutItem Text="Open" Click="Open_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Rename" Click="Rename_OnClick"></MenuFlyoutItem>
+                <MenuFlyoutItem Text="Duplicate" Click="Duplicate_OnClick"></MenuFlyoutItem>
                 <MenuFlyoutItem Text="Delete" Icon="Delete" Click="Delete_OnClick"></MenuFlyoutItem>
             </MenuFlyout>
         </StackPanel.ContextFlyout>
@@ -27,7 +28,7 @@
                 </Grid.ColumnDefinitions>
                 <SymbolIcon x:Name="XIconBox" Foreground="#EEEEFFFF" Grid.Column="1" Visibility="Collapsed"></SymbolIcon>
             <Grid Background="#22ADD8E6" Grid.Column="2" Visibility="{Binding DecorationState}" IsHitTestVisible="False" />
-            <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="2" DoubleTapped="XTextBlock_OnDoubleTapped" PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
+            <TextBlock x:Name="XTextBlock" Foreground="#EEEEFFFF" Grid.Column="2" DoubleTapped="XTextBlock_OnDoubleTapped" PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" ></TextBlock > <!--CanDrag="True" DragStarting="XTextBlock_OnDragStarting"-->
                 <Border x:Name="xBorder" Grid.Column="1" Background="White" Visibility="Collapsed">
                     <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyUp="XTextBox_OnKeyUp" />
                 </Border>

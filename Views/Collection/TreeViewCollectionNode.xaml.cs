@@ -106,16 +106,28 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void TreeViewNode_Drop(object sender, DragEventArgs e)
+        private void TreeViewNode_Drop(object sender, DragEventArgs e)            //KBTODO 
         {
+            // sender = whatever it's dropped to ....... not the actual thing that is dropped 
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
                 var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+
+                //var upCollection = (sender as TreeViewNode).GetFirstDescendantOfType<TreeViewCollectionNode>();
+                //Debug.WriteLine("this one has: " + upCollection.ViewModel?.DocumentViewModels.Count);
+                //Debug.WriteLine("where it came from has: " + ViewModel.DocumentViewModels.Count);
+
+                Debug.WriteLine("this one has: " + coll?.Count);
+                Debug.WriteLine("where it came from has: " + ViewModel.DocumentViewModels.Count);
+
                 if (coll != null && !doc.Equals(data.DraggedDocument))
                 {
                     coll.Add(data.GetDropDocument(new Point(), true));
+                    //TODO delete the original doc 
+                    //ViewModel.RemoveDocument(doc.DataDocument); 
+                    //also need to move the documents visually + programmatically 
                 }
             }
             if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
@@ -127,8 +139,8 @@ namespace Dash
                 {
                     var start = data.First().DraggedDocument.GetPositionField().Data;
                     coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
+                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X,
+                                                                                   dm.DraggedDocument.GetPositionField().Data.Y - start.Y), true)).ToList());
                 }
             }
             e.Handled = true;

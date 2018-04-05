@@ -32,7 +32,7 @@ namespace Dash
 
         public string FilterString
         {
-            get { return (string) GetValue(FilterStringProperty); }
+            get { return (string)GetValue(FilterStringProperty); }
             set { SetValue(FilterStringProperty, value); }
         }
 
@@ -41,7 +41,7 @@ namespace Dash
 
         public DocumentController ContainingDocument
         {
-            get { return (DocumentController) GetValue(ContainingDocumentProperty); }
+            get { return (DocumentController)GetValue(ContainingDocumentProperty); }
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
@@ -62,7 +62,7 @@ namespace Dash
             }
             if (args.NewValue != null)
             {
-                var dvm = (DocumentViewModel) args.NewValue;
+                var dvm = (DocumentViewModel)args.NewValue;
                 oldViewModel = dvm;
 
                 var textBlockBinding = new FieldBinding<TextController>
@@ -70,7 +70,7 @@ namespace Dash
                     Document = dvm.DataDocument,
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
-                    Mode = BindingMode.OneWay,
+                    Mode = BindingMode.TwoWay,
                     Context = new Context(dvm.DocumentController.GetDataDocument()),
                     Tag = "TreeViewNode text block binding"
                 };
@@ -94,7 +94,7 @@ namespace Dash
                     Mode = BindingMode.OneWay,
                     Converter = new SelectedToColorConverter()
                 };
-                
+
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
 
                 if (collection != null)
@@ -128,9 +128,10 @@ namespace Dash
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
+
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
-                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);
+                XHeader.AddFieldBinding(Panel.BackgroundProperty, headerBinding);                       
             }
         }
 
@@ -148,7 +149,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-        public void Highlight(bool ? flag)
+        public void Highlight(bool? flag)
         {
             if (flag == null)
                 ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
@@ -158,7 +159,7 @@ namespace Dash
                 ViewModel.DecorationState = false;
         }
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
-        { 
+        {
             if (_isCollection)
             {
                 e.Handled = true;
@@ -166,12 +167,12 @@ namespace Dash
                 if (CollectionTreeView.Visibility == Visibility.Collapsed)
                 {
                     CollectionTreeView.Visibility = Visibility.Visible;
-                    XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+                    XArrowBlock.Text = (string)Application.Current.Resources["ContractArrowIcon"];
                 }
                 else
                 {
                     CollectionTreeView.Visibility = Visibility.Collapsed;
-                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+                    XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
                 }
             }
         }
@@ -207,7 +208,7 @@ namespace Dash
                     docToFocus = docsInGroup.TypedData.FirstOrDefault();
                 }
             }
-            if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
+            if (!MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
             //var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
             //var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
@@ -218,7 +219,7 @@ namespace Dash
             //    {
             //        if (!col.TypedData.Contains(myDoc))
             //        {
-                        
+
             //        }
             //        else
             //        {
@@ -244,12 +245,11 @@ namespace Dash
             //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
 
-        private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)                           //KBTODO 
         {
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((DataContext as DocumentViewModel).DocumentController, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
         }
-
         public void DeleteDocument()
         {
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
@@ -263,6 +263,14 @@ namespace Dash
         private void Delete_OnClick(object sender, RoutedEventArgs e)
         {
             DeleteDocument();
+        }
+
+        private void Duplicate_OnClick(object sender, RoutedEventArgs e)
+        {
+            var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var cvm = collTreeView.ViewModel;
+            var newDoc = ViewModel.DocumentController.GetCopy(null);
+            cvm.AddDocument(newDoc, null);
         }
 
         private void Rename_OnClick(object sender, RoutedEventArgs e)
@@ -294,5 +302,6 @@ namespace Dash
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
         }
+
     }
 }
