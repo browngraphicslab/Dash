@@ -97,8 +97,8 @@
                             <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" CanDrag="True" DragStarting="Icon_OnDragStarting"
                                 PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited">
                                 <ScrollViewer VerticalAlignment="Center"
-                                        HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" 
-                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                                        HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" 
+                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
                                     <Border VerticalAlignment="Center" Width="500"
                                     HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
                                 </ScrollViewer>
