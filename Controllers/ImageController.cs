@@ -29,8 +29,8 @@ namespace Dash
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
-
-        }
+			
+		}
 
         // == METHODS ==
         public override void Init()
