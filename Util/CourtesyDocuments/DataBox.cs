@@ -18,6 +18,8 @@ namespace Dash
 
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 200, double h = 200)
         {
+
+            w = h = double.NaN;
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);

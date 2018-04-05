@@ -58,12 +58,15 @@ namespace Dash
                 return;
             }
 
+
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
             var maxSearchResultSize = 75;
 
             var vms = SearchHelper.SearchOverCollection(text);
+            //var listController = OperatorScriptParser.Interpret("exec(Script:parseSearchString(Query:'" + text + "'))") as BaseListController;
+            //var vms = listController.Data;
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
