@@ -534,12 +534,17 @@ namespace Dash
            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //var doc = ParentDocument.GetDataDocument();
             ViewModel.AddDocument(Util.BlankNote(), null);
             // ViewModel.AddDocument(ViewModel., null);
             e.Handled = true;
+        }
+
+        private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+         
         }
     }
 }

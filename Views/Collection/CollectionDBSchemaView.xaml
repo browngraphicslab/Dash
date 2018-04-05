@@ -71,7 +71,11 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Button Grid.Row="2" HorizontalAlignment="Center" Tapped="UIElement_OnTapped" Width="200" Height="40">Add Row</Button>
+        <StackPanel HorizontalAlignment="Center" Grid.Row="2" Orientation="Horizontal">
+            <Button HorizontalAlignment="Center" Tapped="AddRow_OnTapped" Margin="2" Width="200" Height="40">Add Row</Button>
+            <Button HorizontalAlignment="Center" Tapped="AddColumn_OnTapped" Margin="2" Width="200" Height="40">Add Column</Button>
+        </StackPanel>
+        
     </Grid>
  
 </UserControl>
