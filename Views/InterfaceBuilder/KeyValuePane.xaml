@@ -57,7 +57,7 @@
                             <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="Padding" Value="0" />
                             <Setter Property="Margin" Value="0" />
-                            <Setter Property="BorderThickness" Value="0,0,.01,.01" />
+                            <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
                         </Style>
                     </ListView.ItemContainerStyle>
@@ -87,7 +87,7 @@
                             <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="Padding" Value="0" />
                             <Setter Property="Margin" Value="0" />
-                            <Setter Property="BorderThickness" Value="0,0,.01,.01" />
+                            <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
                             <Setter Property="MaxHeight" Value="60"/>
                         </Style>
@@ -115,14 +115,14 @@
                 <ColumnDefinition Width="3*"></ColumnDefinition>
                 <ColumnDefinition Width="5*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0" Height="Auto" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
+            <Grid Grid.Column="0" Height="Auto" BorderThickness="0,0.1,.1,.1" BorderBrush="LightGray">
                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                     <TextBox x:Name="xNewKeyText" PlaceholderText="Key..." BorderThickness="0" TextWrapping="Wrap" KeyUp="TextFocus_KeyUp"></TextBox>
                 </ScrollViewer>
             </Grid>
-            <Grid Grid.Column="1" Height="Auto" BorderThickness="0,0.1,.01,.01" BorderBrush="LightGray">
+            <Grid Grid.Column="1" Height="Auto" BorderThickness="0,0.1,.1,.1" BorderBrush="LightGray">
                 <ScrollViewer MaxWidth="500" VerticalAlignment="Center"
                                           HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" MaxHeight="60"
                                           HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
