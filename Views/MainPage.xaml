@@ -13,7 +13,7 @@
     </Page.Resources>
 
     <!-- negative margin here hides the collection's output dot-->
-    <Grid x:Name="xOuterGrid" Margin="0,0,0,0">
+    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
         <Grid.Resources>
             <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -41,6 +41,7 @@
             <ColumnDefinition Width="15" x:Name="xPageSplitter"/>
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
+
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
@@ -54,6 +55,7 @@
                 <SymbolIcon Symbol="Back"></SymbolIcon>
             </Button>
         </StackPanel>
+
 
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" 
             x:Name="xSplitter"

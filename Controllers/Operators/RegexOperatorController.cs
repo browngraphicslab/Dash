@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Text.RegularExpressions;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Dash
@@ -28,11 +29,11 @@ namespace Dash
         //Output keys
         public static readonly KeyController MatchesKey = new KeyController("9C395B1C-A7A7-47A4-9F30-3B83CD2D0939", "Matches");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [TextKey]            = new IOInfo(TypeInfo.Text, true),
-            [ExpressionKey]      = new IOInfo(TypeInfo.Text, true),
-            [SplitExpressionKey] = new IOInfo(TypeInfo.Text, true)
+            new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(SplitExpressionKey, new IOInfo(TypeInfo.Text, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

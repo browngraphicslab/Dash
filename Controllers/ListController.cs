@@ -112,6 +112,9 @@ namespace Dash
 
         public override void Init()
         {
+            //why have a list of none?
+            Debug.Assert(!(Model as ListModel).SubTypeInfo.Equals(TypeInfo.None));
+
             TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
             UpdateOnServer();
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);

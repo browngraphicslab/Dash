@@ -107,7 +107,12 @@ namespace Dash
         public double Width
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
+            set
+            {
+                LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
+                if (LayoutDocument.GetDereferencedField<TextController>(KeyStore.TextWrappingKey, null) is TextController)
+                    LayoutDocument.SetField<TextController>(KeyStore.TextWrappingKey, DashShared.TextWrapping.Wrap.ToString(), true);
+            }
         }
         public double Height
         {

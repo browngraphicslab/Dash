@@ -148,7 +148,7 @@ namespace Dash
         {
             DoClearEntries();
         }
-
+        
         public bool ContainsKey(TKey key)
         {
             return _keyedEntryCollection.Contains(key);

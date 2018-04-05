@@ -69,7 +69,7 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             
             // set bounds
-            MinWidth = 100;
+            MinWidth = 5;
             MinHeight = 25;
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
@@ -507,7 +507,7 @@ namespace Dash
                 if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? ViewModel.Width : ViewModel.ActualWidth;
+                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualWidth: ViewModel.Width) : ViewModel.ActualWidth;
                     var h = double.IsNaN(ViewModel.Height) && ViewModel.Content is CollectionView ? ViewModel.ActualHeight : ViewModel.Height;
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
@@ -812,7 +812,7 @@ namespace Dash
                     activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newField, footer ? newField : curLayout }).Document;
                     activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
                     activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualWidth, true);
-                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualHeight, true);
+                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualHeight+32, true);
                     activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
                 }

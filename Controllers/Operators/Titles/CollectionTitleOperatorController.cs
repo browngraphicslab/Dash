@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -29,9 +30,9 @@ namespace Dash
         //Output keys
         public static readonly KeyController ComputedTitle = new KeyController("B8F9AC2E-02F8-4C95-82D8-401BA57053C3", "Computed Title");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [CollectionDocsKey] = new IOInfo(TypeInfo.List, true),
+            new KeyValuePair<KeyController, IOInfo>(CollectionDocsKey, new IOInfo(TypeInfo.List, true)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -42,13 +43,21 @@ namespace Dash
         {
             TextController output = null;
 
+            DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                var firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
+                firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
+
+            // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;
+            //      however, if something's position changed, then we need to update no matter what since we don't know if the sort ordering has changed.
+            //var listArgs = ((args as DocumentController.DocumentFieldUpdatedEventArgs)?.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs);
+            //if (listArgs?.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content &&
+            //    listArgs?.ChangedDocuments.Contains(firstDoc) == false)
+            //    return;
 
 
             outputs[ComputedTitle] = new TextController((output ?? new TextController("Untitled")).Data);

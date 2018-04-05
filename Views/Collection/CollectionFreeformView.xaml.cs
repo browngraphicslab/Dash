@@ -730,7 +730,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
+                var postitNote = new RichTextNote(text: text).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
