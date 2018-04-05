@@ -68,6 +68,7 @@ namespace Dash
         {
             Loaded -= KeyValuePane_Loaded;
             DataContextChanged -= KeyValuePane_DataContextChanged;
+            _dataContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
 
         }
 

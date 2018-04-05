@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using System.Collections.Generic;
 using Windows.Foundation;
+using Dash.Converters;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -33,6 +35,17 @@ namespace Dash
                     Tag = "Rich Text Box Text Binding"
                 };
                 element.AddFieldBinding(RichTextView.TextProperty, binding);
+
+                var wrapBinding = new FieldBinding<TextController>()
+                {
+                    Document = docController,
+                    Key = KeyStore.TextWrappingKey,
+                    Mode = BindingMode.OneWay,
+                    Converter = new StringToTextWrappingConverter(),
+                    Context = context,
+                    Tag = "Rich Text Box Text Wrapping Binding"
+                };
+                element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, wrapBinding);
             }
         }
 
@@ -46,6 +59,7 @@ namespace Dash
             {
                 rtv = new RichTextView()
                 {
+                    LayoutDocument = docController.GetActiveLayout() ?? docController,
                     DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
                 };
                 rtv.ManipulationMode = ManipulationModes.All;

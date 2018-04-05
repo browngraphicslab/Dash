@@ -129,14 +129,17 @@ namespace Dash
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
+
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+
                 setupMapView(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            
+            OperatorScriptParser.TEST();
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -277,7 +280,7 @@ namespace Dash
         private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     if (flag == null)
                         dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
@@ -311,7 +314,7 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
