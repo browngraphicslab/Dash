@@ -1,9 +1,12 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Core;
@@ -16,6 +19,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Path = Windows.UI.Xaml.Shapes.Path;
+
+//using Dash.Util;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -53,7 +59,6 @@ namespace Dash
         
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
-
         public bool BindRenderTransform
         {
             get { return (bool)GetValue(BindRenderTransformProperty); }
@@ -124,6 +129,7 @@ namespace Dash
                     e.Handled = true;
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                 }
+                MainPage.Instance.RemoveInfoDot();
             }
             void ResizeHandles_restorePointerTracking()
             {
@@ -149,28 +155,6 @@ namespace Dash
                     e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                 };
             }
-
-            // setup OperatorEllipse 
-            OperatorEllipseHighlight.PointerExited    += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Collapsed;
-            OperatorEllipseUnhighlight.PointerEntered += (sender, e) => OperatorEllipseHighlight.Visibility = Visibility.Visible;
-            xOperatorEllipseBorder.PointerPressed += (sender, e) => {
-                this.ManipulationMode = ManipulationModes.None;
-                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            };
-            xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
-            xOperatorEllipseBorder.DragStarting += (sender, args) =>
-            {
-                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-                if (selected?.Count() > 0)
-                {
-                    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-                            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-                }
-                else
-                    args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
-                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            };
 
             // setup Title Icon
             xTitleIcon.PointerPressed += (sender, e) =>  {
@@ -236,6 +220,8 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
+            MainPage.Instance.RemoveInfoDot();
+
             var currentTranslate = ViewModel.InteractiveManipulationPosition;  
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
 
@@ -527,6 +513,9 @@ namespace Dash
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
             }
+
+            MainPage.Instance.RemoveInfoDot();
+            MainPage.Instance.AddInfoDot(this);
         }
 
         /// <summary>
@@ -593,6 +582,7 @@ namespace Dash
         }
         public void ShowContext()
         {
+            MainPage.Instance.RemoveInfoDot();
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
         }
         public void GetJson()
@@ -601,6 +591,7 @@ namespace Dash
         }
         private void FadeOut_Completed(object sender, object e)
         {
+            MainPage.Instance.RemoveInfoDot();
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
@@ -641,12 +632,14 @@ namespace Dash
         {
             if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
                 ViewModel.DecorationState = false;
+            MainPage.Instance.RemoveInfoDot();
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            MainPage.Instance.AddInfoDot(this);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
         }
 
@@ -654,6 +647,8 @@ namespace Dash
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
             var selectedDocs = SelectedDocuments();
+            MainPage.Instance.RemoveInfoDot();
+            MainPage.Instance.AddInfoDot(this);
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             if (collection == null || ViewModel == null || selectedDocs == null)
@@ -844,5 +839,45 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
+
+
+        private async void MenuFlyoutItemCopy2_OnClick(object sender, RoutedEventArgs e)
+        {
+            
+
+            var dataPackage = new DataPackage();
+            dataPackage.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, true);
+         
+            if (this.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
+            {
+                Clipboard.Clear();
+                Uri imgUri = this.ViewModel.DocumentController.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data;
+
+                if (imgUri.IsFile)
+                {
+                    var storageFile =
+                        await StorageFile.GetFileFromPathAsync(imgUri.LocalPath);
+
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(storageFile));
+                }
+                else
+                {
+                    Debug.WriteLine("Copying an image from the web");
+                    Debug.Assert(false,
+                        "this code is untested, so if you hit this make sure copying images from the web works");
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromUri(imgUri));
+                }
+            }
+            else
+            {
+                Clipboard.Clear();
+                //works for text
+                dataPackage.SetText(this.ViewModel.DocumentController.Title);
+            }
+
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
+            Clipboard.SetContent(dataPackage);
+        }
+
     }
 }

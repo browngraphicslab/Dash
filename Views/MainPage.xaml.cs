@@ -28,6 +28,9 @@ using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
+using Windows.UI.Xaml.Shapes;
+using Dash.Annotations;
+using Dash.Views;
 using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -147,6 +150,53 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
+        public void AddInfoDot(DocumentView dv, [CanBeNull] InfoDot infod = null)
+        {
+            if (!dv.ViewModel.DocumentController.DocumentType.Equals(KeyValueDocumentBox.DocumentType))
+            {
+
+                //TODO: this doesn't work for nesting
+                CollectionFreeformView freeview = dv.GetFirstAncestorOfType<CollectionFreeformView>();
+                //CollectionFreeformView freeview = (CollectionFreeformView) GetMainCollectionView().CurrentView;
+                if ((freeview != null))
+                {
+                    bool newDot = false;
+                    //if this function was called with just the first parameter, a new InfoDot is created
+                    if (infod == null)
+                    {
+                        infod = new InfoDot(dv);
+                        newDot = true;
+                    }
+
+                    Point pos = new Point(dv.ViewModel.XPos + dv.ViewModel.Width, dv.ViewModel.YPos);
+                    Point mainPagePos = freeview.TransformToVisual(xCanvas).TransformPoint(pos);
+
+                    Canvas.SetLeft(infod, mainPagePos.X);
+                    Canvas.SetTop(infod, mainPagePos.Y);
+                    if (newDot)
+                    {
+                        xCanvas.Children.Add(infod);
+                    }
+                    else
+                    {
+                        infod.OperatorEllipse.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+
+        }
+
+        public void RemoveInfoDot()
+        {
+            var infods = xCanvas.Children.OfType<InfoDot>().ToList();
+            foreach (var infod in infods)
+            {
+                //infod.Background = new SolidColorBrush(Colors.Red);
+                infod.OperatorEllipse.Visibility = Visibility.Collapsed;
+            }
+
+        }
+
         public bool SetCurrentWorkspace(DocumentController workspace)
         {
             //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
@@ -184,7 +234,7 @@ namespace Dash
         {
             RoutedEventHandler handler = null;
             handler =
-                delegate(object sender, RoutedEventArgs args)
+                delegate (object sender, RoutedEventArgs args)
                 {
                     MainDocView.xContentPresenter.Loaded -= handler;
 
@@ -198,7 +248,7 @@ namespace Dash
                             if (vm.DocumentController.Equals(document))
                             {
                                 RoutedEventHandler finalHandler = null;
-                                finalHandler = delegate(object finalSender, RoutedEventArgs finalArgs)
+                                finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
                                     NavigateToDocumentInWorkspace(document);
@@ -217,7 +267,7 @@ namespace Dash
                             if (coll == null)
                             {
                                 RoutedEventHandler contentHandler = null;
-                                contentHandler = delegate(object contentSender, RoutedEventArgs contentArgs)
+                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
                                     if (!NavigateToDocumentInWorkspace(document))
@@ -324,7 +374,7 @@ namespace Dash
                             containerViewModel.XPos + containerViewModel.ActualWidth / 2,
                             containerViewModel.YPos + containerViewModel.ActualHeight / 2));
 
-                    
+
 
                     var pt = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(0, 0));
                     var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;

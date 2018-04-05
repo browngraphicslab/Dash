@@ -80,7 +80,6 @@ namespace Dash
             ParentDocument.StyleCollection(this);
             
             #region CollectionView context menu 
-
             /// <summary>
             /// This method will update the right-click context menu from the DocumentView with the items in the CollectionView (with options to add new document/collection, and to 
             /// view the collection as different formats).

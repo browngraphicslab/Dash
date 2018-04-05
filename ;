@@ -1,0 +1,14 @@
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch madeline/operator_dot
+# Changes to be committed:
+#	modified:   Dash.csproj
+#	modified:   Views/DocumentView.xaml.cs
+#	modified:   Views/MainPage.xaml.cs
+#
+# Untracked files:
+#	Views/InfoDot.xaml
+#	Views/InfoDot.xaml.cs
+#

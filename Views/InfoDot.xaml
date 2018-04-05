@@ -1,0 +1,24 @@
+﻿<UserControl
+    x:Class="Dash.Views.InfoDot"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+
+    <Border x:Name="xOperatorEllipseBorder" x:FieldModifier="public" Background="Transparent" 
+            HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0"
+            PointerEntered="XOperatorEllipseBorder_OnPointerEntered" PointerExited="XOperatorEllipseBorder_OnPointerExited"
+            PointerPressed="XOperatorEllipseBorder_OnPointerPressed">
+        <Ellipse x:Name="OperatorEllipse" x:FieldModifier="public"  Style="{StaticResource xFieldLinkHandle}"
+                 CanDrag="True" DragStarting="OperatorEllipse_OnDragStarting" 
+                 PointerEntered="OperatorEllipse_OnPointerEntered"
+                 PointerExited="OperatorEllipse_OnPointerExited"    PointerReleased="OperatorEllipse_OnPointerReleased"        
+                 />
+    </Border>
+
+</UserControl>

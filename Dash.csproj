@@ -213,6 +213,7 @@
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CopiedVars.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
@@ -344,6 +345,9 @@
     </Compile>
     <Compile Include="Views\ImageNode.xaml.cs">
       <DependentUpon>ImageNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InfoDot.xaml.cs">
+      <DependentUpon>InfoDot.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
@@ -811,6 +815,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ImageNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InfoDot.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
