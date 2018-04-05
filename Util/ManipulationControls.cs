@@ -179,6 +179,20 @@ namespace Dash
             Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
         }
 
+        private void Dock()
+        {
+            var currentBoundingBox = InteractiveBounds(ParentDocument.ViewModel);
+            var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
+                new Size(MainPage.Instance.xMainDocView.ActualWidth, MainPage.Instance.xMainDocView.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
+            {
+                MainPage.Instance.Dock(ParentDocument);
+            }
+            else
+            {
+                MainPage.Instance.UnhighlightDock();
+            }
+        }
 
         private Tuple<DocumentViewModel, Side, double> GetClosestDocumentView(Rect currentBoundingBox)
         {
@@ -333,7 +347,7 @@ namespace Dash
         */
 
         #endregion
-
+            
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -392,6 +406,7 @@ namespace Dash
                 //DetectShake(sender, e);
 
                 Snap(true);
+                Dock();
                 e.Handled = true;
             }
         }

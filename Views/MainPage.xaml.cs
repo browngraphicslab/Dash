@@ -508,5 +508,15 @@ namespace Dash
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
+
+        public void Dock(DocumentView parentDocument)
+        {
+            xDock.Opacity = 0.4;
+        }
+
+        public void UnhighlightDock()
+        {
+            xDock.Opacity = 0;
+        }
     }
 }

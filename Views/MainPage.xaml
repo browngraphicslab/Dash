@@ -40,10 +40,11 @@
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="15" x:Name="xPageSplitter"/>
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
+            <ColumnDefinition Width="15" x:Name="xDockColumn"/>
         </Grid.ColumnDefinitions>
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
+        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" Grid.ColumnSpan="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2" Grid.ColumnSpan="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
             </Grid>
@@ -77,9 +78,13 @@
         </localMicrosoft:GridSplitter>
         <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="4" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Rectangle x:Name="TemporaryRectangle" x:FieldModifier="public" Width="0" Height="0" Fill="Gold" Opacity=".4"></Rectangle>
         </Canvas>
+
+        <Rectangle x:Name="xDock" x:FieldModifier="public" Grid.Row="0" Grid.Column="3" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"
+                   HorizontalAlignment="Stretch"/>
+
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
