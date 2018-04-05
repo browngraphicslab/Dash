@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Dash.Models;
@@ -45,13 +46,13 @@ namespace Dash
             new KeyController("4ECAF1CB-5FEF-4B6D-8A84-C134BD90C750", "Output Collection");
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
-                [InputCollection] = new IOInfo(TypeInfo.List, true),
-                [ColumnVariables] = new IOInfo(TypeInfo.List, true),
-                [VariableName] = new IOInfo(TypeInfo.Text, true),
-                [ValueName] = new IOInfo(TypeInfo.Text, true),
+                new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(ColumnVariables, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(VariableName, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(ValueName, new IOInfo(TypeInfo.Text, true)),
 
             };
 
@@ -62,13 +63,16 @@ namespace Dash
             };
 
 
-        public MeltOperatorController() : base(new OperatorModel(OperatorType.Melt))
+        public MeltOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
         public MeltOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("871A8ADC-5D15-4B31-9BE7-6256D9C961EE", "Melt");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
@@ -119,17 +123,7 @@ namespace Dash
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
 
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new MeltOperatorController();
         }

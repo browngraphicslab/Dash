@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using DashShared;
 
@@ -9,9 +10,12 @@ namespace Dash
         public SubtractOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public SubtractOperatorController() : base(new OperatorModel(OperatorType.Subtract))
+        public SubtractOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("D98C45BF-ADD3-4832-A627-ED7DDBB3B04E", "Subtract");
 
         //Input keys
         public static readonly KeyController AKey = new KeyController("AE143AA5-4959-4B17-9FB4-B7BAB045366F", "A");
@@ -20,10 +24,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController DifferenceKey = new KeyController("851F7905-1363-4077-BF05-149327A55C34", "Difference");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [AKey] = new IOInfo(TypeInfo.Number, true),
-            [BKey] = new IOInfo(TypeInfo.Number, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true))
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -41,17 +45,9 @@ namespace Dash
             outputs[DifferenceKey] = new NumberController(a - b);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new SubtractOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new SubtractOperatorController();
         }
     }
 }

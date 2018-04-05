@@ -1,18 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using DashShared;
 
 namespace Dash
 {
+    [OperatorType("add")]
     public class AddOperatorController : OperatorController
     {
         public AddOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public AddOperatorController() : base(new OperatorModel(OperatorType.Add))
+        public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("5C121004-6C32-4BB7-9CBF-C4A6573376EF", "Add");
 
         //Input keys
         public static readonly KeyController AKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
@@ -21,10 +26,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController SumKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [AKey] = new IOInfo(TypeInfo.Number, true),
-            [BKey] = new IOInfo(TypeInfo.Number, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true))
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -44,17 +49,9 @@ namespace Dash
             outputs[SumKey] = new NumberController(sum);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new AddOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,11 +29,11 @@ namespace Dash
         public static readonly KeyController KeyWords = new KeyController("D4E89394-35EA-477B-959E-1A96F5CC2D39", "KeyWords");
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
             {
-                [InputCollection] = new IOInfo(TypeInfo.List, true),
-                [TextField] = new IOInfo(TypeInfo.Text, true)
+                new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(TextField, new IOInfo(TypeInfo.Text, true)),
             };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
@@ -45,9 +46,12 @@ namespace Dash
         {
         }
 
-        public ExtractKeywordsOperatorController() : base(new OperatorModel(OperatorType.ExtractKeywords))
+        public ExtractKeywordsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("8EA60017-CF8E-4885-B712-7C38906C299F", "Keywords");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -61,7 +65,7 @@ namespace Dash
             foreach (var inputDoc in collection.TypedData)
             {
                 // get the data from it if it exists
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 // get the text and add it to allText if the text exists
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
@@ -81,7 +85,7 @@ namespace Dash
             var outputDocs = new List<DocumentController>();
             foreach (var inputDoc in collection.TypedData)
             {
-                var dataDoc = inputDoc.GetDataDocument(null);
+                var dataDoc = inputDoc.GetDataDocument();
                 var textInput = dataDoc.GetField(textFieldKey) as TextController;
                 if (textInput != null)
                 {
@@ -97,19 +101,9 @@ namespace Dash
             outputs[OutputCollection] = new ListController<DocumentController>(outputDocs);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new ExtractKeywordsOperatorController(new OperatorModel(OperatorType.ExtractKeywords));
-        }
-
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-
-        public override object GetValue(Context context)
-        {
-            throw new NotImplementedException();
+            return new ExtractKeywordsOperatorController();
         }
     }
 }

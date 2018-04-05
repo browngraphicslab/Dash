@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Text.RegularExpressions;
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Dash
@@ -13,9 +14,12 @@ namespace Dash
         {
         }
 
-        public RegexOperatorController() : base(new OperatorModel(OperatorType.Regex))
+        public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("434B2CBC-003A-4DAD-8E8B-7F759A39B37C", "Regex");
 
         //Input keys
         public static readonly KeyController ExpressionKey      = new KeyController("0FA9226F-35BB-4AEE-A830-C81FF9611F3E", "Expression");
@@ -25,11 +29,11 @@ namespace Dash
         //Output keys
         public static readonly KeyController MatchesKey = new KeyController("9C395B1C-A7A7-47A4-9F30-3B83CD2D0939", "Matches");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [TextKey]            = new IOInfo(TypeInfo.Text, true),
-            [ExpressionKey]      = new IOInfo(TypeInfo.Text, true),
-            [SplitExpressionKey] = new IOInfo(TypeInfo.Text, true)
+            new KeyValuePair<KeyController, IOInfo>(TextKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(ExpressionKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(SplitExpressionKey, new IOInfo(TypeInfo.Text, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -69,17 +73,9 @@ namespace Dash
             outputs[MatchesKey] = new ListController<TextController>(collected);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            return new AddOperatorController(OperatorFieldModel);
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
+            return new RegexOperatorController(OperatorFieldModel);
         }
     }
 }

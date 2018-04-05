@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Windows.Foundation.Metadata;
 using DashShared;
 
 namespace Dash
 {
+    [OperatorType("mult")]
     public class MultiplyOperatorController : OperatorController
     {
 
-        public MultiplyOperatorController() : base(new OperatorModel(OperatorType.Multiply))
+        public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
 
         }
@@ -17,6 +19,9 @@ namespace Dash
         {
         }
 
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("518988DD-4C30-4AE6-AF7F-3532B7A71C7B", "Multiply");
+
         //Input keys
         public static readonly KeyController AKey = new KeyController("D0FF0175-F158-43CC-B2A3-CE7266BBA062", "A");
         public static readonly KeyController BKey = new KeyController("3D1BB49B-6F11-4044-AC81-2ECA3EECEB7B", "B");
@@ -24,10 +29,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController ProductKey = new KeyController("B618238C-16A0-4F6F-9DEE-C4657C087991", "Product");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [AKey] = new IOInfo(TypeInfo.Number, true),
-            [BKey] = new IOInfo(TypeInfo.Number, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true)),
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
@@ -48,17 +53,9 @@ namespace Dash
             outputs[ProductKey] = new NumberController(a * b);
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new MultiplyOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

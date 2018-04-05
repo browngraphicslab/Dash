@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -15,9 +16,12 @@ namespace Dash
         {
         }
 
-        public RichTextTitleOperatorController() : base(new OperatorModel(OperatorType.RichTextTitle))
+        public RichTextTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("B56DC556-7B88-495B-880B-1E3D420A1F5B", "Rich Text Title");
 
         //Input keys
         public static readonly KeyController RichTextKey = KeyStore.DocumentTextKey;// new KeyController("E0105956-B0F8-4552-9420-CA7572C94657", "Rich Text");
@@ -26,9 +30,9 @@ namespace Dash
         public static readonly KeyController ComputedTitle = new KeyController("94E01AAF-DD88-4130-9EE5-18D7B8B2674C", "Computed Title");
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [RichTextKey] = new IOInfo(TypeInfo.Text, true),
+            new KeyValuePair<KeyController, IOInfo>(RichTextKey, new IOInfo(TypeInfo.Text, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -54,19 +58,9 @@ namespace Dash
             outputs[ComputedTitle] = new TextController(computedTitle ?? "");
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
             return new RichTextTitleOperatorController();
-        }
-
-        public override bool SetValue(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetValue(Context context)
-        {
-            return this;
         }
     }
 }

@@ -128,7 +128,7 @@ namespace Dash
             if (field == null)
             {
                 TDefault f = new TDefault();
-                if (!f.SetValue(fieldData))
+                if (!f.TrySetValue(fieldData))
                 {
                     return false;
                 }
@@ -137,7 +137,7 @@ namespace Dash
             }
             else
             {
-                return field.SetValue(fieldData);
+                return field.TrySetValue(fieldData);
             }
         }
 

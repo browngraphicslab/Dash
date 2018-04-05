@@ -71,7 +71,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.OneWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
+                    Context = new Context(dvm.DocumentController.GetDataDocument()),
                     Tag = "TreeViewNode text block binding"
                 };
 
@@ -81,7 +81,7 @@ namespace Dash
                     Key = KeyStore.TitleKey,
                     FallbackValue = "Untitled",
                     Mode = BindingMode.TwoWay,
-                    Context = new Context(dvm.DocumentController.GetDataDocument(null)),
+                    Context = new Context(dvm.DocumentController.GetDataDocument()),
                     FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                     Tag = "TreeViewNode text box binding"
                 };
@@ -95,7 +95,7 @@ namespace Dash
                     Converter = new SelectedToColorConverter()
                 };
                 
-                var collection = dvm.DocumentController.GetDataDocument(null).GetField(KeyStore.DataKey) as ListController<DocumentController>;
+                var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
 
                 if (collection != null)
                 {
@@ -110,10 +110,10 @@ namespace Dash
                         XIconBox.Symbol = Symbol.Library;
                     }
                     var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument(null).Id, KeyStore.DataKey));
+                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument().Id, KeyStore.DataKey));
                     CollectionTreeView.DataContext =
                         collectionViewModel;
-                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument(null);
+                    CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                     XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
 
                     XArrowBlock.Visibility = Visibility.Visible;
@@ -148,9 +148,17 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
-
-        private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        public void Highlight(bool ? flag)
         {
+            if (flag == null)
+                ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
+            else if (flag == true)
+                ViewModel.DecorationState = (ViewModel.Undecorated == false);
+            else if (flag == false)
+                ViewModel.DecorationState = false;
+        }
+        private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        { 
             if (_isCollection)
             {
                 e.Handled = true;
@@ -166,6 +174,27 @@ namespace Dash
                     XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
                 }
             }
+        }
+
+        private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            Highlight(true);
+            MainPage.Instance.HighlightDoc(docTapped, true);
+
+        }
+
+        private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Highlight(false);
+            var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            MainPage.Instance.HighlightDoc(docTapped, false);
+        }
+
+        private void XTextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            //var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            //MainPage.Instance.HighlightDoc(docTapped);
         }
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -241,7 +270,9 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Visible;
+            XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
+            XTextBox.SelectAll();
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
@@ -252,6 +283,7 @@ namespace Dash
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Collapsed;
+            XTextBlock.Visibility = Visibility.Visible;
         }
 
         private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)

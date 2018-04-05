@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -15,29 +16,24 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
 
-        public ConcatOperatorController() : base(new OperatorModel(OperatorType.Concat)) { }
+        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }
 
         public ConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("F69DF9CF-5B51-482D-AE1E-40B3266930CB", "Concat");
+
+        public override FieldControllerBase GetDefaultController()
         {
             return new ConcatOperatorController();
         }
 
-        public override object GetValue(Context context)
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
-        }
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
-        {
-            [AKey] = new IOInfo(TypeInfo.Text, true),
-            [BKey] = new IOInfo(TypeInfo.Text, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Text, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

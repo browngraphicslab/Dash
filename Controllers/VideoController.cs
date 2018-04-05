@@ -16,7 +16,7 @@ namespace Dash
 
 		public VideoController() : base(new VideoModel()) { }
 
-		public VideoController(Uri path, string data = null) : base(new VideoModel(path)) { }
+		public VideoController(Uri path) : base(new VideoModel(path)) { }
 
 		public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
 		{
@@ -65,7 +65,7 @@ namespace Dash
 			return Data;
 		}
 
-		public override bool SetValue(object value)
+		public override bool TrySetValue(object value)
 		{
 			Debug.Assert(value is Uri);
 			if (value is Uri u)
@@ -91,7 +91,7 @@ namespace Dash
 
 		public override FieldModelController<VideoModel> Copy()
 		{
-			return new VideoController(VideoFieldModel.Data, VideoFieldModel.ByteData);
+			return new VideoController(VideoFieldModel.Data);
 		}
 	}
 }

@@ -87,13 +87,13 @@ namespace Dash
             {
                 var str = "=" + (opField.Model as OperatorModel).Type + "(";
                 foreach (var input in opField.Inputs)
-                    str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
+                    str += refDoc.GetField(input.Key)?.ToString().TrimStart('=') + ",";
                 str = str.TrimEnd(',') + ")";
                 return str;
             }
             return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);

@@ -23,8 +23,7 @@ namespace Dash
      /// </summary>
     public class WebBox : CourtesyDocument
     {
-        public static DocumentType DocumentType =
-            new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
+        public static DocumentType DocumentType = new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
         public WebBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
@@ -71,12 +70,6 @@ namespace Dash
                 element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
 
-
-        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
-        {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            SetupTextBinding(element, docController, context);
-        }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
@@ -107,8 +100,9 @@ namespace Dash
             else web.Source = new Uri(textfieldModelController.Data);
             web.LoadCompleted += Web_LoadCompleted;
 
+            SetupBindings(web, docController, context);
             if (html == null)
-                SetupBindings(web, docController, context);
+                SetupTextBinding(web, docController, context);
             
             return web;
         }

@@ -20,12 +20,12 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
         }
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
-            var documentfieldModelController = docController.GetDataDocument(context);
+            var documentfieldModelController = docController.GetDataDocument();
             Debug.Assert(documentfieldModelController != null);
 
             var border = new Border();

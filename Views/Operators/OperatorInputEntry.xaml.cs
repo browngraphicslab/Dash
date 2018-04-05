@@ -51,10 +51,10 @@ namespace Dash
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
                 // we pass a view document, so we get the data document
-                _refDoc = dragData.GetDraggedDocument()?.GetDataDocument();
+                _refDoc = dragData.DraggedDocument?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 if (dragData.DraggedKey != null)
                 {
                     opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
@@ -80,7 +80,7 @@ namespace Dash
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
                 var fieldKey = dragData.FieldKey;
                 opDoc.SetField(key, new TextController(fieldKey.Id), true);
@@ -100,13 +100,13 @@ namespace Dash
             // set the input type
             var el = sender as FrameworkElement;
             var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
-            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-            _inputType = opField.Inputs[key].Type;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
+            _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
 
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                _refDoc = dragData.GetDraggedDocument();
+                _refDoc = dragData.DraggedDocument;
                 if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
                 {
                     // the operator controller the input is going to
@@ -199,7 +199,7 @@ namespace Dash
             {
                 return;
             }
-            var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)DataContext)?.Key as KeyController;
             if (args.ChosenSuggestion is CollectionKeyPair chosen)
             {
                 if (chosen.CollectionKey == null)

@@ -18,6 +18,8 @@ namespace Dash
 
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 200, double h = 200)
         {
+
+            w = h = double.NaN;
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
@@ -44,7 +46,7 @@ namespace Dash
             else if (data is ListController<DocumentController> docList)
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
-                return CollectionBox.MakeView(documentController, context, documentController.GetDataDocument(null));
+                return CollectionBox.MakeView(documentController, context);
             } else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document

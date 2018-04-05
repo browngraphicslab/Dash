@@ -88,6 +88,16 @@ namespace Dash
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        public DocumentController Snapshot()
+        {
+            var controllers = new List<DocumentController>();
+            foreach (var dvm in ViewModel.DocumentViewModels)
+                controllers.Add(dvm.DocumentController.GetViewCopy());
+            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
+            return snap;
+        }
+
         #region data configuration
 
         void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -127,11 +137,12 @@ namespace Dash
                 MakeInkCanvas();
             }
             
-            if (ParentDocument?.ViewModel.LayoutDocument?.GetField(KeyStore.CollectionFitToParentKey) != null)
+            if (ParentDocument?.ViewModel.LayoutDocument?.GetField<TextController>(KeyStore.CollectionFitToParentKey)?.Data == "true")
             {
                 ViewManipulationControls.FitToParent();
             }
         }
+
         #endregion
 
         #region Manipulation
@@ -549,7 +560,7 @@ namespace Dash
                 }
                 if (e.Key == VirtualKey.G)
                 {
-                    ViewModel.AddDocument(Util.BlankDocWithPosition(where, _marquee.Width, _marquee.Height), null);
+                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height), null);
                 }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
@@ -557,13 +568,13 @@ namespace Dash
             }
         }
 
-        List<DocumentView> DocsInMarquee(Rect marquee)
+        public List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 var docs = xItemsControl.ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null))
+                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null && d.IsHitTestVisible))
                 {
                     var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
@@ -719,7 +730,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
+                var postitNote = new RichTextNote(text: text).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
@@ -845,6 +856,7 @@ namespace Dash
             var richEditBox = sender as RichEditBox;
             richEditBox.GotFocus -= RichEditBox_GotFocus;
             previewTextbox.Text = string.Empty;
+            richEditBox.Document.Selection.SetRange(0, 0);
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }

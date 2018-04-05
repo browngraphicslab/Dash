@@ -98,7 +98,7 @@ namespace Dash
             Action = action;
             DataDoc = dataDoc;
             // set the default title
-            dataDoc.GetTitleFieldOrSetDefault(null);
+            dataDoc.GetTitleFieldOrSetDefault();
             dataDoc.AddFieldUpdatedListener(key, TextChangedHandler);
             TextChangedHandler(dataDoc, null, null);
         }

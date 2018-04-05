@@ -85,9 +85,10 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
+            return 0;
             throw new System.NotImplementedException();
         }
-        public override bool SetValue(object value)
+        public override bool TrySetValue(object value)
         {
             return false;
         }

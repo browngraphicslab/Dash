@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using DashShared;
 
@@ -14,10 +15,10 @@ namespace Dash
         //Output keys
         public static readonly KeyController IntersectionKey = new KeyController("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } = new ObservableDictionary<KeyController, IOInfo>
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            [AKey] = new IOInfo(TypeInfo.List, true),
-            [BKey] = new IOInfo(TypeInfo.List, true)
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.List, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.List, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -29,9 +30,12 @@ namespace Dash
         {
         }
 
-        public IntersectionOperatorController() : base(new OperatorModel(OperatorType.Intersection))
+        public IntersectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("5B93D353-AE02-4E20-9E2D-D38C01BC5F20", "Intersection");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
         {
@@ -48,18 +52,9 @@ namespace Dash
             //(doc.GetField(IntersectionKey) as ListController<DocumentController>).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
-        public override FieldModelController<OperatorModel> Copy()
+        public override FieldControllerBase GetDefaultController()
         {
-            //return new IntersectionOperatorModelController(OperatorFieldModel);
             return new IntersectionOperatorController();
-        }
-        public override object GetValue(Context context)
-        {
-            throw new System.NotImplementedException();
-        }
-        public override bool SetValue(object value)
-        {
-            return false;
         }
     }
 }

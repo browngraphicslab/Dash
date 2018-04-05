@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" DataContextChanged="OnUserControlDataContextChanged" RightTapped="OnRightTapped"
+    d:DesignWidth="400" DataContextChanged="OnUserControlDataContextChanged"
     x:Name="OpView">
 
     <Grid x:Name="OuterGrid"  Margin="0,0,0,0" Background="#88888888">
