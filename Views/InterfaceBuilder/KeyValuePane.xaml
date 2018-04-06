@@ -62,17 +62,8 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:KeyFieldContainer">
-                            <Grid x:Name="xKeyContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited"
-                                DragStarting="Icon_OnDragStarting" CanDrag="True">
-                                <ScrollViewer VerticalAlignment="Center" HorizontalScrollMode="Enabled"
-                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"
-                                        VerticalScrollMode="Disabled">
-                                    <TextBlock Text="{x:Bind Path=Key.Name}"
-                                        Style="{StaticResource xForceTextBlockDefault}" FontWeight="Medium"
-                                        VerticalAlignment="Stretch" HorizontalAlignment="Left" />
-                                </ScrollViewer>
-                            </Grid>
+                        <DataTemplate x:DataType="local:EditableScriptViewModel">
+                            <TextBlock Text="{x:Bind Key.Name}"></TextBlock>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -93,16 +84,8 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:KeyFieldContainer">
-                            <Grid x:Name="xFieldContentGrid" Tapped="Grid_Tapped" Height="60" MaxHeight="60" CanDrag="True" DragStarting="Icon_OnDragStarting"
-                                PointerEntered="ListItemPointerEntered" PointerExited="ListItemPointerExited">
-                                <ScrollViewer VerticalAlignment="Center"
-                                        HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" 
-                                        HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-                                    <Border VerticalAlignment="Center" Width="500"
-                                    HorizontalAlignment="Stretch" Child="{x:Bind Path=Controller, Converter={StaticResource BoundFieldModelControllerToFrameworkElementConverter}}" />
-                                </ScrollViewer>
-                            </Grid>
+                        <DataTemplate>
+                            <local:EditableScriptBox></local:EditableScriptBox>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 
