@@ -59,6 +59,7 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -434,6 +435,9 @@ namespace Dash
 
         #endregion
 
+
+
+
         /// <summary>
         /// Resizes the control based on the user's dragging the ResizeHandles.  The contents will adjust to fit the bounding box
         /// of the control *unless* the Shift button is held in which case the control will be resized but the contents will remain.
@@ -487,7 +491,7 @@ namespace Dash
             {
                 // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
                 newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
-                
+
                 // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
                 newSize.Height = double.IsNaN(newSize.Height)
                     ? ViewModel.ActualHeight / ViewModel.ActualWidth * newSize.Width
@@ -517,8 +521,8 @@ namespace Dash
 
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
-                 (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
-                 (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
+                (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
+                (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
 
             e.Handled = true;
 
@@ -527,7 +531,10 @@ namespace Dash
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
             }
+
         }
+  
+
 
         /// <summary>
         /// If the documentView contains a FreeformCollection, resizes the (TODO: is this right) first
@@ -627,10 +634,15 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
                 ToFront();
             }
+			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
+			{
+				//ViewModel.DocumentController.GetVideo().Pause();
+			}
         }
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {

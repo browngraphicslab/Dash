@@ -8,6 +8,7 @@ using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash.Controllers;
+using Dash.Converters;
 using DashShared;
 using DashShared.Models;
 
@@ -296,7 +297,11 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
                             }
-                        }
+							else if (target.Value.Type == TypeInfo.Video)
+							{
+								opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
+							}
+						}
                     }
                     SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
@@ -304,7 +309,6 @@ namespace Dash
             else
             {
                 if (curField != null && !(curField is ReferenceController))
-                {
                     if (curField is NumberController nc)
                     {
                         double num;
@@ -313,8 +317,11 @@ namespace Dash
                         else return false;
                     }
                     else if (curField is TextController tc)
+                    {
                         tc.Data = textInput;
+                    }
                     else if (curField is ImageController ic)
+                    {
                         try
                         {
                             ic.Data = new Uri(textInput);
@@ -323,9 +330,21 @@ namespace Dash
                         {
                             ic.Data = null;
                         }
+                    }
                     else if (curField is DateTimeController)
                     {
                         return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
+                    }
+                    else if (curField is VideoController vc)
+                    {
+                        try
+                        {
+                            vc.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            vc.Data = null;
+                        }
                     }
                     else if (curField is DocumentController)
                     {
@@ -334,12 +353,18 @@ namespace Dash
                         //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is ListController<DocumentController> lc)
+                    {
                         lc.TypedData =
-                            new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                            new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    }
                     else if (curField is RichTextController rtc)
+                    {
                         rtc.Data = new RichTextModel.RTD(textInput);
-                    else return false;
-                }
+                    }
+                    else
+                    {
+                        return false;
+                    }
             }
             return true;
         }
@@ -1023,8 +1048,11 @@ namespace Dash
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
-            // set up contexts information
-            context = new Context(context);
+			Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
+			Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+
+			// set up contexts information
+			context = new Context(context);
             context.AddDocumentContext(this);
             context.AddDocumentContext(GetDataDocument());
 
@@ -1040,9 +1068,9 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-
                 return doc.MakeViewUI(context, GetDataDocument());
             }
+
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))
             {
                 return KeyStore.TypeRenderer[DocumentType](this, context);
@@ -1297,6 +1325,8 @@ namespace Dash
                 FromDelegate = fromDelegate;
             }
         }
+
+
         #endregion
     }
 }
