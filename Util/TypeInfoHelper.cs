@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using DashShared;
-using DashShared.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Dash
 {

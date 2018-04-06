@@ -1,16 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Dash.Controllers;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 using DashShared;
 using NewControls.Geometry;
 using static Dash.NoteDocuments;

@@ -1,12 +1,9 @@
 ﻿using System;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
 using Windows.UI.Text;
-using Windows.UI.Core;
 using Windows.UI;
 using Windows.Foundation;
 using Gma.CodeCloud.Controls.Geometry;
-using NewControls.Geometry;
 using Windows.UI.Xaml.Controls;
 using NewControls;
 using System.Diagnostics;

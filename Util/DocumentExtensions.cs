@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
-using Windows.Foundation.Metadata;
 using Dash.Controllers;
-using DashShared.Models;
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.UI.Xaml.Controls;
-using Flurl.Util;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {

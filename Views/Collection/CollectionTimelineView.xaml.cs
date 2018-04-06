@@ -7,7 +7,6 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using DashShared;
-using Microsoft.Toolkit.Uwp.UI;
 using Windows.UI.Xaml.Controls;
 using Windows.System;
 

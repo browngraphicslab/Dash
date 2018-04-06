@@ -10,7 +10,6 @@ namespace Dash.FontIcons
 // </auto-generated>
 //------------------------------------------------------------------------------
 {
-    using System.ComponentModel;
     ///<summary>
     ///	FontAwesome v4.7.0 by Dave Gandy (@davegandy)
     ///	The iconic font and CSS toolkit

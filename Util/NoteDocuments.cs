@@ -1,15 +1,7 @@
 ﻿using DashShared;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI;
-using Windows.UI.Xaml;
-using Dash.Controllers;
-using DashShared.Models;
 
 namespace Dash
 {

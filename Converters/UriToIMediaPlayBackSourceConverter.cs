@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
-using Windows.UI.Xaml.Controls;
 
 namespace Dash.Converters
 {

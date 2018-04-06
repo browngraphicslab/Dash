@@ -1,22 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.IO;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
-using Microsoft.Toolkit.Uwp;
 using Microsoft.Toolkit.Uwp.Helpers;
 using System.Diagnostics;
-using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {

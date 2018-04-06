@@ -1,22 +1,15 @@
-﻿using Microsoft.ProjectOxford.Vision.Contract;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using NewControls.Geometry;
-using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
-using System.Collections.ObjectModel;
 using DashShared;
 
 namespace Dash

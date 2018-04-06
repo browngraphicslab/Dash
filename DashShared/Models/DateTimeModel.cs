@@ -1,8 +1,6 @@
 ﻿using System;
-using DashShared;
-using DashShared.Models;
 
-namespace Dash
+namespace DashShared
 {
     /// <summary>
     /// An implementation of FieldModel, DateTimeModel is effectively a wrapper class around Data of type DateTime. Adds custom ToString functionality. 

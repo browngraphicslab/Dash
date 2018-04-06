@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Storage;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls.Primitives;
 using CsvHelper;
-using Newtonsoft.Json;
-using Dash.Controllers.Operators;
 using DashShared;
-using Flurl.Util;
-using Microsoft.Toolkit.Uwp;
 using Microsoft.Toolkit.Uwp.Helpers;
-using Newtonsoft.Json.Linq;
 using static Dash.NoteDocuments;
 
 namespace Dash

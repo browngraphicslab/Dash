@@ -1,6 +1,5 @@
 ﻿using Windows.UI.Text;
 using Windows.UI.Xaml;
-using Dash.Views;
 
 namespace Dash
 {

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Windows.Foundation;
-using Dash.Controllers;
 using DashShared;
-using Windows.UI.Xaml;
 
 namespace Dash
 {

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

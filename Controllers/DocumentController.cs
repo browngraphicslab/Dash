@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Controls;
 using Dash.Controllers;
 using Dash.Converters;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {
