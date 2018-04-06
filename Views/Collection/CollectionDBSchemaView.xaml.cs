@@ -37,6 +37,8 @@ namespace Dash
             xHeaderView.ItemsSource = SchemaHeaders;
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
             Drop += CollectionDBSchemaView_Drop;
+
+            _schemaAddedFields = new List<KeyController>();
         }
 
         private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
@@ -221,45 +223,10 @@ namespace Dash
 
                 fmController = dc.Document.GetDataDocument().GetField(key);
 
-                var ke = key.GetTypeAsString();
 
                 if (fmController == null)
                 {
-                    //switch (key.GetTypeAsString())
-                    //{
-                    //    //case TypeInfo.Number:
-                    //    //    fmController = new NumberController(new DoubleToStringConverter().ConvertXamlToData(stringValue));
-                    //    //    break;
-                    //    //case TypeInfo.Image:
-                    //    //    // TODO check to see if the uri is valid
-                    //    //    fmController = new ImageController(new UriToStringConverter().ConvertXamlToData(stringValue));
-                    //    //    break;
-                    //    //case TypeInfo.Text:
-                    //    //    fmController = new TextController(xEditTextBox.Text);
-                    //    //    break;
-                    //    //case TypeInfo.List:
-                    //    //    //TODO tfs: this can only create lists of docs(collections), not lists of other things
-                    //    //    fmController = new ListController<DocumentController>();
-                    //    //    break;
-                    //    //case TypeInfo.Point:
-                    //    //    fmController = new PointController(new PointToStringConverter().ConvertXamlToData(stringValue));
-                    //    //    break;
-                    //    //case TypeInfo.Document:
-                    //    //    fmController = new Converters.DocumentControllerToStringConverter(null).ConvertXamlToData(stringValue);
-                    //    //    break;
-                    //    case TypeInfo.None:
-                    //    //case TypeInfo.PointerReference:
-                    //    //case TypeInfo.DocumentReference:
-                    //    //case TypeInfo.Operator:
-                    //    //case TypeInfo.Ink:
-                    //    //case TypeInfo.RichText:
-                    //    //case TypeInfo.Rectangle:
-                    //    //case TypeInfo.Key:
-                    //    //case TypeInfo.Reference:
-                    //    //case TypeInfo.Any:
-                    //    default:
-                    //        throw new ArgumentOutOfRangeException();
-                    //}
+                    //TODO make this create the correct field type
                     dc.Document.GetDataDocument().SetField(key, new TextController(xEditTextBox.Text), true);
                 }
             }
@@ -348,12 +315,17 @@ namespace Dash
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
-                { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, 
-                                                     FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
+                {
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel()
+                    {
+                        SchemaView = this,
+                        SchemaDocument = ParentDocument,
+                        Width = 150,
+                        FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)
+                    });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
+                foreach (var d in dbDocs.Select((db) => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
                 {
                     //if (d.GetField(RegexOperatorController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -370,12 +342,20 @@ namespace Dash
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
+
+                foreach (var f in _schemaAddedFields)
+                    if (!f.Name.StartsWith("_") && !SchemaHeadersContains(f))
+                        SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f });
+                
+
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
                 // add all the records
                 UpdateRecords(dbDocs);
             }
         }
+
+        private List<KeyController> _schemaAddedFields;
 
         private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
@@ -544,7 +524,11 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-         
+            _schemaAddedFields.Add(new KeyController());
+            UpdateFields(new Context(ParentDocument));
+            //var x = xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>;
+
+            //foreach (var docVM in )
         }
     }
 }

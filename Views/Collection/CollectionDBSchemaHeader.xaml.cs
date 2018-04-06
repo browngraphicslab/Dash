@@ -125,5 +125,10 @@ namespace Dash
             }
             
         }
+
+        private void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }
