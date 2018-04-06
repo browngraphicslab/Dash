@@ -180,6 +180,7 @@
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
+    <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
@@ -1143,6 +1144,12 @@
   <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Dash_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
