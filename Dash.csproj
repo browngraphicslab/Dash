@@ -151,6 +151,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
     <Compile Include="Controllers\IControllerBase.cs" />
@@ -223,6 +224,7 @@
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
+    <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />

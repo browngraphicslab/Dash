@@ -7,6 +7,8 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
+using Dash.Converters;
 using DashShared;
 using DashShared.Models;
 
@@ -307,7 +309,6 @@ namespace Dash
             else
             {
                 if (curField != null && !(curField is ReferenceController))
-                {
                     if (curField is NumberController nc)
                     {
                         double num;
@@ -316,8 +317,11 @@ namespace Dash
                         else return false;
                     }
                     else if (curField is TextController tc)
+                    {
                         tc.Data = textInput;
+                    }
                     else if (curField is ImageController ic)
+                    {
                         try
                         {
                             ic.Data = new Uri(textInput);
@@ -326,28 +330,41 @@ namespace Dash
                         {
                             ic.Data = null;
                         }
-					else if (curField is VideoController vc)
-						try
-						{
-							vc.Data = new Uri(textInput);
-						}
-						catch (Exception)
-						{
-							vc.Data = null;
-						}
-					else if (curField is DocumentController)
+                    }
+                    else if (curField is DateTimeController)
+                    {
+                        return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
+                    }
+                    else if (curField is VideoController vc)
+                    {
+                        try
+                        {
+                            vc.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            vc.Data = null;
+                        }
+                    }
+                    else if (curField is DocumentController)
                     {
                         //TODO tfs: fix this
                         throw new NotImplementedException();
                         //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is ListController<DocumentController> lc)
+                    {
                         lc.TypedData =
-                            new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                            new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    }
                     else if (curField is RichTextController rtc)
+                    {
                         rtc.Data = new RichTextModel.RTD(textInput);
-                    else return false;
-                }
+                    }
+                    else
+                    {
+                        return false;
+                    }
             }
             return true;
         }
@@ -731,7 +748,6 @@ namespace Dash
             {
                 UpdateOnServer();
             }
-
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()

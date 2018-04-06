@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 
@@ -64,7 +65,7 @@ namespace Dash
                 SetupBindings(view, documentController, context);
                 return view;
             }
-            else if (data is TextController || data is NumberController)
+            else if (data is TextController || data is NumberController || data is DateTimeController)
             {
                 return TextingBox.MakeView(documentController, context);
             }
