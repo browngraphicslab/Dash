@@ -129,14 +129,17 @@ namespace Dash
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
+
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+
                 setupMapView(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            
+            OperatorScriptParser.TEST();
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  

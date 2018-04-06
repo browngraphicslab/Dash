@@ -16,6 +16,7 @@ namespace DashShared
         Number = 0x1,
         Text = 0x2,
         Image = 0x4,
+		Video = 0x8,
         Document = 0x10,
         PointerReference = 0x20,
         DocumentReference = 0x40,
@@ -27,40 +28,6 @@ namespace DashShared
         Rectangle = 0x1000,
         Key = 0x2000,
         Reference = PointerReference | DocumentReference,
-        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum OperatorType
-    {
-        Add,
-        Zip,
-        Filter,
-        CollectionMap,
-        Intersection,
-        Union,
-        Map,
-        ImageToUri,
-        DocumentAppend,
-        Concat,
-        Divide,
-        Search,
-        Api,
-        Compound,
-        Subtract,
-        Multiply,
-        Regex,
-        Melt,
-        ExecuteHtmlJavaScript,
-        SentenceAnalyzer,
-        ExtractKeywords,
-        ImageRecognition,
-        RichTextTitle,
-        CollectionTitle,
-        ImageToColorPalette,
-        GroupTitle,
-        Quizlet,
-        RichTextDocument
-    }
-
+        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video,	
+	}
 }

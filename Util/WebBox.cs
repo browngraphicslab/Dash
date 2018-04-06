@@ -197,13 +197,13 @@ namespace Dash
             {
                 case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
                 case "move": parent.DocumentView_PointerEntered(null, null);
-                             (web.Tag as ManipulationControlHelper)?.pointerMoved(web, null); break;
+                             (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
                 case "leave": { if (!parent.IsPointerOver())
                                     parent.DocumentView_PointerExited(null, null);
                                 break;
                               }
                 case "up":  parent.ToFront();
-                            (web.Tag as ManipulationControlHelper)?.pointerReleased(web, null);
+                            (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
                              web.Tag = null; break;
             }
         }

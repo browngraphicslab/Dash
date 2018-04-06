@@ -104,6 +104,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView);
+					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView);
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
