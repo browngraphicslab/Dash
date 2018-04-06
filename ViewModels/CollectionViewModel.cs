@@ -420,8 +420,7 @@ namespace Dash
         {
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move;
-            else
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy)) e.AcceptedOperation = DataPackageOperation.Copy;
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy)) e.AcceptedOperation = DataPackageOperation.Copy;
             else e.AcceptedOperation = e.DataView.RequestedOperation;
 
             RemoveDragDropIndication(sender as UserControl);

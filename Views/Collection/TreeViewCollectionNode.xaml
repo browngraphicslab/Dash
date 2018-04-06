@@ -14,7 +14,7 @@
     <Grid Background="Transparent" HorizontalAlignment="Center">
        <ListView x:Name="xListView"
                  ItemsSource="{Binding DocumentViewModels}" 
-                 SelectionMode="None"
+                 SelectionMode="None" CanDragItems="True" DragItemsStarting="xListView_DragItemsStarting"
                  CanReorderItems="True" AllowDrop="True" >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
