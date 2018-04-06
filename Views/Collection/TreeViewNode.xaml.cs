@@ -244,12 +244,7 @@ namespace Dash
             //}
             //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
-
-        private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)                           //KBTODO 
-        {
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((DataContext as DocumentViewModel).DocumentController, true);
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-        }
+        
         public void DeleteDocument()
         {
             var collTreeView = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
