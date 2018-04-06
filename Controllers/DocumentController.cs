@@ -7,6 +7,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
 using DashShared.Models;
 
@@ -322,6 +323,10 @@ namespace Dash
                         {
                             ic.Data = null;
                         }
+                    else if (curField is DateTimeController)
+                    {
+                        return curField.TrySetValue(new DateTimeToStringConverter().ConvertXamlToData(textInput));
+                    }
                     else if (curField is DocumentController)
                     {
                         //TODO tfs: fix this
@@ -718,7 +723,6 @@ namespace Dash
             {
                 UpdateOnServer();
             }
-
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()

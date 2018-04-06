@@ -79,15 +79,15 @@ namespace Dash
                 case TypeInfo.Key:
                     controller = new KeyController(model as KeyModel);
                     break;
+                case TypeInfo.DateTime:
+                    controller = new DateTimeController(model as DateTimeModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Reference:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Any:
                     throw new Exception("Shoudlnt get here");
-                    break;
             }
 
             Debug.Assert(controller != null);

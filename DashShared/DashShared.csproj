@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="DashConstants.cs" />
     <Compile Include="DashUI\DashUI.cs" />
+    <Compile Include="Models\DateTimeModel.cs" />
     <Compile Include="Models\ISerializable.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
