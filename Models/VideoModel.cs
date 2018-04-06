@@ -46,14 +46,8 @@ namespace Dash
 				}
 			}
 
-			/// <summary>
-			/// not null if the file is stored in localfolder
-			/// </summary>
 			private string localFile;
 
-			/// <summary>
-			///  not null if the file is stored outside localfolder like on the web
-			/// </summary>
 			private Uri globalUri;
 
 			public VideoModel() : base(null)

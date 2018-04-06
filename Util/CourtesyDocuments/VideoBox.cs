@@ -30,6 +30,7 @@ namespace Dash
 			(fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
 			Document = GetLayoutPrototype().MakeDelegate();
 			Document.SetFields(fields, true);
+			//set field to the doc controller of the reference
 			Document.SetField(KeyStore.DocumentContextKey,
 				(refToVideo as ReferenceController).GetDocumentController(null), true);
 		}
@@ -40,7 +41,7 @@ namespace Dash
 		}
 
 		/// <summary>
-		///   Creates a MediaPlayerElement and 
+		///   Creates a MediaPlayerElement that will be binded to video reference.
 		/// </summary>
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
@@ -58,7 +59,6 @@ namespace Dash
 
 			return video;
 		}
-	
 
 		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller,
 			Context context)
@@ -66,6 +66,7 @@ namespace Dash
 			var data = controller.GetField(KeyStore.DataKey);
 			if (data is ReferenceController reference)
 			{
+				//add fieldUpdatedListener to the doc controller of the reference
 				var dataDoc = reference.GetDocumentController(context);
 				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
 					delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
@@ -75,18 +76,19 @@ namespace Dash
 							(DocumentController.DocumentFieldUpdatedEventArgs)args;
 						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
 							return;
+						//bind the MediaPlayerElement source to the new video
 						BindVideoSource(video, doc, c, reference.FieldKey);
 					});
 			}
-
-			
 			BindVideoSource(video, controller, context, KeyStore.DataKey);
 		}
 
+		/// <summary>
+		///   Binds the source of the MediaPlayerElement to the IMediaPlayBackSource of the video.
+		/// </summary>
 		protected static void BindVideoSource(MediaPlayerElement video, DocumentController docController, Context context,
 			KeyController key)
 		{
-			Debug.WriteLine("VID" + video);
 			var data = docController.GetDereferencedField(key, context) as VideoController;
 			Debug.Assert(data != null);
 			var binding = new FieldBinding<VideoController>
@@ -95,8 +97,10 @@ namespace Dash
 				Key = KeyStore.DataKey,
 				Mode = BindingMode.OneWay,
 				Context = context,
+				//converts uri to source data of the MediaPlayerElement
 				Converter = UriToIMediaPlayBackSourceConverter.Instance
 			};
+			//bind to source property of MediaPlayerElement
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
 

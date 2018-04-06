@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash.Converters
 {
+	/// <summary>
+	///   Converts Uri to IMediaPlayBackSource, which the is the source data for MediaPlayerElement
+	/// </summary>
 	class UriToIMediaPlayBackSourceConverter : SafeDataToXamlConverter<Uri, IMediaPlaybackSource>
 	{
 		private UriToIMediaPlayBackSourceConverter() { }
