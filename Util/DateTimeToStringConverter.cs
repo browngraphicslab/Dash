@@ -1,72 +1,29 @@
 ﻿using System;
-using System.Globalization;
 
 namespace Dash
 {
+    /// <summary>
+    /// Converter supports bidirectional conversion between DateTime and string
+    /// </summary>
     public class DateTimeToStringConverter : SafeDataToXamlConverter<DateTime, string>
     {
-        public int[] Dti;
-
+        /*
+         * Returns the received DateTime as a string in general long format
+         */
         public override string ConvertDataToXaml(DateTime data, object parameter = null)
         {
             return data.ToString("G");
         }
 
+        /*
+         * Parses the string in general long format representing a DateTime and attempts to convert it into an instance of DateTime
+         * Should always yield a successful conversion given that the current counterpart DateTime to String method returns a string in general long format.
+         */
         public override DateTime ConvertXamlToData(string xaml, object parameter = null)
         {
             var dateTime = new DateTime();
             DateTime.TryParse(xaml, out dateTime);
             return dateTime;
         }
-        
-
-        //public override DateTime ConvertXamlToData(string xaml, object parameter = null)
-        //{
-        //    string[] dateTimeSplit = xaml.Split(' ');
-        //    string[] dateComponents = dateTimeSplit[0].Split('/');
-        //    string[] timeComponents = dateTimeSplit[1].Split(':');
-        //    if (ConvertSuccessful(dateComponents, timeComponents))
-        //    {
-        //        try
-        //        {
-        //            return new DateTime(Dti[0], Dti[1], Dti[2], Dti[3], Dti[4], Dti[5]);
-        //        }
-        //        catch (ArgumentOutOfRangeException e)
-        //        {
-        //            return new DateTime();
-        //        }
-        //    }
-        //    return new DateTime();
-        //}
-
-        //public bool ConvertSuccessful(string[] dateComponents, string[] timeComponents)
-        //{
-        //    if (!int.TryParse(dateComponents[2], out int year))
-        //    {
-        //        return false;
-        //    }
-        //    if (!int.TryParse(dateComponents[0], out int month))
-        //    {
-        //        return false;
-        //    }
-        //    if (!int.TryParse(dateComponents[1], out int day))
-        //    {
-        //        return false;
-        //    }
-        //    if (!int.TryParse(timeComponents[0], out int hour))
-        //    {
-        //        return false;
-        //    }
-        //    if (!int.TryParse(timeComponents[1], out int minute))
-        //    {
-        //        return false;
-        //    }
-        //    if (!int.TryParse(timeComponents[2], out int second))
-        //    {
-        //        return false;
-        //    }
-        //    Dti = new [] {year, month, day, hour, minute, second};
-        //    return true;
-        //}
     }
 }
