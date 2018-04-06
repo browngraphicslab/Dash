@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Data;
+using Dash.Controllers;
 using Dash.Converters;
 
 namespace Dash
@@ -33,7 +34,10 @@ namespace Dash
             {
                 return new UriToStringConverter();
             }
-
+            if (controller is DateTimeController)
+            {
+                return new DateTimeToStringConverter();
+            }
             return new ObjectToStringConverter(null);
         }
 

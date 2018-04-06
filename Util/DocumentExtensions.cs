@@ -355,7 +355,7 @@ namespace Dash
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new NumberController(DateTime.Now.ToFileTime()), true);
+            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new DateTimeController(DateTime.Now), true);
             if (MainPage.Instance.WebContext == null)
             {
                 return;
