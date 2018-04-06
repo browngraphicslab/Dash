@@ -59,6 +59,7 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -530,7 +531,9 @@ namespace Dash
                 //uncomment to make children in collection stretch
                 fitFreeFormChildrenToTheirLayouts();
             }
+
         }
+  
 
 
         /// <summary>
