@@ -76,6 +76,12 @@ namespace Dash
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
         {
+            //TODO check if func exists
+            if (!DSL.FuncNameExists(funcName))
+            {
+                //return some new operator that will check for an exact key value pair of funcName and paramName
+            }
+
             return funcName + "(" + paramName + ")";
         }
 

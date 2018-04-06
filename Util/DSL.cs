@@ -35,6 +35,16 @@ namespace Dash
         }
 
         /// <summary>
+        /// returns whether a certain function exists by its string name
+        /// </summary>
+        /// <param name="funcName"></param>
+        /// <returns></returns>
+        public static bool FuncNameExists(string funcName)
+        {
+            return OperatorScript.FuncNameExists(funcName);
+        }
+
+        /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.
         /// This method should throw exceptions if the string is not a valid script.
         /// If an InvalidDishScriptException is throw, the exception.ScriptErrorModel SHOULD be a helpful error message
