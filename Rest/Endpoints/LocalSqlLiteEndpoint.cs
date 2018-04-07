@@ -51,7 +51,7 @@ namespace Dash
                 Connection = _db,
             };
             addDocCommand.Parameters.AddWithValue("@id", newDocument.Id);
-            addDocCommand.Parameters.AddWithValue("@field", JsonConvert.SerializeObject(newDocument));
+            addDocCommand.Parameters.AddWithValue("@field", newDocument.Serialize());
 
             try
             {
@@ -74,7 +74,7 @@ namespace Dash
                 };
 
             updateDocCommand.Parameters.AddWithValue("@id", documentToUpdate.Id);
-            updateDocCommand.Parameters.AddWithValue("@field", JsonConvert.SerializeObject(documentToUpdate));
+            updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
 
             try
             {
@@ -126,7 +126,7 @@ namespace Dash
                 var reader = getAllDocsCommand.ExecuteReader();
                 while (reader.Read())
                 {
-                    fieldModels.Add(reader.GetString(1).CreateObject<FieldModel>());
+                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
                 }
 
                 fieldModels = fieldModels.Where(query.Func).ToList();
@@ -136,7 +136,7 @@ namespace Dash
                 error?.Invoke(e);
             }
 
-            //success?.Invoke(fieldModels);
+            success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
         public async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
@@ -153,7 +153,7 @@ namespace Dash
                 var reader = getAllDocsCommand.ExecuteReader();
                 while (reader.Read())
                 {
-                    fieldModels.Add(reader.GetString(1).CreateObject<FieldModel>());
+                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
                 }
 
                 fieldModels = fieldModels.Where(query.Func).ToList();
