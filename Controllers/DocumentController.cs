@@ -684,7 +684,8 @@ namespace Dash
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             // get the prototype with the desired key or just get ourself
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+            var proto = GetPrototypeWithFieldKey(key) ?? this;
+            var doc = forceMask ? this : proto;
 
             // get the old value of the field
             FieldControllerBase oldField;
@@ -701,15 +702,15 @@ namespace Dash
                 field.SaveOnServer();
                 oldField?.DisposeField();
 
-                proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+                doc._fields[key] = field;
+                doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
                 var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 if (key.Name != "_Cache Access Key")
-                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
+                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                 {
@@ -719,7 +720,7 @@ namespace Dash
                     ; // do we need to watch anything when the DocumentContext field is set?
                 else
                 {
-                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
+                    setupFieldChangedListeners(key, field, oldField, new Context(doc));
                 }
 
                 return true;

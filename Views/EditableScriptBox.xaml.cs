@@ -132,7 +132,8 @@ namespace Dash
                 Key = ViewModel.Reference.FieldKey,
                 Context = ViewModel.Context,
                 Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay
+                Mode = BindingMode.OneWay,
+                
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
         }
