@@ -18,7 +18,7 @@ namespace Dash
         }
         
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string guid, bool saveOnServer = true) : this(new KeyModel(guid))
+        public KeyController(string guid, bool saveOnServer = true) : base(new KeyModel(guid))
         {
             if (saveOnServer)
             {
@@ -26,7 +26,7 @@ namespace Dash
             }
         }
 
-        public KeyController(string guid, string name, bool saveOnServer = true) : this(new KeyModel(guid, name))
+        public KeyController(string guid, string name, bool saveOnServer = true) : base(new KeyModel(guid, name))
         {
             if (saveOnServer)
             {
@@ -34,7 +34,7 @@ namespace Dash
             }
         }
 
-        public KeyController(bool saveOnServer = true) : this(new KeyModel())
+        public KeyController(bool saveOnServer = true) : base(new KeyModel())
         {
             if (saveOnServer)
             {

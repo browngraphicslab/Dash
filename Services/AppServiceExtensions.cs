@@ -10,7 +10,7 @@ namespace Dash
         /// The container which we can use to get services which are registered in the <code>RegisterServices()</code> method
         /// You can use this container and access it anywhere using
         /// <para>
-        /// <code>App.Instance.Container.GetRequiredService&lt;DesiredService&gt;();</code>
+        /// <code>App.Instance.Container.GetRequiredService&ltDesiredService&gt;();</code>
         /// </para>
         /// </summary>
         public IServiceProvider Container;
@@ -24,7 +24,6 @@ namespace Dash
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalEverythingEndpoint>();
-            serviceCollection.AddTransient<IController<FieldModel>, DocumentController>();
             return serviceCollection.BuildServiceProvider();
         }
 

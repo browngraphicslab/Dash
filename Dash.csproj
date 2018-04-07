@@ -209,9 +209,8 @@
     <Compile Include="Rest\Endpoints\IQuery.cs" />
     <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
     <Compile Include="Rest\Endpoints\LocalEverythingEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalSqlLiteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
@@ -1116,6 +1115,12 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite">
+      <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite.Core">
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.1.0-preview1-final</Version>

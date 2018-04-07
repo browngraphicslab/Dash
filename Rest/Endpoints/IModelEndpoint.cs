@@ -80,5 +80,11 @@ namespace Dash
         /// <param name="error"></param>
         /// <returns></returns>
         Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase;
+
+        /// <summary>
+        /// Close the connection to the endpoint
+        /// </summary>
+        /// <returns></returns>
+        Task Close();
     }
 }

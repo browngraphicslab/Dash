@@ -11,7 +11,6 @@ namespace DashShared
         /// </summary>
         public const bool DEVELOP_LOCALLY = true;
 
-
         #region DocumentDB
 
         /// <summary>

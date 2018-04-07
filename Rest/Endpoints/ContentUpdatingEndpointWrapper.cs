@@ -137,5 +137,9 @@ namespace Dash
         {
             return _endpoint.GetDocumentsByQuery(query, GetSuccessFunc(success), error);
         }
+
+        public async Task Close()
+        {
+        }
     }
 }
