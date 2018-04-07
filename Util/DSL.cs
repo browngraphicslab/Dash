@@ -84,7 +84,7 @@ namespace Dash
             return GetScriptError(script) != null;
         }
 
-        public static string GetScriptForOperatorTree(OperatorController outputController)
+        private static string GetScriptForOperatorTree(OperatorController outputController)
         {
             //TODO not have this be 'Undefined' but rather just fail and tell user
             var controllerName = outputController.GetDishName() ?? "UNDEFINED";

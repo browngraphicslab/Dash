@@ -68,6 +68,7 @@ namespace DashShared
         GetKeys,
         PutSearchResultsIntoDictionary,
         IntersectSearch,
-        GetDocumentsInCollection
+        GetDocumentsInCollection,
+        KeyFieldQuery
     }
 }

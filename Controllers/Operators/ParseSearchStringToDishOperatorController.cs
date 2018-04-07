@@ -79,7 +79,7 @@ namespace Dash
             //TODO check if func exists
             if (!DSL.FuncNameExists(funcName))
             {
-                //return some new operator that will check for an exact key value pair of funcName and paramName
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(" + funcName + "," + paramName + ")";
             }
 
             return funcName + "(" + paramName + ")";
