@@ -32,11 +32,13 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
+            UpdateOnServer();
+
             FieldModelUpdated?.Invoke(this,
                 args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),
                 context);
 
-            Debug.Assert(ContentController<FieldModel>.CheckAllModels());
+            //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
 
         public virtual FieldControllerBase Dereference(Context context)

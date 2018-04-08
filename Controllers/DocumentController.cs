@@ -704,12 +704,12 @@ namespace Dash
                 //    return false;
                 //}
 
-                //field.SaveOnServer();
+                field.SaveOnServer();
                 oldField?.DisposeField();
 
                 proto._fields[key] = field;
                 proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
-                proto.UpdateOnServer();
+                //proto.UpdateOnServer();
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
