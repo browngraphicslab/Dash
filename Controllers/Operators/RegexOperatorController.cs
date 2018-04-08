@@ -14,6 +14,8 @@ namespace Dash
 
         public RegexOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

@@ -16,6 +16,7 @@ namespace Dash
             Debug.Assert(docId != null);
             Debug.Assert(key != null);
             //DocumentId = docId;
+            SaveOnServer();
             Init();
         }
 

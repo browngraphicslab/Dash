@@ -183,7 +183,6 @@
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
-    <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />

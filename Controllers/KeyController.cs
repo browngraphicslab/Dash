@@ -14,6 +14,7 @@ namespace Dash
             {
                 KeyModel.Name = value;
                 UpdateOnServer();
+                OnFieldModelUpdated(null);
             }
         }
         
@@ -22,7 +23,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate(bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
@@ -30,7 +37,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
@@ -38,7 +51,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
@@ -46,7 +65,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 

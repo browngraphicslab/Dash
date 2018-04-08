@@ -62,6 +62,7 @@ namespace Dash
 
         public MeltOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public MeltOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

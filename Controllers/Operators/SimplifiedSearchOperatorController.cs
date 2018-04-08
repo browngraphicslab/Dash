@@ -16,6 +16,8 @@ namespace Dash
 
         public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public SimplifiedSearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

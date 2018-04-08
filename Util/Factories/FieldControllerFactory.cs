@@ -43,7 +43,7 @@ namespace Dash
                     controller = MakeListFieldController(model as ListModel);
                     break;
                 case TypeInfo.Document:
-                    controller = new DocumentController(model as DocumentModel);
+                    controller = new DocumentController(model as DocumentModel, false);
                     break;
                 case TypeInfo.Ink:
                     controller = new InkController(model as InkModel);

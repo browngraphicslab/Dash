@@ -5,8 +5,18 @@ namespace Dash
 {
     public class RectController : FieldModelController<RectModel>
     {
-        public RectController(Rect data) :base(new RectModel(data)) { }
-        public RectController(double x, double y, double width, double height) : base(new RectModel(x, y, width, height)) { }
+        public RectController(Rect data) : base(new RectModel(data))
+        {
+            SaveOnServer();
+
+        }
+
+        public RectController(double x, double y, double width, double height) : base(
+            new RectModel(x, y, width, height))
+        {
+            SaveOnServer();
+
+        }
 
         public RectController(RectModel rectModel) : base(rectModel)
         {
@@ -51,8 +61,8 @@ namespace Dash
                 if (RectModel.Data != value)
                 {
                     RectModel.Data = value;
-                    OnFieldModelUpdated(null);
-                }
+                    UpdateOnServer();
+                    OnFieldModelUpdated(null);                }
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;

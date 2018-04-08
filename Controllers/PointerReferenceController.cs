@@ -8,6 +8,7 @@ namespace Dash.Controllers
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
+            SaveOnServer();
             Init();
         }
 

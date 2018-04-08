@@ -15,6 +15,8 @@ namespace Dash
 
         public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

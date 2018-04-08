@@ -6,10 +6,21 @@ namespace Dash
     public class PointController : FieldModelController<PointModel>
     {
 
-        public PointController() : this(0, 0) { }
+        public PointController() : this(0, 0)
+        {
+        }
 
-        public PointController(Point data) :base(new PointModel(data) ) { }
-        public PointController(double x, double y) : base(new PointModel(x, y)) { }
+        public PointController(Point data) : base(new PointModel(data))
+        {
+            SaveOnServer();
+
+        }
+
+        public PointController(double x, double y) : base(new PointModel(x, y))
+        {
+            SaveOnServer();
+
+        }
 
         public PointController(PointModel pointFieldModel) : base(pointFieldModel)
         {
@@ -53,7 +64,7 @@ namespace Dash
                 if(PointFieldModel.Data != value)
                 {
                     PointFieldModel.Data = value;
-                    OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), null);
+                    OnFieldModelUpdated(null);
                 }
             }
         }

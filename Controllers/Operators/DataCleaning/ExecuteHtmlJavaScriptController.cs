@@ -60,8 +60,9 @@ namespace Dash
 
         public ExecuteHtmlJavaScriptController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
-        
+
 
         public ExecuteHtmlJavaScriptController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

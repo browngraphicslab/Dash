@@ -12,6 +12,7 @@ namespace Dash
 
         public TextController(string data) : base(new TextModel(data))
         {
+            SaveOnServer();
         }
 
         public TextController(TextModel textFieldModel) : base(textFieldModel)
@@ -51,6 +52,7 @@ namespace Dash
                 {
                     _lowerData = value.ToLower();
                     TextFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

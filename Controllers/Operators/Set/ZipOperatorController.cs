@@ -14,6 +14,8 @@ namespace Dash
 
         public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public ZipOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

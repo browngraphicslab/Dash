@@ -21,7 +21,6 @@ namespace Dash.Controllers
          */
         public DateTimeController() : this(DateTime.Now.Date)
         {
-            
         }
 
         /*
@@ -29,7 +28,8 @@ namespace Dash.Controllers
          */
         public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data))
         {
-            
+            SaveOnServer();
+
         }
 
         /*
@@ -109,6 +109,7 @@ namespace Dash.Controllers
                 if (!value.Equals(DateTimeFieldModel.Data))
                 {
                     DateTimeFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

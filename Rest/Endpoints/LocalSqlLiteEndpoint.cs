@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Dash
         /// Connection to the sqlite database
         /// </summary>
         private SqliteConnection _db;
+
 
         public LocalSqlLiteEndpoint()
         {
@@ -45,27 +47,38 @@ namespace Dash
 
         public void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
         {
+            var watch = Stopwatch.StartNew();
+
             var addDocCommand = new SqliteCommand
             {
+                //CommandText = @"INSERT OR REPLACE INTO `Fields` VALUES (@id, @field);",
                 CommandText = @"INSERT INTO `Fields` VALUES (@id, @field);",
                 Connection = _db,
             };
             addDocCommand.Parameters.AddWithValue("@id", newDocument.Id);
-            addDocCommand.Parameters.AddWithValue("@field", newDocument.Serialize());
+            var serialize = newDocument.Serialize();
+            addDocCommand.Parameters.AddWithValue("@field", serialize);
 
             try
             {
                 addDocCommand.ExecuteNonQuery();
-                success?.Invoke(newDocument);
             }
             catch (SqliteException e)
             {
                 error?.Invoke(e);
+                return;
             }
+
+            watch.Stop();
+            Debug.WriteLine($"Add Doc: {watch.ElapsedMilliseconds}");
+
+            success?.Invoke(newDocument);
         }
 
         public void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
         {
+            var watch = Stopwatch.StartNew();
+
             var updateDocCommand =
                 new SqliteCommand
                 {
@@ -74,30 +87,69 @@ namespace Dash
                 };
 
             updateDocCommand.Parameters.AddWithValue("@id", documentToUpdate.Id);
-            updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
+            var serialize = documentToUpdate.Serialize();
+            updateDocCommand.Parameters.AddWithValue("@field", serialize);
 
             try
             {
                 updateDocCommand.ExecuteNonQuery();
-                success?.Invoke(documentToUpdate);
             }
             catch (SqliteException e)
             {
                 error?.Invoke(e);
+                return;
             }
+
+            watch.Stop();
+            Debug.WriteLine($"Update Doc: {watch.ElapsedMilliseconds}");
+            //Debug.WriteLine(serialize);
+
+            success?.Invoke(documentToUpdate);
+
         }
 
         public async Task GetDocument(string id, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
         {
-            throw new NotImplementedException();
+            var watch = Stopwatch.StartNew();
+
+            var fieldModels = new List<FieldModel>();
+
+            var getDocCommand = new SqliteCommand
+            {
+                CommandText = @"SELECT field from Fields WHERE `id`=@id;",
+                Connection = _db
+            };
+            getDocCommand.Parameters.AddWithValue("@id", id);
+
+            try
+            {
+                var reader = getDocCommand.ExecuteReader();
+                while (reader.Read())
+                {
+                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
+                }
+            }
+            catch (SqliteException e)
+            {
+                error?.Invoke(e);
+                return;
+            }
+
+
+            watch.Stop();
+            Debug.WriteLine($"GetDocument: {watch.ElapsedMilliseconds}");
+
+            success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
-        public async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success,
+            Action<Exception> error)
         {
             throw new NotImplementedException();
         }
 
-        public async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success,
+            Action<Exception> error) where V : EntityBase
         {
             throw new NotImplementedException();
         }
@@ -112,8 +164,11 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public async Task GetDocumentsByQuery(IQuery<FieldModel> query, Func<RestRequestReturnArgs, Task> success, Action<Exception> error)
+        public async Task GetDocumentsByQuery(IQuery<FieldModel> query, Func<RestRequestReturnArgs, Task> success,
+            Action<Exception> error)
         {
+            var watch = Stopwatch.StartNew();
+
             var getAllDocsCommand = new SqliteCommand
             {
                 CommandText = @"SELECT field from Fields",
@@ -134,13 +189,20 @@ namespace Dash
             catch (SqliteException e)
             {
                 error?.Invoke(e);
+                return;
             }
+
+            watch.Stop();
+            Debug.WriteLine($"GetDocumentsByQuery: {watch.ElapsedMilliseconds}");
 
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
-        public async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public async Task GetDocumentsByQuery<V>(IQuery<FieldModel> query, Func<IEnumerable<V>, Task> success,
+            Action<Exception> error) where V : EntityBase
         {
+            var watch = Stopwatch.StartNew();
+
             var getAllDocsCommand = new SqliteCommand
             {
                 CommandText = @"SELECT field from Fields",
@@ -161,7 +223,11 @@ namespace Dash
             catch (SqliteException e)
             {
                 error?.Invoke(e);
+                return;
             }
+
+            watch.Stop();
+            Debug.WriteLine($"GetDocumentsByQuery<V>s: {watch.ElapsedMilliseconds}");
 
             success?.Invoke(fieldModels.OfType<V>());
         }
@@ -170,5 +236,92 @@ namespace Dash
         {
             _db.Close();
         }
+
+        public void HasDocument(FieldModel model, Action<bool> success, Action<Exception> error)
+        {
+            var watch = Stopwatch.StartNew();
+
+            var hasDocCommand =
+                new SqliteCommand
+                {
+                    CommandText = @"SELECT EXISTS (SELECT `id` FROM `Fields` WHERE `id`=@id LIMIT 1);",
+                    Connection = _db
+                };
+
+            hasDocCommand.Parameters.AddWithValue("@id", model.Id);
+
+            var hasDoc = false;
+
+            try
+            {
+                var reader = hasDocCommand.ExecuteReader();
+                reader.Read();
+                hasDoc = reader.GetBoolean(0);
+            }
+            catch (SqliteException e)
+            {
+                error?.Invoke(e);
+                return;
+            }
+
+
+            watch.Stop();
+            Debug.WriteLine($"Update Doc: {watch.ElapsedMilliseconds}");
+
+            success?.Invoke(hasDoc);
+        }
+
+        public bool CheckAllDocuments(IEnumerable<FieldModel> documents)
+        {
+            var watch = Stopwatch.StartNew();
+
+            foreach (var doc in documents)
+            {
+
+                var fieldModels = new List<FieldModel>();
+
+                var getDocCommand = new SqliteCommand
+                {
+                    CommandText = @"SELECT field from Fields WHERE `id`=@id;",
+                    Connection = _db
+                };
+                getDocCommand.Parameters.AddWithValue("@id", doc.Id);
+
+                try
+                {
+                    var reader = getDocCommand.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
+                    }
+                }
+                catch (SqliteException e)
+                {
+                    throw;
+                }
+
+                if (!fieldModels.Any())
+                {
+                    Debug.Assert(false);
+                    return false;
+                }
+
+                foreach (var fieldModel in fieldModels)
+                {
+                    if (!doc.Equals(fieldModel))
+                    {
+                        Debug.Assert(false);
+                        return false;
+                    }
+                }
+            }
+
+            watch.Stop();
+            Debug.WriteLine($"CheckDocs: {watch.ElapsedMilliseconds}");
+
+            return true;
+
+        }
     }
+
 }

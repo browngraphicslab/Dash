@@ -53,7 +53,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
             Init();
         }
@@ -698,11 +704,12 @@ namespace Dash
                 //    return false;
                 //}
 
-                field.SaveOnServer();
+                //field.SaveOnServer();
                 oldField?.DisposeField();
 
                 proto._fields[key] = field;
                 proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+                proto.UpdateOnServer();
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
@@ -1047,8 +1054,8 @@ namespace Dash
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
-			Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
-			Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+			//Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
+			//Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
 
 			// set up contexts information
 			context = new Context(context);
@@ -1282,7 +1289,9 @@ namespace Dash
 
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
+            {
                 OnFieldModelUpdated(args, c);
+            }
 
             // bubbles event down to delegates
             if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))

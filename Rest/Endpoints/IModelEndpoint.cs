@@ -86,5 +86,16 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         Task Close();
+
+        /// <summary>
+        /// Whether or not the end point has the passed in document
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="model"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        void HasDocument(T model, Action<bool> success, Action<Exception> error);
+
+        bool CheckAllDocuments(IEnumerable<T> documents);
     }
 }

@@ -4,13 +4,11 @@ namespace Dash
 {
     public class NumberController : FieldModelController<NumberModel>
     {
-        public NumberController() : this(0)
-        {
-            
-        }
+        public NumberController() : this(0) { }
 
         public NumberController(double data = 0) : base(new NumberModel(data))
         {
+            SaveOnServer();
         }
 
         public NumberController(NumberModel numberFieldModel) : base(numberFieldModel)
@@ -68,6 +66,7 @@ namespace Dash
                 if (!value.Equals(NumberFieldModel.Data))
                 {
                     NumberFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

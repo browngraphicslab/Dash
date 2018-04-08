@@ -19,6 +19,7 @@ namespace Dash.Controllers.Operators
 
         public ImageToCognitiveServices() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

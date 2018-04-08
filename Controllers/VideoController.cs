@@ -9,11 +9,17 @@ namespace Dash
 	public class VideoController : FieldModelController<VideoModel>
 	{
 
-		public VideoController() : base(new VideoModel()) { }
+	    public VideoController() : base(new VideoModel())
+	    {
+	        SaveOnServer();
+        }
 
-		public VideoController(Uri path) : base(new VideoModel(path)) { }
+	    public VideoController(Uri path) : base(new VideoModel(path))
+	    {
+	        SaveOnServer();
+        }
 
-		public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
+        public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
 		{
 
 		}
@@ -35,7 +41,8 @@ namespace Dash
 				if (VideoFieldModel.Data != value)
 				{
 					VideoFieldModel.Data = value;
-					OnFieldModelUpdated(null);
+				    UpdateOnServer();
+				    OnFieldModelUpdated(null);
 				}
 			}
 		}

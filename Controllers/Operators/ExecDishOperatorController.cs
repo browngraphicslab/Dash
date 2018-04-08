@@ -19,6 +19,7 @@ namespace Dash
 
         public ExecDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
 

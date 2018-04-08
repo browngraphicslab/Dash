@@ -226,5 +226,15 @@ namespace Dash
         public async Task Close()
         {
         }
+
+        public void HasDocument(T model, Action<bool> success, Action<Exception> error)
+        {
+            success(ModelDictionary.ContainsKey(model.Id));
+        }
+
+        public bool CheckAllDocuments(IEnumerable<T> documents)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

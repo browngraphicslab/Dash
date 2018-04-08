@@ -13,6 +13,7 @@ namespace Dash
 
         public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
