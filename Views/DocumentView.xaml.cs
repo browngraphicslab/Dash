@@ -23,6 +23,8 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
+        //TODO: permanentlydisabledecorations
+
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
        
         /// <summary>

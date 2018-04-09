@@ -29,6 +29,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Toolkit.Uwp.UI;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -482,10 +483,6 @@ namespace Dash
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            args.Cancel = true;
-        }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
         private void setupMapView(DocumentController context)
@@ -512,7 +509,32 @@ namespace Dash
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
 
-        public void Dock(DocumentView parentDocument)
+        public void Dock(DocumentView toDock)
+        {
+            ColumnDefinition newSplitterDefinition = new ColumnDefinition();
+            ColumnDefinition newDockDefinition = new ColumnDefinition();
+            newSplitterDefinition.Width = new GridLength(15, GridUnitType.Pixel);
+            newDockDefinition.Width = new GridLength(1, GridUnitType.Star);
+            xOuterGrid.ColumnDefinitions.Add(newSplitterDefinition);
+            xOuterGrid.ColumnDefinitions.Add(newDockDefinition);
+
+            DocumentController context = toDock.ViewModel.DocumentController;
+            DocumentView dockedView = new DocumentView()
+            {
+                DataContext = new DocumentViewModel(context.GetViewCopy()),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+
+            GridSplitter splitter = new GridSplitter();
+            Grid.SetColumn(splitter, xOuterGrid.ColumnDefinitions.Count - 2); //second-to-last
+            Grid.SetColumn(dockedView, xOuterGrid.ColumnDefinitions.Count - 1);
+
+            xOuterGrid.Children.Add(splitter);
+            xOuterGrid.Children.Add(dockedView);
+        }
+
+        public void HighlightDock()
         {
             xDock.Opacity = 0.4;
         }

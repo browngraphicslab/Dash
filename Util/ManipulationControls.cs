@@ -179,14 +179,17 @@ namespace Dash
             Canvas.SetTop(MainPage.Instance.TemporaryRectangle, boundingBoxScreenSpace.Y);
         }
 
-        private void Dock()
+        private void Dock(bool preview)
         {
             var currentBoundingBox = InteractiveBounds(ParentDocument.ViewModel);
             var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
                 new Size(MainPage.Instance.xMainDocView.ActualWidth, MainPage.Instance.xMainDocView.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
             {
-                MainPage.Instance.Dock(ParentDocument);
+                if (preview)
+                    MainPage.Instance.HighlightDock();
+                else
+                    MainPage.Instance.Dock(ParentDocument);
             }
             else
             {
@@ -406,7 +409,7 @@ namespace Dash
                 //DetectShake(sender, e);
 
                 Snap(true);
-                Dock();
+                Dock(true);
                 e.Handled = true;
             }
         }
@@ -431,6 +434,7 @@ namespace Dash
             if (e == null || !e.Handled)
             {
                 Snap(false); //Snap if you're dragging the element body and it's not a part of the group
+                Dock(false);
 
                 MainPage.Instance.TemporaryRectangle.Width = MainPage.Instance.TemporaryRectangle.Height = 0;
 
