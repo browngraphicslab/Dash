@@ -5,9 +5,12 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Controllers.Operators;
+using Dash.Views;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
@@ -24,6 +27,11 @@ namespace Dash
         private DocumentController _parentDocument;
 
         private ObjectToStringConverter converter = new ObjectToStringConverter();
+
+        // This list stores the fields added in the schema view (not originally in the documents)
+        private List<KeyController> _schemaFieldsNotInDocs;
+
+
         public CollectionDBSchemaView()
         {
             this.InitializeComponent();
@@ -34,7 +42,7 @@ namespace Dash
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
             Drop += CollectionDBSchemaView_Drop;
 
-            _schemaAddedFields = new List<KeyController>();
+            _schemaFieldsNotInDocs = new List<KeyController>();
         }
 
         private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
@@ -219,10 +227,10 @@ namespace Dash
 
                 fmController = dc.Document.GetDataDocument().GetField(key);
 
-
+                // If this field does not yet exist for the document, make one with the inputted text
                 if (fmController == null)
                 {
-                    //TODO make this create the correct field type
+                    //TODO make this create the correct field type (with text parsing?)
                     dc.Document.GetDataDocument().SetField(key, new TextController(xEditTextBox.Text), true);
                 }
             }
@@ -257,7 +265,7 @@ namespace Dash
             ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
-                UpdateFields(new Context(ParentDocument));
+                UpdateFields(new Context(ParentDocument)); 
         }
 
 
@@ -339,10 +347,17 @@ namespace Dash
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
 
-                foreach (var f in _schemaAddedFields)
+                // Add to the header the fields that are not in the documents but has been added to the schema view by the user
+                // if the field is already being displayed (the user has added this field to a document by entered a value), remove it from the list
+                foreach (var f in _schemaFieldsNotInDocs)
                     if (!f.Name.StartsWith("_") && !SchemaHeadersContains(f))
+                    {
                         SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f });
-                
+                    }
+                    else
+                    {
+                        _schemaFieldsNotInDocs.Remove(f);
+                    }
 
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
@@ -350,8 +365,6 @@ namespace Dash
                 UpdateRecords(dbDocs);
             }
         }
-
-        private List<KeyController> _schemaAddedFields;
 
         private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
@@ -520,11 +533,9 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            _schemaAddedFields.Add(new KeyController());
+            // Add a new field to the schema view
+            _schemaFieldsNotInDocs.Add(new KeyController());
             UpdateFields(new Context(ParentDocument));
-            //var x = xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>;
-
-            //foreach (var docVM in )
         }
     }
 }
