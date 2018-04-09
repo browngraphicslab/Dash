@@ -690,7 +690,7 @@ namespace Dash
                     foreach (var kvp in documentController.EnumDisplayableFields())
                     {
                         var keySearch = kvp.Key.SearchForString(searchString);
-                        var fieldSearch = kvp.Value.SearchForString(searchString);
+                        var fieldSearch = kvp.Value.Dereference(new Context(documentController))?.SearchForString(searchString) ?? StringSearchModel.False;
 
                         string topText = null;
                         if (fieldSearch.StringFound)
