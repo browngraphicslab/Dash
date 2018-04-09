@@ -36,11 +36,12 @@ namespace Dash
         public InkController InkController;
 
         public DocumentController ContainerDocument => _collectionRef.GetDocumentController(_context);
-
-        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
+        
+        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>(); 
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         public AdvancedCollectionView BindableDocumentViewModels { get; set; }
+ 
         public KeyController OutputKey { get; set; }
         public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
@@ -414,8 +415,7 @@ namespace Dash
         {
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move;
-            else
-            if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy)) e.AcceptedOperation = DataPackageOperation.Copy;
+            else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy)) e.AcceptedOperation = DataPackageOperation.Copy;
             else e.AcceptedOperation = e.DataView.RequestedOperation;
 
             RemoveDragDropIndication(sender as UserControl);

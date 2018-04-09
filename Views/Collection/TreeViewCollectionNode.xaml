@@ -13,8 +13,9 @@
 
     <Grid Background="Transparent" HorizontalAlignment="Center">
        <ListView x:Name="xListView"
-                 ItemsSource="{Binding BindableDocumentViewModels}" 
-                 SelectionMode="None">
+                 ItemsSource="{Binding DocumentViewModels}" 
+                 SelectionMode="None" CanDragItems="True" DragItemsStarting="xListView_DragItemsStarting"
+                 CanReorderItems="True" AllowDrop="True" >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
@@ -32,8 +33,8 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:DocumentViewModel">
-                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}"></local:TreeViewNode>
-              </DataTemplate>
+                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}" PointerEntered="TreeViewNode_PointerEntered"></local:TreeViewNode>
+                </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 
 

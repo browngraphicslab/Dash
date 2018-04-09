@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
+using Windows.UI.Xaml.Input; 
 using Windows.ApplicationModel.DataTransfer;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -97,43 +98,18 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void TreeViewNode_Drop(object sender, DragEventArgs e)
+        /// <summary>
+        /// Determines which document is dropped when treeviewmenu is dragged 
+        /// </summary>
+        private DocumentViewModel _draggedDocument;
+        private void TreeViewNode_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && !doc.Equals(data.DraggedDocument))
-                {
-                    coll.Add(data.GetDropDocument(new Point(), true));
-                }
-            }
-            if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
-            {
-                var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && data.Count > 0)
-                {
-                    var start = data.First().DraggedDocument.GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
-                }
-            }
-            e.Handled = true;
+            _draggedDocument = (sender as TreeViewNode).ViewModel;
         }
 
-        private void TreeViewNode_DragOver(object sender, DragEventArgs e)
+        private void xListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-            }
-            else
-                e.AcceptedOperation = DataPackageOperation.None;
-            e.Handled = true;
+            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_draggedDocument?.DocumentController, true);
         }
     }
 }
