@@ -498,9 +498,11 @@ namespace Dash
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
 
-        private void xSettingsButton_Tapped(System.Object sender, TappedRoutedEventArgs e)
+        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-
+            var isVisible = xSettingsView.Visibility == Visibility.Visible;
+            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
+            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.SlateGray) : new SolidColorBrush(Colors.Gray); 
         }
     }
 }

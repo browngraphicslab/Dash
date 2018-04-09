@@ -1,0 +1,24 @@
+﻿<Page
+    x:Class="Dash.SettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="50">
+        <StackPanel>
+            <TextBlock FontWeight="Bold" FontSize="18">SETTINGS</TextBlock>
+            
+            <TextBlock FontSize="22" Margin="0,20,0,0">Group Header 1</TextBlock>
+            <TextBlock>Description</TextBlock>
+            <StackPanel Margin="10,0,0,0">
+                <RadioButton IsChecked="True"> Option 1</RadioButton>
+                <RadioButton>Option 2</RadioButton>
+            </StackPanel>
+            
+            <!--ToggleSwitch / Checkbox / Radiobuttons / etc--> 
+        </StackPanel>
+    </Grid>
+</Page>
