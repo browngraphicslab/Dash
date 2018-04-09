@@ -1,7 +1,5 @@
-﻿using System;
-using DashShared;
+﻿using DashShared;
 using Windows.Foundation;
-using DashShared.Models;
 
 namespace Dash
 {

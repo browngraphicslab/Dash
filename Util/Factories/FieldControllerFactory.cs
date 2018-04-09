@@ -3,15 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
 using Dash.Controllers;
-using Dash.Controllers.Operators;
 using DashShared;
-using DashShared.Models;
-using Flurl.Util;
-using Microsoft.Extensions.DependencyInjection;
 using TypeInfo = DashShared.TypeInfo;
 
 namespace Dash
@@ -76,18 +69,21 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ImageController(model as ImageModel);
                     break;
+				case TypeInfo.Video:
+					controller = new VideoController(model as VideoModel);
+					break;
                 case TypeInfo.Key:
                     controller = new KeyController(model as KeyModel);
                     break;
+                case TypeInfo.DateTime:
+                    controller = new DateTimeController(model as DateTimeModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Reference:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Any:
                     throw new Exception("Shoudlnt get here");
-                    break;
             }
 
             Debug.Assert(controller != null);
@@ -113,6 +109,9 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ListController<ImageController>(model);
                     break;
+				case TypeInfo.Video:
+					controller = new ListController<VideoController>(model);
+					break;
                 case TypeInfo.Document:
                     controller = new ListController<DocumentController>(model);
                     break;
@@ -147,7 +146,8 @@ namespace Dash
                     controller = new ListController<KeyController>(model);
                     break;
                 case TypeInfo.Any:
-                    Debug.Fail("idk why you got here");
+                    //Debug.Fail("idk why you got here");
+                    controller = new ListController<FieldControllerBase>(model);
                     break;
                 default:
                     break;
@@ -209,7 +209,10 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ImageController(new Uri("DEFAULT URI"));
                     break;
-                case TypeInfo.None:
+				case TypeInfo.Video:
+					controller = new VideoController(new Uri("ms - appx://Dash/Assets/DefaultVideo.mp4"));
+					break;
+				case TypeInfo.None:
                 case TypeInfo.Reference:
                 case TypeInfo.Any:
                     throw new NotImplementedException("Shouldn't get here");
@@ -238,6 +241,9 @@ namespace Dash
                 case TypeInfo.Image:
                     controller = new ListController<ImageController>();
                     break;
+				case TypeInfo.Video:
+					controller = new ListController<VideoController>();
+					break;
                 case TypeInfo.Document:
                     controller = new ListController<DocumentController>();
                     break;

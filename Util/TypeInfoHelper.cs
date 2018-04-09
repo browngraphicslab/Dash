@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using DashShared;
-using DashShared.Models;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Dash
 {
@@ -18,7 +16,9 @@ namespace Dash
             [typeof(PointController)] = TypeInfo.Point,
             [typeof(ListController<>)] = TypeInfo.List,
             [typeof(DocumentController)] = TypeInfo.Document,
-            [typeof(KeyController)] = TypeInfo.Key
+            [typeof(KeyController)] = TypeInfo.Key,
+
+            [typeof(FieldControllerBase)] = TypeInfo.Any
         };
 
         /*

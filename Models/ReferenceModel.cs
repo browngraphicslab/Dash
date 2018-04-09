@@ -1,5 +1,4 @@
 ﻿using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {

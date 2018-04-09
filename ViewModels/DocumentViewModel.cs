@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using DashShared;
 using Windows.Foundation;
-using Visibility = Windows.UI.Xaml.Visibility;
-using System.Globalization;
-using Dash.Models.DragModels;
 using static Dash.DocumentController;
 
 namespace Dash
@@ -107,7 +96,12 @@ namespace Dash
         public double Width
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
+            set
+            {
+                LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
+                if (LayoutDocument.GetDereferencedField<TextController>(KeyStore.TextWrappingKey, null) is TextController)
+                    LayoutDocument.SetField<TextController>(KeyStore.TextWrappingKey, DashShared.TextWrapping.Wrap.ToString(), true);
+            }
         }
         public double Height
         {

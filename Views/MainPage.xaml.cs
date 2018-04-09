@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -17,18 +12,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
-using DashShared.Models;
-using Flurl;
-using Flurl.Http;
-using Newtonsoft.Json.Linq;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
-using Dash.Views.Document_Menu;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -129,14 +115,17 @@ namespace Dash
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
+
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+
                 setupMapView(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            
+            OperatorScriptParser.TEST();
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -277,7 +266,7 @@ namespace Dash
         private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     if (flag == null)
                         dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
@@ -311,7 +300,7 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;

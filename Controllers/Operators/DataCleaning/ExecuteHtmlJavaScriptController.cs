@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.Linq;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 using static Dash.NoteDocuments;
@@ -31,11 +29,11 @@ namespace Dash
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
-                [HtmlInputKey] = new IOInfo(TypeInfo.Text, true),
-                [ScriptKey]    = new IOInfo(TypeInfo.Text, true),
+                new KeyValuePair<KeyController, IOInfo>(HtmlInputKey, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(ScriptKey, new IOInfo(TypeInfo.Text, true))
 
             };
 

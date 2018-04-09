@@ -1,22 +1,12 @@
-﻿using Microsoft.ProjectOxford.Vision.Contract;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using NewControls.Geometry;
-using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
-using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -130,7 +120,7 @@ namespace Dash
                 {
                     r.Union(dvm.Bounds);
                 }
-                if (r != Rect.Empty)
+                if (r.Width != 0 && r.Height != 0)
                 {
                     var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
                     var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
@@ -138,7 +128,8 @@ namespace Dash
                     var scale    = new Point(scaleAmt, scaleAmt);
                     var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
 
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
+                    if (scaleAmt != 0)
+                        OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
                 }
             }
         }

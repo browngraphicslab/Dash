@@ -4,7 +4,6 @@ using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -26,7 +25,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
 using Dash.Annotations;
-using DashShared.Models;
+using DashShared;
 using NewControls.Geometry;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -730,7 +729,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
+                var postitNote = new RichTextNote(text: text).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }

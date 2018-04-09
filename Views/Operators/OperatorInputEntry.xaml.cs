@@ -1,19 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
@@ -54,7 +44,7 @@ namespace Dash
                 _refDoc = dragData.DraggedDocument?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 if (dragData.DraggedKey != null)
                 {
                     opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
@@ -80,7 +70,7 @@ namespace Dash
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
                 var fieldKey = dragData.FieldKey;
                 opDoc.SetField(key, new TextController(fieldKey.Id), true);
@@ -100,8 +90,8 @@ namespace Dash
             // set the input type
             var el = sender as FrameworkElement;
             var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
-            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-            _inputType = opField.Inputs[key].Type;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
+            _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
 
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
@@ -199,7 +189,7 @@ namespace Dash
             {
                 return;
             }
-            var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)DataContext)?.Key as KeyController;
             if (args.ChosenSuggestion is CollectionKeyPair chosen)
             {
                 if (chosen.CollectionKey == null)

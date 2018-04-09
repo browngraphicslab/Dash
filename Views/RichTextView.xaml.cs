@@ -1,30 +1,23 @@
-﻿using Dash.Controllers.Operators;
+﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Visibility = Windows.UI.Xaml.Visibility;
-using System.ComponentModel;
-using System.Globalization;
-using Windows.UI.Xaml.Documents;
-using DashShared.Models;
-using static Dash.NoteDocuments;
-using Windows.ApplicationModel.Core;
-using System.Diagnostics;
-using Windows.ApplicationModel.DataTransfer;
-using System.Text.RegularExpressions;
-using Dash.Models.DragModels;
+using DashShared;
 using static Dash.FieldControllerBase;
+using static Dash.NoteDocuments;
+using TextWrapping = Windows.UI.Xaml.TextWrapping;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -33,8 +26,9 @@ namespace Dash
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD)));
-
-        bool  _isPointerPressed = false;
+        public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
+            "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
+        
         int   _prevQueryLength;// The length of the previous search query
         int   _nextMatch = 0;// Index of the next highlighted search result
 
@@ -49,8 +43,7 @@ namespace Dash
         public RichTextView()
         {
             this.InitializeComponent();
-            Loaded   += OnLoaded;
-            Unloaded += UnLoaded;
+            Loaded += OnLoaded;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) =>
             {
@@ -80,9 +73,9 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            xRichEditBox.GotFocus += (s,e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
+            xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
-            xRichEditBox.TextChanged += (s,e) => UpdateDocument();
+            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
             xRichEditBox.KeyUp += (s, e) => {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
@@ -101,26 +94,26 @@ namespace Dash
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
+        
 
-        public void UpdateDocument()
+        public void UpdateDocumentFromXaml()
         {
-            if (DataContext == null || Text == null)
-                return;
-            setText(getRtfText());
-
-            var allText = getReadableText();
-            DataDocument.SetField<TextController>(KeyStore.DocumentTextKey, allText, true);
-
-            // auto-generate key/value pairs by scanning the text
-            var reg     = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
-            var matches = reg.Matches(allText);
-            foreach (var str in matches)
+            if (DataContext != null && Text != null)
             {
-                var split = str.ToString().Split(':');
-                var key   = split.FirstOrDefault().Trim(' ');
-                var value = split.LastOrDefault().Trim(' ');
-                
-                DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                convertTextFromXamlRTF();
+                setContainerHeight();
+
+                // auto-generate key/value pairs by scanning the text
+                var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+                var matches = reg.Matches(getReadableText());
+                foreach (var str in matches)
+                {
+                    var split = str.ToString().Split(':');
+                    var key = split.FirstOrDefault().Trim(' ');
+                    var value = split.LastOrDefault().Trim(' ');
+
+                    DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                }
             }
         }
         public RichTextModel.RTD   Text
@@ -129,6 +122,7 @@ namespace Dash
             set { SetValue(TextProperty, value); }
         }
         public DocumentController  DataDocument { get; set; }
+        public DocumentController  LayoutDocument { get; set; }
         DocumentView       getDocView() { return this.GetFirstAncestorOfType<DocumentView>(); }
         DocumentController getLayoutDoc() { return getDocView()?.ViewModel.LayoutDocument; }
         DocumentController getDataDoc() { return getDocView()?.ViewModel.DataDocument; }
@@ -151,51 +145,51 @@ namespace Dash
         {
             string allRtfText;
             xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
-            return allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            var strippedRtf = allRtfText.Replace("\r\n\\pard\\tx720\\par\r\n", ""); // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            return new Regex("\\\\par[\r\n}\\\\]*\0").Replace(strippedRtf, "}\r\n\0");
         }
-        void               setText(string rtfText)
+        /// <summary>
+        /// Retrieves the Xaml RTF of this view and stores it in the Dash document's Text field model.
+        /// </summary>
+        void               convertTextFromXamlRTF()
         {
-            if (!rtfText.Equals(Text.RtfFormatString))
-                Text = new RichTextModel.RTD(rtfText);  // RTF editor adds a trailing extra paragraph when queried -- need to strip that off
+            var xamlRTF = getRtfText();
+            if (!xamlRTF.Equals(_lastXamlRTFText))  // don't update if the Text is the same as what we last set it to
+                Text = new RichTextModel.RTD(xamlRTF);
+            _lastXamlRTFText = xamlRTF;
         }
-        void               sizeToFit()
+        void               setContainerHeight()
         {
-            if (!_isPointerPressed)
+            if (Parent is RelativePanel relative && FocusManager.GetFocusedElement() == xRichEditBox)
             {
-                xRichEditBox.Height = double.NaN;
-                xRichEditBox.Measure(new Size(xRichEditBox.ActualWidth, 1000));
-                if (Parent is RelativePanel relative)
-                {
-                    var pad = 0.0;
-                    foreach (var item in relative.Children)
-                        if (item != this)
-                            pad += (item as FrameworkElement).ActualHeight;
-                    relative.Height = xRichEditBox.DesiredSize.Height + pad;
-                }
-                Height = xRichEditBox.DesiredSize.Height;
+                if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
+                    LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
+                xRichEditBox.Measure(new Size(ActualWidth, 1000));
+                var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                relative.Height = xRichEditBox.DesiredSize.Height + pad;
             }
         }
 
         #region eventhandlers
-
+        string _lastXamlRTFText = "";
         void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             if (FocusManager.GetFocusedElement() != xRichEditBox)
             {
-                var reg = new Regex("\\\\par[\r\n}\\\\]*\0");
-                var newstr = reg.Replace(Text.RtfFormatString, "}\r\n\0");
-                xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, newstr);
-                var selected = getSelected();
-                if (selected != null)
+                if (Text.RtfFormatString != _lastXamlRTFText)
+                {
+                    xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
+                    _lastXamlRTFText = getRtfText(); // so we need to retrieve what Xaml actually stored and treat that as an 'alias' for the format string we used to set the text.
+                }
+                if (getSelected() is string selected)
                 {
                     _prevQueryLength = selected.Length;
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
-                    _originalCharFormat.Add(s, this.xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                    _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
-                    UpdateDocument();
                 }
             }
         }
@@ -331,49 +325,24 @@ namespace Dash
         #endregion
 
         #region load/unload
-        PointerEventHandler  _pressedHdlr = null;
-        PointerEventHandler  _releasedHdlr = null;
-        FieldUpdatedHandler  _selectedFieldUpdatedHdlr = null;
-        EventHandler<object> _scrollHandler = null;
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            _pressedHdlr = new PointerEventHandler(async (s, e) => _isPointerPressed = true);
+            var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
+            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+            
+            void UnLoaded(object s, RoutedEventArgs e)
+            {
+                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+                Unloaded -= UnLoaded;
+            }
 
-            _releasedHdlr = new PointerEventHandler(async (s, e) => {
-                _isPointerPressed = false;
-                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
-            });
-            _selectedFieldUpdatedHdlr = new FieldUpdatedHandler((FieldControllerBase s, FieldUpdatedEventArgs e, Context c) => MatchQuery(getSelected()));
-            _scrollHandler            = async (object s, object e) => {
-                if (this.GetFirstDescendantOfType<ScrollBar>().Visibility == Visibility.Visible)
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Low, async () => sizeToFit());
-            };
-
-            MainPage.Instance.AddHandler(PointerPressedEvent, _pressedHdlr, true);
-            MainPage.Instance.AddHandler(PointerReleasedEvent, _releasedHdlr, true);
-            DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
-            this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated += _scrollHandler;
+            Unloaded += UnLoaded;
         }
 
-        /// <summary>
-        /// Unsubscribes TextChanged handler on Unload
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void UnLoaded(object sender, RoutedEventArgs e)
-        {
-            if (_pressedHdlr != null)
-                MainPage.Instance.RemoveHandler(PointerPressedEvent, _pressedHdlr);
-            if (_releasedHdlr != null)
-                MainPage.Instance.RemoveHandler(PointerReleasedEvent, _releasedHdlr);
-            if (_selectedFieldUpdatedHdlr != null)
-                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, _selectedFieldUpdatedHdlr);
-            this.GetFirstDescendantOfType<ScrollBar>().LayoutUpdated -= _scrollHandler; // bcz: don't know why we need to do this, but the events keep getting generated after 'this' is unloaded
-        }
         #endregion
 
         #region hyperlink
-        
+
         string getHyperlinkTargetForSelection()
         {
             var s1 = xRichEditBox.Document.Selection.StartPosition;
@@ -398,7 +367,7 @@ namespace Dash
             if (theDoc != null)
                 createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
 
-            setText(getRtfText());
+            convertTextFromXamlRTF();
 
             xRichEditBox.Document.Selection.SetRange(s1, s2);
         }
@@ -523,7 +492,7 @@ namespace Dash
                 xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
-            UpdateDocument();
+            UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
         }
 

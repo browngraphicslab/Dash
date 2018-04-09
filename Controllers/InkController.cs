@@ -3,20 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Storage.Streams;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Dash.Converters;
-using Dash.Models;
-using Dash.Views;
 using DashShared;
-using DashShared.Models;
 using Newtonsoft.Json;
 
 namespace Dash
@@ -85,6 +76,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
+            return 0;
             throw new System.NotImplementedException();
         }
         public override bool TrySetValue(object value)

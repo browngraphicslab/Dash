@@ -32,8 +32,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Runtime.Serialization;
-using System.Runtime.InteropServices;
 
 namespace Dash
 {
@@ -148,7 +146,7 @@ namespace Dash
         {
             DoClearEntries();
         }
-
+        
         public bool ContainsKey(TKey key)
         {
             return _keyedEntryCollection.Contains(key);

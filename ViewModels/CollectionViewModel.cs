@@ -1,7 +1,5 @@
-﻿using Dash.Controllers.Operators;
-using DashShared;
+﻿using DashShared;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,13 +15,10 @@ using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
-using Windows.System;
-using Windows.UI.Core;
 using Dash.Models.DragModels;
 
 namespace Dash
@@ -383,7 +378,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
+                    var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -536,18 +531,18 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(text);
+                var t = new RichTextNote(text, where, new Size(300, double.NaN));
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(text);
+                var t = new RichTextNote(text, where, new Size(300,double.NaN));
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {
                     var pair = new Regex(":").Split(match.ToString());
-                    t.Document.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
+                    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
                 }
                 AddDocument(t.Document, null);
             }

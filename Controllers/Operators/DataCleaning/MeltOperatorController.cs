@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
 
 namespace Dash
@@ -45,13 +43,13 @@ namespace Dash
             new KeyController("4ECAF1CB-5FEF-4B6D-8A84-C134BD90C750", "Output Collection");
 
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>()
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
+            new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
             {
-                [InputCollection] = new IOInfo(TypeInfo.List, true),
-                [ColumnVariables] = new IOInfo(TypeInfo.List, true),
-                [VariableName] = new IOInfo(TypeInfo.Text, true),
-                [ValueName] = new IOInfo(TypeInfo.Text, true),
+                new KeyValuePair<KeyController, IOInfo>(InputCollection, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(ColumnVariables, new IOInfo(TypeInfo.List, true)),
+                new KeyValuePair<KeyController, IOInfo>(VariableName, new IOInfo(TypeInfo.Text, true)),
+                new KeyValuePair<KeyController, IOInfo>(ValueName, new IOInfo(TypeInfo.Text, true)),
 
             };
 

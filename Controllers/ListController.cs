@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {
@@ -112,6 +109,9 @@ namespace Dash
 
         public override void Init()
         {
+            //why have a list of none?
+            Debug.Assert(!(Model as ListModel).SubTypeInfo.Equals(TypeInfo.None));
+
             TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
             UpdateOnServer();
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
