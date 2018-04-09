@@ -46,6 +46,14 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
 
+        public static class SearchResultDocumentOutline
+        {
+            public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("4ACEB999-6E82-4B40-9602-BD6D362CAC54", "_searchResultTitle"));
+            public static KeyController SearchResultIdKey = new KeyController(new KeyModel("F3740B30-C63F-4549-A814-832CC3E01558", "_searchResultId"));//TODO TFS make this a doc reference
+            public static KeyController SearchResultHelpTextKey = new KeyController(new KeyModel("4712CBF3-BDD9-4A92-8AC5-043F4BA14AAB", "_searchResultHelpText"));
+        }
+
+
         public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "_CollectionFitToParent");
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "_Horizontal Alignment");

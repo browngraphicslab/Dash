@@ -203,6 +203,11 @@ namespace Dash
                 }
             }
 
+            if (ContentController<FieldModel>.HasController(s))
+            {
+                return new LiteralExpression(ContentController<FieldModel>.GetController(s) as FieldControllerBase);
+            }
+
             //TODO Make sure there aren't multiple quotes
             return new LiteralExpression(new TextController(s));//TODO
         }
@@ -353,11 +358,18 @@ namespace Dash
 
         private static KeyValuePair<string, string> ParseKeyValue(string s, List<KeyController> functionKeys, int parameterIndex, string functionName)
         {
+            s = s.Trim();
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return new KeyValuePair<string, string>(" ", " ");
+            }
             int index = s.IndexOf(':');
 
             KeyValuePair<string, string> kvp;
 
             bool hasProvidedParamName = (index != -1);//TODO im not certain that this is foolproof 
+            //var isStringLiteral = StringOpeningCharacters.Contains(s[0]) && StringClosingCharacters[StringOpeningCharacters.ToString().IndexOf(s[0])] == s.Last();
+            //hasProvidedParamName &= !isStringLiteral;
             if (hasProvidedParamName)
             {
                 var funcOpeningCharIndex = s.IndexOf(FunctionOpeningCharacter);

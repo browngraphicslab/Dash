@@ -58,6 +58,16 @@ namespace Dash
             return _reverseFunctionMap.ContainsKey(t) ? _reverseFunctionMap[t] : null;
         }
 
+        /// <summary>
+        /// returns whether a certain function exists based on a string name
+        /// </summary>
+        /// <param name="funcName"></param>
+        /// <returns></returns>
+        public static bool FuncNameExists(string funcName)
+        {
+            return _functionMap.ContainsKey(funcName);
+        }
+
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function

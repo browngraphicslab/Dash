@@ -16,12 +16,12 @@ namespace DashShared
         Operator = 0x80,
         Point = 0x100,
         List = 0x200,
-        Ink = 0x300,
+        Ink = 0x400,
         RichText = 0x800,
         Rectangle = 0x1000,
         Key = 0x2000,
         DateTime = 0x4000,
         Reference = PointerReference | DocumentReference,
-        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video | DateTime,	
-	}
+        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video | DateTime
+    }
 }

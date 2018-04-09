@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using DashShared;
 
 namespace Dash
@@ -54,7 +55,7 @@ namespace Dash
             var searchOutputList = OperatorScriptParser.Interpret(stringScriptToExecute) as BaseListController;
             if (searchOutputList != null)
             {
-                outputs[ResultsKey] = searchOutputList;
+                outputs[ResultsKey] = new ListController<FieldControllerBase>(searchOutputList.Data.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i as DocumentController).Id)));
             }
             else
             {

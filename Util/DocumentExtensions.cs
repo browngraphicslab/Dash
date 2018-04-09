@@ -575,6 +575,13 @@ namespace Dash
             }
             return copy;
         }
+
+
+        public static string GetDishName<T>(this T controller) where T : OperatorController
+        {
+            return OperatorScript.GetDishOperatorName<T>();
+        }
+
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
                 ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys, List<KeyController> dontCopyKeys)
         {
