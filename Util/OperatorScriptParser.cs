@@ -8,8 +8,8 @@ namespace Dash
 {
     public class OperatorScriptParser
     {
-        private static char FunctionOpeningCharacter = '(';
-        private static char FunctionClosingCharacter = ')';
+        public static char FunctionOpeningCharacter = '(';
+        public static char FunctionClosingCharacter = ')';
 
         private static char[] StringOpeningCharacters = {'{', '<'};
         private static char[] StringClosingCharacters = { '}', '>'};
@@ -128,6 +128,40 @@ namespace Dash
             {
                 throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
             }
+        }
+
+        /// <summary>
+        /// Method to call to get an operator controller that represents the script called
+        /// </summary>
+        /// <param name="script"></param>
+        /// <returns></returns>
+        public static FieldControllerBase GetOperatorControllerForScript(string script)
+        {
+            try
+            {
+                var se = ParseToExpression(script);
+                return se.CreateReference();
+
+            }
+            catch (ScriptException scriptException)
+            {
+                throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
+            }
+        }
+
+        public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
+        {
+            var doc = operatorReference.GetDocumentController(context);
+            var op = doc.GetDereferencedField<OperatorController>(KeyStore.OperatorKey, context);
+
+            var funcName = op.GetDishName();
+            var script = funcName + FunctionOpeningCharacter;
+            foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))
+            {
+                Debug.Assert(doc.GetField(inputKey) != null);
+                script += inputKey.Name + ":" + DSL.GetScriptForOperatorTree(doc.GetField(inputKey));
+            }
+            return script + FunctionClosingCharacter;
         }
 
         /// <summary>
@@ -426,6 +460,8 @@ namespace Dash
         private abstract class ScriptExpression
         {
             public abstract FieldControllerBase Execute();
+
+            public abstract FieldControllerBase CreateReference();
         }
 
         private class LiteralExpression : ScriptExpression
@@ -438,6 +474,11 @@ namespace Dash
             }
 
             public override FieldControllerBase Execute()
+            {
+                return field;
+            }
+
+            public override FieldControllerBase CreateReference()
             {
                 return field;
             }
@@ -455,16 +496,25 @@ namespace Dash
             }
             public override FieldControllerBase Execute()
             {
-                var outputs = new Dictionary<KeyController, FieldControllerBase>();
-
                 var inputs = new Dictionary<KeyController, FieldControllerBase>();
                 foreach (var parameter in parameters)
                 {
                     inputs.Add(parameter.Key, parameter.Value.Execute());
                 }
 
+                try
+                {
+                    return OperatorScript.Run(opName, inputs);
+                }
+                catch (Exception e)
+                {
+                    throw new ScriptExecutionException(new GeneralScriptExecutionFailure(opName));
+                }
+            }
 
-                return OperatorScript.Run(opName, inputs);
+            public override FieldControllerBase CreateReference()
+            {
+                return OperatorScript.CreateDocumentForOperator(parameters.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key, kvp.Value.CreateReference())), opName);//recursive linq
             }
         }
 
@@ -475,6 +525,25 @@ namespace Dash
             public abstract string GetHelpfulString();
         }
 
+
+        public abstract class ScriptExecutionErrorModel : ScriptErrorModel
+        {
+            public Exception InnerException { get; set; }
+        }
+
+        public class GeneralScriptExecutionFailure : ScriptExecutionErrorModel
+        {
+            public GeneralScriptExecutionFailure(string functionName)
+            {
+                FunctionName = functionName;
+            }
+            public string FunctionName { get; private set; }
+            public override string GetHelpfulString()
+            {
+                return "Unknown execution error occurred.  Function called: " + FunctionName;
+            }
+        }
+
         public class ScriptException : Exception
         {
             public ScriptException(ScriptErrorModel error)
@@ -482,6 +551,15 @@ namespace Dash
                 Error = error;
             }
             public ScriptErrorModel Error { get; }
+        }
+
+        public class ScriptExecutionException : Exception
+        {
+            public ScriptExecutionException(ScriptExecutionErrorModel error)
+            {
+                Error = error;
+            }
+            public ScriptExecutionErrorModel Error { get; }
         }
 
         public class InvalidDishScriptException : Exception

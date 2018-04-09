@@ -155,7 +155,7 @@ namespace Dash
 
             try
             {
-                fmController = Interpret(stringValue);
+                fmController = DSL.InterpretUserInput(stringValue);
 
             }
             catch (InvalidDishScriptException e)

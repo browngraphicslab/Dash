@@ -579,7 +579,7 @@ namespace Dash
 
         public static string GetDishName<T>(this T controller) where T : OperatorController
         {
-            return OperatorScript.GetDishOperatorName<T>();
+            return DSL.GetFuncName(controller);
         }
 
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
