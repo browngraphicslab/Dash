@@ -1,11 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Syncfusion.Pdf.Parsing;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -57,5 +63,87 @@ namespace Dash
         {
             xTreeRoot.Highlight(document, flag);
         }
+
+        private async void MakePdf_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            //Load the PDF document as stream
+            Stream pdfStream = typeof(MainPage).GetTypeInfo().Assembly.GetManifestResourceStream("Sample.Assets.Data.Sample.pdf");
+
+            //Creates an empty PDF loaded document instance
+            PdfLoadedDocument document = new PdfLoadedDocument();
+
+            //Loads or opens an existing PDF document through Open method of PdfLoadedDocument class
+            await document.OpenAsync(pdfStream);
+
+            MemoryStream stream = new MemoryStream();
+
+            await document.SaveAsync(stream);
+
+            //Close the documents
+
+            document.Close(true);
+
+            //Save the stream as PDF document file in local machine
+
+            Save(stream, "Result.pdf");
+
+           
+
+                //Load the PDF document.
+
+                PdfLoadedDocument loadedDocument = new PdfLoadedDocument("saved.pdf");
+
+            //Get the loaded form.
+
+            PdfLoadedForm loadedForm = loadedDocument.Form;
+
+            //Get the loaded text box field and fill it.
+
+            PdfLoadedTextBoxField loadedTextBoxField = loadedForm.Fields[0] as PdfLoadedTextBoxField;
+
+            loadedTextBoxField.Text = "First Name";
+
+            //Save the modified document.
+
+            Save(stream, "sample.pdf");
+
+            //Close the document
+
+            loadedDocument.Close(true);
+        }
+
+        async void Save(Stream stream, string filename)
+        {
+
+            stream.Position = 0;
+
+            StorageFile stFile;
+            if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
+            {
+                FileSavePicker savePicker = new FileSavePicker();
+                savePicker.DefaultFileExtension = ".pdf";
+                savePicker.SuggestedFileName = "Sample";
+                savePicker.FileTypeChoices.Add("Adobe PDF Document", new List<string>() {".pdf"});
+                stFile = await savePicker.PickSaveFileAsync();
+            }
+            else
+            {
+                StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
+                stFile = await local.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
+            }
+
+            if (stFile != null)
+            {
+                Windows.Storage.Streams.IRandomAccessStream fileStream =
+                    await stFile.OpenAsync(FileAccessMode.ReadWrite);
+                Stream st = fileStream.AsStreamForWrite();
+                st.Write((stream as MemoryStream).ToArray(), 0, (int) stream.Length);
+                st.Flush();
+                st.Dispose();
+                fileStream.Dispose();
+            }
+        }
+
+
     }
 }
