@@ -248,6 +248,10 @@ namespace Dash
                 {
                     throw new ScriptException(new MissingParameterScriptErrorModel(func, kvp.Key.Name));
                 }
+                if (!kvp.Value.Type.HasFlag(parameters[kvp.Key].Type))
+                {
+                    
+                }
             }
 
             return new FunctionExpression(parts.FunctionName, parameters);
@@ -426,6 +430,8 @@ namespace Dash
         private abstract class ScriptExpression
         {
             public abstract FieldControllerBase Execute();
+
+            public abstract TypeInfo Type { get; }
         }
 
         private class LiteralExpression : ScriptExpression
@@ -441,6 +447,8 @@ namespace Dash
             {
                 return field;
             }
+
+            public override TypeInfo Type => TypeInfo.Text;
         }
 
         private class FunctionExpression : ScriptExpression
@@ -466,6 +474,8 @@ namespace Dash
 
                 return OperatorScript.Run(opName, inputs);
             }
+
+            public override TypeInfo Type => TypeInfo.Text;
         }
 
         public abstract class ScriptErrorModel : EntityBase
