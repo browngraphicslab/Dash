@@ -33,8 +33,7 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:DocumentViewModel">
-                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}"></local:TreeViewNode>
-                    <!--AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop"-->
+                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}" PointerEntered="TreeViewNode_PointerEntered"></local:TreeViewNode>
                 </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 

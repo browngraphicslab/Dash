@@ -106,50 +106,18 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void TreeViewNode_Drop(object sender, DragEventArgs e)            //KBTODO 
+        /// <summary>
+        /// Determines which document is dropped when treeviewmenu is dragged 
+        /// </summary>
+        private DocumentViewModel _draggedDocument;
+        private void TreeViewNode_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
-            {
-                var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-
-                if (coll != null && !doc.Equals(data.DraggedDocument))
-                {
-                    coll.Add(data.GetDropDocument(new Point(), true));
-                }
-            }
-            if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
-            {
-                var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && data.Count > 0)
-                {
-                    var start = data.First().DraggedDocument.GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y - start.Y), true)).ToList());
-                }
-            }
-            e.Handled = true;
-        }
-
-        private void TreeViewNode_DragOver(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
-            }
-            else
-                e.AcceptedOperation = DataPackageOperation.None;
-            e.Handled = true;
+            _draggedDocument = (sender as TreeViewNode).ViewModel;
         }
 
         private void xListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            var dvm = ViewModel.DocumentViewModels[2]; //KBTODO gotta get this  
-            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((dvm as DocumentViewModel).DocumentController, true);
+            e.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_draggedDocument?.DocumentController, true);
         }
     }
 }
