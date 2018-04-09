@@ -92,7 +92,7 @@ namespace Dash
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(dvm.DocumentController.GetViewCopy());
-            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, 500, 300, controllers).Document;
+            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;
         }

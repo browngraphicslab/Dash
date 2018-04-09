@@ -9,6 +9,8 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using System.IO;
+using Windows.UI.Xaml.Markup;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -98,13 +100,25 @@ namespace Dash
                 newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
                 vms.Add(newVm);
             }
-
+            
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
             Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
+        }
+
+        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var docTapped = ContentController<FieldModel>.GetController<DocumentController>(((sender as Grid).DataContext as SearchResultViewModel)?.Id);
+            MainPage.Instance.HighlightDoc(docTapped, true);
+        }
+
+        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var docTapped = ContentController<FieldModel>.GetController<DocumentController>(((sender as Grid).DataContext as SearchResultViewModel)?.Id);
+            MainPage.Instance.HighlightDoc(docTapped, false);
         }
 
         private void ExecuteSearch(AutoSuggestBox searchBox)
