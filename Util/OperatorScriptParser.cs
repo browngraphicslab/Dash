@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using DashShared;
 
 namespace Dash
@@ -209,7 +210,7 @@ namespace Dash
             }
 
             //TODO Make sure there aren't multiple quotes
-            return new LiteralExpression(new TextController(s));//TODO
+            return new LiteralExpression(new TextController(s));
         }
 
         private static ScriptExpression ParseNumber(double number)
@@ -248,9 +249,10 @@ namespace Dash
                 {
                     throw new ScriptException(new MissingParameterScriptErrorModel(func, kvp.Key.Name));
                 }
-                if (!kvp.Value.Type.HasFlag(parameters[kvp.Key].Type))
+                if (parameters.ContainsKey(kvp.Key) && !kvp.Value.Type.HasFlag(parameters[kvp.Key].Type))
                 {
-                    
+                    //TODO Trent
+                    //throw new ScriptException(new ...);
                 }
             }
 
@@ -448,7 +450,7 @@ namespace Dash
                 return field;
             }
 
-            public override TypeInfo Type => TypeInfo.Text;
+            public override TypeInfo Type => field.TypeInfo;
         }
 
         private class FunctionExpression : ScriptExpression
@@ -475,9 +477,10 @@ namespace Dash
                 return OperatorScript.Run(opName, inputs);
             }
 
-            public override TypeInfo Type => TypeInfo.Text;
+            public override TypeInfo Type => OperatorScript.GetOutputType(opName);
         }
 
+        #region Exceptions
         public abstract class ScriptErrorModel : EntityBase
         {
             public string ExtraInfo { get; set; }
@@ -626,5 +629,7 @@ namespace Dash
                 return $"A function call was missing a required parameter.  Function Name: {FunctionName}    Missing parameter: {MissingParameter}";
             }
         }
+
+#endregion
     }
 }
