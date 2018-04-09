@@ -298,6 +298,9 @@
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
+      <DependentUpon>MarqueeInfo.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
     </Compile>
@@ -759,6 +762,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\MarqueeInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
