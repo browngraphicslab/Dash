@@ -9,6 +9,26 @@
     d:DesignHeight="500"
     d:DesignWidth="300">
 
+    <UserControl.Resources>
+        <Style TargetType="ListViewItem" x:Key="CollapseBox">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="BorderThickness" Value="0,0,.1,.1" />
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="Height" Value="60" />
+        </Style>
+        <Style TargetType="ListViewItem" x:Key="ExpandBox">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="BorderThickness" Value="0,0,.1,.1" />
+            <Setter Property="BorderBrush" Value="LightGray" />
+            <Setter Property="Height" Value="120" />
+        </Style>
+    </UserControl.Resources>
 
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
           BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch">
@@ -52,7 +72,7 @@
                     Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
                     ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
+                        <Style TargetType="ListViewItem" x:Name="CollapseBox">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="VerticalContentAlignment" Value="Center" />
                             <Setter Property="Padding" Value="10" />
@@ -81,7 +101,6 @@
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
-                            <Setter Property="MaxHeight" Value="60"/>
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>

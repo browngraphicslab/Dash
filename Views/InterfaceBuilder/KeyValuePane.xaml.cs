@@ -272,5 +272,21 @@ namespace Dash
                 e.Handled = true;
             }
         }
+
+        public void Expand_Value(object sender)
+        {
+            var valuebox = sender as EditableScriptBox;
+            var index = ListItemSource.IndexOf(valuebox.ViewModel);
+            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
+            key.Style = Resources["ExpandBox"] as Style;
+        }
+
+        public void Collapse_Value(object sender)
+        {
+            var valuebox = sender as EditableScriptBox;
+            var index = ListItemSource.IndexOf(valuebox.ViewModel);
+            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
+            key.Style = Resources["CollapseBox"] as Style;
+        }
     }
 }

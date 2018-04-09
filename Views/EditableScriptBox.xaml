@@ -10,10 +10,8 @@
     d:DesignWidth="400"
     DataContextChanged="EditableScriptBox_OnDataContextChanged">
 
-    <Grid x:Name="xBackground" Background="Transparent">
-        <ScrollViewer Height="60">
-            <Grid VerticalAlignment="Center">
-                <TextBlock x:Name="XTextBlock"
+    <Grid x:Name="xBackground" Background="Transparent" Height="60" VerticalAlignment="Center">
+        <TextBlock x:Name="XTextBlock"
                            x:FieldModifier="public"
                            FontSize="{x:Bind FontSize, Mode=OneWay}"
                            FontWeight="{x:Bind FontWeight, Mode=OneWay}"
@@ -24,7 +22,7 @@
                            DoubleTapped="XTextBlock_DoubleTapped"
                            Padding="10"
                            ></TextBlock>
-                <TextBox x:Name="XTextBox"
+        <TextBox x:Name="XTextBox"
                          x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
                          FontSize="{x:Bind FontSize, Mode=OneWay}"
                          FontWeight="{x:Bind FontWeight, Mode=OneWay}"
@@ -40,7 +38,5 @@
                          LostFocus="XTextBox_OnLostFocus"
                          Loaded="XTextBox_OnLoaded"
                          Padding="10"></TextBox>
-            </Grid>
-        </ScrollViewer>
     </Grid>
 </UserControl>
