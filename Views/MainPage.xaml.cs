@@ -497,5 +497,10 @@ namespace Dash
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
+
+        private void xSettingsButton_Tapped(System.Object sender, TappedRoutedEventArgs e)
+        {
+
+        }
     }
 }

@@ -77,7 +77,6 @@
                 </Grid>
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
-        <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="AlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
@@ -87,15 +86,17 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="15" x:Name="xTreeSplitter"/>
                 <RowDefinition Height="325" />
+                <RowDefinition Height="30" />
             </Grid.RowDefinitions>
             <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="25" />
                 </Grid.RowDefinitions>
-                <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
+                <Button x:Name="snapshotButton" Grid.Row="1" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
             </Grid>
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
+            
             <localMicrosoft:GridSplitter 
                 GettingFocus="TextBlock_GettingFocus" 
                 x:Name="xLeftSplitter"
@@ -117,6 +118,16 @@
                     </Grid>
                 </localMicrosoft:GridSplitter.Element>
             </localMicrosoft:GridSplitter>
-          </Grid>
+
+            <Grid Grid.Row="3" Height="30" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Button x:Name="xSettingsButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="xSettingsButton_Tapped">
+                    <StackPanel Orientation="Horizontal" >
+                        <SymbolIcon Symbol="Setting" VerticalAlignment="Center" ></SymbolIcon>
+                        <TextBlock Text="Settings" VerticalAlignment="Center" Margin="0,-1,0,0" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+        </Grid>
     </Grid>
 </Page>
