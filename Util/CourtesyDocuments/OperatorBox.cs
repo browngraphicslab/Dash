@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Dash;
-using Dash.Views;
 using DashShared;
 
 namespace Dash

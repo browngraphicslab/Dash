@@ -1,7 +1,6 @@
 ﻿using Dash.Views;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI;

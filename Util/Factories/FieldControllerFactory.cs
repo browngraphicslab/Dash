@@ -3,15 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
 using Dash.Controllers;
-using Dash.Controllers.Operators;
 using DashShared;
-using DashShared.Models;
-using Flurl.Util;
-using Microsoft.Extensions.DependencyInjection;
 using TypeInfo = DashShared.TypeInfo;
 
 namespace Dash
@@ -82,15 +75,15 @@ namespace Dash
                 case TypeInfo.Key:
                     controller = new KeyController(model as KeyModel);
                     break;
+                case TypeInfo.DateTime:
+                    controller = new DateTimeController(model as DateTimeModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Reference:
                     throw new Exception("Shoudlnt get here");
-                    break;
                 case TypeInfo.Any:
                     throw new Exception("Shoudlnt get here");
-                    break;
             }
 
             Debug.Assert(controller != null);
@@ -167,100 +160,6 @@ namespace Dash
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {
-            //OperatorController controller = null;
-            //switch (model.Type)
-            //{
-            //    case OperatorType.RichTextTitle:
-            //        controller = new RichTextTitleOperatorController(model);
-            //        break;
-            //    case OperatorType.CollectionTitle:
-            //        controller = new CollectionTitleOperatorController(model);
-            //        break;
-            //    case OperatorType.Add:
-            //        controller = new AddOperatorController(model);
-            //        break;
-            //    case OperatorType.Zip:
-            //        controller = new ZipOperatorController(model);
-            //        break;
-            //    //case OperatorType.CollectionMap:
-            //    //    controller = new CollectionMapOperator(model);
-            //    //    break;
-            //    case OperatorType.Intersection:
-            //        controller = new IntersectionOperatorController(model);
-            //        break;
-            //    case OperatorType.Union:
-            //        controller = new UnionOperatorController(model);
-            //        break;
-            //    case OperatorType.Map:
-            //        controller = new MapOperatorController(model);
-            //        break;
-            //    case OperatorType.ImageToUri:
-            //        controller = new ImageOperatorController(model);
-            //        break;
-            //    case OperatorType.ExecDish:
-            //        controller = new ExecDishOperatorController(model);
-            //        break;
-            //    case OperatorType.ExecuteDishToString:
-            //        controller = new GetScriptValueAsStringOperatorController(model);
-            //        break;
-            //    case OperatorType.SimplifiedSearch:
-            //        controller = new SimplifiedSearchOperatorController(model);
-            //        break;
-            //    case OperatorType.GetKeys:
-            //        controller = new GetKeysOperatorController(model);
-            //        break;
-            //    case OperatorType.DocumentAppend:
-            //        controller = new DocumentAppendOperatorController(model);
-            //        break;
-            //    case OperatorType.Concat:
-            //        controller = new ConcatOperatorController(model);
-            //        break;
-            //    case OperatorType.Divide:
-            //        controller = new DivideOperatorController(model);
-            //        break;
-            //    case OperatorType.Search:
-            //        controller = new SearchOperatorController(model);
-            //        break;
-            //    case OperatorType.Api:
-            //        controller = new ApiOperatorController(model);
-            //        break;
-            //    case OperatorType.Compound:
-            //        controller = new CompoundOperatorController(model as CompoundOperatorModel);
-            //        break;
-            //    case OperatorType.Subtract:
-            //        controller = new SubtractOperatorController(model);
-            //        break;
-            //    case OperatorType.Multiply:
-            //        controller = new MultiplyOperatorController(model);
-            //        break;
-            //    case OperatorType.Regex:
-            //        controller = new RegexOperatorController(model);
-            //        break;
-            //    case OperatorType.Melt:
-            //        controller = new MeltOperatorController(model);
-            //        break;
-            //    case OperatorType.SentenceAnalyzer:
-            //        controller = new ExtractSentencesOperatorController(model);
-            //        break;
-            //    case OperatorType.ExtractKeywords:
-            //        controller = new ExtractKeywordsOperatorController(model);
-            //        break;
-            //    case OperatorType.ImageRecognition:
-            //        controller = new ImageToCognitiveServices(model);
-            //        break;
-            //    case OperatorType.ExecuteHtmlJavaScript:
-            //        controller = new ExecuteHtmlJavaScriptController(model);
-            //        break;
-            //    case OperatorType.CollectionMap:
-            //        break;
-            //    case OperatorType.Quizlet:
-            //        controller = new QuizletOperator(model);
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-
-            //return controller;
             // TODO assert that op controllers have a private static field TypeKey
             // TODO use reflection to map keys to delegates for performance (google linq-expressions-creating-objects)
             var opToBuild = OperatorTypes.First(opType => ((KeyController) opType.GetField("TypeKey", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null)).KeyModel.Equals(model.Type));

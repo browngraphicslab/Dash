@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
-using Windows.Foundation.Metadata;
 using Dash.Controllers;
-using DashShared.Models;
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.UI.Xaml.Controls;
-using Flurl.Util;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -355,7 +347,7 @@ namespace Dash
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new NumberController(DateTime.Now.ToFileTime()), true);
+            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new DateTimeController(DateTime.Now), true);
             if (MainPage.Instance.WebContext == null)
             {
                 return;
@@ -583,6 +575,13 @@ namespace Dash
             }
             return copy;
         }
+
+
+        public static string GetDishName<T>(this T controller) where T : OperatorController
+        {
+            return OperatorScript.GetDishOperatorName<T>();
+        }
+
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
                 ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys, List<KeyController> dontCopyKeys)
         {

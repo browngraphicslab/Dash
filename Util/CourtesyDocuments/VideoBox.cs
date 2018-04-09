@@ -1,16 +1,8 @@
 ﻿using DashShared;
-using DashShared.Models;
 using Windows.Foundation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Windows.Media.Playback;
-using Windows.Media.Core;
 using Windows.UI.Xaml.Controls;
-using Dash.Controllers;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
 using Dash.Converters;

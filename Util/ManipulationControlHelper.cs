@@ -1,44 +1,13 @@
-﻿using DashShared;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Devices.HumanInterfaceDevice;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using Dash.Controllers;
-using static Dash.NoteDocuments;
-using Dash.Controllers.Operators;
-using Dash.Views;
-using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI.Xaml.Media.Animation;
-using Dash.Annotations;
-using DashShared.Models;
-using Flurl.Util;
-using NewControls.Geometry;
-using Syncfusion.Pdf.Graphics;
 
 
 namespace Dash

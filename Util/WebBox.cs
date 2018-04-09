@@ -4,16 +4,8 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Dash;
 using DashShared;
-using Windows.UI.Xaml.Media;
-using Windows.UI;
 using Windows.UI.Xaml.Data;
-using System.Numerics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Linq;
 using Windows.UI.Core;
 using Windows.System;
 

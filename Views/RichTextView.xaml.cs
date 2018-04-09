@@ -1,5 +1,4 @@
 ﻿using Dash.Models.DragModels;
-using DashShared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +13,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using DashShared;
 using static Dash.FieldControllerBase;
 using static Dash.NoteDocuments;
+using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236

@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using DashShared;
 using Windows.Foundation;
-using Visibility = Windows.UI.Xaml.Visibility;
-using System.Globalization;
-using Dash.Models.DragModels;
 using static Dash.DocumentController;
 
 namespace Dash

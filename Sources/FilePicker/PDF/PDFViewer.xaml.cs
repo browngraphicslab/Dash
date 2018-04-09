@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.Data.Pdf;
-using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;

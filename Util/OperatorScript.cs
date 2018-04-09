@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
@@ -58,6 +56,16 @@ namespace Dash
             Debug.Assert(_reverseFunctionMap.ContainsKey(t));
 
             return _reverseFunctionMap.ContainsKey(t) ? _reverseFunctionMap[t] : null;
+        }
+
+        /// <summary>
+        /// returns whether a certain function exists based on a string name
+        /// </summary>
+        /// <param name="funcName"></param>
+        /// <returns></returns>
+        public static bool FuncNameExists(string funcName)
+        {
+            return _functionMap.ContainsKey(funcName);
         }
 
 

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Gma.CodeCloud.Controls.TextAnalyses.Stemmers;
+﻿using Gma.CodeCloud.Controls.TextAnalyses.Stemmers;
 
 namespace Gma.CodeCloud.Controls.TextAnalyses
 {

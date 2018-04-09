@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 
 namespace Dash
 {

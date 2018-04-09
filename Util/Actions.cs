@@ -1,29 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using Windows.UI;
+﻿using Windows.Foundation;
 using Windows.UI.Core;
-using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Shapes;
-using Dash.Controllers;
-using Dash.Models;
-using DashShared;
-using Microsoft.Extensions.DependencyInjection;
-using RadialMenuControl.UserControl;
-using Dash.Controllers.Operators;
 using static Dash.NoteDocuments;
-using Dash.Views.Document_Menu;
 
 namespace Dash
 {
