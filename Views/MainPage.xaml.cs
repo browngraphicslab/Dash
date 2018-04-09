@@ -67,6 +67,7 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
+                xMainDocView.ViewModel.DisableDecorations = true;
 
                 xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
             };
@@ -514,8 +515,12 @@ namespace Dash
             {
                 DataContext = new DocumentViewModel(context.GetViewCopy()),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
+                VerticalAlignment = VerticalAlignment.Stretch,
             };
+
+            dockedView.ViewModel.Width = Double.NaN;
+            dockedView.ViewModel.Height = Double.NaN;
+            dockedView.ViewModel.DisableDecorations = true;
 
             GridSplitter splitter = new GridSplitter();
             Grid.SetColumn(splitter, xOuterGrid.ColumnDefinitions.Count - 2); //second-to-last

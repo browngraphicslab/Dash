@@ -26,6 +26,8 @@ namespace Dash
         public double MaxScale { get; set; } = 5.0;
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
+        public double ManipulationStartX { get; set; }
+        public double ManipulationStartY { get; set; }
 
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
@@ -388,15 +390,22 @@ namespace Dash
 
         private void Dock(bool preview)
         {
-            var currentBoundingBox = InteractiveBounds(ParentDocument.ViewModel);
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(ParentDocument.ViewModel.ActualWidth, ParentDocument.ViewModel.ActualHeight));
             var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
-                new Size(MainPage.Instance.xMainDocView.ActualWidth, MainPage.Instance.xMainDocView.ActualHeight));
+                new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
             {
                 if (preview)
+                {
                     MainPage.Instance.HighlightDock();
+                }
                 else
+                {
+                    ParentDocument.TransformDelta(new Point(ManipulationStartX, ManipulationStartY));
+                    MainPage.Instance.UnhighlightDock();
                     MainPage.Instance.Dock(ParentDocument);
+                }   
             }
             else
             {
@@ -654,6 +663,9 @@ namespace Dash
                 e.Complete();
                 return;
             }
+
+            ManipulationStartX = ParentDocument.ViewModel.XPos;
+            ManipulationStartY = ParentDocument.ViewModel.YPos;
 
             OnManipulatorStarted?.Invoke();
 

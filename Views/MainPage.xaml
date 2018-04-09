@@ -16,9 +16,9 @@
     <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
-            <ColumnDefinition Width="15" x:Name="xPageSplitter"/>
-            <ColumnDefinition MinWidth="50" Width="3*" x:Name="xMainDocViewColumn"/>
-            <ColumnDefinition Width="15" x:Name="xDockColumn"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition MinWidth="50" Width="3*"/>
+            <ColumnDefinition Width="15" MaxWidth="15"/>
         </Grid.ColumnDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>

@@ -778,10 +778,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\DashGridSplitter.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Document Menu\TreeMenuNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
