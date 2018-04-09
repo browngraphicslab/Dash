@@ -23,10 +23,5 @@ namespace Dash.Views.Collection
         {
             this.InitializeComponent();
         }
-
-        private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }
