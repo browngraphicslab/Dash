@@ -11,29 +11,36 @@
     DataContextChanged="EditableScriptBox_OnDataContextChanged">
 
     <Grid x:Name="xBackground" Background="Transparent">
-        <TextBlock x:Name="XTextBlock"
-                   x:FieldModifier="public"
-                   FontSize="{x:Bind FontSize, Mode=OneWay}"
-                   FontWeight="{x:Bind FontWeight, Mode=OneWay}"
-                   Foreground="{x:Bind Foreground}"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Top"
-                   TextWrapping="Wrap" 
-                   DoubleTapped="XTextBlock_DoubleTapped"></TextBlock>
-        <TextBox x:Name="XTextBox"
-                 x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
-                 FontSize="{x:Bind FontSize, Mode=OneWay}"
-                 FontWeight="{x:Bind FontWeight, Mode=OneWay}"
-                 Foreground="{x:Bind Foreground}"
-                 Background="{x:Bind Background}"
-                 HorizontalAlignment="Stretch" 
-                 VerticalAlignment="Top" 
-                 TextWrapping="Wrap" 
-                 BorderThickness="0" 
-                 PointerWheelChanged="XTextBox_OnPointerWheelChanged"
-                 ManipulationDelta="XTextBox_OnManipulationDelta"
-                 KeyDown="XTextBox_OnKeyDown"
-                 LostFocus="XTextBox_OnLostFocus"
-                 Loaded="XTextBox_OnLoaded"></TextBox>
+        <ScrollViewer Height="60">
+            <Grid VerticalAlignment="Center">
+                <TextBlock x:Name="XTextBlock"
+                           x:FieldModifier="public"
+                           FontSize="{x:Bind FontSize, Mode=OneWay}"
+                           FontWeight="{x:Bind FontWeight, Mode=OneWay}"
+                           Foreground="{x:Bind Foreground}"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Top"
+                           TextWrapping="Wrap" 
+                           DoubleTapped="XTextBlock_DoubleTapped"
+                           Padding="10"
+                           ></TextBlock>
+                <TextBox x:Name="XTextBox"
+                         x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
+                         FontSize="{x:Bind FontSize, Mode=OneWay}"
+                         FontWeight="{x:Bind FontWeight, Mode=OneWay}"
+                         Foreground="{x:Bind Foreground}"
+                         Background="{x:Bind Background}"
+                         HorizontalAlignment="Stretch" 
+                         VerticalAlignment="Top" 
+                         TextWrapping="Wrap" 
+                         BorderThickness="0" 
+                         PointerWheelChanged="XTextBox_OnPointerWheelChanged"
+                         ManipulationDelta="XTextBox_OnManipulationDelta"
+                         KeyDown="XTextBox_OnKeyDown"
+                         LostFocus="XTextBox_OnLostFocus"
+                         Loaded="XTextBox_OnLoaded"
+                         Padding="10"></TextBox>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

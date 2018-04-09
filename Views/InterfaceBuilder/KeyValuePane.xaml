@@ -55,10 +55,11 @@
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                             <Setter Property="VerticalContentAlignment" Value="Center" />
-                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Padding" Value="10" />
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="Height" Value="60" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
