@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Windows.Foundation.Metadata;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {

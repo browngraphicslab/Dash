@@ -1,14 +1,9 @@
-﻿using DashShared;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
-using Windows.Web.Http.Headers;
 
 namespace Dash {
     /// <summary>

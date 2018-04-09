@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
-using Dash;
 using DashShared;
 using Windows.UI.Xaml.Data;
-using DashShared.Models;
 
 namespace Dash
 {

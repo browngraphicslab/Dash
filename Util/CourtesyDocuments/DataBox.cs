@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Dash.Controllers;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {
@@ -39,6 +34,10 @@ namespace Dash
             {
                 return ImageBox.MakeView(documentController, context);
             }
+			if (data is VideoController)
+			{
+				return VideoBox.MakeView(documentController, context);
+			}
             else if (data is ListController<DocumentController> docList)
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
@@ -60,7 +59,7 @@ namespace Dash
                 SetupBindings(view, documentController, context);
                 return view;
             }
-            else if (data is TextController || data is NumberController)
+            else if (data is TextController || data is NumberController || data is DateTimeController)
             {
                 return TextingBox.MakeView(documentController, context);
             }

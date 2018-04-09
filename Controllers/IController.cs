@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using DashShared;
-using DashShared.Models;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {

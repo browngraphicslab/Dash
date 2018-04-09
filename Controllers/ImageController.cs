@@ -1,19 +1,6 @@
 ﻿using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
-using DashShared.Models;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Storage.Streams;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Graphics.Imaging;
-using Windows.UI.Xaml.Media;
-using Windows.Storage;
 using System.Diagnostics;
-using Windows.Data.Pdf;
 
 namespace Dash
 {
@@ -29,8 +16,8 @@ namespace Dash
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
-
-        }
+			
+		}
 
         // == METHODS ==
         public override void Init()

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Windows.UI;
+﻿using Windows.UI;
 
 namespace RadialMenuControl.Themes
 {

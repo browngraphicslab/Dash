@@ -1,7 +1,5 @@
-﻿using Dash.Controllers.Operators;
-using DashShared;
+﻿using DashShared;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,13 +15,10 @@ using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
-using Windows.System;
-using Windows.UI.Core;
 using Dash.Models.DragModels;
 
 namespace Dash

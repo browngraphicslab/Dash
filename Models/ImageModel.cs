@@ -4,7 +4,6 @@ using System.Linq;
 using Windows.Storage;
 using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
-using DashShared.Models;
 
 namespace Dash
 {

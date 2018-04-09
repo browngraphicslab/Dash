@@ -41,8 +41,8 @@
 
         <!-- NUMBERS, THICKNESSES -->
         <x:Double x:Key="DocumentOpacity">.9</x:Double>
-        <x:Double x:Key="DefaultFontSize">15</x:Double>
-        <x:Double x:Key="DefaultTitleFontSize">18</x:Double>
+        <x:Double x:Key="DefaultFontSize">14</x:Double>
+        <x:Double x:Key="DefaultTitleFontSize">30</x:Double>
         <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
         <!-- COLORS -->
