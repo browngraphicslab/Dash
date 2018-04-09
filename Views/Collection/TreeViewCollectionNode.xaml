@@ -14,7 +14,8 @@
     <Grid Background="Transparent" HorizontalAlignment="Center" Margin="0,0,0,6">
        <ListView x:Name="xListView"
                  ItemsSource="{Binding BindableDocumentViewModels}" 
-                 SelectionMode="None">
+                 SelectionMode="None" ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                 >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
