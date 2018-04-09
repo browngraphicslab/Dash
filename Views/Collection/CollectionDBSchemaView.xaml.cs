@@ -525,9 +525,8 @@ namespace Dash
 
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //var doc = ParentDocument.GetDataDocument();
+            // Add a new document to the schema view
             ViewModel.AddDocument(Util.BlankNote(), null);
-            // ViewModel.AddDocument(ViewModel., null);
             e.Handled = true;
         }
 
