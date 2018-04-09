@@ -128,7 +128,8 @@ namespace Dash
                     var scale    = new Point(scaleAmt, scaleAmt);
                     var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
 
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
+                    if (scaleAmt != 0)
+                        OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
                 }
             }
         }
