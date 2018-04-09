@@ -32,6 +32,8 @@ namespace Dash
                     CollectionPageView_DataContextChanged(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
+                if (xThumbs.Items.Count > 0)
+                    xThumbs.SelectedIndex = 0;
             };
             xThumbs.SizeChanged += (sender, e) =>
             {
