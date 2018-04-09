@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -17,18 +12,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
-using DashShared.Models;
-using Flurl;
-using Flurl.Http;
-using Newtonsoft.Json.Linq;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
-using Dash.Views.Document_Menu;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 

@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 using static Dash.NoteDocuments;

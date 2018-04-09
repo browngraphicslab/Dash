@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DashShared
+﻿namespace DashShared
 {
     public enum Visibility
     {

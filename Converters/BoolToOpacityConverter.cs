@@ -1,8 +1,4 @@
-﻿using Windows.UI;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
-
-namespace Dash
+﻿namespace Dash
 {
     public class BoolToOpacityConverter : SafeDataToXamlConverter<bool, double>
     {

@@ -63,6 +63,7 @@ namespace Dash
                     if (GetConverter != null)
                     {
                         converter = GetConverter(field);
+						Debug.WriteLine("CONVERTER: " + GetConverter(field) + "FIELD: " + field);
                     }
                     var fieldData = field.GetValue(context);
                     var xamlData = converter == null || fieldData == null

@@ -1,15 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Dash.Controllers;
+﻿using System.Collections.ObjectModel;
 using DashShared;
-using DashShared.Models;
-using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {

@@ -1,20 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel;
-using Windows.Foundation;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using DashShared;
-using DashShared.Models;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Dash
 {

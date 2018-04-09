@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Windows.ApplicationModel.Store;
-using Windows.Devices.PointOfService;
 using Windows.Foundation;
-using Windows.UI.Notifications;
 using RadialMenuControl.Components;
 
 namespace RadialMenuControl.UserControl
 {
     using Themes;
-    using Windows.UI;
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;

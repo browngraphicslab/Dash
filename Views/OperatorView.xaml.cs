@@ -1,23 +1,10 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Shapes;
-using DashShared;
-using System.Collections.Generic;
-using Windows.ApplicationModel;
-using Windows.Foundation;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
-using Windows.UI;
-using Dash.Controllers.Operators;
-using Dash.Views;
-using System.Collections.Specialized;
-using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
-using DashShared.Models;
 using Dash.Models.DragModels;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236

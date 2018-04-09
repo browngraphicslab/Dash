@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dash
+﻿namespace Dash
 {
     public class SearchResultViewModel
     {
@@ -23,7 +17,7 @@ namespace Dash
         public string Id { get; private set; }
         public string ContextualText { get; set; }
         public DocumentController ViewDocument { get; }
-        public DocumentController DocumentCollection { get; }
+        public DocumentController DocumentCollection { get; set; }
         public bool IsLikelyUsefulContextText { get; }
 
     }

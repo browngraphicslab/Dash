@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using Windows.UI.Xaml;
-using Dash;
 using DashShared;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using System.Collections.Generic;
 using Windows.Foundation;
 using Dash.Converters;
 using Windows.UI.Xaml.Controls;

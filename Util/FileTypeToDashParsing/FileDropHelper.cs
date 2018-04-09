@@ -7,8 +7,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using Dash.Controllers;
-using DashShared;
 using static Dash.NoteDocuments;
 
 namespace Dash
@@ -21,6 +19,7 @@ namespace Dash
         Ppt,
         Web,
         Image,
+		Video,
         Json,
         Csv,
         Pdf,
@@ -149,7 +148,9 @@ namespace Dash
                     return await new CsvToDashUtil().ParseFileAsync(fileData);
                 case FileType.Image:
                     return await new ImageToDashUtil().ParseFileAsync(fileData);
-                case FileType.Web:
+				case FileType.Video:
+					return await new VideoToDashUtil().ParseFileAsync(fileData);
+				case FileType.Web:
                     var link = await dataView.GetWebLinkAsync();
                     return new HtmlNote(link.AbsoluteUri, where: where).Document;
                 case FileType.Pdf:
@@ -223,6 +224,11 @@ namespace Dash
                 filepath.EndsWith(".bmp") ||
                 filepath.EndsWith(".gif")) // PRODUCTION READY! Is this all of them? who knows?
                 return FileType.Image;
+			if (filepath.EndsWith(".mp4") ||
+				filepath.EndsWith(".avi") ||
+				filepath.EndsWith(".mov") ||
+				filepath.EndsWith(".mp3"))
+				return FileType.Video;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;
 
