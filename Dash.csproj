@@ -140,7 +140,6 @@
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />
-    <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Browser\BrowserRequest.cs" />
@@ -1164,7 +1163,8 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Dash_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
