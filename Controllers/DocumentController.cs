@@ -820,7 +820,7 @@ namespace Dash
         /// <returns></returns>
         public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields.ToArray())
             {
                 yield return keyFieldPair;
             }
@@ -841,7 +841,7 @@ namespace Dash
         /// <returns></returns>
         public IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> EnumDisplayableFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields)
+            foreach (KeyValuePair<KeyController, FieldControllerBase> keyFieldPair in _fields.ToArray())
             {
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
                     yield return keyFieldPair;

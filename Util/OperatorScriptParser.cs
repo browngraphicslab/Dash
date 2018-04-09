@@ -368,8 +368,8 @@ namespace Dash
             KeyValuePair<string, string> kvp;
 
             bool hasProvidedParamName = (index != -1);//TODO im not certain that this is foolproof 
-            //var isStringLiteral = StringOpeningCharacters.Contains(s[0]) && StringClosingCharacters[StringOpeningCharacters.ToString().IndexOf(s[0])] == s.Last();
-            //hasProvidedParamName &= !isStringLiteral;
+            var isStringLiteral = StringOpeningCharacters.Contains(s[0]) && StringClosingCharacters[StringOpeningCharacters.IndexOf(s[0])] == s.Last();
+            hasProvidedParamName &= !isStringLiteral;
             if (hasProvidedParamName)
             {
                 var funcOpeningCharIndex = s.IndexOf(FunctionOpeningCharacter);
