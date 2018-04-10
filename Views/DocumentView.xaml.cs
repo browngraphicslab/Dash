@@ -208,6 +208,7 @@ namespace Dash
             {
                 SelectedDocuments().ForEach((d) =>
                 {
+                    d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
                     d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                     d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
                 });
