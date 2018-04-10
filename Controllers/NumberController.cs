@@ -44,7 +44,8 @@ namespace Dash
             var data = value as double?;
             if (value is double?)
             {
-                Data = (double)data.Value;
+                if (Data != (double)data.Value)
+                    Data = (double)data.Value;
                 return true;
             }
             if (value is double dub)

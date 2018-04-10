@@ -99,12 +99,20 @@ namespace Dash
                 Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
             };
 
-            PointerPressed += (sender, e) =>
+            AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
             {
                 var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+            }), true);
+
+            PointerPressed += (sender, e) =>
+            {
+                //var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                //var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
+                //ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
             };
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
@@ -121,8 +129,9 @@ namespace Dash
             {
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    e.Handled = true;
+                    MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
+                    e.Handled = true;
                 }
             }
             void ResizeHandles_restorePointerTracking()
@@ -132,6 +141,12 @@ namespace Dash
                 PointerExited += DocumentView_PointerExited;
                 
             };
+            void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+            {
+                ResizeHandles_restorePointerTracking();
+                MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
+                e.Handled = true;
+            }
             ResizeHandleTopLeft.ManipulationDelta     += (s, e) => Resize(s as FrameworkElement, e, true,  true); 
             ResizeHandleTopRight.ManipulationDelta    += (s, e) => Resize(s as FrameworkElement, e, true,  false);
             ResizeHandleBottomLeft.ManipulationDelta  += (s, e) => Resize(s as FrameworkElement, e, false, true);
@@ -140,7 +155,7 @@ namespace Dash
             foreach (var handle in new Ellipse[] { ResizeHandleBottomLeft, ResizeHandleBottomRight, ResizeHandleTopLeft, ResizeHandleTopRight })
             {
                 handle.ManipulationStarted   += ResizeHandles_OnManipulationStarted;
-                handle.ManipulationCompleted += (s, e) => { ResizeHandles_restorePointerTracking(); e.Handled = true; }; // call Snap() if resizing should snap
+                handle.ManipulationCompleted += ResizeHandles_OnManipulationCompleted; 
                 handle.PointerReleased       += (s, e) => ResizeHandles_restorePointerTracking();
                 handle.PointerPressed        += (s, e) =>
                 {
@@ -528,12 +543,11 @@ namespace Dash
 
             if (!this.IsShiftPressed())
             {
-                //uncomment to make children in collection stretch
-                fitFreeFormChildrenToTheirLayouts();
+                var cp = this.GetFirstDescendantOfType<ContentPresenter>();
+                if (cp.Content is CollectionView)
+                    fitFreeFormChildrenToTheirLayouts();
             }
-
         }
-  
 
 
         /// <summary>
