@@ -42,7 +42,7 @@ namespace Dash
             version = 1.0;
         }
 
-        public string GetType()
+        public string GetTypeName()
         {
             return _name;
         }
