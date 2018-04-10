@@ -58,6 +58,18 @@ namespace Dash
             return _reverseFunctionMap.ContainsKey(t) ? _reverseFunctionMap[t] : null;
         }
 
+        private static OperatorController GetOperatorWithName(string funcName)
+        {
+            if (_functionMap.ContainsKey(funcName))
+            {
+                var t = _functionMap[funcName];
+                var op = (OperatorController) Activator.CreateInstance(t);
+                return op;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// returns the dish function name for a given operator
         /// </summary>
@@ -81,6 +93,10 @@ namespace Dash
             return _functionMap.ContainsKey(funcName);
         }
 
+        public static DashShared.TypeInfo GetOutputType(string funcName)
+        {
+            return GetOperatorWithName(funcName)?.Outputs.ElementAt(0).Value ?? DashShared.TypeInfo.None;
+        }
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function

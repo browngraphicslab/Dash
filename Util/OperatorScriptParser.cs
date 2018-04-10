@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using DashShared;
 
 namespace Dash
@@ -101,13 +102,33 @@ namespace Dash
         {
             var number = Interpret(script);
             var num = (double)number.GetValue(null);
-            Debug.Assert(num == correctValue);
+            Debug.Assert(num.Equals(correctValue));
+
+            var asRef = DSL.GetOperatorControllerForScript(script);
+            var toString = DSL.GetScriptForOperatorTree(asRef);
+            for (int i = 0; i < (new Random()).Next(10); i++)
+            {
+                asRef = DSL.GetOperatorControllerForScript(toString);
+                toString = DSL.GetScriptForOperatorTree(asRef);
+            }
+            var number2 = (double)Interpret(toString).GetValue(null);
+            Debug.Assert(number2.Equals(num));
         }
 
         private static void TestString(string script, string correctValue)
         {
             var s = Interpret(script);
             Debug.Assert(s.GetValue(null).Equals(correctValue));
+
+            var asRef = DSL.GetOperatorControllerForScript(script);
+            var toString = DSL.GetScriptForOperatorTree(asRef);
+            for (int i = 0; i < (new Random()).Next(10); i++)
+            {
+                asRef = DSL.GetOperatorControllerForScript(toString);
+                toString = DSL.GetScriptForOperatorTree(asRef);
+            }
+            var s2 = (string)(Interpret(toString).GetValue(null));
+            Debug.Assert(s2.Equals(s.GetValue(null)));
         }
 
         /// <summary>
@@ -156,12 +177,13 @@ namespace Dash
 
             var funcName = op.GetDishName();
             var script = funcName + FunctionOpeningCharacter;
+            var middle = new List<string>();
             foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))
             {
                 Debug.Assert(doc.GetField(inputKey) != null);
-                script += inputKey.Name + ":" + DSL.GetScriptForOperatorTree(doc.GetField(inputKey));
+                middle.Add(inputKey.Name + ":" + DSL.GetScriptForOperatorTree(doc.GetField(inputKey)));
             }
-            return script + FunctionClosingCharacter;
+            return script + string.Join(ParameterDelimiterCharacter, middle)+FunctionClosingCharacter;
         }
 
         /// <summary>
@@ -243,7 +265,7 @@ namespace Dash
             }
 
             //TODO Make sure there aren't multiple quotes
-            return new LiteralExpression(new TextController(s));//TODO
+            return new LiteralExpression(new TextController(s));
         }
 
         private static ScriptExpression ParseNumber(double number)
@@ -281,6 +303,11 @@ namespace Dash
                 if (kvp.Value.IsRequired && !parameters.ContainsKey(kvp.Key))
                 {
                     throw new ScriptException(new MissingParameterScriptErrorModel(func, kvp.Key.Name));
+                }
+                if (parameters.ContainsKey(kvp.Key) && !kvp.Value.Type.HasFlag(parameters[kvp.Key].Type))
+                {
+                    //TODO Trent
+                    //throw new ScriptException(new ...);
                 }
             }
 
@@ -462,6 +489,9 @@ namespace Dash
             public abstract FieldControllerBase Execute();
 
             public abstract FieldControllerBase CreateReference();
+
+            public abstract TypeInfo Type { get; }
+
         }
 
         private class LiteralExpression : ScriptExpression
@@ -477,11 +507,17 @@ namespace Dash
             {
                 return field;
             }
-
+            
             public override FieldControllerBase CreateReference()
             {
+                if (field is TextController)
+                {
+                    return new TextController(StringOpeningCharacters[0]+((TextController)field).Data+StringClosingCharacters[0]);
+                }
                 return field;
             }
+            public override TypeInfo Type => field.TypeInfo;
+
         }
 
         private class FunctionExpression : ScriptExpression
@@ -516,8 +552,11 @@ namespace Dash
             {
                 return OperatorScript.CreateDocumentForOperator(parameters.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key, kvp.Value.CreateReference())), opName);//recursive linq
             }
+
+            public override TypeInfo Type => OperatorScript.GetOutputType(opName);
         }
 
+        #region Exceptions
         public abstract class ScriptErrorModel : EntityBase
         {
             public string ExtraInfo { get; set; }
@@ -694,5 +733,7 @@ namespace Dash
                 return $"A function call was missing a required parameter.  Function Name: {FunctionName}    Missing parameter: {MissingParameter}";
             }
         }
+
+#endregion
     }
 }
