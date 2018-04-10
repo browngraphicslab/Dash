@@ -231,7 +231,8 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
-    <Compile Include="Util\DSL.cs" />
+    <Compile Include="Util\DSL\DashException.cs" />
+    <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
@@ -1098,6 +1099,7 @@
     <ProjectReference Include="DashShared\DashShared.csproj">
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

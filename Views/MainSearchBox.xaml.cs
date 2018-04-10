@@ -96,7 +96,8 @@ namespace Dash
 
             foreach (var list in lists.OrderBy(i => i.Count))
             {
-                var newVm = SearchHelper.DocumentSearchResultToViewModel(list.First());
+                var bestResult = SearchHelper.ChooseHelpfulSearchResult(list, text);
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(bestResult);
                 newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
                 vms.Add(newVm);
             }
@@ -285,6 +286,18 @@ namespace Dash
                 }
 
                 return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
+            }
+
+            /// <summary>
+            /// TODO NICK
+            /// </summary>
+            /// <param name="resultDocs"></param>
+            /// <param name="originalSearch"></param>
+            /// <returns></returns>
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
+            {
+                Debug.Assert(resultDocs.Any());
+                return resultDocs.First();
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
