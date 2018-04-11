@@ -70,9 +70,21 @@ namespace Dash
             }
 
             var maxSearchResultSize = 75;
+            DocumentController resultDict = null;
+            try
+            {
+                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ExecDishOperatorController>() + "({" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
+                resultDict = interpreted as DocumentController;
+            }
+            catch (OperatorScriptParser.InvalidDishScriptException e)
+            {
 
-            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "("+DSL.GetFuncName<ExecDishOperatorController>()+ "({"+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
-            var resultDict = interpreted as DocumentController;
+            }
+            catch(OperatorScriptParser.ScriptExecutionException e)
+            {
+
+            }
+            
 
             if (resultDict == null)
             {
@@ -328,10 +340,11 @@ namespace Dash
             public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
             {
                 var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var doc = ContentController<FieldModel>.GetController<DocumentController>(id.Data);
                 var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
                 var helpText = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey);
 
-                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, null, null, true);
+                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, doc, null, true);
             }
 
             /*

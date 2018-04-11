@@ -408,11 +408,14 @@ namespace Dash
                 }
             }
             kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex), functionKeys, ++parameterIndex, functionName);
-            if (toReturn.ContainsKey(kvp.Key))
+            //if (kvp.Key != null)
             {
-                throw new ScriptException(new ParameterProvidedMultipleTimesScriptErrorModel(functionName, kvp.Key));
+                if (toReturn.ContainsKey(kvp.Key))
+                {
+                    throw new ScriptException(new ParameterProvidedMultipleTimesScriptErrorModel(functionName, kvp.Key));
+                }
+                toReturn[kvp.Key.Trim()] = kvp.Value.Trim();
             }
-            toReturn[kvp.Key.Trim()] = kvp.Value.Trim();
 
             return toReturn;
         }
@@ -422,7 +425,7 @@ namespace Dash
             s = s.Trim();
             if (string.IsNullOrWhiteSpace(s))
             {
-                return new KeyValuePair<string, string>(" ", " ");
+                return new KeyValuePair<string, string>();
             }
             int index = s.IndexOf(':');
 
