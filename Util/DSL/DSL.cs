@@ -7,10 +7,18 @@ using System.Threading.Tasks;
 namespace Dash
 {
     /// <summary>
-    /// Public static API for using DSL (Dish Scripting Language)
+    /// Class used to execute DSL (Dish Scripting Language).  
+    /// This class can be instantiated to use local state, 
+    /// or can be used as a Public static API for using DSL
     /// </summary>
-    public static class DSL
+    public class DSL
     {
+        private ScriptState _state;
+        public DSL(ScriptState state = null)
+        {
+            _state = state ?? new ScriptState();
+        }
+
         /// <summary>
         /// Returns the string name for using the given operator as a Dish Function.
         /// Returns null if it doesn't have a declared name.
@@ -68,6 +76,14 @@ namespace Dash
                 }
                 throw e;
             }
+            catch (OperatorScriptParser.DSLException e)
+            {
+                if (catchErrors)
+                {
+                    return new TextController("Execution Error: " + e.Message);
+                }
+                throw e;
+            }
         }
 
 
@@ -90,6 +106,14 @@ namespace Dash
                 if (catchErrors)
                 {
                     return new TextController(e.ScriptErrorModel.GetHelpfulString());
+                }
+                throw e;
+            }
+            catch (OperatorScriptParser.DSLException e)
+            {
+                if (catchErrors)
+                {
+                    return new TextController("Execution Error: "+e.Message);
                 }
                 throw e;
             }

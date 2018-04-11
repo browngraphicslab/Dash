@@ -586,7 +586,9 @@ namespace Dash
             }
         }
 
-        public class ScriptException : Exception
+        public class DSLException : Exception{}
+
+        public class ScriptException : DSLException
         {
             public ScriptException(ScriptErrorModel error)
             {
@@ -595,7 +597,7 @@ namespace Dash
             public ScriptErrorModel Error { get; }
         }
 
-        public class ScriptExecutionException : Exception
+        public class ScriptExecutionException : DSLException
         {
             public ScriptExecutionException(ScriptExecutionErrorModel error)
             {
