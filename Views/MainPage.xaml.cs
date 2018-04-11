@@ -148,6 +148,7 @@ namespace Dash
             var workspaceViewCopy = workspace.GetViewCopy();
             workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
             workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+            workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
             MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
             setupMapView(workspaceViewCopy);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
