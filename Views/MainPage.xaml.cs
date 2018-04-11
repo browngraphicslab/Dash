@@ -145,10 +145,13 @@ namespace Dash
             {
                 return true;
             }
-            MainDocView.DataContext = new DocumentViewModel(workspace);
-            setupMapView(workspace);
+            var workspaceViewCopy = workspace.GetViewCopy();
+            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+            MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
+            setupMapView(workspaceViewCopy);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceViewCopy, true);
             return true;
         }
 
@@ -487,7 +490,7 @@ namespace Dash
             mapTimer.Tick += (ss,aa) => {
                 if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
                 {
-                    freeformView.ViewManipulationControls.FitToParent();
+                   freeformView.ViewManipulationControls.FitToParent();
                 }
             };
             mapTimer.Start();
