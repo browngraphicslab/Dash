@@ -119,8 +119,9 @@ namespace Dash
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
             AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
 
-            SizeChanged += (sender, e) => {
-                ViewModel?.UpdateActualSize(this.ActualWidth, this.ActualHeight);
+            SizeChanged += (sender, e) =>
+            {
+                ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 PositionContextPreview();
             };
 
@@ -486,8 +487,8 @@ namespace Dash
             var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
 
             // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.ActualWidth, ViewModel.ActualHeight);
-            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualHeight / ViewModel.ActualWidth * oldSize.Width : oldSize.Height;
+            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
+            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
             Size newSize = new Size();
 
             // sets directions/weights depending on which handle was dragged as mathematical manipulations
@@ -500,7 +501,7 @@ namespace Dash
             {
                 // proportional resizing
                 var diffX = cursorXDirection * p.X;
-                newSize = Resize(diffX, ViewModel.ActualHeight / ViewModel.ActualWidth * diffX);
+                newSize = Resize(diffX, ViewModel.ActualSize.Y / ViewModel.ActualSize.X * diffX);
             }
             else
             {
@@ -509,7 +510,7 @@ namespace Dash
 
                 // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
                 newSize.Height = double.IsNaN(newSize.Height)
-                    ? ViewModel.ActualHeight / ViewModel.ActualWidth * newSize.Width
+                    ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
                     : newSize.Height;
             }
 
@@ -525,8 +526,8 @@ namespace Dash
                 if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualWidth: ViewModel.Width) : ViewModel.ActualWidth;
-                    var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualHeight : ViewModel.Height;
+                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X: ViewModel.Width) : ViewModel.ActualSize.X;
+                    var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
                     return new Size(ViewModel.Width, ViewModel.Height);
@@ -540,28 +541,6 @@ namespace Dash
                 (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
 
             e.Handled = true;
-
-            if (!this.IsShiftPressed())
-            {
-                var cp = this.GetFirstDescendantOfType<ContentPresenter>();
-                if (cp.Content is CollectionView)
-                    fitFreeFormChildrenToTheirLayouts();
-            }
-        }
-
-
-        /// <summary>
-        /// If the documentView contains a FreeformCollection, resizes the (TODO: is this right) first
-        /// DocumentVIew in that collection to be the size of the FreeformCollection.
-        /// </summary>
-        void fitFreeFormChildrenToTheirLayouts()
-        {
-            var freeFormChild = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionFreeformView>(this);
-            var parentOfFreeFormChild = freeFormChild != null ? VisualTreeHelperExtensions.GetFirstAncestorOfType<DocumentView>(freeFormChild) : null;
-            if (this == parentOfFreeFormChild)
-            {   // if this document directly contains a free form child, then initialize its contents to fit its layout.
-                freeFormChild?.ViewManipulationControls?.FitToParent();
-            }
         }
 
         // Controls functionality for the Right-click context menu
@@ -834,8 +813,8 @@ namespace Dash
                     }
                     activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newField, footer ? newField : curLayout }).Document;
                     activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
-                    activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualWidth, true);
-                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualHeight+32, true);
+                    activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
+                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
                     activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
                 }
