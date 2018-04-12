@@ -70,7 +70,12 @@ namespace Dash
             //TODO check if func exists
             if (!DSL.FuncNameExists(funcName))
             {
-                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(" + funcName + "," + paramName + ")";
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "({" + funcName + "},{" + paramName + "})";
+            }
+
+            if (OperatorScript.GetFirstInputType(funcName) == DashShared.TypeInfo.Text)
+            {
+                return funcName + "({" + paramName + "})";
             }
 
             return funcName + "(" + paramName + ")";

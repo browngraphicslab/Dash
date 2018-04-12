@@ -95,7 +95,12 @@ namespace Dash
 
         public static DashShared.TypeInfo GetOutputType(string funcName)
         {
-            return GetOperatorWithName(funcName)?.Outputs.ElementAt(0).Value ?? DashShared.TypeInfo.None;
+            return GetOperatorWithName(funcName)?.Outputs?.ElementAt(0).Value ?? DashShared.TypeInfo.None;
+        }
+
+        public static DashShared.TypeInfo GetFirstInputType(string funcName)
+        {
+            return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
 
         /// <summary>
