@@ -138,14 +138,14 @@ namespace Dash
             }
         }
 
-        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args)
+        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args, ScriptState state = null)
         {
             if (_functionMap.ContainsKey(funcName))
             {
                 var t = _functionMap[funcName];
                 var op = (OperatorController) Activator.CreateInstance(t);
                 var outDict = new Dictionary<KeyController, FieldControllerBase>();
-                op.Execute(args,outDict, null);
+                op.Execute(args,outDict, null, state);
                 return outDict.First().Value;
             }
             return null;

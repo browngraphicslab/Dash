@@ -37,7 +37,7 @@ namespace Dash
             return new MapOperatorController();
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var input = (BaseListController) inputs[InputKey];
             var op = (OperatorController)inputs[OperatorKey];

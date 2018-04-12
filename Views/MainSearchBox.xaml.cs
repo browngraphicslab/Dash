@@ -76,11 +76,11 @@ namespace Dash
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ExecDishOperatorController>() + "({" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
                 resultDict = interpreted as DocumentController;
             }
-            catch (OperatorScriptParser.InvalidDishScriptException e)
+            catch (InvalidDishScriptException e)
             {
 
             }
-            catch(OperatorScriptParser.ScriptExecutionException e)
+            catch(ScriptExecutionException e)
             {
 
             }

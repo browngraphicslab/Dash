@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Sockets;
 using DashShared;
 
 namespace Dash
@@ -12,12 +11,14 @@ namespace Dash
         public static char FunctionOpeningCharacter = '(';
         public static char FunctionClosingCharacter = ')';
 
-        private static char[] StringOpeningCharacters = {'{', '<'};
-        private static char[] StringClosingCharacters = { '}', '>'};
+        public static char[] StringOpeningCharacters = {'{', '<'};
+        public static char[] StringClosingCharacters = { '}', '>'};
 
-        private static char ParameterDelimiterCharacter = ',';
+        public static char ParameterDelimiterCharacter = ',';
 
-        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>();
+        public static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>();
+
+        private static bool TEST_STRING_TO_REF = false;
 
         static OperatorScriptParser()
         {
@@ -83,17 +84,17 @@ namespace Dash
 
                 //Testing parse to strign wtihout string notation
 
-                TestString("hello", "hello");
-                TestString("{hello}", "hello");
-                TestString("[\"'(", "[\"'(");
-                TestString("{[\"'(}", "[\"'(");
-                TestString("{[\"{'(}", "[\"{'(");
-                TestString("{{{}", "{{");
+                TestString($"{o}hello{c}", "hello");
+                TestString($"{o}[\"'({c}", "[\"'(");
+                TestString($"{o}[\"{{'({c}", "[\"{'(");
+                TestString(o + "{{" + c, "{{");
 
-                var parts5 = ParseToOuterFunctionParts($"search(trent)");
-                Debug.Assert(parts5.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", $"trent" } })));
+                var parts5 = ParseToOuterFunctionParts($"search({o}trent{c})");
+                Debug.Assert(parts5.Equals(new FunctionParts("search", new Dictionary<string, string>() { { "Term", $"{o}trent{c}" } })));
 
-                var testResults2 = Interpret($"search(hello)"); //Shouldn't throw an error
+                var testResults2 = Interpret($"search({o}hello{c})"); //Shouldn't throw an error
+
+                TestNumber($"let(x, 6, add(x,7))", 13);
             }
 
         }
@@ -104,15 +105,19 @@ namespace Dash
             var num = (double)number.GetValue(null);
             Debug.Assert(num.Equals(correctValue));
 
-            var asRef = DSL.GetOperatorControllerForScript(script);
-            var toString = DSL.GetScriptForOperatorTree(asRef);
-            for (int i = 0; i < (new Random()).Next(10); i++)
+
+            if (TEST_STRING_TO_REF)
             {
-                asRef = DSL.GetOperatorControllerForScript(toString);
-                toString = DSL.GetScriptForOperatorTree(asRef);
+                var asRef = DSL.GetOperatorControllerForScript(script);
+                var toString = DSL.GetScriptForOperatorTree(asRef);
+                for (int i = 0; i < (new Random()).Next(10); i++)
+                {
+                    asRef = DSL.GetOperatorControllerForScript(toString);
+                    toString = DSL.GetScriptForOperatorTree(asRef);
+                }
+                var number2 = (double) Interpret(toString).GetValue(null);
+                Debug.Assert(number2.Equals(num));
             }
-            var number2 = (double)Interpret(toString).GetValue(null);
-            Debug.Assert(number2.Equals(num));
         }
 
         private static void TestString(string script, string correctValue)
@@ -120,15 +125,18 @@ namespace Dash
             var s = Interpret(script);
             Debug.Assert(s.GetValue(null).Equals(correctValue));
 
-            var asRef = DSL.GetOperatorControllerForScript(script);
-            var toString = DSL.GetScriptForOperatorTree(asRef);
-            for (int i = 0; i < (new Random()).Next(10); i++)
+            if (TEST_STRING_TO_REF)
             {
-                asRef = DSL.GetOperatorControllerForScript(toString);
-                toString = DSL.GetScriptForOperatorTree(asRef);
+                var asRef = DSL.GetOperatorControllerForScript(script);
+                var toString = DSL.GetScriptForOperatorTree(asRef);
+                for (int i = 0; i < (new Random()).Next(10); i++)
+                {
+                    asRef = DSL.GetOperatorControllerForScript(toString);
+                    toString = DSL.GetScriptForOperatorTree(asRef);
+                }
+                var s2 = (string) (Interpret(toString).GetValue(null));
+                Debug.Assert(s2.Equals(s.GetValue(null)));
             }
-            var s2 = (string)(Interpret(toString).GetValue(null));
-            Debug.Assert(s2.Equals(s.GetValue(null)));
         }
 
         /// <summary>
@@ -138,12 +146,12 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase Interpret(string script)
+        public static FieldControllerBase Interpret(string script, ScriptState state = null)
         {
             try
             {
                 var se = ParseToExpression(script);
-                return se.Execute();
+                return se.Execute(state ?? new ScriptState());
             }
             catch (ScriptException scriptException)
             {
@@ -156,12 +164,12 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase GetOperatorControllerForScript(string script)
+        public static FieldControllerBase GetOperatorControllerForScript(string script,ScriptState state = null)
         {
             try
             {
                 var se = ParseToExpression(script);
-                return se.CreateReference();
+                return se.CreateReference(state ?? new ScriptState());
 
             }
             catch (ScriptException scriptException)
@@ -231,7 +239,7 @@ namespace Dash
                 }
                 else
                 {
-                    toReturn = IsFunction(script) ? ParseFunction(script) : ParseToExpression(StringOpeningCharacters[0] + script + StringClosingCharacters[0]);
+                    toReturn = IsFunction(script) ? ParseFunction(script) : ParseToVariable(script);
                 }
             }
             
@@ -243,6 +251,13 @@ namespace Dash
         private static bool IsFunction(string script)
         {
             return char.IsLetter(script[0]) && script.Any(i => i.Equals(FunctionOpeningCharacter));
+        }
+
+        private static ScriptExpression ParseToVariable(string variableName)
+        {
+            //TODO maybe require the variable name to be of certain format? (no spaces, no special chars, etc)
+            return new VariableExpression(variableName);
+
         }
 
         private static ScriptExpression ParseString(string s)
@@ -309,6 +324,14 @@ namespace Dash
                     //TODO Trent
                     //throw new ScriptException(new ...);
                 }
+            }
+
+            if (parts.FunctionName.Equals(DSL.GetFuncName<LetOperatorController>()))
+            {
+                return new LetExpression(
+                    (parameters[LetOperatorController.VariableNameKey] as VariableExpression).GetVariableName(), 
+                    parameters[LetOperatorController.VariableValueKey], 
+                    parameters[LetOperatorController.ContinuedExpressionKey]);
             }
 
             return new FunctionExpression(parts.FunctionName, parameters);
@@ -460,285 +483,5 @@ namespace Dash
 
             return kvp;
         }
-
-        public class FunctionParts
-        {
-            public FunctionParts() { }
-
-            public FunctionParts(string functionName, Dictionary<string, string> parameters)
-            {
-                FunctionName = functionName;
-                FunctionParameters = parameters;
-            }
-            public string FunctionName { get; set; }
-            public Dictionary<string, string> FunctionParameters { get; set; }
-
-            public override bool Equals(object obj)
-            {
-                var parts = obj as FunctionParts;
-                if (parts == null)
-                {
-                    return false;
-                }
-                return parts.FunctionName == FunctionName &&
-                           FunctionParameters.All(i => parts.FunctionParameters.ContainsKey(i.Key) && parts.FunctionParameters[i.Key] == i.Value) &&
-                           parts.FunctionParameters.Count == FunctionParameters.Count;
-            }
-        }
-
-
-        private abstract class ScriptExpression
-        {
-            public abstract FieldControllerBase Execute();
-
-            public abstract FieldControllerBase CreateReference();
-
-            public abstract TypeInfo Type { get; }
-
-        }
-
-        private class LiteralExpression : ScriptExpression
-        {
-            private FieldControllerBase field;
-
-            public LiteralExpression(FieldControllerBase field)
-            {
-                this.field = field;
-            }
-
-            public override FieldControllerBase Execute()
-            {
-                return field;
-            }
-            
-            public override FieldControllerBase CreateReference()
-            {
-                if (field is TextController)
-                {
-                    return new TextController(StringOpeningCharacters[0]+((TextController)field).Data+StringClosingCharacters[0]);
-                }
-                return field;
-            }
-            public override TypeInfo Type => field.TypeInfo;
-
-        }
-
-        private class FunctionExpression : ScriptExpression
-        {
-            private string opName;
-            private Dictionary<KeyController, ScriptExpression> parameters;
-
-            public FunctionExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
-            {
-                this.opName = opName;
-                this.parameters = parameters;
-            }
-            public override FieldControllerBase Execute()
-            {
-                var inputs = new Dictionary<KeyController, FieldControllerBase>();
-                foreach (var parameter in parameters)
-                {
-                    inputs.Add(parameter.Key, parameter.Value.Execute());
-                }
-
-                try
-                {
-                    return OperatorScript.Run(opName, inputs);
-                }
-                catch (Exception e)
-                {
-                    throw new ScriptExecutionException(new GeneralScriptExecutionFailure(opName));
-                }
-            }
-
-            public override FieldControllerBase CreateReference()
-            {
-                return OperatorScript.CreateDocumentForOperator(parameters.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key, kvp.Value.CreateReference())), opName);//recursive linq
-            }
-
-            public override TypeInfo Type => OperatorScript.GetOutputType(opName);
-        }
-
-        #region Exceptions
-        public abstract class ScriptErrorModel : EntityBase
-        {
-            public string ExtraInfo { get; set; }
-
-            public abstract string GetHelpfulString();
-        }
-
-
-        public abstract class ScriptExecutionErrorModel : ScriptErrorModel
-        {
-            public Exception InnerException { get; set; }
-        }
-
-        public class GeneralScriptExecutionFailure : ScriptExecutionErrorModel
-        {
-            public GeneralScriptExecutionFailure(string functionName)
-            {
-                FunctionName = functionName;
-            }
-            public string FunctionName { get; private set; }
-            public override string GetHelpfulString()
-            {
-                return "Unknown execution error occurred.  Function called: " + FunctionName;
-            }
-        }
-
-        public class DSLException : Exception{}
-
-        public class ScriptException : DSLException
-        {
-            public ScriptException(ScriptErrorModel error)
-            {
-                Error = error;
-            }
-            public ScriptErrorModel Error { get; }
-        }
-
-        public class ScriptExecutionException : DSLException
-        {
-            public ScriptExecutionException(ScriptExecutionErrorModel error)
-            {
-                Error = error;
-            }
-            public ScriptExecutionErrorModel Error { get; }
-        }
-
-        public class InvalidDishScriptException : Exception
-        {
-            public InvalidDishScriptException(string script, ScriptErrorModel scriptErrorModel, ScriptException innerScriptException =  null)
-            {
-                Script = script;
-                ScriptErrorModel = scriptErrorModel;
-                InnerScriptException = innerScriptException;
-            }
-
-            public string Script { get; private set; }
-            public ScriptException InnerScriptException { get; }
-            public ScriptErrorModel ScriptErrorModel { get; private set; }
-        }
-
-        public class InvalidParameterScriptErrorModel : ScriptErrorModel
-        {
-            public InvalidParameterScriptErrorModel(string parameterName)
-            {
-                ParameterName = parameterName;
-            }
-            public string ParameterName { get; }
-            public override string GetHelpfulString()
-            {
-                return $"A function's parameter was invalid and not part of the function invoked.  Parameter: {ParameterName}";
-            }
-        }
-
-        public class ParameterProvidedMultipleTimesScriptErrorModel : ScriptErrorModel
-        {
-            public ParameterProvidedMultipleTimesScriptErrorModel(string functionName, string parameterName)
-            {
-                ParameterName = parameterName;
-                FunctionName = functionName;
-            }
-            public string ParameterName { get; }
-            public string FunctionName { get; }
-
-            public override string GetHelpfulString()
-            {
-                return $"A parameter was passed multiple times into the same function.  Function: {FunctionName}   Parameter: {ParameterName}";
-            }
-        }
-
-        public class FunctionNotFoundScriptErrorModel : ScriptErrorModel
-        {
-            public FunctionNotFoundScriptErrorModel(string functionName)
-            {
-                FunctionName = functionName;
-            }
-            public string FunctionName { get; }
-
-            public override string GetHelpfulString()
-            {
-                return $"An unknown function was called.  Function: {FunctionName}";
-            }
-        }
-
-        public class FunctionCallMissingScriptErrorModel : ScriptErrorModel
-        {
-            public FunctionCallMissingScriptErrorModel(string attemptedFunction)
-            {
-                AttemptedFunction = attemptedFunction;
-            }
-            public string AttemptedFunction { get; }
-
-            public override string GetHelpfulString()
-            {
-                return $"A function was given but not called.  Attemped Function: {AttemptedFunction}";
-            }
-        }
-
-
-        public class InvalidStringScriptErrorModel : ScriptErrorModel
-        {
-            public InvalidStringScriptErrorModel(string attemptedString)
-            {
-                AttemptedString = attemptedString;
-            }
-            public string AttemptedString { get; }
-
-
-            public override string GetHelpfulString()
-            {
-                return $"A string literal or string return value was invalidly formatted.  Attempted String: {AttemptedString}";
-            }
-        }
-
-        public class EmptyScriptErrorModel : ScriptErrorModel
-        {
-            public EmptyScriptErrorModel()
-            {
-                ExtraInfo = ExtraInfo ?? "";
-                ExtraInfo += "The script was a blank space";
-            }
-
-            public override string GetHelpfulString()
-            {
-                return $"The script or an inner part of the script was empty.";
-            }
-        }
-
-        public class TooManyParametersGivenScriptErrorModel : ScriptErrorModel
-        {
-            public TooManyParametersGivenScriptErrorModel(string functionName, string paramValue)
-            {
-                FunctionName = functionName;
-                ParameterValue = paramValue;
-            }
-            public string FunctionName { get; }
-            public string ParameterValue{ get; }
-
-            public override string GetHelpfulString()
-            {
-                return $"Too many parameters were passed into a function.  Function Name: {FunctionName}    Last given parameter: {ParameterValue}";
-            }
-        }
-
-        public class MissingParameterScriptErrorModel : ScriptErrorModel
-        {
-            public MissingParameterScriptErrorModel(string functionName, string missingParam)
-            {
-                FunctionName = functionName;
-                MissingParameter = missingParam;
-            }
-            public string FunctionName { get; }
-            public string MissingParameter { get; }
-
-            public override string GetHelpfulString()
-            {
-                return $"A function call was missing a required parameter.  Function Name: {FunctionName}    Missing parameter: {MissingParameter}";
-            }
-        }
-
-#endregion
     }
 }

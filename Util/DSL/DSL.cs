@@ -68,7 +68,7 @@ namespace Dash
             {
                 return OperatorScriptParser.Interpret(script);
             }
-            catch (OperatorScriptParser.InvalidDishScriptException e)
+            catch (InvalidDishScriptException e)
             {
                 if (catchErrors)
                 {
@@ -76,7 +76,7 @@ namespace Dash
                 }
                 throw e;
             }
-            catch (OperatorScriptParser.DSLException e)
+            catch (DSLException e)
             {
                 if (catchErrors)
                 {
@@ -101,7 +101,7 @@ namespace Dash
             {
                 return OperatorScriptParser.GetOperatorControllerForScript(script);
             }
-            catch (OperatorScriptParser.InvalidDishScriptException e)
+            catch (InvalidDishScriptException e)
             {
                 if (catchErrors)
                 {
@@ -109,7 +109,7 @@ namespace Dash
                 }
                 throw e;
             }
-            catch (OperatorScriptParser.DSLException e)
+            catch (DSLException e)
             {
                 if (catchErrors)
                 {

@@ -42,7 +42,7 @@ namespace Dash
         /// <param name="variableName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public State<T> AddOrUpdateValue(T variableName, FieldControllerBase value)
+        public virtual State<T> AddOrUpdateValue(T variableName, FieldControllerBase value)
         {
             var d = GetCopy();
             d[variableName] = value;
@@ -57,7 +57,7 @@ namespace Dash
         /// <param name="variableName"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public State<T> RemoveValue(T variableName, bool returnNewState = true, bool throwExceptionIfNotExists = false)
+        public virtual State<T> RemoveValue(T variableName, bool returnNewState = true, bool throwExceptionIfNotExists = false)
         {
             if (throwExceptionIfNotExists && !_dictionary.ContainsKey(variableName))
             {

@@ -40,7 +40,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("99E9328B-7341-403F-819B-26CDAB2F9A51", "Exec to string");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             string result;
             try
@@ -48,7 +48,7 @@ namespace Dash
                 var controller = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
                 result = controller is BaseListController ? string.Join("      " ,(controller as BaseListController).Data.Select(i => i.ToString())) : controller.GetValue(null).ToString();
             }
-            catch (OperatorScriptParser.InvalidDishScriptException e)
+            catch (InvalidDishScriptException e)
             {
                 result = e.ScriptErrorModel.GetHelpfulString();
             }
