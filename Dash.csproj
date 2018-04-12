@@ -182,6 +182,7 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
@@ -318,6 +319,7 @@
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\EditableScriptViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
@@ -347,6 +349,9 @@
     </Compile>
     <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
       <DependentUpon>TreeNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditableScriptBox.xaml.cs">
+      <DependentUpon>EditableScriptBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
@@ -818,6 +823,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\TreeNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditableScriptBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

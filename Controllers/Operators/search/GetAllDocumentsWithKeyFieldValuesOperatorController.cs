@@ -36,8 +36,8 @@ namespace Dash
             new KeyValuePair<KeyController, IOInfo>(ValueQueryKey, new IOInfo(TypeInfo.Text, true)),
         };
 
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
-        new ObservableDictionary<KeyController, TypeInfo>()
+        public override ObservableDictionary<KeyController, DashShared.TypeInfo> Outputs { get; } =
+        new ObservableDictionary<KeyController, DashShared.TypeInfo>()
         {
             [ResultsKey] = TypeInfo.List
         };

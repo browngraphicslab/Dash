@@ -36,6 +36,11 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        public void SetField(FieldControllerBase field, Context c)
+        {
+            GetDocumentController(c).SetField(FieldKey, field, true);
+        }
+
         /// <summary>
         /// Resolve this reference field model to the lowest delegate in the given context
         /// </summary>
