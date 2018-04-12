@@ -70,7 +70,12 @@ namespace Dash
             //TODO check if func exists
             if (!DSL.FuncNameExists(funcName))
             {
-                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(" + funcName + "," + paramName + ")";
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "({" + funcName + "},{" + paramName + "})";
+            }
+
+            if (OperatorScript.GetFirstInputType(funcName) == DashShared.TypeInfo.Text)
+            {
+                return funcName + "({" + paramName + "})";
             }
 
             return funcName + "(" + paramName + ")";
@@ -91,7 +96,7 @@ namespace Dash
             }
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();

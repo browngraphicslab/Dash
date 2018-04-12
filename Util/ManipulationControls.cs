@@ -95,7 +95,7 @@ namespace Dash
             {
                 X = dvm.InteractiveManipulationPosition.X,
                 Y = dvm.InteractiveManipulationPosition.Y
-            }.TransformBounds(new Rect(0, 0, dvm.ActualWidth * dvm.InteractiveManipulationScale.X, dvm.ActualHeight * dvm.InteractiveManipulationScale.Y));
+            }.TransformBounds(new Rect(0, 0, dvm.ActualSize.X * dvm.InteractiveManipulationScale.X, dvm.ActualSize.Y * dvm.InteractiveManipulationScale.Y));
         }
 
         enum AlignmentAxis
@@ -232,7 +232,7 @@ namespace Dash
             var parentDocumentAxesBefore = AlignmentAxes(boundsBeforeTranslation);
 
             var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + translate.X, boundsBeforeTranslation.Y + translate.Y, boundsBeforeTranslation.Width, boundsBeforeTranslation.Height);
-            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
+            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel).ToList().Contains(vm));
             var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
 
             double distanceThreshold = 1000;

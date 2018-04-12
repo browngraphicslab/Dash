@@ -73,6 +73,7 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
+            PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
@@ -160,13 +161,22 @@ namespace Dash
         }
         void               setContainerHeight()
         {
-            if (Parent is RelativePanel relative && FocusManager.GetFocusedElement() == xRichEditBox)
+
+            if (FocusManager.GetFocusedElement() == xRichEditBox)
             {
-                if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
-                    LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
-                xRichEditBox.Measure(new Size(ActualWidth, 1000));
-                var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
-                relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                if (Parent is RelativePanel relative)
+                {
+                    if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
+                        LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
+                    xRichEditBox.Measure(new Size(ActualWidth, 1000));
+                    if (relative != null)
+                    {
+                        var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                        relative.Height = xRichEditBox.DesiredSize.Height + pad;
+                    }
+                }
+                else
+                    Height = double.NaN;
             }
         }
 

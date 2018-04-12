@@ -86,6 +86,33 @@ namespace Dash
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
 
         }
+        
+        public void FitContents()
+        {
+            if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey,null)?.Data == "true" &&
+                ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionView.CollectionViewType.Freeform.ToString())
+            {
+                var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
+                var r = Rect.Empty;
+                foreach (var d in DocumentViewModels)
+                {
+                    r.Union(d.Bounds);
+                }
+                if (r.Width != 0 && r.Height != 0)
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var scale = new Point(scaleAmt, scaleAmt);
+                    var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
+                    if (scaleAmt > 0)
+                    {
+                        ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey,     scale, true);
+                        ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, trans, true);
+                    }
+                }
+            }
+        }
 
 
         #region DocumentModel and DocumentViewModel Data Changes
@@ -427,7 +454,7 @@ namespace Dash
             else if (DocumentViewModels.Count > 0)
             {
                 var lastPos = DocumentViewModels.Last().Position;
-                where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
+                where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
             }
 
 
