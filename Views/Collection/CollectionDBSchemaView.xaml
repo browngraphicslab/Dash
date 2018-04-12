@@ -48,10 +48,10 @@
             </ListView.ItemTemplate>
         </ListView>
         <!--records list-->
-        <ListView x:Name="xRecordsView" x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
+        <ListView x:Name="xRecordsView"  x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
                   SelectionMode="Extended"
-                  Background="#CCDDDDDD"
+                  Background="#f6f6f6"
                   CanDragItems="True"
                   CanReorderItems="True"
                   AllowDrop="True"

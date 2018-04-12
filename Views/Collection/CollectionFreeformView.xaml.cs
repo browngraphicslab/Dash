@@ -531,7 +531,7 @@ namespace Dash
 
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
+            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
             {
                 var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
@@ -543,7 +543,7 @@ namespace Dash
                     ViewModel.AddDocument(
                         new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
                 }
-                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C)
+                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
                     var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                     var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
@@ -552,6 +552,12 @@ namespace Dash
                     {
                         ViewModel.AddDocument(
                             new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    }
+
+                    if (e.Key == VirtualKey.T)
+                    {
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
                     }
 
                     foreach (var v in viewsinMarquee)
