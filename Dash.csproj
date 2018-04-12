@@ -231,9 +231,35 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
-    <Compile Include="Util\DSL.cs" />
+    <Compile Include="Util\DSL\DashException.cs" />
+    <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\DSL\DSLException.cs" />
+    <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionParts.cs" />
+    <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
+    <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\LetExpression.cs" />
+    <Compile Include="Util\DSL\LetOperatorController.cs" />
+    <Compile Include="Util\DSL\LiteralExpression.cs" />
+    <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\MultiLineOperatorScriptParser.cs" />
+    <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptException.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionException.cs" />
+    <Compile Include="Util\DSL\ScriptExpression.cs" />
+    <Compile Include="Util\DSL\ScriptState.cs" />
+    <Compile Include="Util\DSL\State.cs" />
+    <Compile Include="Util\DSL\VariableExpression.cs" />
+    <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
@@ -247,7 +273,7 @@
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\OperatorScript.cs" />
-    <Compile Include="Util\OperatorScriptParser.cs" />
+    <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
@@ -285,6 +311,7 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
@@ -1098,6 +1125,7 @@
     <ProjectReference Include="DashShared\DashShared.csproj">
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

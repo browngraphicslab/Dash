@@ -33,7 +33,7 @@ namespace Dash
             [DifferenceKey] = TypeInfo.Number,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var numberA = (NumberController)inputs[AKey];
             var numberB = (NumberController)inputs[BKey];
