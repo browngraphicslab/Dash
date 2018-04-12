@@ -48,7 +48,13 @@ namespace Dash
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
         public static InkController InkController { get; set; } = new InkController();
 
+        // relating to system wide selected items
         public DocumentView xMapDocumentView;
+        private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
+        public void DeselectAllDocuments() => SelectedDocuments = new List<DocumentView>();
+        public void SelectDocument(DocumentView doc) => SelectedDocuments = new List<DocumentView>() { doc };
+        public void SelectDocuments(IEnumerable<DocumentView> doc) => SelectedDocuments = doc ;
+        public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()
         {
@@ -144,6 +150,11 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
+        /// <summary>
+        /// Updates the workspace currently displayed on the canvas.
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
         public bool SetCurrentWorkspace(DocumentController workspace)
         {
             //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
@@ -177,6 +188,12 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Given a Workspace document (collection freeform), displays the workspace on the main canvas
+        /// and centers on a specific document.
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="document"></param>
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
         {
             RoutedEventHandler handler = null;
@@ -248,6 +265,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Centers the main canvas view to a given document.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
         public bool NavigateToDocumentInWorkspace(DocumentController document)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
