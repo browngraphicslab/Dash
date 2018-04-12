@@ -35,7 +35,6 @@ namespace Dash
     public sealed partial class CollectionFreeformView : ICollectionView, INotifyPropertyChanged
     {
         MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        TransformGroupData  _transformGroup = new TransformGroupData(new Point(), new Point());
         Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         CollectionViewModel _lastViewModel = null;
         List<DocumentView>  _selectedDocs = new List<DocumentView>();
@@ -46,21 +45,18 @@ namespace Dash
         public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
-        public TransformGroupData        TransformGroup {
-            get => _transformGroup;
+        public TransformGroupData        TransformGroup
+        {
+            get
+            {
+                var trans = ViewModel.ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var scale = ViewModel.ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                return new TransformGroupData(trans, scale);
+            }
             set
-            {   //TODO possibly handle a scale center not being 0,0 here
-                if (!_transformGroup.Equals(value))
-                {
-                    _transformGroup = value;
-                    var viewdoc = ViewModel.ContainerDocument;
-                    if (viewdoc != null)
-                    {
-                        viewdoc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey).Data = value.Translate;
-                        viewdoc.GetFieldOrCreateDefault<PointController>(KeyStore.PanZoomKey).Data = value.ScaleAmount;
-                    }
-                    OnPropertyChanged();
-                }
+            {
+                ViewModel.ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
+                ViewModel.ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey, value.ScaleAmount, true);
             }
         }
 
@@ -69,6 +65,16 @@ namespace Dash
         public CollectionFreeformView()
         {
             InitializeComponent();
+            void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                OnPropertyChanged(nameof(TransformGroup));
+            }
+            void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                // if we resize a freeform collection, we adjust its pan/zoom so that all of its contents are visible
+                if (!this.IsShiftPressed())
+                    ViewModel.FitContents();
+            }
             Loaded += (sender, e) =>
             {
                 DataContextChanged -= OnDataContextChanged;
@@ -76,8 +82,17 @@ namespace Dash
                 if (ViewModel != null)
                     OnDataContextChanged(null, null);
                 setupCanvases();
+                ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
             };
-            Unloaded  += (sender, e) => _lastViewModel = null;
+            Unloaded += (sender, e) =>
+            {
+                _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+                _lastViewModel = null;
+            };
             xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
             xOuterGrid.PointerExited  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             xOuterGrid.SizeChanged    += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
@@ -104,8 +119,8 @@ namespace Dash
             if (ViewModel != null && ViewModel != _lastViewModel)
             {
                 var viewdoc = ViewModel.ContainerDocument;
-                var pos     = viewdoc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                var zoom    = viewdoc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                var pos     = TransformGroup.Translate;
+                var zoom    = TransformGroup.ScaleAmount;
                 if (ViewManipulationControls != null)
                 {
                     ViewManipulationControls.ElementScale = zoom.X;
@@ -121,8 +136,8 @@ namespace Dash
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        void setupCanvases() {
-
+        void setupCanvases()
+        {
             MakePreviewTextbox();
             
             //make and add selectioncanvas 
@@ -138,7 +153,7 @@ namespace Dash
             
             if (ParentDocument?.ViewModel.LayoutDocument?.GetField<TextController>(KeyStore.CollectionFitToParentKey)?.Data == "true")
             {
-                ViewManipulationControls.FitToParent();
+                ViewModel.FitContents();
             }
         }
 
@@ -325,7 +340,7 @@ namespace Dash
                     (float)matrix.OffsetY);
                 xBackgroundCanvas.Invalidate();
             }
-
+            
             TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 

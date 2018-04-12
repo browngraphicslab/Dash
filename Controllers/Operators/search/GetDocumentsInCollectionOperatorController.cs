@@ -42,7 +42,7 @@ namespace Dash
         };
 
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var searchTerm = inputs[TextKey] as TextController;
             if (searchTerm != null && searchTerm.Data != null)
