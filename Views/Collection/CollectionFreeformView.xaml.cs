@@ -25,6 +25,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
 using Dash.Annotations;
+using Dash.Views.Collection;
 using DashShared;
 using NewControls.Geometry;
 
@@ -461,6 +462,7 @@ namespace Dash
         Rectangle _marquee;
         Point     _marqueeAnchor;
         bool      _isMarqueeActive;
+        private MarqueeInfo mInfo;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -511,6 +513,9 @@ namespace Dash
                     MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
                     _marquee.AllowFocusOnInteraction = true;
                     SelectionCanvas.Children.Add(_marquee);
+
+                    mInfo = new MarqueeInfo();
+                    SelectionCanvas.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -520,6 +525,9 @@ namespace Dash
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
                     args.Handled = true;
+                   
+                    Canvas.SetLeft(mInfo, newAnchor.X);
+                    Canvas.SetTop(mInfo, newAnchor.Y + newHeight);
                 }
             }
         }
