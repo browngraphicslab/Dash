@@ -167,7 +167,7 @@ namespace DashShared
             public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
             public static KeyModel OperatorKey = new KeyModel("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
-            public static KeyModel OperatorCacheKey = new KeyModel("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041", "Operator Cache");
+            public static KeyModel OperatorCacheKey = new KeyModel("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041", "_Operator Cache");
             public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "_Parsed Fields");
             public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "_WebContext");
             public static KeyModel ModifiedTimestampKey = new KeyModel("CAAD33A3-DE94-42CF-A54A-F85C5F04940E", "ModifiedTime");
