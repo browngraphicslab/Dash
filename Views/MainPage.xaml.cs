@@ -125,6 +125,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
             OperatorScriptParser.TEST();
+            MultiLineOperatorScriptParser.TEST();
 
             BrowserView.ForceInit();
 

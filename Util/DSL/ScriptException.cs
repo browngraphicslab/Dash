@@ -8,6 +8,10 @@
             Error = error;
         }
         public ScriptErrorModel Error { get; }
+        public override string GetHelpfulString()
+        {
+            return Error.GetHelpfulString();
+        }
     }
     
 }

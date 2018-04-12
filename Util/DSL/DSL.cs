@@ -19,6 +19,29 @@ namespace Dash
             _state = state ?? new ScriptState();
         }
 
+        public FieldControllerBase Run(string script, bool catchErrors)
+        {
+            try
+            {
+                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
+                return OperatorScriptParser.Interpret(singleLineScript, _state);
+            }
+            catch (DSLException e)
+            {
+                if (catchErrors)
+                {
+                    return new TextController(e.GetHelpfulString());
+                }
+                throw e;
+            }
+        }
+
+        public FieldControllerBase this[string variableName]
+        {
+            get { return _state[variableName]; }
+            set { _state = _state.AddOrUpdateValue(variableName, value) as ScriptState; }
+        }
+
         /// <summary>
         /// Returns the string name for using the given operator as a Dish Function.
         /// Returns null if it doesn't have a declared name.
@@ -66,21 +89,14 @@ namespace Dash
         {
             try
             {
-                return OperatorScriptParser.Interpret(script);
-            }
-            catch (InvalidDishScriptException e)
-            {
-                if (catchErrors)
-                {
-                    return new TextController(e.ScriptErrorModel.GetHelpfulString());
-                }
-                throw e;
+                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
+                return OperatorScriptParser.Interpret(singleLineScript);
             }
             catch (DSLException e)
             {
                 if (catchErrors)
                 {
-                    return new TextController("Execution Error: " + e.Message);
+                    return new TextController(e.GetHelpfulString());
                 }
                 throw e;
             }
@@ -99,21 +115,14 @@ namespace Dash
         {
             try
             {
-                return OperatorScriptParser.GetOperatorControllerForScript(script);
-            }
-            catch (InvalidDishScriptException e)
-            {
-                if (catchErrors)
-                {
-                    return new TextController(e.ScriptErrorModel.GetHelpfulString());
-                }
-                throw e;
+                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
+                return OperatorScriptParser.GetOperatorControllerForScript(singleLineScript);
             }
             catch (DSLException e)
             {
                 if (catchErrors)
                 {
-                    return new TextController("Execution Error: "+e.Message);
+                    return new TextController(e.GetHelpfulString());
                 }
                 throw e;
             }

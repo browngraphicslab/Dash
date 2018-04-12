@@ -2,6 +2,9 @@
 
 namespace Dash
 {
-        public class DSLException : Exception{}
+    public abstract class DSLException : Exception
+    {
+        public abstract string GetHelpfulString();
+    }
 
 }

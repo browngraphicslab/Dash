@@ -28,7 +28,7 @@ namespace Dash
             }
         }
 
-        private static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsTrackingInternals = new List<KeyValuePair<char, char>>()
+        public static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsTrackingInternals = new List<KeyValuePair<char, char>>()
         {
             new KeyValuePair<char, char>('[',']'),
             new KeyValuePair<char, char>(FunctionOpeningCharacter, FunctionClosingCharacter)
@@ -95,6 +95,7 @@ namespace Dash
                 var testResults2 = Interpret($"search({o}hello{c})"); //Shouldn't throw an error
 
                 TestNumber($"let(x, 6, add(x,7))", 13);
+                TestNumber($"let(x, 6, add(x,let(x, 3, add(x,2))))", 11);
             }
 
         }
@@ -431,7 +432,8 @@ namespace Dash
                 }
             }
             kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex), functionKeys, ++parameterIndex, functionName);
-            //if (kvp.Key != null)
+
+            if (kvp.Key != null)
             {
                 if (toReturn.ContainsKey(kvp.Key))
                 {
@@ -454,7 +456,7 @@ namespace Dash
 
             KeyValuePair<string, string> kvp;
 
-            bool hasProvidedParamName = (index != -1);//TODO im not certain that this is foolproof 
+            bool hasProvidedParamName = (index != -1);
             var isStringLiteral = StringOpeningCharacters.Contains(s[0]) && StringClosingCharacters[StringOpeningCharacters.IndexOf(s[0])] == s.Last();
             hasProvidedParamName &= !isStringLiteral;
             if (hasProvidedParamName)
