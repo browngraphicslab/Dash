@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using Dash.Models;
-using DashShared;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash.StaticClasses
 {

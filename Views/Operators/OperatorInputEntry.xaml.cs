@@ -1,23 +1,14 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using Windows.UI;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -62,7 +53,9 @@ namespace Dash
                 _refDoc = dragData.DraggedDocument?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                
+
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 xEllipse.Stroke = new SolidColorBrush(Colors.Red);
                 if (dragData.DraggedKey != null)
                 {
@@ -89,7 +82,7 @@ namespace Dash
             {
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
-                var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
+                var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
                 var fieldKey = dragData.FieldKey;
                 opDoc.SetField(key, new TextController(fieldKey.Id), true);
@@ -115,8 +108,8 @@ namespace Dash
             // set the types of data this operator input can handle
             var el = sender as FrameworkElement;
             var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
-            var key = ((DictionaryEntry?)el?.DataContext)?.Key as KeyController;
-            _inputType = opField.Inputs[key].Type;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
+            _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
 
 
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
@@ -216,7 +209,7 @@ namespace Dash
             {
                 return;
             }
-            var key = ((DictionaryEntry?)DataContext)?.Key as KeyController;
+            var key = ((KeyValuePair<KeyController, IOInfo>?)DataContext)?.Key as KeyController;
             if (args.ChosenSuggestion is CollectionKeyPair chosen)
             {
                 if (chosen.CollectionKey == null)

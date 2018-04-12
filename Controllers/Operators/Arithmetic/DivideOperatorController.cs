@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Windows.Foundation.Metadata;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {
+    [OperatorType("div")]
     public class DivideOperatorController : OperatorController
     {
 
@@ -28,27 +28,23 @@ namespace Dash
         public static readonly KeyController RemainderKey =
             new KeyController("32208EDB-B673-4957-A0AB-3704A15A1686", "Remainder");
 
-        public override ObservableDictionary<KeyController, IOInfo> Inputs { get; } =
-            new ObservableDictionary<KeyController, IOInfo>
-            {
-                [AKey] = new IOInfo(TypeInfo.Number, true),
-                [BKey] = new IOInfo(TypeInfo.Number, true)
-            };
-
-        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } =
-            new ObservableDictionary<KeyController, TypeInfo>
-            {
-                [QuotientKey] = TypeInfo.Number,
-                [RemainderKey] = TypeInfo.Number
-            };
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+        {
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true))
+        };
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        {
+            [QuotientKey] = TypeInfo.Number,
+            [RemainderKey] = TypeInfo.Number
+        };
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("7169B1E9-957A-49DC-91F6-16364A1AB576", "Divide");
 
         public static int numExecutions = 0;
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var numberA = (NumberController) inputs[AKey];
             var numberB = (NumberController) inputs[BKey];

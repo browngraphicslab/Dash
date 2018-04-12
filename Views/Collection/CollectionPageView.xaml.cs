@@ -1,24 +1,14 @@
-﻿using Dash.Converters;
-using DashShared.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Dash.Models.DragModels;
 
@@ -42,10 +32,13 @@ namespace Dash
                     CollectionPageView_DataContextChanged(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
+                if (xThumbs.Items.Count > 0)
+                    xThumbs.SelectedIndex = 0;
             };
             xThumbs.SizeChanged += (sender, e) =>
             {
-                FitPageButton_Click(null, null);
+                if (CurPage?.Content is CollectionView cview)
+                    cview.ViewModel.FitContents();
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
@@ -223,7 +216,7 @@ namespace Dash
         }
         public DocumentViewModel CurPage
         {
-            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : this.xDocView.DataContext as DocumentViewModel; }
+            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : xDocView.DataContext as DocumentViewModel; }
             set
             {
                 xDocView.DataContext = value;
@@ -236,62 +229,24 @@ namespace Dash
                     Tag = "CurPage Title Binding"
                 };
 
-                if (value.Content is CollectionView)
-                {
-                    value.Content.Loaded -= Content_Loaded;
-                    value.Content.Loaded += Content_Loaded;
-                }
-
                 SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
                 
-                var cview = (CurPage?.Content as CollectionView);
-                if (cview != null)
+                if (value.Content is CollectionView cview)
                 {
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
+                    void Cview_Loaded(object sender, RoutedEventArgs e)
+                    {
+                        void ContainerDocument_FieldModelUpdated(FieldControllerBase s, FieldUpdatedEventArgs args, Context context)
+                        {
+                            cview.ViewModel.FitContents();
+                        }
+                        cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
+                        cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
+                        cview.ViewModel.FitContents();
+                    }
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
                 }
-            }
-        }
-
-        private void ContainerDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var cview = (CurPage?.Content as CollectionView);
-            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
-        }
-
-        private void Cview_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cview = sender as CollectionView;
-            cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-            cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
-            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
-        }
-
-        private void Content_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cv = sender as CollectionView;
-            if (cv != null)
-            {
-                var _element = cv.CurrentView as CollectionFreeformView;
-                if (_element is CollectionFreeformView)
-                {
-                    _element.Loaded -= _element_Loaded;
-                    _element.Loaded += _element_Loaded;
-                }
-                cv.Loaded -= Content_Loaded;
-            }
-        }
-
-        private void _element_Loaded(object sender, RoutedEventArgs e)
-        {
-            var _element = sender as CollectionFreeformView;
-            if (_element is CollectionFreeformView)
-            {
-                _element.ViewManipulationControls.FitToParent();
-                _element.Loaded -= _element_Loaded;
             }
         }
         
@@ -382,13 +337,7 @@ namespace Dash
                 xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
             }
         }
-
-        private void FitPageButton_Click(object sender, RoutedEventArgs e)
-        {
-            var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element?.ViewManipulationControls?.FitToParent();
-        }
-
+        
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var ind = xThumbs.SelectedIndex;

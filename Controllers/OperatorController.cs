@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using DashShared;
 
 namespace Dash
@@ -28,12 +27,50 @@ namespace Dash
         }
     }
 
+
+    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
+    public class OperatorTypeAttribute : Attribute
+    {
+        private string _name;
+        public double version;
+
+        public OperatorTypeAttribute(string name)
+        {
+            this._name = name;
+
+            // Default value.
+            version = 1.0;
+        }
+
+        public string GetTypeName()
+        {
+            return _name;
+        }
+    }
+
     public abstract class OperatorController : FieldModelController<OperatorModel>
     {
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<KeyController, IOInfo> Inputs { get; }
+        public abstract ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; }
+
+        /*
+        /// <summary>
+        /// returns the Inputs in specific order for the operator
+        /// </summary>
+        public virtual List<KeyController> InputKeyOrder
+        {
+            get
+            {
+                return Inputs.Keys.ToList(); 
+            }
+        }
+
+        public KeyController GetKeyAtIndex(int index)
+        {
+            return InputKeyOrder[index];
+        }*/
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
@@ -55,7 +92,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null);
 
         /// <summary>
         /// Create a new <see cref="OperatorController"/> associated with the passed in <see cref="OperatorFieldModel" />

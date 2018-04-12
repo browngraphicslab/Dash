@@ -1,23 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -179,12 +169,14 @@ namespace Dash
         private void XTextBlock_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
+            Highlight(true);
             MainPage.Instance.HighlightDoc(docTapped, true);
 
         }
 
         private void XTextBlock_PointerExited(object sender, PointerRoutedEventArgs e)
         {
+            Highlight(false);
             var docTapped = (DataContext as DocumentViewModel).DocumentController;
             MainPage.Instance.HighlightDoc(docTapped, false);
         }
@@ -268,7 +260,9 @@ namespace Dash
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Visible;
+            XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
+            XTextBox.SelectAll();
         }
 
         private void Open_OnClick(object sender, RoutedEventArgs e)
@@ -279,6 +273,7 @@ namespace Dash
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
             xBorder.Visibility = Visibility.Collapsed;
+            XTextBlock.Visibility = Visibility.Visible;
         }
 
         private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)

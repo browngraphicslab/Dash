@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI;

@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.UI.Text;
+﻿using Windows.UI.Text;
 
 namespace Dash.Converters
 {

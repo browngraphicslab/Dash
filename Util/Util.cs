@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -136,22 +135,6 @@ namespace Dash
             {
                 X = p.X,
                 Y = p.Y
-            };
-        }
-
-        /// <summary>
-        ///     Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too
-        ///     stubborn
-        /// </summary>
-        /// <param name="toBind"></param>
-        public static void ForceBindHeightToParentDocumentHeight(FrameworkElement toBind)
-        {
-            var parent = toBind.GetFirstAncestorOfType<DocumentView>();
-            if (parent == null) return;
-            parent.SizeChanged += (ss, ee) =>
-            {
-                toBind.Width = parent.ActualWidth;
-                toBind.Height = parent.ActualHeight;
             };
         }
 

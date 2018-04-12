@@ -1,7 +1,5 @@
-﻿using Dash.Controllers.Operators;
-using DashShared;
+﻿using DashShared;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,13 +15,10 @@ using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using static Dash.NoteDocuments;
-using Windows.System;
-using Windows.UI.Core;
 using Dash.Models.DragModels;
 
 namespace Dash
@@ -90,6 +85,33 @@ namespace Dash
             CellSize = 250; // TODO figure out where this should be set
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
 
+        }
+        
+        public void FitContents()
+        {
+            if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey,null)?.Data == "true" &&
+                ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionView.CollectionViewType.Freeform.ToString())
+            {
+                var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
+                var r = Rect.Empty;
+                foreach (var d in DocumentViewModels)
+                {
+                    r.Union(d.Bounds);
+                }
+                if (r.Width != 0 && r.Height != 0)
+                {
+                    var rect = new Rect(new Point(), new Point(parSize.X, parSize.Y));
+                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
+                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
+                    var scale = new Point(scaleAmt, scaleAmt);
+                    var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
+                    if (scaleAmt > 0)
+                    {
+                        ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey,     scale, true);
+                        ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, trans, true);
+                    }
+                }
+            }
         }
 
 
@@ -382,7 +404,7 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(text: text, size: new Size(400, 40)).Document;
+                    var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -432,7 +454,7 @@ namespace Dash
             else if (DocumentViewModels.Count > 0)
             {
                 var lastPos = DocumentViewModels.Last().Position;
-                where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
+                where = new Point(lastPos.X + DocumentViewModels.Last().ActualSize.X, lastPos.Y);
             }
 
 
@@ -536,18 +558,18 @@ namespace Dash
             {
                 var text = await e.DataView.GetRtfAsync();
 
-                var t = new RichTextNote(text);
+                var t = new RichTextNote(text, where, new Size(300, double.NaN));
                 AddDocument(t.Document, null);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
             {
                 var text = await e.DataView.GetTextAsync();
-                var t = new RichTextNote(text);
+                var t = new RichTextNote(text, where, new Size(300,double.NaN));
                 var matches = new Regex(".*:.*").Matches(text);
                 foreach (var match in matches)
                 {
                     var pair = new Regex(":").Split(match.ToString());
-                    t.Document.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim('\r')), true);
+                    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
                 }
                 AddDocument(t.Document, null);
             }

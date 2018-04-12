@@ -1,12 +1,7 @@
 using System;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using DashShared;
 using System.Collections.Generic;
-using System.Diagnostics;
-using Windows.UI.Xaml.Data;
 using Dash.Converters;
-using DashShared.Models;
 
 namespace Dash
 {
@@ -81,17 +76,20 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
+            return OperatorScriptParser.GetScriptForOperatorTree(this, context);
+
+            /*
             var refDoc = GetDocumentController(context);
             var opField = refDoc.GetDereferencedField(KeyStore.OperatorKey, context) as OperatorController;
             if (opField != null)
             {
                 var str = "=" + (opField.Model as OperatorModel).Type + "(";
                 foreach (var input in opField.Inputs)
-                    str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
+                    str += refDoc.GetField(input.Key)?.ToString().TrimStart('=') + ",";
                 str = str.TrimEnd(',') + ")";
                 return str;
             }
-            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
+            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;*/
         }
         public override bool TrySetValue(object value)
         {
@@ -102,8 +100,7 @@ namespace Dash
                 return doc.ParseDocField(FieldKey, s, field);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
-                var rtfield = doc.GetFieldOrCreateDefault<RichTextController>(FieldKey);
-                rtfield.Data = rtd;
+                doc.SetField<RichTextController>(FieldKey, rtd, true);
                 return true;
             }
 

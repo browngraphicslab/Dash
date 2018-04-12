@@ -1,22 +1,13 @@
-﻿using Microsoft.ProjectOxford.Vision.Contract;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
-using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using NewControls.Geometry;
-using static Dash.NoteDocuments;
 using Point = Windows.Foundation.Point;
-using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -118,30 +109,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        public void FitToParent()
-        {
-            var par = _freeformView.Parent as FrameworkElement;
-            if (par != null)
-            {
-                var r = Rect.Empty;
-                foreach (var dvm in _freeformView.ViewModel.DocumentViewModels)
-
-                {
-                    r.Union(dvm.Bounds);
-                }
-                if (r != Rect.Empty)
-                {
-                    var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
-                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
-                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
-                    var scale    = new Point(scaleAmt, scaleAmt);
-                    var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
-
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
-                }
-            }
-        }
+        
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;

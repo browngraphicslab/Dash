@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -17,19 +12,11 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
-using DashShared.Models;
-using Flurl;
-using Flurl.Http;
-using Newtonsoft.Json.Linq;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
-using Dash.Views.Document_Menu;
-using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
-using Microsoft.Toolkit.Uwp.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Timers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -46,7 +33,6 @@ namespace Dash
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
-        public static InkController InkController { get; set; } = new InkController();
 
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
@@ -135,14 +121,18 @@ namespace Dash
                 }
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
+
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+
                 setupMapView(lastWorkspace);
             }
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            
+            OperatorScriptParser.TEST();
+            MultiLineOperatorScriptParser.TEST();
+
             BrowserView.ForceInit();
 
             //this next line is optional and can be removed.  
@@ -167,10 +157,14 @@ namespace Dash
             {
                 return true;
             }
-            MainDocView.DataContext = new DocumentViewModel(workspace);
-            setupMapView(workspace);
+            var workspaceViewCopy = workspace.GetViewCopy();
+            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+            workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+            MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
+            setupMapView(workspaceViewCopy);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceViewCopy, true);
             return true;
         }
 
@@ -299,7 +293,7 @@ namespace Dash
         private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     if (flag == null)
                         dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
@@ -333,15 +327,15 @@ namespace Dash
             }
 
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument()))
+                if (dm.DocumentController.Equals(document))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
 
                     
 
@@ -374,8 +368,8 @@ namespace Dash
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -510,21 +504,25 @@ namespace Dash
         private void setupMapView(DocumentController context)
         {
             mapTimer.Stop();
+            mapTimer = new DispatcherTimer();
             if (xMapDocumentView != null)
             {
-                xLeftStack.Children.Remove(xMapDocumentView);
+                xLeftGrid.Children.Remove(xMapDocumentView);
             }
-            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-            xLeftStack.Children.Add(xMapDocumentView);
-            mapTimer.Interval = new TimeSpan(0, 0, 1);
-            mapTimer.Tick += (ss,aa) => {
-                if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
-                {
-                    freeformView.ViewManipulationControls.FitToParent();
-                }
+            var copy = context.GetViewCopy();
+            copy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+            xMapDocumentView = new DocumentView() {  DataContext = new DocumentViewModel(copy), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            xMapDocumentView.Loaded += (s,e) =>
+            {
+                var collectionViewModel = xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel;
+                mapTimer.Interval = new TimeSpan(0, 0, 1);
+                mapTimer.Tick += (ss, ee) => collectionViewModel.FitContents();
+                mapTimer.Start();
             };
-            mapTimer.Start();
+            Grid.SetColumn(xMapDocumentView, 2);
+            xLeftStack.Children.Add(xMapDocumentView);
         }
+
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)

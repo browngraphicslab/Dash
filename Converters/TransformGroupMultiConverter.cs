@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media;
 
@@ -37,6 +33,7 @@ namespace Dash
                 X = pos.X,
                 Y = pos.Y
             });
+            System.Diagnostics.Debug.WriteLine("Pos = " + pos + " scale = " + scale);
             return new MatrixTransform() { Matrix = group.Value };
         }
 

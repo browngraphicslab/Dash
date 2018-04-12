@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reflection;
 using Windows.UI.Xaml.Data;
 
 namespace Dash

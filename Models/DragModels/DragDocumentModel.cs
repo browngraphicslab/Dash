@@ -80,7 +80,20 @@ namespace Dash.Models.DragModels
 
             // create a view copy
             var shiftState = MainPage.Instance.IsShiftPressed() || ShowViewCopy || forceShowViewCopy;
-            if (shiftState) return DraggedDocument.GetViewCopy(where);
+            if (shiftState)
+            {
+                var vcopy = DraggedDocument.GetViewCopy(where);
+                // when we drop a collection that has no bounds (e.g., a workspace), then we create
+                // an arbitrary size for it and zero out its pan position so that it will FitToParent
+                if (double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data) &&                    
+                    vcopy.DocumentType.Equals(NoteDocuments.CollectionNote.DocumentType))
+                {
+                    vcopy.SetField<NumberController>(KeyStore.WidthFieldKey, 500, true);
+                    vcopy.SetField<NumberController>(KeyStore.HeightFieldKey,300, true);
+                    vcopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                }
+                return vcopy;
+            }
 
             // create a key value pane
             return DraggedDocument.GetKeyValueAlias(where);

@@ -1,21 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Windows.Foundation;
-using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
-using DashShared;
-using Windows.UI.Xaml.Controls.Primitives;
-using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
@@ -266,8 +256,7 @@ namespace Dash
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
                 [KeyStore.HorizontalAlignmentKey] = new TextController(HorizontalAlignment.Stretch.ToString()),
                 [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
-                [KeyStore.ActualWidthKey] = new NumberController(double.NaN),
-                [KeyStore.ActualHeightKey] = new NumberController(double.NaN)
+                [KeyStore.ActualSizeKey] = new PointController(double.NaN, double.NaN),
                 
         };
 

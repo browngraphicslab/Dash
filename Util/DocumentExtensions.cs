@@ -3,16 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
-using Windows.Foundation.Metadata;
 using Dash.Controllers;
-using DashShared.Models;
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Storage;
-using Windows.UI.Xaml.Controls;
-using Flurl.Util;
-using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
@@ -208,7 +200,7 @@ namespace Dash
             var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc)) ?? doc;
             var activeLayout =  new KeyValueDocumentBox(null).Document;
             activeLayout.SetField(KeyStore.DocumentContextKey, docContext, true);
-            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(200), false);
+            activeLayout.SetField(KeyStore.HeightFieldKey, new NumberController(500), false);
             if (where != null)
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey, new PointController((Point)where), true);
@@ -218,7 +210,7 @@ namespace Dash
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointController(
-                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? doc.GetActiveLayout().GetField<NumberController>(KeyStore.ActualWidthKey).Data) + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<PointController>(KeyStore.ActualSizeKey)?.Data.X ?? doc.GetActiveLayout().GetField<PointController>(KeyStore.ActualSizeKey).Data.X) + 70, 
                         where?.Y ?? oldPosition.Data.Y)),
                         true);
             }
@@ -231,7 +223,7 @@ namespace Dash
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
-                where = new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 70,
+                where = new Point(where?.X ?? oldPosition.Data.X + doc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X + 70,
                             where?.Y ?? oldPosition.Data.Y);
             }
             Debug.Assert(where != null);
@@ -355,7 +347,7 @@ namespace Dash
         public static void CaptureNeighboringContext(this DocumentController doc)
         {
             var dataDocument = doc.GetDataDocument();
-            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new NumberController(DateTime.Now.ToFileTime()), true);
+            dataDocument.SetField(KeyStore.ModifiedTimestampKey, new DateTimeController(DateTime.Now), true);
             if (MainPage.Instance.WebContext == null)
             {
                 return;
@@ -549,17 +541,16 @@ namespace Dash
             var posField = activeLayout?.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController ??
                            doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController;
 
-
             return posField;
         }
 
         public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)
         {
+            context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout();
-            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
-                                       new Context(context)) as PointController ??
-                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
-                                       PointController;
+            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController ??
+                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController;
+
             return scaleAmountField;
         }
 
@@ -583,6 +574,13 @@ namespace Dash
             }
             return copy;
         }
+
+
+        public static string GetDishName<T>(this T controller) where T : OperatorController
+        {
+            return DSL.GetFuncName(controller);
+        }
+
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
                 ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys, List<KeyController> dontCopyKeys)
         {

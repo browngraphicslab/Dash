@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Windows.UI.Xaml.Controls;
-
-namespace Dash
+﻿namespace Dash
 {
     public class SimpleCollectionViewModel //: CollectionViewModel
     {

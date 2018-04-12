@@ -4,16 +4,8 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Dash;
 using DashShared;
-using Windows.UI.Xaml.Media;
-using Windows.UI;
 using Windows.UI.Xaml.Data;
-using System.Numerics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Linq;
 using Windows.UI.Core;
 using Windows.System;
 
@@ -70,12 +62,6 @@ namespace Dash
                 element.SetBinding(WebView.SourceProperty, sourceBinding);
         }
 
-
-        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
-        {
-            CourtesyDocument.SetupBindings(element, docController, context);
-            SetupTextBinding(element, docController, context);
-        }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // the document field model controller provides us with the DATA
@@ -106,8 +92,9 @@ namespace Dash
             else web.Source = new Uri(textfieldModelController.Data);
             web.LoadCompleted += Web_LoadCompleted;
 
+            SetupBindings(web, docController, context);
             if (html == null)
-                SetupBindings(web, docController, context);
+                SetupTextBinding(web, docController, context);
             
             return web;
         }
@@ -202,13 +189,13 @@ namespace Dash
             {
                 case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
                 case "move": parent.DocumentView_PointerEntered(null, null);
-                             (web.Tag as ManipulationControlHelper)?.pointerMoved(web, null); break;
+                             (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
                 case "leave": { if (!parent.IsPointerOver())
                                     parent.DocumentView_PointerExited(null, null);
                                 break;
                               }
                 case "up":  parent.ToFront();
-                            (web.Tag as ManipulationControlHelper)?.pointerReleased(web, null);
+                            (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
                              web.Tag = null; break;
             }
         }

@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using DashShared;
-using DashShared.Models;
 
 namespace Dash
 {
