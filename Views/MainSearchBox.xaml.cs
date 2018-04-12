@@ -70,9 +70,21 @@ namespace Dash
             }
 
             var maxSearchResultSize = 75;
+            DocumentController resultDict = null;
+            try
+            {
+                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ExecDishOperatorController>() + "({" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
+                resultDict = interpreted as DocumentController;
+            }
+            catch (InvalidDishScriptException e)
+            {
 
-            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "("+DSL.GetFuncName<ExecDishOperatorController>()+ "({"+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
-            var resultDict = interpreted as DocumentController;
+            }
+            catch(ScriptExecutionException e)
+            {
+
+            }
+            
 
             if (resultDict == null)
             {
@@ -96,7 +108,8 @@ namespace Dash
 
             foreach (var list in lists.OrderBy(i => i.Count))
             {
-                var newVm = SearchHelper.DocumentSearchResultToViewModel(list.First());
+                var bestResult = SearchHelper.ChooseHelpfulSearchResult(list, text);
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(bestResult);
                 newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
                 vms.Add(newVm);
             }
@@ -287,6 +300,18 @@ namespace Dash
                 return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
             }
 
+            /// <summary>
+            /// TODO NICK
+            /// </summary>
+            /// <param name="resultDocs"></param>
+            /// <param name="originalSearch"></param>
+            /// <returns></returns>
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
+            {
+                Debug.Assert(resultDocs.Any());
+                return resultDocs.First();
+            }
+
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null, DocumentController thisController = null)
             {
@@ -315,10 +340,11 @@ namespace Dash
             public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
             {
                 var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var doc = ContentController<FieldModel>.GetController<DocumentController>(id.Data);
                 var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
                 var helpText = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey);
 
-                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, null, null, true);
+                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, doc, null, true);
             }
 
             /*

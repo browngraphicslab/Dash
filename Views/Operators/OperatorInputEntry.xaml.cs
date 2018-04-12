@@ -96,7 +96,7 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                _refDoc = dragData.DraggedDocument;
+                _refDoc = dragData.DraggedDocument.GetDataDocument();
                 if (dragData.DraggedKey != null) //There is a specified key, so check if it's the right type
                 {
                     // the operator controller the input is going to

@@ -32,11 +32,13 @@ namespace Dash
                 if (value.IsFile && File.Exists(ApplicationData.Current.LocalFolder.Path + "\\" + value.Segments.Last()))
                 {
                     localFile = value.Segments.Last();
+                    globalUri = null;
                 }
                 else
                 {
                     // otherwise assume the file is a globalUri like http so set it there
                     globalUri = value;
+                    localFile = null;
                 }
 
                 _uriCache = localFile == null ? globalUri : new Uri(ApplicationData.Current.LocalFolder.Path + "\\" + localFile);

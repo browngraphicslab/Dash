@@ -42,7 +42,7 @@ namespace Dash
             version = 1.0;
         }
 
-        public string GetType()
+        public string GetTypeName()
         {
             return _name;
         }
@@ -92,7 +92,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null);
 
         /// <summary>
         /// Create a new <see cref="OperatorController"/> associated with the passed in <see cref="OperatorFieldModel" />

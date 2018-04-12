@@ -76,6 +76,9 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
+            return "=="+OperatorScriptParser.GetScriptForOperatorTree(this, context);
+
+            /*
             var refDoc = GetDocumentController(context);
             var opField = refDoc.GetDereferencedField(KeyStore.OperatorKey, context) as OperatorController;
             if (opField != null)
@@ -86,7 +89,7 @@ namespace Dash
                 str = str.TrimEnd(',') + ")";
                 return str;
             }
-            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
+            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;*/
         }
         public override bool TrySetValue(object value)
         {
@@ -97,8 +100,7 @@ namespace Dash
                 return doc.ParseDocField(FieldKey, s, field);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
-                var rtfield = doc.GetFieldOrCreateDefault<RichTextController>(FieldKey);
-                rtfield.Data = rtd;
+                doc.SetField<RichTextController>(FieldKey, rtd, true);
                 return true;
             }
 

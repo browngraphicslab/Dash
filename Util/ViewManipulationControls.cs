@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.System;
@@ -108,31 +109,7 @@ namespace Dash
                 e.Handled = true;
             }
         }
-
-        public void FitToParent()
-        {
-            var par = _freeformView.Parent as FrameworkElement;
-            if (par != null)
-            {
-                var r = Rect.Empty;
-                foreach (var dvm in _freeformView.ViewModel.DocumentViewModels)
-
-                {
-                    r.Union(dvm.Bounds);
-                }
-                if (r.Width != 0 && r.Height != 0)
-                {
-                    var rect     = new Rect(new Point(), new Point(par.ActualWidth, par.ActualHeight));
-                    var scaleWidth = r.Width / r.Height > rect.Width / rect.Height;
-                    var scaleAmt = scaleWidth ? rect.Width / r.Width : rect.Height / r.Height;
-                    var scale    = new Point(scaleAmt, scaleAmt);
-                    var trans    = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
-
-                    if (scaleAmt != 0)
-                        OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(trans, scale), true);
-                }
-            }
-        }
+        
         public void Dispose()
         {
             _freeformView.ManipulationDelta -= ElementOnManipulationDelta;
