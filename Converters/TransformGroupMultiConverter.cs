@@ -33,6 +33,7 @@ namespace Dash
                 X = pos.X,
                 Y = pos.Y
             });
+            System.Diagnostics.Debug.WriteLine("Pos = " + pos + " scale = " + scale);
             return new MatrixTransform() { Matrix = group.Value };
         }
 

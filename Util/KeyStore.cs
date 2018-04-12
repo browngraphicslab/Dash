@@ -42,8 +42,7 @@ namespace Dash
         public static KeyController WorkspaceHistoryKey = new KeyController(DashConstants.KeyStore.WorkspaceHistoryKey);
         public static KeyController PanPositionKey = new KeyController(DashConstants.KeyStore.PanPositionKey);
         public static KeyController PanZoomKey = new KeyController(DashConstants.KeyStore.PanZoomKey);
-        public static KeyController ActualWidthKey = new KeyController(DashConstants.KeyStore.ActualWidthKey);
-        public static KeyController ActualHeightKey = new KeyController(DashConstants.KeyStore.ActualHeightKey);
+        public static KeyController ActualSizeKey = new KeyController(DashConstants.KeyStore.ActualSizeKey);
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
 

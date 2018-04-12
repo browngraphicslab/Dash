@@ -93,7 +93,7 @@ namespace Dash
             {
                 X = dvm.InteractiveManipulationPosition.X,
                 Y = dvm.InteractiveManipulationPosition.Y
-            }.TransformBounds(new Rect(0, 0, dvm.ActualWidth * dvm.InteractiveManipulationScale.X, dvm.ActualHeight * dvm.InteractiveManipulationScale.Y));
+            }.TransformBounds(new Rect(0, 0, dvm.ActualSize.X * dvm.InteractiveManipulationScale.X, dvm.ActualSize.Y * dvm.InteractiveManipulationScale.Y));
         }
 
         enum AlignmentAxis

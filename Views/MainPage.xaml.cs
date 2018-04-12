@@ -16,6 +16,7 @@ using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Timers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -32,7 +33,6 @@ namespace Dash
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
-        public static InkController InkController { get; set; } = new InkController();
 
         public DocumentView xMapDocumentView;
 
@@ -312,8 +312,8 @@ namespace Dash
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
 
                     
 
@@ -346,8 +346,8 @@ namespace Dash
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -482,21 +482,25 @@ namespace Dash
         private void setupMapView(DocumentController context)
         {
             mapTimer.Stop();
+            mapTimer = new DispatcherTimer();
             if (xMapDocumentView != null)
             {
-                xLeftStack.Children.Remove(xMapDocumentView);
+                xLeftGrid.Children.Remove(xMapDocumentView);
             }
-            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-            xLeftStack.Children.Add(xMapDocumentView);
-            mapTimer.Interval = new TimeSpan(0, 0, 1);
-            mapTimer.Tick += (ss,aa) => {
-                if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
-                {
-                   freeformView.ViewManipulationControls.FitToParent();
-                }
+            var copy = context.GetViewCopy();
+            copy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+            xMapDocumentView = new DocumentView() {  DataContext = new DocumentViewModel(copy), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            xMapDocumentView.Loaded += (s,e) =>
+            {
+                var collectionViewModel = xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel;
+                mapTimer.Interval = new TimeSpan(0, 0, 1);
+                mapTimer.Tick += (ss, ee) => collectionViewModel.FitContents();
+                mapTimer.Start();
             };
-            mapTimer.Start();
+            Grid.SetColumn(xMapDocumentView, 2);
+            xLeftStack.Children.Add(xMapDocumentView);
         }
+
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)

@@ -138,22 +138,6 @@ namespace Dash
             };
         }
 
-        /// <summary>
-        ///     Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too
-        ///     stubborn
-        /// </summary>
-        /// <param name="toBind"></param>
-        public static void ForceBindHeightToParentDocumentHeight(FrameworkElement toBind)
-        {
-            var parent = toBind.GetFirstAncestorOfType<DocumentView>();
-            if (parent == null) return;
-            parent.SizeChanged += (ss, ee) =>
-            {
-                toBind.Width = parent.ActualWidth;
-                toBind.Height = parent.ActualHeight;
-            };
-        }
-
         public static void FixListViewBaseManipulationDeltaPropagation(ListViewBase xList)
         {
             var scrollBar = xList.GetFirstDescendantOfType<ScrollBar>();
