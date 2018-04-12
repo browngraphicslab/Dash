@@ -76,10 +76,10 @@ namespace Dash
             XTextBlock.Visibility = Visibility.Visible;
             try
             {
-                FieldControllerBase field = OperatorScriptParser.Interpret(text);
+                FieldControllerBase field = DSL.InterpretUserInput(text);
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
-            catch (OperatorScriptParser.ScriptException)
+            catch (DSLException)
             {
                 return false;
             }

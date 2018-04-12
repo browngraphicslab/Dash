@@ -165,9 +165,9 @@ namespace Dash
             {
                 fmController = DSL.InterpretUserInput(stringValue, true);
             }
-            catch (InvalidDishScriptException e)
+            catch (DSLException e)
             {
-                fmController = new TextController(e.ScriptErrorModel.GetHelpfulString());
+                fmController = new TextController(e.GetHelpfulString());
             }
 
             _dataContextDocument.SetField(key, fmController, true);
