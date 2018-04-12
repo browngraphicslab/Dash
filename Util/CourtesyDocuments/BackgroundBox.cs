@@ -46,17 +46,6 @@ namespace Dash
             Document.SetFields(fields, true);
         }
 
-
-
-        protected static void BindBackgroundColor(ContentPresenter Outelement, DocumentController docController,
-            Context context)
-        {
-            
-
-            //Shape element = (Shape)Outelement.Content;
-            //element.AddFieldBinding(Shape.FillProperty, binding);
-        }
-
         protected static void BindShape(ContentPresenter Outelement, DocumentController docController,
             Context context)
         {
@@ -131,7 +120,6 @@ namespace Dash
 
             SetupBindings(shape, docController, context);
 
-            //BindBackgroundColor(shape, docController, context);
             BindShape(shape, docController, context);
 
             return shape;
