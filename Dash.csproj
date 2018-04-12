@@ -182,6 +182,7 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\TextToVideoOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
