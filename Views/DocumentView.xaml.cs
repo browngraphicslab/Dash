@@ -87,16 +87,25 @@ namespace Dash
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
             
+            void sizeChangedHandler(object sender, SizeChangedEventArgs e)
+            {
+                ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
+                PositionContextPreview();
+            }
             Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
                 Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
+
+                SizeChanged += sizeChangedHandler;
+                ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
             };
             Unloaded += (sender, e) =>
             {
                 Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
                 Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
+                SizeChanged -= sizeChangedHandler;
             };
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
@@ -118,12 +127,6 @@ namespace Dash
             PointerExited  += DocumentView_PointerExited;
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
             AddHandler(TappedEvent, new TappedEventHandler(DocumentView_OnTapped), true);  // RichText and other controls handle Tapped events
-
-            SizeChanged += (sender, e) =>
-            {
-                ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
-                PositionContextPreview();
-            };
 
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

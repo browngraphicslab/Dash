@@ -89,7 +89,8 @@ namespace Dash
         
         public void FitContents()
         {
-            if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionView.CollectionViewType.Freeform.ToString())
+            if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey,null)?.Data == "true" &&
+                ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionView.CollectionViewType.Freeform.ToString())
             {
                 var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
                 var r = Rect.Empty;

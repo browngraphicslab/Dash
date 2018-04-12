@@ -486,7 +486,9 @@ namespace Dash
             {
                 xLeftGrid.Children.Remove(xMapDocumentView);
             }
-            xMapDocumentView = new DocumentView() {  DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            var copy = context.GetViewCopy();
+            copy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+            xMapDocumentView = new DocumentView() {  DataContext = new DocumentViewModel(copy), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
             xMapDocumentView.Loaded += (s,e) =>
             {
                 var collectionViewModel = xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel;
