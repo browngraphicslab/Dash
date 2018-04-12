@@ -47,9 +47,9 @@ namespace Dash.Controllers.Operators
             };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            var textController = inputs.Values.FirstOrDefault() as TextController;
+            var textController = inputs[TextKey] as TextController;
             var uri = textController.Data;
 
             try
@@ -64,7 +64,7 @@ namespace Dash.Controllers.Operators
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new AddOperatorController();
+            return new TextToImageOperator();
         }
     }
 
