@@ -78,6 +78,7 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
+                ViewModel.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 DataContextChanged -= OnDataContextChanged;
                 DataContextChanged += OnDataContextChanged;
                 if (ViewModel != null)

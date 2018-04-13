@@ -339,7 +339,8 @@ namespace Dash
         {
             var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-            
+            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out _lastXamlRTFText);
+
             void UnLoaded(object s, RoutedEventArgs e)
             {
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
