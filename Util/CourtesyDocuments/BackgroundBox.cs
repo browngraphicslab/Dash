@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 { 
@@ -45,12 +46,10 @@ namespace Dash
             Document.SetFields(fields, true);
         }
 
-
-
-        protected static void BindBackgroundColor(Windows.UI.Xaml.Shapes.Shape element, DocumentController docController,
+        protected static void BindShape(ContentPresenter Outelement, DocumentController docController,
             Context context)
         {
-            var binding = new FieldBinding<TextController>()
+            var backgroundBinding = new FieldBinding<TextController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
@@ -59,8 +58,19 @@ namespace Dash
                 Context = context
             };
 
-            element.AddFieldBinding(Shape.FillProperty, binding);
+            var binding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.AdornmentShapeKey,
+                Context = context,
+                Converter = new ShapeNameToShapeConverter(),
+                ConverterParameter = backgroundBinding
+            };
+            
+            Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
         }
+
         /// <summary>
         /// Returns the prototype layout if it exists, otherwise creates a new prototype layout
         /// </summary>
@@ -89,27 +99,29 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the  view
-            Shape shape = null;
+            ContentPresenter shape = new ContentPresenter();
             AdornmentShape ashape = AdornmentShape.Rectangular;
             Enum.TryParse<AdornmentShape>(docController.GetDereferencedField<TextController>(KeyStore.AdornmentShapeKey, context)?.Data ?? AdornmentShape.Rounded.ToString(), out ashape);
             switch (ashape) {
                 case AdornmentShape.Elliptical:
-                    shape = new Ellipse();
+                    shape.Content = new Ellipse();
                     break;
                 case AdornmentShape.Rectangular:
-                    shape = new Rectangle();
+                    shape.Content = new Rectangle();
                     break;
                 case AdornmentShape.Rounded:
-                    shape = new Rectangle();
-                    (shape as Rectangle).RadiusX = (shape as Rectangle).RadiusY = 40;
+                    Shape innerRectangle = new Rectangle();
+                    (innerRectangle as Rectangle).RadiusX = (innerRectangle as Rectangle).RadiusY = 40;
+                    shape.Content = innerRectangle;
                     break;
             }
             
             shape.Loaded += Background_Loaded;
 
             SetupBindings(shape, docController, context);
-            BindBackgroundColor(shape, docController, context);
-            
+
+            BindShape(shape, docController, context);
+
             return shape;
         }
 

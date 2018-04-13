@@ -24,6 +24,8 @@ namespace Dash
         }
         double _startHeaderDragWidth = 0;
 
+        private double _storedWidth = 0;
+
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
@@ -69,6 +71,7 @@ namespace Dash
         
         private void ResizeHandleManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            _startHeaderDragWidth = ViewModel.Width;
             e.Handled = true;
         }
 
@@ -80,7 +83,6 @@ namespace Dash
         {
             ViewModel.SchemaView.xHeaderView.CanReorderItems = false;
             ViewModel.SchemaView.xHeaderView.CanDragItems = false;
-            _startHeaderDragWidth = ViewModel.Width;
         }
 
         private void ResizeHandle_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -92,6 +94,24 @@ namespace Dash
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+        }
+
+        private void ResizeHandle_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ViewModel.Width > 0)
+            {
+                _storedWidth = ViewModel.Width;
+                ViewModel.Width = 0;
+            } else
+            {
+                ViewModel.Width = _storedWidth;
+            }
+            
+        }
+
+        private void TextBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

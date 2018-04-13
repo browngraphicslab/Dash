@@ -37,7 +37,7 @@ namespace Dash
         /// <summary>
         ///     The list of fields displayed on the key value pane
         /// </summary>
-        private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
+        private ObservableCollection<EditableScriptViewModel> ListItemSource { get; }
 
         public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
 
@@ -45,7 +45,7 @@ namespace Dash
         {
             InitializeComponent();
 
-            ListItemSource = new ObservableCollection<KeyFieldContainer>();
+            ListItemSource = new ObservableCollection<EditableScriptViewModel>();
             
             DataContextChanged += KeyValuePane_DataContextChanged;
             PointerPressed += (sender, e) =>
@@ -82,6 +82,10 @@ namespace Dash
             // if the datacontext is a document controller
             if (DataContext is DocumentController dc)
             {
+                if (dc.Equals(_dataContextDocument))
+                {
+                    return;
+                }
                 // remove old events from the previous datacontext
                 if (_dataContextDocument != null)
                 {
@@ -110,8 +114,9 @@ namespace Dash
             {
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
-                        ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key,
-                            new BoundController(keyFieldPair.Value, _dataContextDocument), TypeColumnWidth, true));
+                        ListItemSource.Add(
+                            new EditableScriptViewModel(
+                                new DocumentFieldReference(_dataContextDocument.Id, keyFieldPair.Key)));
             }
 
         }
@@ -124,27 +129,30 @@ namespace Dash
             // if a field has been replaced or updated then set it's source to be the new element
             // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-            if (args.Action == DocumentController.FieldUpdatedAction.Replace ||
-                args.Action == DocumentController.FieldUpdatedAction.Update)
-                UpdateListItemSourceElement(dargs.Reference.FieldKey, dargs.NewValue);
-            else SetListItemSourceToCurrentDataContext();
+            if (args.Action == DocumentController.FieldUpdatedAction.Add)
+            {
+                addField(dargs);
+            } else if (args.Action == DocumentController.FieldUpdatedAction.Remove)
+            {
+                removeField(dargs);
+            }
         }
 
-        private void UpdateListItemSourceElement(KeyController fieldKey, FieldControllerBase fieldValue)
+        private void removeField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
         {
-            for (var i = 0; i < ListItemSource.Count; i++)
-                if (ListItemSource[i].Key.Equals(fieldKey))
-                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
-                        new BoundController(fieldValue, _dataContextDocument), TypeColumnWidth);
+            ListItemSource.Remove(new EditableScriptViewModel(dargs.Reference));
         }
 
+        private void addField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
+        {
+            ListItemSource.Add(new EditableScriptViewModel(dargs.Reference));
+        }
 
 
         /// <summary>
         ///     Adds a new row to the KeyValuePane, using user inputed values, returning a boolean depending on whether it is
         ///     successful in adding the pair.
         ///     
-        /// TODO @tyler: type info parsing - right now we will just assume text as the type for the key value pair
         /// </summary>
         private void AddKeyValuePair()
         {
@@ -157,9 +165,9 @@ namespace Dash
             {
                 fmController = DSL.InterpretUserInput(stringValue, true);
             }
-            catch (InvalidDishScriptException e)
+            catch (DSLException e)
             {
-                fmController = new TextController(e.ScriptErrorModel.GetHelpfulString());
+                fmController = new TextController(e.GetHelpfulString());
             }
 
             _dataContextDocument.SetField(key, fmController, true);
@@ -170,99 +178,6 @@ namespace Dash
             xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
 
             return;
-        }
-
-        /// <summary>
-        ///     when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position
-        /// </summary>
-        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            // if there's already an editing textbox, get rid of it
-            if (_tb != null)
-            {
-                RemoveEditingTextBox();
-                return;
-            }
-
-            // check to see if we're editing a key or a value and set _editKey to true if we're editing a key
-            var posInKvPane = e.GetPosition(xOuterGrid);
-            var columnDefinitions = xKeyValueGrid.ColumnDefinitions;
-            if (columnDefinitions == null)
-            {
-                return;
-            }
-            
-            var keyColumnWidth = columnDefinitions[0].ActualWidth;
-            if (posInKvPane.X > 0 && posInKvPane.X < keyColumnWidth)
-            {
-                _editKey = true;
-            }
-            else
-            {
-                _editKey = false;
-            }
-
-            // set the selectedKV pair, a bunch of textbox methods rely on this field being set
-            _selectedKV = (sender as FrameworkElement)?.DataContext as KeyFieldContainer;
-            if (_selectedKV == null) return;
-
-            // set the text for the textbox to the key name, or the field converted to a string
-            var srcText = _editKey ? _selectedKV.Key.Name : FieldConversion.ConvertFieldToString(_selectedKV.Controller.FieldModelController);
-            _tb = new TextBox
-            {
-                MaxHeight = 500,
-                MaxWidth = 500,
-                TextWrapping=Windows.UI.Xaml.TextWrapping.Wrap,
-                Text = srcText,
-                AcceptsReturn = true //!srcText.Contains("\r") // TODO make this a better heuristic
-            };
-            _tb.BeforeTextChanging += _tb_BeforeTextChanging;
-            _tb.LostFocus += _tb_LostFocus;
-
-            //add textbox graphically
-            var p = Util.PointTransformFromVisual(posInKvPane, xOuterGrid.GetFirstAncestorOfType<Grid>());
-            Canvas.SetLeft(_tb, p.X);
-            Canvas.SetTop(_tb, p.Y);
-            MainPage.Instance.xCanvas.Children.Add(_tb);
-
-            
-            _tb.Focus(FocusState.Programmatic);
-
-        }
-
-        private void _tb_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
-        {
-            var shiftState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-            var enterState = Window.Current.CoreWindow.GetKeyState(VirtualKey.Enter).HasFlag(CoreVirtualKeyStates.Down);
-
-            if (shiftState && enterState)
-            {
-                // bcz: make sure we are writing the field to this instance, and not a prototype.
-                //     so we are copying the field in case it came from the prototype.
-                var field = _dataContextDocument.GetDereferencedField<FieldControllerBase>(
-                    _selectedKV.Key, new Context(_dataContextDocument)).GetCopy();
-                FieldConversion.SetFieldtoString(field, _tb.Text, new Context(_dataContextDocument));
-                _dataContextDocument.SetField(_selectedKV.Key, field, true);
-                RemoveEditingTextBox();
-                args.Cancel = true;
-            }
-        }
-
-        private void _tb_LostFocus(object sender, RoutedEventArgs e)
-        {
-            RemoveEditingTextBox();
-        }
-
-        private void RemoveEditingTextBox()
-        {
-            _tb.LostFocus -= _tb_LostFocus;
-            _tb.BeforeTextChanging -= _tb_BeforeTextChanging;
-            _selectedKV = null;
-            _editKey = false;
-            MainPage.Instance.xCanvas.Children.Remove(_tb);
-            _tb = null;
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -355,6 +270,22 @@ namespace Dash
             {
                 e.Handled = true;
             }
+        }
+
+        public void Expand_Value(object sender)
+        {
+            var valuebox = sender as EditableScriptBox;
+            var index = ListItemSource.IndexOf(valuebox.ViewModel);
+            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
+            key.Style = Resources["ExpandBox"] as Style;
+        }
+
+        public void Collapse_Value(object sender)
+        {
+            var valuebox = sender as EditableScriptBox;
+            var index = ListItemSource.IndexOf(valuebox.ViewModel);
+            var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
+            key.Style = Resources["CollapseBox"] as Style;
         }
     }
 }
