@@ -12,28 +12,9 @@
             <TextBlock FontWeight="SemiBold" FontSize="18">SETTINGS</TextBlock>
 
             <!--Style--> 
-            <TextBlock FontSize="22" Margin="0,20,0,0">Customize your display</TextBlock>
-            <ToggleSwitch Margin="10,0,0,0" IsOn="{x:Bind NightModeOn, Mode=TwoWay}">Night Mode</ToggleSwitch>
-            <Slider Margin="10,0,0,0" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" Value="{x:Bind NoteFontSize, Mode=TwoWay}"></Slider>
-            
-            
-            <!--<TextBlock FontWeight="SemiBold" FontSize="18">SETTINGS</TextBlock>
-            
-            <TextBlock FontSize="22" Margin="0,20,0,0">Group Header 1</TextBlock>
-            <TextBlock>Description</TextBlock>
-            <StackPanel Margin="10,0,0,20">
-                <RadioButton IsChecked="True"> Option 1</RadioButton>
-                <RadioButton>Option 2</RadioButton>
-            </StackPanel>
-            
-            <TextBlock>Description2</TextBlock>
-            <StackPanel Margin="10,0,0,20">
-                <CheckBox Margin="1,0,0,0">checkbox option 1</CheckBox>
-                <CheckBox Margin="1,0,0,0">checkbox option 2</CheckBox>
-                <CheckBox Margin="1,0,0,0">checkbox option 3</CheckBox>
-            </StackPanel>
-
-            <ToggleSwitch Margin="10,0,0,20" FontSize="14">Description 2</ToggleSwitch>-->
+            <TextBlock FontSize="22" Margin="0,20">Customize your display</TextBlock>
+            <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}">Night Mode</ToggleSwitch>
+            <Slider Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" Value="{x:Bind NoteFontSize, Mode=TwoWay}"></Slider>
         </StackPanel>
     </Grid>
 </Page>

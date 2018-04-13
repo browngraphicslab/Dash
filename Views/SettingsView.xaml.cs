@@ -27,9 +27,13 @@ namespace Dash
     {
         public static SettingsView Instance { get; private set; }
 
-        #region Binding variables 
         public event PropertyChangedEventHandler PropertyChanged;
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
+        #region Binding variables 
         private bool _nightModeOn = false; 
         public bool NightModeOn
         {
@@ -48,11 +52,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         public SettingsView()
         {
