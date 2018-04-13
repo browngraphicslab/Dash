@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("Text to Video")]
+    [OperatorType("texttoVideo")]
     class TextToVideoOperatorController : OperatorController
     {
         public TextToVideoOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -32,9 +32,9 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("379173B5-3E72-44E8-8EA0-D5EA946CA173", true);
+        private static readonly KeyController TypeKey = new KeyController("379173B5-3E72-44E8-8EA0-D5EA946CA173", "Text to Video", true);
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var uriController = inputs[URIKey] as TextController;
             if (uriController != null)
