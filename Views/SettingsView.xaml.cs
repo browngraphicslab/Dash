@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -21,9 +23,36 @@ namespace Dash
     /// <summary>
     /// Settings pane 
     /// </summary>
-    public sealed partial class SettingsView : Page
+    public sealed partial class SettingsView : Page, INotifyPropertyChanged 
     {
         public static SettingsView Instance { get; private set; }
+
+        #region Binding variables 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private bool _nightModeOn = false; 
+        public bool NightModeOn
+        {
+            get => _nightModeOn; 
+            set { _nightModeOn = value; }
+        }
+
+        private int _fontSize = 5;
+        public int NoteFontSize
+        {
+            get => _fontSize; 
+            set {
+                _fontSize = value;
+                NotifyPropertyChanged(); 
+            }
+        }
+
+        #endregion
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public SettingsView()
         {

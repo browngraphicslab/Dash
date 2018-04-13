@@ -18,6 +18,7 @@ using static Dash.FieldControllerBase;
 using static Dash.NoteDocuments;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -37,6 +38,8 @@ namespace Dash
         /// </summary>
         Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
 
+        private int NoteFontSize => SettingsView.Instance.NoteFontSize;
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -93,6 +96,14 @@ namespace Dash
             xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
             xFormattingMenuView.richTextView = this;
             xFormattingMenuView.xRichEditBox = xRichEditBox;
+
+            var sizeBinding = new Binding
+            {
+                Source = SettingsView.Instance,
+                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+                Mode = BindingMode.OneWay
+            };
+            xRichEditBox.SetBinding(FontSizeProperty, sizeBinding); 
         }
         
 
@@ -522,7 +533,7 @@ namespace Dash
             }
         }
         #endregion
-        
+
         #region commented out code
 
         //void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -631,6 +642,8 @@ namespace Dash
         //    }
         //}
         #endregion
+
+       
     }
 }
 
