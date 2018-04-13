@@ -17,6 +17,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views.Document_Menu;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -69,6 +70,9 @@ namespace Dash
             xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+
+            var menuToolBar = new MenuToolBar(xCanvas);
+
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -505,6 +509,12 @@ namespace Dash
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
+        }
+
+        //@Main toolbar
+        private void AddCustomButtons()
+        {
+
         }
     }
 }

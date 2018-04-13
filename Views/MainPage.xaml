@@ -7,6 +7,7 @@
                     xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:documentMenu="using:Dash.Views.Document_Menu"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
@@ -117,6 +118,6 @@
                     </Grid>
                 </localMicrosoft:GridSplitter.Element>
             </localMicrosoft:GridSplitter>
-          </Grid>
+        </Grid>
     </Grid>
 </Page>
