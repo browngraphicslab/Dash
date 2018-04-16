@@ -23,6 +23,7 @@ using Microsoft.Toolkit.Uwp.UI;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -520,16 +521,19 @@ namespace Dash
             xOuterGrid.ColumnDefinitions.Add(newDockDefinition);
 
             DocumentController context = toDock.ViewModel.DocumentController;
-            DocumentView dockedView = new DocumentView()
+            DocumentView copiedView = new DocumentView()
             {
                 DataContext = new DocumentViewModel(context.GetViewCopy()),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
 
-            dockedView.ViewModel.Width = Double.NaN;
-            dockedView.ViewModel.Height = Double.NaN;
-            dockedView.ViewModel.DisableDecorations = true;
+            copiedView.ViewModel.Width = Double.NaN;
+            copiedView.ViewModel.Height = Double.NaN;
+            copiedView.ViewModel.DisableDecorations = true;
+
+            var dockedView = new DockedView();
+            dockedView.ChangeView(copiedView);
 
             GridSplitter splitter = new GridSplitter();
             Grid.SetColumn(splitter, xOuterGrid.ColumnDefinitions.Count - 2); //second-to-last

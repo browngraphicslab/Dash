@@ -391,7 +391,7 @@ namespace Dash
         private void Dock(bool preview)
         {
             var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(ParentDocument.ViewModel.ActualWidth, ParentDocument.ViewModel.ActualHeight));
+                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
             var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
                 new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
@@ -399,6 +399,7 @@ namespace Dash
                 if (preview)
                 {
                     MainPage.Instance.HighlightDock();
+                    Debug.WriteLine("highlight");
                 }
                 else
                 {
