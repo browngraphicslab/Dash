@@ -57,7 +57,6 @@
             </Button>
         </StackPanel>
 
-
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" 
             x:Name="xSplitter"
             Grid.Column="1" Width="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
@@ -83,6 +82,7 @@
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="AlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
         </Canvas>
+        
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
