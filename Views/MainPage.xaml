@@ -42,6 +42,7 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
 
+
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
@@ -92,8 +93,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="25" />
+                    <RowDefinition Height="750" />
                 </Grid.RowDefinitions>
                 <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
+                <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
+                </local:DishReplView>
             </Grid>
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
             <localMicrosoft:GridSplitter 
@@ -117,6 +121,6 @@
                     </Grid>
                 </localMicrosoft:GridSplitter.Element>
             </localMicrosoft:GridSplitter>
-          </Grid>
+        </Grid>
     </Grid>
 </Page>
