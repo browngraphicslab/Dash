@@ -47,10 +47,29 @@ namespace Dash
             try
             {
                 var script = inputs[ScriptKey] as TextController;
-                var controller = (new DSL(ScriptState.ContentAware())).Run((script)?.Data ?? "", true);
-                result = controller is BaseListController
-                    ? string.Join("      ", (controller as BaseListController).Data.Select(i => i.ToString()))
-                    : controller.GetValue(null).ToString();
+                var dsl = new DSL(ScriptState.ContentAware());
+                var scriptToRun = (script)?.Data ?? "";
+                var controller = dsl.Run(scriptToRun, true);
+                if (controller != null)
+                {
+                    if (controller is ReferenceController)
+                    {
+                        var r = (ReferenceController) controller;
+                        result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
+                    }
+                    else
+                    {
+
+                        result = controller is BaseListController
+                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
+                            : controller?.GetValue(null)?.ToString();
+                    }
+
+                }
+                else
+                {
+                    result = "error";
+                }
             }
             catch (DSLException e)
             {

@@ -19,12 +19,13 @@ namespace Dash
             _state = state ?? new ScriptState();
         }
 
-        public FieldControllerBase Run(string script, bool catchErrors)
+        public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try
             {
                 var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                return OperatorScriptParser.Interpret(singleLineScript, _state);
+                var interpreted = OperatorScriptParser.Interpret(singleLineScript, _state);
+                return interpreted;
             }
             catch (DSLException e)
             {

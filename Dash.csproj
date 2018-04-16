@@ -246,12 +246,16 @@
     <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
     <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
+    <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
+    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
+    <Compile Include="Util\DSL\MapOperatorController.cs" />
     <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\MultiLineOperatorScriptParser.cs" />
     <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
