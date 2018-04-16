@@ -38,7 +38,7 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
         private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
-        private MenuToolBar Toolbar;
+        private MenuToolbar Toolbar;
         public void DeselectAllDocuments() => SelectedDocuments = new List<DocumentView>();
         public void SelectDocument(DocumentView doc) => SelectedDocuments = new List<DocumentView>() { doc };
         public void SelectDocuments(IEnumerable<DocumentView> docs)
@@ -83,7 +83,7 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            Toolbar = new MenuToolBar(xCanvas);
+            Toolbar = new MenuToolbar(xCanvas);
 
         }
 

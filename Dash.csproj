@@ -346,11 +346,11 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\Toolbar.xaml.cs">
-      <DependentUpon>Toolbar.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
+      <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\TextToolbar.xaml.cs">
-      <DependentUpon>TextToolbar.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
+      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
@@ -826,11 +826,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\Toolbar.xaml">
+    <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\TextToolbar.xaml">
+    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
