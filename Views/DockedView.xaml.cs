@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -19,9 +20,12 @@ namespace Dash.Views
 {
     public sealed partial class DockedView : UserControl
     {
-        public DockedView()
+        public GridSplitter Splitter { get; set; }
+
+        public DockedView(GridSplitter splitter)
         {
             this.InitializeComponent();
+            Splitter = splitter;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)

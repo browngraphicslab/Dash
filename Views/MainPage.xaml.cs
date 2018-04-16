@@ -532,10 +532,10 @@ namespace Dash
             copiedView.ViewModel.Height = Double.NaN;
             copiedView.ViewModel.DisableDecorations = true;
 
-            var dockedView = new DockedView();
+            GridSplitter splitter = new GridSplitter();
+            DockedView dockedView = new DockedView(splitter);
             dockedView.ChangeView(copiedView);
 
-            GridSplitter splitter = new GridSplitter();
             Grid.SetColumn(splitter, xOuterGrid.ColumnDefinitions.Count - 2); //second-to-last
             Grid.SetColumn(dockedView, xOuterGrid.ColumnDefinitions.Count - 1);
 
@@ -551,6 +551,12 @@ namespace Dash
         public void UnhighlightDock()
         {
             xDock.Opacity = 0;
+        }
+
+        public void Undock(DockedView undock)
+        {
+            xOuterGrid.Children.Remove(undock);
+            xOuterGrid.Children.Remove(undock.Splitter);
         }
     }
 }
