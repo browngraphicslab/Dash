@@ -18,8 +18,7 @@ namespace Dash
         public virtual TypeInfo RootTypeInfo => TypeInfo;
 
         public event FieldUpdatedHandler FieldModelUpdated;
-
-
+        
         public FieldControllerBase(FieldModel model) : base(model)
         {
         }

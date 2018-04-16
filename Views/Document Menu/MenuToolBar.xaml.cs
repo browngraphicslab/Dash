@@ -57,6 +57,15 @@ namespace Dash.Views.Document_Menu
 
         }
 
+        /// <summary>
+        /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
+        /// </summary>
+        /// <param name="docs"></param>
+        public void Update(IEnumerable<DocumentView> docs)
+        {
+            SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+        }
+
         private void SetUpBaseMenu()
         {
             _parentCanvas.Children.Add(this);
