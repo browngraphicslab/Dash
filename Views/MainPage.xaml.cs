@@ -450,7 +450,7 @@ namespace Dash
         
         public void ThemeChange()
         {
-            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark; 
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -502,7 +502,7 @@ namespace Dash
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;
             xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.SlateGray) : new SolidColorBrush(Colors.Gray); 
+            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Colors.SlateGray); 
         }
     }
 }

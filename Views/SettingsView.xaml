@@ -12,13 +12,14 @@
             <TextBlock FontWeight="SemiBold" FontSize="18">SETTINGS</TextBlock>
 
             <!--Style--> 
-            <TextBlock FontSize="22" Margin="0,20">Customize your display</TextBlock>
+            <TextBlock FontSize="22" Margin="0,20,0,0">Customize your display</TextBlock>
             <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}">Night Mode</ToggleSwitch>
             <Slider Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" Value="{x:Bind NoteFontSize, Mode=TwoWay}"></Slider>
 
-            <TextBlock Margin="0,20">Mouse scroll functionality</TextBlock>
-            <StackPanel>
-                <RadioButton IsChecked="{x:Bind MouseScroll, Mode=TwoWay}">Scroll</RadioButton>
+            <TextBlock FontSize="22" Margin="0,20,0,0">Customize controls</TextBlock>
+            <TextBlock FontSize="16">Mouse scroll functionality</TextBlock>
+            <StackPanel Margin="10,0,0,0">
+                <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
                 <RadioButton>Zoom</RadioButton>
             </StackPanel>
         </StackPanel>

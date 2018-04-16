@@ -124,7 +124,7 @@
             </localMicrosoft:GridSplitter>
 
             <Grid Grid.Row="3" Height="30" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <Button x:Name="xSettingsButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="SlateGray" Tapped="xSettingsButton_Tapped">
+                <Button x:Name="xSettingsButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Gray" Tapped="xSettingsButton_Tapped">
                     <StackPanel Orientation="Horizontal" >
                         <SymbolIcon Symbol="Setting" VerticalAlignment="Center" ></SymbolIcon>
                         <TextBlock Text="Settings" VerticalAlignment="Center" Margin="0,-1,0,0" Foreground="Black" />

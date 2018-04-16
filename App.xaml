@@ -37,7 +37,6 @@
     
     -->
     <Application.Resources>
-
         <!-- NUMBERS, THICKNESSES -->
         <x:Double x:Key="DocumentOpacity">.9</x:Double>
         <x:Double x:Key="DefaultFontSize">14</x:Double>
@@ -874,7 +873,8 @@
             <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundChromeDisabledLowBrush}" />
             <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
             <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />                                                                  <!--KBTODO--> 
+            <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
+            <!--KBTODO-->
             <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
             <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />

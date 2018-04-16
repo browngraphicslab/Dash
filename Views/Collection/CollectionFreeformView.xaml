@@ -17,7 +17,20 @@
     x:Name="Control"
     >
 
-    <Grid x:Name="xOuterGrid" Background="{ThemeResource CollectionViewBackground}" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="Background" Color="Transparent"></SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="Background" Color="{StaticResource TranslucentDocumentBackgroundColor}"></SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!--Background="{ThemeResource CollectionViewBackground}"-->
+    <Grid x:Name="xOuterGrid" Background="{StaticResource Background}" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>

@@ -30,7 +30,7 @@ namespace Dash
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
-        private bool IsMouseScrollOn => SettingsView.Instance.MouseScroll; 
+        private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn; 
 
         /// <summary>
         /// Created a manipulation control to move element

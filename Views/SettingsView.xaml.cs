@@ -38,28 +38,28 @@ namespace Dash
         public bool NightModeOn
         {
             get => _nightModeOn; 
-            set { _nightModeOn = value; }
+            private set {
+                _nightModeOn = value;
+                //NotifyPropertyChanged();
+                MainPage.Instance.ThemeChange(); 
+            }
         }
 
-        private int _fontSize = 12;
+        private int _fontSize = 16;
         public int NoteFontSize
         {
             get => _fontSize; 
-            set {
+            private set {
                 _fontSize = value;
                 NotifyPropertyChanged(); 
             }
         }
 
         private bool _mouseScroll = true;
-        public bool MouseScroll
+        public bool MouseScrollOn
         {
             get => _mouseScroll; 
-            set
-            {
-                _mouseScroll = value;
-                //NotifyPropertyChanged(); 
-            }
+            private set { _mouseScroll = value; }
         }
 
         #endregion
