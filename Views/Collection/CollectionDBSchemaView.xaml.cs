@@ -100,12 +100,12 @@ namespace Dash
 
         #endregion
 
-        private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
+        private void CollectionDBSchemaRecordField_FieldTappedEvent(EditableScriptViewModel fieldView)
         {
             try
             {
-                var dc = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
-                var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
+                var dc = fieldView.DataContext as EditableScriptViewModel;
+                var recordCollection = (xRecordsView.Items[dc.Row] as EditableScriptViewModel).RecordFields;
                 if (recordCollection.Contains(dc))
                 {
                     var column = recordCollection.IndexOf(dc);
