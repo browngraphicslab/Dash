@@ -37,17 +37,13 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var uriController = inputs[URIKey] as TextController;
-            if (uriController != null)
+            
+            try {
+                outputs[VideoKey] = new VideoController(new Uri(uriController.Data));
+            }
+            catch (UriFormatException e)
             {
-                try {
-                    outputs[VideoKey] = new VideoController(new Uri(uriController.Data));
-                }
-                catch (UriFormatException e)
-                {
-                    return;
-                }
-
-
+                return;
             }
         }
 
