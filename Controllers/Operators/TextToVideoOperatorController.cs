@@ -41,9 +41,8 @@ namespace Dash
             try {
                 outputs[VideoKey] = new VideoController(new Uri(uriController.Data));
             }
-            catch (UriFormatException e)
+            catch (UriFormatException)
             {
-                return;
             }
         }
 
