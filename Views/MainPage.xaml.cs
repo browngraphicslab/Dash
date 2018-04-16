@@ -557,6 +557,10 @@ namespace Dash
         {
             xOuterGrid.Children.Remove(undock);
             xOuterGrid.Children.Remove(undock.Splitter);
+
+            int lastColumnIndex = xOuterGrid.ColumnDefinitions.Count - 1;
+            xOuterGrid.ColumnDefinitions.RemoveAt(lastColumnIndex);
+            xOuterGrid.ColumnDefinitions.RemoveAt(lastColumnIndex - 1);
         }
     }
 }
