@@ -25,6 +25,8 @@ namespace Dash.Views.Document_Menu
     {
         private Canvas _parentCanvas;
 
+        public RichEditBox CurrentSelection;
+
         public MenuToolBar(Canvas canvas)
         {
             this.InitializeComponent();
@@ -33,9 +35,10 @@ namespace Dash.Views.Document_Menu
            // AddButton("Back", Symbol.Back, 1);
         }
 
-        public void SetMenuToolBarBinding(RichEditBox selection)
+        public void SetMenuToolBarBinding(RichEditBox currentSelection)
         {
-            DashMenuToolBar.Editor = selection;
+            DashMenuToolBar.Editor = currentSelection;
+            CurrentSelection = currentSelection;
         }
 
         public void AddButton(String name, Symbol icon, int position)
