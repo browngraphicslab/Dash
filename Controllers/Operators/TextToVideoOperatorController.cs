@@ -39,7 +39,15 @@ namespace Dash
             var uriController = inputs[URIKey] as TextController;
             if (uriController != null)
             {
-                outputs[VideoKey] = new VideoController(new Uri(uriController.Data));
+                try {
+                    outputs[VideoKey] = new VideoController(new Uri(uriController.Data));
+                }
+                catch (UriFormatException e)
+                {
+                    return;
+                }
+
+
             }
         }
 
