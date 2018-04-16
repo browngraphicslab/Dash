@@ -35,7 +35,9 @@
             <!--FORMAT OPTIONS FLYOUT-->
             <FlyoutBase.AttachedFlyout>
                 <Flyout>
-                    <local:FormattingMenuView x:Name="xFormattingMenuView"/>
+                    <Grid x:Name="xAttachedFlyout">
+
+                    </Grid>
                 </Flyout>
             </FlyoutBase.AttachedFlyout>
         </RichEditBox>

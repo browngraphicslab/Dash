@@ -31,6 +31,7 @@ namespace Dash
         
         int   _prevQueryLength;// The length of the previous search query
         int   _nextMatch = 0;// Index of the next highlighted search result
+        FormattingMenuView xFormattingMenuView = null;
 
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
@@ -85,15 +86,7 @@ namespace Dash
             xRichEditBox.ContextMenuOpening += (s,e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
 
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
-
-            // store a clone of character format after initialization as default format
-            xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-            // store a clone of paragraph format after initialization as default format
-            xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-            xFormattingMenuView.richTextView = this;
-            xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
-        
 
         public void UpdateDocumentFromXaml()
         {
@@ -290,6 +283,17 @@ namespace Dash
             }
             else if (this.IsAltPressed()) // opens the format options flyout 
             {
+                if (xFormattingMenuView == null)
+                {
+                    xFormattingMenuView = new FormattingMenuView();
+                    // store a clone of character format after initialization as default format
+                    xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                    // store a clone of paragraph format after initialization as default format
+                    xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
+                    xFormattingMenuView.richTextView = this;
+                    xFormattingMenuView.xRichEditBox = xRichEditBox;
+                    xAttachedFlyout.Children.Add(xFormattingMenuView);
+                }
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
             }

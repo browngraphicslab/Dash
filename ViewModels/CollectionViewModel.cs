@@ -30,56 +30,66 @@ namespace Dash
         Context        _context;
         bool           _canDragItems = true;
         double         _cellSize;
+        bool           _isLoaded = false;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => _collectionRef.DereferenceToRoot<ListController<DocumentController>>(_context);
 
+        public void Loaded(bool isLoaded)
+        {
+            void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                OnPropertyChanged(nameof(TransformGroup));
+            }
+            void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                if (!MainPage.Instance.IsShiftPressed())
+                    FitContents();   // pan/zoom collection so all of its contents are visible
+            }
+            _isLoaded = isLoaded;
+            if (isLoaded)
+            {
+                ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+                // force the view to refresh now that everything is loaded.  These changed handlers will cause the
+                // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
+                PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
+                ActualSizeFieldChanged(null, null, null);
+            }
+            else
+            {
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+                _collectionRef?.GetDocumentController(_context).RemoveFieldUpdatedListener(_collectionRef.FieldKey, collectionFieldChanged);
+            }
+        }
         public InkController InkController;
+        public TransformGroupData TransformGroup
+        {
+            get
+            {
+                var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
+                var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
+                if (trans.Y > 0)   // clamp the y offset so that we can only scroll down
+                {
+                    trans = new Point(trans.X, 0);
+                }
+                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
+            }
+            set
+            {
+                ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, value.Translate, true);
+                ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey,     value.ScaleAmount, true);
+            }
+        }
 
         public DocumentController                      ContainerDocument => _collectionRef.GetDocumentController(_context);
-
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
-
-        public AdvancedCollectionView BindableDocumentViewModels { get; set; }
-        public KeyController OutputKey { get; set; }
-        public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
-
-        public void SetCollectionRef(FieldReference refToCollection, Context context = null)
-        {
-            DocumentViewModels.Clear();
-            _collectionRef = refToCollection;
-            _context = context;
-            addViewModels(CollectionController.TypedData, context);
-
-            var copiedContext = new Context(context);
-
-            refToCollection.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey,
-                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
-                {
-                    if (!context1.IsCompatibleWith(new Context(ContainerDocument)))
-                        return;
-                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-                    var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                    if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
-                    {
-                        if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
-                        {
-                            updateViewModels(cargs, copiedContext);
-                        }
-                        else
-                        {
-
-                            var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(context);
-                            if (collectionFieldModelController == null) return;
-                            var documents = collectionFieldModelController.GetElements();
-                            DocumentViewModels.Clear();
-
-                            addViewModels(documents, context);
-                        }
-                    }
-
-                });
-        }
+        public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
+        public KeyController                           OutputKey { get; set; }
+        public KeyController                           CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
 
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
@@ -91,9 +101,28 @@ namespace Dash
 
             CellSize = 250; // TODO figure out where this should be set
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
+        }
+
+        /// <summary>
+        /// Sets the reference to the field that contains the documents to display.
+        /// </summary>
+        /// <param name="refToCollection"></param>
+        /// <param name="context"></param>
+        public void SetCollectionRef(FieldReference refToCollection, Context context = null)
+        {
+            _collectionRef?.GetDocumentController(_context).RemoveFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
+            DocumentViewModels.Clear();
+            _collectionRef = refToCollection;
+            _context = context;
+            addViewModels(CollectionController.TypedData, context);
+            refToCollection?.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
 
         }
-        
+
+        /// <summary>
+        /// pan/zooms the document so that all of its contents are visible.  
+        /// This only applies of the CollectionViewType is Freeform, and the CollectionFitToParent field is true
+        /// </summary>
         public void FitContents()
         {
             if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey,null)?.Data == "true" &&
@@ -114,13 +143,34 @@ namespace Dash
                     var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
                     if (scaleAmt > 0)
                     {
-                        ContainerDocument.SetField<PointController>(KeyStore.PanZoomKey,     scale, true);
-                        ContainerDocument.SetField<PointController>(KeyStore.PanPositionKey, trans, true);
+                        TransformGroup = new TransformGroupData(trans, scale);
                     }
                 }
             }
         }
+        void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+        {
+            if (!context1.IsCompatibleWith(new Context(ContainerDocument)))
+                return;
+            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+            if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            {
+                if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                {
+                    updateViewModels(cargs, _context);
+                }
+                else
+                {
+                    var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(_context);
+                    if (collectionFieldModelController == null) return;
+                    var documents = collectionFieldModelController.GetElements();
+                    DocumentViewModels.Clear();
 
+                    addViewModels(documents, _context);
+                }
+            }
+        }
 
         #region DocumentModel and DocumentViewModel Data Changes
 
