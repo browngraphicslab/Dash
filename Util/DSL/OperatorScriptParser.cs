@@ -20,6 +20,8 @@ namespace Dash
 
         private static bool TEST_STRING_TO_REF = false;
 
+        private static HashSet<string> _currentScriptExecutions = new HashSet<string>();
+
         static OperatorScriptParser()
         {
             for (int i = 0; i < StringOpeningCharacters.Length; ++i)
@@ -149,6 +151,14 @@ namespace Dash
         /// <returns></returns>
         public static FieldControllerBase Interpret(string script, ScriptState state = null)
         {
+            var hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
+
+            if (_currentScriptExecutions.Contains(hash))
+            {
+                return new TextController(script);
+            }
+
+            _currentScriptExecutions.Add(hash);
             try
             {
                 var se = ParseToExpression(script);
@@ -157,6 +167,10 @@ namespace Dash
             catch (ScriptException scriptException)
             {
                 throw new InvalidDishScriptException(script, scriptException.Error, scriptException);
+            }
+            finally
+            {
+                _currentScriptExecutions.Remove(hash);
             }
         }
 

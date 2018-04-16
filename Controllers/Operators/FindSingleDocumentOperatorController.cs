@@ -1,25 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    [OperatorType("find", "f")]
-    public class SimplifiedSearchOperatorController : OperatorController
+    [OperatorType("findSingle", "fs", "findS")]
+    public class FindSingleDocumentOperatorController : OperatorController
     {
-
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("2515150F-3AF7-4840-AE45-B6951EF628C6", "Query");
+        public static readonly KeyController QueryKey = new KeyController("E3513B99-2375-4BB5-8643-F3BB5DB26312", "Query");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C0EBD4D8-C922-4CAC-81FE-0FB8D8A8AE36", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("A8E9A428-C76C-47CA-A1C0-C4B4F1FB0E05", "Results");
 
-        public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
+        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
         }
 
-        public SimplifiedSearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        public FindSingleDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
@@ -35,13 +37,13 @@ namespace Dash
         };
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
-            [ResultsKey] = TypeInfo.List
+            [ResultsKey] = TypeInfo.Document
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("F0D6FCB0-4635-4ECF-880F-81D2738A1350", "Simple Search");
+            new KeyController("C35B553E-F12A-483A-AED9-30927606B897", "Simple Single Search");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
@@ -59,12 +61,13 @@ namespace Dash
             {
                 var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
 
-                outputs[ResultsKey] = new ListController<FieldControllerBase>(docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)));
+                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).First();
             }
             else
             {
-                outputs[ResultsKey] = new ListController<TextController>();
+                outputs[ResultsKey] = new TextController();
             }
         }
     }
 }
+

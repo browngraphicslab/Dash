@@ -44,5 +44,13 @@ namespace Dash
         {
             return new ScriptState(existingState);
         }
+
+        public static ScriptState ContentAware()
+        {
+            return new ScriptState(new Dictionary<string, FieldControllerBase>()
+            {
+                {"main", MainPage.Instance.MainDocument },
+            });
+        }
     }
 }
