@@ -30,6 +30,8 @@ namespace Dash
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
+        private bool IsMouseScrollOn => SettingsView.Instance.MouseScroll; 
+
         /// <summary>
         /// Created a manipulation control to move element
         /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
@@ -54,7 +56,7 @@ namespace Dash
         {
             e.Handled = true;
 
-            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) || !IsMouseScrollOn) // scale 
             {
                 var point = e.GetCurrentPoint(_freeformView);
 
@@ -67,7 +69,7 @@ namespace Dash
                 if (!ClampScale(scaleAmount))
                     OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position), false);
             }
-            else
+            else // scroll 
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
                 var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ? scrollAmount : 0;

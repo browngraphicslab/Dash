@@ -41,13 +41,24 @@ namespace Dash
             set { _nightModeOn = value; }
         }
 
-        private int _fontSize = 5;
+        private int _fontSize = 12;
         public int NoteFontSize
         {
             get => _fontSize; 
             set {
                 _fontSize = value;
                 NotifyPropertyChanged(); 
+            }
+        }
+
+        private bool _mouseScroll = true;
+        public bool MouseScroll
+        {
+            get => _mouseScroll; 
+            set
+            {
+                _mouseScroll = value;
+                //NotifyPropertyChanged(); 
             }
         }
 
