@@ -38,10 +38,15 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
         private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
+        private MenuToolBar DashTextToolbar;
         public void DeselectAllDocuments() => SelectedDocuments = new List<DocumentView>();
         public void SelectDocument(DocumentView doc) => SelectedDocuments = new List<DocumentView>() { doc };
-        public void SelectDocuments(IEnumerable<DocumentView> doc) => SelectedDocuments = doc ;
-        public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
+        public void SelectDocuments(IEnumerable<DocumentView> docs)
+        {
+            SelectedDocuments = docs;
+            DashTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+        }
+public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()
         {
@@ -77,7 +82,7 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            var menuToolBar = new MenuToolBar(xCanvas);
+            DashTextToolbar = new MenuToolBar(xCanvas);
 
         }
 
