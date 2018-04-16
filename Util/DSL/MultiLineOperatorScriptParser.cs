@@ -147,7 +147,7 @@ namespace Dash
                     {
                         return new ScriptLetLine(line.Substring(0, i).Trim(), line.Substring(i + 1).Trim());
                     }
-                    return new ScriptLetLine(line.Substring(0, i).Trim(), "");
+                    return new ScriptLetLine(line.Substring(0, i).Trim(), "{}");
                 }
             }
             return new ScriptReturnLine(line);

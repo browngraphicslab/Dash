@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using DashShared;
@@ -45,13 +46,21 @@ namespace Dash
             string result;
             try
             {
-                var controller = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
-                result = controller is BaseListController ? string.Join("      " ,(controller as BaseListController).Data.Select(i => i.ToString())) : controller.GetValue(null).ToString();
+                var script = inputs[ScriptKey] as TextController;
+                var controller = (new DSL(ScriptState.ContentAware())).Run((script)?.Data ?? "", true);
+                result = controller is BaseListController
+                    ? string.Join("      ", (controller as BaseListController).Data.Select(i => i.ToString()))
+                    : controller.GetValue(null).ToString();
             }
-            catch (InvalidDishScriptException e)
+            catch (DSLException e)
             {
-                result = e.ScriptErrorModel.GetHelpfulString();
+                result = e.GetHelpfulString();
             }
+            catch (Exception e)
+            {
+                result = "Unknown annoying error occurred : "+e.StackTrace;
+            }
+
             outputs[ResultKey] = new TextController(result);
         }
     }
