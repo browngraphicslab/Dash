@@ -41,7 +41,7 @@ namespace Dash
             private set {
                 _nightModeOn = value;
                 //NotifyPropertyChanged();
-                MainPage.Instance.ThemeChange(); 
+                MainPage.Instance.ThemeChange();
             }
         }
 
