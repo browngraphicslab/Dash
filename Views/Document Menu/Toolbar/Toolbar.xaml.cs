@@ -40,7 +40,7 @@ namespace Dash.Views.Document_Menu
         }
 
 
-        UIElement active = null; // currently active submenu, if null, nothing is selected
+        UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
 
         /// <summary>
         /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
@@ -48,27 +48,31 @@ namespace Dash.Views.Document_Menu
         /// <param name="docs"></param>
         public void Update(IEnumerable<DocumentView> docs)
         {
-            if (active != null) active.Visibility = Visibility.Collapsed;
+            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-            if (docs.Count<DocumentView>() > 0)
+            // just single select
+            if (docs.Count<DocumentView>() == 1)
             {
                 // Text controls
                 var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
                 if (text != null) {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
-                    active = xTextToolbar; 
+                    subtoolbarElement = xTextToolbar; 
                     return;
                 }
 
                 // TODO: Image controls
 
 
-                // TODO: Collection controls
+                // TODO: Collection controls   
 
 
+            } else if (docs.Count<DocumentView>() > 1)
+            {
+                // TODO: multi select
             }
 
-            if (active != null) active.Visibility = Visibility.Visible;
+                if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
         }
 
         private void SetUpBaseMenu()

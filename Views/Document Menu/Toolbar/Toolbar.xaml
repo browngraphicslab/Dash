@@ -14,10 +14,9 @@
     <StackPanel>
         <ctrl:CommandBar>
         </ctrl:CommandBar>
-        <StackPanel>
-            <text:TextToolbar x:Name="xTextToolbar"></text:TextToolbar>
-            <text:ImageToolbar x:Name="xImgToolbar"></text:ImageToolbar>
-            <text:CollectionToolbar x:Name="xImgToolbar"></text:CollectionToolbar>
+        <StackPanel
+            <text:TextToolbar x:Name="xTextToolbar">
+            </text:TextToolbar>
         </StackPanel>
     </StackPanel>
 </UserControl>
