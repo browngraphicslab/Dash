@@ -35,7 +35,7 @@ namespace Dash
 
         public InkController InkController;
 
-        public DocumentController ContainerDocument => _collectionRef.GetDocumentController(_context);
+        public DocumentController                      ContainerDocument => _collectionRef.GetDocumentController(_context);
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
@@ -44,11 +44,9 @@ namespace Dash
         public KeyController OutputKey { get; set; }
         public KeyController CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
-        public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
+        public void SetCollectionRef(FieldReference refToCollection, Context context = null)
         {
-            BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
-
-            Debug.Assert(refToCollection != null);
+            DocumentViewModels.Clear();
             _collectionRef = refToCollection;
             _context = context;
             addViewModels(CollectionController.TypedData, context);
@@ -81,6 +79,15 @@ namespace Dash
                     }
 
                 });
+        }
+
+
+        public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
+        {
+            BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
+
+            Debug.Assert(refToCollection != null);
+            SetCollectionRef(refToCollection, context);
 
             CellSize = 250; // TODO figure out where this should be set
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  

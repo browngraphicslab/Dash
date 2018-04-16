@@ -39,6 +39,7 @@ namespace Dash
         Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         CollectionViewModel _lastViewModel = null;
         List<DocumentView>  _selectedDocs = new List<DocumentView>();
+        bool                _isLoaded = false;
 
         public ViewManipulationControls  ViewManipulationControls { get; set; }
         public bool                      TagMode { get; set; }
@@ -52,7 +53,7 @@ namespace Dash
             {
                 var trans = ViewModel.ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
                 var scale = ViewModel.ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                return new TransformGroupData(trans, scale);
+                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
             }
             set
             {
@@ -78,18 +79,35 @@ namespace Dash
             }
             Loaded += (sender, e) =>
             {
+                _isLoaded = true;
                 ViewModel.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 DataContextChanged -= OnDataContextChanged;
                 DataContextChanged += OnDataContextChanged;
                 if (ViewModel != null)
                     OnDataContextChanged(null, null);
-                setupCanvases();
+                MakePreviewTextbox();
+
+                //make and add selectioncanvas 
+                SelectionCanvas = new Canvas();
+                Canvas.SetLeft(SelectionCanvas, -30000);
+                Canvas.SetTop(SelectionCanvas, -30000);
+                InkHostCanvas.Children.Add(SelectionCanvas);
+
+                if (InkController != null)
+                {
+                    MakeInkCanvas();
+                }
                 ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
                 ViewModel.ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+                // force the view to refresh now that everything is loaded.  These changed handlers will cause the
+                // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
+                PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
+                ActualSizeFieldChanged(null, null, null);
             };
             Unloaded += (sender, e) =>
             {
+                _isLoaded = false;
                 _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
                 _lastViewModel.ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
@@ -137,26 +155,6 @@ namespace Dash
         void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        void setupCanvases()
-        {
-            MakePreviewTextbox();
-            
-            //make and add selectioncanvas 
-            SelectionCanvas = new Canvas();
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
-            InkHostCanvas.Children.Add(SelectionCanvas);
-
-            if (InkController != null)
-            {
-                MakeInkCanvas();
-            }
-            
-            if (ParentDocument?.ViewModel.LayoutDocument?.GetField<TextController>(KeyStore.CollectionFitToParentKey)?.Data == "true")
-            {
-                ViewModel.FitContents();
-            }
         }
 
         #endregion

@@ -99,7 +99,6 @@ namespace Dash
                 Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
 
                 SizeChanged += sizeChangedHandler;
-                ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
             };
             Unloaded += (sender, e) =>
             {

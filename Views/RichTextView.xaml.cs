@@ -52,8 +52,6 @@ namespace Dash
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
-            RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
-
             xSearchDelete.Click += (s, e) =>
             {
                 setSelected("");
@@ -161,7 +159,6 @@ namespace Dash
         }
         void               setContainerHeight()
         {
-
             if (FocusManager.GetFocusedElement() == xRichEditBox)
             {
                 if (Parent is RelativePanel relative)
@@ -339,10 +336,11 @@ namespace Dash
         {
             var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out _lastXamlRTFText);
+            var id = RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
 
             void UnLoaded(object s, RoutedEventArgs e)
             {
+                UnregisterPropertyChangedCallback(TextProperty, id);
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
                 Unloaded -= UnLoaded;
             }
