@@ -30,32 +30,17 @@ namespace Dash.Views.Document_Menu
             this.InitializeComponent();
             _parentCanvas = canvas;
             this.SetUpBaseMenu();
-           // AddButton("Back", Symbol.Back, 1);
         }
 
-        public void SetMenuToolBarBinding(RichEditBox selection)
-        {
-            DashMenuToolBar.Editor = selection;
-        }
 
-        public void AddButton(String name, Symbol icon, int position)
-        {
-            ToolbarButton button = DashMenuToolBar.GetDefaultButton(ButtonType.Headers);
-            button.Visibility = Visibility.Collapsed;
-            DashMenuToolBar.CustomButtons.Add(new ToolbarButton
-                {
-                Name = name,
-                Icon = new SymbolIcon(icon),
-                Position = position
-                }
-                );
-            DashMenuToolBar.CustomButtons.Add(new ToolbarSeparator {Position = position + 1});
-        }
 
         public void SetKeyboardShortcut()
         {
 
         }
+
+
+        UIElement active = null; // currently active submenu, if null, nothing is selected
 
         /// <summary>
         /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
@@ -63,7 +48,27 @@ namespace Dash.Views.Document_Menu
         /// <param name="docs"></param>
         public void Update(IEnumerable<DocumentView> docs)
         {
-            SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+            if (active != null) active.Visibility = Visibility.Collapsed;
+
+            if (docs.Count<DocumentView>() > 0)
+            {
+                // Text controls
+                var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
+                if (text != null) {
+                    xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+                    active = xTextToolbar; 
+                    return;
+                }
+
+                // TODO: Image controls
+
+
+                // TODO: Collection controls
+
+
+            }
+
+            if (active != null) active.Visibility = Visibility.Visible;
         }
 
         private void SetUpBaseMenu()
@@ -71,11 +76,6 @@ namespace Dash.Views.Document_Menu
             _parentCanvas.Children.Add(this);
             Canvas.SetLeft(this, 325);
             Canvas.SetTop(this, 5);
-            Debug.WriteLine(_parentCanvas.Width);
-            Debug.WriteLine(_parentCanvas.Height);
-            Debug.WriteLine("TOOLBAR LOADED!");
-            //SetDefaultMenuStyle();
-            //SetButtonActions();
         }
     }
 }

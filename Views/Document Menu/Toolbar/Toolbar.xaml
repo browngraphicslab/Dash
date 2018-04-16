@@ -2,17 +2,22 @@
     x:Class="Dash.Views.Document_Menu.MenuToolBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:local="using:Dash.Views.Document_Menu"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ctrl="using:Windows.UI.Xaml.Controls"
+    xmlns:text="using:Dash.Views.Document_Menu.Toolbar"
     mc:Ignorable="d"
     d:DesignHeight="300" 
     d:DesignWidth="400">
 
-    <controls:TextToolbar
-        x:Name="DashMenuToolBar"
-        Visibility="Visible">
-    </controls:TextToolbar>
-
+    <StackPanel>
+        <ctrl:CommandBar>
+        </ctrl:CommandBar>
+        <StackPanel>
+            <text:TextToolbar x:Name="xTextToolbar"></text:TextToolbar>
+            <text:ImageToolbar x:Name="xImgToolbar"></text:ImageToolbar>
+            <text:CollectionToolbar x:Name="xImgToolbar"></text:CollectionToolbar>
+        </StackPanel>
+    </StackPanel>
 </UserControl>
