@@ -4,6 +4,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 using System;
+using static Dash.DocumentController;
 
 namespace Dash
 {
@@ -71,6 +72,17 @@ namespace Dash
             var view       = new CollectionView(collectionViewModel,  viewType);
 
             SetupBindings(view, docController, context);
+
+            void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            {
+                var newDocContext = (args as DocumentFieldUpdatedEventArgs).NewValue as DocumentController;
+                var newContext = new Context(c);
+                foreach (var ctxt in context.DocContextList)
+                    newContext.AddDocumentContext(ctxt);
+                newContext.AddDocumentContext(newDocContext);
+                collectionViewModel.SetCollectionRef(new DocumentFieldReference(docController.Id, KeyStore.DataKey), newContext);
+            }
+            docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
             
             return view;
         }

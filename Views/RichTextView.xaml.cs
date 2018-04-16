@@ -31,6 +31,7 @@ namespace Dash
         
         int   _prevQueryLength;// The length of the previous search query
         int   _nextMatch = 0;// Index of the next highlighted search result
+        FormattingMenuView xFormattingMenuView = null;
 
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
@@ -51,8 +52,6 @@ namespace Dash
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
-
-            RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
 
             xSearchDelete.Click += (s, e) =>
             {
@@ -87,15 +86,7 @@ namespace Dash
             xRichEditBox.ContextMenuOpening += (s,e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
 
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
-
-            // store a clone of character format after initialization as default format
-            xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
-            // store a clone of paragraph format after initialization as default format
-            xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
-            xFormattingMenuView.richTextView = this;
-            xFormattingMenuView.xRichEditBox = xRichEditBox;
         }
-        
 
         public void UpdateDocumentFromXaml()
         {
@@ -161,7 +152,6 @@ namespace Dash
         }
         void               setContainerHeight()
         {
-
             if (FocusManager.GetFocusedElement() == xRichEditBox)
             {
                 if (Parent is RelativePanel relative)
@@ -293,6 +283,17 @@ namespace Dash
             }
             else if (this.IsAltPressed()) // opens the format options flyout 
             {
+                if (xFormattingMenuView == null)
+                {
+                    xFormattingMenuView = new FormattingMenuView();
+                    // store a clone of character format after initialization as default format
+                    xFormattingMenuView.defaultCharFormat = xRichEditBox.Document.Selection.CharacterFormat.GetClone();
+                    // store a clone of paragraph format after initialization as default format
+                    xFormattingMenuView.defaultParFormat = xRichEditBox.Document.Selection.ParagraphFormat.GetClone();
+                    xFormattingMenuView.richTextView = this;
+                    xFormattingMenuView.xRichEditBox = xRichEditBox;
+                    xAttachedFlyout.Children.Add(xFormattingMenuView);
+                }
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
             }
@@ -339,10 +340,11 @@ namespace Dash
         {
             var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-            xRichEditBox.Document.GetText(TextGetOptions.FormatRtf, out _lastXamlRTFText);
+            var id = RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
 
             void UnLoaded(object s, RoutedEventArgs e)
             {
+                UnregisterPropertyChangedCallback(TextProperty, id);
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
                 Unloaded -= UnLoaded;
             }

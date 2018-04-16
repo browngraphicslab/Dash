@@ -34,7 +34,7 @@ namespace Dash
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
 
-        public DocumentView xMapDocumentView;
+        public DocumentView         xMapDocumentView;
 
         public MainPage()
         {
@@ -146,10 +146,14 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceViewCopy = workspace.GetViewCopy();
-            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-            workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+            var workspaceViewCopy = workspace;
+            if (workspaceViewCopy.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true") //  !isWorkspace)
+            {
+                workspaceViewCopy = workspace.GetViewCopy();
+                workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+            }
             MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
             setupMapView(workspaceViewCopy);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
@@ -479,26 +483,22 @@ namespace Dash
         }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
-        private void setupMapView(DocumentController context)
+        void setupMapView(DocumentController mainDocumentCollection)
         {
-            mapTimer.Stop();
-            mapTimer = new DispatcherTimer();
-            if (xMapDocumentView != null)
+            if (xMapDocumentView == null)
             {
-                xLeftGrid.Children.Remove(xMapDocumentView);
-            }
-            var copy = context.GetViewCopy();
-            copy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
-            xMapDocumentView = new DocumentView() {  DataContext = new DocumentViewModel(copy), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-            xMapDocumentView.Loaded += (s,e) =>
-            {
-                var collectionViewModel = xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel;
+                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                Grid.SetColumn(xMapDocumentView, 2);
+                xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) => collectionViewModel.FitContents();
-                mapTimer.Start();
-            };
-            Grid.SetColumn(xMapDocumentView, 2);
-            xLeftStack.Children.Add(xMapDocumentView);
+                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
+            }
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
+            mapTimer.Start();
         }
 
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
