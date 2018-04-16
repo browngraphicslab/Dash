@@ -55,9 +55,10 @@ namespace Dash.Views.Document_Menu
             {
                 // Text controls
                 var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
-                if (text != null) {
+                if (text != null)
+                {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
-                    subtoolbarElement = xTextToolbar; 
+                    subtoolbarElement = xTextToolbar;
                     return;
                 }
 
@@ -67,9 +68,13 @@ namespace Dash.Views.Document_Menu
                 // TODO: Collection controls   
 
 
-            } else if (docs.Count<DocumentView>() > 1)
+            }
+            else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
+            }
+            else {
+                subtoolbarElement = null;
             }
 
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
