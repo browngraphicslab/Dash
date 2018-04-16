@@ -2,6 +2,10 @@
 *Before you merge into master, update this list with whatever new features or changes you implemented. This will ensure everyone is aware of what features they need to be testing against when they add new functionality.
 Also, be sure that new features do not break any of the existing ones in this list.*
 
+#### Groupings
+Underlays that ley you drag everything that is on top of them. They have a shape: circle, rectangular, or rounded rectangular.
+You can add them by creating a marquee selection then pressing 'G' before you release the marquee selection. You can also create them via the 'Grouping' in the tab/radial menu.
+
 ### Instructions for installing SyncFusion Nuget Packages
 
 1. Go to *Tools* > *Options* and scroll to *NuGet Package Manager*

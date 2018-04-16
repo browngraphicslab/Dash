@@ -123,6 +123,7 @@ namespace Dash
                 //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 //ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
             };
+
             PointerEntered += DocumentView_PointerEntered;
             PointerExited  += DocumentView_PointerExited;
             RightTapped    += (s,e) => DocumentView_OnTapped(null,null);
@@ -630,16 +631,21 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
                 ToFront();
+                List<DocumentView> d = new List<DocumentView>();
+                d.Add(this);
+                (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
+                (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
+                
             }
 			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
 			{
 				//ViewModel.DocumentController.GetVideo().Pause();
 			}
         }
+
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
