@@ -246,6 +246,7 @@
     <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
     <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
     <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\InvalidDishScriptException.cs" />

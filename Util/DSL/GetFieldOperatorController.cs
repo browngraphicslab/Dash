@@ -52,7 +52,7 @@ namespace Dash
                 {
                     if (key.Key.Name.Equals(keyName))
                     {
-                        outputs[ResultFieldKey] = key.Value;
+                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
                     }
                 }
@@ -61,7 +61,7 @@ namespace Dash
                 {
                     if (key.Key.Name.ToLower().Equals(keyName.ToLower()))
                     {
-                        outputs[ResultFieldKey] = key.Value;
+                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
                     }
                 }
@@ -69,18 +69,18 @@ namespace Dash
 
                 foreach (var key in fields) //check exact string contains
                 {
-                    if (key.Key.Name.Contains(keyName) && key.Key.Name.Length < keyName.Length * 2)
+                    if (key.Key.Name.Contains(keyName) && keyName.Length  >= 3)
                     {
-                        outputs[ResultFieldKey] = key.Value;
+                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
                     }
                 }
 
                 foreach (var key in fields) //check to lower stirng contains
                 {
-                    if (key.Key.Name.ToLower().Contains(keyName.ToLower()) && key.Key.Name.Length < keyName.Length * 2)
+                    if (key.Key.Name.ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
                     {
-                        outputs[ResultFieldKey] = key.Value;
+                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
                     }
                 }
