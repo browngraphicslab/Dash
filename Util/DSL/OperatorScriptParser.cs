@@ -103,6 +103,22 @@ namespace Dash
                 TestNumber($"let(x, 6, add(x,7))", 13);
                 TestNumber($"let(x, 6, add(x,let(x, 3, add(x,2))))", 11);
                 TestNumber($"let(x, 6, add(let(x, 3, add(x,2)), x))", 11);
+
+
+                //testing nested string and commas
+                var eleven = "let(x, 6, add(let(x, 3, add(x,exec({add(1,exec({1}))}))), x))";
+                var fifteen = $"exec({{add(exec({{{eleven}}}), 4)}})";
+                TestNumber($"exec({{mult(3, exec({{{fifteen}}}))}})", 3*(15));
+
+                var num = (new Random()).Next(2000) - 1000;
+                var s = num.ToString();
+                for (int j = 0; j < 6 + (new Random()).Next(5); j++)
+                {
+                    var r = (new Random()).Next(2000) - 1000;
+                    s = $"exec({o}add(exec({o}{s}{c}), add(exec({o}{s}{c}), exec({o}{r}{c}))){c})";
+                    num += num + r;
+                }
+                TestNumber(s, num);
             }
 
         }

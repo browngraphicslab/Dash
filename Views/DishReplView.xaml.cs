@@ -27,7 +27,7 @@ namespace Dash
         {
             this.InitializeComponent();
             this.DataContext = new DishReplViewModel();
-            _dsl = new DSL(ScriptState.ContentAware());
+            _dsl = new DSL(ScriptState.ContentAware(), true);
         }
 
         private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
@@ -37,8 +37,7 @@ namespace Dash
             {
                 var currentText = textBox.Text;
                 textBox.Text = "";
-                var existingScript = DSL.GetFuncName<GetScriptValueAsStringOperatorController>()+"({" + string.Join(';', ViewModel.Items.Select(i => i.GetLineText())) + ";" + currentText + "})";
-                var returnValue = _dsl.Run(existingScript) as TextController;
+                var returnValue = _dsl.Run(currentText) as TextController;
                 ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue.Data, new TextController("test")));
                 xScrollViewer.ScrollToVerticalOffset(int.MaxValue);
             }
