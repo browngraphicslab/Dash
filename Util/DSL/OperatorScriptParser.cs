@@ -462,12 +462,23 @@ namespace Dash
             for (int i = 0; i < innerFunctionParameters.Length; ++i)
             {
                 char c = innerFunctionParameters[i];
-
-                if (!closingCharacters.Any() || !ignoreValueClosingChars.Contains(closingCharacters.Peek()))
+                var currentlyInString = closingCharacters.Any() && ignoreValueClosingChars.Contains(closingCharacters.Peek());
+                if (!closingCharacters.Any() || !currentlyInString)
                 {
                     foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
                     {
                         if (c == encapsulatingCharacterPair.Key)
+                        {
+                            closingCharacters.Push(encapsulatingCharacterPair.Value);
+                        }
+                    }
+                }
+
+                if (currentlyInString)
+                {
+                    foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
+                    {
+                        if (c == encapsulatingCharacterPair.Key && ignoreValueClosingChars.Contains(encapsulatingCharacterPair.Value))
                         {
                             closingCharacters.Push(encapsulatingCharacterPair.Value);
                         }
