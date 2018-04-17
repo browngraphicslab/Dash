@@ -202,7 +202,7 @@ namespace Dash
                 _bindingMap[element] = new Dictionary<DependencyProperty, Action>();
             }
 
-            Debug.Assert(!_bindingMap[element].ContainsKey(property));
+            //Debug.Assert(!_bindingMap[element].ContainsKey(property));
             _bindingMap[element][property] = removeBinding;
         }
 
