@@ -102,6 +102,7 @@ namespace Dash
 
                 TestNumber($"let(x, 6, add(x,7))", 13);
                 TestNumber($"let(x, 6, add(x,let(x, 3, add(x,2))))", 11);
+                TestNumber($"let(x, 6, add(let(x, 3, add(x,2)), x))", 11);
             }
 
         }
@@ -184,7 +185,7 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase GetOperatorControllerForScript(string script,ScriptState state = null)
+        public static FieldControllerBase GetOperatorControllerForScript(string script, ScriptState state = null)
         {
             try
             {

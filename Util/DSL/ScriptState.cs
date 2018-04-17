@@ -12,12 +12,9 @@ namespace Dash
         public static string THIS_NAME = "this";
         private Dictionary<string, FieldControllerBase> _dictionary = new Dictionary<string, FieldControllerBase>();
 
-        public ScriptState(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null) : base(existingState){}
+        public ScriptState(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null, string trackingId = null) : base(existingState, trackingId) {}
 
-        public ScriptState(ScriptState existingState) : base(existingState?._dictionary?.ToArray()){}
-
-
-        public ScriptState(FieldControllerBase thisController) : this(new [] {new KeyValuePair<string, FieldControllerBase>(THIS_NAME, thisController)}) { }
+        public ScriptState(ScriptState existingState, string trackingId = null) : base(existingState?._dictionary?.ToArray(), trackingId){}
 
         /// <summary>
         /// To create a state object from a document controller.  
@@ -25,9 +22,20 @@ namespace Dash
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        public static ScriptState CreateStateFromDocumentController(DocumentController doc)
+        public static ScriptState CreateStateFromDocumentController(DocumentController doc, string trackingId = null)
         {
-            return new ScriptState(doc.EnumFields().Select(kvp => new KeyValuePair<string, FieldControllerBase>(kvp.Key.Name, kvp.Value)));
+            return new ScriptState(doc.EnumFields().Select(kvp => new KeyValuePair<string, FieldControllerBase>(kvp.Key.Name, kvp.Value)), trackingId);
+        }
+
+        /// <summary>
+        /// To create a state object  with an existing field called 'this', as the passed in document controller
+        /// </summary>
+        /// <param name="thisDocument"></param>
+        /// <returns></returns>
+        public static ScriptState CreateStateWithThisDocument(DocumentController thisDocument, ScriptState existingState = null, string trackingId = null)
+        {
+            var state = existingState ?? new ScriptState(trackingId : trackingId);
+            return state.AddOrUpdateValue(THIS_NAME, thisDocument) as ScriptState;
         }
 
         /// <summary>
@@ -40,9 +48,9 @@ namespace Dash
             return new DocumentController(_dictionary.Select(kvp => new KeyValuePair<KeyController, FieldControllerBase>(new KeyController(new KeyModel(){Name = kvp.Key}), kvp.Value)).ToDictionary(k =>k.Key, v => v.Value), DocumentType.DefaultType);
         }
 
-        protected override State<string> CreateNew(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null)
+        protected override State<string> CreateNew(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null, string trackingId = null)
         {
-            return new ScriptState(existingState);
+            return new ScriptState(existingState, trackingId);
         }
 
         public static ScriptState ContentAware()
