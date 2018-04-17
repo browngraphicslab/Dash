@@ -10,7 +10,6 @@ namespace Dash
     public class ScriptState : State<string>
     {
         public static string THIS_NAME = "this";
-        private Dictionary<string, FieldControllerBase> _dictionary = new Dictionary<string, FieldControllerBase>();
 
         public ScriptState(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null, string trackingId = null) : base(existingState, trackingId) {}
 

@@ -58,7 +58,8 @@ namespace Dash
             try
             {
                 var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                return OperatorScriptParser.GetOperatorControllerForScript(singleLineScript, _state);
+                var controller = OperatorScriptParser.GetOperatorControllerForScript(singleLineScript, _state);
+                return controller;
             }
             catch (DSLException e)
             {
@@ -230,7 +231,7 @@ namespace Dash
         /// <returns></returns>
         public static string GetScriptForOperatorTree(FieldControllerBase fieldController, Context context = null)
         {
-            return fieldController.GetValue(context).ToString();
+            return (fieldController is TextController) ? OperatorScriptParser.StringOpeningCharacters[0] + fieldController.GetValue(context).ToString() + OperatorScriptParser.StringClosingCharacters[0] : fieldController.GetValue(context).ToString();
         }
     }
 }

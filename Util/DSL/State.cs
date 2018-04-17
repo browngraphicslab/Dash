@@ -16,7 +16,7 @@ namespace Dash
         /// </summary>
         private static Dictionary<string, State<T>> _trackingDictionary = new Dictionary<string, State<T>>();
 
-        private readonly Dictionary<T, FieldControllerBase> _dictionary;
+        protected readonly Dictionary<T, FieldControllerBase> _dictionary;
         private string _trackingId = null;
 
         protected State(IEnumerable<KeyValuePair<T, FieldControllerBase>> existingState = null, string trackingId = null)
