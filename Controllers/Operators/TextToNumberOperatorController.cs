@@ -45,12 +45,9 @@ namespace Dash
         {
             var textController = inputs[TextKey] as TextController;
 
-            try
+            if (double.TryParse(textController.Data, out var num))
             {
-                outputs[NumberKey] = new NumberController(double.Parse(textController.Data));
-            }
-            catch (Exception e)
-            {
+                outputs[NumberKey] = new NumberController(num);
             }
         }
 
