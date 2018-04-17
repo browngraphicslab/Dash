@@ -57,7 +57,7 @@ namespace Dash
         {
             return new ScriptState(new Dictionary<string, FieldControllerBase>()
             {
-                {"main", MainPage.Instance.MainDocument },
+                {"main", MainPage.Instance?.MainDocument },
                 { "help", new TextController(OperatorScript.FunctionDocumentation)}
             });
         }
