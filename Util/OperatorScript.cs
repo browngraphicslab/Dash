@@ -26,10 +26,13 @@ namespace Dash
                 //IF YOU CRASHED ON THIS LINE THEN YOU PROBABLY ADDED A NEW OPERATOR WITHOUT AN EMPTY CONSTRUCTOR. 
                 OperatorController op = (OperatorController)Activator.CreateInstance(operatorType);
 
-                var typeName = operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetTypeName();
+                var typeNames = operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetTypeNames();
 
-                _functionMap[typeName] = operatorType;
-                _reverseFunctionMap[operatorType] = typeName;
+                foreach (var typeName in typeNames)
+                {
+                    _functionMap[typeName] = operatorType;
+                    _reverseFunctionMap[operatorType] = typeName;
+                }
             }
         }
 
@@ -79,7 +82,7 @@ namespace Dash
         {
             //if this fails then the function name doens't exist for the given controller
 
-            return controller.GetType().GetCustomAttribute<OperatorTypeAttribute>().GetTypeName();
+            return controller.GetType().GetCustomAttribute<OperatorTypeAttribute>().GetTypeNames().First();
         }
 
 
