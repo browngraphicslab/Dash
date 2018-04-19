@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data.Common;
@@ -6,11 +7,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Schema;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using DashShared;
 using Flurl.Util;
+using Newtonsoft.Json.Serialization;
 
 namespace Dash
 {
@@ -22,25 +25,54 @@ namespace Dash
         public static void CollectionToTxt(DocumentController collection)
         {
             //Get all the Document Controller in the collection
-            //The document cotnrollers are saved as the Data Field in each collection
+            //The document controllers are saved as the Data Field in each collection
             var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
 
-            foreach (var viewDoc in dataDocs)
+          //create a list of key value pairs that link each doc to its point
+            List<KeyValuePair<DocumentController, List<double>>> docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
+
+            foreach (var doc in dataDocs)
             {
-                // Debug.WriteLine($"{viewDoc.GetField(KeyStore.PositionFieldKey)}");
-                // var dataDoc = viewDoc.GetDataDocument();
-                IEnumerable<KeyValuePair<String, Object>> docPostion = viewDoc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot(null).ToKeyValuePairs().ToImmutableList();
-               // docPostion.
-                //Debug.WriteLine(a);
+                String docType = doc.DocumentType.Type;
+                //create diffrent output for different document types by calling helper functions
+                switch (docType)
+                {
+                    case "Rich Text Box":
+                        String a = TextToTxt(doc);
+                        break;
+                    case "Image Box":
+                        Console.WriteLine("Case 1");
+                        break;
+                    case "Background Box":
+                        Console.WriteLine("Case 1");
+                        break;
+                    case "Collection Box":
+                        Console.WriteLine("Case 1");
+                        break;
+                    default:
+                        Console.WriteLine("Default case");
+                        break;
+                }
 
-             
+                //Get an ImmutableList of KetValue Pairs with doc properites - add a breaker point and look at properties to see what extentions to add
+                IEnumerable <KeyValuePair<String, Object>> docPostion = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot(null).ToKeyValuePairs().ToImmutableList();
+                object rawpoint = docPostion.ElementAt(1).Value;
+                double xPt = (double)(rawpoint.GetType().GetProperty("X").GetValue(rawpoint, null));
+                double yPt = (double)(rawpoint.GetType().GetProperty("Y").GetValue(rawpoint, null));
+
+                //now add data to docToPt List
+                List<double> point = new List<double>();
+                point.Add(xPt);
+                point.Add(yPt);
+                docToPt.Add(new KeyValuePair<DocumentController, List<double>>(doc, point));
             }
+        
 
-           // var orderedDocs = OrderElements(viewDocs);
-           // SaveData();
+           // var orderedDocs = OrderElements(docToPt);
+            SaveData();
         }
 
-        private static List<DocumentController> OrderElements(List<DocumentController> elems)
+        private static List<DocumentController> OrderElements(List<KeyValuePair<DocumentController, List<double>>> docPtData)
         {
             IEnumerable<DocumentController> a = ContentController<FieldModel>.GetControllers<DocumentController>();
 
@@ -61,33 +93,29 @@ namespace Dash
             return null;
         }
 
-        private static void allDocsToTxt()
-        {
 
+        private static String TextToTxt(DocumentController doc)
+        {
+            return doc.Title;
         }
 
-        private static void TextToTxt()
+        private static String ImageToTxt(DocumentController doc)
         {
-
-        }
-
-        private static void ImgToTxt()
-        {
-
+            return "b";
         }
 
 
         private static async void SaveData()
         {
-            String filename = "Sample.txt";
+            String filename = "Sample.md";
 
             StorageFile stFile;
             if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
             {
                 FileSavePicker savePicker = new FileSavePicker();
-                savePicker.DefaultFileExtension = ".txt";
+                savePicker.DefaultFileExtension = ".md";
                 savePicker.SuggestedFileName = "Dash";
-                savePicker.FileTypeChoices.Add("Txt Document", new List<string>() { ".txt" });
+                savePicker.FileTypeChoices.Add("Markdown Document", new List<string>() { ".md" });
                 stFile = await savePicker.PickSaveFileAsync();
                 await Windows.Storage.FileIO.WriteTextAsync(stFile, "Swift as a shadow");
             }
