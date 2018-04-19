@@ -67,7 +67,7 @@
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CollectionDBSchemaRecord/>
+                    <local:EditableScriptBox></local:EditableScriptBox>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
