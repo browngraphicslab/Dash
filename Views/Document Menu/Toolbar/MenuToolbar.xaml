@@ -17,6 +17,8 @@
         <StackPanel>
             <text:TextSubtoolbar x:Name="xTextToolbar">
             </text:TextSubtoolbar>
+            <text:ImageSubtoolbar x:Name="xImageToolbar">
+            </text:ImageSubtoolbar>
         </StackPanel>
     </StackPanel>
 </UserControl>

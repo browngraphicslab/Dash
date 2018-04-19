@@ -62,13 +62,19 @@ namespace Dash.Views.Document_Menu
                     return;
                 }
 
-                // TODO: Image controls
+				// TODO: Image controls
+				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageBox>(docs.First());
+				if (image != null)
+				{
+					xImageToolbar.SetMenuToolBarBinding(image);
+					subtoolbarElement = xImageToolbar;
+					return;
+				}
+
+				// TODO: Collection controls   
 
 
-                // TODO: Collection controls   
-
-
-            }
+			}
             else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
