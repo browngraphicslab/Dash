@@ -114,7 +114,7 @@ namespace Dash
 
         public override FieldModelController<RichTextModel> Copy()
         {
-            return new RichTextController(Data);
+            return new RichTextController(new RichTextModel.RTD(Data.RtfFormatString));
         }
     }
 }

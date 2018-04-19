@@ -494,6 +494,7 @@ namespace Dash
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
+                Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
                 mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();

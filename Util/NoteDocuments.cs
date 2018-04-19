@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -39,6 +40,9 @@ namespace Dash
                 if (!string.IsNullOrEmpty(title))
                     dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                //layout.SetField(KeyStore.DataKey,//TODO Get this to work
+                //    new PointerReferenceController(
+                //        new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
                 layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
                 return layout;
             }

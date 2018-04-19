@@ -163,7 +163,8 @@ namespace Dash
 
             try
             {
-                fmController = DSL.InterpretUserInput(stringValue, true);
+                //fmController = DSL.InterpretUserInput(stringValue, true);
+                fmController = DSL.InterpretUserInput(stringValue, state: ScriptState.CreateStateWithThisDocument(_dataContextDocument));
             }
             catch (DSLException e)
             {
