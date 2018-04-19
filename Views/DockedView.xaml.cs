@@ -20,12 +20,10 @@ namespace Dash.Views
 {
     public sealed partial class DockedView : UserControl
     {
-        public GridSplitter Splitter { get; set; }
 
-        public DockedView(GridSplitter splitter)
+        public DockedView()
         {
             this.InitializeComponent();
-            Splitter = splitter;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)

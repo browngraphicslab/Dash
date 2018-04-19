@@ -18,7 +18,9 @@
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="15"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="15" MaxWidth="15"/>
+            <ColumnDefinition Width="0" x:Name="xDockSplitterColumn"/>
+            <ColumnDefinition Width="0" x:Name="xDockPanelColumn"/>
         </Grid.ColumnDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
@@ -65,5 +67,8 @@
                 x:Name="xLeftSplitter"
                 Grid.Row="1" Height="15"/>
         </Grid>
+
+        <localMicrosoft:GridSplitter Grid.Column="4" Width="15"/>
+        <StackPanel x:Name="xDockPanel" Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
     </Grid>
 </Page>

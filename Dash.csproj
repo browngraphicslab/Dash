@@ -512,6 +512,9 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Splitter.xaml.cs">
+      <DependentUpon>Splitter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
@@ -1000,6 +1003,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Splitter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

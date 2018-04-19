@@ -399,7 +399,6 @@ namespace Dash
                 if (preview)
                 {
                     MainPage.Instance.HighlightDock();
-                    Debug.WriteLine("highlight");
                 }
                 else
                 {

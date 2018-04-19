@@ -513,13 +513,6 @@ namespace Dash
 
         public void Dock(DocumentView toDock)
         {
-            ColumnDefinition newSplitterDefinition = new ColumnDefinition();
-            ColumnDefinition newDockDefinition = new ColumnDefinition();
-            newSplitterDefinition.Width = new GridLength(15, GridUnitType.Pixel);
-            newDockDefinition.Width = new GridLength(1, GridUnitType.Star);
-            xOuterGrid.ColumnDefinitions.Add(newSplitterDefinition);
-            xOuterGrid.ColumnDefinitions.Add(newDockDefinition);
-
             DocumentController context = toDock.ViewModel.DocumentController;
             DocumentView copiedView = new DocumentView()
             {
@@ -532,15 +525,21 @@ namespace Dash
             copiedView.ViewModel.Height = Double.NaN;
             copiedView.ViewModel.DisableDecorations = true;
 
-            GridSplitter splitter = new GridSplitter();
-            DockedView dockedView = new DockedView(splitter);
+            DockedView dockedView = new DockedView();
             dockedView.ChangeView(copiedView);
+            dockedView.Width = 200;
 
-            Grid.SetColumn(splitter, xOuterGrid.ColumnDefinitions.Count - 2); //second-to-last
-            Grid.SetColumn(dockedView, xOuterGrid.ColumnDefinitions.Count - 1);
-
-            xOuterGrid.Children.Add(splitter);
-            xOuterGrid.Children.Add(dockedView);
+            if (xDockPanel.Children.Count == 0)
+            {
+                xDockSplitterColumn.Width = new GridLength(15, GridUnitType.Pixel);
+                xDockPanelColumn.Width = GridLength.Auto;
+                xDockPanel.Children.Add(dockedView);
+            }
+            else
+            {
+                xDockPanel.Children.Add(new Splitter());
+                xDockPanel.Children.Add(dockedView);
+            }
         }
 
         public void HighlightDock()
@@ -555,12 +554,14 @@ namespace Dash
 
         public void Undock(DockedView undock)
         {
-            xOuterGrid.Children.Remove(undock);
-            xOuterGrid.Children.Remove(undock.Splitter);
-
-            int lastColumnIndex = xOuterGrid.ColumnDefinitions.Count - 1;
-            xOuterGrid.ColumnDefinitions.RemoveAt(lastColumnIndex);
-            xOuterGrid.ColumnDefinitions.RemoveAt(lastColumnIndex - 1);
+//            DockPanel.Children.Remove(undock);
+//            DockPanel.Children.Remove(undock.Splitter);
+//
+//            if (DockPanel.Children.Count == 0)
+//            {
+//                DockPanel.Visibility = Visibility.Collapsed;
+//                DockSplitter.Visibility = Visibility.Collapsed;
+//            }
         }
     }
 }
