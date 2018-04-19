@@ -3,7 +3,8 @@
 namespace DashShared
 {
     [Flags]
-    public enum TypeInfo
+    public enum 
+        TypeInfo
     {
         None = 0x0,
         Number = 0x1,

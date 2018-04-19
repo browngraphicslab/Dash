@@ -131,6 +131,7 @@ namespace Dash
         /// <returns></returns>
         public abstract StringSearchModel SearchForString(string searchString);
 
+        public abstract string GetSearchableString();
         /// <summary>
         ///     Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock
         ///     displaying the number of items stored in collection/list

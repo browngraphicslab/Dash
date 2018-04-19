@@ -47,14 +47,30 @@ namespace Dash
         {
             foreach (var documentController in documents)
             {
+                Document doc = new Document(); //Document to be added to Lucene index
+                foreach (var kvp in documentController.EnumFields())
+                {
+                    AddFieldToDocument(doc, kvp.Key, kvp.Value);
+                }
+                _indexWriter.AddDocument(doc);
+                /*
                 string documentId = "1"; //TODO: use actual document controller
                 string documentText = "the mitochondria is the powerhouse of the cell";
                 Document doc = new Document();
                 doc.Add(new Field("id", documentId, Field.Store.YES, Field.Index.NO));
                 doc.Add(new Field("postBody", documentText, Field.Store.YES, Field.Index.ANALYZED)); //TODO: double check that the Field.Index.ANALYZED is what we want.
                 _indexWriter.AddDocument(doc);
+                */
             }
         }
+
+        private void AddFieldToDocument(Document doc, KeyController key, FieldControllerBase fieldController)
+        {
+            var val = fieldController.GetSearchableString();
+            doc.Add(new Field(key.Name, val, Field.Store.YES, Field.Index.NO));
+        }
+
+
         public void AddInitialDocumentsToWriter()
         {
             string documentId = "1"; //TODO: use actual document controller
