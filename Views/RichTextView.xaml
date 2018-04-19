@@ -16,12 +16,11 @@
                 <Setter Property="Foreground" Value="{ThemeResource TranslucentWhite}"></Setter>
             </Style>
         </Grid.Resources>
-        <!--<Canvas VerticalAlignment="Bottom">-->
         <RichEditBox x:FieldModifier="public" 
                          AllowDrop="True"
                          Grid.Row="0"
                          x:Name="xRichEditBox" 
-                        Foreground="{StaticResource MainText}"
+                        Foreground="{ThemeResource TextBrush}"  
                          VerticalAlignment="Top" 
                          HorizontalAlignment="Left" 
                          BorderThickness="0"

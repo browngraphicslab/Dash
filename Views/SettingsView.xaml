@@ -7,9 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="50">
+    <Grid Background="{ThemeResource CollectionBackgroundBrush}" Padding="50">
         <StackPanel>
-            <TextBlock FontWeight="SemiBold" FontSize="18">SETTINGS</TextBlock>
+            <TextBlock FontWeight="SemiBold" FontSize="18" Foreground="{ThemeResource TextBrush}">SETTINGS</TextBlock>
 
             <!--Style--> 
             <TextBlock FontSize="22" Margin="0,20,0,0">Customize your display</TextBlock>

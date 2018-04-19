@@ -67,7 +67,7 @@
             x:Name="xSplitter"
             Grid.Column="1" Width="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
-                Background="LightGray"
+                Background="{ThemeResource GridSplitterBrush}"
                 Foreground="White" 
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
@@ -106,7 +106,7 @@
                 x:Name="xLeftSplitter"
                 Grid.Row="1" Height="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
                 ResizeDirection="Auto"
-                Background="LightGray"
+                Background="{ThemeResource GridSplitterBrush}"
                 Foreground="White" 
                 FontSize="13">
                 <localMicrosoft:GridSplitter.Element>

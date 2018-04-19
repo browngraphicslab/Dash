@@ -14,7 +14,7 @@
         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#686868</SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid Background="#556666">
+    <Grid Background="{ThemeResource TreeviewBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>

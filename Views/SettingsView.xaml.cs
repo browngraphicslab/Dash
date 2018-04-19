@@ -40,7 +40,6 @@ namespace Dash
             get => _nightModeOn; 
             private set {
                 _nightModeOn = value;
-                //NotifyPropertyChanged();
                 MainPage.Instance.ThemeChange();
             }
         }

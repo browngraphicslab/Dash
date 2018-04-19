@@ -63,6 +63,7 @@ namespace Dash
                 GlobalInkSettings.Opacity = 1;
 
                 xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
+                RequestedTheme = ElementTheme.Light; 
             };
 
             xSplitter.Tapped += (s,e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -450,7 +451,7 @@ namespace Dash
         
         public void ThemeChange()
         {
-            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark; 
+            RequestedTheme = RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark; 
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -502,7 +503,7 @@ namespace Dash
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;
             xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Colors.SlateGray); 
+            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Colors.LightGray); 
         }
     }
 }
