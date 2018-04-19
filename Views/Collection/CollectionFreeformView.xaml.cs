@@ -53,7 +53,6 @@ namespace Dash
             DataContextChanged += (s, args) => _lastViewModel = ViewModel;
             Loaded += (sender, e) =>
             {
-                ViewModel.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 MakePreviewTextbox();
 
                 //make and add selectioncanvas 

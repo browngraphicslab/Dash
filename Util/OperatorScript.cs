@@ -12,13 +12,24 @@ namespace Dash
         private static Dictionary<string, Type> _functionMap;
         private static Dictionary<Type, string> _reverseFunctionMap;
 
+        private static bool PrintAllFuncDocumentation;
+        public static string FunctionDocumentation;
+
         private OperatorScript()
         {
+            FunctionDocumentation = "";
+            PrintAllFuncDocumentation = true;
             Init();
         }
 
         private void Init()
         {
+
+            if (PrintAllFuncDocumentation)
+            {
+                Debug.WriteLine("\n\n\n\nAll DSL Functions: \n");
+            }
+
             _functionMap = new Dictionary<string, Type>();
             _reverseFunctionMap = new Dictionary<Type, string>();
             foreach (var operatorType in GetTypesWithOperatorAttribute(Assembly.GetExecutingAssembly()))
@@ -32,8 +43,27 @@ namespace Dash
                 {
                     _functionMap[typeName] = operatorType;
                     _reverseFunctionMap[operatorType] = typeName;
+
+
+                    if (PrintAllFuncDocumentation)
+                    {
+                        PrintDocumentation(typeName, op);
+                    }
                 }
+
             }
+
+            if (PrintAllFuncDocumentation)
+            {
+                Debug.WriteLine("\n\n\n\n\n");
+            }
+        }
+
+        private static void PrintDocumentation(string funcName, OperatorController op)
+        {
+            var doc = funcName + "( " + string.Join(',', op.Inputs.Select(i => " "+i.Value.Type.ToString() + "  "+  i.Key.Name.ToLower())) + " );";
+            FunctionDocumentation += doc + "         \n";
+            Debug.WriteLine(doc);
         }
 
         /// <summary>
@@ -154,6 +184,10 @@ namespace Dash
                 var op = (OperatorController) Activator.CreateInstance(t);
                 var outDict = new Dictionary<KeyController, FieldControllerBase>();
                 op.Execute(args,outDict, null, state);
+                if (outDict.Count == 0)
+                {
+                    return null;
+                }
                 return outDict.First().Value;
             }
             return null;

@@ -3,7 +3,7 @@
 namespace Dash
 {
 
-    public class InvalidDishScriptException : Exception
+    public class InvalidDishScriptException : DSLException
     {
         public InvalidDishScriptException(string script, ScriptErrorModel scriptErrorModel,
             ScriptException innerScriptException = null)
@@ -16,5 +16,9 @@ namespace Dash
         public string Script { get; private set; }
         public ScriptException InnerScriptException { get; }
         public ScriptErrorModel ScriptErrorModel { get; private set; }
+        public override string GetHelpfulString()
+        {
+            return ScriptErrorModel.GetHelpfulString();
+        }
     }
 }

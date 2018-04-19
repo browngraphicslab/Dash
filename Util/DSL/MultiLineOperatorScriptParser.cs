@@ -29,6 +29,13 @@ namespace Dash
             TestNumber("a = add(1,9); " +
                        "b=mult(a,1.5); " +
                        "add(a,mult(b, 0))", 10);
+
+            TestNumber("a = 7", 7);
+            TestNumber("a = 7;", 7);
+
+            TestNumber("a = 7; b = 9", 9);
+            TestNumber("a = 7; b = 9;", 9);
+            TestNumber("a = 7; b = 9;;;;;", 9);
         }
 
 
@@ -55,6 +62,10 @@ namespace Dash
         {
             Debug.Assert(multiLineScript != null);
             multiLineScript = multiLineScript?.Trim();
+            while (multiLineScript[multiLineScript.Length - 1] == LineDelimiterCharacter)
+            {
+                multiLineScript = multiLineScript.Remove(multiLineScript.Length - 1);
+            }
             var allEncapsulatingCharacters = OperatorScriptParser.EncapsulatingCharacterPairsIgnoringInternals.Concat(OperatorScriptParser.EncapsulatingCharacterPairsTrackingInternals).ToArray();
             var ignoreValueClosingChars = new HashSet<char>(OperatorScriptParser.EncapsulatingCharacterPairsIgnoringInternals.Select(i => i.Value));
 
@@ -103,6 +114,7 @@ namespace Dash
         private static string ConcatMultipleLines(ScriptLine[] lines)
         {
             string script = OperatorScriptParser.StringOpeningCharacters[0].ToString() + OperatorScriptParser.StringClosingCharacters[0];
+
             for (int i = lines.Length -1; i >= 0; i--)
             {
                 var line = lines[i];
@@ -114,7 +126,17 @@ namespace Dash
                     }
                     continue;
                 }
-                script = (line as ScriptLetLine).GetDishScript(script);
+                else
+                {
+                    if (i == lines.Length - 1)
+                    {
+                        script = (line as ScriptLetLine).GetDishScript((line as ScriptLetLine).GetVariableName());
+                    }
+                    else
+                    {
+                        script = (line as ScriptLetLine).GetDishScript(script);
+                    }
+                }
             }
             return script;
         }
@@ -194,6 +216,11 @@ namespace Dash
                        + OperatorScriptParser.ParameterDelimiterCharacter
                        + continuedExpression
                        + OperatorScriptParser.FunctionClosingCharacter;
+            }
+
+            public string GetVariableName()
+            {
+                return _variableName;
             }
 
             public override LineType Type { get{return LineType.Let;} }
