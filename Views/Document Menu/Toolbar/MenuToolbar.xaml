@@ -8,13 +8,25 @@
     xmlns:ctrl="using:Windows.UI.Xaml.Controls"
     xmlns:text="using:Dash.Views.Document_Menu.Toolbar"
     mc:Ignorable="d"
-    d:DesignHeight="300" 
-    d:DesignWidth="400">
+    d:DesignHeight="100" 
+    d:DesignWidth="800">
 
         <StackPanel>
-            <ctrl:CommandBar>
-            </ctrl:CommandBar>
-        <StackPanel>
+        <ctrl:CommandBar IsOpen="True">
+            <AppBarButton Icon="TouchPointer"  Label="Pointer" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Edit" Label="Ink"></AppBarButton>
+            <AppBarButton Icon="SelectAll" Label="Group Tool"></AppBarButton>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Rename" Label="Add Note" Click="AppBarButton_Click"></AppBarButton>
+            <AppBarButton Icon="ViewAll" Label="Add Group" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Pictures" Label="Add Image" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Video" Label="Add Video" Click="AppBarButton_Click"/>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Copy" Label="Copy" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Paste" Label="Paste" Click="AppBarButton_Click"/>
+            <AppBarButton Icon="Delete" Label="Delete" Click="AppBarButton_Click"/>
+        </ctrl:CommandBar>
+        <StackPanel Margin="0,12,0,0">
             <text:TextSubtoolbar x:Name="xTextToolbar">
             </text:TextSubtoolbar>
         </StackPanel>
