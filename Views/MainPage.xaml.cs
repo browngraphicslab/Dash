@@ -29,7 +29,8 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance { get; private set; }
-        
+
+        public SearchEngine SearchEngine = new SearchEngine();
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }

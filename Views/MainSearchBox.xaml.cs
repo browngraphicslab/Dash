@@ -45,12 +45,28 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+                NewSearch(sender);
 
             }
             _currentSearch = sender.Text.ToLower(); ;
         }
 
+
+        private void NewSearch(AutoSuggestBox searchBox)
+        {
+            if (searchBox == null)
+            {
+                return;
+            }
+
+            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
+
+            var text = searchBox.Text.ToLower();
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            MainPage.Instance.SearchEngine.Search(text);
+        }
 
         private void ExecuteDishSearch(AutoSuggestBox searchBox)
         {
@@ -221,7 +237,7 @@ namespace Dash
         {
             if (!string.IsNullOrEmpty(_currentSearch))
             {
-                ExecuteDishSearch(sender as AutoSuggestBox);
+                NewSearch(sender as AutoSuggestBox);
             }
         }
 
@@ -315,6 +331,7 @@ namespace Dash
             public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
             {
                 Debug.Assert(resultDocs.Any());
+                var results = resultDocs.ToArray();
                 return resultDocs.First();
             }
 
