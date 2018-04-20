@@ -61,12 +61,13 @@ namespace Dash
 
                 // TODO: Image controls
 
-                // TODO: Collection controls   
+                // TODO: Collection controls  
+                
                 var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
                 if (col != null)
                 {
-                    xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
-                    subtoolbarElement = xTextToolbar;
+                    CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+                    subtoolbarElement = xCollectionToolbar;
                     return;
                 }
 
