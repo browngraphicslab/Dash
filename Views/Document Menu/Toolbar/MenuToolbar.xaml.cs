@@ -19,7 +19,7 @@ using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Document_Menu
+namespace Dash
 {
     public sealed partial class MenuToolbar : UserControl
     {
@@ -32,13 +32,10 @@ namespace Dash.Views.Document_Menu
             this.SetUpBaseMenu();
         }
 
-
-
         public void SetKeyboardShortcut()
         {
 
         }
-
 
         UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
 
@@ -65,7 +62,13 @@ namespace Dash.Views.Document_Menu
                 // TODO: Image controls
 
                 // TODO: Collection controls   
-
+                var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+                if (col != null)
+                {
+                    xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+                    subtoolbarElement = xTextToolbar;
+                    return;
+                }
 
             }
             else if (docs.Count<DocumentView>() > 1)

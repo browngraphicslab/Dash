@@ -1,23 +1,34 @@
 ﻿<UserControl
-    x:Class="Dash.Views.Document_Menu.MenuToolbar"
+    x:Class="Dash.MenuToolbar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views.Document_Menu"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ctrl="using:Windows.UI.Xaml.Controls"
-    xmlns:text="using:Dash.Views.Document_Menu.Toolbar"
     mc:Ignorable="d"
-    d:DesignHeight="300" 
-    d:DesignWidth="400">
+    d:DesignHeight="100" 
+    d:DesignWidth="800">
 
-        <StackPanel ManipulationDelta="UIElement_OnManipulationDelta_" ManipulationMode="All">
-            <ctrl:CommandBar>
-            </ctrl:CommandBar>
         <StackPanel>
-            <text:TextSubtoolbar x:Name="xTextToolbar">
-            </text:TextSubtoolbar>
-            <text:CollectionSubtoolbar/>
+        <ctrl:CommandBar IsOpen="True">
+            <AppBarButton Icon="TouchPointer"  Label="Pointer" />
+            <AppBarButton Icon="Edit" Label="Ink"></AppBarButton>
+            <AppBarButton Icon="SelectAll" Label="Group Tool"></AppBarButton>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
+            <AppBarButton Icon="ViewAll" Label="Add Group"/>
+            <AppBarButton Icon="Pictures" Label="Add Image"/>
+            <AppBarButton Icon="Video" Label="Add Video"/>
+            <AppBarSeparator/>
+            <AppBarButton Icon="Copy" Label="Copy" />
+            <AppBarButton Icon="Paste" Label="Paste" />
+            <AppBarButton Icon="Delete" Label="Delete" />
+        </ctrl:CommandBar>
+        <StackPanel Margin="0,12,0,0">
+            <local:TextSubtoolbar x:Name="xTextToolbar">
+            </local:TextSubtoolbar>
+            <local:CollectionSubtoolbar/>
         </StackPanel>
         <StackPanel.RenderTransform>
             <CompositeTransform x:Name="xToolbarTransform"/>
