@@ -20,6 +20,7 @@ namespace Dash.Views
 {
     public sealed partial class DockedView : UserControl
     {
+        public DockedView NestedView { get; set; }
 
         public DockedView()
         {
@@ -41,6 +42,37 @@ namespace Dash.Views
             xContentGrid.Children.Clear();
             xContentGrid.Children.Add(view);
             xContentGrid.Children.Add(xCloseButton);
+        }
+
+        public void ChangeNestedView(DockedView view)
+        {
+            // first time setting the nested view?
+            if (NestedView == null)
+            {
+                ColumnDefinition splitterCol = new ColumnDefinition();
+                splitterCol.Width = new GridLength(15);
+                ColumnDefinition viewCol = new ColumnDefinition();
+                viewCol.Width = new GridLength(1, GridUnitType.Star);
+                xContentGrid.ColumnDefinitions.Add(splitterCol);
+                xContentGrid.ColumnDefinitions.Add(viewCol);
+
+                GridSplitter splitter = new GridSplitter();
+
+                Grid.SetColumn(splitter, xContentGrid.ColumnDefinitions.Count - 2);
+                xContentGrid.Children.Add(splitter);
+                Grid.SetColumn(view, xContentGrid.ColumnDefinitions.Count - 1);
+
+                NestedView = view;
+            }
+            else
+            {
+                xContentGrid.Children.Remove(NestedView);
+                Grid.SetColumn(view, Grid.GetColumn(NestedView));
+                NestedView = view;
+                xContentGrid.Children.Add(NestedView);
+            }
+
+            xContentGrid.Children.Add(NestedView);
         }
     }
 }

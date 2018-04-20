@@ -20,28 +20,20 @@ namespace Dash.Views
 {
     public sealed partial class Splitter : UserControl
     {
-        private FrameworkElement _left;
-        private FrameworkElement _right;
+        public FrameworkElement Left { get; set; }
+        public FrameworkElement Right { get; set; }
 
         public Splitter()
         {
             this.InitializeComponent();
         }
 
-        public void SetLeft(FrameworkElement left)
-        {
-            _left = left;
-        }
-
-        public void SetRight(FrameworkElement right)
-        {
-            _right = right;
-        }
-
         private void Splitter_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            _left.Width += e.Delta.Translation.X;
-            _right.Width -= e.Delta.Translation.X;
+            if (!Double.IsNaN(Left.Width))
+                Left.Width += e.Delta.Translation.X;
+            if (!Double.IsNaN(Right.Width))
+                Right.Width -= e.Delta.Translation.X;
         }
     }
 }

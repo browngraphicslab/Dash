@@ -42,6 +42,7 @@ namespace Dash
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
 
         public DocumentView         xMapDocumentView;
+        private bool _firstDock = true;
 
         public MainPage()
         {
@@ -529,19 +530,37 @@ namespace Dash
 
             DockedView dockedView = new DockedView();
             dockedView.ChangeView(copiedView);
-            dockedView.Width = 200;
+            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
 
-            if (xDockPanel.Children.Count == 0)
+            if (_firstDock)
             {
-                xDockSplitterColumn.Width = new GridLength(15, GridUnitType.Pixel);
-                xDockPanelColumn.Width = GridLength.Auto;
-                xDockPanel.Children.Add(dockedView);
+                ColumnDefinition splitterCol = new ColumnDefinition();
+                splitterCol.Width = new GridLength(15);
+                ColumnDefinition viewCol = new ColumnDefinition();
+                viewCol.Width = new GridLength(1, GridUnitType.Star);
+                xOuterGrid.ColumnDefinitions.Add(splitterCol);
+                xOuterGrid.ColumnDefinitions.Add(viewCol);
+
+                GridSplitter splitter = new GridSplitter();
+                Grid.SetColumn(splitter, Grid.GetColumn(xMainDocView) + Grid.GetColumnSpan(xMainDocView) + 1);
+                xOuterGrid.Children.Add(splitter);
+                Grid.SetColumn(dockedView, Grid.GetColumn(splitter) + Grid.GetColumnSpan(xMainDocView) + 1);
+                xOuterGrid.Children.Add(dockedView);
+                _firstDock = false;
             }
             else
             {
-                xDockPanel.Children.Add(new Splitter());
-                xDockPanel.Children.Add(dockedView);
+                DockedView tail = this.GetFirstDescendantOfType<DockedView>();
+                // find the tail of this "linked list"
+                while (tail.NestedView != null)
+                {
+                    tail = tail.NestedView;
+                }
+                
+                tail.ChangeNestedView(dockedView);
             }
+            
         }
 
         public void HighlightDock()

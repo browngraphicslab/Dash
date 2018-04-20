@@ -12,15 +12,20 @@
     <Grid x:Name="xContentGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="30"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Button Tapped="xCloseButton_Tapped" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+        <Grid Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Button Tapped="xCloseButton_Tapped" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                     Grid.Column="1" Grid.Row="0" x:Name="xCloseButton" Opacity="1" Margin="5" Background="White">
-            <SymbolIcon Symbol="Cancel"/>
-        </Button>
+                <SymbolIcon Symbol="Cancel"/>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>
