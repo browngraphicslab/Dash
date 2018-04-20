@@ -10,7 +10,10 @@
     d:DesignHeight="100" 
     d:DesignWidth="800">
 
-        <StackPanel>
+     <StackPanel ManipulationDelta="UIElement_OnManipulationDelta" ManipulationMode="All">
+        <StackPanel.RenderTransform>
+             <CompositeTransform x:Name="xToolbarTransform"/>
+        </StackPanel.RenderTransform>
         <ctrl:CommandBar IsOpen="True">
             <AppBarButton Icon="TouchPointer"  Label="Pointer" />
             <AppBarButton Icon="Edit" Label="Ink"></AppBarButton>
@@ -30,8 +33,5 @@
             </local:TextSubtoolbar>
             <local:CollectionSubtoolbar/>
         </StackPanel>
-        <StackPanel.RenderTransform>
-            <CompositeTransform x:Name="xToolbarTransform"/>
-        </StackPanel.RenderTransform>
     </StackPanel>
 </UserControl>

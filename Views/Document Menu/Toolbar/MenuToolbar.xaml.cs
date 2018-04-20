@@ -89,7 +89,7 @@ namespace Dash
             Canvas.SetTop(this, 5);
         }
 
-        private void UIElement_OnManipulationDelta_(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
             var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
