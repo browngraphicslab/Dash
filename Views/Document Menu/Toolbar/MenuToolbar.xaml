@@ -11,12 +11,16 @@
     d:DesignHeight="300" 
     d:DesignWidth="400">
 
-        <StackPanel>
+        <StackPanel ManipulationDelta="UIElement_OnManipulationDelta_" ManipulationMode="All">
             <ctrl:CommandBar>
             </ctrl:CommandBar>
         <StackPanel>
             <text:TextSubtoolbar x:Name="xTextToolbar">
             </text:TextSubtoolbar>
+            <text:CollectionSubtoolbar/>
         </StackPanel>
+        <StackPanel.RenderTransform>
+            <CompositeTransform x:Name="xToolbarTransform"/>
+        </StackPanel.RenderTransform>
     </StackPanel>
 </UserControl>

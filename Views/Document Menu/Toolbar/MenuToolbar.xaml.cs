@@ -64,7 +64,6 @@ namespace Dash.Views.Document_Menu
 
                 // TODO: Image controls
 
-
                 // TODO: Collection controls   
 
 
@@ -85,6 +84,22 @@ namespace Dash.Views.Document_Menu
             _parentCanvas.Children.Add(this);
             Canvas.SetLeft(this, 325);
             Canvas.SetTop(this, 5);
+        }
+
+        private void UIElement_OnManipulationDelta_(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
+            var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
+            var actualWidth = ((Frame) Window.Current.Content).ActualWidth;
+            var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
+            if (newLatPo > 0 && newLatPo < actualWidth)
+            {
+                xToolbarTransform.TranslateX += e.Delta.Translation.X;
+            }
+            if (newVertPo > 0 && newVertPo < actualHeight)
+            {
+                xToolbarTransform.TranslateY += e.Delta.Translation.Y;
+            }
         }
     }
 }

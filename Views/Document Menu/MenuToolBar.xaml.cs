@@ -32,6 +32,7 @@ namespace Dash.Views.Document_Menu
             this.InitializeComponent();
             _parentCanvas = canvas;
             this.SetUpBaseMenu();
+
            // AddButton("Back", Symbol.Back, 1);
         }
 
