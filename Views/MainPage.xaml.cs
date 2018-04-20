@@ -63,7 +63,6 @@ namespace Dash
                 GlobalInkSettings.Opacity = 1;
 
                 xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
-                RequestedTheme = ElementTheme.Light; 
             };
 
             xSplitter.Tapped += (s,e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -449,9 +448,9 @@ namespace Dash
             }
         }
         
-        public void ThemeChange()
+        public void ThemeChange(bool nightModeOn)
         {
-            RequestedTheme = RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark; 
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)

@@ -876,7 +876,6 @@
                 <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
                 <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
                 <Setter Property="FontSize" Value="{StaticResource DefaultFontSize}" />
-                <!--KBTODO-->
                 <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
                 <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
@@ -970,18 +969,27 @@
                     <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="White"></SolidColorBrush>
                     <SolidColorBrush x:Key="GridSplitterBrush" Color="LightGray"></SolidColorBrush>
                     <SolidColorBrush x:Key="TreeviewBrush" Color="#556666"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"></SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
                     <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="White"></SolidColorBrush>
                     <SolidColorBrush x:Key="GridSplitterBrush" Color="LightGray"></SolidColorBrush>
                     <SolidColorBrush x:Key="TreeviewBrush" Color="#556666"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"></SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource InverseColor}" />
                     <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="#1e1e1e"></SolidColorBrush>
-                    <SolidColorBrush x:Key="GridSplitterBrush" Color="#3a3a3a"></SolidColorBrush>
+                    <SolidColorBrush x:Key="GridSplitterBrush" Color="#565656"></SolidColorBrush>
                     <SolidColorBrush x:Key="TreeviewBrush" Color="#353f3f"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#565656"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBCollectionBrush" Color="#8e8e8e"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBTextBrush" Color="#e1eded"></SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
