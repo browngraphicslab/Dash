@@ -19,7 +19,7 @@ using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Document_Menu
+namespace Dash
 {
     public sealed partial class MenuToolbar : UserControl
     {
@@ -32,13 +32,10 @@ namespace Dash.Views.Document_Menu
             this.SetUpBaseMenu();
         }
 
-
-
         public void SetKeyboardShortcut()
         {
 
         }
-
 
         UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
 
@@ -71,10 +68,17 @@ namespace Dash.Views.Document_Menu
 					return;
 				}
 
-				// TODO: Collection controls   
+                // TODO: Collection controls  
+                
+                var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+                if (col != null)
+                {
+                    CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+                    subtoolbarElement = xCollectionToolbar;
+                    return;
+                }
 
-
-			}
+            }
             else if (docs.Count<DocumentView>() > 1)
             {
                 // TODO: multi select
@@ -91,6 +95,22 @@ namespace Dash.Views.Document_Menu
             _parentCanvas.Children.Add(this);
             Canvas.SetLeft(this, 325);
             Canvas.SetTop(this, 5);
+        }
+
+        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
+            var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
+            var actualWidth = ((Frame) Window.Current.Content).ActualWidth;
+            var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
+            if (newLatPo > 0 && newLatPo < actualWidth)
+            {
+                xToolbarTransform.TranslateX += e.Delta.Translation.X;
+            }
+            if (newVertPo > 0 && newVertPo < actualHeight)
+            {
+                xToolbarTransform.TranslateY += e.Delta.Translation.Y;
+            }
         }
     }
 }
