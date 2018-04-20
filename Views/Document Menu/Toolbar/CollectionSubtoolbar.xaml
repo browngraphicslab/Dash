@@ -12,7 +12,7 @@
 
     <Grid>
         <CommandBar>
-            <AppBarButton x:Name="xBreakGroup" Icon="Cut" Width="54" Click="BreakGroup_OnClick" Label="Break"/>
+            <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
         </CommandBar>
             <ComboBox x:Name="xViewModesDropdown" SelectedIndex="1" SelectedValue="View Modes" Width="200" Margin="8" SelectionChanged="ViewModesDropdown_OnSelectionChanged">
                 <ComboBoxItem Content="Freeform"/>
