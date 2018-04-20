@@ -30,7 +30,7 @@ namespace Dash
 
         // This list stores the fields added in the schema view (not originally in the documents)
         private List<KeyController> _schemaFieldsNotInDocs;
-
+        private ObservableCollection<CollectionDBSchemaRecordViewModel> ListItemSource { get; }
 
         public CollectionDBSchemaView()
         {
@@ -41,6 +41,7 @@ namespace Dash
             xHeaderView.ItemsSource = SchemaHeaders;
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
             Drop += CollectionDBSchemaView_Drop;
+            ListItemSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>();
 
             _schemaFieldsNotInDocs = new List<KeyController>();
         }
@@ -263,6 +264,9 @@ namespace Dash
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
+            var test = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, new Context(ParentDocument))?.TypedData ??
+                       ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))?.TypedData;
+            UpdateRecords(test);
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -367,24 +371,30 @@ namespace Dash
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
                 // add all the records
-                UpdateRecords(dbDocs);
+                //UpdateRecords(dbDocs);
             }
         }
 
         private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
-            var records = new List<CollectionDBSchemaRecordViewModel>();
             int recordCount = 0;
             foreach (var d in dbDocs)
             {
-                records.Add(new CollectionDBSchemaRecordViewModel(
+                var recordFields = new ObservableCollection<EditableScriptViewModel>();
+                foreach (var keyFieldPair in d.EnumFields())
+                    if (!keyFieldPair.Key.Name.StartsWith("_"))
+                        recordFields.Add(
+                            new EditableScriptViewModel(
+                                new DocumentFieldReference(d.Id, keyFieldPair.Key)));
+                ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
                     ParentDocument,
                     d,
-                    SchemaHeaders.Select(hvm => new EditableScriptViewModel(new DocumentFieldReference(hvm.SchemaDocument.Id, hvm.FieldKey)))//CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
+                    recordFields
+                    //SchemaHeaders.Select(hvm => new EditableScriptViewModel(new DocumentFieldReference(d.Id, hvm.FieldKey)))//CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
                     ));
                 recordCount++;
             }
-            xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
+            //xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
         }
 
         /// <summary>

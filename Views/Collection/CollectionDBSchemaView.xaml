@@ -56,6 +56,7 @@
                   CanReorderItems="True"
                   AllowDrop="True"
                   Height="100"
+                  ItemsSource="{x:Bind ListItemSource}"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
                   PointerPressed="xRecordsView_PointerPressed"  
                   Loaded="XRecordsView_OnLoaded"
@@ -67,7 +68,7 @@
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:EditableScriptBox></local:EditableScriptBox>
+                    <local:CollectionDBSchemaRecord></local:CollectionDBSchemaRecord>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

@@ -15,13 +15,14 @@ namespace Dash
     {
 
         private PointerPoint _downPt;
+        private DocumentController _dataContextDocument;
 
 
         public CollectionDBSchemaRecord()
         {
             this.InitializeComponent();
         }
-        
+
         private void CollectionDBSchemaRecordField_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
