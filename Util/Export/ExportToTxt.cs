@@ -24,37 +24,51 @@ namespace Dash
 
         public static void CollectionToTxt(DocumentController collection)
         {
+            //TODO: have user make a folder and pput each collection in own file in folder
+
+
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
             var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
 
-          //create a list of key value pairs that link each doc to its point
+            //create a list of key value pairs that link each doc to its point
             List<KeyValuePair<DocumentController, List<double>>> docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
+
+            //list of each line of text that must be added to file - one string for each doc
+            List<String> fileText = new List<string>();
 
             foreach (var doc in dataDocs)
             {
                 String docType = doc.DocumentType.Type;
                 //create diffrent output for different document types by calling helper functions
+                String newText;
                 switch (docType)
                 {
                     case "Rich Text Box":
-                        String a = TextToTxt(doc);
+                        newText = TextToTxt(doc);
                         break;
                     case "Image Box":
-                        Console.WriteLine("Case 1");
+                        newText = ImageToTxt(doc);
                         break;
-                    case "Background Box":
+                /*    case "Background Box":
                         Console.WriteLine("Case 1");
                         break;
                     case "Collection Box":
                         Console.WriteLine("Case 1");
-                        break;
+                        break; */
                     default:
-                        Console.WriteLine("Default case");
+                        newText = null;
                         break;
                 }
 
-                //Get an ImmutableList of KetValue Pairs with doc properites - add a breaker point and look at properties to see what extentions to add
+                //add text to list for specificed cases
+                if (newText != null)
+                {
+                    fileText.Add(newText);
+                }
+
+                //TODO: consider accessing Position properties as done in ImgToTxt
+                //Get an ImmutableList of KeyValue Pairs with doc properites - add a breaker point and look at properties to see what extentions to add
                 IEnumerable <KeyValuePair<String, Object>> docPostion = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot(null).ToKeyValuePairs().ToImmutableList();
                 object rawpoint = docPostion.ElementAt(1).Value;
                 double xPt = (double)(rawpoint.GetType().GetProperty("X").GetValue(rawpoint, null));
@@ -66,10 +80,10 @@ namespace Dash
                 point.Add(yPt);
                 docToPt.Add(new KeyValuePair<DocumentController, List<double>>(doc, point));
             }
-        
 
-           // var orderedDocs = OrderElements(docToPt);
-            SaveData();
+            // var orderedDocs = OrderElements(docToPt);
+            String colTitle = collection.ToString();
+            SaveData(fileText, colTitle);
         }
 
         private static List<DocumentController> OrderElements(List<KeyValuePair<DocumentController, List<double>>> docPtData)
@@ -101,29 +115,51 @@ namespace Dash
 
         private static String ImageToTxt(DocumentController doc)
         {
-            return "b";
+            //string version of the image uri
+            String uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
+
+            //get image width and height
+            String stringWidth = doc.GetField(KeyStore.ActualWidthKey).DereferenceToRoot(null).ToString();
+
+            //return uri with HTML image formatting
+            return "<img src=\"" + uri + "\" width=\"" + stringWidth + "\">";
         }
 
 
-        private static async void SaveData()
+        private static async void SaveData(List<String> text, String title)
         {
-            String filename = "Sample.md";
-
             StorageFile stFile;
             if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
             {
                 FileSavePicker savePicker = new FileSavePicker();
                 savePicker.DefaultFileExtension = ".md";
-                savePicker.SuggestedFileName = "Dash";
+                savePicker.SuggestedFileName = title;
                 savePicker.FileTypeChoices.Add("Markdown Document", new List<string>() { ".md" });
                 stFile = await savePicker.PickSaveFileAsync();
-                await Windows.Storage.FileIO.WriteTextAsync(stFile, "Swift as a shadow");
+                AddFileText(text, stFile);
             }
             else
             {
+                String filename = title + ".md";
                 StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
                 stFile = await local.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
-                await Windows.Storage.FileIO.WriteTextAsync(stFile, "Swift as a shadow");
+                AddFileText(text, stFile);
+            }
+        }
+
+        private static async void AddFileText(List<String> text, StorageFile stFile)
+        {
+            if (stFile != null)
+            {
+                //combine strings to one string to add to file
+                String mergedText = "";
+                foreach (String word in text)
+                {
+                    mergedText = mergedText + word + "\n";
+                }
+
+                //add String to file - this happens a bit after file is saved
+                await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
             }
         }
     }
