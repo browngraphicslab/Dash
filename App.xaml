@@ -972,6 +972,7 @@
                     <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"></SolidColorBrush>
+                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="{StaticResource AccentGreenColor}"></SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
@@ -981,6 +982,7 @@
                     <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"></SolidColorBrush>
+                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="{StaticResource AccentGreenColor}"></SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource InverseColor}" />
@@ -990,6 +992,7 @@
                     <SolidColorBrush x:Key="CollectionBorderBrush" Color="#565656"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBCollectionBrush" Color="#8e8e8e"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBTextBrush" Color="#e1eded"></SolidColorBrush>
+                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="#2a4a63"></SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>

@@ -8,6 +8,7 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <!--Use these styles to add new controls-->
         <Style TargetType="TextBlock" x:Key="TitleStyle">
             <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -21,8 +22,11 @@
         </Style>
         <Style TargetType="TextBlock" x:Key="ParagraphStyle">
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Margin" Value="9,10,0,0"/>
+            <Setter Property="Margin" Value="9,10,0,5"/>
             <Setter Property="Foreground" Value="{ThemeResource TextBrush}" />
+        </Style>
+        <Style TargetType="StackPanel" x:Key="RadioButtonStackPanelStyle">
+            <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
     </Page.Resources>
 
@@ -39,7 +43,7 @@
             <!--Controls-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
             <TextBlock Style="{StaticResource ParagraphStyle}">Mouse scroll functionality</TextBlock>
-            <StackPanel Margin="10,0,0,0">
+            <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
                 <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
                 <RadioButton>Zoom</RadioButton>
             </StackPanel>
@@ -48,10 +52,7 @@
 </Page>
 
 
-<!--
-    TODO make styles so you don't have to repeat that shit one thousand times 
-    
-    
-- saving options? (manual / automatic every 1min or whatever) 
-- export options, where to save to, etc. (default?)
+<!--    MORE POSSIBLE SETTINGS STUFF 
+- saving options? (manual / automatic every 1min or whatever, let people choose) 
+- export options, where to save to, etc. (set default?)
 -->
