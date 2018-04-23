@@ -39,8 +39,12 @@ namespace Dash
         public DocumentView xMapDocumentView;
         private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
-        public void DeselectAllDocuments() => SelectedDocuments = new List<DocumentView>();
-        public void SelectDocument(DocumentView doc) => SelectedDocuments = new List<DocumentView>() { doc };
+        public void DeselectAllDocuments()
+        {
+            SelectedDocuments = new List<DocumentView>();
+            Toolbar.Update(SelectedDocuments);
+        }
+        public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
         public void SelectDocuments(IEnumerable<DocumentView> docs)
         {
             SelectedDocuments = docs;

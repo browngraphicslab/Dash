@@ -56,7 +56,6 @@ namespace Dash
                 {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
                     subtoolbarElement = xTextToolbar;
-                    return;
                 }
 
 				// TODO: Image controls
@@ -65,7 +64,6 @@ namespace Dash
 				{
 					xImageToolbar.SetMenuToolBarBinding(image);
 					subtoolbarElement = xImageToolbar;
-					return;
 				}
 
                 // TODO: Collection controls  
@@ -75,7 +73,6 @@ namespace Dash
                 {
                     CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
                     subtoolbarElement = xCollectionToolbar;
-                    return;
                 }
 
             }

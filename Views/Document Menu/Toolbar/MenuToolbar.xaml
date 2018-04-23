@@ -30,10 +30,10 @@
             <AppBarButton Icon="Delete" Label="Delete" />
         </ctrl:CommandBar>
         <StackPanel Margin="0,12,0,0">
-            <local:TextSubtoolbar x:Name="xTextToolbar">
+            <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed">
             </local:TextSubtoolbar>
-            <local:CollectionSubtoolbar x:Name="xCollectionToolbar"/>
-            <local:ImageSubtoolbar x:Name="xImageToolbar"/>
+            <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
+            <local:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar"/>
 
         </StackPanel>
     </StackPanel>
