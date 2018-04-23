@@ -122,7 +122,8 @@ namespace Dash
         private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel?.CollectionKey))
-                UpdateFields(new Context(ParentDocument));
+                UpdateRecords(ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
+                             ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData);
         }
 
         /// </summary>
@@ -184,17 +185,6 @@ namespace Dash
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
                 {
-                    //if (d.GetField(RegexOperatorController.TextKey) == null &&
-                    //    d.GetField(KeyStore.DocumentTextKey) != null)
-                    //{
-                    //    var rd = OperatorDocumentFactory.CreateOperatorDocument(new RegexOperatorController());
-                    //    rd.SetField(RegexOperatorController.ExpressionKey, new TextController("^\\$[0-9.]+$"), true);
-                    //    rd.SetField(RegexOperatorController.SplitExpressionKey, new TextController(" "), true);
-                    //    rd.SetField(RegexOperatorController.ExpressionKey, new TextController(".*"), true);
-                    //    rd.SetField(RegexOperatorController.SplitExpressionKey, new TextController("\\."), true);
-                    //    rd.SetField(RegexOperatorController.TextKey, new DocumentReferenceFieldController(d.GetId(), KeyStore.DocumentTextKey), true);
-                    //    d.SetField(RegexOperatorController.MatchesKey, new DocumentReferenceFieldController(rd.GetId(), RegexOperatorController.MatchesKey), true);
-                    //}
                     foreach (var f in d.EnumFields())
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
@@ -221,82 +211,40 @@ namespace Dash
 
         private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
+            // update records only happen when 
             if (dbDocs.Count() == ListItemSource.Count) return;
             ListItemSource.Clear();
             int recordCount = 0;
 
             foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
             {
-                var recordFields = new ObservableCollection<EditableScriptViewModel>();
-                foreach (var keyFieldPair in d.EnumFields())
-                {
-                    if (!keyFieldPair.Key.Name.StartsWith("_"))
-                        recordFields.Add(
-                            new EditableScriptViewModel(
-                                new DocumentFieldReference(d.Id, keyFieldPair.Key))
-                            {
-                                Row = recordCount
-                            });
-                }
+                var recordFields = CreateNewRecord(d, recordCount);
                 ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
                     ParentDocument,
                     d,
                     recordFields
-                    //SchemaHeaders.Select(hvm => new EditableScriptViewModel(new DocumentFieldReference(d.Id, hvm.FieldKey)))//CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
                 ));
                 recordCount++;
             }
-            //xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
         }
 
-        /// <summary>
-        ///     removes any documents which would lead to infinite loops from dbDocs
-        /// </summary>
-        /// <param name="dbDocs"></param>
-        /// <param name="selectedBars"></param>
-        public void filterDocuments(List<DocumentController> dbDocs, List<string> selectedBars)
+        private ObservableCollection<EditableScriptViewModel> CreateNewRecord(DocumentController doc, int row)
         {
-            var keepAll = selectedBars.Count == 0;
-
-            var collection = new List<DocumentController>();
-
-            foreach (var dmc in dbDocs.ToArray())
+            var newRecord = new ObservableCollection<EditableScriptViewModel>();
+            foreach (var keyFieldPair in doc.EnumFields())
             {
-                var visited = new List<DocumentController>();
-                visited.Add(dmc);
-
-                if (SearchInDocumentForNamedField(dmc, selectedBars, visited))
-                    collection.Add(dmc);
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    newRecord.Add(
+                        new EditableScriptViewModel(
+                            new DocumentFieldReference(doc.Id, keyFieldPair.Key))
+                        {
+                            Row = row
+                        });
             }
-            ParentDocument.SetField(KeyStore.CollectionOutputKey, new ListController<DocumentController>(collection), true);
-        }
 
-        private static bool SearchInDocumentForNamedField(DocumentController dmc, List<string> selectedBars,
-            List<DocumentController> visited)
-        {
-            if (dmc == null)
-                return false;
-            // loop through each field to find on that matches the field name pattern 
-            foreach (var pfield in dmc.EnumFields()
-                .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentController))
-                if (pfield.Value is DocumentController)
-                {
-                    var nestedDoc = pfield.Value as DocumentController;
-                    if (!visited.Contains(nestedDoc))
-                    {
-                        visited.Add(nestedDoc);
-                        var field = SearchInDocumentForNamedField(nestedDoc, selectedBars, visited);
-                        if (field)
-                            return true;
-                    }
-                }
-                else
-                {
-                    return true;
-                }
-            return false;
+            return newRecord;
         }
-
+        
         #region Activation
         
 
