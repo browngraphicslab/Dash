@@ -81,7 +81,9 @@
         <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Line x:Name="AlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+
         </Canvas>
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
