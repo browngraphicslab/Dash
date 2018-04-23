@@ -76,7 +76,7 @@ namespace Dash
             XTextBlock.Visibility = Visibility.Visible;
             try
             {
-                FieldControllerBase field = DSL.InterpretUserInput(text);
+                FieldControllerBase field = DSL.InterpretUserInput(text, state:  ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)

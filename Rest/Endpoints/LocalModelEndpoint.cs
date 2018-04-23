@@ -37,19 +37,19 @@ namespace Dash
                 new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                if (File.Exists(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName))
+                if (File.Exists(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName))
                 {
-                    var dictionaryText = File.ReadAllText(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName);
+                    var dictionaryText = File.ReadAllText(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName);
                     _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
-                    File.Copy(LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + _fileName, LocalKeyEndpoint.LocalStorageFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
+                    File.Copy(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
                 }
                 else
                 {
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
                 }
 
-                Debug.WriteLine("\n\n\n\nDatabase at:   " + LocalKeyEndpoint.LocalStorageFolder.Path + "\n\n\n\n");
+                Debug.WriteLine("\n\n\n\nDatabase at:   " + Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\n\n\n\n");
             }
             catch (Exception e)
             {
@@ -80,7 +80,7 @@ namespace Dash
                         }
                     }
 
-                    var file = await LocalKeyEndpoint.LocalStorageFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
+                    var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
                     using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
                         using (var outgoingStream = stream.GetOutputStreamAt(0))

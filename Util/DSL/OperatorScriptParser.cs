@@ -16,6 +16,10 @@ namespace Dash
 
         public static char ParameterDelimiterCharacter = ',';
 
+        public static char FieldAccessorCharacter = '.';
+
+        public static char[] AllowedVariableNameCharacters = new[]{'_'};
+
         public static List<KeyValuePair<char, char>> EncapsulatingCharacterPairsIgnoringInternals = new List<KeyValuePair<char, char>>();
 
         private static bool TEST_STRING_TO_REF = false;
@@ -98,6 +102,23 @@ namespace Dash
 
                 TestNumber($"let(x, 6, add(x,7))", 13);
                 TestNumber($"let(x, 6, add(x,let(x, 3, add(x,2))))", 11);
+                TestNumber($"let(x, 6, add(let(x, 3, add(x,2)), x))", 11);
+
+
+                //testing nested string and commas
+                var eleven = "let(x, 6, add(let(x, 3, add(x,exec({add(1,exec({1}))}))), x))";
+                var fifteen = $"exec({{add(exec({{{eleven}}}), 4)}})";
+                TestNumber($"exec({{mult(3, exec({{{fifteen}}}))}})", 3*(15));
+
+                var num = (new Random()).Next(2000) - 1000;
+                var s = num.ToString();
+                for (int j = 0; j < 6 + (new Random()).Next(5); j++)
+                {
+                    var r = (new Random()).Next(2000) - 1000;
+                    s = $"exec({o}add(exec({o}{s}{c}), add(exec({o}{s}{c}), exec({o}{r}{c}))){c})";
+                    num += num + r;
+                }
+                TestNumber(s, num);
             }
 
         }
@@ -162,7 +183,8 @@ namespace Dash
             try
             {
                 var se = ParseToExpression(script);
-                return se.Execute(state ?? new ScriptState());
+                var exec = se.Execute(state ?? new ScriptState());
+                return exec;
             }
             catch (ScriptException scriptException)
             {
@@ -179,7 +201,7 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase GetOperatorControllerForScript(string script,ScriptState state = null)
+        public static FieldControllerBase GetOperatorControllerForScript(string script, ScriptState state = null)
         {
             try
             {
@@ -270,9 +292,34 @@ namespace Dash
 
         private static ScriptExpression ParseToVariable(string variableName)
         {
+            var fieldAccessCharIndex = variableName.LastIndexOf(FieldAccessorCharacter);
+            if (fieldAccessCharIndex >= 1) //this if statement checks for dot notation of fields
+            {
+                if (fieldAccessCharIndex.Equals(variableName.Length - 1))
+                {
+                    throw new ScriptException(new InvalidDotNotationScriptErrorModel(variableName));
+                }
+                if (variableName.Skip(fieldAccessCharIndex + 1).All(IsAllowedNameCharacter))//if all the chars after the '.' are chars or digits, 
+                {
+                    var newString = DSL.GetFuncName<GetFieldOperatorController>() +
+                                    FunctionOpeningCharacter +
+                                    variableName.Substring(0, fieldAccessCharIndex) +
+                                    ParameterDelimiterCharacter +
+                                    StringOpeningCharacters[0] +
+                                    variableName.Substring(fieldAccessCharIndex + 1) +
+                                    StringClosingCharacters[0] +
+                                    FunctionClosingCharacter;
+                    return ParseToExpression(newString);
+                }
+            }
+
             //TODO maybe require the variable name to be of certain format? (no spaces, no special chars, etc)
             return new VariableExpression(variableName);
 
+        }
+        private static bool IsAllowedNameCharacter(char c)
+        {
+            return char.IsLetterOrDigit(c) || AllowedVariableNameCharacters.Contains(c);
         }
 
         private static ScriptExpression ParseString(string s)
@@ -281,7 +328,7 @@ namespace Dash
             {
                 throw new ScriptException(new InvalidStringScriptErrorModel(s)); 
             }
-            for (int i = 0; i < StringOpeningCharacters.Length; i++)
+            for (int i = 0; i < StringOpeningCharacters.Length; i++)//this for loop finds string literals only
             {
                 if (s[0] == StringOpeningCharacters[i] && s[s.Length - 1] == StringClosingCharacters[i])
                 {
@@ -289,13 +336,13 @@ namespace Dash
                 }
             }
 
-            if (ContentController<FieldModel>.HasController(s))
+            if (ContentController<FieldModel>.HasController(s)) //checks to see if this is defining a field ID
             {
                 return new LiteralExpression(ContentController<FieldModel>.GetController(s) as FieldControllerBase);
             }
 
             //TODO Make sure there aren't multiple quotes
-            return new LiteralExpression(new TextController(s));
+            return new LiteralExpression(new TextController(s)); //otherwise defaults to returnig as existing string
         }
 
         private static ScriptExpression ParseNumber(double number)
@@ -354,6 +401,25 @@ namespace Dash
 
         private static FunctionParts ParseToOuterFunctionParts(string script)
         {
+            var fieldAccessCharIndex = script.LastIndexOf(FieldAccessorCharacter);
+            if (fieldAccessCharIndex > 1 && script[fieldAccessCharIndex - 1] == FunctionClosingCharacter) //this if statement checks for dot notation of fields
+            {
+                if (fieldAccessCharIndex.Equals(script.Length - 1))
+                {
+                    throw new ScriptException(new InvalidDotNotationScriptErrorModel(script));
+                }
+                if (script.Skip(fieldAccessCharIndex + 1).All(IsAllowedNameCharacter))//if all the chars after the '.' are chars or digits, 
+                {
+                    return ParseToOuterFunctionParts(DSL.GetFuncName<GetFieldOperatorController>()+
+                                                     FunctionOpeningCharacter+
+                                                     script.Substring(0, fieldAccessCharIndex)+
+                                                     ParameterDelimiterCharacter+
+                                                     StringOpeningCharacters[0] +
+                                                     script.Substring(fieldAccessCharIndex + 1) +
+                                                     StringClosingCharacters[0] +
+                                                     FunctionClosingCharacter);
+                }
+            }
             var parts = new FunctionParts();
             int parametersStartIndex = 0;
             foreach(char c in script)
@@ -412,12 +478,23 @@ namespace Dash
             for (int i = 0; i < innerFunctionParameters.Length; ++i)
             {
                 char c = innerFunctionParameters[i];
-
-                if (!closingCharacters.Any() || !ignoreValueClosingChars.Contains(closingCharacters.Peek()))
+                var currentlyInString = closingCharacters.Any() && ignoreValueClosingChars.Contains(closingCharacters.Peek());
+                if (!closingCharacters.Any() || !currentlyInString)
                 {
                     foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
                     {
                         if (c == encapsulatingCharacterPair.Key)
+                        {
+                            closingCharacters.Push(encapsulatingCharacterPair.Value);
+                        }
+                    }
+                }
+
+                if (currentlyInString)
+                {
+                    foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
+                    {
+                        if (c == encapsulatingCharacterPair.Key && ignoreValueClosingChars.Contains(encapsulatingCharacterPair.Value))
                         {
                             closingCharacters.Push(encapsulatingCharacterPair.Value);
                         }
