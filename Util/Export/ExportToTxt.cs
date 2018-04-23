@@ -21,27 +21,57 @@ namespace Dash
 
     public static class ExportToTxt
     {
+        private static StorageFolder folder;
 
-        public static void CollectionToTxt(DocumentController collection)
+        public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
-            //TODO: have user make a folder and pput each collection in own file in folder
+            //TODO: Nested collections, other document types, position
 
+            //TODO: collections can be named same thing, which would screw up links
 
+            //allow the user to pick a folder to save all the files
+            folder = await PickFolder();
+
+            //save names of all collections for linking pruposes
+            List<String> colNames = new List<string>();
+
+            //create one file in this folder for each collection
+            foreach (var collectionDoc in collectionDataDocs)
+            {
+                //CollectionToTxt returns the content that must be added to a file
+                var colContent = CollectionContent(collectionDoc);
+                var colTitle = collectionDoc.ToString();
+                colNames.Add(colTitle);
+
+                //create a file in folder with colContent and titled colTitle
+                CreateFile(colContent, colTitle);
+            }
+
+            //make index.html file that refrences other collections
+            CreateIndex(colNames);
+        }
+
+        public static List<string> CollectionContent(DocumentController collection)
+        {
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
-            var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
+           // var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
+            var dataDocs = collection.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
 
             //create a list of key value pairs that link each doc to its point
-            List<KeyValuePair<DocumentController, List<double>>> docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
+           // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
+
+            OrderElements(dataDocs);
 
             //list of each line of text that must be added to file - one string for each doc
-            List<String> fileText = new List<string>();
+            var fileText = new List<string>();
 
             foreach (var doc in dataDocs)
             {
-                String docType = doc.DocumentType.Type;
+                var docType = doc.DocumentType.Type;
                 //create diffrent output for different document types by calling helper functions
-                String newText;
+                string newText;
                 switch (docType)
                 {
                     case "Rich Text Box":
@@ -52,10 +82,10 @@ namespace Dash
                         break;
                 /*    case "Background Box":
                         Console.WriteLine("Case 1");
-                        break;
-                    case "Collection Box":
-                        Console.WriteLine("Case 1");
                         break; */
+                    case "Collection Box":
+                        newText = CollectionToTxt(doc);
+                        break; 
                     default:
                         newText = null;
                         break;
@@ -67,100 +97,136 @@ namespace Dash
                     fileText.Add(newText);
                 }
 
-                //TODO: consider accessing Position properties as done in ImgToTxt
+                /*
                 //Get an ImmutableList of KeyValue Pairs with doc properites - add a breaker point and look at properties to see what extentions to add
                 IEnumerable <KeyValuePair<String, Object>> docPostion = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot(null).ToKeyValuePairs().ToImmutableList();
                 object rawpoint = docPostion.ElementAt(1).Value;
                 double xPt = (double)(rawpoint.GetType().GetProperty("X").GetValue(rawpoint, null));
-                double yPt = (double)(rawpoint.GetType().GetProperty("Y").GetValue(rawpoint, null));
+                double yPt = (double)(rawpoint.GetType().GetProperty("Y").GetValue(rawpoint, null)); 
 
                 //now add data to docToPt List
                 List<double> point = new List<double>();
                 point.Add(xPt);
                 point.Add(yPt);
                 docToPt.Add(new KeyValuePair<DocumentController, List<double>>(doc, point));
+                */
             }
 
-            // var orderedDocs = OrderElements(docToPt);
-            String colTitle = collection.ToString();
-            SaveData(fileText, colTitle);
+            return fileText;
         }
 
-        private static List<DocumentController> OrderElements(List<KeyValuePair<DocumentController, List<double>>> docPtData)
-        {
-            IEnumerable<DocumentController> a = ContentController<FieldModel>.GetControllers<DocumentController>();
 
-            //reorder list of elems based on position
-            foreach (var doc in a)
+        private static void OrderElements(List<DocumentController> docs)
+        {
+            // This shows calling the Sort(Comparison(T) overload using 
+            // an anonymous method for the Comparison delegate. 
+            // This method treats null as the lesser of two values.
+            docs.Sort(delegate (DocumentController doc1, DocumentController doc2)
             {
-                // Context context = doc;
-                // var deepestDelegateID = context?.GetDeepestDelegateOf(DocumentId) ?? DocumentId;
+                //get the y points of each doc
+                var pt1 = doc1.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                var y1 = pt1.Data.Y;
+                var pt2 = doc2.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                var y2 = pt2.Data.Y;
 
-
-                Debug.WriteLine(doc);
-
-                Point pt = doc.GetPositionField().Data;
-                double xpt = pt.X;
-                double ypt = pt.Y;
-                Debug.WriteLine("x - " + xpt + " y - " + ypt);
-            }
-            return null;
+                //return 1 if doc1 first and -1 if doc2 first
+                if (y1 >= y2) return 1;
+                else return -1;
+            });
         }
 
 
-        private static String TextToTxt(DocumentController doc)
+        private static string TextToTxt(DocumentController doc)
         {
-            return doc.Title;
+            return doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
         }
 
-        private static String ImageToTxt(DocumentController doc)
+        private static string ImageToTxt(DocumentController doc)
         {
             //string version of the image uri
-            String uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
+            var uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
 
             //get image width and height
-            String stringWidth = doc.GetField(KeyStore.ActualWidthKey).DereferenceToRoot(null).ToString();
+            var stringWidth = doc.GetField(KeyStore.ActualWidthKey).DereferenceToRoot(null).ToString();
 
             //return uri with HTML image formatting
             return "<img src=\"" + uri + "\" width=\"" + stringWidth + "\">";
         }
 
-
-        private static async void SaveData(List<String> text, String title)
+        private static string CollectionToTxt(DocumentController col)
         {
-            StorageFile stFile;
+            var docs = col.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+
+
+            //get text that must be added to file for this collection
+            var colText = CollectionContent(col);
+            var colTitle = col.ToString();
+
+            //create a file in folder with colContent and titled colTitle
+            CreateFile(colText, colTitle);
+
+            //return link to page you just created
+            return "<a href=\"./" + colTitle + ".html\">" + colTitle + "</a>";
+        }
+
+        private static async Task<StorageFolder> PickFolder()
+        {
+            StorageFolder stFolder;
             if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
             {
-                FileSavePicker savePicker = new FileSavePicker();
-                savePicker.DefaultFileExtension = ".md";
-                savePicker.SuggestedFileName = title;
-                savePicker.FileTypeChoices.Add("Markdown Document", new List<string>() { ".md" });
-                stFile = await savePicker.PickSaveFileAsync();
-                AddFileText(text, stFile);
+                //create folder picker with basic properties
+                var savePicker = new FolderPicker();
+                savePicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+                savePicker.FileTypeFilter.Add("*");
+                savePicker.ViewMode = PickerViewMode.Thumbnail;
+
+                stFolder = await savePicker.PickSingleFolderAsync();
+
+                //return the folder that the user picked - it is a task bc async
+                return stFolder;
             }
             else
             {
-                String filename = title + ".md";
-                StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-                stFile = await local.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
-                AddFileText(text, stFile);
+                //If the user can't pick a folder, it just makes a folder in data called Dash
+                var local = Windows.Storage.ApplicationData.Current.LocalFolder;
+                stFolder = await local.CreateFolderAsync("Dash");
+                return stFolder;
             }
+
+            
         }
 
-        private static async void AddFileText(List<String> text, StorageFile stFile)
+
+        private static async void CreateFile(List<string> text, string title)
         {
+           var filename = title + ".html";
+           var stFile = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
+
             if (stFile != null)
             {
                 //combine strings to one string to add to file
-                String mergedText = "";
-                foreach (String word in text)
+                var mergedText = "";
+                foreach (var word in text)
                 {
-                    mergedText = mergedText + word + "\n";
+                    mergedText = mergedText + word + "<br>";
                 }
 
                 //add String to file - this happens a bit after file is saved
                 await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
             }
+        }
+
+        private static async void CreateIndex(List<string> subCollections)
+        {
+            List<String> htmlContent = new List<string>();
+            foreach (var colName in subCollections)
+            {
+                //make link to this collection
+                htmlContent.Add("<a href=\"./" + colName + ".html\">" + colName + "</a>");
+            }
+
+            CreateFile(htmlContent, "index");
         }
     }
 }

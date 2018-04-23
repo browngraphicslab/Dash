@@ -72,11 +72,8 @@ namespace Dash
             //so a data file is made for each element in this list
             var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
 
-            foreach (var collectionDoc in collectionDataDocs)
-            {
-                //CollectionToTxt Creates a Txt file out of this collectionDoc
-                ExportToTxt.CollectionToTxt(collectionDoc);
-            }
+            //Now call function in ExportToTxt that converts all collections to files
+           ExportToTxt.DashToTxt(collectionDataDocs);
         }
 
 
