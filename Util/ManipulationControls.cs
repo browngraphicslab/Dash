@@ -718,7 +718,6 @@ namespace Dash
         {
             if (e == null || !e.Handled)
             {
-                Dock(false);
                 MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
                 var docRoot = ParentDocument;
@@ -736,7 +735,8 @@ namespace Dash
                             _documentsToRemoveAfterManipulation.Clear();
                         }
 
-                        docRoot.MoveToContainingCollection(overlappedViews);
+                        if (! docRoot.MoveToContainingCollection(overlappedViews))
+                            Dock(false);
                     }));
 
                 OnManipulatorCompleted?.Invoke();
