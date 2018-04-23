@@ -102,6 +102,23 @@ namespace Dash
 
                 TestNumber($"let(x, 6, add(x,7))", 13);
                 TestNumber($"let(x, 6, add(x,let(x, 3, add(x,2))))", 11);
+                TestNumber($"let(x, 6, add(let(x, 3, add(x,2)), x))", 11);
+
+
+                //testing nested string and commas
+                var eleven = "let(x, 6, add(let(x, 3, add(x,exec({add(1,exec({1}))}))), x))";
+                var fifteen = $"exec({{add(exec({{{eleven}}}), 4)}})";
+                TestNumber($"exec({{mult(3, exec({{{fifteen}}}))}})", 3*(15));
+
+                var num = (new Random()).Next(2000) - 1000;
+                var s = num.ToString();
+                for (int j = 0; j < 6 + (new Random()).Next(5); j++)
+                {
+                    var r = (new Random()).Next(2000) - 1000;
+                    s = $"exec({o}add(exec({o}{s}{c}), add(exec({o}{s}{c}), exec({o}{r}{c}))){c})";
+                    num += num + r;
+                }
+                TestNumber(s, num);
             }
 
         }
@@ -184,7 +201,7 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase GetOperatorControllerForScript(string script,ScriptState state = null)
+        public static FieldControllerBase GetOperatorControllerForScript(string script, ScriptState state = null)
         {
             try
             {
@@ -461,12 +478,23 @@ namespace Dash
             for (int i = 0; i < innerFunctionParameters.Length; ++i)
             {
                 char c = innerFunctionParameters[i];
-
-                if (!closingCharacters.Any() || !ignoreValueClosingChars.Contains(closingCharacters.Peek()))
+                var currentlyInString = closingCharacters.Any() && ignoreValueClosingChars.Contains(closingCharacters.Peek());
+                if (!closingCharacters.Any() || !currentlyInString)
                 {
                     foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
                     {
                         if (c == encapsulatingCharacterPair.Key)
+                        {
+                            closingCharacters.Push(encapsulatingCharacterPair.Value);
+                        }
+                    }
+                }
+
+                if (currentlyInString)
+                {
+                    foreach (var encapsulatingCharacterPair in allEncapsulatingCharacters)
+                    {
+                        if (c == encapsulatingCharacterPair.Key && ignoreValueClosingChars.Contains(encapsulatingCharacterPair.Value))
                         {
                             closingCharacters.Push(encapsulatingCharacterPair.Value);
                         }
