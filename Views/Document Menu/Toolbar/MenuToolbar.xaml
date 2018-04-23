@@ -22,7 +22,7 @@
             <AppBarSeparator/>
             <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
             <AppBarButton Icon="ViewAll" Label="Add Group"/>
-            <AppBarButton Icon="Pictures" Label="Add Image"/>
+            <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
             <AppBarButton Icon="Video" Label="Add Video"/>
             <AppBarSeparator/>
             <AppBarButton Icon="Copy" x:Name="xCopy" Label="Duplicate" Click="Copy" />
@@ -33,7 +33,6 @@
             </local:TextSubtoolbar>
             <local:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar"/>
             <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
-
         </StackPanel>
     </StackPanel>
 </UserControl>

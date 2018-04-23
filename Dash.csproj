@@ -362,9 +362,9 @@
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-  <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
-    <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
-  </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
+      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>

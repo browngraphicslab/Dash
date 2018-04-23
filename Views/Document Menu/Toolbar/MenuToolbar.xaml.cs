@@ -10,11 +10,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using System.Diagnostics;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -132,7 +136,7 @@ namespace Dash
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
             }
         }
-
+        
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
         {
@@ -147,6 +151,39 @@ namespace Dash
             foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
             {
                 d.DeleteDocument();
+            }
+        }
+
+        // add image btn
+        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
+
+            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+            if (imagesToAdd != null)
+            {
+                foreach (var thisImage in imagesToAdd)
+                {
+                    using (var thisImageStream = await thisImage.OpenAsync(FileAccessMode.Read))
+                    {
+                        var bmp = new BitmapImage();
+                        await bmp.SetSourceAsync(thisImageStream);
+                        var newImage = new Image {Source = bmp};
+                    }
+                }
+            }
+            else
+            {
+                //Flash an 'X' over the image selection button
             }
         }
     }

@@ -663,9 +663,12 @@ namespace Dash
                 ToFront();
                 List<DocumentView> d = new List<DocumentView>();
                 d.Add(this);
+                //foreach (DocumentView doc in d)
+                //{
+                //    System.Diagnostics.Debug.WriteLine(doc.ToString());
+                //}
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
-                
             }
 			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
 			{
