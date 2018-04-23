@@ -93,6 +93,7 @@ namespace Dash
             Canvas.SetTop(this, 5);
         }
 
+        // moves toolbar on drag TODO: merge w/ snapping code
         private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
@@ -106,6 +107,23 @@ namespace Dash
             if (newVertPo > 0 && newVertPo < actualHeight)
             {
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
+            }
+        }
+
+        // copy
+        private void Copy(object sender, RoutedEventArgs e)
+        {
+            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments()) {
+                d.CopyDocument();
+            }  
+        }
+
+        // delete
+        private void Delete(object sender, RoutedEventArgs e)
+        {
+            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            {
+                d.DeleteDocument();
             }
         }
     }

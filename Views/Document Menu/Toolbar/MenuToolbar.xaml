@@ -25,9 +25,8 @@
             <AppBarButton Icon="Pictures" Label="Add Image"/>
             <AppBarButton Icon="Video" Label="Add Video"/>
             <AppBarSeparator/>
-            <AppBarButton Icon="Copy" Label="Copy" />
-            <AppBarButton Icon="Paste" Label="Paste" />
-            <AppBarButton Icon="Delete" Label="Delete" />
+            <AppBarButton Icon="Copy" Label="Duplicate" Click="Copy" />
+            <AppBarButton Icon="Delete" Label="Delete" Click="Delete" />
         </ctrl:CommandBar>
         <StackPanel Margin="0,12,0,0">
             <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed">
