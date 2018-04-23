@@ -66,9 +66,9 @@ namespace Dash
                 //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;
+                SetupTextBinding(rtv, docController, context);
+                SetupBindings(rtv, docController, context);
             }
-            SetupTextBinding(rtv, docController, context);
-            SetupBindings(rtv, docController, context);
 
             return rtv;
         }
