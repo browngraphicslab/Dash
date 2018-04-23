@@ -156,10 +156,7 @@ namespace Dash
 						***/
 			
 		}
-		else //if file is null, remove the pane
-		{
-			MainPage.Main._workspace.getRoot().Children.Remove(this);
-		}
+		
 	}
 
 		private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
