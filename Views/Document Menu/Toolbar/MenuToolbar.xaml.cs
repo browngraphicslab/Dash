@@ -129,13 +129,16 @@ namespace Dash
             var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
             if (imagesToAdd != null)
             {
+                var docNum = 0;
                 foreach (var thisImage in imagesToAdd)
                 {
-                    using (var thisImageStream = await thisImage.OpenAsync(FileAccessMode.Read))
+                    docNum += 1;
+                    var parser = new ImageToDashUtil();
+                    var docController = await parser.ParseFileAsync(thisImage);
+                    if (docController != null)
                     {
-                        var bmp = new BitmapImage();
-                        await bmp.SetSourceAsync(thisImageStream);
-                        var newImage = new Image {Source = bmp};
+                        docController.GetPositionField().Data = new Point(50 * docNum, 50 * docNum);
+                        MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
                     }
                 }
             }
