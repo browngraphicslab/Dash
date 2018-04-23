@@ -62,7 +62,6 @@ namespace Dash
 
         private void CollectionDBView_DataContextChanged(object sender, DataContextChangedEventArgs args)
         {
-            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             updateChart(new Context(ParentDocument));
         }   

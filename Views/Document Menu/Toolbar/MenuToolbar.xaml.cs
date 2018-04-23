@@ -131,12 +131,12 @@ namespace Dash
             {
                 foreach (var thisImage in imagesToAdd)
                 {
-                    //Im
-                    //var display = new Image();
-                    //Uri source
-                    //BitmapImage temporary = new BitmapImage(); 
-                    //display.Source = new ImageSource();
-                    //thisImage
+                    using (var thisImageStream = await thisImage.OpenAsync(FileAccessMode.Read))
+                    {
+                        var bmp = new BitmapImage();
+                        await bmp.SetSourceAsync(thisImageStream);
+                        var newImage = new Image {Source = bmp};
+                    }
                 }
             }
             else

@@ -17,7 +17,7 @@
 
         public override FieldControllerBase CreateReference(ScriptState state)
         {
-            if (field is TextController)
+            if (field is TextController && false)
             {
                 return new TextController(OperatorScriptParser.StringOpeningCharacters[0] + ((TextController) field).Data +
                                           OperatorScriptParser.StringClosingCharacters[0]);
