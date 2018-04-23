@@ -25,14 +25,15 @@ namespace Dash
         public Context Context { get; }
 
         public KeyController Key => Reference.FieldKey;
-
+        public int Row { get; set; }
         public FieldControllerBase Value => Reference.Dereference(Context);
 
-        public EditableScriptViewModel(FieldReference reference, Context context = null)
+        public EditableScriptViewModel(FieldReference reference, Context context = null, int row = 0)
         {
             Reference = reference;
             _dataReference = reference.GetReferenceController();
             Context = context;
+            Row = row;
         }
     }
 }

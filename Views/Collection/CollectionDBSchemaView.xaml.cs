@@ -105,9 +105,8 @@ namespace Dash
         {
             try
             {
-                var dcRecord = fieldView.DataContext as CollectionDBSchemaRecordFieldViewModel;
                 var dc = fieldView.DataContext as EditableScriptViewModel;
-                var recordCollection = (xRecordsView.Items[dcRecord.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
+                var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
                 if (recordCollection.Contains(dc))
                 {
                     var column = recordCollection.IndexOf(dc);
@@ -148,14 +147,13 @@ namespace Dash
                 {
                     if (xEditTextBox.Text == "\r")
                     {
-                        var dcRecord = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                         var dc = xEditTextBox.Tag as EditableScriptViewModel;
                         var field = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetDereferencedField(dc.Key, null);
                         xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
                         dc.Selected = false;
                         var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-                        var column = (xRecordsView.Items[dcRecord.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                        var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dcRecord.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                        var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                        var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                         updateEditBox(recordViewModel.RecordFields[column]);
                     }
                     e.Handled = true;
@@ -182,11 +180,10 @@ namespace Dash
                 {
                     direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
                     var dc = xEditTextBox.Tag as EditableScriptViewModel;
-                    var dcRecord = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                     SetFieldValue(dc);
-                    var column = (xRecordsView.Items[dcRecord.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                     if (column < 0) return;
-                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dcRecord.Row + direction))] as CollectionDBSchemaRecordViewModel;
+                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                     this.xRecordsView.SelectedItem = recordViewModel;
                     updateEditBox(recordViewModel.RecordFields[column]);
                 }
@@ -195,10 +192,9 @@ namespace Dash
                 {
                     direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
                     var dc = xEditTextBox.Tag as EditableScriptViewModel;
-                    var dcRecord = xEditTextBox.Tag as CollectionDBSchemaRecordFieldViewModel;
                     SetFieldValue(dc);
-                    var column = (xRecordsView.Items[dcRecord.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                    var recordViewModel = xRecordsView.Items[dcRecord.Row] as CollectionDBSchemaRecordViewModel;
+                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
+                    var recordViewModel = xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel;
                     updateEditBox(recordViewModel.RecordFields[Math.Max(0, Math.Min(recordViewModel.RecordFields.Count - 1, column + direction))]);
                 }
             }
@@ -264,9 +260,9 @@ namespace Dash
 
             CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
             CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
-            var test = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, new Context(ParentDocument))?.TypedData ??
+            var newDataDoc = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, new Context(ParentDocument))?.TypedData ??
                        ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))?.TypedData;
-            UpdateRecords(test);
+            UpdateRecords(newDataDoc);
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -313,12 +309,15 @@ namespace Dash
             else UpdateRecords(records.Select((r) => r.Value));
             _lastFieldSortKey = viewModel.FieldKey;
         }
+
         /// <summary>
         ///     Updates all the fields in the schema view
         /// </summary>
         /// <param name="context"></param>
         public void UpdateFields(Context context)
         {
+            // ParentDoc is collection layout, the datadoc has a List of Layouot Documents which are displayed by the parentdoc
+            // this makes dbdocs a list of layout docs in the collection
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
                          ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
             var headerList = ParentDocument
@@ -371,21 +370,28 @@ namespace Dash
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
                 // add all the records
-                //UpdateRecords(dbDocs);
+                UpdateRecords(dbDocs);
             }
         }
 
         private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
         {
+            if (dbDocs.Count() == ListItemSource.Count) return;
+            ListItemSource.Clear();
             int recordCount = 0;
-            foreach (var d in dbDocs)
+
+            foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
             {
                 var recordFields = new ObservableCollection<EditableScriptViewModel>();
                 foreach (var keyFieldPair in d.EnumFields())
+                {
+                    Debug.WriteLine(keyFieldPair);
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         recordFields.Add(
                             new EditableScriptViewModel(
-                                new DocumentFieldReference(d.Id, keyFieldPair.Key)));
+                                new DocumentFieldReference(d.Id, keyFieldPair.Key), null, recordCount));
+                }
+
                 ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
                     ParentDocument,
                     d,

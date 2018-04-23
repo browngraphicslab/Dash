@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Dash.Models.DragModels;
+using DebugSettings = Windows.UI.Xaml.DebugSettings;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -105,6 +107,10 @@ namespace Dash
             ParentDoc = parentDoc;
             Document = document;
             RecordFields = new ObservableCollection<EditableScriptViewModel>(fields);
+            /*foreach (var field in RecordFields)
+            {
+                Debug.WriteLine(field.Key + ": " + field.Value);
+            }*/
         }
 
     }
