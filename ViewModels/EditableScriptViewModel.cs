@@ -8,6 +8,7 @@ namespace Dash
 {
     public class EditableScriptViewModel : ViewModelBase
     {
+        double _width;
         bool _isSelected;
         ReferenceController _dataReference;
         public bool Selected
@@ -27,13 +28,10 @@ namespace Dash
         public KeyController Key => Reference.FieldKey;
         public int Row { get; set; }
         public FieldControllerBase Value => Reference.Dereference(Context);
-
-        public EditableScriptViewModel(FieldReference reference, Context context = null, int row = 0)
+        public EditableScriptViewModel(FieldReference reference)
         {
             Reference = reference;
             _dataReference = reference.GetReferenceController();
-            Context = context;
-            Row = row;
         }
     }
 }

@@ -115,7 +115,6 @@ namespace Dash
             {
                 foreach (var keyFieldPair in _dataContextDocument.EnumFields())
                 {
-                    Debug.WriteLine(keyFieldPair);
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(
                             new EditableScriptViewModel(

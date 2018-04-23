@@ -39,7 +39,6 @@ namespace Dash
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
             xHeaderView.ItemsSource = SchemaHeaders;
-            xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
             Drop += CollectionDBSchemaView_Drop;
             ListItemSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>();
 
@@ -93,162 +92,10 @@ namespace Dash
 
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
 
-        #region ItemSelection
-
-        public void ToggleSelectAllItems()
-        {
-        }
-
-        #endregion
-
-        private void CollectionDBSchemaRecordField_FieldTappedEvent(CollectionDBSchemaRecordField fieldView)
-        {
-            try
-            {
-                var dc = fieldView.DataContext as EditableScriptViewModel;
-                var recordCollection = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields;
-                if (recordCollection.Contains(dc))
-                {
-                    var column = recordCollection.IndexOf(dc);
-                    if (column != -1)
-                    {
-                        FlyoutBase.SetAttachedFlyout(fieldView, xEditField);
-                        updateEditBox(dc);
-                        xEditField.ShowAt(this);
-                    }
-
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-            }
-
-
-        }
-
-        private void updateEditBox(EditableScriptViewModel dc)
-        {
-            xEditTextBox.Tag = dc;
-
-            var field = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetDereferencedField(dc.Key, null);
-            xEditTextBox.Text = converter.ConvertDataToXaml(field?.GetValue(null));
-            var numReturns = xEditTextBox.Text.Count((c) => c == '\r');
-            xEditTextBox.Height = Math.Min(250, 50 + numReturns * 15);
-            dc.Selected = true;
-            xEditTextBox.SelectAll();
-        }
-        
-        private void xEditTextBox_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            try
-            {
-                if (e.Key == Windows.System.VirtualKey.Enter)
-                {
-                    if (xEditTextBox.Text == "\r")
-                    {
-                        var dc = xEditTextBox.Tag as EditableScriptViewModel;
-                        var field = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetDereferencedField(dc.Key, null);
-                        xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
-                        dc.Selected = false;
-                        var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-                        var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                        var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
-                        updateEditBox(recordViewModel.RecordFields[column]);
-                    }
-                    e.Handled = true;
-                }
-                if (e.Key == Windows.System.VirtualKey.Tab)
-                {
-                    e.Handled = true;
-                }
-            }
-            catch (Exception exception)
-            {
-                e.Handled = true;
-
-            }
-
-        }
-
-        private void xEditTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            try
-            {
-                var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
-                if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
-                {
-                    direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
-                    var dc = xEditTextBox.Tag as EditableScriptViewModel;
-                    SetFieldValue(dc);
-                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                    if (column < 0) return;
-                    var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
-                    this.xRecordsView.SelectedItem = recordViewModel;
-                    updateEditBox(recordViewModel.RecordFields[column]);
-                }
-
-                if (e.Key == Windows.System.VirtualKey.Tab || e.Key == Windows.System.VirtualKey.Right || e.Key == Windows.System.VirtualKey.Left)
-                {
-                    direction = e.Key == Windows.System.VirtualKey.Right ? 1 : e.Key == Windows.System.VirtualKey.Left ? -1 : direction;
-                    var dc = xEditTextBox.Tag as EditableScriptViewModel;
-                    SetFieldValue(dc);
-                    var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
-                    var recordViewModel = xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel;
-                    updateEditBox(recordViewModel.RecordFields[Math.Max(0, Math.Min(recordViewModel.RecordFields.Count - 1, column + direction))]);
-                }
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-            }
-            e.Handled = true;
-        }
-
-
-        private void xEditField_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
-        {
-            var dc = xEditTextBox.Tag as EditableScriptViewModel;
-            SetFieldValue(dc);
-        }
-
-        private void SetFieldValue(EditableScriptViewModel dc)
-        {
-            //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            var field = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetDereferencedField(dc.Key, null);
-            if (field == null)
-            {
-
-
-                var key = dc.Key;
-                FieldControllerBase fmController = new TextController("something went wrong");
-                var stringValue = xEditTextBox.Text;
-
-                dc.Reference.GetDocumentController(dc.Context).GetDataDocument().ParseDocField(key, xEditTextBox.Text);
-                dc.Reference.GetDocumentController(dc.Context).GetDataDocument().ParseDocField(key, xEditTextBox.Text);
-
-                fmController = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetField(key);
-
-                // If this field does not yet exist for the document, make one with the inputted text
-                if (fmController == null)
-                {
-                    //TODO make this create the correct field type (with text parsing?)
-                    dc.Reference.GetDocumentController(dc.Context).GetDataDocument().SetField(key, new TextController(xEditTextBox.Text), true);
-                }
-            }
-            field = dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetDereferencedField(dc.Key, null);
-
-            dc.Reference.GetDocumentController(dc.Context).GetDataDocument().ParseDocField(dc.Key, xEditTextBox.Text, field);
-            dc.ReferenceController = new DocumentReferenceController(dc.Reference.GetDocumentController(dc.Context).GetDataDocument().GetId(), dc.Key);
-            dc.Selected = false;
-        }
-
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
             ParentDocument = null;
-
-            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
         }
 
 
@@ -258,8 +105,6 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             CollectionDBView_DataContextChanged(null, null);
 
-            CollectionDBSchemaRecordField.FieldTappedEvent -= CollectionDBSchemaRecordField_FieldTappedEvent;
-            CollectionDBSchemaRecordField.FieldTappedEvent += CollectionDBSchemaRecordField_FieldTappedEvent;
             var newDataDoc = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, new Context(ParentDocument))?.TypedData ??
                        ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))?.TypedData;
             UpdateRecords(newDataDoc);
@@ -337,7 +182,7 @@ namespace Dash
                     });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db) => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
+                foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
                 {
                     //if (d.GetField(RegexOperatorController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -385,19 +230,20 @@ namespace Dash
                 var recordFields = new ObservableCollection<EditableScriptViewModel>();
                 foreach (var keyFieldPair in d.EnumFields())
                 {
-                    Debug.WriteLine(keyFieldPair);
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         recordFields.Add(
                             new EditableScriptViewModel(
-                                new DocumentFieldReference(d.Id, keyFieldPair.Key), null, recordCount));
+                                new DocumentFieldReference(d.Id, keyFieldPair.Key))
+                            {
+                                Row = recordCount
+                            });
                 }
-
                 ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
                     ParentDocument,
                     d,
                     recordFields
                     //SchemaHeaders.Select(hvm => new EditableScriptViewModel(new DocumentFieldReference(d.Id, hvm.FieldKey)))//CollectionDBSchemaRecordFieldViewModel(d, f, HeaderBorderThickness, recordCount))
-                    ));
+                ));
                 recordCount++;
             }
             //xRecordsView.ItemsSource = new ObservableCollection<CollectionDBSchemaRecordViewModel>(records);
@@ -450,15 +296,6 @@ namespace Dash
                 }
             return false;
         }
-
-        #region DragAndDrop
-        
-
-        public void SetDropIndicationFill(Brush fill)
-        {
-        }
-
-        #endregion
 
         #region Activation
         
@@ -548,6 +385,7 @@ namespace Dash
         {
             // Add a new document to the schema view
             ViewModel.AddDocument(Util.BlankNote(), null);
+            CollectionDBView_DataContextChanged(null, null);
             e.Handled = true;
         }
 

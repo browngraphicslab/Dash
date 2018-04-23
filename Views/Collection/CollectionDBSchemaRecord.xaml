@@ -19,7 +19,7 @@
                     CanDrag="False" AllowDrop="False" CanReorderItems="False" >
         <ListView.ItemsPanel>
             <ItemsPanelTemplate>
-                <ItemsStackPanel CanDrag="False" AllowDrop="False" Orientation="Horizontal"  Margin="0"/>
+                <ItemsStackPanel CanDrag="False" AllowDrop="False" Orientation="Horizontal" Margin="0"/>
             </ItemsPanelTemplate>
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>

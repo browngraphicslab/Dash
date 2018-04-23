@@ -107,10 +107,6 @@ namespace Dash
             ParentDoc = parentDoc;
             Document = document;
             RecordFields = new ObservableCollection<EditableScriptViewModel>(fields);
-            /*foreach (var field in RecordFields)
-            {
-                Debug.WriteLine(field.Key + ": " + field.Value);
-            }*/
         }
 
     }
