@@ -686,6 +686,7 @@ namespace Dash
             }
             if (ParentDocument.IsRightBtnPressed() || ParentDocument.IsLeftBtnPressed())
             {
+                Debug.WriteLine("is right btn or left btn true");
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);

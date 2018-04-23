@@ -21,6 +21,7 @@ namespace Dash.Views
     public sealed partial class DockedView : UserControl
     {
         public DockedView NestedView { get; set; }
+        public DockedView PreviousView { get; set; }
 
         public DockedView()
         {
@@ -39,9 +40,9 @@ namespace Dash.Views
             Grid.SetRow(view, 0);
             Grid.SetRowSpan(view, 2);
 
-            xContentGrid.Children.Clear();
-            xContentGrid.Children.Add(view);
-            xContentGrid.Children.Add(xCloseButton);
+            xMainDockedView.Children.Clear();
+            xMainDockedView.Children.Add(view);
+            xMainDockedView.Children.Add(xCloseButton);
         }
 
         public void ChangeNestedView(DockedView view)
@@ -49,19 +50,9 @@ namespace Dash.Views
             // first time setting the nested view?
             if (NestedView == null)
             {
-                ColumnDefinition splitterCol = new ColumnDefinition();
-                splitterCol.Width = new GridLength(15);
-                ColumnDefinition viewCol = new ColumnDefinition();
-                viewCol.Width = new GridLength(1, GridUnitType.Star);
-                xContentGrid.ColumnDefinitions.Add(splitterCol);
-                xContentGrid.ColumnDefinitions.Add(viewCol);
-
-                GridSplitter splitter = new GridSplitter();
-
-                Grid.SetColumn(splitter, xContentGrid.ColumnDefinitions.Count - 2);
-                xContentGrid.Children.Add(splitter);
-                Grid.SetColumn(view, xContentGrid.ColumnDefinitions.Count - 1);
-
+                xSplitterColumn.Width = new GridLength(15);
+                xNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
+                Grid.SetColumn(view, 2);
                 NestedView = view;
             }
             else
@@ -73,6 +64,20 @@ namespace Dash.Views
             }
 
             xContentGrid.Children.Add(NestedView);
+        }
+
+        public DockedView ClearNestedView()
+        {
+            if (NestedView != null)
+            {
+                xSplitterColumn.Width = new GridLength(0);
+                xNestedViewColumn.Width = new GridLength(0);
+                xContentGrid.Children.Remove(NestedView);
+            }
+
+            var toReturn = NestedView;
+            NestedView = null;
+            return toReturn;
         }
     }
 }

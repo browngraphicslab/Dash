@@ -535,17 +535,10 @@ namespace Dash
 
             if (_firstDock)
             {
-                ColumnDefinition splitterCol = new ColumnDefinition();
-                splitterCol.Width = new GridLength(15);
-                ColumnDefinition viewCol = new ColumnDefinition();
-                viewCol.Width = new GridLength(1, GridUnitType.Star);
-                xOuterGrid.ColumnDefinitions.Add(splitterCol);
-                xOuterGrid.ColumnDefinitions.Add(viewCol);
+                xDockSplitterColumn.Width = new GridLength(15);
+                xDockColumn.Width = new GridLength(300);
 
-                GridSplitter splitter = new GridSplitter();
-                Grid.SetColumn(splitter, Grid.GetColumn(xMainDocView) + Grid.GetColumnSpan(xMainDocView) + 1);
-                xOuterGrid.Children.Add(splitter);
-                Grid.SetColumn(dockedView, Grid.GetColumn(splitter) + Grid.GetColumnSpan(xMainDocView) + 1);
+                Grid.SetColumn(dockedView, 4);
                 xOuterGrid.Children.Add(dockedView);
                 _firstDock = false;
             }
@@ -559,12 +552,14 @@ namespace Dash
                 }
                 
                 tail.ChangeNestedView(dockedView);
+                dockedView.PreviousView = tail;
             }
             
         }
 
         public void HighlightDock()
         {
+            Debug.WriteLine("highlight yes");
             xDock.Opacity = 0.4;
         }
 
@@ -575,14 +570,38 @@ namespace Dash
 
         public void Undock(DockedView undock)
         {
-//            DockPanel.Children.Remove(undock);
-//            DockPanel.Children.Remove(undock.Splitter);
-//
-//            if (DockPanel.Children.Count == 0)
-//            {
-//                DockPanel.Visibility = Visibility.Collapsed;
-//                DockSplitter.Visibility = Visibility.Collapsed;
-//            }
+            // means it's the last NestedView
+            if (undock.NestedView == null)
+            {
+                // means it's also the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    xDockSplitterColumn.Width = new GridLength(0);
+                    xDockColumn.Width = new GridLength(0);
+                    xOuterGrid.Children.Remove(undock);
+                    _firstDock = true;
+                }
+                else
+                {
+                    undock.PreviousView.ClearNestedView();
+                }
+            }
+            else
+            {
+                // means it's the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    var newFirst = undock.ClearNestedView();
+                    xOuterGrid.Children.Remove(undock);
+                    Grid.SetColumn(newFirst, 4);
+                    xOuterGrid.Children.Add(newFirst);
+                }
+                else
+                {
+                    var newNext = undock.ClearNestedView();
+                    undock.PreviousView.ChangeNestedView(newNext);
+                }
+            }
         }
     }
 }
