@@ -32,9 +32,8 @@
         <StackPanel Margin="0,12,0,0">
             <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed">
             </local:TextSubtoolbar>
+            <local:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar"/>
             <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
-            <local:ImageSubtoolbar Visibility="Visible" x:Name="xImageToolbar"/>
-
         </StackPanel>
     </StackPanel>
 </UserControl>

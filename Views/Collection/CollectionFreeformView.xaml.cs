@@ -593,7 +593,6 @@ namespace Dash
         {
             if (XInkCanvas.IsTopmost())
             {
-                DeselectAll();
                 _isMarqueeActive = false;
                 RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }

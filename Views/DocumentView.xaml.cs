@@ -614,7 +614,7 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            //xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>

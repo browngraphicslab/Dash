@@ -63,10 +63,9 @@ namespace Dash
                 }
 
 				// TODO: Image controls
-				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<EditableImage>(docs.First());
+				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(docs.First());
 				if (image != null)
 				{
-					xImageToolbar.SetMenuToolBarBinding(image);
 					subtoolbarElement = xImageToolbar;
 				}
 
