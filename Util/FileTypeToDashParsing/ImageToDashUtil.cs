@@ -14,6 +14,20 @@ namespace Dash
 {
     public class ImageToDashUtil : IFileParser
     {
+
+        /// <summary>
+        /// Parse a file and save it to the local filesystem
+        /// </summary>
+        public async Task<DocumentController> ParseFileAsync(StorageFile file)
+        {
+            var localFile = await CopyFileToLocal(file);
+
+            var title = file.DisplayName;
+
+            return await CreateImageBoxFromLocalFile(localFile, title);
+        }
+
+
         /// <summary>
         /// Parse a file and save it to the local filesystem
         /// </summary>
@@ -77,6 +91,22 @@ namespace Dash
             {
                 await fileData.FileUri.GetHttpStreamToStorageFileAsync(localFile);
             }
+            return localFile;
+        }
+
+        /// <summary>
+        /// Copy a file to the local file system, returns a refernece to the file in the local filesystem
+        /// </summary>
+        private static async Task<StorageFile> CopyFileToLocal(StorageFile file)
+        {
+            var localFile = await CreateUniqueLocalFile();
+
+            // if the uri filepath is a local file then copy it locally
+            if (!file.FileType.EndsWith(".url"))
+            {
+                await file.CopyAndReplaceAsync(localFile);
+            }
+
             return localFile;
         }
 
