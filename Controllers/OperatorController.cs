@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using DashShared;
 
 namespace Dash
@@ -31,20 +32,45 @@ namespace Dash
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class OperatorTypeAttribute : Attribute
     {
-        private string _name;
+        private string[] _names;
         public double version;
 
-        public OperatorTypeAttribute(string name)
+        public OperatorTypeAttribute(string name) //Cant pass enumerable to type attribute consrtructor.  Hacky but it works and shouldn't need to scale much
         {
-            this._name = name;
+            this._names = new []{name};
 
             // Default value.
             version = 1.0;
         }
 
-        public string GetType()
+        public OperatorTypeAttribute(string name1, string name2)
         {
-            return _name;
+            this._names = new[] { name1, name2 };
+
+            // Default value.
+            version = 1.0;
+        }
+
+
+        public OperatorTypeAttribute(string name1, string name2, string name3)
+        {
+            this._names = new[] { name1, name2, name3 };
+
+            // Default value.
+            version = 1.0;
+        }
+
+        public OperatorTypeAttribute(string name1, string name2, string name3, string name4)
+        {
+            this._names = new[] { name1, name2, name3, name4 };
+
+            // Default value.
+            version = 1.0;
+        }
+
+        public string[] GetTypeNames()
+        {
+            return _names;
         }
     }
 
@@ -92,7 +118,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null);
 
         /// <summary>
         /// Create a new <see cref="OperatorController"/> associated with the passed in <see cref="OperatorFieldModel" />

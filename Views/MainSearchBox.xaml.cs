@@ -70,10 +70,17 @@ namespace Dash
             }
 
             var maxSearchResultSize = 75;
+            DocumentController resultDict = null;
+            try
+            {
+                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "}))");
+                resultDict = interpreted as DocumentController;
+            }
+            catch (DSLException e)
+            {
 
-            var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "("+DSL.GetFuncName<ExecDishOperatorController>()+ "({"+ DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "})}))");
-            var resultDict = interpreted as DocumentController;
-
+            }
+            
             if (resultDict == null)
             {
                 return;
@@ -81,9 +88,30 @@ namespace Dash
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
+            var tree = DocumentTree.MainPageTree;
+            var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
+
+            foreach (var doc in docs)
+            {
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
+                newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
+                vms.Add(newVm);
+            }
+            
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+            }
+        }
+
+        public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
+            DocumentController searchResultsDictionary, string originalSearch)
+        {
             var lists = new List<List<DocumentController>>();
 
-            foreach (var kvp in resultDict.EnumFields(true))
+            foreach (var kvp in searchResultsDictionary.EnumFields(true))
             {
                 var list = kvp.Value as ListController<DocumentController>;
                 if (list != null)
@@ -96,16 +124,7 @@ namespace Dash
 
             foreach (var list in lists.OrderBy(i => i.Count))
             {
-                var newVm = SearchHelper.DocumentSearchResultToViewModel(list.First());
-                newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
-                vms.Add(newVm);
-            }
-            
-            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
-            foreach (var searchResultViewModel in first)
-            {
-                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+                yield return SearchHelper.ChooseHelpfulSearchResult(list, originalSearch);
             }
         }
 
@@ -287,6 +306,18 @@ namespace Dash
                 return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
             }
 
+            /// <summary>
+            /// TODO NICK
+            /// </summary>
+            /// <param name="resultDocs"></param>
+            /// <param name="originalSearch"></param>
+            /// <returns></returns>
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
+            {
+                Debug.Assert(resultDocs.Any());
+                return resultDocs.First();
+            }
+
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null, DocumentController thisController = null)
             {
@@ -315,10 +346,11 @@ namespace Dash
             public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
             {
                 var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var doc = ContentController<FieldModel>.GetController<DocumentController>(id.Data);
                 var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
                 var helpText = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey);
 
-                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, null, null, true);
+                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, doc, null, true);
             }
 
             /*

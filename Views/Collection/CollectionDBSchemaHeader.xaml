@@ -17,9 +17,9 @@
             <ColumnDefinition MinWidth="10" Width="10"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid Tapped="HeaderTapped" DoubleTapped="HeaderDoubleTapped" HorizontalAlignment="Stretch" PointerPressed="Grid_PointerPressed" VerticalAlignment="Stretch" Background="{ThemeResource DocumentBackground}">
-            <TextBox Padding="3 0 0 0" IsHitTestVisible="False"  FontSize="{StaticResource DefaultFontSize}" FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
+            <TextBox Padding="3 0 0 0" IsHitTestVisible="False"  FontSize="{StaticResource DefaultFontSize}"  FontWeight="Bold" Foreground="Black" Text="{Binding}"/>
         </Grid>
         <Grid Grid.Column="1" x:Name="ResizeHandle"  ManipulationMode="All" CanDrag="False" Background="{ThemeResource SelectedGrey}"
-              PointerEntered="ResizeHandle_PointerEntered" PointerExited="ResizeHandle_PointerExited" ManipulationStarted="ResizeHandleManipulationStarted" ManipulationDelta="ResizeHandleManipulationDelta" ManipulationCompleted="ResizeHandleManipulationCompleted"/>
+              PointerEntered="ResizeHandle_PointerEntered" PointerExited="ResizeHandle_PointerExited" ManipulationStarted="ResizeHandleManipulationStarted" ManipulationDelta="ResizeHandleManipulationDelta" ManipulationCompleted="ResizeHandleManipulationCompleted" Tapped="ResizeHandle_Tapped"/>
     </Grid>
 </UserControl>

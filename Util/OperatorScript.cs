@@ -12,13 +12,24 @@ namespace Dash
         private static Dictionary<string, Type> _functionMap;
         private static Dictionary<Type, string> _reverseFunctionMap;
 
+        private static bool PrintAllFuncDocumentation;
+        public static string FunctionDocumentation;
+
         private OperatorScript()
         {
+            FunctionDocumentation = "";
+            PrintAllFuncDocumentation = true;
             Init();
         }
 
         private void Init()
         {
+
+            if (PrintAllFuncDocumentation)
+            {
+                Debug.WriteLine("\n\n\n\nAll DSL Functions: \n");
+            }
+
             _functionMap = new Dictionary<string, Type>();
             _reverseFunctionMap = new Dictionary<Type, string>();
             foreach (var operatorType in GetTypesWithOperatorAttribute(Assembly.GetExecutingAssembly()))
@@ -26,11 +37,33 @@ namespace Dash
                 //IF YOU CRASHED ON THIS LINE THEN YOU PROBABLY ADDED A NEW OPERATOR WITHOUT AN EMPTY CONSTRUCTOR. 
                 OperatorController op = (OperatorController)Activator.CreateInstance(operatorType);
 
-                var typeName = operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetType();
+                var typeNames = operatorType.GetCustomAttribute<OperatorTypeAttribute>().GetTypeNames();
 
-                _functionMap[typeName] = operatorType;
-                _reverseFunctionMap[operatorType] = typeName;
+                foreach (var typeName in typeNames)
+                {
+                    _functionMap[typeName] = operatorType;
+                    _reverseFunctionMap[operatorType] = typeName;
+
+
+                    if (PrintAllFuncDocumentation)
+                    {
+                        PrintDocumentation(typeName, op);
+                    }
+                }
+
             }
+
+            if (PrintAllFuncDocumentation)
+            {
+                Debug.WriteLine("\n\n\n\n\n");
+            }
+        }
+
+        private static void PrintDocumentation(string funcName, OperatorController op)
+        {
+            var doc = funcName + "( " + string.Join(',', op.Inputs.Select(i => " "+i.Value.Type.ToString() + "  "+  i.Key.Name.ToLower())) + " );";
+            FunctionDocumentation += doc + "         \n";
+            Debug.WriteLine(doc);
         }
 
         /// <summary>
@@ -58,6 +91,31 @@ namespace Dash
             return _reverseFunctionMap.ContainsKey(t) ? _reverseFunctionMap[t] : null;
         }
 
+        private static OperatorController GetOperatorWithName(string funcName)
+        {
+            if (_functionMap.ContainsKey(funcName))
+            {
+                var t = _functionMap[funcName];
+                var op = (OperatorController) Activator.CreateInstance(t);
+                return op;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// returns the dish function name for a given operator
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static string GetDishOperatorName<T>(T controller) where T : OperatorController
+        {
+            //if this fails then the function name doens't exist for the given controller
+
+            return controller.GetType().GetCustomAttribute<OperatorTypeAttribute>().GetTypeNames().First();
+        }
+
+
         /// <summary>
         /// returns whether a certain function exists based on a string name
         /// </summary>
@@ -68,6 +126,15 @@ namespace Dash
             return _functionMap.ContainsKey(funcName);
         }
 
+        public static DashShared.TypeInfo GetOutputType(string funcName)
+        {
+            return GetOperatorWithName(funcName)?.Outputs?.ElementAt(0).Value ?? DashShared.TypeInfo.None;
+        }
+
+        public static DashShared.TypeInfo GetFirstInputType(string funcName)
+        {
+            return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
+        }
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function
@@ -109,16 +176,43 @@ namespace Dash
             }
         }
 
-        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args)
+        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args, ScriptState state = null)
         {
             if (_functionMap.ContainsKey(funcName))
             {
                 var t = _functionMap[funcName];
                 var op = (OperatorController) Activator.CreateInstance(t);
                 var outDict = new Dictionary<KeyController, FieldControllerBase>();
-                op.Execute(args,outDict, null);
+                op.Execute(args,outDict, null, state);
+                if (outDict.Count == 0)
+                {
+                    return null;
+                }
                 return outDict.First().Value;
             }
+            return null;
+        }
+
+
+        public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, string funcName)
+        {
+            if (_functionMap.ContainsKey(funcName))
+            {
+                var t = _functionMap[funcName];
+                var op = (OperatorController) Activator.CreateInstance(t);
+
+                var doc = new DocumentController();
+
+                foreach (var parameter in parameters)
+                {
+                    doc.SetField(parameter.Key, parameter.Value, true);
+                }
+                doc.SetField(KeyStore.OperatorKey, op, true);
+
+                return new DocumentReferenceController(doc.Id, op.Outputs.FirstOrDefault().Key);
+                
+            }
+
             return null;
         }
     }

@@ -684,7 +684,8 @@ namespace Dash
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             // get the prototype with the desired key or just get ourself
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+            var proto = GetPrototypeWithFieldKey(key) ?? this;
+            var doc = forceMask ? this : proto;
 
             // get the old value of the field
             FieldControllerBase oldField;
@@ -701,15 +702,15 @@ namespace Dash
                 field.SaveOnServer();
                 oldField?.DisposeField();
 
-                proto._fields[key] = field;
-                proto.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
+                doc._fields[key] = field;
+                doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
                 var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 if (key.Name != "_Cache Access Key")
-                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(proto));
+                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                 {
@@ -719,7 +720,7 @@ namespace Dash
                     ; // do we need to watch anything when the DocumentContext field is set?
                 else
                 {
-                    setupFieldChangedListeners(key, field, oldField, new Context(proto));
+                    setupFieldChangedListeners(key, field, oldField, new Context(doc));
                 }
 
                 return true;
@@ -1047,8 +1048,8 @@ namespace Dash
         /// <returns></returns>
         public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
         {
-			Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
-			Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
+			//Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
+			//Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
 
 			// set up contexts information
 			context = new Context(context);
@@ -1178,7 +1179,7 @@ namespace Dash
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                    // try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
+                     // try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
                     spaces += "  ";
                     generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
                     spaces = spaces.Substring(2);
@@ -1204,37 +1205,36 @@ namespace Dash
         void setupPrototypeFieldChangedListeners(FieldControllerBase newField)
         {
             var prototype = newField as DocumentController;
-            if (prototype != null)
-            {
-                /// <summary>
-                /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
-                /// </summary>
-                void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                {
-                    var dargs = (DocumentFieldUpdatedEventArgs)args;
-                    dargs.FromDelegate = true;
-                    prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
-                };
-                FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+            if (prototype == null) return;
 
-                /// <summary>
-                /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
-                /// the field that was modified on the prototype
-                /// </summary>
-                void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+            /// <summary>
+            /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
+            /// </summary>
+            void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            {
+                var dargs = (DocumentFieldUpdatedEventArgs)args;
+                dargs.FromDelegate = true;
+                prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
+            };
+            FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+
+            /// <summary>
+            /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
+            /// the field that was modified on the prototype
+            /// </summary>
+            void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+            {
+                var updateArgs = (DocumentFieldUpdatedEventArgs)args;
+                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
-                    var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
-                    {
-                        OnDocumentFieldUpdated(this,
-                            new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
-                                new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
-                                updateArgs.FieldArgs, false), new Context(this), true);
-                    }
+                    OnDocumentFieldUpdated(this,
+                        new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
+                            new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
+                            updateArgs.FieldArgs, false), new Context(this), true);
                 }
-                prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
-                prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
             }
+            prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
+            prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
         }
 
         bool doesAnythingMaskThisField(KeyController field, Context c)

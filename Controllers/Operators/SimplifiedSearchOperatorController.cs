@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("find")]
+    [OperatorType("find", "f")]
     public class SimplifiedSearchOperatorController : OperatorController
     {
 
@@ -43,19 +43,23 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("F0D6FCB0-4635-4ECF-880F-81D2738A1350", "Simple Search");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";
 
             var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
 
-            var stringScriptToExecute = $"{exec}(Script:parseSearchString(Query:{{{searchQuery}}}))";
+            var stringScriptToExecute = $"{exec}(Script:parseSearchString({{{searchQuery}}}))";
 
-            var searchOutputList = OperatorScriptParser.Interpret(stringScriptToExecute) as BaseListController;
-            if (searchOutputList != null)
+            var interpreted = OperatorScriptParser.Interpret(stringScriptToExecute);
+            var resultDict = interpreted as DocumentController;
+
+            if (resultDict != null)
             {
-                outputs[ResultsKey] = new ListController<FieldControllerBase>(searchOutputList.Data.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i as DocumentController).Id)));
+                var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
+
+                outputs[ResultsKey] = new ListController<FieldControllerBase>(docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)));
             }
             else
             {

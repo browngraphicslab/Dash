@@ -17,12 +17,14 @@
     >
 
     <UserControl.Resources>
-        <!-- ThemeResource doesn't work without this for some reason--> 
+        <!-- ThemeResource doesn't work without this for some reason-->
         <Style TargetType="TextBlock" x:Key="TextStyle">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Foreground" Value="{ThemeResource DBTextBrush}" />
         </Style>
     </UserControl.Resources>
     
-    <TextBlock Style="{StaticResource TextStyle}"  Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
+    <Border BorderBrush="#EE555555" BorderThickness=".2">
+        <TextBlock Style="{StaticResource TextStyle}"  Text="{Binding DataReference,Converter={StaticResource ObjectToStringConverter}}"></TextBlock>
+    </Border>
 </UserControl>

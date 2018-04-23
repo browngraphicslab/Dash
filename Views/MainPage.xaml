@@ -41,8 +41,6 @@
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
         </Grid.ColumnDefinitions>
 
-        
-        
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
         
@@ -59,14 +57,10 @@
             </Button>
         </StackPanel>
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Line x:Name="AlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
-        </Canvas>
-
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" />
 
         <Grid Grid.Column="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
-            <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{StaticResource AccentGreen}" ></Ellipse>
+            <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
             <SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>
         </Grid>
 
@@ -92,7 +86,11 @@
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
 
-        
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+        </Canvas>
+
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
@@ -104,7 +102,11 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="25" />
                 </Grid.RowDefinitions>
-                <Button x:Name="snapshotButton" Grid.Row="1" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
+
+                <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
+                <!--
+                <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
+                </local:DishReplView>-->
             </Grid>
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
 
@@ -129,7 +131,6 @@
                     </Grid>
                 </localMicrosoft:GridSplitter.Element>
             </localMicrosoft:GridSplitter>
-
         </Grid>
     </Grid>
 </Page>
