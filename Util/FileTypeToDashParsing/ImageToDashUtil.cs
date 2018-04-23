@@ -106,6 +106,10 @@ namespace Dash
             {
                 await file.CopyAndReplaceAsync(localFile);
             }
+            else
+            {
+                throw new NotImplementedException();
+            }
 
             return localFile;
         }
