@@ -108,6 +108,64 @@ namespace Dash
             {
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
             }
-        }
-    }
+		}
+
+	
+
+	/**
+	 * Launches File picker for video
+	*/
+	private async System.Threading.Tasks.Task LaunchPicker()
+	{
+		//instantiates a file picker
+		var picker = new Windows.Storage.Pickers.FileOpenPicker();
+		picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+		//picker will open to user's video library
+		picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+		//filter possible file types to .avi, .mp4, and .wmv
+		
+			picker.FileTypeFilter.Add(".avi");
+			picker.FileTypeFilter.Add(".mp4");
+			picker.FileTypeFilter.Add(".wmv");
+	
+	
+		//awaits user upload of video 
+		Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+
+		if (file != null)
+		{
+			// this grants read/write access to the picked file
+			//videoPath.Text = file.Path;
+
+			return await new VideoToDashUtil().ParseFileAsync(file);
+
+				/**
+				 * // Opens a stream for the uploaded file.
+				// The 'using' block ensures the stream is disposed
+				// after the image is loaded.
+				using (Windows.Storage.Streams.IRandomAccessStream fileStream =
+				await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
+			{
+				//create a new media player, which will display and play the uploaded video 
+				MediaPlayer mediaPlayer = new MediaPlayer();
+				//set source to uploaded file
+				mediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
+				mediaPlayer.Play();
+				//set the newly created media player on the node created in xaml
+				mediaPlayerElement.SetMediaPlayer(mediaPlayer);
+						***/
+			
+		}
+		else //if file is null, remove the pane
+		{
+			MainPage.Main._workspace.getRoot().Children.Remove(this);
+		}
+	}
+
+		private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
+		{
+		
+			await this.LaunchPicker();
+		}
+	}
 }

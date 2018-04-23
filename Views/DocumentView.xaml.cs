@@ -636,6 +636,7 @@ namespace Dash
                 ToFront();
                 List<DocumentView> d = new List<DocumentView>();
                 d.Add(this);
+				
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
                 
