@@ -50,7 +50,7 @@ namespace Dash
                 var fields = doc.EnumFields().ToArray();
                 foreach (var key in fields) //check exact string equality
                 {
-                    if (key.Key.Name.Equals(keyName))
+                    if (key.Key.Name.Replace(" ", "").Equals(keyName))
                     {
                         outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
@@ -59,7 +59,7 @@ namespace Dash
 
                 foreach (var key in fields) //check to lower string equality
                 {
-                    if (key.Key.Name.ToLower().Equals(keyName.ToLower()))
+                    if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
                     {
                         outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
@@ -69,7 +69,7 @@ namespace Dash
 
                 foreach (var key in fields) //check exact string contains
                 {
-                    if (key.Key.Name.Contains(keyName) && keyName.Length  >= 3)
+                    if (key.Key.Name.Replace(" ", "").Contains(keyName) && keyName.Length  >= 3)
                     {
                         outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;
@@ -78,7 +78,7 @@ namespace Dash
 
                 foreach (var key in fields) //check to lower stirng contains
                 {
-                    if (key.Key.Name.ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
+                    if (key.Key.Name.Replace(" ", "").ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
                     {
                         outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
                         return;

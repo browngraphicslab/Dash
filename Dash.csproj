@@ -266,6 +266,7 @@
     <Compile Include="Util\DSL\ScriptExecutionException.cs" />
     <Compile Include="Util\DSL\ScriptExpression.cs" />
     <Compile Include="Util\DSL\ScriptState.cs" />
+    <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
     <Compile Include="Util\DSL\State.cs" />
     <Compile Include="Util\DSL\VariableExpression.cs" />
     <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
