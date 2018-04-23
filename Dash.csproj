@@ -353,7 +353,6 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-<<<<<<< HEAD
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
     </Compile>
@@ -365,10 +364,9 @@
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
       <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
-=======
+    </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
->>>>>>> 0532a0add23e677dcb5162ba73171d7a7d804452
     </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
@@ -844,7 +842,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-<<<<<<< HEAD
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -858,9 +855,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
-=======
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DishReplView.xaml">
->>>>>>> 0532a0add23e677dcb5162ba73171d7a7d804452
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
