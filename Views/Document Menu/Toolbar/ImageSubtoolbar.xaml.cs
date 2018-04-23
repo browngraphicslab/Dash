@@ -29,7 +29,6 @@ namespace Dash
 
 		internal void SetMenuToolBarBinding(ImageBox image)
 		{
-			throw new NotImplementedException();
 		}
 
 		/**
