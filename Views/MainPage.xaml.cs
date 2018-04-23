@@ -492,6 +492,8 @@ namespace Dash
                 xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
                 xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView.IsHitTestVisible = false;
+                Grid.SetColumn(xMapDocumentView, 2);
                 Grid.SetRow(xMapDocumentView, 0);
                 xLeftStack.Children.Add(xMapDocumentView);
                 mapTimer.Interval = new TimeSpan(0, 0, 1);
