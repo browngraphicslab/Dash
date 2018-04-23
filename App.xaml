@@ -84,7 +84,6 @@
             <!-- background colors -->
             <SolidColorBrush x:Key="OperatorBackground"  Color="#FF132D4B" />
             <Color x:Key="TranslucentDocumentBackgroundColor">#CCFFFFFF</Color>
-            <SolidColorBrush x:Key="RadialMenuBackground" Color="{StaticResource TranslucentDocumentBackgroundColor}" />
             <SolidColorBrush x:Key="DraggerLineStroke" Color="#66007AFF"/>
             <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
             <SolidColorBrush x:Key="DocumentBackground" Color="{StaticResource DocumentBackgroundColor}" Opacity="{StaticResource DocumentOpacity}" />

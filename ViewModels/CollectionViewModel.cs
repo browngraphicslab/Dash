@@ -430,15 +430,6 @@ namespace Dash
                 where = new Point(lastPos.X + DocumentViewModels.Last().ActualWidth, lastPos.Y);
             }
 
-
-            // if we are dragging and dropping from the radial menu
-            if (e.DataView?.Properties.ContainsKey(RadialMenuView.RadialMenuDropKey) == true)
-            {
-                var action =
-                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
-                        Action<ICollectionView, DragEventArgs>;
-                action?.Invoke(senderView, e);
-            }
             // if we drag from the file system
             else if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
             {

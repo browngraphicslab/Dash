@@ -50,9 +50,6 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            var radialMenu = new RadialMenuView(xCanvas);
-            radialMenu.Loaded += (s,e) => radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
-
             Loaded += (s, e) =>
             {
                 GlobalInkSettings.Hue = 200;
@@ -502,7 +499,16 @@ namespace Dash
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;
             xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            xSettingsButton.Background = isVisible ? new SolidColorBrush(Colors.Gray) : new SolidColorBrush(Colors.LightGray); 
+        }
+
+        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray); 
+        }
+
+        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
     }
 }
