@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Schema;
 using Windows.Foundation;
@@ -22,33 +23,48 @@ namespace Dash
     public static class ExportToTxt
     {
         private static StorageFolder folder;
+        private static List<String> UsedUrlNames = new List<string>();
 
         public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
-            //TODO: Nested collections, other document types, position
+            //TODO: other document types
 
             //TODO: collections can be named same thing, which would screw up links
 
             //allow the user to pick a folder to save all the files
             folder = await PickFolder();
 
-            //save names of all collections for linking pruposes
-            List<String> colNames = new List<string>();
-
-            //create one file in this folder for each collection
-            foreach (var collectionDoc in collectionDataDocs)
+            if (folder != null)
             {
-                //CollectionToTxt returns the content that must be added to a file
-                var colContent = CollectionContent(collectionDoc);
-                var colTitle = collectionDoc.ToString();
-                colNames.Add(colTitle);
+                //save names of all collections for linking pruposes
+                List<String> colNames = new List<string>();
 
-                //create a file in folder with colContent and titled colTitle
-                CreateFile(colContent, colTitle);
+                //create one file in this folder for each collection
+                foreach (var collectionDoc in collectionDataDocs)
+                {
+                    //CollectionToTxt returns the content that must be added to a file
+                    var colContent = CollectionContent(collectionDoc);
+                    var colTitle = collectionDoc.ToString();
+
+                    //TODO: get rid of old number before adding new one
+                    //make sure there isn't already reference to colTitle
+                    int count = 1;
+                    while (UsedUrlNames.Contains(colTitle))
+                    {
+                        colTitle = colTitle + count.ToString();
+                        count++;
+                    }
+                    UsedUrlNames.Add(colTitle);
+
+                    colNames.Add(colTitle);
+
+                    //create a file in folder with colContent and titled colTitle
+                    CreateFile(colContent, colTitle);
+                }
+
+                //make index.html file that refrences other collections
+                CreateIndex(colNames);
             }
-
-            //make index.html file that refrences other collections
-            CreateIndex(colNames);
         }
 
         public static List<string> CollectionContent(DocumentController collection)
@@ -200,22 +216,27 @@ namespace Dash
 
         private static async void CreateFile(List<string> text, string title)
         {
-           var filename = title + ".html";
-           var stFile = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
-
-            if (stFile != null)
+            if (folder != null)
             {
-                //combine strings to one string to add to file
-                var mergedText = "";
-                foreach (var word in text)
-                {
-                    mergedText = mergedText + word + "<br>";
-                }
+                var filename = title + ".html";
+                var stFile = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
 
-                //add String to file - this happens a bit after file is saved
-                await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
+                if (stFile != null)
+                {
+                    //combine strings to one string to add to file
+                    var mergedText = "";
+                    foreach (var word in text)
+                    {
+                        mergedText = mergedText + word + "<br>";
+                    }
+
+                        //add String to file - this happens a bit after file is saved
+                        await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
+                   
+                }
             }
         }
+    
 
         private static async void CreateIndex(List<string> subCollections)
         {
