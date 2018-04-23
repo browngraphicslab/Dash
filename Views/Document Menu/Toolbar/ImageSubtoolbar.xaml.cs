@@ -27,9 +27,9 @@ namespace Dash
 			this.InitializeComponent();
 		}
 
-		internal void SetMenuToolBarBinding(ImageBox image)
+		internal void SetMenuToolBarBinding(EditableImage image)
 		{
-			throw new NotImplementedException();
+
 		}
 
 		/**

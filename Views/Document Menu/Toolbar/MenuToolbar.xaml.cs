@@ -10,11 +10,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using System.Diagnostics;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -59,7 +63,7 @@ namespace Dash
                 }
 
 				// TODO: Image controls
-				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageBox>(docs.First());
+				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<EditableImage>(docs.First());
 				if (image != null)
 				{
 					xImageToolbar.SetMenuToolBarBinding(image);
@@ -108,6 +112,39 @@ namespace Dash
             {
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
             }
+        }
+
+        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
+
+            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+            if (imagesToAdd != null)
+            {
+                foreach (var thisImage in imagesToAdd)
+                {
+                    //Im
+                    //var display = new Image();
+                    //Uri source
+                    //BitmapImage temporary = new BitmapImage(); 
+                    //display.Source = new ImageSource();
+                    //thisImage
+                }
+            }
+            else
+            {
+                //Flash an 'X' over the image selection button
+            }
+
         }
     }
 }
