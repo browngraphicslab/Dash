@@ -690,6 +690,7 @@ namespace Dash
             // get the old value of the field
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
+            var overwrittenField = forceMask && !proto.Equals(doc) ? null : oldField;
 
             // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
@@ -700,7 +701,7 @@ namespace Dash
                 //}
 
                 field.SaveOnServer();
-                oldField?.DisposeField();
+                overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
@@ -1225,8 +1226,15 @@ namespace Dash
             void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
             {
                 var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey)  && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
+                    // bcz: I think this works, but I don't like having to put it here.
+                    //var protoField = this.GetField(updateArgs.Reference.FieldKey);
+                    //if (protoField is PointerReferenceController pref)
+                    //{
+                    //    if (doesAnythingMaskThisField(pref.DocumentReference.FieldKey, updateContext))
+                    //        return;
+                    //}
                     OnDocumentFieldUpdated(this,
                         new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
                             new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),

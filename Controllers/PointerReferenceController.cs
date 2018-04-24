@@ -25,7 +25,7 @@ namespace Dash.Controllers
 
         public override FieldModelController<ReferenceModel> Copy()
         {
-            return new PointerReferenceController(DocumentReference, FieldKey);
+            return new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
         }
 
         public override DocumentController GetDocumentController(Context context)
