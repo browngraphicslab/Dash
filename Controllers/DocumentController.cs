@@ -534,7 +534,7 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public DocumentController MakeDelegate()
-        {
+         {  
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
                 DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
@@ -548,6 +548,27 @@ namespace Dash
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();
             currentDelegates.Add(delegateController);
+
+            // copy all self-referential fields and update the references to point to the delegate
+            foreach (var f in EnumFields())
+                if (f.Value is ReferenceController)
+                {
+                    var refCopy = f.Value.GetCopy();
+                    if (refCopy is PointerReferenceController pref)
+                    {
+                        if (pref.DocumentReference.GetDocumentController(null).Equals(this))
+                        {
+                            refCopy = new PointerReferenceController(new DocumentReferenceController(delegateController.Id, pref.DocumentReference.FieldKey), pref.FieldKey);
+                        }
+                    } else if (refCopy is DocumentReferenceController dref)
+                    {
+                        if (dref.GetDocumentController(null).Equals(this))
+                        {
+                            refCopy = new DocumentReferenceController(delegateController.Id, dref.FieldKey);
+                        }
+                    }
+                    delegateController.SetField(f.Key, refCopy, true);
+                }
 
             // return the now fully populated delegate
             return delegateController;
@@ -683,6 +704,8 @@ namespace Dash
         /// <returns></returns>
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
+            if (field == null)
+                return false;
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;
@@ -692,8 +715,8 @@ namespace Dash
             proto._fields.TryGetValue(key, out oldField);
             var overwrittenField = forceMask && !proto.Equals(doc) ? null : oldField;
 
-            // if the old and new field reference the exact same controller then we're done
-            if (!ReferenceEquals(oldField, field))
+            // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
+            if (!ReferenceEquals(oldField, field) || (forceMask && !proto.Equals(doc)))
             {
                 //if (proto.CheckCycle(key, field))
                 //{
@@ -715,7 +738,7 @@ namespace Dash
 
                 if (key.Equals(KeyStore.PrototypeKey))
                 {
-                    setupPrototypeFieldChangedListeners(field);
+                    //setupPrototypeFieldChangedListeners(field);
                 }
                 else if (key.Equals(KeyStore.DocumentContextKey))
                     ; // do we need to watch anything when the DocumentContext field is set?

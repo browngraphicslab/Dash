@@ -43,6 +43,7 @@ namespace Dash
                 //layout.SetField(KeyStore.DataKey,//TODO Get this to work
                 //    new PointerReferenceController(
                 //        new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
+                layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
                 layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
                 return layout;
             }
@@ -72,16 +73,16 @@ namespace Dash
                 return protoDoc;
             }
 
-            DocumentController CreateLayout(CollectionView.CollectionViewType viewType, Point where, Size size)
+            DocumentController CreateLayout(DocumentController dataDoc, CollectionView.CollectionViewType viewType, Point where, Size size)
             {
-                return new CollectionBox(getDataReference(_prototypeID), where.X, where.Y, size.Width, size.Height, viewType).Document;
+                return new CollectionBox(getDataReference(dataDoc.Id), where.X, where.Y, size.Width, size.Height, viewType).Document;
             }
             static int count = 1;
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : 
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new ListController<DocumentController>());
-                Document = initSharedLayout(CreateLayout(viewtype, where, new Size(width, height)), dataDocument);
+                Document = initSharedLayout(CreateLayout(dataDocument, viewtype, where, new Size(width, height)), dataDocument);
                 dataDocument.Tag = "Collection Note Data " + count;
                 Document.Tag = "Collection Note Layout" + count++;
 
@@ -129,17 +130,17 @@ namespace Dash
                 return protoDoc;
             }
 
-            DocumentController CreateLayout(Point where, Size size)
+            DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
             {
                 size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-                return new RichTextBox(getDataReference(_prototypeID), where.X, where.Y, size.Width, size.Height).Document;
+                return new RichTextBox(getDataReference(dataDoc.Id), where.X, where.Y, size.Width, size.Height).Document;
             }
             
             public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size=new Size()) : 
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
-                Document = initSharedLayout(CreateLayout(where, size), dataDocument);
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
                 Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
             }
         }
@@ -166,21 +167,21 @@ namespace Dash
                 return protoDoc;
             }
             
-            DocumentController CreateLayout(Point where, Size size)
+            DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
             {
-                return new WebBox(getDataReference(_prototypeID), where.X, where.Y, size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height).Document;
+                return new WebBox(getDataReference(dataDocument.Id), where.X, where.Y, size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height).Document;
             }
             
             public HtmlNote(string text = "", string title = "", Point where = new Point(), Size size = new Size()) : 
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new TextController(text ?? "Html stuff here"));
-                Document = initSharedLayout(CreateLayout(where, size), dataDocument, title);
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             }
             public HtmlNote(DocumentController dataDocument, Point where = new Point(), Size size = new Size()) :
                base(_prototypeID)
             {
-                Document = initSharedLayout(CreateLayout(where, size), dataDocument);
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             }
         }
         public class PostitNote : NoteDocument
@@ -198,9 +199,9 @@ namespace Dash
                 return new DocumentController(fields, DocumentType, prototypeID);
             }
 
-            DocumentController CreateLayout(Point where, Size size)
+            DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
             {
-                return new TextingBox(getDataReference(_prototypeID), where.X, where.Y, size.Width, size.Height).Document;
+                return new TextingBox(getDataReference(dataDocument.Id), where.X, where.Y, size.Width, size.Height).Document;
             }
 
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class
@@ -208,7 +209,7 @@ namespace Dash
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new TextController(text ?? "Write something amazing!"));
-                Document = initSharedLayout(CreateLayout(where, size), dataDocument, title);
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             }
         }
 

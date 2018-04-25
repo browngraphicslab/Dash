@@ -4,8 +4,14 @@ namespace Dash.Controllers
 {
     class PointerReferenceController : ReferenceController
     {
-        public ReferenceController DocumentReference { get; set; }
+        public ReferenceController DocumentReference { get; private set; }
 
+        DocumentController _lastDoc = null;
+        void fieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            DisposeField();
+            Init();
+        }
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
             Init();
@@ -21,6 +27,14 @@ namespace Dash.Controllers
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
             base.Init();
+            _lastDoc = DocumentReference?.GetDocumentController(null);
+           _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+        }
+
+        public override void DisposeField()
+        {
+             base.DisposeField();
+            _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
         public override FieldModelController<ReferenceModel> Copy()
@@ -30,7 +44,7 @@ namespace Dash.Controllers
 
         public override DocumentController GetDocumentController(Context context)
         {
-            return DocumentReference.DereferenceToRoot<DocumentController>(context);
+            return DocumentReference?.DereferenceToRoot<DocumentController>(context);
         }
 
         public override FieldReference GetFieldReference()

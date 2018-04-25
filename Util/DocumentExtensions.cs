@@ -145,11 +145,11 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
+                copiedData.Tag = "CollectionInstance Data";
                 activeLayout = doc.MakeDelegate();
+                activeLayout.Tag = "CollectionInstance Layout";
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
-                newDoc.Tag = "CollectionInstance Layout";
-                copiedData.Tag = "CollectionInstance Data";
             }
             else if (docContext == null && activeLayout != null) // has a layout
             {
@@ -592,6 +592,7 @@ namespace Dash
             }
             if (doc == null)
                 return doc;
+            if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
             if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return doc;
             if (docs.ContainsKey(doc))
