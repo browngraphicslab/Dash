@@ -27,6 +27,8 @@ namespace Dash
         public double MaxScale { get; set; } = 5.0;
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
+
+        // for docking
         public double ManipulationStartX { get; set; }
         public double ManipulationStartY { get; set; }
 
@@ -463,6 +465,7 @@ namespace Dash
                 new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
             {
+                Debug.WriteLine("intersecting");
                 if (preview)
                 {
                     MainPage.Instance.HighlightDock();
@@ -476,6 +479,7 @@ namespace Dash
             }
             else
             {
+                Debug.WriteLine("not intersecting");
                 MainPage.Instance.UnhighlightDock();
             }
         }
@@ -753,7 +757,7 @@ namespace Dash
             }
             if (ParentDocument.IsRightBtnPressed() || ParentDocument.IsLeftBtnPressed())
             {
-                Debug.WriteLine("is right btn or left btn true");
+                Debug.WriteLine("dock preview=true should be firing");
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);

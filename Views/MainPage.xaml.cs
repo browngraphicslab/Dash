@@ -592,6 +592,7 @@ namespace Dash
                 if (undock.PreviousView == null)
                 {
                     var newFirst = undock.ClearNestedView();
+                    newFirst.PreviousView = null;
                     xOuterGrid.Children.Remove(undock);
                     Grid.SetColumn(newFirst, 4);
                     xOuterGrid.Children.Add(newFirst);

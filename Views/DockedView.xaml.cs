@@ -60,7 +60,6 @@ namespace Dash.Views
                 xContentGrid.Children.Remove(NestedView);
                 Grid.SetColumn(view, Grid.GetColumn(NestedView));
                 NestedView = view;
-                xContentGrid.Children.Add(NestedView);
             }
 
             xContentGrid.Children.Add(NestedView);
