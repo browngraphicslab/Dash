@@ -50,9 +50,10 @@ namespace Dash
         {
             ParentDocument = element;
 
-            element.ManipulationDelta += ElementOnManipulationDelta;
-            element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationDelta += ElementOnManipulationDelta;
+            //element.AddHandler(UIElement.ManipulationDeltaEvent, new Manipulation(ElementOnManipulationDelta), true);
+            element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationStarted += ElementOnManipulationStarted;
             element.AddHandler(UIElement.ManipulationCompletedEvent, new ManipulationCompletedEventHandler(ElementOnManipulationCompleted), true);
         }

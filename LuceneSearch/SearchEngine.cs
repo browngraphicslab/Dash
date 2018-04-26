@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
@@ -38,16 +39,18 @@ namespace Dash
             _analyzer = new StandardAnalyzer(Version.LUCENE_30);
             _indexWriter = new IndexWriter(_directory, _analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
             _indexWriter.DeleteAll(); //Comment out for persistence
-            AddDocuments(ContentController<FieldModel>.GetControllers<DocumentController>());
             _indexSearcher = new IndexSearcher(_directory);
 
         }
 
         public void AddDocuments(IEnumerable<DocumentController> documents)
         {
-            foreach (var documentController in documents)
+            foreach (var documentController in documents.Where(d => d.DocumentType.Equals(NoteDocuments.RichTextNote.DocumentType)))
             {
                 Document doc = new Document(); //Document to be added to Lucene index
+                var dataDoc = documentController.GetDataDocument();
+                var richTextController = dataDoc.GetDataDocument();
+                //var richTextString =
                 foreach (var kvp in documentController.EnumFields())
                 {
                     AddFieldToDocument(doc, kvp.Key, kvp.Value);
@@ -64,6 +67,7 @@ namespace Dash
             }
         }
 
+       
         private void AddFieldToDocument(Document doc, KeyController key, FieldControllerBase fieldController)
         {
             var val = fieldController.GetSearchableString();

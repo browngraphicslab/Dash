@@ -42,7 +42,10 @@ namespace Dash
         {
             return Copy() as T;
         }
-
+        public override string GetSearchableString()
+        {
+            return string.Empty;
+        }
 
         public virtual void Dispose()
         {

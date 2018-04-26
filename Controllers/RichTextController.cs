@@ -89,6 +89,8 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+
+
         // bcz: just want the basic behavior of converting the field into a string.. no need to override.
         //public override FrameworkElement GetTableCellView(Context context)
         //{

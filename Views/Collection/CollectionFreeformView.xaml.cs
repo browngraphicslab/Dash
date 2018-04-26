@@ -80,6 +80,8 @@ namespace Dash
             xOuterGrid.PointerPressed  += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
+            MainPage.Instance.SearchEngine.AddDocuments(ContentController<FieldModel>.GetControllers<DocumentController>());
+
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 

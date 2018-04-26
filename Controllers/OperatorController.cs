@@ -151,6 +151,10 @@ namespace Dash
             return StringSearchModel.False;
         }
 
+        public override string GetSearchableString()
+        {
+            return string.Empty;
+        }
         public sealed override object GetValue(Context context)
         {
             // getvalue does not mean anything on an operator since
