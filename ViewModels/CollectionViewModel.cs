@@ -88,7 +88,6 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public ObservableCollection<DocumentViewModel> ThumbDocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
         public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
-        public KeyController                           OutputKey { get; set; }
         public KeyController                           CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
 
