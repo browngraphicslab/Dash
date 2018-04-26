@@ -47,7 +47,6 @@ namespace Dash
                 return layout;
             }
         }
-       
 
         public class CollectionNote : NoteDocument
         {
@@ -62,12 +61,10 @@ namespace Dash
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                     [KeyStore.OperatorKey] = new ListController<OperatorController> (new OperatorController[] { new CollectionTitleOperatorController() })
                 };
-                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Collection Data Prototype" };
 
                 protoDoc.SetField(KeyStore.TitleKey,
                     new DocumentReferenceController(protoDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
-
-                protoDoc.Tag = "Collection Data Prototype";
 
                 return protoDoc;
             }
@@ -113,8 +110,7 @@ namespace Dash
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
                     [KeyStore.OperatorKey]          = new ListController<OperatorController>(new OperatorController[] { new RichTextDocumentOperatorController(), new RichTextTitleOperatorController() })
                 };
-                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
-                protoDoc.Tag = "Rich Text Data Prototype";
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Rich Text Data Prototype" };
                 
                 protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, RichTextDocumentOperatorController.ReadableTextKey), true);
                 protoDoc.SetField(KeyStore.TitleKey,        new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
@@ -139,7 +135,6 @@ namespace Dash
             }
         }
 
-
         public class ImageNote : NoteDocument
         {
             public static DocumentType DocumentType = new DocumentType("80577E19-5AE6-4BEF-940C-E516CE154684", "Rich Text Note");
@@ -151,8 +146,7 @@ namespace Dash
                     //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Image Note Data API"),
                  };
-                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
-                protoDoc.Tag = "ImageNote data prototype";
+               var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "ImageNote data prototype" };
 
                return protoDoc;
             }
@@ -185,8 +179,7 @@ namespace Dash
                     //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Video Note Data API"),
                 };
-                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
-                protoDoc.Tag = "VideoNote data prototype";
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "VideoNote data prototype" };
 
                 return protoDoc;
             }
@@ -221,7 +214,7 @@ namespace Dash
                     [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
                     [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextTitleOperatorController() })
                 };
-                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Html Note Prototype" };
 
                 protoDoc.SetField(KeyStore.TitleKey,
                     new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
@@ -254,11 +247,12 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>
                 {
-                    [KeyStore.TitleKey]             = new TextController("Prototype Title"),
-                  //  [KeyStore.DataKey]              = new TextController("Prototype Content"),
+                    [KeyStore.TitleKey] = new TextController("Prototype Title"),
+                    //  [KeyStore.DataKey]              = new TextController("Prototype Content"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("PostIt Note Data API"),
                 };
-                return new DocumentController(fields, DocumentType, prototypeID);
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Postit Note Protoype" };
+                return protoDoc;
             }
 
             DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
@@ -274,6 +268,5 @@ namespace Dash
                 Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             }
         }
-
     }
 }

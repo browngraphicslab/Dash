@@ -32,14 +32,13 @@ namespace Dash
 
         public BackgroundBox(AdornmentShape shape, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-            // set fields based on the parameters
-            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), null);
-            SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
-
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
-            Document.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
-            Document.SetField(KeyStore.AdornmentShapeKey, new TextController(shape.ToString()), true);
+            // set fields based on the parameters
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
+            fields.Add(KeyStore.BackgroundColorKey, new TextController(hexColor));
+            fields.Add(KeyStore.AdornmentShapeKey, new TextController(shape.ToString()));
+            SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
         protected static void BindShape(ContentPresenter Outelement, DocumentController docController,

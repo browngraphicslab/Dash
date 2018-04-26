@@ -19,19 +19,11 @@ namespace Dash
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
             var fields = DefaultLayoutFields(position, size, new ListController<DocumentController>(layoutDocuments));
+            fields.Add(SpacingKey, new NumberController(DefaultSpacing));
             SetupDocument(DocumentType, PrototypeId, "ListViewLayout Prototype Layout", fields);
-
-            SetSpacingField(Document, DefaultSpacing, true);
         }
 
         public ListViewLayout() : this(new List<DocumentController>()) { }
-        
-
-        private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
-        {
-            var currentSpacingField = new NumberController(spacing);
-            docController.SetField(SpacingKey, currentSpacingField, forceMask);
-        }
 
         private static void BindSpacing(ListView listView, DocumentController docController,  Context context)
         {

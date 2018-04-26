@@ -13,7 +13,6 @@ namespace Dash
         public MeltOperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(200, 100), refToOp);
-
             SetupDocument(DocumentType, PrototypeId, "MeltOperatorBox Prototype Layout", fields);
         }
 

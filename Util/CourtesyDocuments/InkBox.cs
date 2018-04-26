@@ -16,12 +16,11 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
             SetupDocument(DocumentType, PrototypeId, "InkBox Prototype Layout", fields);
             //Document.SetField(InkDataKey, new InkFieldModelController(), true);
-            SetLayoutForDocument(Document, Document, true, true);
+            //SetLayoutForDocument(Document, Document, true, true);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
             if (fmController != null)
             {

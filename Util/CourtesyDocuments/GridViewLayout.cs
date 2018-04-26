@@ -19,15 +19,8 @@ namespace Dash
         public GridViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
             var fields = DefaultLayoutFields(position, size, new ListController<DocumentController>(layoutDocuments));
+            fields.Add(GridViewKey, new NumberController(DefaultSpacing));
             SetupDocument(DocumentType, PrototypeId, "GridViewLayout Prototype Layout", fields);
-
-            SetSpacingField(Document, DefaultSpacing, true);
-        }
-
-        private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
-        {
-            var currentSpacingField = new NumberController(spacing);
-            docController.SetField(GridViewKey, currentSpacingField, forceMask);
         }
 
         /// <summary>
