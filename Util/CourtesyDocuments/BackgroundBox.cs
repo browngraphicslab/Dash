@@ -34,16 +34,12 @@ namespace Dash
         {
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), null);
-            
-            // get a delegate of the prototype layout (which already has fields set on it)
-            Document = GetLayoutPrototype().MakeDelegate();
+            SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
+
             var r = new Random();
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
             Document.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
             Document.SetField(KeyStore.AdornmentShapeKey, new TextController(shape.ToString()), true);
-
-            // replace any of the default fields on the prototype delegate with the new fields
-            Document.SetFields(fields, true);
         }
 
         protected static void BindShape(ContentPresenter Outelement, DocumentController docController,
@@ -69,31 +65,6 @@ namespace Dash
             };
             
             Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
-        }
-
-        /// <summary>
-        /// Returns the prototype layout if it exists, otherwise creates a new prototype layout
-        /// </summary>
-        /// <returns></returns>
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                            InstantiatePrototypeLayout();
-            return prototype;
-        }
-        /// <summary>
-        /// Creates a new prototype layout
-        /// </summary>
-        /// <returns></returns>
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), null);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
-        }
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)

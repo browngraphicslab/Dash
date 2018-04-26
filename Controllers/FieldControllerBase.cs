@@ -106,7 +106,7 @@ namespace Dash
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(double.NaN);
             tb.Document.SetWidth(double.NaN);
-            return tb.makeView(tb.Document, context);
+            return TextingBox.MakeView(tb.Document, context);
         }
 
         public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id)

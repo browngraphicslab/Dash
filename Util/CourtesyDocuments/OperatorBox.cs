@@ -11,26 +11,13 @@ namespace Dash
     /// </summary>
     public class OperatorBox : CourtesyDocument
     {
+        public static DocumentType DocumentType = DashConstants.TypeStore.OperatorBoxType;
+        private static readonly string PrototypeId = "A30A067F-01A2-4044-AB70-5ADB987DA04B";
+
         public OperatorBox(ReferenceController refToOp)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(250,100), refToOp);
-            Document = new DocumentController(fields, DashConstants.TypeStore.OperatorBoxType);
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FrameworkElement makeView(DocumentController docController,
-            Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "OperatorBox Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,

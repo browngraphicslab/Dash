@@ -218,9 +218,9 @@ namespace Dash
         public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
         {
             var doc = operatorReference.GetDocumentController(context);
-            var op = doc.GetDereferencedField<OperatorController>(KeyStore.OperatorKey, context);
+            var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
-            var funcName = op.GetDishName();
+            var funcName = op.TypedData.First().GetDishName();
             var script = funcName + FunctionOpeningCharacter;
             var middle = new List<string>();
             foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))

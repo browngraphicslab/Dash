@@ -33,32 +33,12 @@ namespace Dash
                 (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
             if (h != 0 && !double.IsNaN(h))
                 (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
+            SetupDocument(DocumentType, PrototypeId, "TextingBox Prototype Layout", fields);
             SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);
             SetFontSizeField(Document, DefaultFontSize, true, null);
             SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
             if (backgroundColor != null)
                 SetBackgroundColorField(Document, (Color)backgroundColor, true, null);
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var textController = new TextController(DefaultText);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textController);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-
-            return prototypeDocument;
         }
 
         protected static void SetupBindings(EditableTextBlock element, DocumentController docController, Context context)
@@ -71,12 +51,6 @@ namespace Dash
             BindBackgroundColor(element, docController, context);
             SetupTextBinding(element, docController, context);
         }
-
-        public override FrameworkElement makeView(DocumentController docController,Context context)
-        {
-            return MakeView(docController, context);
-        }
-
         /// <summary>
         /// Makes the view 
         /// </summary>

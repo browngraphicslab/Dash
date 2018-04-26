@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
 using Dash.Controllers;
+using System;
 
 namespace Dash
 {
@@ -24,9 +25,9 @@ namespace Dash
             }
             protected DocumentController _prototype;
             protected abstract DocumentController createPrototype(string prototypeID);
-            protected DocumentReferenceController getDataReference(string prototypeID)
+            protected DocumentReferenceController getDataReference(DocumentController dataDoc)
             {
-                return new DocumentReferenceController(prototypeID, KeyStore.DataKey);
+                return new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey);
             }
             protected DocumentController makeDataDelegate(FieldControllerBase controller)
             {
@@ -40,10 +41,8 @@ namespace Dash
                 if (!string.IsNullOrEmpty(title))
                     dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-                //layout.SetField(KeyStore.DataKey,//TODO Get this to work
-                //    new PointerReferenceController(
-                //        new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
-                layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
+                layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
+                // layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
                 layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
                 return layout;
             }
@@ -59,9 +58,9 @@ namespace Dash
             {
                 var fields = new Dictionary<KeyController, FieldControllerBase>()
                 {
-                   // [KeyStore.DataKey] = new ListController<DocumentController>(),
+                    // [KeyStore.DataKey] = new ListController<DocumentController>(),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
-                    [KeyStore.OperatorKey] = new CollectionTitleOperatorController()
+                    [KeyStore.OperatorKey] = new ListController<OperatorController> (new OperatorController[] { new CollectionTitleOperatorController() })
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
@@ -75,7 +74,7 @@ namespace Dash
 
             DocumentController CreateLayout(DocumentController dataDoc, CollectionView.CollectionViewType viewType, Point where, Size size)
             {
-                return new CollectionBox(getDataReference(dataDoc.Id), where.X, where.Y, size.Width, size.Height, viewType).Document;
+                return new CollectionBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height, viewType).Document;
             }
             static int count = 1;
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : 
@@ -112,28 +111,21 @@ namespace Dash
                 {
                     //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
                     [KeyStore.AbstractInterfaceKey] = new TextController("RichText Note Data API"),
-                    [KeyStore.OperatorKey]          = new RichTextTitleOperatorController(),
+                    [KeyStore.OperatorKey]          = new ListController<OperatorController>(new OperatorController[] { new RichTextDocumentOperatorController(), new RichTextTitleOperatorController() })
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
-
-                var docTextDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
-                {
-                    [KeyStore.DataKey] = new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey),
-                    [KeyStore.OperatorKey] = new RichTextDocumentOperatorController(),
-                }, DocumentType.DefaultType);
-                protoDoc.SetField(KeyStore.DocumentTextKey,
-                    new DocumentReferenceController(docTextDoc.Id, RichTextDocumentOperatorController.ReadableTextKey),
-                    true);
+                protoDoc.Tag = "Rich Text Data Prototype";
                 
-                protoDoc.SetField(KeyStore.TitleKey,
-                    new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
+                protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, RichTextDocumentOperatorController.ReadableTextKey), true);
+                protoDoc.SetField(KeyStore.TitleKey,        new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
                 return protoDoc;
             }
 
+            static int rcount = 1;
             DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
             {
                 size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-                return new RichTextBox(getDataReference(dataDoc.Id), where.X, where.Y, size.Width, size.Height).Document;
+                return new RichTextBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
             }
             
             public RichTextNote(string text = "Something to fill this space?", Point where = new Point(), Size size=new Size()) : 
@@ -141,10 +133,80 @@ namespace Dash
             {
                 var dataDocument = makeDataDelegate(new RichTextController(new RichTextModel.RTD(text)));
                 Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
+                Document.Tag = "Rich Text Note Layout " + rcount;
+                dataDocument.Tag = "Rich Text Note Data" + rcount++;
                 Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
             }
         }
 
+
+        public class ImageNote : NoteDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("80577E19-5AE6-4BEF-940C-E516CE154684", "Rich Text Note");
+            static string _prototypeID = "36AF28B6-5EEF-48E2-9C4E-3698C77AE005";
+            protected override DocumentController createPrototype(string prototypeID)
+            {
+                var fields = new Dictionary<KeyController, FieldControllerBase>
+                {
+                    //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
+                    [KeyStore.AbstractInterfaceKey] = new TextController("Image Note Data API"),
+                 };
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
+                protoDoc.Tag = "ImageNote data prototype";
+
+               return protoDoc;
+            }
+
+            static int icount = 1;
+            DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
+            {
+                size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
+                return new ImageBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            }
+
+            public ImageNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
+                base(_prototypeID)
+            {
+                var dataDocument = makeDataDelegate(new ImageController(location));
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
+                Document.Tag = "Image Note Layout " + icount;
+                dataDocument.Tag = "Image Note Data" + icount++;
+            }
+        }
+
+        public class VideoNote : NoteDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("E9D1BEAF-8D88-4C00-958B-A1C7DB3AB560", "Video Note");
+            static string _prototypeID = "9D2573C1-1FA2-49ED-9C38-425224D9F685";
+            protected override DocumentController createPrototype(string prototypeID)
+            {
+                var fields = new Dictionary<KeyController, FieldControllerBase>
+                {
+                    //[KeyStore.DataKey]              = new RichTextController(new RichTextModel.RTD("Prototype Content")),
+                    [KeyStore.AbstractInterfaceKey] = new TextController("Video Note Data API"),
+                };
+                var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
+                protoDoc.Tag = "VideoNote data prototype";
+
+                return protoDoc;
+            }
+
+            static int vcount = 1;
+            DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
+            {
+                size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
+                return new VideoBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            }
+
+            public VideoNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
+                base(_prototypeID)
+            {
+                var dataDocument = makeDataDelegate(new ImageController(location));
+                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
+                Document.Tag = "Video Note Layout " + vcount;
+                dataDocument.Tag = "Video Note Data" + vcount++;
+            }
+        }
         public class HtmlNote : NoteDocument
         {
             public static DocumentType DocumentType = new DocumentType("292C8EF7-D41D-49D6-8342-EC48AE014CBC", "Html Note");
@@ -157,7 +219,7 @@ namespace Dash
                   //  [KeyStore.DataKey] = new TextController("Prototype Content"),
                     [KeyStore.DocumentTextKey] = new TextController("Prototype Html Text"),
                     [KeyStore.AbstractInterfaceKey] = new TextController("Html Note Data API"),
-                    [KeyStore.OperatorKey] = new RichTextTitleOperatorController()
+                    [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new RichTextTitleOperatorController() })
                 };
                 var protoDoc = new DocumentController(fields, DocumentType, prototypeID);
 
@@ -169,7 +231,7 @@ namespace Dash
             
             DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
             {
-                return new WebBox(getDataReference(dataDocument.Id), where.X, where.Y, size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height).Document;
+                return new WebBox(getDataReference(dataDocument), where.X, where.Y, size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height).Document;
             }
             
             public HtmlNote(string text = "", string title = "", Point where = new Point(), Size size = new Size()) : 
@@ -201,7 +263,7 @@ namespace Dash
 
             DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
             {
-                return new TextingBox(getDataReference(dataDocument.Id), where.X, where.Y, size.Width, size.Height).Document;
+                return new TextingBox(getDataReference(dataDocument), where.X, where.Y, size.Width, size.Height).Document;
             }
 
             // TODO for bcz - takes in text and title to display, docType is by default the one stored in this class

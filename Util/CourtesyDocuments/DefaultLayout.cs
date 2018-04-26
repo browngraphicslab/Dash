@@ -11,26 +11,7 @@ namespace Dash
         public DefaultLayout(double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
+            SetupDocument(DocumentType, PrototypeId, "DefaultLayout Prototype Layout", fields);
         }
     }
 }

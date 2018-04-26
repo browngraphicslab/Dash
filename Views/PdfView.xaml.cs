@@ -44,7 +44,7 @@ namespace Dash
                 }
                 else
                 {
-                    var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null).Data;
+                    var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                     System.Diagnostics.Debug.WriteLine("===> to " + xPdfView.VerticalOffset + "(" + curOffset );
                 }
             };

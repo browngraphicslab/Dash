@@ -89,7 +89,7 @@ namespace Dash
         {
             // set the input type
             var el = sender as FrameworkElement;
-            var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
+            var opField = OperatorFieldReference.DereferenceToRoot<ListController<OperatorController>>(null).TypedData.First();
             var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
             _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
 

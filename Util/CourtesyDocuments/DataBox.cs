@@ -13,16 +13,9 @@ namespace Dash
 
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-
             w = h = double.NaN;
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
-        }
-
-        public override FrameworkElement makeView(DocumentController documentController, Context context)
-        {
-            return MakeView(documentController, context);
+            SetupDocument(DocumentType, PrototypeId, "Data Box Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController documentController, Context context)
@@ -68,20 +61,6 @@ namespace Dash
                 return RichTextBox.MakeView(documentController, context);
             }
             return new Grid();
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            return ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                   InstantiatePrototypeLayout();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var defaultText = new TextController("Default Data");
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), defaultText);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
         }
     }
 }
