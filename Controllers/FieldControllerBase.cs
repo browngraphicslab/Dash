@@ -20,6 +20,7 @@ namespace Dash
         public event FieldUpdatedHandler FieldModelUpdated;
 
         public object Tag = null;
+
         public FieldControllerBase(FieldModel model) : base(model)
         {
         }

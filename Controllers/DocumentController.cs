@@ -28,6 +28,8 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
+        public object Tag = null;
+
         public override string ToString()
         {
             return Title;
@@ -713,7 +715,7 @@ namespace Dash
             // get the old value of the field
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
-            var overwrittenField = forceMask && !proto.Equals(doc) ? null : oldField;
+            var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
 
             // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
             if (!ReferenceEquals(oldField, field) || (forceMask && !proto.Equals(doc)))
@@ -1251,13 +1253,6 @@ namespace Dash
                 var updateArgs = (DocumentFieldUpdatedEventArgs)args;
                 if (!_fields.ContainsKey(updateArgs.Reference.FieldKey)  && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
-                    // bcz: I think this works, but I don't like having to put it here.
-                    //var protoField = this.GetField(updateArgs.Reference.FieldKey);
-                    //if (protoField is PointerReferenceController pref)
-                    //{
-                    //    if (doesAnythingMaskThisField(pref.DocumentReference.FieldKey, updateContext))
-                    //        return;
-                    //}
                     OnDocumentFieldUpdated(this,
                         new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
                             new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
