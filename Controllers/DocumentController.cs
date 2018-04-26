@@ -1230,13 +1230,6 @@ namespace Dash
                 var updateArgs = (DocumentFieldUpdatedEventArgs)args;
                 if (!_fields.ContainsKey(updateArgs.Reference.FieldKey)  && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
-                    // bcz: I think this works, but I don't like having to put it here.
-                    //var protoField = this.GetField(updateArgs.Reference.FieldKey);
-                    //if (protoField is PointerReferenceController pref)
-                    //{
-                    //    if (doesAnythingMaskThisField(pref.DocumentReference.FieldKey, updateContext))
-                    //        return;
-                    //}
                     OnDocumentFieldUpdated(this,
                         new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
                             new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
