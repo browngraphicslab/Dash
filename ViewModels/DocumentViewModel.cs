@@ -114,7 +114,7 @@ namespace Dash
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
-        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey).Data;}
+        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point(0,0);}
 
         protected bool Equals(DocumentViewModel other)
         {

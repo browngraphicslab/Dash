@@ -68,8 +68,8 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             
             // set bounds
-            MinWidth = 5;
-            MinHeight = 25;
+            MinWidth = 35;
+            MinHeight = 35;
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
