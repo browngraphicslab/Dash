@@ -41,7 +41,7 @@ namespace Dash
             if (headerViewModel != null)
             {
                 HeaderViewModel = headerViewModel;
-                BorderThickness = HeaderViewModel.headerBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
+                BorderThickness = HeaderViewModel.HeaderBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
                 Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
                 HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + HeaderViewModel.Width;
             }
