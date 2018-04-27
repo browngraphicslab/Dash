@@ -297,7 +297,10 @@ namespace Dash
                         return currentScale;
                     }
 
+                    if (ViewModel == null) return;
+
                     var transformation = ViewModel.TransformGroup;
+
                     // calculate the translate delta
                     var translateDelta = new TranslateTransform
                     {

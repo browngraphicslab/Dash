@@ -26,15 +26,39 @@ namespace Dash
     {
         private DocumentController _parentDocument;
 
-        private ObjectToStringConverter converter = new ObjectToStringConverter();
-
         // This list stores the fields added in the schema view (not originally in the documents)
         private List<KeyController> _schemaFieldsNotInDocs;
+
         private ObservableCollection<CollectionDBSchemaRecordViewModel> ListItemSource { get; }
+
+        //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
+        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
+            new ObservableCollection<CollectionDBSchemaRecordViewModel>();
+
+        public ObservableCollection<HeaderViewModel> SchemaHeaders { get; set; } =
+            new ObservableCollection<HeaderViewModel>();
+
+        public DocumentController ParentDocument
+        {
+            get => _parentDocument;
+            set
+            {
+                _parentDocument = value;
+                if (value != null)
+                {
+                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
+                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
+                }
+            }
+        }
+
+        public CollectionViewModel ViewModel { get; set; }
+
+        private Dictionary<KeyController, HashSet<TypeInfo>> _typedHeaders;
 
         public CollectionDBSchemaView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Unloaded += CollectionDBSchemaView_Unloaded;
             Loaded += CollectionDBSchemaView_Loaded;
             MinWidth = MinHeight = 50;
@@ -50,51 +74,13 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            var recordSource = xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>;
-            var slist = SchemaHeaders.ToArray().ToList();
-            foreach (var r in recordSource)
-                if (r.RecordFields.Count == slist.Count)
-                {
-                    UpdateRecords((xRecordsView.ItemsSource as ObservableCollection<CollectionDBSchemaRecordViewModel>).ToArray().Select((xr)=> xr.Document));
-                    var stuff = new ListController<TextController>();
-                    foreach (var s in SchemaHeaders)
-                        stuff.Add(new TextController(s.FieldKey.Id));
-                    ParentDocument.SetField(HeaderListKey, stuff, true);
-                    break;
-                }
-        }
-
-        //bcz: this field isn't used, but if it's not here Field items won't be updated when they're changed.  Why???????
-        public ObservableCollection<CollectionDBSchemaRecordViewModel> Records { get; set; } =
-            new ObservableCollection<CollectionDBSchemaRecordViewModel>();
-
-        public ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel> SchemaHeaders { get; set; } =
-            new ObservableCollection<CollectionDBSchemaHeader.HeaderViewModel>();
-
-        public DocumentController ParentDocument
-        {
-            get => _parentDocument;
-            set
-            {
-                if (ParentDocument != null)
-                    ParentDocument.FieldModelUpdated -= ParentDocument_DocumentFieldUpdated;
-                _parentDocument = value;
-                if (value != null)
-                {
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-                    ParentDocument.FieldModelUpdated += ParentDocument_DocumentFieldUpdated;
-                }
-            }
-        }
-
-        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
-
         private void CollectionDBSchemaView_Unloaded(object sender, RoutedEventArgs e)
         {
             DataContextChanged -= CollectionDBView_DataContextChanged;
+            if (ViewModel != null)
+            {
+                ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
+            }
             ParentDocument = null;
         }
 
@@ -104,142 +90,179 @@ namespace Dash
             DataContextChanged += CollectionDBView_DataContextChanged;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController;
             CollectionDBView_DataContextChanged(null, null);
-
-            var newDataDoc = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, new Context(ParentDocument))?.TypedData ??
-                       ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))?.TypedData;
-            UpdateRecords(newDataDoc);
         }
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
-            ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
-            if (ParentDocument != null)
-                UpdateFields(new Context(ParentDocument)); 
+            if (DataContext is CollectionViewModel cvm)
+            {
+                // if datacontext hasn't actually changed just return
+                if (ViewModel == cvm)
+                {
+                    return;
+                }
+
+                // remove events from previous datacontext
+                if (ViewModel != null)
+                {
+                    ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
+                }
+
+                // add events to new datacontext and set it
+                cvm.CollectionController.FieldModelUpdated += CollectionController_FieldModelUpdated;
+                ViewModel = cvm;
+
+                // set the parentDocument which is the document holding this collection
+                ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
+                if (ParentDocument != null)
+                {
+                    ResetHeaders();
+                    ResetRecords();
+                }
+            }
         }
 
-
-        private void ParentDocument_DocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (((DocumentController.DocumentFieldUpdatedEventArgs) args).Reference.FieldKey.Equals(ViewModel?.CollectionKey))
-                UpdateRecords(ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
-                             ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData);
+            // if a field has been replaced or updated then set it's source to be the new element
+            // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
+            var dargs = (ListController<DocumentController>.ListFieldUpdatedEventArgs)args;
+            if (dargs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
+            {
+                AddRows(dargs);
+            }
+            else if (dargs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove)
+            {
+                RemoveRows(dargs);
+            } else if (dargs.ListAction ==
+                       ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear)
+            {
+                ListItemSource.Clear();
+            }
+            else if (dargs.ListAction ==
+                       ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace)
+            {
+                //TODO
+                throw new NotImplementedException();
+            }
+
+            UpdateHeaders(dargs.ChangedDocuments); // TODO find a better way to update this
         }
 
-        /// </summary>
-        public static KeyController HeaderListKey = new KeyController("7C3F0C3F-F065-4094-8802-F572B35C4D42", "HeaderList");
-        private bool SchemaHeadersContains(KeyController field)
+        private void UpdateHeaders(List<DocumentController> changedDocuments)
         {
-            foreach (var s in SchemaHeaders)
-                if (s.FieldKey.Equals(field))
-                    return true;
-            return false;
+            var context = new Context(ParentDocument);
+            _typedHeaders = Util.GetDisplayableTypedHeaders(ParentDocument.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context));
+            foreach (var doc in changedDocuments.Select(doc => doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? doc))
+            {
+                foreach (var keyFieldPair in doc.EnumDisplayableFields())
+                {
+                    if (!_typedHeaders.ContainsKey(keyFieldPair.Key))
+                    {
+                        _typedHeaders.Add(keyFieldPair.Key, new HashSet<TypeInfo> { keyFieldPair.Value.TypeInfo });
+                        SchemaHeaders.Add(new HeaderViewModel()
+                        {
+                            SchemaView = this,
+                            SchemaDocument = ParentDocument,
+                            Width = 150,
+                            FieldKey = keyFieldPair.Key
+                        });
+                    }
+                    else
+                    {
+                        if (!_typedHeaders[keyFieldPair.Key].Contains(keyFieldPair.Value.TypeInfo))
+                            _typedHeaders[keyFieldPair.Key].Add(keyFieldPair.Value.TypeInfo);
+                    }
+                }
+            }
+        }
+
+        private void AddRows(ListController<DocumentController>.ListFieldUpdatedEventArgs dargs)
+        {
+            foreach (var doc in dargs.ChangedDocuments.Select(doc => doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? doc))
+            {
+                var recordFields = CreateNewRecord(doc);
+                ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
+                    ParentDocument,
+                    doc,
+                    recordFields
+                ));
+            }
+        }
+
+        private void RemoveRows(ListController<DocumentController>.ListFieldUpdatedEventArgs dargs)
+        {
+            //TODO
+            throw new NotImplementedException();
         }
 
         KeyController _lastFieldSortKey = null;
-        public void Sort(CollectionDBSchemaHeader.HeaderViewModel viewModel)
-        {
-            var dbDocs = ParentDocument.GetDataDocument()
-                   .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
 
-            var records = new SortedList<string, DocumentController>();
-            foreach (var d in dbDocs)
-            {
-                var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
-                if (records.ContainsKey(str))
-                    records.Add(str + Guid.NewGuid(), d);
-                else records.Add(str, d);
-            }
-            if (_lastFieldSortKey != null && _lastFieldSortKey.Equals(viewModel.FieldKey))
-                UpdateRecords(records.Select((r) => r.Value).Reverse());
-            else UpdateRecords(records.Select((r) => r.Value));
-            _lastFieldSortKey = viewModel.FieldKey;
+        public void Sort(HeaderViewModel viewModel)
+        {
+            // TODO reimplement this with advanced collection view
+            //var dbDocs = ParentDocument.GetDataDocument()
+            //       .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
+
+            //var records = new SortedList<string, DocumentController>();
+            //foreach (var d in dbDocs)
+            //{
+            //    var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
+            //    if (records.ContainsKey(str))
+            //        records.Add(str + Guid.NewGuid(), d);
+            //    else records.Add(str, d);
+            //}
+            //if (_lastFieldSortKey != null && _lastFieldSortKey.Equals(viewModel.FieldKey))
+            //    ResetRecords(records.Select((r) => r.Value).Reverse());
+            //else ResetRecords(records.Select((r) => r.Value));
+            //_lastFieldSortKey = viewModel.FieldKey;
         }
 
         /// <summary>
         ///     Updates all the fields in the schema view
         /// </summary>
-        /// <param name="context"></param>
-        public void UpdateFields(Context context)
+        public void ResetHeaders()
         {
-            // ParentDoc is collection layout, the datadoc has a List of Layouot Documents which are displayed by the parentdoc
-            // this makes dbdocs a list of layout docs in the collection
-            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
-                         ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
-            var headerList = ParentDocument
-                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
-            if (dbDocs != null)
+            var context = new Context(ParentDocument);
+            _typedHeaders = Util.GetDisplayableTypedHeaders(ParentDocument.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context));
+            SchemaHeaders.Clear();
+            foreach (var typedHeader in _typedHeaders)
             {
-                SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
-                SchemaHeaders.Clear();
-                foreach (var h in headerList)
+                SchemaHeaders.Add(new HeaderViewModel()
                 {
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel()
-                    {
-                        SchemaView = this,
-                        SchemaDocument = ParentDocument,
-                        Width = 150,
-                        FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)
-                    });
-                }
-                // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
-                {
-                    foreach (var f in d.EnumFields())
-                        if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
-                            SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
-                }
-
-                // Add to the header the fields that are not in the documents but has been added to the schema view by the user
-                // if the field is already being displayed (the user has added this field to a document by entered a value), remove it from the list
-                foreach (var f in _schemaFieldsNotInDocs)
-                    if (!f.Name.StartsWith("_") && !SchemaHeadersContains(f))
-                    {
-                        SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f });
-                    }
-                    else
-                    {
-                        _schemaFieldsNotInDocs.Remove(f);
-                    }
-
-                SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
-
-                // add all the records
-                UpdateRecords(dbDocs);
+                    SchemaView = this,
+                    SchemaDocument = ParentDocument,
+                    Width = 150,
+                    FieldKey = typedHeader.Key
+                });
             }
         }
 
-        private void UpdateRecords(IEnumerable<DocumentController> dbDocs)
+        private void ResetRecords()
         {
-            // update records only happen when 
-            if (dbDocs.Count() == ListItemSource.Count) return;
+            var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, new Context(ParentDocument))?.TypedData;         
             ListItemSource.Clear();
-            int recordCount = 0;
-
             foreach (var d in dbDocs.Select(db => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
             {
-                var recordFields = CreateNewRecord(d, recordCount);
+                var recordFields = CreateNewRecord(d);
                 ListItemSource.Add(new CollectionDBSchemaRecordViewModel(
                     ParentDocument,
                     d,
                     recordFields
                 ));
-                recordCount++;
             }
         }
 
-        private ObservableCollection<EditableScriptViewModel> CreateNewRecord(DocumentController doc, int row)
+        private ObservableCollection<EditableScriptViewModel> CreateNewRecord(DocumentController doc)
         {
             var newRecord = new ObservableCollection<EditableScriptViewModel>();
-            foreach (var keyFieldPair in doc.EnumFields())
+            foreach (var keyTypePair in _typedHeaders)
             {
-                if (!keyFieldPair.Key.Name.StartsWith("_"))
-                    newRecord.Add(
-                        new EditableScriptViewModel(
-                            new DocumentFieldReference(doc.Id, keyFieldPair.Key))
-                        {
-                            Row = row
-                        });
+                newRecord.Add(
+                    new EditableScriptViewModel(
+                        new DocumentFieldReference(doc.Id, keyTypePair.Key)));
             }
 
             return newRecord;
@@ -257,12 +280,13 @@ namespace Dash
 
         private void xOuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+            xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
         }
 
         private void xOuterGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            this.xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
+            // TODO see if this is still necessary
+            xRecordsView.Height = xOuterGrid.ActualHeight - xHeaderArea.ActualHeight;
         }
 
         private void XRecordsView_OnLoaded(object sender, RoutedEventArgs e)
@@ -341,7 +365,7 @@ namespace Dash
         {
             // Add a new field to the schema view
             _schemaFieldsNotInDocs.Add(new KeyController());
-            UpdateFields(new Context(ParentDocument));
+            ResetHeaders();
         }
     }
 }

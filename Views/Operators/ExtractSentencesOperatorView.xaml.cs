@@ -65,7 +65,7 @@ namespace Dash
         {
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-            _allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
+            _allHeaders = Util.GetDisplayableTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
         }
 
 
