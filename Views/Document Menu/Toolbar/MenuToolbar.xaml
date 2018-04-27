@@ -23,7 +23,7 @@
             <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
             <AppBarButton Icon="ViewAll" Label="Add Group"/>
             <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
-            <AppBarButton Icon="Video" Label="Add Video"/>
+            <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
             <AppBarSeparator/>
             <AppBarButton Icon="Copy" x:Name="xCopy" Label="Duplicate" Click="Copy" />
             <AppBarButton Icon="Delete" x:Name="xDelete" Label="Delete" Click="Delete" />

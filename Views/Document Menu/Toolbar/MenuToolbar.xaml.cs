@@ -195,8 +195,42 @@ namespace Dash
 				//Flash an 'X' over the image selection button
 			}
 		}
+
+		/**
+		 * Launches file picker & adds selected video(s) to the workspace.
+		*/
+		private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
+		{
+			//instantiates a file picker, set to open in user's video library
+			var picker = new Windows.Storage.Pickers.FileOpenPicker();
+			picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+			picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+
+			picker.FileTypeFilter.Add(".avi");
+			picker.FileTypeFilter.Add(".mp4");
+			picker.FileTypeFilter.Add(".wmv");
+
+			//awaits user upload of video 
+			var files = await picker.PickMultipleFilesAsync();
+
+			if (files != null)
+			{
+				foreach (Windows.Storage.StorageFile file in files)
+				{
+					//create a doc controller for the video, set position, and add to canvas
+					var docController = await new VideoToDashUtil().ParseFileAsync(file);
+					var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+					var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+					docController.GetPositionField().Data = where;
+					MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+				}
+				//add error message for null file?
+			}
+		}
 	}
+
 }
+
     
 
 
