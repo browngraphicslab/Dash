@@ -1,6 +1,6 @@
 ﻿<UserControl
-    x:Name="This"
     x:Class="Dash.DocumentView"
+    x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -17,7 +17,7 @@
     xmlns:localConverters="using:Dash.Converters">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
-            <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
+            <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
         </Storyboard>
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>

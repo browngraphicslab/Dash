@@ -25,6 +25,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
 using Dash.Annotations;
+using Dash.Views.Collection;
 using DashShared;
 using NewControls.Geometry;
 
@@ -32,10 +33,9 @@ using NewControls.Geometry;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : ICollectionView, INotifyPropertyChanged
+    public sealed partial class CollectionFreeformView : ICollectionView
     {
         MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        TransformGroupData  _transformGroup = new TransformGroupData(new Point(), new Point());
         Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         CollectionViewModel _lastViewModel = null;
         List<DocumentView>  _selectedDocs = new List<DocumentView>();
@@ -46,41 +46,41 @@ namespace Dash
         public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
-        public TransformGroupData        TransformGroup {
-            get => _transformGroup;
-            set
-            {   //TODO possibly handle a scale center not being 0,0 here
-                if (!_transformGroup.Equals(value))
-                {
-                    _transformGroup = value;
-                    var viewdoc = ViewModel.ContainerDocument;
-                    if (viewdoc != null)
-                    {
-                        viewdoc.GetFieldOrCreateDefault<PointController>(KeyStore.PanPositionKey).Data = value.Translate;
-                        viewdoc.GetFieldOrCreateDefault<PointController>(KeyStore.PanZoomKey).Data = value.ScaleAmount;
-                    }
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public CollectionFreeformView()
         {
             InitializeComponent();
+            DataContextChanged += (s, args) => _lastViewModel = ViewModel;
             Loaded += (sender, e) =>
             {
-                DataContextChanged -= OnDataContextChanged;
-                DataContextChanged += OnDataContextChanged;
-                if (ViewModel != null)
-                    OnDataContextChanged(null, null);
-                setupCanvases();
+                MakePreviewTextbox();
+
+                //make and add selectioncanvas 
+                SelectionCanvas = new Canvas();
+                Canvas.SetLeft(SelectionCanvas, -30000);
+                Canvas.SetTop(SelectionCanvas, -30000);
+                InkHostCanvas.Children.Add(SelectionCanvas);
+
+                if (InkController != null)
+                {
+                    MakeInkCanvas();
+                }
+                ViewModel?.Loaded(true);
+                ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             };
-            Unloaded  += (sender, e) => _lastViewModel = null;
-            xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
-            xOuterGrid.PointerExited  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            xOuterGrid.SizeChanged    += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+            Unloaded += (sender, e) =>
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                }
+
+                _lastViewModel?.Loaded(false);
+                _lastViewModel = null;
+            };
+            xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            xOuterGrid.PointerExited   += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            xOuterGrid.SizeChanged     += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
             xOuterGrid.PointerPressed  += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
@@ -97,53 +97,6 @@ namespace Dash
             return snap;
         }
 
-        #region data configuration
-
-        void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
-            if (ViewModel != null && ViewModel != _lastViewModel)
-            {
-                var viewdoc = ViewModel.ContainerDocument;
-                var pos     = viewdoc.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
-                var zoom    = viewdoc.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                if (ViewManipulationControls != null)
-                {
-                    ViewManipulationControls.ElementScale = zoom.X;
-                }
-
-                SetFreeformTransform(new MatrixTransform() { Matrix = new Matrix(zoom.X, 0, 0, zoom.Y, pos.X, pos.Y) });
-                _lastViewModel = ViewModel;
-            }
-        }
-
-        [NotifyPropertyChangedInvocator]
-        void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        void setupCanvases() {
-
-            MakePreviewTextbox();
-            
-            //make and add selectioncanvas 
-            SelectionCanvas = new Canvas();
-            Canvas.SetLeft(SelectionCanvas, -30000);
-            Canvas.SetTop(SelectionCanvas, -30000);
-            InkHostCanvas.Children.Add(SelectionCanvas);
-
-            if (InkController != null)
-            {
-                MakeInkCanvas();
-            }
-            
-            if (ParentDocument?.ViewModel.LayoutDocument?.GetField<TextController>(KeyStore.CollectionFitToParentKey)?.Data == "true")
-            {
-                ViewManipulationControls.FitToParent();
-            }
-        }
-
-        #endregion
-
         #region Manipulation
         /// <summary>
         /// Animation storyboard for first half. Unfortunately, we can't use the super useful AutoReverse boolean of animations to do this with one storyboard
@@ -156,7 +109,8 @@ namespace Dash
             composite.Children.Add((xItemsControl.ItemsPanelRoot as Canvas).RenderTransform);
             composite.Children.Add(translate);
 
-            SetFreeformTransform(new MatrixTransform { Matrix = composite.Value });
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
         public void MoveAnimated(TranslateTransform translate)
@@ -222,18 +176,19 @@ namespace Dash
             _storyboard1.Completed += Storyboard1OnCompleted;
         }
 
-        private void Storyboard1OnCompleted(object sender, object e)
+        void Storyboard1OnCompleted(object sender, object e)
         {
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             _storyboard1.Completed -= Storyboard1OnCompleted;
         }
 
-        private void CompositionTargetOnRendering(object sender, object e)
+        void CompositionTargetOnRendering(object sender, object e)
         {
-            SetFreeformTransform(_transformBeingAnimated); //Update the transform
+            var matrix = _transformBeingAnimated.Matrix;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
-        private DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
+        DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
         {
 
             var toReturn = new DoubleAnimation();
@@ -253,7 +208,7 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
+        void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             // calculate the translate delta
             var translateDelta = new TranslateTransform
@@ -278,56 +233,18 @@ namespace Dash
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
 
-            var matrix = new MatrixTransform { Matrix = composite.Value };
-            SetFreeformTransform(matrix);
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
         #endregion
 
         #region BackgroundTiling
 
-        bool _resourcesLoaded;
+        bool             _resourcesLoaded;
         CanvasImageBrush _bgBrush;
-        const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        const float BackgroundOpacity = 1.0f;
-
-        void SetFreeformTransform(MatrixTransform matrixTransform)
-        {
-            // clamp the y offset so that we can only scrollw down
-            var matrix = matrixTransform.Matrix;
-            if (matrix.OffsetY > 0)
-            {
-                matrix.OffsetY = 0;
-            }
-
-            if (_resourcesLoaded)
-            {
-                double clampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
-                {
-                    while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
-                    {
-                        currentScale /= numberOfBackgroundRows;
-                    }
-
-                    while (currentScale > 0 && currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
-                    {
-                        currentScale *= numberOfBackgroundRows;
-                    }
-                    return currentScale;
-                }
-
-                var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
-                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
-                    (float)matrix.M12,
-                    (float)matrix.M21,
-                    (float)aliasSafeScale,
-                    (float)matrix.OffsetX,
-                    (float)matrix.OffsetY);
-                xBackgroundCanvas.Invalidate();
-            }
-
-            TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
-        }
+        const double     NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        const float      BackgroundOpacity = 1.0f;
 
         void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
@@ -358,8 +275,70 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// When the ViewModel's TransformGroup changes, this needs to update its background canvas
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CollectionViewModel.TransformGroup))
+            {
+
+                if (_resourcesLoaded)
+                {
+                    double clampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+                    {
+                        while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+                        {
+                            currentScale /= numberOfBackgroundRows;
+                        }
+
+                        while (currentScale > 0 && currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+                        {
+                            currentScale *= numberOfBackgroundRows;
+                        }
+                        return currentScale;
+                    }
+
+                    var transformation = ViewModel.TransformGroup;
+                    // calculate the translate delta
+                    var translateDelta = new TranslateTransform
+                    {
+                        X = transformation.Translate.X,
+                        Y = transformation.Translate.Y
+                    };
+
+                    // calculate the scale delta
+                    var scaleDelta = new ScaleTransform
+                    {
+                        CenterX = transformation.ScaleCenter.X,
+                        CenterY = transformation.ScaleCenter.Y,
+                        ScaleX = transformation.ScaleAmount.X,
+                        ScaleY = transformation.ScaleAmount.Y
+                    };
+
+                    //Create initial composite transform
+                    var composite = new TransformGroup();
+                    composite.Children.Add(scaleDelta); // add the new scaling
+                    composite.Children.Add(translateDelta); // add the new translate
+
+                    var matrix = composite.Value;
+
+                    var aliasSafeScale = clampBackgroundScaleForAliasing(matrix.M11, NumberOfBackgroundRows);
+                    _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                        (float)matrix.M12,
+                        (float)matrix.M21,
+                        (float)aliasSafeScale,
+                        (float)matrix.OffsetX,
+                        (float)matrix.OffsetY);
+                    xBackgroundCanvas.Invalidate();
+                }
+            }
+        }
+
         #endregion
-        
+
         #region Tagging
 
         public bool TagNote(string tagValue, DocumentView docView)
@@ -399,7 +378,7 @@ namespace Dash
             TagKeyBox.Visibility = Visibility.Collapsed;
         }
 
-        private void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
@@ -409,12 +388,12 @@ namespace Dash
             }
         }
 
-        private void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             sender.Text = ((KeyController)args.SelectedItem).Name;
         }
 
-        private void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null)
             {
@@ -446,6 +425,7 @@ namespace Dash
         Rectangle _marquee;
         Point     _marqueeAnchor;
         bool      _isMarqueeActive;
+        private MarqueeInfo mInfo;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -496,6 +476,9 @@ namespace Dash
                     MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
                     _marquee.AllowFocusOnInteraction = true;
                     SelectionCanvas.Children.Add(_marquee);
+
+                    mInfo = new MarqueeInfo();
+                    SelectionCanvas.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -505,6 +488,9 @@ namespace Dash
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
                     args.Handled = true;
+                   
+                    Canvas.SetLeft(mInfo, newAnchor.X);
+                    Canvas.SetTop(mInfo, newAnchor.Y + newHeight);
                 }
             }
         }
@@ -531,7 +517,7 @@ namespace Dash
 
         void _marquee_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
+            if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
             {
                 var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
@@ -543,7 +529,7 @@ namespace Dash
                     ViewModel.AddDocument(
                         new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
                 }
-                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C)
+                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
                     var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                     var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
@@ -552,6 +538,12 @@ namespace Dash
                     {
                         ViewModel.AddDocument(
                             new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                    }
+
+                    if (e.Key == VirtualKey.T)
+                    {
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
                     }
 
                     foreach (var v in viewsinMarquee)
@@ -600,7 +592,7 @@ namespace Dash
 
         #region Activation
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (XInkCanvas.IsTopmost())
             {

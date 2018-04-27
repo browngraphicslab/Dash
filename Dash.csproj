@@ -18,10 +18,10 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>C6011D886F1001CFBEBA09C005A134F571FD2281</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>102900712F8D559B6BF28D3E358030F881201953</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -182,8 +182,10 @@
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
@@ -192,6 +194,7 @@
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
+    <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
@@ -231,10 +234,42 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
-    <Compile Include="Util\DSL.cs" />
+    <Compile Include="Util\DSL\DashException.cs" />
+    <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\Export\ExportToTxt.cs" />
+    <Compile Include="Util\DSL\DSLException.cs" />
+    <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionParts.cs" />
+    <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
+    <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
+    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\LetExpression.cs" />
+    <Compile Include="Util\DSL\LetOperatorController.cs" />
+    <Compile Include="Util\DSL\LiteralExpression.cs" />
+    <Compile Include="Util\DSL\MapOperatorController.cs" />
+    <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\MultiLineOperatorScriptParser.cs" />
+    <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptException.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionException.cs" />
+    <Compile Include="Util\DSL\ScriptExpression.cs" />
+    <Compile Include="Util\DSL\ScriptState.cs" />
+    <Compile Include="Util\DSL\State.cs" />
+    <Compile Include="Util\DSL\VariableExpression.cs" />
+    <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
@@ -248,7 +283,7 @@
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\OperatorScript.cs" />
-    <Compile Include="Util\OperatorScriptParser.cs" />
+    <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
@@ -286,11 +321,15 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\DishReplViewModel.cs" />
+    <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
@@ -298,6 +337,9 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
+      <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
@@ -312,11 +354,17 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DishReplView.xaml.cs">
+      <DependentUpon>DishReplView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
       <DependentUpon>TreeNode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditableScriptBox.xaml.cs">
+      <DependentUpon>EditableScriptBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
@@ -763,6 +811,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Collection\MarqueeInfo.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Collection\TimelineElement.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -779,11 +831,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DishReplView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Document Menu\TreeMenuNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\TreeNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditableScriptBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1099,6 +1159,7 @@
     <ProjectReference Include="DashShared\DashShared.csproj">
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -1149,7 +1210,7 @@
       <Version>11.0.2</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
-      <Version>16.1.0.26</Version>
+      <Version>16.1.0.24</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0-preview1-26216-02</Version>
@@ -1163,10 +1224,11 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Dash_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

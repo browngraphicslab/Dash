@@ -148,6 +148,8 @@ namespace Dash
                 activeLayout = doc.MakeDelegate();
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
+                newDoc.Tag = "CollectionInstance Layout";
+                copiedData.Tag = "CollectionInstance Data";
             }
             else if (docContext == null && activeLayout != null) // has a layout
             {
@@ -210,7 +212,7 @@ namespace Dash
             {
                 activeLayout.SetField(KeyStore.PositionFieldKey,
                     new PointController(
-                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<NumberController>(KeyStore.ActualWidthKey)?.Data ?? doc.GetActiveLayout().GetField<NumberController>(KeyStore.ActualWidthKey).Data) + 70, 
+                        new Point(where?.X ?? oldPosition.Data.X + (doc.GetField<PointController>(KeyStore.ActualSizeKey)?.Data.X ?? doc.GetActiveLayout().GetField<PointController>(KeyStore.ActualSizeKey).Data.X) + 70, 
                         where?.Y ?? oldPosition.Data.Y)),
                         true);
             }
@@ -223,7 +225,7 @@ namespace Dash
             var oldPosition = doc.GetPositionField();
             if (oldPosition != null)  // if original had a position field, then delegate needs a new one -- just offset it
             {
-                where = new Point(where?.X ?? oldPosition.Data.X + doc.GetField<NumberController>(KeyStore.ActualWidthKey).Data + 70,
+                where = new Point(where?.X ?? oldPosition.Data.X + doc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X + 70,
                             where?.Y ?? oldPosition.Data.Y);
             }
             Debug.Assert(where != null);
@@ -246,7 +248,7 @@ namespace Dash
             var newDoc = doc;
             if (activeLayout == null && (docContext != null || doc.GetField(KeyStore.PositionFieldKey) != null))  // has DocumentContext
             {
-                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey }), // skip layout & delegates
+                activeLayout = doc.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.ActiveLayoutKey, KeyStore.PrototypeKey }), // skip layout & delegates
                                             new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey })); // don't copy the document context
                 newDoc = activeLayout;
             }
@@ -541,17 +543,16 @@ namespace Dash
             var posField = activeLayout?.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController ??
                            doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointController;
 
-
             return posField;
         }
 
         public static PointController GetScaleAmountField(this DocumentController doc, Context context = null)
         {
+            context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout();
-            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
-                                       new Context(context)) as PointController ??
-                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
-                                       PointController;
+            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController ??
+                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as PointController;
+
             return scaleAmountField;
         }
 
@@ -564,9 +565,9 @@ namespace Dash
             {
                 foreach (var r in refs)
                 {
-                    if (r is DocumentReferenceController)
+                    var rDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
+                    if (rDoc != null)
                     {
-                        var rDoc = (DocumentReferenceController)r;
                         string rId = rDoc.DocumentId;
                         if (rId == d2.Key.GetId())
                             rDoc.ChangeFieldDoc(d2.Value.GetId());
@@ -579,7 +580,7 @@ namespace Dash
 
         public static string GetDishName<T>(this T controller) where T : OperatorController
         {
-            return OperatorScript.GetDishOperatorName<T>();
+            return DSL.GetFuncName(controller);
         }
 
         private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,

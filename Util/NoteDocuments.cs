@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -39,6 +40,9 @@ namespace Dash
                 if (!string.IsNullOrEmpty(title))
                     dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
                 layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
+                //layout.SetField(KeyStore.DataKey,//TODO Get this to work
+                //    new PointerReferenceController(
+                //        new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
                 layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
                 return layout;
             }
@@ -63,6 +67,8 @@ namespace Dash
                 protoDoc.SetField(KeyStore.TitleKey,
                     new DocumentReferenceController(protoDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
 
+                protoDoc.Tag = "Collection Data Prototype";
+
                 return protoDoc;
             }
 
@@ -70,12 +76,14 @@ namespace Dash
             {
                 return new CollectionBox(getDataReference(_prototypeID), where.X, where.Y, size.Width, size.Height, viewType).Document;
             }
-
+            static int count = 1;
             public CollectionNote(Point where, CollectionView.CollectionViewType viewtype, double width=500, double height = 300, List<DocumentController> collectedDocuments = null) : 
                 base(_prototypeID)
             {
                 var dataDocument = makeDataDelegate(new ListController<DocumentController>());
                 Document = initSharedLayout(CreateLayout(viewtype, where, new Size(width, height)), dataDocument);
+                dataDocument.Tag = "Collection Note Data " + count;
+                Document.Tag = "Collection Note Layout" + count++;
 
                 // bcz : shouldn't need this, but something's up in the events that are sent to CollectionViewModel
                 //Document.SetField(KeyStore.DataKey, new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);

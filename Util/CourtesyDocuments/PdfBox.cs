@@ -4,6 +4,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using Syncfusion.Windows.PdfViewer;
+using System.Linq;
 
 namespace Dash
 {
@@ -75,11 +76,11 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the pdf view
-            var pdfView = new PdfView();
+            var pdfView = new PdfView() { DataContext = docController };
             var pdf = pdfView.Pdf;
 
             // make the pdf respond to resizing, interactions etc...
-            SetupBindings(pdf, docController, context);
+            SetupBindings(pdfView, docController, context);
             SetupPdfBinding(pdf, docController, context);
             
             return pdfView;
@@ -98,16 +99,26 @@ namespace Dash
             dataDoc.AddFieldUpdatedListener(reference.FieldKey,
                 delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                 {
-                    DocumentController doc = (DocumentController)sender;
-                    DocumentController.DocumentFieldUpdatedEventArgs dargs =
-                        (DocumentController.DocumentFieldUpdatedEventArgs)args;
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
+                    var doc = (DocumentController)sender;
+                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+                    if (args.Action != DocumentController.FieldUpdatedAction.Update && !dargs.FromDelegate)
                     {
-                        return;
+                        BindPdfSource(pdf, doc, c, reference.FieldKey);
                     }
-                    BindPdfSource(pdf, doc, c, reference.FieldKey);
                 });
-            
+
+            controller.AddFieldUpdatedListener(KeyStore.PdfVOffsetFieldKey, 
+                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                {
+                    if (!pdf.IsPointerOver())
+                    {
+                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+                        System.Diagnostics.Debug.WriteLine("Telling me" + ((dargs.NewValue as NumberController)?.Data ?? 0));
+                        pdf.ScrollToVerticalOffset((dargs.NewValue as NumberController)?.Data ?? 0);
+                    }
+                });
+
+
             BindPdfSource(pdf, controller, context, KeyStore.DataKey);
         }
 

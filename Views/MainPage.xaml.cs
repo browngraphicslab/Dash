@@ -17,6 +17,7 @@ using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Timers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -33,9 +34,8 @@ namespace Dash
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
-        public static InkController InkController { get; set; } = new InkController();
 
-        public DocumentView xMapDocumentView;
+        public DocumentView         xMapDocumentView;
 
         public MainPage()
         {
@@ -126,6 +126,7 @@ namespace Dash
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
             OperatorScriptParser.TEST();
+            MultiLineOperatorScriptParser.TEST();
 
             BrowserView.ForceInit();
 
@@ -146,10 +147,18 @@ namespace Dash
             {
                 return true;
             }
-            MainDocView.DataContext = new DocumentViewModel(workspace);
-            setupMapView(workspace);
+            var workspaceViewCopy = workspace;
+            if (workspaceViewCopy.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true") //  !isWorkspace)
+            {
+                workspaceViewCopy = workspace.GetViewCopy();
+                workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+            }
+            MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
+            setupMapView(workspaceViewCopy);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspace, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceViewCopy, true);
             return true;
         }
 
@@ -308,8 +317,8 @@ namespace Dash
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
 
                     
 
@@ -342,8 +351,8 @@ namespace Dash
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
-                            containerViewModel.XPos + containerViewModel.ActualWidth / 2,
-                            containerViewModel.YPos + containerViewModel.ActualHeight / 2));
+                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
+                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
                     root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
@@ -475,24 +484,26 @@ namespace Dash
         }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
-        private void setupMapView(DocumentController context)
+        void setupMapView(DocumentController mainDocumentCollection)
         {
-            mapTimer.Stop();
-            if (xMapDocumentView != null)
+            if (xMapDocumentView == null)
             {
-                xLeftStack.Children.Remove(xMapDocumentView);
+                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                xMapDocumentView.IsHitTestVisible = false;
+                Grid.SetColumn(xMapDocumentView, 2);
+                Grid.SetRow(xMapDocumentView, 0);
+                xLeftStack.Children.Add(xMapDocumentView);
+                mapTimer.Interval = new TimeSpan(0, 0, 1);
+                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
             }
-            xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(context.GetViewCopy()), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-            xLeftStack.Children.Add(xMapDocumentView);
-            mapTimer.Interval = new TimeSpan(0, 0, 1);
-            mapTimer.Tick += (ss,aa) => {
-                if (xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.CurrentView is CollectionFreeformView freeformView)
-                {
-                    freeformView.ViewManipulationControls.FitToParent();
-                }
-            };
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             mapTimer.Start();
         }
+
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)

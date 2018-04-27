@@ -20,11 +20,12 @@ namespace Dash.Controllers
             DocumentReference =
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
+            base.Init();
         }
 
         public override FieldModelController<ReferenceModel> Copy()
         {
-            return new PointerReferenceController(DocumentReference, FieldKey);
+            return new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
         }
 
         public override DocumentController GetDocumentController(Context context)
