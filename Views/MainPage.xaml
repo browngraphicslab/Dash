@@ -30,7 +30,7 @@
                 <ColumnDefinition Width="15"/>
             </Grid.ColumnDefinitions>
             <local:DocumentView Grid.Column="0" Grid.ColumnSpan="2" x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-            <Rectangle Grid.Column="1" x:Name="xDock" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0.4" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="1" x:Name="xDock" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
         </Grid>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2" Grid.ColumnSpan="2">
             <Grid Name="xSearchBoxGrid" Visibility="Collapsed">

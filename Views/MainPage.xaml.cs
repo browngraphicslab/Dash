@@ -600,6 +600,7 @@ namespace Dash
                 else
                 {
                     var newNext = undock.ClearNestedView();
+                    newNext.PreviousView = undock.PreviousView;
                     undock.PreviousView.ChangeNestedView(newNext);
                 }
             }

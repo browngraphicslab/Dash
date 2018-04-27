@@ -53,15 +53,14 @@ namespace Dash.Views
                 xSplitterColumn.Width = new GridLength(15);
                 xNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
                 Grid.SetColumn(view, 2);
-                NestedView = view;
             }
             else
             {
                 xContentGrid.Children.Remove(NestedView);
                 Grid.SetColumn(view, Grid.GetColumn(NestedView));
-                NestedView = view;
             }
 
+            NestedView = view;
             xContentGrid.Children.Add(NestedView);
         }
 

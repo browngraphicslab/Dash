@@ -465,21 +465,20 @@ namespace Dash
                 new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
             {
-                Debug.WriteLine("intersecting");
                 if (preview)
                 {
                     MainPage.Instance.HighlightDock();
                 }
                 else
                 {
-                    ParentDocument.TransformDelta(new Point(ManipulationStartX, ManipulationStartY));
+                    ParentDocument.ViewModel.XPos = ManipulationStartX;
+                    ParentDocument.ViewModel.YPos = ManipulationStartY;
                     MainPage.Instance.UnhighlightDock();
                     MainPage.Instance.Dock(ParentDocument);
                 }   
             }
             else
             {
-                Debug.WriteLine("not intersecting");
                 MainPage.Instance.UnhighlightDock();
             }
         }
@@ -757,7 +756,6 @@ namespace Dash
             }
             if (ParentDocument.IsRightBtnPressed() || ParentDocument.IsLeftBtnPressed())
             {
-                Debug.WriteLine("dock preview=true should be firing");
                 var pointerPosition = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(ParentDocument.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);
                 var delta = new Point(pointerPosition2.X - pointerPosition.X, pointerPosition2.Y - pointerPosition.Y);
@@ -808,11 +806,11 @@ namespace Dash
                             _documentsToRemoveAfterManipulation.Clear();
                         }
 
-                        if (! docRoot.MoveToContainingCollection(overlappedViews))
-                            Dock(false);
+                        docRoot.MoveToContainingCollection(overlappedViews);
                     }));
 
                 OnManipulatorCompleted?.Invoke();
+                Dock(false);
 
                 if (e != null)
                 {
