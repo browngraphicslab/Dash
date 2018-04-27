@@ -109,7 +109,7 @@ namespace Dash
 
                 foreach (var doc in dataDocs)
                 {
-                    var docType = doc.DocumentType.Type;
+                    string docType = doc.DocumentType.Type;
                     //create diffrent output for different document types by calling helper functions
                     string newText;
                     switch (docType) //TODO: there is also a Data Box
@@ -176,6 +176,7 @@ namespace Dash
 
         private static double getMargin(DocumentController doc)
         {
+            //TODO: if I scale margin, it looks funny not to scale width / height
             var marginLeft = 0.0;
             if (doc.GetField(KeyStore.PositionFieldKey) != null)
             {
@@ -204,7 +205,7 @@ namespace Dash
             var uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
 
             //get image width and height
-            var stringWidth = doc.GetField(KeyStore.ActualWidthKey).DereferenceToRoot(null).ToString();
+            var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
 
             var marginLeft = getMargin(doc);
 
