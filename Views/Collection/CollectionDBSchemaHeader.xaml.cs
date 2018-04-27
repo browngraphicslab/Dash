@@ -14,7 +14,7 @@ namespace Dash
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
-            public Border headerBorder;
+            public Border HeaderBorder;
 
             public override string ToString() { return FieldKey.Name; }
             public double Width
@@ -30,6 +30,7 @@ namespace Dash
         public CollectionDBSchemaHeader()
         {
             this.InitializeComponent();
+            
         }
 
         public HeaderViewModel ViewModel { get => DataContext as HeaderViewModel;  }
