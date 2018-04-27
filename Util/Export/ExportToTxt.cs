@@ -183,6 +183,7 @@ namespace Dash
                 //TODO: I add 1500 to get rid of negatives, come up with better solution
                 var x = pt1.Data.X + 1500.0;
                 marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
+               // var y = 
             }
 
             return marginLeft;
