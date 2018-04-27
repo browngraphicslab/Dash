@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
@@ -25,11 +26,15 @@ namespace Dash
         private static StorageFolder folder;
         private static List<String> UsedUrlNames = new List<string>();
 
+        //define the max width and height coordinates in html and dash for conversion
+        private static double PAGEWIDTH = 300.0;
+        private static double PAGEHEIGHT = 1000.0;
+        private static double DASHWIDTH = 1500.0;
+
+
         public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
             //TODO: other document types
-
-            //TODO: collections can be named same thing, which would screw up links
 
             //allow the user to pick a folder to save all the files
             folder = await PickFolder();
@@ -51,7 +56,24 @@ namespace Dash
                     int count = 1;
                     while (UsedUrlNames.Contains(colTitle))
                     {
-                        colTitle = colTitle + count.ToString();
+                        //check if title ends in (x)
+                        if ((colTitle.Length > 3) && (colTitle[colTitle.Length - 1].Equals(')')))
+                        {
+                            //2 digit number is parenthesis
+                            if ((colTitle[colTitle.Length - 4].Equals('(')))
+                            {
+                                colTitle = colTitle.Substring(0, colTitle.Length - 4) + "(" + count + ")";
+                            }
+                            //one digit number
+                            else if ((colTitle[colTitle.Length - 3].Equals('(')))
+                            {
+                                colTitle = colTitle.Substring(0, colTitle.Length - 3) + "(" + count + ")";
+                            }
+                        }
+                        else
+                        {
+                            colTitle = colTitle + "(" + count + ")";
+                        }
                         count++;
                     }
                     UsedUrlNames.Add(colTitle);
@@ -71,79 +93,80 @@ namespace Dash
         {
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
-           // var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
-            var dataDocs = collection.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-
-            //create a list of key value pairs that link each doc to its point
-           // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
-
-            OrderElements(dataDocs);
-
-            //list of each line of text that must be added to file - one string for each doc
-            var fileText = new List<string>();
-
-            foreach (var doc in dataDocs)
+            // var dataDocs = collection.GetField(KeyStore.DataKey).DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
+            if (collection.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null) != null)
             {
-                var docType = doc.DocumentType.Type;
-                //create diffrent output for different document types by calling helper functions
-                string newText;
-                switch (docType)
+                var dataDocs = collection.GetDataDocument()
+                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+
+                //create a list of key value pairs that link each doc to its point
+                // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
+
+                OrderElements(dataDocs);
+
+                //list of each line of text that must be added to file - one string for each doc
+                var fileText = new List<string>();
+
+                foreach (var doc in dataDocs)
                 {
-                    case "Rich Text Box":
-                        newText = TextToTxt(doc);
-                        break;
-                    case "Image Box":
-                        newText = ImageToTxt(doc);
-                        break;
-                /*    case "Background Box":
-                        Console.WriteLine("Case 1");
-                        break; */
-                    case "Collection Box":
-                        newText = CollectionToTxt(doc);
-                        break; 
-                    default:
-                        newText = null;
-                        break;
+                    var docType = doc.DocumentType.Type;
+                    //create diffrent output for different document types by calling helper functions
+                    string newText;
+                    switch (docType) //TODO: there is also a Data Box
+                    {
+                        case "Rich Text Box":
+                            newText = TextToTxt(doc);
+                            break;
+                        case "Image Box":
+                            newText = ImageToTxt(doc);
+                            break;
+                        case "Background Box":
+                            newText = BackgroundBoxToTxt(doc);
+                            break; 
+                        case "Collection Box":
+                            newText = CollectionToTxt(doc);
+                            break;
+                        default:
+                            newText = null;
+                            break;
+                    }
+
+                    //add text to list for specificed cases
+                    if (newText != null)
+                    {
+                        fileText.Add(newText);
+                    }
                 }
 
-                //add text to list for specificed cases
-                if (newText != null)
-                {
-                    fileText.Add(newText);
-                }
-
-                /*
-                //Get an ImmutableList of KeyValue Pairs with doc properites - add a breaker point and look at properties to see what extentions to add
-                IEnumerable <KeyValuePair<String, Object>> docPostion = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot(null).ToKeyValuePairs().ToImmutableList();
-                object rawpoint = docPostion.ElementAt(1).Value;
-                double xPt = (double)(rawpoint.GetType().GetProperty("X").GetValue(rawpoint, null));
-                double yPt = (double)(rawpoint.GetType().GetProperty("Y").GetValue(rawpoint, null)); 
-
-                //now add data to docToPt List
-                List<double> point = new List<double>();
-                point.Add(xPt);
-                point.Add(yPt);
-                docToPt.Add(new KeyValuePair<DocumentController, List<double>>(doc, point));
-                */
+                return fileText;
             }
-
-            return fileText;
+            else
+            {
+                return new List<string>();
+            }  
         }
-
 
         private static void OrderElements(List<DocumentController> docs)
         {
             // This shows calling the Sort(Comparison(T) overload using 
             // an anonymous method for the Comparison delegate. 
-            // This method treats null as the lesser of two values.
             docs.Sort(delegate (DocumentController doc1, DocumentController doc2)
             {
+                var y1 = 0.0;
+                var y2 = 0.0;
                 //get the y points of each doc
-                var pt1 = doc1.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-                var y1 = pt1.Data.Y;
-                var pt2 = doc2.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-                var y2 = pt2.Data.Y;
+                //check that doc has PostionFieldKey
+                if (doc1.GetField(KeyStore.PositionFieldKey) != null)
+                {
+                    var pt1 = doc1.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                    y1 = pt1.Data.Y;
+                }
+
+                if (doc2.GetField(KeyStore.PositionFieldKey) != null)
+                {
+                    var pt2 = doc2.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                    y2 = pt2.Data.Y;
+                }
 
                 //return 1 if doc1 first and -1 if doc2 first
                 if (y1 >= y2) return 1;
@@ -151,10 +174,27 @@ namespace Dash
             });
         }
 
+        private static double getMargin(DocumentController doc)
+        {
+            var marginLeft = 0.0;
+            if (doc.GetField(KeyStore.PositionFieldKey) != null)
+            {
+                var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                //TODO: I add 1500 to get rid of negatives, come up with better solution
+                var x = pt1.Data.X + 1500.0;
+                marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
+            }
+
+            return marginLeft;
+        }
+
 
         private static string TextToTxt(DocumentController doc)
         {
-            return doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+            var text = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
+            var marginLeft = getMargin(doc);
+
+            return "<p style=\"margin-left: " + marginLeft + "px; \">" + text + "</p>";
         }
 
         private static string ImageToTxt(DocumentController doc)
@@ -165,8 +205,10 @@ namespace Dash
             //get image width and height
             var stringWidth = doc.GetField(KeyStore.ActualWidthKey).DereferenceToRoot(null).ToString();
 
+            var marginLeft = getMargin(doc);
+
             //return uri with HTML image formatting
-            return "<img src=\"" + uri + "\" width=\"" + stringWidth + "\">";
+            return "<img src=\"" + uri + "\" width=\"" + stringWidth + "px\" style=\"margin-left: " + marginLeft + "px; \">";
         }
 
         private static string CollectionToTxt(DocumentController col)
@@ -177,13 +219,67 @@ namespace Dash
 
             //get text that must be added to file for this collection
             var colText = CollectionContent(col);
+            //make sure there isn't already reference to colTitle
             var colTitle = col.ToString();
+            int count = 1;
+            while (UsedUrlNames.Contains(colTitle))
+            {
+                //check if title ends in (x)
+                if ((colTitle.Length > 3) && (colTitle[colTitle.Length - 1].Equals(')')))
+                {
+                    //2 digit number is parenthesis
+                    if ((colTitle[colTitle.Length - 4].Equals('(')))
+                    {
+                        colTitle = colTitle.Substring(0, colTitle.Length - 4) + "(" + count + ")";
+                    }
+                    //one digit number
+                    else if ((colTitle[colTitle.Length - 3].Equals('(')))
+                    {
+                        colTitle = colTitle.Substring(0, colTitle.Length - 3) + "(" + count + ")";
+                    }
+                }
+                else
+                {
+                    colTitle = colTitle + "(" + count + ")";
+                }
+                count++;
+            }
+            UsedUrlNames.Add(colTitle);
 
             //create a file in folder with colContent and titled colTitle
             CreateFile(colText, colTitle);
 
+            var marginLeft = getMargin(col);
+
             //return link to page you just created
-            return "<a href=\"./" + colTitle + ".html\">" + colTitle + "</a>";
+            return "<a href=\"./" + colTitle + ".html\" style=\"margin-left: " + marginLeft + "px; \">" + colTitle + "</a>";
+        }
+
+        private static string BackgroundBoxToTxt(DocumentController doc)
+        {
+            var text = "";
+            // get shape of box
+            var shape = doc.GetDereferencedField(KeyStore.AdornmentShapeKey, null).ToString();
+            var colorC = doc.GetDereferencedField(KeyStore.BackgroundColorKey, null).ToString();
+            //convert color to colro code used by html
+            var color = "#" + colorC.Substring(3, 6) + colorC.Substring(1, 2);
+            var width = doc.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString();
+            var height = doc.GetDereferencedField(KeyStore.HeightFieldKey, null).ToString();
+            var marginLeft = getMargin(doc);
+
+            if (shape == "Elliptical")
+            {
+                text = "<div style=\"height:" + height + "px; width: " + width + "px; border-radius: 50%; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+            }
+            else if (shape == "Rectangular")
+            {
+                text = "<div style=\"height:" + height + "px; width:" + width + "px; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+            }
+            else if (shape == "Rounded")
+            {
+                text = "<div style=\"height:" + height + "px; width:" + width + "px; border-radius: 15%; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+            }
+            return text;
         }
 
         private static async Task<StorageFolder> PickFolder()
