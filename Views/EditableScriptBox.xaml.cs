@@ -46,6 +46,8 @@ namespace Dash
         public EditableScriptBox()
         {
             this.InitializeComponent();
+
+            
         }
 
         private void XTextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -155,6 +157,18 @@ namespace Dash
                 
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
+
+            if (ViewModel.HeaderViewModel != null)
+            {
+                var widthBinding = new Binding()
+                {
+                    Source = ViewModel.Width,
+                    Path = new PropertyPath(nameof(this.Width)),
+                    Mode = BindingMode.OneWay,
+                };
+                this.SetBinding(WidthProperty, widthBinding);
+
+            }
         }
     }
 }

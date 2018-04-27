@@ -14,6 +14,7 @@ namespace Dash
             public KeyController          FieldKey;
             public DocumentController     SchemaDocument;
             public CollectionDBSchemaView SchemaView;
+            public Border headerBorder;
 
             public override string ToString() { return FieldKey.Name; }
             public double Width

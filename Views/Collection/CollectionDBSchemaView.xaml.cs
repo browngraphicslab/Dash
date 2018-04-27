@@ -262,7 +262,7 @@ namespace Dash
             {
                 newRecord.Add(
                     new EditableScriptViewModel(
-                        new DocumentFieldReference(doc.Id, keyTypePair.Key)));
+                        new DocumentFieldReference(doc.Id, keyTypePair.Key), SchemaHeaders.First(h => h.FieldKey.Equals(keyTypePair.Key))));
             }
 
             return newRecord;
