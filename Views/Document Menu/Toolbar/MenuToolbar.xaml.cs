@@ -179,8 +179,10 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
-                        docController.GetPositionField().Data = new Point(50 * docNum, 50 * docNum);
-                        MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        docController.GetPositionField().Data = where;
+                        mainPageCollectionView.ViewModel.AddDocument(docController, null);
                     }
                 }
             }
