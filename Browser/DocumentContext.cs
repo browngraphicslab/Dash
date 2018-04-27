@@ -38,8 +38,11 @@ namespace Dash
         {
             // TODO this is such a hack if it stops working its might be cause we stopped saving all images with .jpg cause that was insane to begin with
             var uriSource = new Uri(ApplicationData.Current.LocalFolder.Path + "\\" + ImageId + ".jpg");
-            Debug.Assert(File.Exists(uriSource.LocalPath), "the webcontext either didn't save or the path is incorrect");
-
+            //Debug.Assert(File.Exists(uriSource.LocalPath), "the webcontext either didn't save or the path is incorrect");
+            if (!File.Exists(uriSource.LocalPath))
+            {
+                return null;
+            }
             return new BitmapImage(uriSource);
         }
 

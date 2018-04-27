@@ -282,6 +282,8 @@ namespace Dash
         /// <param name="e"></param>
         void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (ViewModel == null) return;
+
             if (e.PropertyName == nameof(CollectionViewModel.TransformGroup))
             {
 
