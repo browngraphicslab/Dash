@@ -180,7 +180,16 @@ namespace Dash
                     if (docController != null)
                     {
                         var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+
+                        var widthOffset = -0.5;
+                        var heightOffset = -0.5 * docController.GetHeightField().Data;
+
+                        var midHoriz = mainPageCollectionView.ActualWidth / 2;
+                        var midVert = mainPageCollectionView.ActualHeight / 2; //+ MainPage.Instance.xMainTreeView.ActualWidth();
+                        //Debug.WriteLine(docController.GetWidthField().Data);
+                        //Debug.WriteLine(docController.GetHeightField().Data);
+                        //var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(midHoriz + widthOffset, midVert + heightOffset));
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(midHoriz, midVert));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController, null);
                     }
