@@ -10,159 +10,193 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using System.Diagnostics;
+using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class MenuToolbar : UserControl
-    {
-        private Canvas _parentCanvas;
+	/// <summary>
+	/// The top level toolbar in Dash.
+	/// </summary>
+	public sealed partial class MenuToolbar : UserControl
+	{
+		// == FIELDS
+		private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
+		private AppBarButton[] docSpecificButtons;
+		private Canvas _parentCanvas;
 
-        public MenuToolbar(Canvas canvas)
-        {
-            this.InitializeComponent();
-            _parentCanvas = canvas;
-            this.SetUpBaseMenu();
-        }
+		// == CONSTRUCTORS ==
+		/// <summary>
+		/// Creates a new Toolbar with the given canvas as reference.
+		/// </summary>
+		/// <param name="canvas"></param>
+		public MenuToolbar(Canvas canvas)
+		{
+			this.InitializeComponent();
+			_parentCanvas = canvas;
 
-        public void SetKeyboardShortcut()
-        {
+			// list of buttons that are enabled only if there is 1 or more selected documents
+			AppBarButton[] buttons = { xCopy, xDelete };
+			docSpecificButtons = buttons;
+			this.SetUpBaseMenu();
+		}
 
-        }
+		// == METHODS ==
+		/// <summary>
+		/// Disables or enables toolbar level document specific icons.
+		/// </summary>
+		/// <param name="hasDocuments"></param>
+		private void toggleSelectOptions(Boolean hasDocuments)
+		{
+			var o = .5;
+			if (hasDocuments) o = 1;
+			foreach (AppBarButton b in docSpecificButtons)
+			{
+				b.IsEnabled = hasDocuments;
+				b.Opacity = o;
+			}
+		}
 
-        UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
+		/// <summary>
+		/// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
+		/// </summary>
+		/// <param name="docs"></param>
+		public void Update(IEnumerable<DocumentView> docs)
+		{
+			if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-        /// <summary>
-        /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
-        /// </summary>
-        /// <param name="docs"></param>
-        public void Update(IEnumerable<DocumentView> docs)
-        {
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
+			toggleSelectOptions(docs.Count<DocumentView>() > 0);
 
-            // just single select
-            if (docs.Count<DocumentView>() == 1)
-            {
-                // Text controls
-                var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
-                if (text != null)
-                {
-                    xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
-                    subtoolbarElement = xTextToolbar;
-                }
+			// just single select
+			if (docs.Count<DocumentView>() == 1)
+			{
+				// Text controls
+				var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
+				if (text != null)
+				{
+					xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+					subtoolbarElement = xTextToolbar;
+				}
 
 				// TODO: Image controls
-				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageBox>(docs.First());
+				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(docs.First());
 				if (image != null)
 				{
-					xImageToolbar.SetMenuToolBarBinding(image);
 					subtoolbarElement = xImageToolbar;
 				}
 
-                // TODO: Collection controls  
-                
-                var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
-                if (col != null)
-                {
-                    CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
-                    subtoolbarElement = xCollectionToolbar;
-                }
+				// TODO: Collection controls  
 
-            }
-            else if (docs.Count<DocumentView>() > 1)
-            {
-                // TODO: multi select
-            }
-            else {
-                subtoolbarElement = null;
-            }
-
-                if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
-        }
-
-        private void SetUpBaseMenu()
-        {
-            _parentCanvas.Children.Add(this);
-            Canvas.SetLeft(this, 325);
-            Canvas.SetTop(this, 5);
-        }
-
-        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
-            var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
-            var actualWidth = ((Frame) Window.Current.Content).ActualWidth;
-            var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
-            if (newLatPo > 0 && newLatPo < actualWidth)
-            {
-                xToolbarTransform.TranslateX += e.Delta.Translation.X;
-            }
-            if (newVertPo > 0 && newVertPo < actualHeight)
-            {
-                xToolbarTransform.TranslateY += e.Delta.Translation.Y;
-            }
-		}
-
-	
-
-	/**
-	 * Launches File picker for video
-	*/
-	private async System.Threading.Tasks.Task LaunchPicker()
-	{
-		//instantiates a file picker
-		var picker = new Windows.Storage.Pickers.FileOpenPicker();
-		picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-		//picker will open to user's video library
-		picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
-		//filter possible file types to .avi, .mp4, and .wmv
-		
-			picker.FileTypeFilter.Add(".avi");
-			picker.FileTypeFilter.Add(".mp4");
-			picker.FileTypeFilter.Add(".wmv");
-	
-	
-		//awaits user upload of video 
-		Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
-
-		if (file != null)
-		{
-			// this grants read/write access to the picked file
-			//videoPath.Text = file.Path;
-
-			return await new VideoToDashUtil().ParseFileAsync(file);
-
-				/**
-				 * // Opens a stream for the uploaded file.
-				// The 'using' block ensures the stream is disposed
-				// after the image is loaded.
-				using (Windows.Storage.Streams.IRandomAccessStream fileStream =
-				await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
+				var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+				if (col != null)
+				{
+					CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
+					subtoolbarElement = xCollectionToolbar;
+				}
+			}
+			else if (docs.Count<DocumentView>() > 1)
 			{
-				//create a new media player, which will display and play the uploaded video 
-				MediaPlayer mediaPlayer = new MediaPlayer();
-				//set source to uploaded file
-				mediaPlayer.Source = MediaSource.CreateFromStorageFile(file);
-				mediaPlayer.Play();
-				//set the newly created media player on the node created in xaml
-				mediaPlayerElement.SetMediaPlayer(mediaPlayer);
-						***/
-			
+				// TODO: multi select
+			}
+			else
+			{
+				subtoolbarElement = null;
+			}
+			if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
 		}
-		
-	}
 
-		private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
+		private void SetUpBaseMenu()
 		{
-		
-			await this.LaunchPicker();
+			_parentCanvas.Children.Add(this);
+			Canvas.SetLeft(this, 325);
+			Canvas.SetTop(this, 5);
+		}
+
+		// moves toolbar on drag TODO: merge w/ docking code
+		private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+		{
+			var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
+			var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
+			var actualWidth = ((Frame)Window.Current.Content).ActualWidth;
+			var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
+			if (newLatPo > 0 && newLatPo < actualWidth)
+			{
+				xToolbarTransform.TranslateX += e.Delta.Translation.X;
+			}
+			if (newVertPo > 0 && newVertPo < actualHeight)
+			{
+				xToolbarTransform.TranslateY += e.Delta.Translation.Y;
+			}
+
+		}
+
+		// copy btn
+		private void Copy(object sender, RoutedEventArgs e)
+		{
+			foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+			{
+				d.CopyDocument();
+			}
+		}
+
+		// delete btn
+		private void Delete(object sender, RoutedEventArgs e)
+		{
+			foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+			{
+				d.DeleteDocument();
+			}
+		}
+
+		// add image btn
+		private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+		{
+			var imagePicker = new FileOpenPicker
+			{
+				ViewMode = PickerViewMode.Thumbnail,
+				SuggestedStartLocation = PickerLocationId.PicturesLibrary
+			};
+			imagePicker.FileTypeFilter.Add(".jpg");
+			imagePicker.FileTypeFilter.Add(".jpeg");
+			imagePicker.FileTypeFilter.Add(".bmp");
+			imagePicker.FileTypeFilter.Add(".png");
+			imagePicker.FileTypeFilter.Add(".svg");
+
+			var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+			if (imagesToAdd != null)
+			{
+				var docNum = 0;
+				foreach (var thisImage in imagesToAdd)
+				{
+					docNum += 1;
+					var parser = new ImageToDashUtil();
+					var docController = await parser.ParseFileAsync(thisImage);
+					if (docController != null)
+					{
+						var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+						var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+						docController.GetPositionField().Data = where;
+						mainPageCollectionView.ViewModel.AddDocument(docController, null);
+					}
+				}
+			}
+			else
+			{
+				//Flash an 'X' over the image selection button
+			}
 		}
 	}
 }
+    
+
+

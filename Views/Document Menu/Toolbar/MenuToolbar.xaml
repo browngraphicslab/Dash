@@ -22,19 +22,17 @@
             <AppBarSeparator/>
             <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
             <AppBarButton Icon="ViewAll" Label="Add Group"/>
-            <AppBarButton Icon="Pictures" Label="Add Image"/>
-            <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
+            <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
+            <AppBarButton Icon="Video" Label="Add Video"/>
             <AppBarSeparator/>
-            <AppBarButton Icon="Copy" Label="Copy" />
-            <AppBarButton Icon="Paste" Label="Paste" />
-            <AppBarButton Icon="Delete" Label="Delete" />
+            <AppBarButton Icon="Copy" x:Name="xCopy" Label="Duplicate" Click="Copy" />
+            <AppBarButton Icon="Delete" x:Name="xDelete" Label="Delete" Click="Delete" />
         </ctrl:CommandBar>
         <StackPanel Margin="0,12,0,0">
             <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed">
             </local:TextSubtoolbar>
-            <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
             <local:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar"/>
-
+            <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
         </StackPanel>
     </StackPanel>
 </UserControl>

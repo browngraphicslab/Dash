@@ -40,10 +40,12 @@ namespace Dash
         /// The width of the context preview
         /// </summary>
         const double _contextPreviewActualWidth = 255;
+
         /// <summary>
         /// The height of the context preview
         /// </summary>
         const double _contextPreviewActualHeight = 330;
+
         /// <summary>
         /// A reference to the actual context preview
         /// </summary>
@@ -560,10 +562,19 @@ namespace Dash
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
+
+        /// <summary>
+        /// Ensures the menu flyout is shown on right tap.
+        /// </summary>
         public void ForceRightTapContextMenu()
         {
             xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
         }
+
+        /// <summary>
+        /// Deletes the document from the view.
+        /// </summary>
+        /// <param name="addTextBox"></param>
         public void DeleteDocument(bool addTextBox=false)
         {
             if (ParentCollection != null)
@@ -576,13 +587,21 @@ namespace Dash
                 }
             }
         }
-        private void CopyDocument()
+
+        /// <summary>
+        /// Copies the Document.
+        /// </summary>
+        public void CopyDocument()
         {
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
         }
+
+        /// <summary>
+        /// Copes the DocumentView for the document
+        /// </summary>
         private void CopyViewDocument()
         {
             // will this screw things up?
@@ -591,10 +610,18 @@ namespace Dash
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
+
+        /// <summary>
+        /// Pulls up the linked KeyValuePane of the document.
+        /// </summary>
         private void KeyValueViewDocument()
         {
             ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
         }
+
+        /// <summary>
+        /// Opens in Chrome the context from which the document was made.
+        /// </summary>
         public void ShowContext()
         {
             ViewModel.DocumentController.GetDataDocument().RestoreNeighboringContext();
@@ -614,7 +641,7 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            //xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
             xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>
@@ -636,10 +663,12 @@ namespace Dash
                 ToFront();
                 List<DocumentView> d = new List<DocumentView>();
                 d.Add(this);
-				
+                //foreach (DocumentView doc in d)
+                //{
+                //    System.Diagnostics.Debug.WriteLine(doc.ToString());
+                //}
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
                 (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
-                
             }
 			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
 			{

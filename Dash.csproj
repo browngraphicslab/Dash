@@ -158,7 +158,6 @@
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
-    <Compile Include="Controllers\Operators\FindSingleDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
@@ -241,17 +240,23 @@
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
     <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />
     <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
     <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
+    <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
+    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
+    <Compile Include="Util\DSL\MapOperatorController.cs" />
     <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\MultiLineOperatorScriptParser.cs" />
     <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
@@ -321,7 +326,9 @@
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\DishReplViewModel.cs" />
     <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
@@ -357,6 +364,9 @@
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
       <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DishReplView.xaml.cs">
+      <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
@@ -848,6 +858,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DishReplView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Document Menu\TreeMenuNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1223,7 +1237,7 @@
       <Version>11.0.2</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
-      <Version>16.1.0.26</Version>
+      <Version>16.1.0.24</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0-preview1-26216-02</Version>
