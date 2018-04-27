@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,13 +14,7 @@ namespace Dash
         #region SchemaVariables
 
         double _width;
-        Thickness _borderThickness;
-        public Thickness BorderThickness
-        {
-            get => _borderThickness;
-            set => SetProperty(ref _borderThickness, value);
-        }
-        public CollectionDBSchemaHeader.HeaderViewModel HeaderViewModel;
+        private Thickness BorderThickness { get; }
         public double Width
         {
             get => _width;
@@ -40,12 +36,26 @@ namespace Dash
             Reference = reference;
             if (headerViewModel != null)
             {
-                HeaderViewModel = headerViewModel;
-                BorderThickness = HeaderViewModel.HeaderBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
-                Width = BorderThickness.Left + BorderThickness.Right + (double)HeaderViewModel.Width;
-                HeaderViewModel.PropertyChanged += (sender, e) => Width = BorderThickness.Left + BorderThickness.Right + HeaderViewModel.Width;
+                BorderThickness = headerViewModel.HeaderBorder.BorderThickness; // not expected to change at run-time, so not registering for callbacks
+                Width = BorderThickness.Left + BorderThickness.Right + headerViewModel.Width;
+                headerViewModel.PropertyChanged += OnHeaderViewModelOnPropertyChanged;
+            }
+            else
+            {
+                Width = double.NaN;
             }
 
+        }
+
+        private void OnHeaderViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is CollectionDBSchemaHeader.HeaderViewModel hvm)
+            {
+                if (e.PropertyName == nameof(hvm.Width))
+                {
+                    Width = BorderThickness.Left + BorderThickness.Right + hvm.Width;
+                }
+            }
         }
     }
 }

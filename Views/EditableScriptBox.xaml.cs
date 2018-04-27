@@ -122,7 +122,7 @@ namespace Dash
             xBackground.Height = 120;
             xBackground.VerticalAlignment = VerticalAlignment.Top;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Expand_Value(this);
+            kvp?.Expand_Value(this);
         }
 
         public void CollapseBox()
@@ -130,7 +130,7 @@ namespace Dash
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Collapse_Value(this);
+            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -157,18 +157,6 @@ namespace Dash
                 
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
-
-            if (ViewModel.HeaderViewModel != null)
-            {
-                var widthBinding = new Binding()
-                {
-                    Source = ViewModel.Width,
-                    Path = new PropertyPath(nameof(this.Width)),
-                    Mode = BindingMode.OneWay,
-                };
-                this.SetBinding(WidthProperty, widthBinding);
-
-            }
         }
     }
 }

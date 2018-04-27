@@ -97,7 +97,7 @@ namespace Dash
             if (DataContext is CollectionViewModel cvm)
             {
                 // if datacontext hasn't actually changed just return
-                if (ViewModel == cvm)
+                if (ViewModel != null && ViewModel.CollectionController.Equals(cvm.CollectionController))
                 {
                     return;
                 }
@@ -224,6 +224,7 @@ namespace Dash
         /// </summary>
         public void ResetHeaders()
         {
+            // TODO why is this called about 4 times on start up
             var context = new Context(ParentDocument);
             _typedHeaders = Util.GetDisplayableTypedHeaders(ParentDocument.GetDataDocument()
                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context));
