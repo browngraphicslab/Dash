@@ -15,7 +15,7 @@
         <StackPanel.RenderTransform>
              <CompositeTransform x:Name="xToolbarTransform"/>
         </StackPanel.RenderTransform>
-        <ctrl:CommandBar IsOpen="True">
+        <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
             <AppBarButton Icon="TouchPointer"  Label="Pointer" />
             <AppBarButton Icon="Edit" Label="Ink"></AppBarButton>
             <AppBarButton Icon="SelectAll" Label="Group Tool"></AppBarButton>
@@ -29,8 +29,7 @@
             <AppBarButton Icon="Delete" x:Name="xDelete" Label="Delete" Click="Delete" />
         </ctrl:CommandBar>
         <StackPanel Margin="0,12,0,0">
-            <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed">
-            </local:TextSubtoolbar>
+            <local:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed"/>
             <local:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar"/>
             <local:CollectionSubtoolbar Visibility="Collapsed"  x:Name="xCollectionToolbar"/>
         </StackPanel>
