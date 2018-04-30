@@ -553,23 +553,9 @@ namespace Dash
 
             // copy all self-referential fields and update the references to point to the delegate
             foreach (var f in EnumFields())
-                if (f.Value is ReferenceController)
+                if (f.Value is ReferenceController referenceController)
                 {
-                    var refCopy = f.Value.GetCopy();
-                    if (refCopy is PointerReferenceController pref)
-                    {
-                        if (pref.DocumentReference.GetDocumentController(null).Equals(this))
-                        {
-                            refCopy = new PointerReferenceController(new DocumentReferenceController(delegateController.Id, pref.DocumentReference.FieldKey), pref.FieldKey);
-                        }
-                    } else if (refCopy is DocumentReferenceController dref)
-                    {
-                        if (dref.GetDocumentController(null).Equals(this))
-                        {
-                            refCopy = new DocumentReferenceController(delegateController.Id, dref.FieldKey);
-                        }
-                    }
-                    delegateController.SetField(f.Key, refCopy, true);
+                    delegateController.SetField(f.Key, referenceController.CopyForDelegate(this, delegateController), true);
                 }
 
             // return the now fully populated delegate

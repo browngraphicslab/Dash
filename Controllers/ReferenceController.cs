@@ -21,7 +21,6 @@ namespace Dash
             FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
             _lastDoc = GetDocumentController(null);
             _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            
         }
 
         protected void DocFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
@@ -137,5 +136,7 @@ namespace Dash
             var controller = GetDocumentController(null);
             controller?.UpdateOnServer();
         }
+
+        public abstract FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController);
     }
 }

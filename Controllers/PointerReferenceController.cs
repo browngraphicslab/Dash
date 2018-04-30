@@ -69,5 +69,14 @@ namespace Dash.Controllers
             DocumentReference.UpdateOnServer(success, error);
             base.UpdateOnServer(success, error);
         }
+
+        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        {
+            if (DocumentReference.GetDocumentController(null).Equals(documentController))
+            {
+                return new PointerReferenceController(new DocumentReferenceController(delegateController.Id, DocumentReference.FieldKey), FieldKey);
+            }
+            return Copy();
+        }
     }
 }
