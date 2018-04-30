@@ -152,7 +152,6 @@ namespace Dash
                     viewCollectionAs.Items.Add(vtype);
                 }
 
-
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
                 viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;

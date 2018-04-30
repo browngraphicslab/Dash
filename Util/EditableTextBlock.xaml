@@ -6,8 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
-
     <Grid x:Name="xBackground" Background="Transparent">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"

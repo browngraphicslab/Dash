@@ -18,6 +18,7 @@ namespace Dash
 
     public interface IFieldBinding
     {
+        String Tag { get; set; }
         BindingMode Mode { get; set; }
         Context Context { get; set; }
         void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context);
@@ -29,6 +30,7 @@ namespace Dash
 
     public class FieldBinding<TField, TDefault> : IFieldBinding where TField : FieldControllerBase where TDefault : FieldControllerBase, new()
     {
+        public String Tag { get; set; }
         public BindingMode Mode { get; set; }
         public DocumentController Document;
         public KeyController Key;
@@ -45,7 +47,6 @@ namespace Dash
         //Debug stuff
         //Tag that can be set on a binding that will be printed if the binding fails
         //so that you can know which exact binding is failing
-        public String Tag;
 
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {

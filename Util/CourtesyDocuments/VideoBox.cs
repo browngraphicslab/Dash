@@ -20,17 +20,8 @@ namespace Dash
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToVideo);
 			(fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
 			(fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
-			Document = GetLayoutPrototype().MakeDelegate();
-			Document.SetFields(fields, true);
-			//set field to the doc controller of the reference
-			Document.SetField(KeyStore.DocumentContextKey,
-				(refToVideo as ReferenceController).GetDocumentController(null), true);
-		}
-
-		public override FrameworkElement makeView(DocumentController docController, Context context)
-		{
-			return MakeView(docController, context);
-		}
+            SetupDocument(DocumentType, PrototypeId, "VideoBox Prototype Layout", fields);
+        }
 
 		/// <summary>
 		///   Creates a MediaPlayerElement that will be binded to video reference.
@@ -95,22 +86,7 @@ namespace Dash
 			//bind to source property of MediaPlayerElement
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
-
-		protected override DocumentController GetLayoutPrototype()
-		{
-			return ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-				   InstantiatePrototypeLayout();
-		}
-
-		protected override DocumentController InstantiatePrototypeLayout()
-		{
-			//create new video controller w/ default uri
-			var vidController = new VideoController(DefaultVideoUri);
-			var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), vidController);
-			var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-			return prototypeDocument;
-		}
-	}
+    }
 }
 
 

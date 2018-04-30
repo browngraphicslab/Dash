@@ -18,47 +18,12 @@ namespace Dash
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
-            Document = GetLayoutPrototype().MakeDelegate();
-            var layoutDocumentCollection = new ListController<DocumentController>(layoutDocuments);
-            var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
-            Document.SetFields(fields, true); //TODO add fields to constructor parameters   
-
-            SetSpacingField(Document, DefaultSpacing, true);
+            var fields = DefaultLayoutFields(position, size, new ListController<DocumentController>(layoutDocuments));
+            fields.Add(SpacingKey, new NumberController(DefaultSpacing));
+            SetupDocument(DocumentType, PrototypeId, "ListViewLayout Prototype Layout", fields);
         }
 
         public ListViewLayout() : this(new List<DocumentController>()) { }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var layoutDocCollection = new ListController<DocumentController>(new List<DocumentController>());
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-
-            SetSpacingField(prototypeDocument, DefaultSpacing, true); 
-
-            return prototypeDocument;
-        }
-
-        private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
-        {
-            var currentSpacingField = new NumberController(spacing);
-            docController.SetField(SpacingKey, currentSpacingField, forceMask);
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
-        }
 
         private static void BindSpacing(ListView listView, DocumentController docController,  Context context)
         {
