@@ -247,6 +247,7 @@ namespace RadialMenuControl.UserControl
             var floatingParent = FindParent<Floating>(this);
             var distance = Diameter/2 - CenterButton.ActualHeight/2;
 
+            //If we're closing the radial menu...
             if (Pie.Visibility == Visibility.Visible)
             {
                 BackgroundEllipse.Visibility = Visibility.Collapsed;
@@ -261,6 +262,7 @@ namespace RadialMenuControl.UserControl
                 Canvas.SetTop(CenterButton, 0);
                 Canvas.SetLeft(CenterButton, 0);
             }
+            //If we're opening the radial menu...
             else
             {
                 Width = Diameter;

@@ -1,4 +1,6 @@
-﻿namespace RadialMenuControl.UserControl
+﻿using Windows.System.UserProfile;
+
+namespace RadialMenuControl.UserControl
 {
     using Dash;
     using System;
@@ -6,6 +8,7 @@
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
+    using System.Diagnostics;
 
     /// <summary>
     /// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
@@ -21,7 +24,7 @@
         public static readonly DependencyProperty IsBoundByScreenProperty =
             DependencyProperty.Register("IsBoundByScreen", typeof(bool), typeof(Floating), new PropertyMetadata(false));
 
-        public static readonly DependencyProperty ShouldManiuplateChildProperty =
+        public static readonly DependencyProperty ShouldManipulateChildProperty =
             DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(Floating), new PropertyMetadata(false));
         private Border _border;
 
@@ -30,8 +33,8 @@
         /// </summary>
         public bool ShouldManipulateChild
         {
-            get { return (bool)GetValue(ShouldManiuplateChildProperty); }
-            set { SetValue(ShouldManiuplateChildProperty, value); }
+            get { return (bool)GetValue(ShouldManipulateChildProperty); }
+            set { SetValue(ShouldManipulateChildProperty, value); }
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="Floating"/> class.

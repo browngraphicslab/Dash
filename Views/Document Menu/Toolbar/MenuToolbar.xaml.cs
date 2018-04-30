@@ -19,6 +19,7 @@ using System.Diagnostics;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
+using RadialMenuControl.UserControl;
 
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -122,43 +123,6 @@ namespace Dash
 			Canvas.SetTop(this, 5);
 		}
 
-		// moves toolbar on drag TODO: merge w/ docking code
-		private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-		{
-			var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
-			var newVertPo = xToolbarTransform.TranslateY + e.Delta.Translation.Y;
-			var actualWidth = ((Frame)Window.Current.Content).ActualWidth;
-			var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
-			var toolbarHeight = xToolbar.ActualHeight + 20;
-
-			//update toolbar height if subtoolbar is active
-			if (subtoolbarElement != null)
-			{
-				toolbarHeight = toolbarHeight * 2;
-			}
-
-			//if within bounds of the screen, moves toolbar accordingly
-			if (newLatPo > 0 && (newLatPo + xToolbar.ActualWidth + 330) < actualWidth)
-			{
-				xToolbarTransform.TranslateX += e.Delta.Translation.X;
-			}
-			if (newVertPo > 0 && (newVertPo + toolbarHeight) < actualHeight)
-			{
-				xToolbarTransform.TranslateY += e.Delta.Translation.Y;
-			}
-
-			//consider case where toolbar is off-screen by resizing and must move it back
-			if ((newLatPo < 0 && e.Delta.Translation.X > 0) || (newLatPo + xToolbar.ActualWidth + 300 > actualWidth && e.Delta.Translation.X < 0))
-			{
-				xToolbarTransform.TranslateX += e.Delta.Translation.X;
-			}
-			if ((newVertPo < 0 && e.Delta.Translation.Y > 0) || (newVertPo + toolbarHeight > actualHeight && e.Delta.Translation.Y < 0))
-			{
-				xToolbarTransform.TranslateY += e.Delta.Translation.Y;
-			}
-
-		}
-
 		// copy btn
 		private void Copy(object sender, RoutedEventArgs e)
 		{
@@ -246,6 +210,25 @@ namespace Dash
 				//add error message for null file?
 			}
 		}
-	}
 
-                }
+	    /// <summary>
+	    ///     Find a parent element by type!
+	    /// </summary>
+	    /// <typeparam name="T"></typeparam>
+	    /// <param name="child"></param>
+	    /// <returns></returns>
+	    public static T FindParent<T>(DependencyObject child) where T : DependencyObject
+	    {
+	        var parentObject = VisualTreeHelper.GetParent(child);
+	        if (parentObject == null)
+	        {
+	            return null;
+	        }
+
+	        var parent = parentObject as T;
+	        return parent ?? FindParent<T>(parentObject);
+	    }
+
+    }
+
+ }
