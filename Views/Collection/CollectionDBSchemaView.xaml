@@ -51,19 +51,20 @@
                   CanReorderItems="True"
                   AllowDrop="True"
                   Height="100"
-                  ItemsSource="{x:Bind ListItemSource}"
+                  ItemsSource="{x:Bind ColumnViewModels}"
                   SelectionChanged ="XRecordsView_OnSelectionChanged"
                   PointerPressed="xRecordsView_PointerPressed"  
                   Loaded="XRecordsView_OnLoaded"
                   DragItemsStarting="XRecordsView_OnDragItemsStarting">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Vertical" />
+                    <ItemsStackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                    
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CollectionDBSchemaRecord></local:CollectionDBSchemaRecord>
+                    <local:CollectionDBSchemaColumn></local:CollectionDBSchemaColumn>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

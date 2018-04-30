@@ -192,6 +192,7 @@
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
+    <Compile Include="Converters\DocumentAndKeyToEditableScriptBoxConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
@@ -331,6 +332,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionDBSchemaColumn.xaml.cs">
+      <DependentUpon>CollectionDBSchemaColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -801,6 +805,10 @@
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Collection\CollectionDBSchemaColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTimelineView.xaml">
       <SubType>Designer</SubType>
