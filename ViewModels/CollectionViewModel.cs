@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
-using static Dash.NoteDocuments;
 using Dash.Models.DragModels;
 
 namespace Dash
@@ -61,7 +60,8 @@ namespace Dash
                 ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
                 ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
-                _collectionRef?.GetDocumentController(_context).RemoveFieldUpdatedListener(_collectionRef.FieldKey, collectionFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(_collectionRef.FieldKey, collectionFieldChanged);
+                _lastDoc = null;
             }
         }
         public InkController InkController;
@@ -90,7 +90,8 @@ namespace Dash
         public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
         public KeyController                           CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
-
+        public object Tag = null;
+        static int count = 1;
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
@@ -98,10 +99,13 @@ namespace Dash
             Debug.Assert(refToCollection != null);
             SetCollectionRef(refToCollection, context);
 
+            Tag = "CVM " + count++;
+
             CellSize = 250; // TODO figure out where this should be set
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  
         }
 
+        DocumentController _lastDoc = null;
         /// <summary>
         /// Sets the reference to the field that contains the documents to display.
         /// </summary>
@@ -109,13 +113,13 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(FieldReference refToCollection, Context context = null)
         {
-            _collectionRef?.GetDocumentController(_context).RemoveFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
+            _lastDoc?.RemoveFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
             DocumentViewModels.Clear();
             _collectionRef = refToCollection;
             _context = context;
             addViewModels(CollectionController.TypedData, context);
-            refToCollection?.GetDocumentController(context).AddFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
-
+            _lastDoc = refToCollection?.GetDocumentController(context);
+            _lastDoc.AddFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
         }
 
         /// <summary>

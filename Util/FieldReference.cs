@@ -63,14 +63,10 @@ namespace Dash
             if (doc != null)
             {
                 context = new Context(context);
-                var newContext = context;
-                if (doc.ShouldExecute(context, FieldKey))
+                var newContext = doc.ShouldExecute(context, FieldKey, null, false);
+                if (newContext.TryDereferenceToRoot(this, out controller))
                 {
-                    newContext = doc.Execute(context, false);
-                    if (newContext.TryDereferenceToRoot(this, out controller))
-                    {
-                        return controller;
-                    }
+                    return controller;
                 }
 
                 var fmc = GetDocumentController(newContext)?.GetField(FieldKey);

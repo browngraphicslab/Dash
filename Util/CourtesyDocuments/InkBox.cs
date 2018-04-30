@@ -14,15 +14,13 @@ namespace Dash
         public InkBox(FieldControllerBase refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
+            SetupDocument(DocumentType, PrototypeId, "InkBox Prototype Layout", fields);
             //Document.SetField(InkDataKey, new InkFieldModelController(), true);
-            SetLayoutForDocument(Document, Document, true, true);
+            //SetLayoutForDocument(Document, Document, true, true);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkController;
             if (fmController != null)
             {
@@ -32,24 +30,6 @@ namespace Dash
                 return inkCanvas;
             }
             return new Grid();
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var inkFieldModelController = new InkController();
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), inkFieldModelController);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
         }
 
         private static ReferenceController GetInkReference(DocumentController docController)

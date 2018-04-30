@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -14,6 +15,8 @@ namespace Dash
     internal class ApiDocumentModel : CourtesyDocument
     {
         public static readonly DocumentType DocumentType = ApiOperatorController.ApiType;
+        private static string PrototypeId = "683EA5CB-A2FE-4B34-A461-7BCC7BDC7754";
+
 
         public static readonly KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
         public static readonly KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
@@ -52,13 +55,13 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(400),
                 [KeyStore.PositionFieldKey] = new PointController(new Windows.Foundation.Point(0,0)),
                 [KeyStore.ScaleAmountFieldKey] = new PointController(1, 1),
+                [KeyStore.IconTypeFieldKey] = new NumberController((double)IconTypeEnum.Api),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                 [KeyStore.DataKey] =
                 new ListController<DocumentController>(new List<DocumentController>())
             };
-            Document = new DocumentController(fields, DocumentType);
-            Document.SetField(KeyStore.IconTypeFieldKey, new NumberController((double)IconTypeEnum.Api), true);
+            SetupDocument(DocumentType, PrototypeId, "API Document Prototype Layout", fields);
             //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
@@ -173,22 +176,7 @@ namespace Dash
             col.Remove(docModelToRemove);
 
         }
-
-        // inherited
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
-        }
+        
 
         /// <summary>
         /// Binds a textbox to a fieldModelController.

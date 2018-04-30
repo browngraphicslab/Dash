@@ -17,6 +17,7 @@ namespace Dash
             [typeof(ListController<>)] = TypeInfo.List,
             [typeof(DocumentController)] = TypeInfo.Document,
             [typeof(KeyController)] = TypeInfo.Key,
+            [typeof(OperatorController)] = TypeInfo.Operator,
 
             [typeof(FieldControllerBase)] = TypeInfo.Any
         };

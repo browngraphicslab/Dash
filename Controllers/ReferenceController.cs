@@ -14,12 +14,14 @@ namespace Dash
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
 
         }
+
+        DocumentController _lastDoc = null;
         public override void Init()
         {
             FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
-            var docController = GetDocumentController(null);
-            docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc = GetDocumentController(null);
+            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         protected void DocFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
@@ -31,8 +33,7 @@ namespace Dash
 
         public override void DisposeField()
         {
-            var docController = GetDocumentController(null);
-            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         public KeyController FieldKey { get; set; }
@@ -127,14 +128,16 @@ namespace Dash
         {
             base.SaveOnServer(success, error);
             var controller = GetDocumentController(null);
-            controller.SaveOnServer();
+            controller?.SaveOnServer();
         }
 
         public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.UpdateOnServer(success, error);
             var controller = GetDocumentController(null);
-            controller.UpdateOnServer();
+            controller?.UpdateOnServer();
         }
+
+        public abstract FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController);
     }
 }

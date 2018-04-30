@@ -29,7 +29,7 @@ namespace Dash
             }
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
-            var doc = new NoteDocuments.PostitNote(text, title).Document;
+            var doc = new PostitNote(text, title).Document;
             return doc;
         }
     }

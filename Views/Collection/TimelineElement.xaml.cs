@@ -102,7 +102,7 @@ namespace Dash
 
             if (docText != null)
             {
-                thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText).Document;
+                thumbnailImageViewDoc = new PostitNote(docText).Document;
             }
             else
             {

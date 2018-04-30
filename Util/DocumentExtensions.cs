@@ -145,11 +145,11 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
+                copiedData.Tag = "CollectionInstance Data";
                 activeLayout = doc.MakeDelegate();
+                activeLayout.Tag = "CollectionInstance Layout";
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
-                newDoc.Tag = "CollectionInstance Layout";
-                copiedData.Tag = "CollectionInstance Data";
             }
             else if (docContext == null && activeLayout != null) // has a layout
             {
@@ -457,6 +457,22 @@ namespace Dash
         }
 
 
+        // TODO bcz: this feels hacky -- is there a better way to get a reasonable layout for a document?
+        public static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(this DocumentController doc)
+        {
+            var isLayout = doc.GetField(KeyStore.DocumentContextKey) != null;
+            var layoutDocType = (doc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)?.DocumentType;
+            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
+            {
+                var layoutDoc = new KeyValueDocumentBox(doc);
+
+                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
+                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
+                doc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
+            }
+
+            return isLayout ? doc : doc.GetActiveLayout(null);
+        }
         public static DocumentController GetActiveLayout(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
@@ -592,6 +608,7 @@ namespace Dash
             }
             if (doc == null)
                 return doc;
+            if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
             if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return doc;
             if (docs.ContainsKey(doc))

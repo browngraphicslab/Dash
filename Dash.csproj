@@ -222,6 +222,7 @@
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
@@ -281,6 +282,12 @@
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
+    <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
+    <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\PostitNote.cs" />
+    <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
+    <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
@@ -368,7 +375,6 @@
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
     <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
@@ -552,7 +558,6 @@
     </Compile>
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
-    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />

@@ -14,10 +14,11 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
             Document = new DocumentController(fields, DocumentType);
         }
-
+        
         protected override DocumentController GetLayoutPrototype()
         {
-            throw new NotImplementedException();
+            return ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
+                   InstantiatePrototypeLayout();
         }
 
         protected override DocumentController InstantiatePrototypeLayout()
