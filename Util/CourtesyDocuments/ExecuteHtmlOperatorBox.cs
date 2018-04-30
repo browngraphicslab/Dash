@@ -8,26 +8,12 @@ namespace Dash
     class ExecuteHtmlOperatorBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("63DCAFB4-EED1-4EA7-868F-FAA2479651B0", "ExecuteHtmlOperator Box");
+        private static readonly string PrototypeId = "2E937247-8F91-4A15-9E8B-B282D7D2E96D";
 
         public ExecuteHtmlOperatorBox(ReferenceController refToOp, double width=350, double height=100)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(width,height), refToOp);
-            Document = new DocumentController(fields, DocumentType);
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "ExecuteHtmlOperatorBox Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)

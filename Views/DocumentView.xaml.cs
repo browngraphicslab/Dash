@@ -290,15 +290,18 @@ namespace Dash
                 ShowSelectedContext();
             }
             
-            var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
+            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
+                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
+                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
+                var focused = docView == this;
 
-            if (ViewModel != null && ViewModel.Equals(focused) && 
-                this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift) && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-            {
-                // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                    !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                    HandleShiftEnter();
+                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                {
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        HandleShiftEnter();
+                }
             }
         }
 

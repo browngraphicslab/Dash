@@ -1,16 +1,23 @@
 ﻿using DashShared;
+using System;
 
 namespace Dash.Controllers
 {
     class PointerReferenceController : ReferenceController
     {
-        public ReferenceController DocumentReference { get; set; }
+        public ReferenceController DocumentReference { get; private set; }
+
+        DocumentController _lastDoc = null;
+        void fieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            DisposeField();
+            Init();
+        }
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
             Init();
         }
-
         public PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
         {
         }
@@ -20,7 +27,16 @@ namespace Dash.Controllers
             DocumentReference =
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
+            DocumentReference?.Init();
             base.Init();
+            _lastDoc = DocumentReference?.GetDocumentController(null);
+           _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
+        }
+
+        public override void DisposeField()
+        {
+             base.DisposeField();
+            _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
         public override FieldModelController<ReferenceModel> Copy()
@@ -30,7 +46,7 @@ namespace Dash.Controllers
 
         public override DocumentController GetDocumentController(Context context)
         {
-            return DocumentReference.DereferenceToRoot<DocumentController>(context);
+            return DocumentReference?.DereferenceToRoot<DocumentController>(context);
         }
 
         public override FieldReference GetFieldReference()
@@ -41,6 +57,26 @@ namespace Dash.Controllers
         public override string GetDocumentId(Context context)
         {
             return GetDocumentController(context).Id;
+        }
+
+        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            DocumentReference.SaveOnServer(success, error);
+            base.SaveOnServer(success, error);
+        }
+        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            DocumentReference.UpdateOnServer(success, error);
+            base.UpdateOnServer(success, error);
+        }
+
+        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        {
+            if (DocumentReference.GetDocumentController(null).Equals(documentController))
+            {
+                return new PointerReferenceController(new DocumentReferenceController(delegateController.Id, DocumentReference.FieldKey), FieldKey);
+            }
+            return Copy();
         }
     }
 }

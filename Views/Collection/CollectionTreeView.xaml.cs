@@ -47,7 +47,7 @@ namespace Dash
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             Debug.Assert(ViewModel != null, "ViewModel != null");
-            var documentController = new NoteDocuments.CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
+            var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
 
         }

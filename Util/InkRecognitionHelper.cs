@@ -8,7 +8,6 @@ using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using NewControls.Geometry;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {

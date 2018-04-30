@@ -72,7 +72,7 @@ namespace Dash
                 DocumentController thumbnailImageViewDoc = null;
                 if (!string.IsNullOrEmpty(pageDoc.Title))
                 {
-                    thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
+                    thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
                     thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
                 }
                 else

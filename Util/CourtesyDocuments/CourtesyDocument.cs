@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
+using DashShared;
 
 namespace Dash
 {
@@ -19,18 +20,28 @@ namespace Dash
         public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
         public static readonly KeyController GridColumnSpanKey = new KeyController("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
 
-        protected abstract DocumentController GetLayoutPrototype();
+        protected DocumentController GetLayoutPrototype(DocumentType documentType, string prototypeId, string abstractInterface)
+        {
+
+            return ContentController<FieldModel>.GetController<DocumentController>(prototypeId) ??
+                   InstantiatePrototypeLayout(documentType, abstractInterface);
+        }
 
         public virtual DocumentController Document { get; set; }
 
-        protected abstract DocumentController InstantiatePrototypeLayout();
+        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface)
+        {
+            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
+            fields.Add(KeyStore.AbstractInterfaceKey, new TextController(abstractInterface));
+            return new DocumentController(fields, documentType);
+        }
 
-        /// <summary>
-        /// Fully dereference the field associated with the data key in the passed in docController
-        /// //TODO explain default field model controller idea here once it is written
-        /// </summary>
-        /// <returns></returns>
-        protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceController refToData)
+    /// <summary>
+    /// Fully dereference the field associated with the data key in the passed in docController
+    /// //TODO explain default field model controller idea here once it is written
+    /// </summary>
+    /// <returns></returns>
+    protected static FieldControllerBase GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldControllerBase defaultFieldModelController, out ReferenceController refToData)
         {
             refToData = docController.GetField(KeyStore.DataKey) as ReferenceController;
             if (refToData != null)
@@ -62,8 +73,6 @@ namespace Dash
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
-
-        private static int loaded = 0, unloaded = 0;
 
 
         [Obsolete("Use FieldBindings and AddFieldBinding instead")]
@@ -265,9 +274,10 @@ namespace Dash
             return fields;
         }
 
-        public virtual FrameworkElement makeView(DocumentController docController, Context context)
+        public void SetupDocument(DocumentType documentType, string prototypeId, string abstractInterface, IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields)
         {
-            return new Grid();
+            Document = GetLayoutPrototype(documentType, prototypeId, abstractInterface).MakeDelegate();
+            Document.SetFields(fields, true);
         }
 
         #region GettersAndSetters
