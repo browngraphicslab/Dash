@@ -282,6 +282,12 @@
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
+    <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
+    <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\PostitNote.cs" />
+    <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
+    <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />

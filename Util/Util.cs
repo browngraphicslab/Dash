@@ -25,7 +25,6 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {

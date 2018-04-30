@@ -9,7 +9,6 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {

@@ -15,7 +15,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
 using static Dash.FieldControllerBase;
-using static Dash.NoteDocuments;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Visibility = Windows.UI.Xaml.Visibility;
 

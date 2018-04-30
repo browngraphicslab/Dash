@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
-using static Dash.NoteDocuments;
 using Dash.Models.DragModels;
 
 namespace Dash
