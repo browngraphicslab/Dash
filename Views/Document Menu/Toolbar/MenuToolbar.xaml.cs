@@ -72,7 +72,8 @@ namespace Dash
         /// Gets the current MouseMode set by the toolbar.
         /// </summary>
         /// <returns></returns>
-        public MouseMode GetMouseMode() {
+        public MouseMode GetMouseMode()
+        {
             return mode;
         }
 
@@ -80,7 +81,8 @@ namespace Dash
         /// Disables or enables toolbar level document specific icons.
         /// </summary>
         /// <param name="hasDocuments"></param>
-        private void toggleSelectOptions(Boolean hasDocuments) {
+        private void toggleSelectOptions(Boolean hasDocuments)
+        {
             var o = .5;
             if (hasDocuments) o = 1;
             foreach (AppBarButton b in docSpecificButtons)
@@ -89,6 +91,7 @@ namespace Dash
                 b.Opacity = o;
             }
         }
+        
 
         /// <summary>
         /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
@@ -111,15 +114,14 @@ namespace Dash
                     subtoolbarElement = xTextToolbar;
                 }
 
-				// TODO: Image controls
-				var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(docs.First());
-				if (image != null)
-				{
-					subtoolbarElement = xImageToolbar;
-				}
+                // Image controls
+                var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(docs.First());
+                if (image != null)
+                {
+                    subtoolbarElement = xImageToolbar;
+                }
 
-                // TODO: Collection controls  
-                
+                // Collection controls  
                 var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(docs.First());
                 if (col != null)
                 {
@@ -131,7 +133,8 @@ namespace Dash
             {
                 // TODO: multi select
             }
-            else {
+            else
+            {
                 subtoolbarElement = null;
             }
             if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
@@ -144,29 +147,49 @@ namespace Dash
             Canvas.SetTop(this, 5);
         }
 
-        // moves toolbar on drag TODO: merge w/ docking code
         private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {/*
+        {
             var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
-            var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
-            var actualWidth = ((Frame) Window.Current.Content).ActualWidth;
+            var newVertPo = xToolbarTransform.TranslateY + e.Delta.Translation.Y;
+            var actualWidth = ((Frame)Window.Current.Content).ActualWidth;
             var actualHeight = ((Frame)Window.Current.Content).ActualHeight;
-            if (newLatPo > 0 && newLatPo < actualWidth)
+            var toolbarHeight = xToolbar.ActualHeight + 20;
+
+            //update toolbar height if subtoolbar is active
+            if (subtoolbarElement != null)
+            {
+                toolbarHeight = toolbarHeight * 2;
+            }
+
+            //if within bounds of the screen, moves toolbar accordingly
+            if (newLatPo > 0 && (newLatPo + xToolbar.ActualWidth + 330) < actualWidth)
             {
                 xToolbarTransform.TranslateX += e.Delta.Translation.X;
             }
-            if (newVertPo > 0 && newVertPo < actualHeight)
+            if (newVertPo > 0 && (newVertPo + toolbarHeight) < actualHeight)
             {
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
-            }*/
+            }
+
+            //consider case where toolbar is off-screen by resizing and must move it back
+            if ((newLatPo < 0 && e.Delta.Translation.X > 0) || (newLatPo + xToolbar.ActualWidth + 300 > actualWidth && e.Delta.Translation.X < 0))
+            {
+                xToolbarTransform.TranslateX += e.Delta.Translation.X;
+            }
+            if ((newVertPo < 0 && e.Delta.Translation.Y > 0) || (newVertPo + toolbarHeight > actualHeight && e.Delta.Translation.Y < 0))
+            {
+                xToolbarTransform.TranslateY += e.Delta.Translation.Y;
+            }
+
         }
-        
+
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments()) {
+            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            {
                 d.CopyDocument();
-            }  
+            }
         }
 
         // delete btn
@@ -177,39 +200,7 @@ namespace Dash
                 d.DeleteDocument();
             }
         }
-
-        // add image btn
-        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var imagePicker = new FileOpenPicker
-            {
-                ViewMode = PickerViewMode.Thumbnail,
-                SuggestedStartLocation = PickerLocationId.PicturesLibrary
-            };
-            imagePicker.FileTypeFilter.Add(".jpg");
-            imagePicker.FileTypeFilter.Add(".jpeg");
-            imagePicker.FileTypeFilter.Add(".bmp");
-            imagePicker.FileTypeFilter.Add(".png");
-            imagePicker.FileTypeFilter.Add(".svg");
-
-            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
-            if (imagesToAdd != null)
-            {
-                foreach (var thisImage in imagesToAdd)
-                {
-                    using (var thisImageStream = await thisImage.OpenAsync(FileAccessMode.Read))
-                    {
-                        var bmp = new BitmapImage();
-                        await bmp.SetSourceAsync(thisImageStream);
-                        var newImage = new Image {Source = bmp};
-                    }
-                }
-            }
-            else
-            {
-                //Flash an 'X' over the image selection button
-            }
-        }
+        
 
         // controls which MouseMode is currently activated
         AppBarToggleButton checkedButton = null;
@@ -229,10 +220,79 @@ namespace Dash
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
         {
             AppBarToggleButton toggle = sender as AppBarToggleButton;
-           
+
             checkedButton = xTouch;
             checkedButton.IsChecked = true;
             mode = MouseMode.TakeNote;
         }
+        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
+
+            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+            if (imagesToAdd != null)
+            {
+                var docNum = 0;
+                foreach (var thisImage in imagesToAdd)
+                {
+                    docNum += 1;
+                    var parser = new ImageToDashUtil();
+                    var docController = await parser.ParseFileAsync(thisImage);
+                    if (docController != null)
+                    {
+                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        docController.GetPositionField().Data = where;
+                        mainPageCollectionView.ViewModel.AddDocument(docController, null);
+                    }
+                }
+            }
+            else
+            {
+                //Flash an 'X' over the image selection button
+            }
+        }
+
+        /**
+		 * Launches file picker & adds selected video(s) to the workspace.
+		*/
+        private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
+        {
+            //instantiates a file picker, set to open in user's video library
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+
+            picker.FileTypeFilter.Add(".avi");
+            picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".wmv");
+
+            //awaits user upload of video 
+            var files = await picker.PickMultipleFilesAsync();
+
+            if (files != null)
+            {
+                foreach (Windows.Storage.StorageFile file in files)
+                {
+                    //create a doc controller for the video, set position, and add to canvas
+                    var docController = await new VideoToDashUtil().ParseFileAsync(file);
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    docController.GetPositionField().Data = where;
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+                }
+                //add error message for null file?
+            }
+        }
     }
+
 }
