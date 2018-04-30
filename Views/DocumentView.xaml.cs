@@ -657,13 +657,14 @@ namespace Dash
         }
 
         #region UtilityFuncions
-        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+
+        public CollectionView GetCollectionToMoveTo(List<DocumentView> overlappedViews)
         {
             var selectedDocs = SelectedDocuments();
-
             var collection = this.GetFirstAncestorOfType<CollectionView>();
+
             if (collection == null || ViewModel == null || selectedDocs == null)
-                return false;
+                return null;
 
             foreach (var nestedDocument in overlappedViews)
             {
@@ -672,23 +673,38 @@ namespace Dash
                 {
                     if (!nestedCollection.Equals(collection))
                     {
-                        foreach (var selDoc in selectedDocs)
-                        {
-                            var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                                new Point();
-                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
-                            collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-
-                        }
-                        return true;
+                        return nestedCollection;
                     }
-                    else break;
                 }
             }
-            return false;
+
+            return null;
         }
+
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+        {
+            var selectedDocs = SelectedDocuments();
+
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            var nestedCollection = GetCollectionToMoveTo(overlappedViews);
+
+            if (nestedCollection == null)
+            {
+                return false;
+            }
+            
+            foreach (var selDoc in selectedDocs)
+            {
+                var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                    new Point();
+                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
+                collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+            }
+            return true;
+        }
+
         public void HandleShiftEnter()
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();

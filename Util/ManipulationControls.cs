@@ -37,7 +37,8 @@ namespace Dash
 
 
         private List<DocumentController> _documentsToRemoveAfterManipulation = new List<DocumentController>();
-
+        private CollectionView _previouslyHighlightedCollectionView = null;
+        
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -730,6 +731,14 @@ namespace Dash
                 var deltaAfterAlignment = SimpleAlign(delta);
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
+                var nestedCollection = ParentDocument.GetCollectionToMoveTo(GetOverlappedViews());
+                if ((nestedCollection == null && _previouslyHighlightedCollectionView != null) || nestedCollection != null && !nestedCollection.Equals(_previouslyHighlightedCollectionView))
+                {
+                    _previouslyHighlightedCollectionView?.Unhighlight();
+                    nestedCollection?.Highlight();
+                    _previouslyHighlightedCollectionView = nestedCollection;
+                }
+
                 //DetectShake(sender, e);
 
                 e.Handled = true;
@@ -757,13 +766,11 @@ namespace Dash
             {
                 MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                _previouslyHighlightedCollectionView?.Unhighlight();
 
-                var docRoot = ParentDocument;
+                var overlappedViews = GetOverlappedViews();
                 
-                var pos = docRoot.RootPointerPos();
-                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-                
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
+                ParentDocument?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
                     () =>
                     {
                         if (_documentsToRemoveAfterManipulation.Any())
@@ -773,7 +780,7 @@ namespace Dash
                             _documentsToRemoveAfterManipulation.Clear();
                         }
 
-                        docRoot.MoveToContainingCollection(overlappedViews);
+                        ParentDocument.MoveToContainingCollection(overlappedViews);
                     }));
 
                 OnManipulatorCompleted?.Invoke();
@@ -784,7 +791,13 @@ namespace Dash
                 }
             }
         }
-        
+
+        private List<DocumentView> GetOverlappedViews()
+        {
+            var pos = ParentDocument.RootPointerPos();
+            return VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
+        }
+
         public void Dispose()
         {
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;
