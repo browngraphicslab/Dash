@@ -13,6 +13,7 @@ using System.Xml.Schema;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Xaml;
 using DashShared;
 using Flurl.Util;
 using Newtonsoft.Json.Serialization;
@@ -125,6 +126,9 @@ namespace Dash
                             break; 
                         case "Collection Box":
                             newText = CollectionToTxt(doc);
+                            break;
+                        case "Key Value Document Box":
+                            newText = KeyValToTxt(doc);
                             break;
                         default:
                             newText = null;
@@ -282,6 +286,52 @@ namespace Dash
                 text = "<div style=\"height:" + height + "px; width:" + width + "px; border-radius: 15%; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
             }
             return text;
+        }
+
+        private static string KeyValToTxt(DocumentController doc)
+        {
+            //make table with document fields
+            var text = "<table>";
+
+            var data = doc.GetDataDocument();
+       
+            var backgr = data.GetDereferencedField(KeyStore.BackgroundColorKey, null);
+            if (backgr != null)
+            {
+                text = text + "<tr> <td> Background Color </td> <td>" + backgr + "</td></tr>";
+            }
+
+            var adorns = data.GetDereferencedField(KeyStore.AdornmentShapeKey, null);
+            if (adorns != null)
+            {
+                text = text + "<tr> <td> Adornment Shape </td> <td>" + adorns + "</td></tr>";
+            }
+
+            var dataf = data.GetDereferencedField(KeyStore.DataKey, null);
+            if (dataf != null)
+            {
+                text = text + "<tr> <td> Data </td> <td>" + dataf + "</td></tr>";
+            }
+
+            var time = data.GetDereferencedField(KeyStore.ModifiedTimestampKey, null);
+            if (time != null)
+            {
+                text = text + "<tr> <td> Modified Time </td> <td>" + time + "</td></tr>";
+            }
+
+            var doctext = data.GetDereferencedField(KeyStore.DocumentTextKey, null);
+            if (doctext != null)
+            {
+                text = text + "<tr> <td> Document Text </td> <td>" + doctext + "</td></tr>";
+            }
+
+            var title = data.GetDereferencedField(KeyStore.TitleKey, null);
+            if (title != null)
+            {
+                text = text + "<tr> <td> Background Color </td> <td>" + title + "</td></tr>";
+            }
+
+            return text + "</table>";
         }
 
         private static async Task<StorageFolder> PickFolder()
