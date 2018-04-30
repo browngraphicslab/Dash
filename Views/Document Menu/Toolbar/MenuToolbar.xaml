@@ -16,9 +16,9 @@
              <CompositeTransform x:Name="xToolbarTransform"/>
         </StackPanel.RenderTransform>
         <ctrl:CommandBar IsOpen="True">
-            <AppBarButton Icon="TouchPointer"  Label="Pointer" />
-            <AppBarButton Icon="Edit" Label="Ink"></AppBarButton>
-            <AppBarButton Icon="SelectAll" Label="Group Tool"></AppBarButton>
+            <AppBarToggleButton x:Name="xTouch" Icon="TouchPointer"  Label="Pointer" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
+            <AppBarToggleButton x:Name="xInk" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+            <AppBarToggleButton x:Name="xGroup" Icon="SelectAll" Label="Group Tool"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
             <AppBarSeparator/>
             <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
             <AppBarButton Icon="ViewAll" Label="Add Group"/>

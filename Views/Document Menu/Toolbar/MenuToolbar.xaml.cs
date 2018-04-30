@@ -30,10 +30,23 @@ namespace Dash
     /// </summary>
     public sealed partial class MenuToolbar : UserControl
     {
-        // == FIELDS
+        // == STATIC ==
+        public static MenuToolbar Instance;
+
+        // specifies default left click / tap behavior
+        public enum MouseMode
+        {
+            TakeNote,
+            PanFast,
+            QuickGroup,
+            Ink
+        };
+
+        // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private AppBarButton[] docSpecificButtons;
         private Canvas _parentCanvas;
+        private MouseMode mode;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -43,7 +56,10 @@ namespace Dash
         public MenuToolbar(Canvas canvas)
         {
             this.InitializeComponent();
+            MenuToolbar.Instance = this;
             _parentCanvas = canvas;
+            mode = MouseMode.TakeNote;
+            checkedButton = xTouch;
 
             // list of buttons that are enabled only if there is 1 or more selected documents
             AppBarButton[] buttons = { xCopy, xDelete };
@@ -52,6 +68,14 @@ namespace Dash
         }
 
         // == METHODS ==
+        /// <summary>
+        /// Gets the current MouseMode set by the toolbar.
+        /// </summary>
+        /// <returns></returns>
+        public MouseMode GetMouseMode() {
+            return mode;
+        }
+
         /// <summary>
         /// Disables or enables toolbar level document specific icons.
         /// </summary>
@@ -122,7 +146,7 @@ namespace Dash
 
         // moves toolbar on drag TODO: merge w/ docking code
         private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
+        {/*
             var newLatPo = xToolbarTransform.TranslateX + e.Delta.Translation.X;
             var newVertPo = xToolbarTransform.TranslateX + e.Delta.Translation.Y;
             var actualWidth = ((Frame) Window.Current.Content).ActualWidth;
@@ -134,7 +158,7 @@ namespace Dash
             if (newVertPo > 0 && newVertPo < actualHeight)
             {
                 xToolbarTransform.TranslateY += e.Delta.Translation.Y;
-            }
+            }*/
         }
         
         // copy btn
@@ -185,6 +209,27 @@ namespace Dash
             {
                 //Flash an 'X' over the image selection button
             }
+        }
+
+        // controls which MouseMode is currently activated
+        AppBarToggleButton checkedButton = null;
+        private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            if (checkedButton != sender as AppBarToggleButton)
+            {
+                checkedButton.IsChecked = false;
+                checkedButton = sender as AppBarToggleButton;
+                if (checkedButton == xTouch) mode = MouseMode.TakeNote;
+                else if (checkedButton == xInk) mode = MouseMode.Ink;
+                else if (checkedButton == xGroup) mode = MouseMode.QuickGroup;
+            }
+        }
+
+        private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
+        {
+            checkedButton = xTouch;
+            checkedButton.IsChecked = true;
+            mode = MouseMode.TakeNote;
         }
     }
 }

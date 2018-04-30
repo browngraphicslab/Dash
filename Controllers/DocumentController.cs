@@ -25,13 +25,7 @@ namespace Dash
         private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary
             = new Dictionary<KeyController, FieldUpdatedHandler>();
         public event FieldUpdatedHandler PrototypeFieldUpdated;
-
         public event EventHandler DocumentDeleted;
-
-        public override string ToString()
-        {
-            return Title;
-        }
 
 
         /// <summary>
@@ -75,7 +69,6 @@ namespace Dash
         ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-
         public string LayoutName => DocumentModel.DocumentType.Type;
 
         /// <summary>
@@ -98,7 +91,7 @@ namespace Dash
                 this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
             }
         }
-
+        
         public DocumentModel DocumentModel => Model as DocumentModel;
 
         public string Title
@@ -114,31 +107,12 @@ namespace Dash
                 return DocumentType.Type;
             }
         }
-
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(obj, this))
-            {
-                return true;
-            }
-            DocumentController controller = obj as DocumentController;
-            if (controller == null)
-            {
-                return false;
-            }
-            return GetId().Equals(controller.GetId());
-        }
-
+        
         public DocumentController GetDataDocument()
         {
             return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? this;
         }
-        public override int GetHashCode()
-        {
-            return GetId().GetHashCode();
-        }
-
+        
         public override FieldModelController<DocumentModel> Copy()
         {
             return this.MakeCopy();
@@ -368,68 +342,7 @@ namespace Dash
             return true;
         }
 
-        /// <summary>
-        ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
-        ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
-        ///     <see cref="KeyControllerGeneric{T}" />
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public DocumentController GetPrototypeWithFieldKey(KeyController key)
-        {
-            if (key == null)
-                return null;
-            // if we mask the key by storing it as a field return ourself
-            if (_fields.ContainsKey(key))
-                return this;
-
-            // otherwise get our prototype and see if it associated a Field with the Key
-            var proto = GetPrototype();
-
-            // keep searching through prototypes until we find one with the key, if we never found one return null
-            return proto?.GetPrototypeWithFieldKey(key);
-        }
-
-
-        /// <summary>
-        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
-        ///     and returns null if no prototype exists
-        /// </summary>
-        public DocumentController GetPrototype()
-        {
-            // if there is no prototype return null
-            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
-                return null;
-
-            // otherwise try to convert the field associated with the prototype key into a DocumentController
-            var documentController =
-                _fields[KeyStore.PrototypeKey] as DocumentController;
-
-
-            // if the field contained a DocumentController return its data, otherwise return null
-            return documentController;
-        }
-
-
-        /// <summary>
-        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
-        /// </summary>
-        public LinkedList<DocumentController> GetAllPrototypes()
-        {
-            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
-
-            var prototype = GetPrototype();
-            while (prototype != null)
-            {
-                result.AddFirst(prototype);
-                prototype = prototype.GetPrototype();
-            }
-            result.AddLast(this);
-            return result;
-        }
-
-
-
+        
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
@@ -526,8 +439,67 @@ namespace Dash
         }
         #endregion
 
-        // == DELEGATE MANAGEMENT ==
+        // == PROTOTYPE / DELEGATE MANAGEMENT ==
         #region Delegate Management
+
+        /// <summary>
+        ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
+        ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
+        ///     <see cref="KeyControllerGeneric{T}" />
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public DocumentController GetPrototypeWithFieldKey(KeyController key)
+        {
+            if (key == null)
+                return null;
+            // if we mask the key by storing it as a field return ourself
+            if (_fields.ContainsKey(key))
+                return this;
+
+            // otherwise get our prototype and see if it associated a Field with the Key
+            var proto = GetPrototype();
+
+            // keep searching through prototypes until we find one with the key, if we never found one return null
+            return proto?.GetPrototypeWithFieldKey(key);
+        }
+
+        /// <summary>
+        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
+        ///     and returns null if no prototype exists
+        /// </summary>
+        public DocumentController GetPrototype()
+        {
+            // if there is no prototype return null
+            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
+                return null;
+
+            // otherwise try to convert the field associated with the prototype key into a DocumentController
+            var documentController =
+                _fields[KeyStore.PrototypeKey] as DocumentController;
+
+
+            // if the field contained a DocumentController return its data, otherwise return null
+            return documentController;
+        }
+
+
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype();
+            while (prototype != null)
+            {
+                result.AddFirst(prototype);
+                prototype = prototype.GetPrototype();
+            }
+            result.AddLast(this);
+            return result;
+        }
 
         /// <summary>
         ///  Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
@@ -1082,7 +1054,7 @@ namespace Dash
 
         #endregion
 
-        // == OVERRIDEN from ICOLLECTION ==
+        // == OVERRIDDEN from ICOLLECTION ==
         #region ICollection Overrides
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
@@ -1125,6 +1097,33 @@ namespace Dash
         {
             return StringSearchModel.False;
             //return _fields.Any(field => field.Value.SearchForString(searchString) || field.Key.SearchForString(searchString));
+        }
+        #endregion
+
+        // == OVERRIDEN FROM OBJECT ==
+        #region Overriden from Object
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Title;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
+            DocumentController controller = obj as DocumentController;
+            if (controller == null)
+            {
+                return false;
+            }
+            return GetId().Equals(controller.GetId());
         }
         #endregion
 
