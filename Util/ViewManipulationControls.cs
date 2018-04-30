@@ -57,7 +57,16 @@ namespace Dash
         {
             e.Handled = true;
 
-            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) || !IsMouseScrollOn) // scale 
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
+            {
+                var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
+                var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)
+                    ? scrollAmount
+                    : 0;
+                OnManipulatorTranslatedOrScaled?.Invoke(
+                    new TransformGroupData(new Point(x, scrollAmount - x), new Point(1, 1)), false);
+            }
+            else //scale
             {
                 var point = e.GetCurrentPoint(_freeformView);
 
@@ -68,13 +77,9 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position), false);
-            }
-            else // scroll 
-            {
-                var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
-                var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ? scrollAmount : 0;
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(x, scrollAmount-x), new Point(1,1)), false);
+                    OnManipulatorTranslatedOrScaled?.Invoke(
+                        new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
+                        false);
             }
         }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
