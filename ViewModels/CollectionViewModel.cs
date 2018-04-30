@@ -518,7 +518,7 @@ namespace Dash
             }
 
             // if we drag from the file system
-            else if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+            if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
             {
                 try
                 {
