@@ -51,9 +51,6 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            var radialMenu = new RadialMenuView(xCanvas);
-            radialMenu.Loaded += (s,e) => radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
-
             Loaded += (s, e) =>
             {
                 GlobalInkSettings.Hue = 200;
@@ -458,9 +455,9 @@ namespace Dash
             }
         }
         
-        public void ThemeChange()
+        public void ThemeChange(bool nightModeOn)
         {
-            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -509,6 +506,22 @@ namespace Dash
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
+        }
+
+        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var isVisible = xSettingsView.Visibility == Visibility.Visible;
+            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray); 
+        }
+
+        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
     }
 }
