@@ -222,6 +222,7 @@
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
+    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
@@ -281,6 +282,12 @@
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
+    <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
+    <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\PostitNote.cs" />
+    <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
+    <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
@@ -380,7 +387,6 @@
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
     <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
@@ -434,17 +440,8 @@
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Radial Menu\RadialColorPicker.xaml.cs">
-      <DependentUpon>RadialColorPicker.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Radial Menu\RadialMenuSlider.xaml.cs">
-      <DependentUpon>RadialMenuSlider.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Ink\InkSettingsPane.xaml.cs">
-      <DependentUpon>InkSettingsPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="Util\FreeformInkControl.cs" />
@@ -531,29 +528,12 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\RadialActionModel.cs" />
-    <Compile Include="Models\RadialItemModel.cs" />
-    <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="RadialMenu\CenterButton.xaml.cs" />
-    <Compile Include="RadialMenu\ColorExtensions.cs" />
-    <Compile Include="RadialMenu\Colors.cs" />
-    <Compile Include="RadialMenu\Floating.cs" />
-    <Compile Include="RadialMenu\InnerPieSlicePath.cs" />
-    <Compile Include="RadialMenu\ListSubMenu.xaml.cs" />
-    <Compile Include="RadialMenu\MenuBase.cs" />
-    <Compile Include="RadialMenu\MeterSubmenu.xaml.cs" />
-    <Compile Include="RadialMenu\MeterSubmenuPath.cs" />
-    <Compile Include="RadialMenu\OuterPieSlicePath.cs" />
-    <Compile Include="RadialMenu\PathBase.cs" />
-    <Compile Include="RadialMenu\Pie.xaml.cs" />
-    <Compile Include="RadialMenu\PieSlice.xaml.cs" />
-    <Compile Include="RadialMenu\RadialMenu.xaml.cs" />
-    <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
-    <Compile Include="RadialMenu\Shims.cs" />
-    <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Util\DocumentFieldReference.cs" />
     <Compile Include="Util\DocumentPointerFieldReference.cs" />
@@ -564,7 +544,6 @@
     </Compile>
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
-    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
@@ -707,9 +686,6 @@
     </Compile>
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Radial Menu\RadialMenuView.xaml.cs">
-      <DependentUpon>RadialMenuView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\PositionSettings.xaml.cs">
       <DependentUpon>PositionSettings.xaml</DependentUpon>
@@ -942,18 +918,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Radial Menu\RadialColorPicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Radial Menu\RadialMenuSlider.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Ink\InkSettingsPane.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionPageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1038,41 +1002,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="RadialMenu\CenterButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\ListSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\MeterSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\Pie.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\PieSlice.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\RadialMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\RadialMenuButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\RichTextSettings.xaml">
       <SubType>Designer</SubType>
@@ -1101,10 +1037,6 @@
     <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\CollectionSettings.xaml">
       <SubType>Designer</SubType>
@@ -1154,10 +1086,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\Radial Menu\RadialMenuView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\InterfaceBuilder\PositionSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1192,6 +1120,7 @@
   <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
+    <Folder Include="Themes\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper">

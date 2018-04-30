@@ -62,5 +62,13 @@ namespace Dash
         {
             return DocumentId;
         }
+        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        {
+            if (GetDocumentController(null).Equals(documentController))
+            {
+                return new DocumentReferenceController(delegateController.Id, FieldKey);
+            }
+            return Copy();
+        }
     }
 }

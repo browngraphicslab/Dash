@@ -217,8 +217,9 @@ namespace Dash
         {
             if (checkedButton != sender as AppBarToggleButton)
             {
-                checkedButton.IsChecked = false;
+                AppBarToggleButton temp = checkedButton;
                 checkedButton = sender as AppBarToggleButton;
+                temp.IsChecked = false;
                 if (checkedButton == xTouch) mode = MouseMode.TakeNote;
                 else if (checkedButton == xInk) mode = MouseMode.Ink;
                 else if (checkedButton == xGroup) mode = MouseMode.QuickGroup;
@@ -227,6 +228,8 @@ namespace Dash
 
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
         {
+            AppBarToggleButton toggle = sender as AppBarToggleButton;
+           
             checkedButton = xTouch;
             checkedButton.IsChecked = true;
             mode = MouseMode.TakeNote;

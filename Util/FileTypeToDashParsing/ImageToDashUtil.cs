@@ -143,19 +143,7 @@ namespace Dash
         {
             var imgSize = await GetImageSize(localFile);
 
-            // create a backing document for the image
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
-                [KeyStore.WidthFieldKey] = new NumberController(imgSize.Width),
-                [KeyStore.HeightFieldKey] = new NumberController(imgSize.Height),
-            };
-            if (title != null) fields[KeyStore.TitleKey] = new TextController(title);
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-            // return an image box, by setting the height to NaN the image height automatically sizes
-            // based on the width according to the aspect ratio
-            return new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
+            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgSize.Width, double.NaN), title).Document;
         }
 
         /// <summary>

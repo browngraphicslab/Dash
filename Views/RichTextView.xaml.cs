@@ -15,9 +15,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
 using static Dash.FieldControllerBase;
-using static Dash.NoteDocuments;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -38,6 +38,8 @@ namespace Dash
         /// </summary>
         Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
 
+        private int NoteFontSize => SettingsView.Instance.NoteFontSize;
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -86,6 +88,15 @@ namespace Dash
             xRichEditBox.ContextMenuOpening += (s,e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
 
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
+
+            var sizeBinding = new Binding
+            {
+                Source = SettingsView.Instance,
+                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+                Mode = BindingMode.OneWay
+            };
+            xRichEditBox.SetBinding(FontSizeProperty, sizeBinding); 
+
         }
 
         public void UpdateDocumentFromXaml()
@@ -535,7 +546,7 @@ namespace Dash
             }
         }
         #endregion
-        
+
         #region commented out code
 
         //void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -644,6 +655,8 @@ namespace Dash
         //    }
         //}
         #endregion
+
+       
     }
 }
 

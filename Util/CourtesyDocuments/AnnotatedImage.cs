@@ -63,15 +63,5 @@ namespace Dash
             docLayout.SetField(KeyStore.DocumentContextKey, Document, true);
             Document = docLayout;
         }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
