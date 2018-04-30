@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
+using Dash.Controllers;
 using DashShared;
 using Flurl.Util;
 using Newtonsoft.Json.Serialization;
@@ -52,7 +53,6 @@ namespace Dash
                     var colContent = CollectionContent(collectionDoc);
                     var colTitle = collectionDoc.ToString();
 
-                    //TODO: get rid of old number before adding new one
                     //make sure there isn't already reference to colTitle
                     int count = 1;
                     while (UsedUrlNames.Contains(colTitle))
@@ -113,7 +113,7 @@ namespace Dash
                     string docType = doc.DocumentType.Type;
                     //create diffrent output for different document types by calling helper functions
                     string newText;
-                    switch (docType) //TODO: there is also a Data Box
+                    switch (docType) 
                     {
                         case "Rich Text Box":
                             newText = TextToTxt(doc);
@@ -197,10 +197,18 @@ namespace Dash
 
         private static string TextToTxt(DocumentController doc)
         {
-            var text = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null).Data;
-            var marginLeft = getMargin(doc);
+            var rawText = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null);
+            if (rawText != null)
+            {
+                var text = rawText.Data;
+                var marginLeft = getMargin(doc);
 
-            return "<p style=\"margin-left: " + marginLeft + "px; \">" + text + "</p>";
+                return "<p style=\"margin-left: " + marginLeft + "px; \">" + text + "</p>";
+            }
+            else
+            {
+                return "";
+            }
         }
 
         private static string ImageToTxt(DocumentController doc)
@@ -291,45 +299,48 @@ namespace Dash
         private static string KeyValToTxt(DocumentController doc)
         {
             //make table with document fields
-            var text = "<table>";
+            var marginLeft = getMargin(doc);
+            var text = "<table style=\"margin-left: " + marginLeft + "px; width: 70px; border-collapse: collapse;\">";
+            var tdStyle = "style=\"border: 1px solid #dddddd; padding: 8px; \"";
 
             var data = doc.GetDataDocument();
        
             var backgr = data.GetDereferencedField(KeyStore.BackgroundColorKey, null);
             if (backgr != null)
             {
-                text = text + "<tr> <td> Background Color </td> <td>" + backgr + "</td></tr>";
+                text = text + "<tr> <td " + tdStyle + "> Background Color </td> <td " + tdStyle + ">" + backgr + "</td></tr>";
             }
 
             var adorns = data.GetDereferencedField(KeyStore.AdornmentShapeKey, null);
             if (adorns != null)
             {
-                text = text + "<tr> <td> Adornment Shape </td> <td>" + adorns + "</td></tr>";
+                text = text + "<tr> <td " + tdStyle + "> Adornment Shape </td> <td " + tdStyle + ">" + adorns + "</td></tr>";
             }
 
             var dataf = data.GetDereferencedField(KeyStore.DataKey, null);
             if (dataf != null)
             {
-                text = text + "<tr> <td> Data </td> <td>" + dataf + "</td></tr>";
-            }
-
-            var time = data.GetDereferencedField(KeyStore.ModifiedTimestampKey, null);
-            if (time != null)
-            {
-                text = text + "<tr> <td> Modified Time </td> <td>" + time + "</td></tr>";
-            }
-
-            var doctext = data.GetDereferencedField(KeyStore.DocumentTextKey, null);
-            if (doctext != null)
-            {
-                text = text + "<tr> <td> Document Text </td> <td>" + doctext + "</td></tr>";
+                text = text + "<tr> <td " + tdStyle + "> Data </td> <td " + tdStyle + ">" + dataf + "</td></tr>";
             }
 
             var title = data.GetDereferencedField(KeyStore.TitleKey, null);
             if (title != null)
             {
-                text = text + "<tr> <td> Background Color </td> <td>" + title + "</td></tr>";
+                text = text + "<tr> <td " + tdStyle + "> Title </td> <td " + tdStyle + ">" + title + "</td></tr>";
             }
+
+            DateTimeController time = (DateTimeController)data.GetDereferencedField(KeyStore.ModifiedTimestampKey, null);
+            if (time != null)
+            {
+                text = text + "<tr> <td " + tdStyle + "> Modified Time </td> <td " + tdStyle + ">" + time.Data + "</td></tr>";
+            }
+
+            var doctext = data.GetDereferencedField(KeyStore.DocumentTextKey, null);
+            if (doctext != null)
+            {
+                text = text + "<tr> <td " + tdStyle + "> Document Text </td> <td " + tdStyle + ">" + doctext + "</td></tr>";
+            }
+
 
             return text + "</table>";
         }
