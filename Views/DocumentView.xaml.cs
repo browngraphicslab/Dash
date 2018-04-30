@@ -210,16 +210,19 @@ namespace Dash
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () => {
-                if (!this.IsShiftPressed() && ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
+                var backgroundBoxes = SelectedDocuments().Where((dv) => dv.ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType)).ToList();
+                if (!this.IsShiftPressed() && ParentCollection.CurrentView is CollectionFreeformView cview)
                 {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    backgroundBoxes.ForEach((dv) =>
                     {
-                        cview.SelectDocs(cview.DocsInMarquee(new Rect(ViewModel.Position, new Size(ActualWidth, ActualHeight))));
-                    }
+                        cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
+                    });
                 }
+                // initialize the cached values of position and scale for each manipulated document  
                 SelectedDocuments().ForEach((d) =>
                 {
-                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position; 
                         d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
             };

@@ -638,11 +638,13 @@ namespace Dash
         {
             SelectionCanvas.Children.Clear();
 
-            _selectedDocs.AddRange(selected);
-            
-            foreach (var doc in SelectedDocs)
+            foreach (var doc in selected)
             {
-                doc.SetSelectionBorder(true);
+                if (!_selectedDocs.Contains(doc))
+                {
+                    _selectedDocs.Add(doc);
+                    doc.SetSelectionBorder(true);
+                }
             }
         }
 
