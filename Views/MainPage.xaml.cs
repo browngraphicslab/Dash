@@ -104,7 +104,7 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new NoteDocuments.CollectionNote(new Point(0, 0),
+                    var documentController = new CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
@@ -488,7 +488,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                 xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
                 xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
                 xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);

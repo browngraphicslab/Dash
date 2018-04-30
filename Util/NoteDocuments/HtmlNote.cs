@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 
-namespace Dash.Util.NoteDocuments
+namespace Dash
 {
     public class HtmlNote : NoteDocument
     {

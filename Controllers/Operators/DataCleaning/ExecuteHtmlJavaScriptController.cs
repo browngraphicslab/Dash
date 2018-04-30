@@ -78,7 +78,7 @@ namespace Dash
                 var modHtml = html.Substring(html.ToLower().IndexOf("<html"), html.Length - html.ToLower().IndexOf("<html"));
                 var correctedHtml = modHtml.Replace("<html>", "<html><head><style>img {height: auto !important;}</style></head>");
 
-                var doc = new Dash.Util.NoteDocuments.CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
+                var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
 
                 MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
                     async () => new execClass(correctedHtml, script, doc)));
@@ -90,11 +90,11 @@ namespace Dash
         class execClass
         {
             WebView _web = MainPage.Instance.JavaScriptHack;
-            Dash.Util.NoteDocuments.CollectionNote Cnote;
+            CollectionNote Cnote;
             static int id = 10000;
             static string prefix = "window.external.notify(";
             int Id = 0;
-            public execClass(string correctedHtml, string script, Dash.Util.NoteDocuments.CollectionNote doc)
+            public execClass(string correctedHtml, string script, CollectionNote doc)
             {
                 Cnote = doc;
                 _web.ScriptNotify += _web_ScriptNotify1;
