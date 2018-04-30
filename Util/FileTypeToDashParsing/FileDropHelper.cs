@@ -7,7 +7,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {

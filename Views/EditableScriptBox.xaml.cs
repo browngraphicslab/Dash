@@ -139,7 +139,7 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private EditableScriptViewModel _oldViewModel = null;
+        private EditableScriptViewModel _oldViewModel;
         private void EditableScriptBox_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == null || ViewModel == _oldViewModel)

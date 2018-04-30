@@ -30,47 +30,7 @@ namespace Dash
         {
             // set fields based on the parameters
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToPdf);
-
-            //// update the horizontal and vertical alignment fields to be separate from teh default
-            //if (fields[KeyStore.HorizontalAlignmentKey] is TextController horzTextController)
-            //    horzTextController.Data = HorizontalAlignment.Left.ToString();
-            //if (fields[KeyStore.VerticalAlignmentKey] is TextController vertTextController)
-            //    vertTextController.Data = VerticalAlignment.Top.ToString();
-
-            // get a delegate of the prototype layout (which already has fields set on it)
-            Document = GetLayoutPrototype().MakeDelegate();
-
-            // replace any of the default fields on the prototype delegate with the new fields
-            Document.SetFields(fields, true);
-            Document.SetField(KeyStore.DocumentContextKey, GetPdfReference(Document).GetDocumentController(null), true);
-        }
-
-        /// <summary>
-        /// Returns the prototype layout if it exists, otherwise creates a new prototype layout
-        /// </summary>
-        /// <returns></returns>
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                            InstantiatePrototypeLayout();
-            return prototype;
-        }
-
-        /// <summary>
-        /// Creates a new prototype layout
-        /// </summary>
-        /// <returns></returns>
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var pdfController = new ImageController(DefaultPdfUri);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), pdfController);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "PdfBox Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)

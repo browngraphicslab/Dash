@@ -34,6 +34,7 @@ namespace Dash
             this.Resuming += OnResuming;
         }
 
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.
@@ -78,7 +79,6 @@ namespace Dash
                 {
                     KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundBox.DocumentType, BackgroundBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DBSearchOperatorBox.DocumentType, DBSearchOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView);

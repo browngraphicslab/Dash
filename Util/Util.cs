@@ -25,7 +25,6 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -509,7 +508,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote().Document;
+            return new RichTextNote().Document;
         }
 
         /// <summary>

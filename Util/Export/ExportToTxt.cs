@@ -31,7 +31,6 @@ namespace Dash
         //define the max width and height coordinates in html and dash for conversion
         private static double PAGEWIDTH = 300.0;
         private static double PAGEHEIGHT = 1000.0;
-        private static double DASHWIDTH = 1500.0;
 
 
         public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
@@ -51,7 +50,8 @@ namespace Dash
                 {
                     //CollectionToTxt returns the content that must be added to a file
                     var colContent = CollectionContent(collectionDoc);
-                    var colTitle = collectionDoc.ToString();
+                    string colTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
+                        .ToString();
 
                     //make sure there isn't already reference to colTitle
                     int count = 1;
@@ -105,6 +105,8 @@ namespace Dash
 
                 OrderElements(dataDocs);
 
+                var minMax = MinVal(dataDocs);
+
                 //list of each line of text that must be added to file - one string for each doc
                 var fileText = new List<string>();
 
@@ -116,19 +118,19 @@ namespace Dash
                     switch (docType) 
                     {
                         case "Rich Text Box":
-                            newText = TextToTxt(doc);
+                            newText = TextToTxt(doc, minMax);
                             break;
                         case "Image Box":
-                            newText = ImageToTxt(doc);
+                            newText = ImageToTxt(doc, minMax);
                             break;
                         case "Background Box":
-                            newText = BackgroundBoxToTxt(doc);
+                            newText = BackgroundBoxToTxt(doc, minMax);
                             break; 
                         case "Collection Box":
-                            newText = CollectionToTxt(doc);
+                            newText = CollectionToTxt(doc, minMax);
                             break;
                         case "Key Value Document Box":
-                            newText = KeyValToTxt(doc);
+                            newText = KeyValToTxt(doc, minMax);
                             break;
                         default:
                             newText = null;
@@ -138,7 +140,9 @@ namespace Dash
                     //add text to list for specificed cases
                     if (newText != null)
                     {
-                        fileText.Add(newText);
+                        Debug.WriteLine("<span>" + newText + "</span>");
+
+                        fileText.Add("<span>" + newText + "</span>");
                     }
                 }
 
@@ -178,15 +182,52 @@ namespace Dash
             });
         }
 
-        private static double getMargin(DocumentController doc)
+        private static List<double> MinVal(List<DocumentController> docs)
         {
-            //TODO: if I scale margin, it looks funny not to scale width / height
+            //TODO: same but for y
+
+            double min = Double.PositiveInfinity;
+            double max = Double.NegativeInfinity;
+            // This finds the minimum x value saved in this collection in Dash
+            //and saves Dash width
+            foreach (var doc in docs)
+            {
+                if (doc.GetField(KeyStore.PositionFieldKey) != null)
+                {
+                    var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
+                    var x = pt1.Data.X;
+                    if (x < min)
+                    {
+                        min = x;
+                    }
+
+                    if (x > max)
+                    {
+                        max = x;
+                    }
+                }
+            }
+
+            var minMax = new List<double>();
+            minMax.Add(min);
+            minMax.Add(max);
+            return minMax;
+        }
+
+        private static double getMargin(DocumentController doc, List<double> minMax)
+        {
+            //TODO: if I scale margin, it looks funny not to scale width / height 
             var marginLeft = 0.0;
             if (doc.GetField(KeyStore.PositionFieldKey) != null)
             {
                 var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-                //TODO: I add 1500 to get rid of negatives, come up with better solution
-                var x = pt1.Data.X + 1500.0;
+
+                var min = minMax[0];
+                var max = minMax[1];
+
+                var x =  pt1.Data.X - min;
+
+                var DASHWIDTH = Math.Abs(max - min + 50);
                 marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
                // var y = 
             }
@@ -194,16 +235,25 @@ namespace Dash
             return marginLeft;
         }
 
+        private static double dashToHtml(double val, List<double> minMax)
+        {
+            var min = minMax[0];
+            var max = minMax[1];
 
-        private static string TextToTxt(DocumentController doc)
+            var DASHWIDTH = Math.Abs(max - min + 50);
+            return (val * PAGEWIDTH) / (DASHWIDTH);
+        }
+
+
+        private static string TextToTxt(DocumentController doc, List<double> minMax)
         {
             var rawText = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null);
             if (rawText != null)
             {
                 var text = rawText.Data;
-                var marginLeft = getMargin(doc);
+                var marginLeft = getMargin(doc, minMax);
 
-                return "<p style=\"margin-left: " + marginLeft + "px; \">" + text + "</p>";
+                return "<p style=\"position: fixed; left: " + marginLeft + "px; \">" + text + "</p>";
             }
             else
             {
@@ -211,7 +261,7 @@ namespace Dash
             }
         }
 
-        private static string ImageToTxt(DocumentController doc)
+        private static string ImageToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
             var uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
@@ -219,22 +269,20 @@ namespace Dash
             //get image width and height
             var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
 
-            var marginLeft = getMargin(doc);
+            var marginLeft = getMargin(doc, minMax);
 
             //return uri with HTML image formatting
-            return "<img src=\"" + uri + "\" width=\"" + stringWidth + "px\" style=\"margin-left: " + marginLeft + "px; \">";
+            return "<img src=\"" + uri + "\" width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) 
+                   + "px\" style=\"position: fixed; left: " + marginLeft + "px; \">";
         }
 
-        private static string CollectionToTxt(DocumentController col)
+        private static string CollectionToTxt(DocumentController col, List<double> minMax)
         {
-            var docs = col.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-
-
             //get text that must be added to file for this collection
             var colText = CollectionContent(col);
             //make sure there isn't already reference to colTitle
-            var colTitle = col.ToString();
+            string colTitle = col.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
+                .ToString();
             int count = 1;
             while (UsedUrlNames.Contains(colTitle))
             {
@@ -263,13 +311,13 @@ namespace Dash
             //create a file in folder with colContent and titled colTitle
             CreateFile(colText, colTitle);
 
-            var marginLeft = getMargin(col);
+            var marginLeft = getMargin(col, minMax);
 
             //return link to page you just created
-            return "<a href=\"./" + colTitle + ".html\" style=\"margin-left: " + marginLeft + "px; \">" + colTitle + "</a>";
+            return "<a href=\"./" + colTitle + ".html\" style=\"position: fixed; left: " + marginLeft + "px; \">" + colTitle + "</a>";
         }
 
-        private static string BackgroundBoxToTxt(DocumentController doc)
+        private static string BackgroundBoxToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
             // get shape of box
@@ -279,28 +327,36 @@ namespace Dash
             var color = "#" + colorC.Substring(3, 6) + colorC.Substring(1, 2);
             var width = doc.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString();
             var height = doc.GetDereferencedField(KeyStore.HeightFieldKey, null).ToString();
-            var marginLeft = getMargin(doc);
+            var marginLeft = getMargin(doc, minMax);
+
+            //convert width and height in proportion to other elements
+            //convert width and height in proportion to other elements
+            width = dashToHtml(Convert.ToDouble(width), minMax).ToString();
+            height = dashToHtml(Convert.ToDouble(height), minMax).ToString();
 
             if (shape == "Elliptical")
             {
-                text = "<div style=\"height:" + height + "px; width: " + width + "px; border-radius: 50%; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                text = "<div style=\"height:" + height + "px; width: " + width + "px; border-radius: 50%; " +
+                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
             }
             else if (shape == "Rectangular")
             {
-                text = "<div style=\"height:" + height + "px; width:" + width + "px; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                text = "<div style=\"height:" + height + "px; width:" + width + "px; " +
+                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
             }
             else if (shape == "Rounded")
             {
-                text = "<div style=\"height:" + height + "px; width:" + width + "px; border-radius: 15%; margin-left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                text = "<div style=\"height:" + height + "px; width:" + width + "px; border-radius: 15%; " +
+                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
             }
             return text;
         }
 
-        private static string KeyValToTxt(DocumentController doc)
+        private static string KeyValToTxt(DocumentController doc, List<double> minMax)
         {
             //make table with document fields
-            var marginLeft = getMargin(doc);
-            var text = "<table style=\"margin-left: " + marginLeft + "px; width: 70px; border-collapse: collapse;\">";
+            var marginLeft = getMargin(doc, minMax);
+            var text = "<table style=\"position: fixed; left: " + marginLeft + "px; width: 70px; border-collapse: collapse;\">";
             var tdStyle = "style=\"border: 1px solid #dddddd; padding: 8px; \"";
 
             var data = doc.GetDataDocument();
@@ -386,7 +442,7 @@ namespace Dash
                     var mergedText = "";
                     foreach (var word in text)
                     {
-                        mergedText = mergedText + word + "<br>";
+                        mergedText = mergedText + word;
                     }
 
                         //add String to file - this happens a bit after file is saved

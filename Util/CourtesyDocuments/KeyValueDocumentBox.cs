@@ -11,10 +11,11 @@ namespace Dash
     public class KeyValueDocumentBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("737BB31D-52B4-4C57-AD33-D519F40B57DC", "Key Value Document Box");
+        private static readonly string PrototypeId = "342B88D5-6B7D-43D4-BCC5-F0E8BF228AF3";
         public KeyValueDocumentBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 650, double h = 800)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
-            Document = new DocumentController(fields, DocumentType);
+            SetupDocument(DocumentType, PrototypeId, "KeyValueDocumentBox Prototype Layout", fields);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
@@ -35,16 +36,6 @@ namespace Dash
             SetupBindings(border, docController, context);
 
             return border;
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
         }
     }
 }
