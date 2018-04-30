@@ -40,7 +40,7 @@ namespace Dash
             Debug.Assert(opfmc.GetFieldReference() is DocumentFieldReference, "We assume that the operator view contains a reference to the operator as a key on a document");
             var opView = new OperatorView()
             {
-                DataContext = opfmc.GetFieldReference(),
+                DataContext = opfmc.GetFieldReference().Resolve(context),
             };
 
             if (customLayout != null)
