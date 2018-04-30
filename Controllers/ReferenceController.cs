@@ -128,14 +128,14 @@ namespace Dash
         {
             base.SaveOnServer(success, error);
             var controller = GetDocumentController(null);
-            controller.SaveOnServer();
+            controller?.SaveOnServer();
         }
 
         public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.UpdateOnServer(success, error);
             var controller = GetDocumentController(null);
-            controller.UpdateOnServer();
+            controller?.UpdateOnServer();
         }
     }
 }

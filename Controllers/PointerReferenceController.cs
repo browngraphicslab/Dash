@@ -1,4 +1,5 @@
 ﻿using DashShared;
+using System;
 
 namespace Dash.Controllers
 {
@@ -12,11 +13,11 @@ namespace Dash.Controllers
             DisposeField();
             Init();
         }
+
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
             Init();
         }
-
         public PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
         {
         }
@@ -26,6 +27,7 @@ namespace Dash.Controllers
             DocumentReference =
                 ContentController<FieldModel>.GetController<ReferenceController>(
                     (Model as PointerReferenceModel).ReferenceFieldModelId);
+            DocumentReference?.Init();
             base.Init();
             _lastDoc = DocumentReference?.GetDocumentController(null);
            _lastDoc?.AddFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
@@ -55,6 +57,17 @@ namespace Dash.Controllers
         public override string GetDocumentId(Context context)
         {
             return GetDocumentController(context).Id;
+        }
+
+        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            DocumentReference.SaveOnServer(success, error);
+            base.SaveOnServer(success, error);
+        }
+        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        {
+            DocumentReference.UpdateOnServer(success, error);
+            base.UpdateOnServer(success, error);
         }
     }
 }
