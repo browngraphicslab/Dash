@@ -18,7 +18,6 @@ namespace Dash
 
         public PreviewDocument(DocumentReferenceController refToLayout, Point pos)
         {
-            Document = GetLayoutPrototype().MakeDelegate();
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.PositionFieldKey] = new PointController(pos),
@@ -27,12 +26,7 @@ namespace Dash
                 [KeyStore.HeightFieldKey] = new NumberController(400),
                 [KeyStore.DataKey] = refToLayout
             };
-            Document.SetFields(fields, true);
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "PreviewDocument Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
@@ -73,20 +67,6 @@ namespace Dash
             });
 
             return returnContent;
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                            InstantiatePrototypeLayout();
-            return prototype;
-        }
-
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var prototypeDocument = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, PrototypeId);
-            return prototypeDocument;
         }
     }
 }

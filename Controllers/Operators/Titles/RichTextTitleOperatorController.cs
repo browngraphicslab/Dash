@@ -7,6 +7,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType("rtfTitle")]
     public class RichTextTitleOperatorController : OperatorController
     {
         public RichTextTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

@@ -12,11 +12,12 @@ namespace Dash
     public class RichTextBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("ED3B2D3C-C3EA-4FDC-9C0C-71E10F549C5F", "Rich Text Box");
+        private static readonly string PrototypeId = "001EDE6C-A713-4C54-BF98-0BAFB6230D61";
 
         public RichTextBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
-            Document = new DocumentController(fields, DocumentType);
+            SetupDocument(DocumentType, PrototypeId, "RichTextBox Prototype Layout", fields);
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
         {
@@ -76,16 +77,6 @@ namespace Dash
         private static ReferenceController GetTextReference(DocumentController docController)
         {
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
         }
     }
 

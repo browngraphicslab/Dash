@@ -24,6 +24,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
 using Dash.Views;
+using Dash.Controllers;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -57,9 +58,6 @@ namespace Dash
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
-
-            var radialMenu = new RadialMenuView(xCanvas);
-            radialMenu.Loaded += (s,e) => radialMenu.JumpToPosition(3 * ActualWidth / 4, 3 * ActualHeight / 4);
 
             Loaded += (s, e) =>
             {
@@ -112,7 +110,7 @@ namespace Dash
                 DocumentController lastWorkspace;
                 if (col.Count == 0)
                 {
-                    var documentController = new NoteDocuments.CollectionNote(new Point(0, 0),
+                    var documentController = new CollectionNote(new Point(0, 0),
                         CollectionView.CollectionViewType.Freeform).Document;
                     col.Add(documentController);
                     MainDocument.SetField(KeyStore.LastWorkspaceKey, documentController, true);
@@ -466,9 +464,9 @@ namespace Dash
             }
         }
         
-        public void ThemeChange()
+        public void ThemeChange(bool nightModeOn)
         {
-            this.RequestedTheme = this.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -492,7 +490,7 @@ namespace Dash
         {
             if (xMapDocumentView == null)
             {
-                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
                 xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
                 xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
                 xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
@@ -505,6 +503,7 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
             mapTimer.Start();
         }
 
@@ -559,7 +558,6 @@ namespace Dash
 
         public void HighlightDock()
         {
-            Debug.WriteLine("highlight yes");
             xDock.Opacity = 0.4;
         }
 
@@ -604,6 +602,22 @@ namespace Dash
                     undock.PreviousView.ChangeNestedView(newNext);
                 }
             }
+        }
+
+        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var isVisible = xSettingsView.Visibility == Visibility.Visible;
+            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray); 
+        }
+
+        private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
     }
 }

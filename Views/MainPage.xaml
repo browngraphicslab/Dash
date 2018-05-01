@@ -12,9 +12,10 @@
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </Page.Resources>
 
+
     <!-- negative margin here hides the collection's output dot-->
-    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
-        <Grid.ColumnDefinitions>
+        <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
+            <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="15"/>
             <ColumnDefinition Width="3*"/>
@@ -32,8 +33,8 @@
             <local:DocumentView Grid.Column="0" Grid.ColumnSpan="2" x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
             <Rectangle Grid.Column="1" x:Name="xDock" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
         </Grid>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2" Grid.ColumnSpan="2">
-            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2" Grid.ColumnSpan="2">
+        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
             </Grid>
             <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
@@ -44,15 +45,18 @@
             </Button>
         </StackPanel>
 
+        <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" />
+
+        <Grid Grid.Column="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
+            <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
+            <SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>
+        </Grid>
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
-
-        <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
-
         </Canvas>
 
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -66,14 +70,17 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="25" />
                 </Grid.RowDefinitions>
+
                 <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
                 <!--
                 <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
                 </local:DishReplView>-->
             </Grid>
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
+
             <localMicrosoft:GridSplitter 
                 Grid.Row="1" Height="15"/>
+
         </Grid>
 
         <localMicrosoft:GridSplitter Grid.Column="3"/>

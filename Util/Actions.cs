@@ -1,7 +1,6 @@
 ﻿using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -99,9 +98,5 @@ namespace Dash
         
         #endregion
 
-        public static void ChangeTheme(ICollectionView collectionView, DragEventArgs e)
-        {
-            MainPage.Instance.ThemeChange();
-        }
     }
 }

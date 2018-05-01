@@ -28,7 +28,7 @@ namespace Dash
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
             new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Text, true)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>

@@ -23,15 +23,7 @@ namespace Dash
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
             (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
-            Document.SetField(KeyStore.DocumentContextKey,
-                (refToImage as ReferenceController).GetDocumentController(null), true);
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
@@ -83,20 +75,6 @@ namespace Dash
                 Converter = UriToBitmapImageConverter.Instance
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            return ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                   InstantiatePrototypeLayout();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var imController = new ImageController(DefaultImageUri);
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imController);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
         }
     }
 }
