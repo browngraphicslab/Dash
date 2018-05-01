@@ -527,15 +527,15 @@ namespace Dash
             copiedView.ViewModel.Height = Double.NaN;
             copiedView.ViewModel.DisableDecorations = true;
 
-            DockedView dockedView = new DockedView();
+            DockedView dockedView = new DockedView(DockDirection.Left);
             dockedView.ChangeView(copiedView);
             dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockedView.VerticalAlignment = VerticalAlignment.Stretch;
 
             if (_firstDock)
             {
-                xDockSplitterColumn.Width = new GridLength(15);
-                xDockColumn.Width = new GridLength(300);
+                xLeftDockSplitterColumn.Width = new GridLength(15);
+                xLeftDockColumn.Width = new GridLength(300);
 
                 Grid.SetColumn(dockedView, 4);
                 xOuterGrid.Children.Add(dockedView);
@@ -574,8 +574,8 @@ namespace Dash
                 // means it's also the first NestedView
                 if (undock.PreviousView == null)
                 {
-                    xDockSplitterColumn.Width = new GridLength(0);
-                    xDockColumn.Width = new GridLength(0);
+                    xLeftDockSplitterColumn.Width = new GridLength(0);
+                    xLeftDockColumn.Width = new GridLength(0);
                     xOuterGrid.Children.Remove(undock);
                     _firstDock = true;
                 }

@@ -18,14 +18,24 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 
 namespace Dash.Views
 {
+    public enum DockDirection
+    {
+        Left,
+        Top,
+        Bottom,
+        Right
+    }
+
     public sealed partial class DockedView : UserControl
     {
         public DockedView NestedView { get; set; }
         public DockedView PreviousView { get; set; }
+        public DockDirection Direction { get; set; }
 
-        public DockedView()
+        public DockedView(DockDirection direction)
         {
             this.InitializeComponent();
+            Direction = direction;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -50,14 +60,28 @@ namespace Dash.Views
             // first time setting the nested view?
             if (NestedView == null)
             {
-                xSplitterColumn.Width = new GridLength(15);
-                xNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
-                Grid.SetColumn(view, 2);
+                switch (view.Direction)
+                {
+                    case DockDirection.Left:
+                        xLeftSplitterColumn.Width = new GridLength(15);
+                        xLeftNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
+                        Grid.SetColumn(view, 4);
+                        Grid.SetRow(view, 0);
+                        Grid.SetRowSpan(view, 5);
+                        break;
+                }
             }
             else
             {
                 xContentGrid.Children.Remove(NestedView);
-                Grid.SetColumn(view, Grid.GetColumn(NestedView));
+                switch (view.Direction)
+                {
+                    case DockDirection.Left:
+                        Grid.SetColumn(view, 4);
+                        Grid.SetRow(view, 0);
+                        Grid.SetRowSpan(view, 5);
+                        break;
+                }
             }
 
             NestedView = view;
@@ -68,8 +92,14 @@ namespace Dash.Views
         {
             if (NestedView != null)
             {
-                xSplitterColumn.Width = new GridLength(0);
-                xNestedViewColumn.Width = new GridLength(0);
+                switch (NestedView.Direction)
+                {
+                    case DockDirection.Left:
+                        xLeftSplitterColumn.Width = new GridLength(0);
+                        xLeftNestedViewColumn.Width = new GridLength(0);
+                        break;
+                }
+
                 xContentGrid.Children.Remove(NestedView);
             }
 

@@ -12,11 +12,20 @@
 
     <Grid x:Name="xContentGrid">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0" x:Name="xRightNestedViewColumn"/>
+            <ColumnDefinition Width="0" x:Name="xRightSplitterColumn"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="0" x:Name="xSplitterColumn"/>
-            <ColumnDefinition Width="0" x:Name="xNestedViewColumn"/>
+            <ColumnDefinition Width="0" x:Name="xLeftSplitterColumn"/>
+            <ColumnDefinition Width="0" x:Name="xLeftNestedViewColumn"/>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0" x:Name="xMainDockedView">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" x:Name="xTopNestedViewRow"/>
+            <RowDefinition Height="0" x:Name="xTopSplitterRow"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0" x:Name="xBottomSplitterRow"/>
+            <RowDefinition Height="0" x:Name="xBottomNestedViewRow"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Column="2" Grid.Row="2" x:Name="xMainDockedView">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition MaxWidth="30"/>
@@ -30,6 +39,6 @@
                 <SymbolIcon Symbol="Cancel"/>
             </Button>
         </Grid>
-        <controls:GridSplitter Grid.Column="1"/>
+        <controls:GridSplitter Grid.Column="3" Grid.Row="0" Grid.RowSpan="5"/>
     </Grid>
 </UserControl>
