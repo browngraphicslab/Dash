@@ -7,19 +7,8 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using System.Diagnostics;
-using Windows.Storage;
-using Windows.Storage.Streams;
-using Windows.UI.Xaml.Media.Imaging;
-
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -213,17 +202,19 @@ namespace Dash
                 temp.IsChecked = false;
                 if (checkedButton == xTouch) mode = MouseMode.TakeNote;
                 else if (checkedButton == xInk) mode = MouseMode.Ink;
-                else if (checkedButton == xGroup) mode = MouseMode.QuickGroup;
+                else if (checkedButton == xGroup) mode = MouseMode.PanFast;
             }
         }
 
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
         {
             AppBarToggleButton toggle = sender as AppBarToggleButton;
-
-            checkedButton = xTouch;
-            checkedButton.IsChecked = true;
-            mode = MouseMode.TakeNote;
+            if (toggle == checkedButton)
+            {
+                checkedButton = xTouch;
+                checkedButton.IsChecked = true;
+                mode = MouseMode.TakeNote;
+            }
         }
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {

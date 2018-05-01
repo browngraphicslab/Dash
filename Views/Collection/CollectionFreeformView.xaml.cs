@@ -446,6 +446,11 @@ namespace Dash
             xOuterGrid.ReleasePointerCapture(e.Pointer);
         }
 
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
@@ -496,23 +501,33 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (XInkCanvas.IsTopmost() &&
-                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            // marquee on left click by default, right click in PanFast mode
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote || args.IsRightPressed())
             {
-                if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                    DeselectAll();
+                if (XInkCanvas.IsTopmost() &&
+                    (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                     (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                     ((!args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
+                {
+                    if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
+                        DeselectAll();
 
-                xOuterGrid.CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-                _isMarqueeActive = true;
-                PreviewTextbox_LostFocus(null, null);
-                ParentDocument.ManipulationMode = ManipulationModes.None;
-                args.Handled = true;
-                xOuterGrid.PointerMoved -= OnPointerMoved;
-                xOuterGrid.PointerMoved += OnPointerMoved;
+                    xOuterGrid.CapturePointer(args.Pointer);
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
+                    PreviewTextbox_LostFocus(null, null);
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
+                    args.Handled = true;
+                    xOuterGrid.PointerMoved -= OnPointerMoved;
+                    xOuterGrid.PointerMoved += OnPointerMoved;
+                }
             }
         }
 

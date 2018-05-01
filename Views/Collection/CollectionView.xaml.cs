@@ -47,24 +47,13 @@ namespace Dash
             PointerPressed += OnPointerPressed;
         }
 
+        /// <summary>
+        /// Begins panning events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-            if (parentFreeform != null && rightBtn)
-            {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                } else 
-                    if (parentParentFreeform != null)
-                        CurrentView.ManipulationMode = ManipulationModes.None;
-            }
         }
 
         #region Load And Unload Initialization and Cleanup

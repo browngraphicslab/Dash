@@ -112,7 +112,7 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
             {
-                var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
