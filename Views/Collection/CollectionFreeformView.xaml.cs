@@ -64,6 +64,7 @@ namespace Dash
                 {
                     MakeInkCanvas();
                 }
+                UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
                 ViewModel?.Loaded(true);
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             };

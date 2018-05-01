@@ -7,6 +7,7 @@ using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using static Dash.OperatorScriptParser;
@@ -72,6 +73,15 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView?.StyleKeyValuePane();
+
+
+            var currPageBinding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docView.ViewModel.DataDocument,
+                Key = KeyStore.TitleKey,
+            };
+            xTitleBlock.AddFieldBinding(TextBlock.TextProperty, currPageBinding);
         }
 
         /// <summary>
