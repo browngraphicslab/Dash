@@ -542,6 +542,7 @@ namespace Dash
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
+            delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = this;

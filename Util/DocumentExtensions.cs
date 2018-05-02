@@ -145,9 +145,9 @@ namespace Dash
             if (activeLayout == null && docContext != null)  // has DocumentContext
             {
                 var copiedData = docContext.MakeDelegate(); // instance the data
-                copiedData.Tag = "CollectionInstance Data";
+                copiedData.Tag = (docContext.Tag ?? "") + " COPY";
                 activeLayout = doc.MakeDelegate();
-                activeLayout.Tag = "CollectionInstance Layout";
+                activeLayout.Tag = (doc.Tag ?? "") + " COPY";
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
             }
@@ -182,7 +182,34 @@ namespace Dash
             if (dataField != null)
             {
                 var newDataDoc = newDoc.GetDataDocument();
-                newDataDoc.SetField(KeyStore.DataKey, dataField.GetCopy(), true);
+                if (dataField is ListController<DocumentController> listDocs)
+                {
+                    var mapFromLayoutDataDoc = doc.GetDataDocument();
+                    var mapToLayoutDataDoc = newDoc.GetDataDocument();
+                    var newListDocs = new ListController<DocumentController>();
+                    foreach (var l in listDocs.TypedData)
+                    {
+                        var c = l.Copy() as DocumentController;
+                        c.Tag = l.Tag + "COPY";
+                        //bcz: this seems hacky... take a look it later in more detail.
+                        if (!c.Equals(newDataDoc) && c.GetField(KeyStore.DocumentContextKey, true) != null)
+                            c.SetField(KeyStore.DocumentContextKey, newDataDoc, true);
+                        foreach (var f in l.EnumFields(false))
+                        {
+                            if (f.Value is ReferenceController refCtrl)
+                            {
+                                mapToLayoutDataDoc.SetField(refCtrl.FieldKey, f.Value.DereferenceToRoot(null).GetCopy(), true); 
+                                var newf = refCtrl.CopyForDelegate(mapFromLayoutDataDoc, mapToLayoutDataDoc);
+                                c.SetField(f.Key, newf, true);
+                            }
+                        }
+                        newListDocs.Add(c);
+                    }
+                    newDataDoc.SetField(KeyStore.DataKey, newListDocs, true);
+                }
+                else
+                    newDataDoc.SetField(KeyStore.DataKey, dataField.GetCopy(), true);
+
                 if (activeLayout.GetField(KeyStore.DataKey) is DocumentReferenceController docRef)
                 {
                     activeLayout.SetField(KeyStore.DataKey, new DocumentReferenceController(newDataDoc.Id, KeyStore.DataKey), true);
@@ -608,7 +635,6 @@ namespace Dash
             }
             if (doc == null)
                 return doc;
-            if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
             if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return doc;
             if (docs.ContainsKey(doc))
