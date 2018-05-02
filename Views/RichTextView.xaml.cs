@@ -107,15 +107,27 @@ namespace Dash
                 setContainerHeight();
 
                 // auto-generate key/value pairs by scanning the text
-                var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+                var reg = new Regex("[a-zA-Z 0-9]*:=[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
                 var matches = reg.Matches(getReadableText());
                 foreach (var str in matches)
                 {
-                    var split = str.ToString().Split(':');
+                    var split = str.ToString().Split(":=");
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                    var keycontroller = KeyController.LookupKeyByName(key, true);
+                    var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+                    if (containerDoc != null)
+                    {
+                        var containerData = containerDoc.ContainerDocument.GetDataDocument();
+                        containerData.SetField(keycontroller, new RichTextController(new RichTextModel.RTD(value)), true);
+                        var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
+                        var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                        dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                        dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
+                        containerDoc.AddDocument(dbox, null);
+                        //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
+                    }
                 }
             }
         }
@@ -185,7 +197,7 @@ namespace Dash
         string _lastXamlRTFText = "";
         void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
@@ -288,9 +300,15 @@ namespace Dash
             }
             else if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
-                getDocView().HandleShiftEnter();
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                getDocView().HandleShiftEnter();
+            }
+            else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
+            {
+                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                getDocView().HandleCtrlEnter();
             }
             else if (this.IsAltPressed()) // opens the format options flyout 
             {

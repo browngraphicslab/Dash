@@ -298,5 +298,16 @@ namespace Dash
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
             key.Style = Resources["CollapseBox"] as Style;
         }
+        
+        private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        {
+            foreach (var m in args.Items)
+            {
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                break;
+            }
+        }
     }
 }

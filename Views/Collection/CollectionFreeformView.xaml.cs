@@ -729,6 +729,21 @@ namespace Dash
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
+        public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
+        {
+            if (!loadingPermanentTextbox)
+            {
+                if (resetBuffer)
+                    previewTextBuffer = "";
+                loadingPermanentTextbox = true;
+                var containerData = ViewModel.ContainerDocument.GetDataDocument();
+                var keycontroller = KeyController.LookupKeyByName(keyname, true);
+                containerData.SetField(keycontroller, new TextController("<default>"), true);
+                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                Actions.DisplayDocument(ViewModel, dbox, where);
+            }
+        }
 
         string KeyCodeToUnicode(VirtualKey key)
         {
@@ -839,10 +854,27 @@ namespace Dash
                         richEditBox.GotFocus += RichEditBox_GotFocus;
                         richEditBox.Focus(FocusState.Programmatic);
                     }
+                    var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
+                    if (textBox != null)
+                    {
+                        textBox.Loaded -= TextBox_Loaded;
+                        textBox.Loaded += TextBox_Loaded;
+                    }
                 }
             }
 
         }
+
+        private void TextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableTextBlock;
+            textBox.Loaded -= TextBox_Loaded;
+            textBox.MakeEditable();
+            textBox.XTextBox.GotFocus -= TextBox_GotFocus;
+            textBox.XTextBox.GotFocus += TextBox_GotFocus;
+            textBox.XTextBox.Focus(FocusState.Programmatic);
+        }
+
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
             previewTextbox.Visibility = Visibility.Collapsed;
@@ -854,6 +886,16 @@ namespace Dash
             richEditBox.Document.Selection.SetRange(0, 0);
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
+        }
+        void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+
+            previewTextbox.Visibility = Visibility.Collapsed;
+            loadingPermanentTextbox = false;
+            var text = previewTextBuffer;
+            textBox.GotFocus -= TextBox_GotFocus;
+            previewTextbox.Text = string.Empty;
         }
 
         #endregion

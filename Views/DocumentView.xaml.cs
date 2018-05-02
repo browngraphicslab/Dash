@@ -719,6 +719,15 @@ namespace Dash
 
             collection.LoadNewActiveTextBox("", where, true);
         }
+        public void HandleCtrlEnter()
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var docCanvas = this.GetFirstAncestorOfType<Canvas>();
+            if (collection == null) return;
+            var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+            var dtext = this.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? "";
+            collection.LoadNewDataBox(dtext, where, true);
+        }
 
         #endregion
         #region Context menu click handlers

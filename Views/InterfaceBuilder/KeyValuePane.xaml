@@ -92,7 +92,7 @@
                 <!--field listview-->
                 <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
                         Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                        SelectionMode="None" CanDragItems="True" DragItemsStarting="xFieldListView_DragItemsStarting" ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
