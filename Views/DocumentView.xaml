@@ -62,10 +62,9 @@
         </Border>
 
         <!--grid to hold the inner content of the document-->
-        <Grid Name="xTargetContentGrid" BorderThickness="3" BorderBrush="Transparent">
+        <Grid Name="xTargetContentGrid">
             <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-            
         </Grid>
 
         <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
