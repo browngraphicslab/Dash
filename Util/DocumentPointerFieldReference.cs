@@ -1,4 +1,5 @@
 ﻿using Dash.Controllers;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -18,7 +19,9 @@ namespace Dash
 
         public override FieldReference Resolve(Context context)
         {
-            string docId = context.GetDeepestDelegateOf(GetDocumentController(context).GetId()) ?? GetDocumentController(context).GetId();
+            var docController = GetDocumentController(context)?.GetId();
+            Debug.Assert(docController != null);
+            string docId = context.GetDeepestDelegateOf(docController) ?? docController;
             return new DocumentFieldReference(docId, FieldKey);
         }
         public override FieldReference Copy()

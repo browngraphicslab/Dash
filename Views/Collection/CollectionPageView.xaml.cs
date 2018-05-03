@@ -73,7 +73,7 @@ namespace Dash
                 if (!string.IsNullOrEmpty(pageDoc.Title))
                 {
                     thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
-                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
+                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
                 }
                 else
                 {
@@ -210,7 +210,7 @@ namespace Dash
                     CurPage.DataDocument.SetField(DisplayKey, data, true);
                     var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
-                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
+                    xDocView.DataContext = new DocumentViewModel(CurPage.LayoutDocument) { Undecorated = true };
                 }
             }
         }
@@ -436,6 +436,37 @@ namespace Dash
         private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        /// <summary>
+        /// When left-dragging, we need to "handle" the manipulation since the splitter doesn't do that and the manipulation will 
+        /// propagate to the ManipulationControls which will start moving the parent document.
+        /// When right-dragging, we want to terminate the manipulation and let the parent document use its ManipulationControlHelper to drag the document.
+        /// The helper is setup in the CollectionView's PointerPressed handler;
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xSplitter_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (!this.IsRightBtnPressed())
+                e.Handled = true;
+            else e.Complete();
+         }
+
+        /// <summary>
+        /// when we're left-dragging the splitter, we don't want to let events fall through to the ManipulationControls which would cancel the manipulation.
+        /// Since the splitter doesn't handle it's own drag events, we do it here.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xSplitter_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true; 
+        }
+
+        private void xSplitter_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

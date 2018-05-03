@@ -231,7 +231,7 @@ namespace Dash
                 };
 
             bool loaded = false;
-            if (element.IsInVisualTree())
+            if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
@@ -309,7 +309,7 @@ namespace Dash
             bool loaded = false;
             long token = -1;
 
-            if (element.IsInVisualTree())
+            if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
