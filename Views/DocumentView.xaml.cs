@@ -271,6 +271,15 @@ namespace Dash
             ViewModel.InteractiveManipulationScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
+
+        public void TransformDelta(Point moveTo)
+        {
+            var scaleAmount = new Point(ViewModel.InteractiveManipulationScale.X, ViewModel.InteractiveManipulationScale.Y);
+
+            ViewModel.InteractiveManipulationPosition = moveTo;
+            RenderTransform =
+                TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> {moveTo, scaleAmount});
+        }
         
         /// <summary>
         /// Handles keypress events.

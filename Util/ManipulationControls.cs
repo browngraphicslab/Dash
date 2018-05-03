@@ -28,6 +28,10 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
 
+        // for docking
+        public double ManipulationStartX { get; set; }
+        public double ManipulationStartY { get; set; }
+
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
@@ -453,6 +457,31 @@ namespace Dash
             return newTopLeftPoint;
         }
 
+        private void Dock(bool preview)
+        {
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
+            var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
+                new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
+            {
+                if (preview)
+                {
+                    MainPage.Instance.HighlightDock();
+                }
+                else
+                {
+                    ParentDocument.ViewModel.XPos = ManipulationStartX;
+                    ParentDocument.ViewModel.YPos = ManipulationStartY;
+                    MainPage.Instance.UnhighlightDock();
+                    MainPage.Instance.Dock(ParentDocument);
+                }   
+            }
+            else
+            {
+                MainPage.Instance.UnhighlightDock();
+            }
+        }
 
         private void SnapToCollection(Tuple<DocumentView, Side, double> closest)
         {
@@ -673,7 +702,7 @@ namespace Dash
         */
 
         #endregion
-
+            
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -705,6 +734,9 @@ namespace Dash
                 return;
             }
 
+            ManipulationStartX = ParentDocument.ViewModel.XPos;
+            ManipulationStartY = ParentDocument.ViewModel.YPos;
+
             OnManipulatorStarted?.Invoke();
 
             if (e != null)
@@ -731,7 +763,8 @@ namespace Dash
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
-
+                
+                Dock(true);
                 e.Handled = true;
             }
         }
@@ -777,6 +810,7 @@ namespace Dash
                     }));
 
                 OnManipulatorCompleted?.Invoke();
+                Dock(false);
 
                 if (e != null)
                 {

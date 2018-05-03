@@ -360,6 +360,9 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DockedView.xaml.cs">
+      <DependentUpon>DockedView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
@@ -806,6 +809,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DockedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>    
     <Page Include="Views\DishReplView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

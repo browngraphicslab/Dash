@@ -15,8 +15,15 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Dash.Views.Document_Menu;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Toolkit.Uwp.UI;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views;
 using Dash.Controllers;
 
 
@@ -36,6 +43,7 @@ namespace Dash
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
 
         public DocumentView         xMapDocumentView;
+        private bool _firstDock = true;
 
         public MainPage()
         {
@@ -59,6 +67,7 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
+                xMainDocView.ViewModel.DisableDecorations = true;
 
                 xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
             };
@@ -475,10 +484,6 @@ namespace Dash
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            args.Cancel = true;
-        }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
         void setupMapView(DocumentController mainDocumentCollection)
@@ -506,6 +511,97 @@ namespace Dash
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
+        }
+
+        public void Dock(DocumentView toDock)
+        {
+            DocumentController context = toDock.ViewModel.DocumentController;
+            DocumentView copiedView = new DocumentView()
+            {
+                DataContext = new DocumentViewModel(context.GetViewCopy()),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+
+            copiedView.ViewModel.Width = Double.NaN;
+            copiedView.ViewModel.Height = Double.NaN;
+            copiedView.ViewModel.DisableDecorations = true;
+
+            DockedView dockedView = new DockedView();
+            dockedView.ChangeView(copiedView);
+            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
+
+            if (_firstDock)
+            {
+                xDockSplitterColumn.Width = new GridLength(15);
+                xDockColumn.Width = new GridLength(300);
+
+                Grid.SetColumn(dockedView, 4);
+                xOuterGrid.Children.Add(dockedView);
+                _firstDock = false;
+            }
+            else
+            {
+                DockedView tail = this.GetFirstDescendantOfType<DockedView>();
+                // find the tail of this "linked list"
+                while (tail.NestedView != null)
+                {
+                    tail = tail.NestedView;
+                }
+                
+                tail.ChangeNestedView(dockedView);
+                dockedView.PreviousView = tail;
+            }
+            
+        }
+
+        public void HighlightDock()
+        {
+            xDock.Opacity = 0.4;
+        }
+
+        public void UnhighlightDock()
+        {
+            xDock.Opacity = 0;
+        }
+
+        public void Undock(DockedView undock)
+        {
+            // means it's the last NestedView
+            if (undock.NestedView == null)
+            {
+                // means it's also the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    xDockSplitterColumn.Width = new GridLength(0);
+                    xDockColumn.Width = new GridLength(0);
+                    xOuterGrid.Children.Remove(undock);
+                    _firstDock = true;
+                }
+                else
+                {
+                    undock.PreviousView.ClearNestedView();
+                }
+            }
+            else
+            {
+                // means it's the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    var newFirst = undock.ClearNestedView();
+                    newFirst.PreviousView = null;
+                    xOuterGrid.Children.Remove(undock);
+                    Grid.SetColumn(newFirst, 4);
+                    xOuterGrid.Children.Add(newFirst);
+                }
+                else
+                {
+                    var newNext = undock.ClearNestedView();
+                    newNext.PreviousView = undock.PreviousView;
+                    undock.PreviousView.ChangeNestedView(newNext);
+                }
+            }
         }
 
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
