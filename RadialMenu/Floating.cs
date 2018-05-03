@@ -124,7 +124,7 @@
         }
 
         /// <summary>
-        /// Handler for ManuplationDelta event
+        /// Handler for ManipulationDelta event
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
