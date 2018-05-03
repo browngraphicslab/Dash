@@ -70,8 +70,8 @@ namespace Dash
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
             
             // set bounds
-            MinWidth = 5;
-            MinHeight = 25;
+            MinWidth = 35;
+            MinHeight = 35;
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
@@ -112,7 +112,7 @@ namespace Dash
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
             {
-                var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
@@ -213,16 +213,19 @@ namespace Dash
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () => {
-                if (!this.IsShiftPressed() && ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
+                var backgroundBoxes = SelectedDocuments().Where((dv) => dv.ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType)).ToList();
+                if (!this.IsShiftPressed() && ParentCollection.CurrentView is CollectionFreeformView cview)
                 {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    backgroundBoxes.ForEach((dv) =>
                     {
-                        cview.SelectDocs(cview.DocsInMarquee(new Rect(ViewModel.Position, new Size(ActualWidth, ActualHeight))));
-                    }
+                        cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
+                    });
                 }
+                // initialize the cached values of position and scale for each manipulated document  
                 SelectedDocuments().ForEach((d) =>
                 {
-                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position; 
                         d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
             };
@@ -293,15 +296,18 @@ namespace Dash
                 ShowSelectedContext();
             }
             
-            var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
+            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
+                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
+                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
+                var focused = docView == this;
 
-            if (ViewModel != null && ViewModel.Equals(focused) && 
-                this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift) && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-            {
-                // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                    !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                    HandleShiftEnter();
+                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                {
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        HandleShiftEnter();
+                }
             }
         }
 

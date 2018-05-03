@@ -1,6 +1,4 @@
-﻿using Windows.System.UserProfile;
-
-namespace RadialMenuControl.UserControl
+﻿namespace Dash
 {
     using Dash;
     using System;
@@ -8,7 +6,6 @@ namespace RadialMenuControl.UserControl
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
-    using System.Diagnostics;
 
     /// <summary>
     /// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
@@ -24,7 +21,7 @@ namespace RadialMenuControl.UserControl
         public static readonly DependencyProperty IsBoundByScreenProperty =
             DependencyProperty.Register("IsBoundByScreen", typeof(bool), typeof(Floating), new PropertyMetadata(false));
 
-        public static readonly DependencyProperty ShouldManipulateChildProperty =
+        public static readonly DependencyProperty ShouldManiuplateChildProperty =
             DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(Floating), new PropertyMetadata(false));
         private Border _border;
 
@@ -33,8 +30,8 @@ namespace RadialMenuControl.UserControl
         /// </summary>
         public bool ShouldManipulateChild
         {
-            get { return (bool)GetValue(ShouldManipulateChildProperty); }
-            set { SetValue(ShouldManipulateChildProperty, value); }
+            get { return (bool)GetValue(ShouldManiuplateChildProperty); }
+            set { SetValue(ShouldManiuplateChildProperty, value); }
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="Floating"/> class.
@@ -127,7 +124,7 @@ namespace RadialMenuControl.UserControl
         }
 
         /// <summary>
-        /// Handler for ManipulationDelta event
+        /// Handler for ManuplationDelta event
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -206,7 +203,7 @@ namespace RadialMenuControl.UserControl
             {
                 //var ttv = el.TransformToVisual(Window.Current.Content);
                 //var topLeft = ttv.TransformPoint(new Point(0, 0));
-                var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el); 
+                var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
                 Rect parentRect = new Rect(topLeft.X, topLeft.Y, Window.Current.Bounds.Width - topLeft.X, Window.Current.Bounds.Height - topLeft.Y);
                 position = AdjustedPosition(rect, parentRect);
             }

@@ -24,15 +24,17 @@ namespace Dash
         /// </summary>
         private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary
             = new Dictionary<KeyController, FieldUpdatedHandler>();
-        public event FieldUpdatedHandler PrototypeFieldUpdated;
 
         public event EventHandler DocumentDeleted;
 
+        public object Tag = null;
+
         public override string ToString()
         {
+            return "" + (Tag ?? "");
             return Title;
         }
-
+        
 
         /// <summary>
         ///     A wrapper for <see cref="" />. Change this to propogate changes
@@ -75,7 +77,6 @@ namespace Dash
         ///     The <see cref="Model" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-
         public string LayoutName => DocumentModel.DocumentType.Type;
 
         /// <summary>
@@ -98,7 +99,7 @@ namespace Dash
                 this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
             }
         }
-
+        
         public DocumentModel DocumentModel => Model as DocumentModel;
 
         public string Title
@@ -114,31 +115,12 @@ namespace Dash
                 return DocumentType.Type;
             }
         }
-
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(obj, this))
-            {
-                return true;
-            }
-            DocumentController controller = obj as DocumentController;
-            if (controller == null)
-            {
-                return false;
-            }
-            return GetId().Equals(controller.GetId());
-        }
-
+        
         public DocumentController GetDataDocument()
         {
             return GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? this;
         }
-        public override int GetHashCode()
-        {
-            return GetId().GetHashCode();
-        }
-
+        
         public override FieldModelController<DocumentModel> Copy()
         {
             return this.MakeCopy();
@@ -368,68 +350,7 @@ namespace Dash
             return true;
         }
 
-        /// <summary>
-        ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
-        ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
-        ///     <see cref="KeyControllerGeneric{T}" />
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public DocumentController GetPrototypeWithFieldKey(KeyController key)
-        {
-            if (key == null)
-                return null;
-            // if we mask the key by storing it as a field return ourself
-            if (_fields.ContainsKey(key))
-                return this;
-
-            // otherwise get our prototype and see if it associated a Field with the Key
-            var proto = GetPrototype();
-
-            // keep searching through prototypes until we find one with the key, if we never found one return null
-            return proto?.GetPrototypeWithFieldKey(key);
-        }
-
-
-        /// <summary>
-        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
-        ///     and returns null if no prototype exists
-        /// </summary>
-        public DocumentController GetPrototype()
-        {
-            // if there is no prototype return null
-            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
-                return null;
-
-            // otherwise try to convert the field associated with the prototype key into a DocumentController
-            var documentController =
-                _fields[KeyStore.PrototypeKey] as DocumentController;
-
-
-            // if the field contained a DocumentController return its data, otherwise return null
-            return documentController;
-        }
-
-
-        /// <summary>
-        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
-        /// </summary>
-        public LinkedList<DocumentController> GetAllPrototypes()
-        {
-            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
-
-            var prototype = GetPrototype();
-            while (prototype != null)
-            {
-                result.AddFirst(prototype);
-                prototype = prototype.GetPrototype();
-            }
-            result.AddLast(this);
-            return result;
-        }
-
-
-
+        
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {
             if (!IsOperatorTypeCompatible(key, field))
@@ -526,15 +447,74 @@ namespace Dash
         }
         #endregion
 
-        // == DELEGATE MANAGEMENT ==
+        // == PROTOTYPE / DELEGATE MANAGEMENT ==
         #region Delegate Management
+
+        /// <summary>
+        ///     Returns the first level of inheritance which references the passed in <see cref="KeyControllerGeneric{T}" /> or
+        ///     returns null if no level of inheritance has a <see cref="Controller" /> associated with the passed in
+        ///     <see cref="KeyControllerGeneric{T}" />
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public DocumentController GetPrototypeWithFieldKey(KeyController key)
+        {
+            if (key == null)
+                return null;
+            // if we mask the key by storing it as a field return ourself
+            if (_fields.ContainsKey(key))
+                return this;
+
+            // otherwise get our prototype and see if it associated a Field with the Key
+            var proto = GetPrototype();
+
+            // keep searching through prototypes until we find one with the key, if we never found one return null
+            return proto?.GetPrototypeWithFieldKey(key);
+        }
+
+        /// <summary>
+        ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="Model" />,
+        ///     and returns null if no prototype exists
+        /// </summary>
+        public DocumentController GetPrototype()
+        {
+            // if there is no prototype return null
+            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
+                return null;
+
+            // otherwise try to convert the field associated with the prototype key into a DocumentController
+            var documentController =
+                _fields[KeyStore.PrototypeKey] as DocumentController;
+
+
+            // if the field contained a DocumentController return its data, otherwise return null
+            return documentController;
+        }
+
+
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype();
+            while (prototype != null)
+            {
+                result.AddFirst(prototype);
+                prototype = prototype.GetPrototype();
+            }
+            result.AddLast(this);
+            return result;
+        }
 
         /// <summary>
         ///  Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>
         /// <returns></returns>
         public DocumentController MakeDelegate()
-        {
+         {  
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
                 DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
@@ -548,6 +528,13 @@ namespace Dash
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();
             currentDelegates.Add(delegateController);
+
+            // copy all self-referential fields and update the references to point to the delegate
+            foreach (var f in EnumFields())
+                if (f.Value is ReferenceController referenceController)
+                {
+                    delegateController.SetField(f.Key, referenceController.CopyForDelegate(this, delegateController), true);
+                }
 
             // return the now fully populated delegate
             return delegateController;
@@ -599,7 +586,7 @@ namespace Dash
         /// </summary>
         public TypeInfo GetFieldType(KeyController key)
         {
-            var operatorController = GetField<OperatorController>(key);
+            var operatorController = GetField<ListController<OperatorController>>(key).TypedData.First();
             if (operatorController != null && operatorController.Outputs.ContainsKey(key))
             {
                 return operatorController.Outputs[key];
@@ -614,7 +601,7 @@ namespace Dash
         /// </summary>
         public TypeInfo GetRootFieldType(KeyController key)
         {
-            var operatorController = GetField<OperatorController>(KeyStore.OperatorKey);
+            var operatorController = GetField<ListController<OperatorController>>(KeyStore.OperatorKey).TypedData.First();
             if (operatorController != null && operatorController.Outputs.ContainsKey(key))
             {
                 return operatorController.Outputs[key];
@@ -683,6 +670,8 @@ namespace Dash
         /// <returns></returns>
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
+            if (field == null)
+                return false;
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;
@@ -690,9 +679,10 @@ namespace Dash
             // get the old value of the field
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
+            var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
 
-            // if the old and new field reference the exact same controller then we're done
-            if (!ReferenceEquals(oldField, field))
+            // if the old and new field reference the exact same controller then we're done unless we're force-masking a field
+            if (!ReferenceEquals(oldField, field) || (forceMask && !proto.Equals(doc)))
             {
                 //if (proto.CheckCycle(key, field))
                 //{
@@ -700,7 +690,7 @@ namespace Dash
                 //}
 
                 field.SaveOnServer();
-                oldField?.DisposeField();
+                overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
@@ -713,15 +703,11 @@ namespace Dash
                 generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
-                {
-                    setupPrototypeFieldChangedListeners(field);
-                }
+                    ; // need to see if any prototype operators need to be run
                 else if (key.Equals(KeyStore.DocumentContextKey))
                     ; // do we need to watch anything when the DocumentContext field is set?
                 else
-                {
                     setupFieldChangedListeners(key, field, oldField, new Context(doc));
-                }
 
                 return true;
             }
@@ -884,28 +870,25 @@ namespace Dash
         ///     2. the input contains the updated key or the output contains the updated key
         /// </para>
         /// </summary>
-        public bool ShouldExecute(Context context, KeyController updatedKey)
+        public Context ShouldExecute(Context context, KeyController updatedKey, DocumentFieldUpdatedEventArgs args, bool update=true)
         {
             context = context ?? new Context(this);
-            var opField = GetDereferencedField<OperatorController>(KeyStore.OperatorKey, context);
-            if (opField != null)
-                return opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
-            return false;
+            var opFields = GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
+            if (opFields != null)
+                foreach (var opField in opFields.TypedData)
+                {
+                    var exec = opField.Inputs.Any(i => i.Key.Equals(updatedKey)) || opField.Outputs.ContainsKey(updatedKey);
+                    if (exec)
+                        context = Execute(opField, context, update, args);
+                }
+            return context;
         }
 
-        public Context Execute(Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
+        public Context Execute(OperatorController opField, Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
             context.AddDocumentContext(this);
-
-            // check to see if there is an operator on this document, if so it would be stored at the
-            // operator key
-            var opField = GetDereferencedField(KeyStore.OperatorKey, context) as OperatorController;
-            if (opField == null)
-            {
-                return context; // no operator so we're done
-            }
 
             // create dictionaries to hold the inputs and outputs, these are being prepared
             // to be used in the actual operator's execute method
@@ -1082,7 +1065,7 @@ namespace Dash
 
         #endregion
 
-        // == OVERRIDEN from ICOLLECTION ==
+        // == OVERRIDDEN from ICOLLECTION ==
         #region ICollection Overrides
         public override void DeleteOnServer(Action success = null, Action<Exception> error = null)
         {
@@ -1128,6 +1111,29 @@ namespace Dash
         }
         #endregion
 
+        // == OVERRIDEN FROM OBJECT ==
+        #region Overriden from Object
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
+        }
+        
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(obj, this))
+            {
+                return true;
+            }
+            DocumentController controller = obj as DocumentController;
+            if (controller == null)
+            {
+                return false;
+            }
+            return GetId().Equals(controller.GetId());
+        }
+        #endregion
+
         // == EVENT MANAGEMENT ==
         #region Event Management
 
@@ -1170,9 +1176,8 @@ namespace Dash
             void TriggerDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
                 var refSender = sender as ReferenceController;
-                var proto = GetDataDocument().GetPrototypeWithFieldKey(reference.FieldKey) ??
-                            this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (GetDataDocument().GetId() == refSender?.GetDocumentId(null) || new Context(proto).IsCompatibleWith(c) || (this.GetField(KeyStore.AbstractInterfaceKey, true) != null))
+                var proto =this.GetPrototypeWithFieldKey(reference.FieldKey);
+                if (new Context(proto).IsCompatibleWith(c))
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
@@ -1191,79 +1196,8 @@ namespace Dash
 
         void generateDocumentFieldUpdatedEvents(FieldControllerBase sender, DocumentFieldUpdatedEventArgs args, DocumentFieldReference reference, Context newContext)
         {
-            if (ShouldExecute(newContext, reference.FieldKey))
-            {
-                newContext = Execute(newContext, true, args);
-            }
+            newContext =  ShouldExecute(newContext, reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
-        }
-
-        /// <summary>
-        /// converts fieldModelEvents on this document to fieldModelEvents on its prototype.
-        /// Also generates fieldModelEvents on this document when a prototype's field changes
-        /// </summary>
-        void setupPrototypeFieldChangedListeners(FieldControllerBase newField)
-        {
-            var prototype = newField as DocumentController;
-            if (prototype == null) return;
-
-            /// <summary>
-            /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
-            /// </summary>
-            void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-            {
-                var dargs = (DocumentFieldUpdatedEventArgs)args;
-                dargs.FromDelegate = true;
-                prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
-            };
-            FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
-
-            /// <summary>
-            /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
-            /// the field that was modified on the prototype
-            /// </summary>
-            void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
-            {
-                var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
-                {
-                    OnDocumentFieldUpdated(this,
-                        new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
-                            new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
-                            updateArgs.FieldArgs, false), new Context(this), true);
-                }
-            }
-            prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
-            prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
-        }
-
-        bool doesAnythingMaskThisField(KeyController field, Context c)
-        {
-            var ret = false;
-            var myProtos = GetAllPrototypes().ToArray().ToList();
-            if (c?.DocContextList != null)
-            {
-                foreach (var doc in c.DocContextList)
-                {
-                    var protos = doc.GetAllPrototypes().ToArray().ToList();
-                    if (protos.First().Equals(myProtos.First())) {
-                        if (protos.Count > myProtos.Count)
-                            ret = true;
-                        else if (protos.Count <= myProtos.Count) {
-                            for (int dd = 0; dd < protos.Count; dd++)
-                                if (!protos[dd].Equals(myProtos[dd]))
-                                    ret = true;
-                        }
-                        for (int d = protos.Count; d < myProtos.Count; d++)
-                            if (myProtos[d].GetField(field, true) != null)
-                                ret = true;
-                    }
-                }
-            }
-            //var oldtest = c.IsCompatibleWith(new Context(this));
-            //if (!ret !=  oldtest)
-            //    ;
-            return ret;
         }
 
         /// <summary>
@@ -1283,10 +1217,6 @@ namespace Dash
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
                 OnFieldModelUpdated(args, c);
-
-            // bubbles event down to delegates
-            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
-                PrototypeFieldUpdated?.Invoke(sender, args, c);
         }
 
         /// <summary>

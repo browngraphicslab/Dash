@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using static Dash.NoteDocuments;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
@@ -92,7 +91,7 @@ namespace Dash
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(dvm.DocumentController.GetViewCopy());
-            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;
         }
@@ -282,6 +281,8 @@ namespace Dash
         /// <param name="e"></param>
         void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (ViewModel == null) return;
+
             if (e.PropertyName == nameof(CollectionViewModel.TransformGroup))
             {
 
@@ -445,6 +446,11 @@ namespace Dash
             xOuterGrid.ReleasePointerCapture(e.Pointer);
         }
 
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
@@ -495,23 +501,33 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (XInkCanvas.IsTopmost() &&
-                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            // marquee on left click by default, right click in PanFast mode
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote || args.IsRightPressed())
             {
-                if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                    DeselectAll();
+                if (XInkCanvas.IsTopmost() &&
+                    (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                     (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                     ((!args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
+                {
+                    if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
+                        DeselectAll();
 
-                xOuterGrid.CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-                _isMarqueeActive = true;
-                PreviewTextbox_LostFocus(null, null);
-                ParentDocument.ManipulationMode = ManipulationModes.None;
-                args.Handled = true;
-                xOuterGrid.PointerMoved -= OnPointerMoved;
-                xOuterGrid.PointerMoved += OnPointerMoved;
+                    xOuterGrid.CapturePointer(args.Pointer);
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
+                    PreviewTextbox_LostFocus(null, null);
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
+                    args.Handled = true;
+                    xOuterGrid.PointerMoved -= OnPointerMoved;
+                    xOuterGrid.PointerMoved += OnPointerMoved;
+                }
             }
         }
 
@@ -641,11 +657,13 @@ namespace Dash
         {
             SelectionCanvas.Children.Clear();
 
-            _selectedDocs.AddRange(selected);
-            
-            foreach (var doc in SelectedDocs)
+            foreach (var doc in selected)
             {
-                doc.SetSelectionBorder(true);
+                if (!_selectedDocs.Contains(doc))
+                {
+                    _selectedDocs.Add(doc);
+                    doc.SetSelectionBorder(true);
+                }
             }
 
             MainPage.Instance.SelectDocuments(selected);

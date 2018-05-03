@@ -8,6 +8,7 @@ namespace Dash
 {
     class FieldMultiBinding<TXaml> : IFieldBinding
     {
+        public String Tag { get; set; }
         public BindingMode Mode { get; set; }
         public Context Context { get; set; }
 
@@ -19,8 +20,6 @@ namespace Dash
 
         public SafeDataToXamlConverter<List<object>, TXaml> Converter;//TODO Should this be a list of objects of of FieldControllerBase?
         public Object ConverterParameter;
-
-        public String Tag;
 
         public FieldMultiBinding(params FieldReference[] refs)
         {
