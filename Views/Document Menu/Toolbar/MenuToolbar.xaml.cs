@@ -132,8 +132,8 @@ namespace Dash
         private void SetUpBaseMenu()
         {
             _parentCanvas.Children.Add(this);
-            Canvas.SetLeft(this, 325);
-            Canvas.SetTop(this, 5);
+            //Canvas.SetLeft(this, 325);
+            //Canvas.SetTop(this, 10);
         }
 
         // copy btn
@@ -181,7 +181,11 @@ namespace Dash
                 mode = MouseMode.TakeNote;
             }
         }
-        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+
+		/**
+		* When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
+	   */
+		private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -219,7 +223,7 @@ namespace Dash
         }
 
         /**
-		 * Launches file picker & adds selected video(s) to the workspace.
+		 * When the "Add Video" btn is clicked, this launches a file picker & adds selected video(s) to the workspace.
 		*/
         private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {

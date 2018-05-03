@@ -93,7 +93,6 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
             Toolbar = new MenuToolbar(xCanvas);
-
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -559,6 +558,7 @@ namespace Dash
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;
             xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
+            Toolbar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
