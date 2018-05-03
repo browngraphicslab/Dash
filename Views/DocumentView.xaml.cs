@@ -755,6 +755,15 @@ namespace Dash
 
             collection.LoadNewActiveTextBox("", where, true);
         }
+        public void HandleCtrlEnter()
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var docCanvas = this.GetFirstAncestorOfType<Canvas>();
+            if (collection == null) return;
+            var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+            var dtext = this.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? "";
+            collection.LoadNewDataBox(dtext, where, true);
+        }
 
         #endregion
         #region Context menu click handlers
@@ -816,10 +825,10 @@ namespace Dash
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-                var newField = dragModel.GetDropDocument(new Point());
-                newField.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
-                newField.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                newField.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
+                var newFieldDoc = dragModel.GetDropDocument(new Point());
+                newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
+                newFieldDoc.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                newFieldDoc.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
                 var activeLayout = ViewModel.LayoutDocument;
                 if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
                 {
@@ -827,16 +836,16 @@ namespace Dash
                     {
                         var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
                         if (!footer)
-                            fields.Insert(0, newField);
-                        else fields.Add(newField);
+                            fields.Insert(0, newFieldDoc);
+                        else fields.Add(newFieldDoc);
                         activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
                     }
                     else
                     {
                         var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                         if (!footer)
-                            listCtrl.Add(newField, 0);
-                        else listCtrl.Add(newField);
+                            listCtrl.Add(newFieldDoc, 0);
+                        else listCtrl.Add(newFieldDoc);
                     }
                 }
                 else
@@ -852,11 +861,13 @@ namespace Dash
                     else  // need to create a stackPanel activeLayout and add the document to it
                     {
                         curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
+                        curLayout.Tag = "StackPanel DocView Layout";
                         curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
                         curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
                         curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                     }
-                    activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newField, footer ? newField : curLayout }).Document;
+                    activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
+                    activeLayout.Tag = "StackLayout";
                     activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
                     activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
                     activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
