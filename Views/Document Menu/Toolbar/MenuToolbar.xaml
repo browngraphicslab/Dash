@@ -14,7 +14,7 @@
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
     <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
         <StackPanel>
-            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
+            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" >
                 <AppBarToggleButton x:Name="xTouch" Icon="TouchPointer"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
                 <AppBarToggleButton x:Name="xInk" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
                 <AppBarToggleButton x:Name="xGroup" Icon="SelectAll" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
