@@ -15,12 +15,12 @@
     <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
         <StackPanel>
             <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
-                <AppBarToggleButton x:Name="xTouch" Icon="TouchPointer"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
-                <AppBarToggleButton x:Name="xInk" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
-                <AppBarToggleButton x:Name="xGroup" Icon="SelectAll" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
+                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Rename" Label="Add Note" ></AppBarButton>
-                <AppBarButton Icon="ViewAll" Label="Add Group"/>
+                <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
+                <AppBarButton Icon="ViewAll" IsEnabled="False" Label="Add Group"/>
                 <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
                 <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarSeparator/>
