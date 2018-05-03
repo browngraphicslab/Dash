@@ -132,8 +132,8 @@ namespace Dash
         private void SetUpBaseMenu()
         {
             _parentCanvas.Children.Add(this);
-            Canvas.SetLeft(this, 325);
-            Canvas.SetTop(this, 5);
+            //Canvas.SetLeft(this, 325);
+            //Canvas.SetTop(this, 10);
         }
 
         // copy btn
