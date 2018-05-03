@@ -483,23 +483,23 @@ namespace Dash
         DispatcherTimer mapTimer = new DispatcherTimer();
         void setupMapView(DocumentController mainDocumentCollection)
         {
-            if (xMapDocumentView == null)
-            {
-                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
-                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-                xMapDocumentView.IsHitTestVisible = false;
-                Grid.SetColumn(xMapDocumentView, 2);
-                Grid.SetRow(xMapDocumentView, 0);
-                xLeftStack.Children.Add(xMapDocumentView);
-                mapTimer.Interval = new TimeSpan(0, 0, 1);
-                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
-            }
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
-            mapTimer.Start();
+            //if (xMapDocumentView == null)
+            //{
+            //    var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+            //    xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+            //    xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            //    xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+            //    xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            //    //xMapDocumentView.IsHitTestVisible = false;
+            //    Grid.SetColumn(xMapDocumentView, 2);
+            //    Grid.SetRow(xMapDocumentView, 0);
+            //    xLeftStack.Children.Add(xMapDocumentView);
+            //    mapTimer.Interval = new TimeSpan(0, 0, 1);
+            //    mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
+            //}
+            //xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
+            //xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
+            //mapTimer.Start();
         }
 
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)

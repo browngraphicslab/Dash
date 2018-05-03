@@ -138,6 +138,6 @@ namespace Dash
             controller?.UpdateOnServer();
         }
 
-        public abstract FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController);
+        public abstract FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping);
     }
 }
