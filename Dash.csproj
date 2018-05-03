@@ -413,6 +413,7 @@
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
+    <Compile Include="Views\Floating.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
@@ -790,6 +791,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Collection\CollectionTimelineView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1120,7 +1125,6 @@
   <ItemGroup>
     <Folder Include="Controllers\Operators\Image\" />
     <Folder Include="Push\" />
-    <Folder Include="Themes\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper">
