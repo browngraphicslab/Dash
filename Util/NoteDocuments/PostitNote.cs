@@ -17,6 +17,7 @@ namespace Dash
                 [KeyStore.AbstractInterfaceKey] = new TextController("PostIt Note Data API"),
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Postit Note Protoype" };
+            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey), true);
             return protoDoc;
         }
 

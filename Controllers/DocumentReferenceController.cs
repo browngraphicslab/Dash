@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DashShared;
 
 namespace Dash
@@ -62,11 +63,11 @@ namespace Dash
         {
             return DocumentId;
         }
-        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        public override FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping)
         {
-            if (GetDocumentController(null).Equals(documentController))
+            if (mapping.ContainsKey(GetDocumentController(null)))
             {
-                return new DocumentReferenceController(delegateController.Id, FieldKey);
+                return new DocumentReferenceController(mapping[GetDocumentController(null)].Id, FieldKey);
             }
             return Copy();
         }

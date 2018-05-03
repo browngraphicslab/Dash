@@ -18,7 +18,7 @@ namespace Dash
                 [KeyStore.AbstractInterfaceKey] = new TextController("Collected Docs Note Data API"),
                 [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { new CollectionTitleOperatorController() })
             };
-            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Collection Data Prototype" };
+            var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
 
             protoDoc.SetField(KeyStore.TitleKey,
                 new DocumentReferenceController(protoDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);

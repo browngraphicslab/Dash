@@ -16,6 +16,7 @@ namespace Dash
     /// <summary>
     /// Allows interactions with underlying DocumentModel.
     /// </summary>
+	[DebuggerDisplay("{Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
         /// <summary>
@@ -298,11 +299,11 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
                             }
-							else if (target.Value.Type == TypeInfo.Video)
-							{
-								opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
-							}
-						}
+                            else if (target.Value.Type == TypeInfo.Video)
+                            {
+                                opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
+                            }
+                        }
                     }
                     SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
@@ -536,12 +537,13 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public DocumentController MakeDelegate()
-         {  
+        {
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
                 DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
+            delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = this;
@@ -551,15 +553,38 @@ namespace Dash
             var currentDelegates = GetDelegates();
             currentDelegates.Add(delegateController);
 
-            // copy all self-referential fields and update the references to point to the delegate
-            foreach (var f in EnumFields())
-                if (f.Value is ReferenceController referenceController)
-                {
-                    delegateController.SetField(f.Key, referenceController.CopyForDelegate(this, delegateController), true);
-                }
-
             // return the now fully populated delegate
             return delegateController;
+        }
+
+        public void MapDocuments(Dictionary<DocumentController, DocumentController> mapping)
+        {
+            // copy all self-referential fields and update the references to point to the delegate
+            foreach (var f in EnumFields())
+                if (f.Key.Equals(KeyStore.PrototypeKey) || f.Key.Equals(KeyStore.DelegatesKey))
+                    continue;
+                else
+                if (f.Value is ReferenceController referenceController)
+                {
+                    SetField(f.Key, referenceController.CopyForDelegate(mapping), true);
+                }
+                else if (f.Value is DocumentController fieldDoc && mapping.ContainsKey(fieldDoc))
+                {
+                    SetField(f.Key, mapping[fieldDoc], true);
+                }
+                else if (!f.Key.Equals(KeyStore.DelegatesKey) && f.Value is ListController<DocumentController> listDocs)
+                {
+                    var newListDocs = new ListController<DocumentController>();
+                    foreach (var l in listDocs.TypedData)
+                    {
+                        var lnew = l.MakeDelegate();
+                        mapping.Add(l, lnew);
+                        lnew.MapDocuments(mapping);
+                        mapping.Remove(l);
+                        newListDocs.Add(lnew);
+                    }
+                    SetField(f.Key, newListDocs, true);
+                }
         }
 
         /// <summary>

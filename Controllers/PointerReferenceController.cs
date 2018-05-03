@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System;
+using System.Collections.Generic;
 
 namespace Dash.Controllers
 {
@@ -70,11 +71,11 @@ namespace Dash.Controllers
             base.UpdateOnServer(success, error);
         }
 
-        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        public override FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping)
         {
-            if (DocumentReference.GetDocumentController(null).Equals(documentController))
+            if (mapping.ContainsKey(DocumentReference.GetDocumentController(null)))
             {
-                return new PointerReferenceController(new DocumentReferenceController(delegateController.Id, DocumentReference.FieldKey), FieldKey);
+                return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)].Id, DocumentReference.FieldKey), FieldKey);
             }
             return Copy();
         }
