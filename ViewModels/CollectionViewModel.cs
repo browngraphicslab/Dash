@@ -234,6 +234,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Adds a document to the given collectionview.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <param name="context"></param>
         public void AddDocument(DocumentController doc, Context context)
         {
             if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))

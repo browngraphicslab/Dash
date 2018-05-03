@@ -26,8 +26,8 @@
                 <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
                 <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Copy" x:Name="xCopy" Label="Duplicate" Click="Copy" />
-                <AppBarButton Icon="Delete" x:Name="xDelete" Label="Delete" Click="Delete" />
+                <AppBarButton Icon="Copy" IsEnabled="false" x:Name="xCopy" Label="Duplicate" Click="Copy" />
+                <AppBarButton Icon="Delete" IsEnabled="False" x:Name="xDelete" Label="Delete" Click="Delete" />
             </ctrl:CommandBar>
             <StackPanel Margin="0,12,0,0">
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />

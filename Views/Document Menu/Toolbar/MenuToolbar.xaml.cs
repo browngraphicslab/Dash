@@ -90,10 +90,10 @@ namespace Dash
         {
             if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-            toggleSelectOptions(docs.Count<DocumentView>() > 0);
+            toggleSelectOptions(docs.Count() > 0);
 
             // just single select
-            if (docs.Count<DocumentView>() == 1)
+            if (docs.Count() == 1)
             {
                 // Text controls
                 var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
@@ -148,7 +148,8 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
+            foreach (DocumentView d in tempDocs)
             {
                 d.DeleteDocument();
             }
