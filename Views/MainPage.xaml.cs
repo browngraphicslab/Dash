@@ -38,15 +38,22 @@ namespace Dash
         
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-        private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
+        private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
+
+        // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
         {
             SelectedDocuments = new List<DocumentView>();
             Toolbar.Update(SelectedDocuments);
         }
+        public void DeselectDocument(DocumentView doc)
+        {
+            SelectedDocuments.Remove(doc);
+            Toolbar.Update(SelectedDocuments);
+        }
         public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
-        public void SelectDocuments(IEnumerable<DocumentView> docs)
+        public void SelectDocuments(ICollection<DocumentView> docs)
         {
             SelectedDocuments = docs;
             Toolbar.Update(docs);

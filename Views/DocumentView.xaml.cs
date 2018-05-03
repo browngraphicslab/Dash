@@ -591,6 +591,7 @@ namespace Dash
                 {
                     (ParentCollection.CurrentView as CollectionFreeformView)?.RenderPreviewTextbox(ViewModel.Position);
                 }
+                MainPage.Instance.DeselectDocument(this);
             }
         }
 
@@ -601,8 +602,8 @@ namespace Dash
         {
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
+            var doc = ViewModel.DocumentController.GetCopy(null);
+            ParentCollection?.ViewModel.AddDocument(doc, null);
         }
 
         /// <summary>
