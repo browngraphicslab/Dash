@@ -152,7 +152,13 @@ namespace Dash
 
         private void XListView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.ViewModelScrollViewer = GetScrollViewer(xListView);
+            if (ViewModel != null)
+                ViewModel.ViewModelScrollViewer = GetScrollViewer(xListView);
+        }
+
+        private void XListView_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ViewModelScrollViewer = null;
         }
     }
 }

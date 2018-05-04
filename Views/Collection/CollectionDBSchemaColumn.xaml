@@ -12,6 +12,7 @@
     <ListView
         x:Name="xListView"
         Loaded="XListView_OnLoaded"
+        Unloaded="XListView_OnUnloaded"
         ItemsSource="{Binding EditableViewModels}"
         Width="{Binding Width}" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" 
         SelectionMode="None"

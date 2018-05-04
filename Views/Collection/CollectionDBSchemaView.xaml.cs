@@ -3,12 +3,15 @@ using DashShared;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Flurl.Util;
+using Microsoft.Toolkit.Uwp.UI;
 using static Dash.CollectionDBSchemaHeader;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -75,8 +78,9 @@ namespace Dash
                     {
                         var headerViewModel = e.NewItems[i] as HeaderViewModel;
                         Debug.Assert(headerViewModel != null);
-                        ColumnViewModels.Insert(e.NewStartingIndex + i, 
-                            new CollectionDBSchemaColumnViewModel(headerViewModel.FieldKey, CollectionDocuments, headerViewModel));
+                        ColumnViewModels.Insert(e.NewStartingIndex + i,
+                            new CollectionDBSchemaColumnViewModel(headerViewModel.FieldKey, CollectionDocuments,
+                                headerViewModel));
                     }
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Move:
@@ -87,11 +91,23 @@ namespace Dash
                     {
                         ColumnViewModels.RemoveAt(e.OldStartingIndex);
                     }
+
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Replace:
                     break;
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     break;
+            }
+        }
+
+        private void AddViewChanged()
+        {
+            foreach (var scrollViewer in ColumnViewModels.Select(colvm => colvm.ViewModelScrollViewer))
+            {
+                if (scrollViewer != null)
+                {
+                    scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
+                }
             }
         }
         
@@ -215,22 +231,15 @@ namespace Dash
 
         public void Sort(HeaderViewModel viewModel)
         {
-            // TODO reimplement this with advanced collection view
-            //var dbDocs = ParentDocument.GetDataDocument()
-            //       .GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, null)?.TypedData;
+            // TODO: ACV might not work?
+            /*
+            var acv = new AdvancedCollectionView(CollectionDocuments, true);
 
-            //var records = new SortedList<string, DocumentController>();
-            //foreach (var d in dbDocs)
-            //{
-            //    var str = d.GetDataDocument().GetDereferencedField(viewModel.FieldKey, null)?.GetValue(new Context(d))?.ToString() ?? "{}";
-            //    if (records.ContainsKey(str))
-            //        records.Add(str + Guid.NewGuid(), d);
-            //    else records.Add(str, d);
-            //}
-            //if (_lastFieldSortKey != null && _lastFieldSortKey.Equals(viewModel.FieldKey))
-            //    ResetRecords(records.Select((r) => r.Value).Reverse());
-            //else ResetRecords(records.Select((r) => r.Value));
-            //_lastFieldSortKey = viewModel.FieldKey;
+            acv.Filter = x => x != null;
+            acv.SortDescriptions.Add(new SortDescription("Title", SortDirection.Ascending));
+
+            xRecordsView.ItemsSource = acv;
+            */
         }
 
         /// <summary>
@@ -269,10 +278,6 @@ namespace Dash
                 var cvm = new CollectionDBSchemaColumnViewModel(typedHeader.Key, CollectionDocuments,
                     SchemaHeaders.First(hvm => hvm.FieldKey.Equals(typedHeader.Key)));
                 ColumnViewModels.Add(cvm);
-            }
-
-            foreach (var cvm in ColumnViewModels)
-            {
                 cvm.PropertyChanged += Cvm_PropertyChanged;
             }
         }
@@ -281,13 +286,7 @@ namespace Dash
         {
             if (e.PropertyName.Equals("ViewModelScrollViewer"))
             {
-                foreach (var scrollViewer in ColumnViewModels.Select(colvm => colvm.ViewModelScrollViewer))
-                {
-                    if (scrollViewer != null)
-                    {
-                        scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
-                    }
-                }
+                AddViewChanged();
             }
         }
 
