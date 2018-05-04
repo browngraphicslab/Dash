@@ -93,7 +93,7 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
             Toolbar = new MenuToolbar(xCanvas);
-        }
+		}
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
