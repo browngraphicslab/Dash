@@ -16,11 +16,9 @@ namespace Dash
 
         public abstract TypeInfo TypeInfo { get; }
         public virtual TypeInfo RootTypeInfo => TypeInfo;
-
         public event FieldUpdatedHandler FieldModelUpdated;
-
         public object Tag = null;
-
+            
         public FieldControllerBase(FieldModel model) : base(model)
         {
         }

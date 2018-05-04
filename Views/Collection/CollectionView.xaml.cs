@@ -49,24 +49,13 @@ namespace Dash
             PointerPressed += OnPointerPressed;
         }
 
+        /// <summary>
+        /// Begins panning events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
-            var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-            if (parentFreeform != null && rightBtn)
-            {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
-                var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
-                if (!grabbed && (shifted || parentParentFreeform == null))
-                {
-                    new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
-
-                    args.Handled = true;
-                } else 
-                    if (parentParentFreeform != null)
-                        CurrentView.ManipulationMode = ManipulationModes.None;
-            }
         }
 
         #region Load And Unload Initialization and Cleanup
@@ -160,7 +149,6 @@ namespace Dash
                     vtype.Click += (sender, e) => SetView(n);
                     viewCollectionAs.Items.Add(vtype);
                 }
-
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
