@@ -109,7 +109,10 @@ namespace Dash
 
         private string GetExpression()
         {
-            return TargetFieldController?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
+            var reference = TargetFieldController?.Dereference(TargetDocContext);
+            if (reference is DocumentReferenceController dref && (dref.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite)
+                return XTextBlock.Text;
+            return reference?.GetValue(TargetDocContext)?.ToString();
         }
 
         private void SetExpression(string expression)

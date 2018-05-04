@@ -12,7 +12,7 @@ namespace Dash
             set { (Model as DocumentReferenceModel).DocumentId = value; }
         }
 
-        public DocumentReferenceController(string docId, KeyController key) : base(new DocumentReferenceModel(docId, key.Id))
+        public DocumentReferenceController(string docId, KeyController key, bool copyOnWrite=false) : base(new DocumentReferenceModel(docId, key.Id, copyOnWrite))
         {
             Debug.Assert(docId != null);
             Debug.Assert(key != null);

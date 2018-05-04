@@ -182,7 +182,7 @@ namespace Dash
             // Note: bindings might need to be changed to create copy-on-write
             foreach (var f in origDocContext.EnumDisplayableFields())
                 if ((mapping[origDocContext] as DocumentController).GetField(f.Key, true) == null)
-                    (mapping[origDocContext] as DocumentController).SetField(f.Key, f.Value.Copy(), true);
+                    (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext.Id, f.Key, true), true);
 
             return newDoc;
         }

@@ -252,7 +252,7 @@ namespace Dash
         /// <summary>
         /// Parses text input into a field controller
         /// </summary>
-        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
+        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null, bool copy=false)
         {
             textInput = textInput.Trim(' ');
             if (textInput.StartsWith("="))
@@ -318,18 +318,24 @@ namespace Dash
                     {
                         double num;
                         if (double.TryParse(textInput, out num))
-                            nc.Data = num;
+                            if (copy)
+                                SetField(key, new NumberController(num), true);
+                            else nc.Data = num;
                         else return false;
                     }
                     else if (curField is TextController tc)
                     {
-                        tc.Data = textInput;
+                        if (copy)
+                            SetField(key, new TextController(textInput), true);
+                        else tc.Data = textInput;
                     }
                     else if (curField is ImageController ic)
                     {
                         try
                         {
-                            ic.Data = new Uri(textInput);
+                            if (copy)
+                                SetField(key, new ImageController(new Uri(textInput)), true);
+                            else ic.Data = new Uri(textInput);
                         }
                         catch (Exception)
                         {
@@ -344,7 +350,9 @@ namespace Dash
                     {
                         try
                         {
-                            vc.Data = new Uri(textInput);
+                            if (copy)
+                                SetField(key, new VideoController(new Uri(textInput)), true);
+                            else vc.Data = new Uri(textInput);
                         }
                         catch (Exception)
                         {
@@ -359,7 +367,9 @@ namespace Dash
                     }
                     else if (curField is ListController<DocumentController> lc)
                     {
-                        lc.TypedData =
+                        if (copy)
+                            SetField(key, new ListController<DocumentController>(new DocumentCollectionToStringConverter().ConvertXamlToData(textInput)), true);
+                        else lc.TypedData =
                             new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is RichTextController rtc)
