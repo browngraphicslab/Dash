@@ -37,25 +37,43 @@ namespace Dash
                 new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
             try
             {
-                if (File.Exists(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName))
+                if (File.Exists(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName))
                 {
-                    var dictionaryText = File.ReadAllText(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName);
+                    var dictionaryText = File.ReadAllText(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName);
                     _modelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
-                    File.Copy(Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + _fileName, Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
+                    File.Copy(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName, ApplicationData.Current.LocalFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
                 }
                 else
                 {
                     _modelDictionary = _modelDictionary ?? new Dictionary<string, string>();
                 }
 
-                Debug.WriteLine("\n\n\n\nDatabase at:   " + Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\n\n\n\n");
+                Debug.WriteLine("\n\n\n\nDatabase at:   " + ApplicationData.Current.LocalFolder.Path + "\n\n\n\n");
             }
             catch (Exception e)
             {
                 _modelDictionary = new Dictionary<string, string>();
             }
             //App.Instance.Suspending += AppSuspending;
+        }
+
+        public Dictionary<string, string> GetBackups()
+        {
+            var dict = new Dictionary<string, string>();
+
+            var directoryInfo = new DirectoryInfo(ApplicationData.Current.LocalFolder.Path);
+            var fileInfos = directoryInfo.GetFiles();
+            foreach (var fileInfo in fileInfos)
+            {
+                if (!fileInfo.Name.Contains("_backup_")) continue;
+                var splitInfo = fileInfo.Name.Split(new[] { "_backup_" }, StringSplitOptions.None);
+                var ticks = long.Parse(splitInfo[0]);
+                var prettyTime = new DateTime(ticks).ToString("MM/dd/yyyy h:mm tt");
+                dict[prettyTime] = fileInfo.FullName;
+            }
+
+            return dict;
         }
 
         /// <summary>
@@ -80,7 +98,7 @@ namespace Dash
                         }
                     }
 
-                    var file = await Windows.Storage.ApplicationData.Current.LocalFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
+                    var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
                     using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
                     {
                         using (var outgoingStream = stream.GetOutputStreamAt(0))
@@ -160,9 +178,9 @@ namespace Dash
             try
             {
                 var doc = GetModel(id);
-                var args = new RestRequestReturnArgs()
+                var args = new RestRequestReturnArgs
                 {
-                    ReturnedObjects = new List<EntityBase>()
+                    ReturnedObjects = new List<EntityBase>
                     {
                         doc.CreateObject<T>()
                     }
