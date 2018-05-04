@@ -43,7 +43,8 @@ namespace Dash
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
 
         public DocumentView         xMapDocumentView;
-        private bool _firstDock = true;
+        private bool[] _firstDock = {true, true, true, true};
+        private DockedView[] _lastDockedViews = {null, null, null, null};
 
         public MainPage()
         {
@@ -513,7 +514,7 @@ namespace Dash
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
 
-        public void Dock(DocumentView toDock)
+        public void Dock(DocumentView toDock, DockDirection dir)
         {
             DocumentController context = toDock.ViewModel.DocumentController;
             DocumentView copiedView = new DocumentView()
@@ -527,43 +528,84 @@ namespace Dash
             copiedView.ViewModel.Height = Double.NaN;
             copiedView.ViewModel.DisableDecorations = true;
 
-            DockedView dockedView = new DockedView(DockDirection.Left);
+            DockedView dockedView = new DockedView(dir);
             dockedView.ChangeView(copiedView);
             dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockedView.VerticalAlignment = VerticalAlignment.Stretch;
 
-            if (_firstDock)
+            if (_firstDock[(int) dir])
             {
-                xLeftDockSplitterColumn.Width = new GridLength(15);
-                xLeftDockColumn.Width = new GridLength(300);
-
-                Grid.SetColumn(dockedView, 4);
+                switch (dir)
+                {
+                    case DockDirection.Left:
+                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 2, 1, 0, 5);
+                        break;
+                    case DockDirection.Right:
+                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 6, 1, 0, 5);
+                        break;
+                    case DockDirection.Top:
+                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 0, 1);
+                        break;
+                    case DockDirection.Bottom:
+                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 4, 1);
+                        break;
+                }
+                
                 xOuterGrid.Children.Add(dockedView);
-                _firstDock = false;
+                _firstDock[(int) dir] = false;
+                _lastDockedViews[(int) dir] = dockedView;
             }
             else
             {
-                DockedView tail = this.GetFirstDescendantOfType<DockedView>();
-                // find the tail of this "linked list"
-                while (tail.NestedView != null)
-                {
-                    tail = tail.NestedView;
-                }
-                
+                DockedView tail = _lastDockedViews[(int) dir];
                 tail.ChangeNestedView(dockedView);
                 dockedView.PreviousView = tail;
+                _lastDockedViews[(int) dir] = dockedView;
             }
             
         }
 
-        public void HighlightDock()
+        private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
         {
-            xDock.Opacity = 0.4;
+            Grid.SetColumn(e, col);
+            Grid.SetColumnSpan(e, colSpan);
+            Grid.SetRow(e, row);
+            Grid.SetRowSpan(e, rowSpan);
+        }
+
+        public void HighlightDock(DockDirection dir)
+        {
+            switch (dir)
+            {
+                case DockDirection.Left:
+                    xDockLeft.Opacity = 0.4;
+                    break;
+                case DockDirection.Right:
+                    xDockRight.Opacity = 0.4;
+                    break;
+                case DockDirection.Top:
+                    xDockTop.Opacity = 0.4;
+                    break;
+                case DockDirection.Bottom:
+                    xDockBottom.Opacity = 0.4;
+                    break;
+            }
         }
 
         public void UnhighlightDock()
         {
-            xDock.Opacity = 0;
+            xDockRight.Opacity = 0;
+            xDockLeft.Opacity = 0;
+            xDockTop.Opacity = 0;
+            xDockBottom.Opacity = 0;
         }
 
         public void Undock(DockedView undock)
@@ -574,14 +616,33 @@ namespace Dash
                 // means it's also the first NestedView
                 if (undock.PreviousView == null)
                 {
-                    xLeftDockSplitterColumn.Width = new GridLength(0);
-                    xLeftDockColumn.Width = new GridLength(0);
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            xLeftDockSplitterColumn.Width = new GridLength(0);
+                            xLeftDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Right:
+                            xRightDockSplitterColumn.Width = new GridLength(0);
+                            xRightDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Top:
+                            xTopDockSplitterRow.Height = new GridLength(0);
+                            xTopDockRow.Height = new GridLength(0);
+                            break;
+                        case DockDirection.Bottom:
+                            xBottomDockSplitterRow.Height = new GridLength(0);
+                            xBottomDockRow.Height = new GridLength(0);
+                            break;
+                    }
                     xOuterGrid.Children.Remove(undock);
-                    _firstDock = true;
+                    _firstDock[(int) undock.Direction] = true;
+                    _lastDockedViews[(int) undock.Direction] = null;
                 }
                 else
                 {
                     undock.PreviousView.ClearNestedView();
+                    _lastDockedViews[(int) undock.Direction] = undock.PreviousView;
                 }
             }
             else
@@ -592,7 +653,21 @@ namespace Dash
                     var newFirst = undock.ClearNestedView();
                     newFirst.PreviousView = null;
                     xOuterGrid.Children.Remove(undock);
-                    Grid.SetColumn(newFirst, 4);
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            SetGridPosition(newFirst, 2, 1, 0, 5);
+                            break;
+                        case DockDirection.Right:
+                            SetGridPosition(newFirst, 6, 1, 0, 5);
+                            break;
+                        case DockDirection.Top:
+                            SetGridPosition(newFirst, 4, 1, 0, 1);
+                            break;
+                        case DockDirection.Bottom:
+                            SetGridPosition(newFirst, 4, 1, 4, 1);
+                            break;
+                    }
                     xOuterGrid.Children.Add(newFirst);
                 }
                 else

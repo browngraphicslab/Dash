@@ -20,10 +20,11 @@ namespace Dash.Views
 {
     public enum DockDirection
     {
-        Left,
-        Top,
-        Bottom,
-        Right
+        Left = 0,
+        Right = 1,
+        Top = 2,
+        Bottom = 3,
+        None = 4
     }
 
     public sealed partial class DockedView : UserControl
@@ -49,6 +50,9 @@ namespace Dash.Views
             Grid.SetColumnSpan(view, 2);
             Grid.SetRow(view, 0);
             Grid.SetRowSpan(view, 2);
+            
+            NestedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            NestedView.VerticalAlignment = VerticalAlignment.Stretch;
 
             xMainDockedView.Children.Clear();
             xMainDockedView.Children.Add(view);
@@ -57,7 +61,7 @@ namespace Dash.Views
 
         public void ChangeNestedView(DockedView view)
         {
-            // first time setting the nested view?
+            // first time setting the nested view? If so, initialize dimensions
             if (NestedView == null)
             {
                 switch (view.Direction)
@@ -65,26 +69,53 @@ namespace Dash.Views
                     case DockDirection.Left:
                         xLeftSplitterColumn.Width = new GridLength(15);
                         xLeftNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
-                        Grid.SetColumn(view, 4);
-                        Grid.SetRow(view, 0);
-                        Grid.SetRowSpan(view, 5);
+                        break;
+                    case DockDirection.Right:
+                        xRightSplitterColumn.Width = new GridLength(15);
+                        xRightNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
+                        break;
+                    case DockDirection.Top:
+                        xTopSplitterRow.Height = new GridLength(15);
+                        xTopNestedViewRow.Height = new GridLength(xMainDockedView.ActualHeight / 2);
+                        break;
+                    case DockDirection.Bottom:
+                        xBottomSplitterRow.Height = new GridLength(15);
+                        xBottomNestedViewRow.Height = new GridLength(xMainDockedView.ActualHeight / 2);
                         break;
                 }
             }
             else
             {
                 xContentGrid.Children.Remove(NestedView);
-                switch (view.Direction)
-                {
-                    case DockDirection.Left:
-                        Grid.SetColumn(view, 4);
-                        Grid.SetRow(view, 0);
-                        Grid.SetRowSpan(view, 5);
-                        break;
-                }
+            }
+
+            switch (view.Direction)
+            {
+                case DockDirection.Right:
+                    Grid.SetColumn(view, 4);
+                    Grid.SetRow(view, 0);
+                    Grid.SetRowSpan(view, 5);
+                    break;
+                case DockDirection.Left:
+                    Grid.SetColumn(view, 0);
+                    Grid.SetRow(view, 0);
+                    Grid.SetRowSpan(view, 5);
+                    break;
+                case DockDirection.Top:
+                    Grid.SetRow(view, 0);
+                    Grid.SetColumn(view, 0);
+                    Grid.SetColumnSpan(view, 5);
+                    break;
+                case DockDirection.Bottom:
+                    Grid.SetRow(view, 4);
+                    Grid.SetColumn(view, 0);
+                    Grid.SetColumnSpan(view, 5);
+                    break;
             }
 
             NestedView = view;
+            NestedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            NestedView.VerticalAlignment = VerticalAlignment.Stretch;
             xContentGrid.Children.Add(NestedView);
         }
 
@@ -94,9 +125,21 @@ namespace Dash.Views
             {
                 switch (NestedView.Direction)
                 {
+                    case DockDirection.Right:
+                        xRightSplitterColumn.Width = new GridLength(0);
+                        xRightNestedViewColumn.Width = new GridLength(0);
+                        break;
                     case DockDirection.Left:
                         xLeftSplitterColumn.Width = new GridLength(0);
                         xLeftNestedViewColumn.Width = new GridLength(0);
+                        break;
+                    case DockDirection.Top:
+                        xTopSplitterRow.Height = new GridLength(0);
+                        xTopNestedViewRow.Height = new GridLength(0);
+                        break;
+                    case DockDirection.Bottom:
+                        xBottomSplitterRow.Height = new GridLength(0);
+                        xBottomNestedViewRow.Height = new GridLength(0);
                         break;
                 }
 

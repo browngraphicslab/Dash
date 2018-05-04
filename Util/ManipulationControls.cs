@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
 
@@ -459,28 +460,59 @@ namespace Dash
 
         private void Dock(bool preview)
         {
-            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
-            var location = new Rect(MainPage.Instance.xDock.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)), 
-                new Size(MainPage.Instance.xDock.ActualWidth, MainPage.Instance.xDock.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, location) != RectHelper.Empty)
+            DockDirection overlappedDirection = GetDockIntersection();
+
+            if (overlappedDirection != DockDirection.None)
             {
                 if (preview)
                 {
-                    MainPage.Instance.HighlightDock();
+                    MainPage.Instance.HighlightDock(overlappedDirection);
                 }
                 else
                 {
                     ParentDocument.ViewModel.XPos = ManipulationStartX;
                     ParentDocument.ViewModel.YPos = ManipulationStartY;
                     MainPage.Instance.UnhighlightDock();
-                    MainPage.Instance.Dock(ParentDocument);
+                    MainPage.Instance.Dock(ParentDocument, overlappedDirection);
                 }   
             }
             else
             {
                 MainPage.Instance.UnhighlightDock();
             }
+        }
+
+        private DockDirection GetDockIntersection()
+        {
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
+            var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
+            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
+            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
+            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
+
+            if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Right;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Left;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Top;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Bottom;
+            }
+
+            return DockDirection.None;
         }
 
         private void SnapToCollection(Tuple<DocumentView, Side, double> closest)
