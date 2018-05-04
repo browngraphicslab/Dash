@@ -1198,7 +1198,7 @@ namespace Dash
             {
                 var refSender = sender as ReferenceController;
                 var proto =this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (new Context(proto).IsCompatibleWith(c))
+                //if (new Context(proto).IsCompatibleWith(c))
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.

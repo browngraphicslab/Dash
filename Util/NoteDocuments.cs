@@ -45,6 +45,9 @@ namespace Dash
         protected DocumentController makeDataDelegate(FieldControllerBase controller)
         {
             var dataDocument = _prototype.MakeDelegate();
+            var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
+            mapping.Add(_prototype, dataDocument);
+            dataDocument.MapDocuments(mapping);
             dataDocument.SetField(KeyStore.DataKey, controller, true);
             return dataDocument;
         }
