@@ -41,7 +41,6 @@ namespace Dash
 
         public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
-            //TODO: other document types
 
             //allow the user to pick a folder to save all the files
             folder = await PickFolder();
@@ -195,8 +194,6 @@ namespace Dash
 
         private static List<double> BorderVal(List<DocumentController> docs)
         {
-            //TODO: same but for y
-
             double minX = Double.PositiveInfinity;
             double maxX = Double.NegativeInfinity;
 
