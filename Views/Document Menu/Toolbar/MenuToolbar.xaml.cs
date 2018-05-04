@@ -52,6 +52,7 @@ namespace Dash
             mode = MouseMode.TakeNote;
             checkedButton = xTouch;
 
+			//move toolbar to ideal location on start-up
 			Loaded += (sender, args) =>
 			{
 				Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
