@@ -24,11 +24,18 @@ namespace Dash
     public class CollectionDBSchemaColumnViewModel : ViewModelBase
     {
         double _width;
+        private ScrollViewer _viewModelScrollViewer;
         public KeyController Key { get; } // GET ONLY FOR SAFETY
 
         private ObservableCollection<DocumentController> CollectionDocs { get; } // GET ONLY FOR SAFETY
 
         public ObservableCollection<EditableScriptViewModel> EditableViewModels { get; } // GET ONLY FOR SAFETY
+
+        public ScrollViewer ViewModelScrollViewer
+        {
+            get => _viewModelScrollViewer;
+            set => SetProperty(ref _viewModelScrollViewer, value);
+        }
 
         public double Width
         {
@@ -63,7 +70,6 @@ namespace Dash
 
             collectionDocs.CollectionChanged += CollectionDocs_CollectionChanged;
         }
-
         private void OnHeaderViewModelOnPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is CollectionDBSchemaHeader.HeaderViewModel hvm)
@@ -107,7 +113,7 @@ namespace Dash
     {
 
         public CollectionDBSchemaColumnViewModel ViewModel { get; set; }
-
+        
         public CollectionDBSchemaColumn()
         {
             this.InitializeComponent();
@@ -126,7 +132,27 @@ namespace Dash
                 ViewModel = newViewModel;
             }
         }
+        public static ScrollViewer GetScrollViewer(DependencyObject element)
+        {
+            if (element is ScrollViewer)
+            {
+                return (ScrollViewer)element;
+            }
 
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            {
+                var child = VisualTreeHelper.GetChild(element, i);
 
+                var result = GetScrollViewer(child);
+                if (result != null) return result;
+            }
+
+            return null;
+        }
+
+        private void XListView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ViewModelScrollViewer = GetScrollViewer(xListView);
+        }
     }
 }

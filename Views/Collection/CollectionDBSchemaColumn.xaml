@@ -10,16 +10,32 @@
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionDBSchemaColumnViewModel }">
 
     <ListView
+        x:Name="xListView"
+        Loaded="XListView_OnLoaded"
         ItemsSource="{Binding EditableViewModels}"
-        Width="{Binding Width}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        Width="{Binding Width}" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" 
+        SelectionMode="None"
+        CanDrag="False"
+        AllowDrop="False"
+        CanReorderItems="False"
+        ScrollViewer.VerticalScrollBarVisibility="Hidden"
+        ShowsScrollingPlaceholders="False">
         <ListView.ItemContainerStyle>
             <Style TargetType="ListViewItem">
+                <!--this could be bound to have left/right aligned columns for instance text vs numbers-->
                 <Setter Property="HorizontalContentAlignment" Value="Left" />
-                <Setter Property="VerticalContentAlignment" Value="Top" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
                 <Setter Property="Margin" Value="0,0,0,0" />
                 <Setter Property="Padding" Value="0,0,0,0" />
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="MinHeight" Value="0" />
+                <!--<Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <ContentPresenter />
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>-->
             </Style>
         </ListView.ItemContainerStyle>
         <ListView.ItemTemplate>

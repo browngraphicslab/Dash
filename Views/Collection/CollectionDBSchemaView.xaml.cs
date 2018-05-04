@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -7,8 +9,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Dash.Models.DragModels;
-using DashShared;
 using static Dash.CollectionDBSchemaHeader;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -64,7 +64,6 @@ namespace Dash
             CollectionDocuments = new ObservableCollection<DocumentController>();
             SchemaHeaders = new ObservableCollection<HeaderViewModel>();
             xHeaderView.ItemsSource = SchemaHeaders;
-
         }
 
         private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -94,6 +93,16 @@ namespace Dash
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                     break;
             }
+        }
+        
+        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs scrollViewerViewChangedEventArgs)
+        {
+            foreach (var scrollViewer in ColumnViewModels.Select(cvm => cvm.ViewModelScrollViewer))
+            {
+                if (!scrollViewer.Equals(sender as ScrollViewer))
+                    scrollViewer.ScrollToVerticalOffset((sender as ScrollViewer).VerticalOffset);
+            }
+
         }
 
         private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
@@ -256,8 +265,30 @@ namespace Dash
             foreach (var documentController in dbDocs) CollectionDocuments.Add(documentController);
 
             foreach (var typedHeader in _typedHeaders)
-                ColumnViewModels.Add(new CollectionDBSchemaColumnViewModel(typedHeader.Key, CollectionDocuments,
-                    SchemaHeaders.First(hvm => hvm.FieldKey.Equals(typedHeader.Key))));
+            {
+                var cvm = new CollectionDBSchemaColumnViewModel(typedHeader.Key, CollectionDocuments,
+                    SchemaHeaders.First(hvm => hvm.FieldKey.Equals(typedHeader.Key)));
+                ColumnViewModels.Add(cvm);
+            }
+
+            foreach (var cvm in ColumnViewModels)
+            {
+                cvm.PropertyChanged += Cvm_PropertyChanged;
+            }
+        }
+
+        private void Cvm_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("ViewModelScrollViewer"))
+            {
+                foreach (var scrollViewer in ColumnViewModels.Select(colvm => colvm.ViewModelScrollViewer))
+                {
+                    if (scrollViewer != null)
+                    {
+                        scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
+                    }
+                }
+            }
         }
 
         #region Activation

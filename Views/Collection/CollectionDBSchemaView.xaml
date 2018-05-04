@@ -42,6 +42,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
         <!--records list-->
         <ListView x:Name="xRecordsView"  x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
@@ -58,8 +59,7 @@
                   DragItemsStarting="XRecordsView_OnDragItemsStarting">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                    
+                    <ItemsStackPanel Orientation="Horizontal" VerticalAlignment="Top" Height="Auto"  HorizontalAlignment="Left" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
@@ -68,6 +68,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
         <StackPanel HorizontalAlignment="Center" Grid.Row="2" Orientation="Horizontal">
             <Button HorizontalAlignment="Center" Tapped="AddRow_OnTapped" Margin="2" Width="200" Height="40">Add Row</Button>
             <Button HorizontalAlignment="Center" Tapped="AddColumn_OnTapped" Margin="2" Width="200" Height="40">Add Column</Button>
