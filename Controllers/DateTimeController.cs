@@ -92,7 +92,7 @@ namespace Dash.Controllers
         /*
          * Returns a copy of this instance of DateTimeController (Data field is preserved)
          */
-        public override FieldModelController<DateTimeModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new DateTimeController(Data);
         }

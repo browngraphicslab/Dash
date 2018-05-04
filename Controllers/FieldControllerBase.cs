@@ -70,12 +70,14 @@ namespace Dash
             return new List<DocumentController>();
         }
 
-        public abstract FieldControllerBase GetCopy();
-
         public virtual bool CheckType(FieldControllerBase fmc)
         {
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
+
+        public abstract FieldControllerBase Copy();
+
+        public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return this; }
 
         /// <summary>
         /// Returns the type of this field as a string. Can override this for more complex

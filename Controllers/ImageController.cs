@@ -93,7 +93,7 @@ namespace Dash
             return ImageFieldModel.Data.AbsolutePath;
         }
 
-        public override FieldModelController<ImageModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new ImageController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }

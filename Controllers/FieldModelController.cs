@@ -31,18 +31,10 @@ namespace Dash
             return Model.GetHashCode();
         }
 
-        public override FieldControllerBase GetCopy()
-        {
-            return Copy();
-        }
-
-        public abstract FieldModelController<T> Copy();
-
         public T Copy<T>() where T : FieldControllerBase
         {
             return Copy() as T;
         }
-
 
         public virtual void Dispose()
         {

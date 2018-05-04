@@ -68,6 +68,7 @@ namespace Dash.Models.DragModels
             {
                 var dbox = new DataBox(new DocumentReferenceController(DraggedDocument.Id, DraggedKey), where.X,
                     where.Y).Document;
+                dbox.Tag = "DraggedKey doc";
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);
                 dbox.SetField(KeyStore.TitleKey, new TextController(DraggedKey.Name), true);
                 return dbox;

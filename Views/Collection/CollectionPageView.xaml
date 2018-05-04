@@ -55,7 +55,7 @@
         </Grid>
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
             x:Name="xSplitter"
-            Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
+            Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch" ManipulationStarted="xSplitter_ManipulationStarted" ManipulationCompleted="xSplitter_ManipulationCompleted" ManipulationDelta="xSplitter_ManipulationDelta" 
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 

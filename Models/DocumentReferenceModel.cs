@@ -7,8 +7,11 @@ namespace Dash
     {
         public string DocumentId { get; set; }
 
-        public DocumentReferenceModel(string docId, string keyId, string id = null) : base(keyId, id)
+        public bool CopyOnWrite { get; set; }
+
+        public DocumentReferenceModel(string docId, string keyId, bool copyOnWrite, string id = null) : base(keyId, id)
         {
+            CopyOnWrite = copyOnWrite;
             DocumentId = docId;
         }
 
@@ -20,12 +23,12 @@ namespace Dash
                 return false;
             }
 
-            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(DocumentId);
+            return base.Equals(refFieldModel) && refFieldModel.DocumentId.Equals(DocumentId) && refFieldModel.CopyOnWrite == CopyOnWrite;
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode() ^ DocumentId.GetHashCode();
+            return base.GetHashCode() ^ DocumentId.GetHashCode() & CopyOnWrite.GetHashCode();
         }
     }
 }

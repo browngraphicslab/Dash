@@ -16,6 +16,7 @@ namespace Dash
     /// <summary>
     /// Allows interactions with underlying DocumentModel.
     /// </summary>
+	[DebuggerDisplay("{Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
         /// <summary>
@@ -27,11 +28,8 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
-        public object Tag = null;
-
         public override string ToString()
         {
-            return "" + (Tag ?? "");
             return Title;
         }
 
@@ -141,9 +139,15 @@ namespace Dash
             return GetId().GetHashCode();
         }
 
-        public override FieldModelController<DocumentModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return this.MakeCopy();
+        }
+        public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
+        {
+            if (mapping.ContainsKey(this))
+                return mapping[this];
+            return this;
         }
 
         /// <summary>
@@ -248,7 +252,7 @@ namespace Dash
         /// <summary>
         /// Parses text input into a field controller
         /// </summary>
-        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null)
+        public bool ParseDocField(KeyController key, string textInput, FieldControllerBase curField = null, bool copy=false)
         {
             textInput = textInput.Trim(' ');
             if (textInput.StartsWith("="))
@@ -298,11 +302,11 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new ImageController(new Uri(a)), true);
                             }
-							else if (target.Value.Type == TypeInfo.Video)
-							{
-								opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
-							}
-						}
+                            else if (target.Value.Type == TypeInfo.Video)
+                            {
+                                opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
+                            }
+                        }
                     }
                     SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
@@ -314,18 +318,24 @@ namespace Dash
                     {
                         double num;
                         if (double.TryParse(textInput, out num))
-                            nc.Data = num;
+                            if (copy)
+                                SetField(key, new NumberController(num), true);
+                            else nc.Data = num;
                         else return false;
                     }
                     else if (curField is TextController tc)
                     {
-                        tc.Data = textInput;
+                        if (copy)
+                            SetField(key, new TextController(textInput), true);
+                        else tc.Data = textInput;
                     }
                     else if (curField is ImageController ic)
                     {
                         try
                         {
-                            ic.Data = new Uri(textInput);
+                            if (copy)
+                                SetField(key, new ImageController(new Uri(textInput)), true);
+                            else ic.Data = new Uri(textInput);
                         }
                         catch (Exception)
                         {
@@ -340,7 +350,9 @@ namespace Dash
                     {
                         try
                         {
-                            vc.Data = new Uri(textInput);
+                            if (copy)
+                                SetField(key, new VideoController(new Uri(textInput)), true);
+                            else vc.Data = new Uri(textInput);
                         }
                         catch (Exception)
                         {
@@ -355,7 +367,9 @@ namespace Dash
                     }
                     else if (curField is ListController<DocumentController> lc)
                     {
-                        lc.TypedData =
+                        if (copy)
+                            SetField(key, new ListController<DocumentController>(new DocumentCollectionToStringConverter().ConvertXamlToData(textInput)), true);
+                        else lc.TypedData =
                             new DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is RichTextController rtc)
@@ -536,12 +550,13 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public DocumentController MakeDelegate()
-         {  
+        {
             var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
                 DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
+            delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = this;
@@ -551,15 +566,35 @@ namespace Dash
             var currentDelegates = GetDelegates();
             currentDelegates.Add(delegateController);
 
-            // copy all self-referential fields and update the references to point to the delegate
-            foreach (var f in EnumFields())
-                if (f.Value is ReferenceController referenceController)
-                {
-                    delegateController.SetField(f.Key, referenceController.CopyForDelegate(this, delegateController), true);
-                }
+            var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
+            mapping.Add(this, delegateController);
+            delegateController.MapDocuments(mapping);
 
             // return the now fully populated delegate
             return delegateController;
+        }
+
+        public void MapDocuments(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
+        {
+            // copy all fields containing mapped elements 
+            foreach (var f in EnumFields())
+                if (f.Key.Equals(KeyStore.PrototypeKey) || f.Key.Equals(KeyStore.DelegatesKey))
+                    continue;
+                else if (f.Value is ReferenceController || f.Value is DocumentController)
+                {
+                    SetField(f.Key, f.Value.CopyIfMapped(mapping), true);
+                }
+                else if (f.Value is ListController<DocumentController> listDocs)
+                {
+                    var newListDocs = new ListController<DocumentController>();
+                    foreach (var l in listDocs.TypedData)
+                    {
+                        var lnew = l.MakeDelegate();
+                        lnew.MapDocuments(mapping);
+                        newListDocs.Add(lnew);
+                    }
+                    SetField(f.Key, newListDocs, true);
+                }
         }
 
         /// <summary>
@@ -722,7 +757,7 @@ namespace Dash
                 var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 if (key.Name != "_Cache Access Key")
-                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(doc));
+                    generateDocumentFieldUpdatedEvents(updateArgs, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                     ; // need to see if any prototype operators need to be run
@@ -1158,7 +1193,6 @@ namespace Dash
                 _fieldUpdatedDictionary[key] -= handler;
             }
         }
-        static string spaces = "";
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
@@ -1175,27 +1209,29 @@ namespace Dash
             {
                 var refSender = sender as ReferenceController;
                 var proto =this.GetPrototypeWithFieldKey(reference.FieldKey);
-                if (new Context(proto).IsCompatibleWith(c))
+                //if (new Context(proto).IsCompatibleWith(c))
                 {
                     var newContext = new Context(c);
                     if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                     // try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
-                    spaces += "  ";
-                    generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
-                    spaces = spaces.Substring(2);
+                    generateDocumentFieldUpdatedEvents(updateArgs, newContext);
                 }
             };
             if (newField != null && key != KeyStore.DelegatesKey && key.Name != "_Cache Access Key")
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
         }
 
-        void generateDocumentFieldUpdatedEvents(FieldControllerBase sender, DocumentFieldUpdatedEventArgs args, DocumentFieldReference reference, Context newContext)
+
+        static string spaces = "";
+        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
         {
-            newContext =  ShouldExecute(newContext, reference.FieldKey, args);
+            // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
+            spaces += "  ";
+            newContext =  ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
+            spaces = spaces.Substring(2);
         }
 
         /// <summary>
@@ -1215,6 +1251,13 @@ namespace Dash
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
                 OnFieldModelUpdated(args, c);
+            
+            // now propagate this field model change to all delegates that don't override this field
+            foreach (var d in GetDelegates().TypedData)
+            {
+                if (d.GetField(args.Reference.FieldKey, true) == null)
+                    d.generateDocumentFieldUpdatedEvents(args, c);
+            }
         }
 
         /// <summary>

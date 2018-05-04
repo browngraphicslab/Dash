@@ -158,8 +158,8 @@ namespace Dash
         }
         void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
         {
-            if (!context1.IsCompatibleWith(new Context(ContainerDocument)))
-                return;
+            //if (!context1.IsCompatibleWith(new Context(ContainerDocument)))
+            //    return;
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
             var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
             if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)

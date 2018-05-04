@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DashShared;
 
 namespace Dash
@@ -11,7 +12,7 @@ namespace Dash
             set { (Model as DocumentReferenceModel).DocumentId = value; }
         }
 
-        public DocumentReferenceController(string docId, KeyController key) : base(new DocumentReferenceModel(docId, key.Id))
+        public DocumentReferenceController(string docId, KeyController key, bool copyOnWrite=false) : base(new DocumentReferenceModel(docId, key.Id, copyOnWrite))
         {
             Debug.Assert(docId != null);
             Debug.Assert(key != null);
@@ -35,7 +36,7 @@ namespace Dash
             UpdateOnServer();
         }
 
-        public override FieldModelController<ReferenceModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new DocumentReferenceController(DocumentId, FieldKey);
         }
@@ -62,13 +63,13 @@ namespace Dash
         {
             return DocumentId;
         }
-        public override FieldModelController<ReferenceModel> CopyForDelegate(DocumentController documentController, DocumentController delegateController)
+        public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
-            if (GetDocumentController(null).Equals(documentController))
+            if (mapping.ContainsKey(GetDocumentController(null)))
             {
-                return new DocumentReferenceController(delegateController.Id, FieldKey);
+                return new DocumentReferenceController(mapping[GetDocumentController(null)].Id, FieldKey);
             }
-            return Copy();
+            return this;
         }
     }
 }
