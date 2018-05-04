@@ -87,7 +87,7 @@
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Canvas x:Name="xCanvas" ZIndex="30"  Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
         </Canvas>
