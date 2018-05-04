@@ -17,17 +17,17 @@
 
             <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
                 <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
-                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
                 <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
 
                 <AppBarSeparator/>
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton Icon="ViewAll" IsEnabled="False" Label="Add Group"/>
+                <AppBarButton Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
                 <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
                 <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Copy" x:Name="xCopy" Label="Duplicate" Click="Copy" />
-                <AppBarButton Icon="Delete" x:Name="xDelete" Label="Delete" Click="Delete" />
+                <AppBarButton Icon="Copy" IsEnabled="False" x:Name="xCopy" Opacity="0.5" Label="Duplicate" Click="Copy" />
+                <AppBarButton Icon="Delete" IsEnabled="False"  x:Name="xDelete" Opacity="0.5" Label="Delete" Click="Delete" />
             </ctrl:CommandBar>
             <StackPanel Margin="0,12,0,0">
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />
