@@ -1049,9 +1049,8 @@ namespace Dash
         /// Builds the underlying XAML Framework Element representation of this document.
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public FrameworkElement MakeViewUI(Context context, DocumentController dataDocument = null)
+        public FrameworkElement MakeViewUI(Context context)
         {
 			//Debug.WriteLine("DOCUMENT TYPE: " + DocumentType);
 			//Debug.WriteLine("DOCUMENTCONTROLLER THIS: " + this);
@@ -1073,7 +1072,7 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-                return doc.MakeViewUI(context, GetDataDocument());
+                return doc.MakeViewUI(context);
             }
 
             if (KeyStore.TypeRenderer.ContainsKey(DocumentType))

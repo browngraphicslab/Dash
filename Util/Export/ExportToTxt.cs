@@ -6,14 +6,20 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Schema;
 using Windows.Foundation;
+using Windows.Graphics.Display;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
 using DashShared;
 using Flurl.Util;
@@ -29,8 +35,8 @@ namespace Dash
         private static List<String> UsedUrlNames = new List<string>();
 
         //define the max width and height coordinates in html and dash for conversion
-        private static double PAGEWIDTH = 300.0;
-        private static double PAGEHEIGHT = 1000.0;
+        private static double PAGEWIDTH = 900.0;
+        private static double PAGEHEIGHT = 900.0;
 
 
         public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
@@ -86,7 +92,7 @@ namespace Dash
                 }
 
                 //make index.html file that refrences other collections
-                CreateIndex(colNames);
+                CreateIndex(colNames, folder.Name);
             }
         }
 
@@ -105,10 +111,11 @@ namespace Dash
 
                 OrderElements(dataDocs);
 
-                var minMax = MinVal(dataDocs);
+                var minMax = BorderVal(dataDocs);
 
                 //list of each line of text that must be added to file - one string for each doc
                 var fileText = new List<string>();
+                fileText.Add("<body background=\"https://s3.amazonaws.com/spoonflower/public/design_thumbnails/0611/7656/windowpane2in_c21_shop_thumb.png\" > ");
 
                 foreach (var doc in dataDocs)
                 {
@@ -122,6 +129,9 @@ namespace Dash
                             break;
                         case "Image Box":
                             newText = ImageToTxt(doc, minMax);
+                            break;
+                        case "Video Box":
+                            newText = VideoToTxt(doc, minMax);
                             break;
                         case "Background Box":
                             newText = BackgroundBoxToTxt(doc, minMax);
@@ -146,6 +156,7 @@ namespace Dash
                     }
                 }
 
+                fileText.Add("</body>");
                 return fileText;
             }
             else
@@ -182,13 +193,16 @@ namespace Dash
             });
         }
 
-        private static List<double> MinVal(List<DocumentController> docs)
+        private static List<double> BorderVal(List<DocumentController> docs)
         {
             //TODO: same but for y
 
-            double min = Double.PositiveInfinity;
-            double max = Double.NegativeInfinity;
-            // This finds the minimum x value saved in this collection in Dash
+            double minX = Double.PositiveInfinity;
+            double maxX = Double.NegativeInfinity;
+
+            double minY = Double.PositiveInfinity;
+            double maxY = Double.NegativeInfinity;
+            // This finds the minimum and max values saved in this collection in Dash
             //and saves Dash width
             foreach (var doc in docs)
             {
@@ -196,43 +210,65 @@ namespace Dash
                 {
                     var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
                     var x = pt1.Data.X;
-                    if (x < min)
+                    var y = pt1.Data.Y;
+
+                    if (x < minX)
                     {
-                        min = x;
+                        minX = x;
+                    }
+                    if (y < minY)
+                    {
+                        minY = y;
                     }
 
-                    if (x > max)
+                    if (x > maxX)
                     {
-                        max = x;
+                        maxX = x;
+                    }
+                    if (y > maxY)
+                    {
+                        maxY = y;
                     }
                 }
             }
 
             var minMax = new List<double>();
-            minMax.Add(min);
-            minMax.Add(max);
+            minMax.Add(minX);
+            minMax.Add(maxX);
+            minMax.Add(minY);
+            minMax.Add(maxY);
             return minMax;
         }
 
-        private static double getMargin(DocumentController doc, List<double> minMax)
+        private static List<double> getMargin(DocumentController doc, List<double> minMax)
         {
-            //TODO: if I scale margin, it looks funny not to scale width / height 
             var marginLeft = 0.0;
+            var marginRight = 0.0;
             if (doc.GetField(KeyStore.PositionFieldKey) != null)
             {
                 var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
 
-                var min = minMax[0];
-                var max = minMax[1];
+                var minX = minMax[0];
+                var maxX = minMax[1];
 
-                var x =  pt1.Data.X - min;
+                var x =  pt1.Data.X - minX;
 
-                var DASHWIDTH = Math.Abs(max - min + 50);
+                var DASHWIDTH = Math.Abs(maxX - minX + 50);
                 marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
-               // var y = 
+
+                var minY = minMax[2];
+                var maxY = minMax[3];
+
+                var y = pt1.Data.Y - minY;
+
+                var DASHHEIGHT = Math.Abs(maxY - minY);
+                marginRight = (y * PAGEHEIGHT) / (DASHHEIGHT);
             }
 
-            return marginLeft;
+            var margins = new List<double>();
+            margins.Add(marginLeft);
+            margins.Add(marginRight);
+            return margins;
         }
 
         private static double dashToHtml(double val, List<double> minMax)
@@ -251,9 +287,9 @@ namespace Dash
             if (rawText != null)
             {
                 var text = rawText.Data;
-                var marginLeft = getMargin(doc, minMax);
+                var margins = getMargin(doc, minMax);
 
-                return "<p style=\"position: fixed; left: " + marginLeft + "px; \">" + text + "</p>";
+                return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
             }
             else
             {
@@ -264,22 +300,53 @@ namespace Dash
         private static string ImageToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
-            var uri = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null).Data.ToString();
+            var uriRaw = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null);
+            if (uriRaw != null)
+            {
+                var uri = uriRaw.Data.ToString();
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML image formatting
+                return "<img src=\"" + uri + "\" width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax)
+                       + "px\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">";
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        private static string VideoToTxt(DocumentController doc, List<double> minMax)
+        {
+            //string version of the image uri
+            var uri = doc.GetDereferencedField(KeyStore.DataKey, null).ToString();
 
             //get image width and height
             var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
 
-            var marginLeft = getMargin(doc, minMax);
+            var margins = getMargin(doc, minMax);
 
-            //return uri with HTML image formatting
-            return "<img src=\"" + uri + "\" width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) 
-                   + "px\" style=\"position: fixed; left: " + marginLeft + "px; \">";
+            //return uri with HTML video formatting
+            return "<video width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
+                   "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 1; \" controls>" +
+                   "<source src=\"" + uri + "\" >" +
+                   "Your browser does not support the video tag. </ video >";
         }
 
         private static string CollectionToTxt(DocumentController col, List<double> minMax)
         {
-            //get text that must be added to file for this collection
-            var colText = CollectionContent(col);
+           // var image = makeCollImage(col);
+
+            /*
+            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap();
+            await renderTargetBitmap.RenderAsync(col);
+            var pixelBuffer = await renderTargetBitmap.GetPixelsAsync(); */
+
+                //get text that must be added to file for this collection
+                var colText = CollectionContent(col);
             //make sure there isn't already reference to colTitle
             string colTitle = col.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
                 .ToString();
@@ -311,12 +378,80 @@ namespace Dash
             //create a file in folder with colContent and titled colTitle
             CreateFile(colText, colTitle);
 
-            var marginLeft = getMargin(col, minMax);
+            var margins = getMargin(col, minMax);
+            /*
+            var rawColText = "";
+            for(var i = 1; i < colText.Count - 1; i++)
+            {
+                
+                var splitTxt = colText[i].Split(new string[] { "\"" }, StringSplitOptions.None);
+                var unstyledText = "";
+                for (var j = 0; j < splitTxt.Length; j++)
+                {
+                    if (splitTxt[j].Length > 5)
+                    {
+                        var end = splitTxt[j].Substring(splitTxt[j].Length - 5, splitTxt[j].Length);
+                        if (end == "style=")
+                        {
+
+                        }
+                    }
+                }
+                rawColText = rawColText + colText[i];
+            }*/
+
+            var colWidth = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString()), minMax);
+            var colHeight = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.HeightFieldKey, null).ToString()), minMax.GetRange(2, 2));
 
             //return link to page you just created
-            return "<a href=\"./" + colTitle + ".html\" style=\"position: fixed; left: " + marginLeft + "px; \">" + colTitle + "</a>";
+            return "<a href=\"./" + colTitle + ".html\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">" +
+                   "<div style=\"width: "+ colWidth + "px; height: " + colHeight + "px; border: 1px solid black; \">" + colTitle + "</div></a>";
         }
+        
+        private static async Task<string> makeCollImage(DocumentController col)
+        {
+            //TODO: make image of collection be hyperlink instead of text, calls unitl.exportasimage - line 757
+            //TODO: add collection to main page then take screenshot
 
+            var bitmap = new RenderTargetBitmap();
+            await bitmap.RenderAsync(col.MakeViewUI(null));
+
+            var picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            StorageFile file = null;
+            if (folder != null)
+            {
+                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+
+                var pixels = await bitmap.GetPixelsAsync();
+                var byteArray = pixels.ToArray();
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
+
+                    var displayInformation = DisplayInformation.GetForCurrentView();
+
+                    encoder.SetPixelData(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Ignore,
+                        (uint)bitmap.PixelWidth,
+                        (uint)bitmap.PixelHeight,
+                        displayInformation.RawDpiX,
+                        displayInformation.RawDpiY,
+                        pixels.ToArray());
+
+                    await encoder.FlushAsync();
+                }
+            }
+
+            return "";
+        }
+        
         private static string BackgroundBoxToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
@@ -327,7 +462,7 @@ namespace Dash
             var color = "#" + colorC.Substring(3, 6) + colorC.Substring(1, 2);
             var width = doc.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString();
             var height = doc.GetDereferencedField(KeyStore.HeightFieldKey, null).ToString();
-            var marginLeft = getMargin(doc, minMax);
+            var margins = getMargin(doc, minMax);
 
             //convert width and height in proportion to other elements
             //convert width and height in proportion to other elements
@@ -337,17 +472,17 @@ namespace Dash
             if (shape == "Elliptical")
             {
                 text = "<div style=\"height:" + height + "px; width: " + width + "px; border-radius: 50%; " +
-                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                       "position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; background-color: " + color + ";\"></div>";
             }
             else if (shape == "Rectangular")
             {
                 text = "<div style=\"height:" + height + "px; width:" + width + "px; " +
-                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                       "position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; background-color: " + color + ";\"></div>";
             }
             else if (shape == "Rounded")
             {
                 text = "<div style=\"height:" + height + "px; width:" + width + "px; border-radius: 15%; " +
-                       "position: fixed; left: " + marginLeft + "px; background-color: " + color + ";\"></div>";
+                       "position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; background-color: " + color + ";\"></div>";
             }
             return text;
         }
@@ -355,9 +490,9 @@ namespace Dash
         private static string KeyValToTxt(DocumentController doc, List<double> minMax)
         {
             //make table with document fields
-            var marginLeft = getMargin(doc, minMax);
-            var text = "<table style=\"position: fixed; left: " + marginLeft + "px; width: 70px; border-collapse: collapse;\">";
-            var tdStyle = "style=\"border: 1px solid #dddddd; padding: 8px; \"";
+            var margins = getMargin(doc, minMax);
+            var text = "<table style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; width: 70px; border-collapse: collapse;\">";
+            var tdStyle = "style=\"border: 1px solid #dddddd; padding: 8px; z-index: -1;\"";
 
             var data = doc.GetDataDocument();
        
@@ -445,21 +580,44 @@ namespace Dash
                         mergedText = mergedText + word;
                     }
 
-                        //add String to file - this happens a bit after file is saved
+                        //add String to file
                         await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
                    
                 }
             }
         }
-    
 
-        private static async void CreateIndex(List<string> subCollections)
+        private static async void CreateImage(string url, string title)
+        {
+            if (folder != null)
+            {
+                var filename = title + ".img";
+                var file = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
+
+                HttpClient client = new HttpClient();
+
+                byte[] responseBytes = await client.GetByteArrayAsync(url);
+                var stream = await file.OpenAsync(FileAccessMode.ReadWrite);
+
+                using (var outputStream = stream.GetOutputStreamAt(0))
+                {
+                    DataWriter writer = new DataWriter(outputStream);
+                    writer.WriteBytes(responseBytes);
+                    writer.StoreAsync();
+                    outputStream.FlushAsync();
+                }
+            }
+        }
+
+
+        private static async void CreateIndex(List<string> subCollections, String name)
         {
             List<String> htmlContent = new List<string>();
+            htmlContent.Add("<center><h1 style=\"font-size: 70px;\">" + name + "</h1></center><br>");
             foreach (var colName in subCollections)
             {
                 //make link to this collection
-                htmlContent.Add("<a href=\"./" + colName + ".html\">" + colName + "</a>");
+                htmlContent.Add("<center><a href=\"./" + colName + ".html\" style=\"font-size: 30px; \">" + colName + "</a></center><br>");
             }
 
             CreateFile(htmlContent, "index");
