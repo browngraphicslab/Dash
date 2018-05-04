@@ -556,6 +556,10 @@ namespace Dash
             var currentDelegates = GetDelegates();
             currentDelegates.Add(delegateController);
 
+            var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
+            mapping.Add(this, delegateController);
+            delegateController.MapDocuments(mapping);
+
             // return the now fully populated delegate
             return delegateController;
         }
@@ -576,9 +580,7 @@ namespace Dash
                     foreach (var l in listDocs.TypedData)
                     {
                         var lnew = l.MakeDelegate();
-                        mapping.Add(l, lnew);
                         lnew.MapDocuments(mapping);
-                        mapping.Remove(l);
                         newListDocs.Add(lnew);
                     }
                     SetField(f.Key, newListDocs, true);
