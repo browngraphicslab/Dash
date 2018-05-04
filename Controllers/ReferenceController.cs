@@ -137,7 +137,5 @@ namespace Dash
             var controller = GetDocumentController(null);
             controller?.UpdateOnServer();
         }
-
-        public abstract FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping);
     }
 }

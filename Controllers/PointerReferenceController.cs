@@ -40,7 +40,7 @@ namespace Dash.Controllers
             _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
-        public override FieldModelController<ReferenceModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
         }
@@ -71,13 +71,13 @@ namespace Dash.Controllers
             base.UpdateOnServer(success, error);
         }
 
-        public override FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping)
+        public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
             if (mapping.ContainsKey(DocumentReference.GetDocumentController(null)))
             {
                 return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)].Id, DocumentReference.FieldKey), FieldKey);
             }
-            return Copy();
+            return this;// Copy() as ReferenceController;
         }
     }
 }

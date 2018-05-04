@@ -36,7 +36,7 @@ namespace Dash
             UpdateOnServer();
         }
 
-        public override FieldModelController<ReferenceModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new DocumentReferenceController(DocumentId, FieldKey);
         }
@@ -63,13 +63,13 @@ namespace Dash
         {
             return DocumentId;
         }
-        public override FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping)
+        public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
             if (mapping.ContainsKey(GetDocumentController(null)))
             {
                 return new DocumentReferenceController(mapping[GetDocumentController(null)].Id, FieldKey);
             }
-            return Copy();
+            return this;
         }
     }
 }

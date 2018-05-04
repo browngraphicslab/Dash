@@ -28,11 +28,8 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
-        public object Tag = null;
-
         public override string ToString()
         {
-            return "" + (Tag ?? "");
             return Title;
         }
 
@@ -142,9 +139,15 @@ namespace Dash
             return GetId().GetHashCode();
         }
 
-        public override FieldModelController<DocumentModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return this.MakeCopy();
+        }
+        public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
+        {
+            if (mapping.ContainsKey(this))
+                return mapping[this];
+            return this;
         }
 
         /// <summary>
@@ -557,22 +560,17 @@ namespace Dash
             return delegateController;
         }
 
-        public void MapDocuments(Dictionary<DocumentController, DocumentController> mapping)
+        public void MapDocuments(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
-            // copy all self-referential fields and update the references to point to the delegate
+            // copy all fields containing mapped elements 
             foreach (var f in EnumFields())
                 if (f.Key.Equals(KeyStore.PrototypeKey) || f.Key.Equals(KeyStore.DelegatesKey))
                     continue;
-                else
-                if (f.Value is ReferenceController referenceController)
+                else if (f.Value is ReferenceController || f.Value is DocumentController)
                 {
-                    SetField(f.Key, referenceController.CopyForDelegate(mapping), true);
+                    SetField(f.Key, f.Value.CopyIfMapped(mapping), true);
                 }
-                else if (f.Value is DocumentController fieldDoc && mapping.ContainsKey(fieldDoc))
-                {
-                    SetField(f.Key, mapping[fieldDoc], true);
-                }
-                else if (!f.Key.Equals(KeyStore.DelegatesKey) && f.Value is ListController<DocumentController> listDocs)
+                else if (f.Value is ListController<DocumentController> listDocs)
                 {
                     var newListDocs = new ListController<DocumentController>();
                     foreach (var l in listDocs.TypedData)
@@ -747,7 +745,7 @@ namespace Dash
                 var reference = new DocumentFieldReference(GetId(), key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 if (key.Name != "_Cache Access Key")
-                generateDocumentFieldUpdatedEvents(field, updateArgs, reference, new Context(doc));
+                    generateDocumentFieldUpdatedEvents(updateArgs, new Context(doc));
 
                 if (key.Equals(KeyStore.PrototypeKey))
                     ; // need to see if any prototype operators need to be run
@@ -1184,7 +1182,6 @@ namespace Dash
                 _fieldUpdatedDictionary[key] -= handler;
             }
         }
-        static string spaces = "";
         /// <summary>
         /// Adds listeners to the field model updated event which fire the document model updated event
         /// </summary>
@@ -1208,20 +1205,22 @@ namespace Dash
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);
-                     // try { Debug.WriteLine(spaces + this.Title + " -> " + key + " = " + newField.GetValue(context)); } catch (Exception) { }
-                    spaces += "  ";
-                    generateDocumentFieldUpdatedEvents(sender, updateArgs, reference, newContext);
-                    spaces = spaces.Substring(2);
+                    generateDocumentFieldUpdatedEvents(updateArgs, newContext);
                 }
             };
             if (newField != null && key != KeyStore.DelegatesKey && key.Name != "_Cache Access Key")
                 newField.FieldModelUpdated += TriggerDocumentFieldUpdated;
         }
 
-        void generateDocumentFieldUpdatedEvents(FieldControllerBase sender, DocumentFieldUpdatedEventArgs args, DocumentFieldReference reference, Context newContext)
+
+        static string spaces = "";
+        void generateDocumentFieldUpdatedEvents(DocumentFieldUpdatedEventArgs args, Context newContext)
         {
-            newContext =  ShouldExecute(newContext, reference.FieldKey, args);
+            // try { Debug.WriteLine(spaces + this.Title + " -> " + args.Reference.FieldKey + " = " + args.NewValue); } catch (Exception) { }
+            spaces += "  ";
+            newContext =  ShouldExecute(newContext, args.Reference.FieldKey, args);
             OnDocumentFieldUpdated(this, args, newContext, true);
+            spaces = spaces.Substring(2);
         }
 
         /// <summary>
@@ -1241,6 +1240,13 @@ namespace Dash
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
                 OnFieldModelUpdated(args, c);
+            
+            // now propagate this field model change to all delegates that don't override this field
+            foreach (var d in GetDelegates().TypedData)
+            {
+                if (d.GetField(args.Reference.FieldKey, true) == null)
+                    d.generateDocumentFieldUpdatedEvents(args, c);
+            }
         }
 
         /// <summary>

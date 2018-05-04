@@ -233,7 +233,7 @@ namespace Dash
             });
         }
 
-        public override FieldModelController<ListModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new ListController<T>(new List<T>(TypedData));
         }

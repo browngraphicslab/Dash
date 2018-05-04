@@ -82,7 +82,8 @@ namespace Dash
                                                                new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
                         Converter = new TransformGroupMultiConverter(),
                         Context = new Context(doc),
-                        Mode = BindingMode.OneWay
+                        Mode = BindingMode.OneWay,
+                        Tag = "RenderTransform multi binding in DocumentView"
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
