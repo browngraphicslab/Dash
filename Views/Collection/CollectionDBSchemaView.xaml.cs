@@ -115,6 +115,8 @@ namespace Dash
         {
             foreach (var scrollViewer in ColumnViewModels.Select(cvm => cvm.ViewModelScrollViewer))
             {
+                if (scrollViewer == null) continue;
+
                 if (!scrollViewer.Equals(sender as ScrollViewer))
                     scrollViewer.ScrollToVerticalOffset((sender as ScrollViewer).VerticalOffset);
             }
