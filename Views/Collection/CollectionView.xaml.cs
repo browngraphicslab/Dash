@@ -31,6 +31,8 @@ namespace Dash
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
+        public event Action<object, RoutedEventArgs> CurrentViewLoaded;
+
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             Loaded += CollectionView_Loaded;
@@ -76,7 +78,14 @@ namespace Dash
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
-        { 
+        {
+            // ParentDocument can be null if we are rendering collections for thumbnails
+            if (ParentDocument == null)
+            {
+                SetView(_viewType);
+                return;
+            }
+
             ParentDocument.StyleCollection(this);
             
             #region CollectionView context menu 
@@ -226,11 +235,19 @@ namespace Dash
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
+            CurrentView.Loaded -= CurrentView_Loaded;
+            CurrentView.Loaded += CurrentView_Loaded;
             xContentControl.Content = CurrentView;
             var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data;
             if (curViewType != _viewType.ToString())
                 ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
         }
+
+        private void CurrentView_Loaded(object sender, RoutedEventArgs e)
+        {
+            CurrentViewLoaded?.Invoke(sender, e);
+        }
+
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");

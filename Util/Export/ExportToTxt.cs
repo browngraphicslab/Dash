@@ -19,6 +19,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
 using DashShared;
@@ -54,7 +55,7 @@ namespace Dash
                 foreach (var collectionDoc in collectionDataDocs)
                 {
                     //CollectionToTxt returns the content that must be added to a file
-                    var colContent = CollectionContent(collectionDoc);
+                    var colContent = await CollectionContent(collectionDoc);
                     string colTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
                         .ToString();
 
@@ -95,7 +96,7 @@ namespace Dash
             }
         }
 
-        public static List<string> CollectionContent(DocumentController collection)
+        public static async Task<List<string>> CollectionContent(DocumentController collection)
         {
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
@@ -136,7 +137,7 @@ namespace Dash
                             newText = BackgroundBoxToTxt(doc, minMax);
                             break; 
                         case "Collection Box":
-                            newText = CollectionToTxt(doc, minMax);
+                            newText = await CollectionToTxt(doc, minMax);
                             break;
                         case "Key Value Document Box":
                             newText = KeyValToTxt(doc, minMax);
@@ -333,7 +334,7 @@ namespace Dash
                    "Your browser does not support the video tag. </ video >";
         }
 
-        private static string CollectionToTxt(DocumentController col, List<double> minMax)
+        private static async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
            // var image = makeCollImage(col);
 
@@ -343,7 +344,7 @@ namespace Dash
             var pixelBuffer = await renderTargetBitmap.GetPixelsAsync(); */
 
                 //get text that must be added to file for this collection
-                var colText = CollectionContent(col);
+                var colText = await CollectionContent(col);
             //make sure there isn't already reference to colTitle
             string colTitle = col.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
                 .ToString();
@@ -376,33 +377,52 @@ namespace Dash
             CreateFile(colText, colTitle);
 
             var margins = getMargin(col, minMax);
-            /*
-            var rawColText = "";
-            for(var i = 1; i < colText.Count - 1; i++)
-            {
-                
-                var splitTxt = colText[i].Split(new string[] { "\"" }, StringSplitOptions.None);
-                var unstyledText = "";
-                for (var j = 0; j < splitTxt.Length; j++)
-                {
-                    if (splitTxt[j].Length > 5)
-                    {
-                        var end = splitTxt[j].Substring(splitTxt[j].Length - 5, splitTxt[j].Length);
-                        if (end == "style=")
-                        {
 
-                        }
-                    }
-                }
-                rawColText = rawColText + colText[i];
-            }*/
-
+            // TODO extract collection stuff into a new method
             var colWidth = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString()), minMax);
-            var colHeight = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.HeightFieldKey, null).ToString()), minMax.GetRange(2, 2));
+
+            // create a 
+            var collView = col.MakeViewUI(null) as CollectionView;
+            Debug.Assert(collView != null);    
+            MainPage.Instance.xCanvas.Children.Add(collView);
+            Canvas.SetLeft(collView, -10000);
+            Canvas.SetTop(collView, -10000);
+            collView.CurrentViewLoaded += async delegate(object sender, RoutedEventArgs args)
+            {
+                var bitmap = new RenderTargetBitmap();
+                await bitmap.RenderAsync(collView.CurrentView);
+               
+                var file = await folder.CreateFileAsync($"{colTitle}.png", CreationCollisionOption.ReplaceExisting);
+
+                var pixels = await bitmap.GetPixelsAsync();
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
+
+                    var displayInformation = DisplayInformation.GetForCurrentView();
+
+                    encoder.SetPixelData(
+                        BitmapPixelFormat.Rgba8,
+                        BitmapAlphaMode.Ignore,
+                        (uint)bitmap.PixelWidth,
+                        (uint)bitmap.PixelHeight,
+                        displayInformation.RawDpiX,
+                        displayInformation.RawDpiY,
+                        pixels.ToArray());
+
+                    await encoder.FlushAsync();
+                }
+                MainPage.Instance.xCanvas.Children.Remove(collView);
+            };
+
+            //"<img src=\"" + uri + "\" width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax)
+            //    + "px\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">"
+
 
             //return link to page you just created
             return "<a href=\"./" + colTitle + ".html\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">" +
-                   "<div style=\"width: "+ colWidth + "px; height: " + colHeight + "px; border: 1px solid black; \">" + colTitle + "</div></a>";
+                   "<div style=\"width: "+ colWidth + "px; border: 1px solid black; \">" + "<img style=\"width: 100%;\" src=\"" + colTitle + ".png\"/>" + "</div></a>";
         }
         
         private static async Task<string> makeCollImage(DocumentController col)
