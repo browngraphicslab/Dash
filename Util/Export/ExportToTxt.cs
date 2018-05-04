@@ -171,6 +171,7 @@ namespace Dash
             // an anonymous method for the Comparison delegate. 
             docs.Sort(delegate (DocumentController doc1, DocumentController doc2)
             {
+                // NOTE if no positionfield set we default to 0
                 var y1 = 0.0;
                 var y2 = 0.0;
                 //get the y points of each doc
@@ -336,15 +337,8 @@ namespace Dash
 
         private static async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
-           // var image = makeCollImage(col);
-
-            /*
-            RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap();
-            await renderTargetBitmap.RenderAsync(col);
-            var pixelBuffer = await renderTargetBitmap.GetPixelsAsync(); */
-
-                //get text that must be added to file for this collection
-                var colText = await CollectionContent(col);
+            //get text that must be added to file for this collection
+            var colText = await CollectionContent(col);
             //make sure there isn't already reference to colTitle
             string colTitle = col.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
                 .ToString();
@@ -381,13 +375,18 @@ namespace Dash
             // TODO extract collection stuff into a new method
             var colWidth = dashToHtml(Convert.ToDouble(col.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString()), minMax);
 
-            // create a 
+            // create a collectionview off the screen
             var collView = col.MakeViewUI(null) as CollectionView;
             Debug.Assert(collView != null);    
             MainPage.Instance.xCanvas.Children.Add(collView);
             Canvas.SetLeft(collView, -10000);
             Canvas.SetTop(collView, -10000);
-            collView.CurrentViewLoaded += async delegate(object sender, RoutedEventArgs args)
+
+            // when the currentview of the collectionview is loaded (i.e. freeform grid etc...)
+            // render the currentview to a bitmap and save it for export
+            // if you don't wait for currentviewloaded you get a white screen since only the background
+            // of the collection has loaded
+            collView.CurrentViewLoaded += async delegate
             {
                 var bitmap = new RenderTargetBitmap();
                 await bitmap.RenderAsync(collView.CurrentView);
@@ -413,60 +412,12 @@ namespace Dash
 
                     await encoder.FlushAsync();
                 }
-                MainPage.Instance.xCanvas.Children.Remove(collView);
+                MainPage.Instance.xCanvas.Children.Remove(collView); // remove the collection from the canvas (cleanup)
             };
 
-            //"<img src=\"" + uri + "\" width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax)
-            //    + "px\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">"
-
-
-            //return link to page you just created
+            //return link to the image you just created
             return "<a href=\"./" + colTitle + ".html\" style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px; \">" +
                    "<div style=\"width: "+ colWidth + "px; border: 1px solid black; \">" + "<img style=\"width: 100%;\" src=\"" + colTitle + ".png\"/>" + "</div></a>";
-        }
-        
-        private static async Task<string> makeCollImage(DocumentController col)
-        {
-            //TODO: make image of collection be hyperlink instead of text, calls unitl.exportasimage - line 757
-            //TODO: add collection to main page then take screenshot
-
-            var bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(col.MakeViewUI(null));
-
-            var picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
-            StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
-
-            StorageFile file = null;
-            if (folder != null)
-            {
-                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
-
-                var pixels = await bitmap.GetPixelsAsync();
-                var byteArray = pixels.ToArray();
-
-                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
-
-                    var displayInformation = DisplayInformation.GetForCurrentView();
-
-                    encoder.SetPixelData(
-                        BitmapPixelFormat.Bgra8,
-                        BitmapAlphaMode.Ignore,
-                        (uint)bitmap.PixelWidth,
-                        (uint)bitmap.PixelHeight,
-                        displayInformation.RawDpiX,
-                        displayInformation.RawDpiY,
-                        pixels.ToArray());
-
-                    await encoder.FlushAsync();
-                }
-            }
-
-            return "";
         }
         
         private static string BackgroundBoxToTxt(DocumentController doc, List<double> minMax)
@@ -512,43 +463,11 @@ namespace Dash
             var tdStyle = "style=\"border: 1px solid #dddddd; padding: 8px; z-index: -1;\"";
 
             var data = doc.GetDataDocument();
-       
-            var backgr = data.GetDereferencedField(KeyStore.BackgroundColorKey, null);
-            if (backgr != null)
-            {
-                text = text + "<tr> <td " + tdStyle + "> Background Color </td> <td " + tdStyle + ">" + backgr + "</td></tr>";
-            }
 
-            var adorns = data.GetDereferencedField(KeyStore.AdornmentShapeKey, null);
-            if (adorns != null)
+            foreach (var kvp in data.EnumDisplayableFields())
             {
-                text = text + "<tr> <td " + tdStyle + "> Adornment Shape </td> <td " + tdStyle + ">" + adorns + "</td></tr>";
+                text = text + "<tr> <td " + tdStyle + "> " + kvp.Key.Name + " </td> <td " + tdStyle + ">" + kvp.Value + "</td></tr>";
             }
-
-            var dataf = data.GetDereferencedField(KeyStore.DataKey, null);
-            if (dataf != null)
-            {
-                text = text + "<tr> <td " + tdStyle + "> Data </td> <td " + tdStyle + ">" + dataf + "</td></tr>";
-            }
-
-            var title = data.GetDereferencedField(KeyStore.TitleKey, null);
-            if (title != null)
-            {
-                text = text + "<tr> <td " + tdStyle + "> Title </td> <td " + tdStyle + ">" + title + "</td></tr>";
-            }
-
-            DateTimeController time = (DateTimeController)data.GetDereferencedField(KeyStore.ModifiedTimestampKey, null);
-            if (time != null)
-            {
-                text = text + "<tr> <td " + tdStyle + "> Modified Time </td> <td " + tdStyle + ">" + time.Data + "</td></tr>";
-            }
-
-            var doctext = data.GetDereferencedField(KeyStore.DocumentTextKey, null);
-            if (doctext != null)
-            {
-                text = text + "<tr> <td " + tdStyle + "> Document Text </td> <td " + tdStyle + ">" + doctext + "</td></tr>";
-            }
-
 
             return text + "</table>";
         }

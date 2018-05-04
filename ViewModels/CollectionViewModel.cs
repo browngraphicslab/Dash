@@ -113,6 +113,11 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(FieldReference refToCollection, Context context = null)
         {
+            if (refToCollection.DereferenceToRoot<ListController<DocumentController>>(context) == null)
+            {
+                return;
+            }
+
             _lastDoc?.RemoveFieldUpdatedListener(refToCollection.FieldKey, collectionFieldChanged);
             DocumentViewModels.Clear();
             _collectionRef = refToCollection;
