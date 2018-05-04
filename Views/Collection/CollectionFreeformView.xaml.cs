@@ -651,7 +651,7 @@ namespace Dash
         }
         
         /// <summary>
-        /// Selects all of the documents in selected.
+        /// Selects all of the documents in selected. Works on a view-specific level.
         /// </summary>
         /// <param name="selected"></param>
         public void SelectDocs(IEnumerable<DocumentView> selected)
@@ -667,7 +667,7 @@ namespace Dash
                 }
             }
 
-            MainPage.Instance.SelectDocuments(selected);
+            MainPage.Instance.SelectDocuments(_selectedDocs);
         }
 
         #endregion

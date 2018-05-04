@@ -91,10 +91,10 @@ namespace Dash
         {
             if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-            toggleSelectOptions(docs.Count<DocumentView>() > 0);
+            toggleSelectOptions(docs.Count() > 0);
 
             // just single select
-            if (docs.Count<DocumentView>() == 1)
+            if (docs.Count() == 1)
             {
                 // Text controls
                 var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First());
@@ -149,7 +149,8 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
+            foreach (DocumentView d in tempDocs)
             {
                 d.DeleteDocument();
             }
@@ -181,7 +182,11 @@ namespace Dash
                 mode = MouseMode.TakeNote;
             }
         }
-        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+
+		/**
+		* When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
+	   */
+		private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -219,7 +224,7 @@ namespace Dash
         }
 
         /**
-		 * Launches file picker & adds selected video(s) to the workspace.
+		 * When the "Add Video" btn is clicked, this launches a file picker & adds selected video(s) to the workspace.
 		*/
         private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {
