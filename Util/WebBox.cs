@@ -183,8 +183,7 @@ namespace Dash
             if (parent == null)
                 return;
 
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
+            var shiftState = web.IsShiftPressed();
             switch (e.Value as string)
             {
                 case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;

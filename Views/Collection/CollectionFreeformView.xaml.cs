@@ -771,11 +771,8 @@ namespace Dash
         string KeyCodeToUnicode(VirtualKey key)
         {
 
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var capState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
-                .HasFlag(CoreVirtualKeyStates.Down) || CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
-                               .HasFlag(CoreVirtualKeyStates.Locked);
+            var shiftState = this.IsShiftPressed();
+            var capState   = this.IsCapsPressed();
             var virtualKeyCode = (uint)key;
 
             string character = null;
@@ -794,8 +791,7 @@ namespace Dash
             //Take care of letters
             if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
             {
-                if (shiftState == false && capState == false ||
-                    shiftState && capState)
+                if ((!shiftState && !capState) || (shiftState && capState))
                 {
                     character = key.ToString().ToLower();
                 }
@@ -852,7 +848,6 @@ namespace Dash
             //Take care of numpad numbers
             if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
             {
-
                 character = (virtualKeyCode - 96).ToString();
             }
 

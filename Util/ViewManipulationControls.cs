@@ -60,9 +60,7 @@ namespace Dash
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
             {
                 var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
-                var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)
-                    ? scrollAmount
-                    : 0;
+                var x = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift) ? scrollAmount  : 0;
                 OnManipulatorTranslatedOrScaled?.Invoke(
                     new TransformGroupData(new Point(x, scrollAmount - x), new Point(1, 1)), false);
             }

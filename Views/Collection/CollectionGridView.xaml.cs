@@ -34,7 +34,7 @@ namespace Dash
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            if (this.IsCtrlPressed())
             {
                 var point = e.GetCurrentPoint(this);
 
