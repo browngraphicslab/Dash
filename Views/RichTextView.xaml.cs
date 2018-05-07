@@ -61,6 +61,8 @@ namespace Dash
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
 
+            xSearchBox.KeyUp += (s, e) => e.Handled = true;
+
             xSearchBox.QuerySubmitted += (s,e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
             xSearchBox.QueryChanged += (s,e) => setSelected(e.QueryText);// Searches content of the xRichEditBox, highlights all results
@@ -210,7 +212,8 @@ namespace Dash
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
-                    _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                    if (!_originalCharFormat.ContainsKey(s))
+                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
@@ -564,6 +567,7 @@ namespace Dash
                 }
             }
         }
+
         #endregion
 
         #region commented out code
@@ -674,8 +678,6 @@ namespace Dash
         //    }
         //}
         #endregion
-
-       
     }
 }
 
