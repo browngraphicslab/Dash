@@ -712,7 +712,6 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
-            previewTextbox.Loaded += (s, e) => AddHandler(KeyDownEvent, previewTextHandler, false);
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
