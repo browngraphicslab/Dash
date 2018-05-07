@@ -124,7 +124,7 @@ namespace Dash
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
                 FocusedDocument = this;
                 MainPage.Instance.Focus(FocusState.Programmatic);
-                e.Handled = true;
+                e.Handled = ManipulationMode != ManipulationModes.None;
             };
 
             PointerEntered += DocumentView_PointerEntered;

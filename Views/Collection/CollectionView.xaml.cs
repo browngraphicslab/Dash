@@ -71,7 +71,7 @@ namespace Dash
                 }
                 else
                     if (parentParentFreeform != null)
-                    CurrentView.ManipulationMode = ManipulationModes.None;
+                        CurrentView.ManipulationMode = ManipulationModes.None;
             }
         }
 
