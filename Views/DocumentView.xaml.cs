@@ -649,8 +649,9 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            //xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
