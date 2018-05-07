@@ -138,5 +138,10 @@ namespace Dash
                 SetExpression(XTextBox.Text);
             }
         }
+
+        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }
