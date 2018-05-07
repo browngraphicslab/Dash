@@ -35,6 +35,7 @@
                          PointerWheelChanged="XTextBox_OnPointerWheelChanged"
                          ManipulationDelta="XTextBox_OnManipulationDelta"
                          KeyDown="XTextBox_OnKeyDown"
+                         KeyUp="XTextBox_KeyUp" 
                          LostFocus="XTextBox_OnLostFocus"
                          Loaded="XTextBox_OnLoaded"
                          Padding="10"></TextBox>

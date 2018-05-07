@@ -70,6 +70,11 @@ namespace Dash
                 SetExpression(XTextBox.Text);
         }
 
+        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         private bool SetExpression(string text)
         {
             TextBoxLoaded = false;
@@ -128,7 +133,7 @@ namespace Dash
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Collapse_Value(this);
+            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

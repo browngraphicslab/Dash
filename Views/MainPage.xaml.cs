@@ -50,8 +50,11 @@ namespace Dash
         }
         public void DeselectDocument(DocumentView doc)
         {
-            SelectedDocuments.Remove(doc);
-            Toolbar.Update(SelectedDocuments);
+            if (SelectedDocuments.Count() != 0)
+            {
+                SelectedDocuments.Remove(doc);
+                Toolbar.Update(SelectedDocuments);
+            }
         }
         public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
         public void SelectDocuments(ICollection<DocumentView> docs)
