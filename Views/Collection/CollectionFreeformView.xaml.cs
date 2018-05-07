@@ -514,7 +514,8 @@ namespace Dash
             {
                 if (XInkCanvas.IsTopmost() &&
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                     (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
+                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
                      ((!args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
