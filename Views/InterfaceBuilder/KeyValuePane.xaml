@@ -91,8 +91,8 @@
 
                 <!--field listview-->
                 <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                        Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        SelectionMode="None" CanDragItems="True" DragItemsStarting="xFieldListView_DragItemsStarting" ItemsSource="{x:Bind ListItemSource}">
+                        Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" PointerPressed="xFieldListView_PointerPressed"  
+                        SelectionMode="None" CanDragItems="True" ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -105,7 +105,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:EditableScriptBox></local:EditableScriptBox>
+                            <local:EditableScriptBox PointerPressed="EditableScriptBox_PointerPressed"></local:EditableScriptBox>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 
