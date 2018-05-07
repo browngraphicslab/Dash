@@ -428,6 +428,7 @@ namespace Dash
         Point     _marqueeAnchor;
         bool      _isMarqueeActive;
         private MarqueeInfo mInfo;
+        object    _marqueeKeyHandler = null;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -479,8 +480,10 @@ namespace Dash
                         StrokeDashArray = new DoubleCollection { 5, 2 },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
-                    MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                    MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
+                    if (_marqueeKeyHandler != null)
+                        MainPage.Instance.RemoveHandler(KeyDownEvent, _marqueeKeyHandler);
+                    _marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
+                    MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
                     _marquee.AllowFocusOnInteraction = true;
                     SelectionCanvas.Children.Add(_marquee);
 
@@ -509,8 +512,8 @@ namespace Dash
         /// <param name="args"></param>
         void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            // marquee on left click by default, right click in PanFast mode
-            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote || args.IsRightPressed())
+            // marquee on left click by default
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
             {
                 if (XInkCanvas.IsTopmost() &&
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
@@ -626,8 +629,8 @@ namespace Dash
             {
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Visibility.Collapsed;
                 previewTextbox.Visibility = Visibility.Visible;
+                AddHandler(KeyDownEvent, previewTextHandler, false);
                 previewTextbox.Text = string.Empty;
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
                 previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -696,8 +699,12 @@ namespace Dash
 
         TextBox previewTextbox { get; set; }
 
+        object previewTextHandler = null;
         void MakePreviewTextbox()
         {
+            if (previewTextHandler == null)
+                previewTextHandler = new KeyEventHandler(PreviewTextbox_KeyDown);
+
             previewTextbox = new TextBox
             {
                 Width = 200,
@@ -705,7 +712,8 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
-            AddHandler(KeyDownEvent, new KeyEventHandler(PreviewTextbox_KeyDown), true);
+            previewTextbox.Loaded += (s, e) => AddHandler(KeyDownEvent, previewTextHandler, false);
+            previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -713,13 +721,14 @@ namespace Dash
 
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
         }
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             var text = KeyCodeToUnicode(e.Key);
             if (text is null) return;
             if (previewTextbox.Visibility != Visibility.Collapsed)
@@ -895,6 +904,7 @@ namespace Dash
 
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
@@ -909,6 +919,7 @@ namespace Dash
         {
             var textBox = sender as TextBox;
 
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;

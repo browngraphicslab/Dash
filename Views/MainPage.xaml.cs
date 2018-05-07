@@ -50,7 +50,7 @@ namespace Dash
         }
         public void DeselectDocument(DocumentView doc)
         {
-            if (SelectedDocuments.Count() != 0)
+            if (SelectedDocuments?.Count() > 0)
             {
                 SelectedDocuments.Remove(doc);
                 Toolbar.Update(SelectedDocuments);
@@ -412,6 +412,27 @@ namespace Dash
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
             }
+
+            if (DocumentView.FocusedDocument != null && !e.Handled) {
+                if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
+                {
+                    if (DocumentView.FocusedDocument.ViewModel != null && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                    {
+                        // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                        if (!DocumentView.FocusedDocument.ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                            !DocumentView.FocusedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                            DocumentView.FocusedDocument.HandleShiftEnter();
+                    }
+                }
+                if (this.IsF1Pressed() && this.IsPointerOver())
+                {
+                    DocumentView.FocusedDocument.ShowLocalContext(true);
+                }
+                if (this.IsF2Pressed() && this.IsPointerOver())
+                {
+                    DocumentView.FocusedDocument.ShowSelectedContext();
+                }
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -439,6 +460,11 @@ namespace Dash
                             d.DeleteDocument();
                         break;
                     }
+            }
+            if (DocumentView.FocusedDocument != null)
+            {
+                if (!this.IsF1Pressed())
+                    DocumentView.FocusedDocument.ShowLocalContext(false);
             }
         }
 

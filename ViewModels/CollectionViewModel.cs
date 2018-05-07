@@ -90,16 +90,12 @@ namespace Dash
         public AdvancedCollectionView                  BindableDocumentViewModels { get; set; }
         public KeyController                           CollectionKey => _collectionRef.FieldKey ?? KeyStore.DataKey;
 
-        public object Tag = null;
-        static int count = 1;
         public CollectionViewModel(FieldReference refToCollection, Context context = null) : base()
         {
             BindableDocumentViewModels = new AdvancedCollectionView(DocumentViewModels, true) { Filter = o => true };
 
             Debug.Assert(refToCollection != null);
             SetCollectionRef(refToCollection, context);
-
-            Tag = "CVM " + count++;
 
             CellSize = 250; // TODO figure out where this should be set
                             //  OutputKey = KeyStore.CollectionOutputKey;  // bcz: this wasn't working -- can't assume the collection is backed by a document with a CollectionOutputKey.  

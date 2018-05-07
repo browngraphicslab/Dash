@@ -36,6 +36,18 @@ namespace Dash
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 
+        static DocumentView _focusedDocument;
+        // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
+        static public DocumentView FocusedDocument
+        {
+            get => _focusedDocument;
+            set
+            {
+                System.Diagnostics.Debug.WriteLine("Focusing on " + value.ViewModel.DocumentController.Tag);
+                _focusedDocument = value;
+            }
+        } 
+
         /// <summary>
         /// The width of the context preview
         /// </summary>
@@ -98,33 +110,21 @@ namespace Dash
             Loaded += (sender, e) => {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
-                Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
             };
-            Unloaded += (sender, e) =>
-            {
-                Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
-                SizeChanged -= sizeChangedHandler;
-            };
+            Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
-            AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
+            PointerPressed += (sender, e) =>
             {
                 var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
-            }), true);
-
-            PointerPressed += (sender, e) =>
-            {
-                //var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                //var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
-                //ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+                FocusedDocument = this;
+                MainPage.Instance.Focus(FocusState.Programmatic);
+                e.Handled = true;
             };
 
             PointerEntered += DocumentView_PointerEntered;
@@ -274,42 +274,6 @@ namespace Dash
             ViewModel.InteractiveManipulationPosition = translate;
             ViewModel.InteractiveManipulationScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
-        }
-        
-        /// <summary>
-        /// Handles keypress events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
-        {
-            if (!this.IsF1Pressed())
-                ShowLocalContext(false);
-        }
-        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
-        {
-            if (this.IsF1Pressed() && this.IsPointerOver())
-            {
-                ShowLocalContext(true);
-            }
-            if (this.IsF2Pressed() && this.IsPointerOver())
-            {
-                ShowSelectedContext();
-            }
-            
-            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
-                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
-                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
-                var focused = docView == this;
-
-                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-                {
-                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                        HandleShiftEnter();
-                }
-            }
         }
 
         public void ShowLocalContext(bool showContext)
@@ -670,19 +634,22 @@ namespace Dash
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
                 ToFront();
-                List<DocumentView> d = new List<DocumentView>();
-                d.Add(this);
+                var d = new List<DocumentView>(new DocumentView[] { this });
                 //foreach (DocumentView doc in d)
                 //{
                 //    System.Diagnostics.Debug.WriteLine(doc.ToString());
                 //}
-                (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
-                (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
+                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview)
+                {
+                    if (!this.IsShiftPressed())
+                        cfview.DeselectAll();
+                    cfview.SelectDocs(d);
+                    if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                    {
+                        cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    }
+                }
             }
-			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
-			{
-				//ViewModel.DocumentController.GetVideo().Pause();
-			}
         }
 
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)

@@ -52,6 +52,7 @@ namespace Dash
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
@@ -81,7 +82,8 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) => {
+            xRichEditBox.KeyUp += (s, e) => 
+            {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
                     getDocView().DeleteDocument(true);
                 e.Handled = true;
@@ -221,6 +223,7 @@ namespace Dash
         }
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = false;
             var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
@@ -249,6 +252,7 @@ namespace Dash
                         }
                     }
                 }
+                e.Handled = true;
             }
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {
@@ -307,12 +311,14 @@ namespace Dash
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleShiftEnter();
+                e.Handled = true;
             }
             else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleCtrlEnter();
+                e.Handled = true;
             }
             else if (this.IsAltPressed()) // opens the format options flyout 
             {
@@ -329,6 +335,7 @@ namespace Dash
                 }
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
+                e.Handled = true;
             }
             else if (this.IsTabPressed())
             {
@@ -341,13 +348,16 @@ namespace Dash
                 {
                     case VirtualKey.N:
                         xRichEditBox.Document.Redo();
+                        e.Handled = true;
                         break;
                     case VirtualKey.H:
                         this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
+                        e.Handled = true;
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
                         xSearchBox.Focus(FocusState.Programmatic);
+                        e.Handled = true;
                         break;
                     case VirtualKey.L:
                         if (this.IsShiftPressed())
@@ -360,6 +370,7 @@ namespace Dash
                             {
                                 xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                             }
+                            e.Handled = true;
                         }
                         break;
                 }
