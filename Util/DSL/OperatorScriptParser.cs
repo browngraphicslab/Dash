@@ -220,6 +220,8 @@ namespace Dash
             var doc = operatorReference.GetDocumentController(context);
             var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
+            if (op == null)
+                return "FIXME in OperatorScriptParser";
             var funcName = op.TypedData.First().GetDishName();
             var script = funcName + FunctionOpeningCharacter;
             var middle = new List<string>();
