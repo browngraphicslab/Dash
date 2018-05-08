@@ -222,7 +222,7 @@ namespace Dash
                         var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                         var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                         docController.GetPositionField().Data = where;
-                        mainPageCollectionView.ViewModel.AddDocument(docController, null);
+                        mainPageCollectionView.ViewModel.AddDocument(docController);
                     }
                 }
             }
@@ -258,7 +258,7 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
                 //add error message for null file?
             }

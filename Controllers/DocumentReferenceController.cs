@@ -69,7 +69,7 @@ namespace Dash
             {
                 return new DocumentReferenceController(mapping[GetDocumentController(null)].Id, FieldKey);
             }
-            return this;
+            return null;
         }
     }
 }

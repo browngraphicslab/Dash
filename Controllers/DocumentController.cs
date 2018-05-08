@@ -127,7 +127,7 @@ namespace Dash
         {
             if (mapping.ContainsKey(this))
                 return mapping[this];
-            return this;
+            return null;
         }
 
         /// <summary>
@@ -560,7 +560,9 @@ namespace Dash
                     continue;
                 else if (f.Value is ReferenceController || f.Value is DocumentController)
                 {
-                    SetField(f.Key, f.Value.CopyIfMapped(mapping), true);
+                    var mappedField = f.Value.CopyIfMapped(mapping);
+                    if (mappedField != null)
+                        SetField(f.Key, mappedField, true);
                 }
                 else if (f.Value is ListController<DocumentController> listDocs)
                 {

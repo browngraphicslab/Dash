@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using Dash.Controllers;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 
 namespace Dash.Models.DragModels
@@ -70,6 +71,8 @@ namespace Dash.Models.DragModels
                     where.Y).Document;
                 dbox.Tag = "DraggedKey doc";
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);
+                //dbox.SetField(KeyStore.DataKey,
+                //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
                 dbox.SetField(KeyStore.TitleKey, new TextController(DraggedKey.Name), true);
                 return dbox;
             }

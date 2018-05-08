@@ -75,7 +75,7 @@ namespace Dash
 
         public abstract FieldControllerBase Copy();
 
-        public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return this; }
+        public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return null; }
 
         /// <summary>
         /// Returns the type of this field as a string. Can override this for more complex

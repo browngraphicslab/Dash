@@ -88,7 +88,7 @@ namespace Dash
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
 
-                xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
+                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);

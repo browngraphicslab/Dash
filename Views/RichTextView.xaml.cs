@@ -129,7 +129,7 @@ namespace Dash
                         var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                         dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
-                        containerDoc.AddDocument(dbox, null);
+                        containerDoc.AddDocument(dbox);
                         //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
                     }
                 }

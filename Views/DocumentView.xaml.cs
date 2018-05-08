@@ -575,7 +575,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
             var doc = ViewModel.DocumentController.GetCopy(null);
-            ParentCollection?.ViewModel.AddDocument(doc, null);
+            ParentCollection?.ViewModel.AddDocument(doc);
         }
 
         /// <summary>
@@ -586,7 +586,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null));
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
@@ -595,7 +595,7 @@ namespace Dash
         /// </summary>
         private void KeyValueViewDocument()
         {
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias());
         }
 
         /// <summary>
@@ -695,7 +695,7 @@ namespace Dash
                             var where = nestedCollection.CurrentView is CollectionFreeformView ?
                                 Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                                 new Point();
-                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
+                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
                             collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
 
                         }
@@ -766,7 +766,7 @@ namespace Dash
             foreach (var doc in SelectedDocuments())
                 doc.KeyValueViewDocument();
         }
-        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y)), null) ; }
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }

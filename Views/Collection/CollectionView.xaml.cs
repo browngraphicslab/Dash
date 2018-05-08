@@ -115,7 +115,7 @@ namespace Dash
                 newCollection.Click += (sender, e) =>
                 {
                     var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
-                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt), null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
+                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
                 };
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);

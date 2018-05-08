@@ -548,7 +548,7 @@ namespace Dash
                     var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
                     
                     ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                 }
                 if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
@@ -558,13 +558,13 @@ namespace Dash
                     if (e.Key == VirtualKey.C)
                     {
                         ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                     }
 
                     if (e.Key == VirtualKey.T)
                     {
                         ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                     }
 
                     foreach (var v in viewsinMarquee)
@@ -572,7 +572,7 @@ namespace Dash
                 }
                 if (e.Key == VirtualKey.G)
                 {
-                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height), null);
+                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height));
                 }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));

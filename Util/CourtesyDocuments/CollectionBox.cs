@@ -38,7 +38,7 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), context)
+            var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
             { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
 
             // set the view type (i.e. list, grid, freeform)
@@ -50,12 +50,7 @@ namespace Dash
 
             void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
             {
-                var newDocContext = (args as DocumentFieldUpdatedEventArgs).NewValue as DocumentController;
-                var newContext = new Context(c);
-                foreach (var ctxt in context.DocContextList)
-                    newContext.AddDocumentContext(ctxt);
-                newContext.AddDocumentContext(newDocContext);
-                collectionViewModel.SetCollectionRef(new DocumentFieldReference(docController.Id, KeyStore.DataKey), newContext);
+                collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
             }
             docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
             

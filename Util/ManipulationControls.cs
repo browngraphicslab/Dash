@@ -472,7 +472,7 @@ namespace Dash
             //Add ParentDocument to collection
             if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
-                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController, null);
+                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController);
             }
 
             _documentsToRemoveAfterManipulation = new List<DocumentController>()

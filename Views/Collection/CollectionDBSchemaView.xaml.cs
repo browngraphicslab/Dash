@@ -508,7 +508,7 @@ namespace Dash
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote(), null);
+            ViewModel.AddDocument(Util.BlankNote());
             e.Handled = true;
         }
 

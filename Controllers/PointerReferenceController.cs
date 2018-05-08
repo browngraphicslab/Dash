@@ -77,7 +77,7 @@ namespace Dash.Controllers
             {
                 return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)].Id, DocumentReference.FieldKey), FieldKey);
             }
-            return this;// Copy() as ReferenceController;
+            return null;
         }
     }
 }
