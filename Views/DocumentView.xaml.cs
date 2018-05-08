@@ -647,7 +647,7 @@ namespace Dash
                 //{
                 //    System.Diagnostics.Debug.WriteLine(doc.ToString());
                 //}
-                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview)
+                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
                 {
                     if (!this.IsShiftPressed())
                         cfview.DeselectAll();

@@ -195,6 +195,7 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.DeleteDocument();
+            e.Handled = true;
         }
 
         private void Icon_OnDragStarting(UIElement sender, DragStartingEventArgs args)

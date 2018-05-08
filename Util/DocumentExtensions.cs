@@ -251,7 +251,8 @@ namespace Dash
             else if (activeLayout != null) // has a layout
             {
                 newDoc = doc.MakeDelegate(); // inherit the document so we can override its layout
-                newLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey, KeyStore.DocumentContextKey, KeyStore.ActiveLayoutKey })); // copy the layout and skip document contexts
+                newLayout = activeLayout.MakeCopy(new List<KeyController>(new KeyController[] { KeyStore.LayoutListKey, KeyStore.DelegatesKey,  KeyStore.ActiveLayoutKey }),
+                                                  new List<KeyController>(new KeyController[] { KeyStore.DocumentContextKey})); // copy the layout and skip document contexts
                 newDoc.SetField(KeyStore.ActiveLayoutKey, newLayout, true);
             }
             else
@@ -569,19 +570,15 @@ namespace Dash
         public static DocumentController MakeCopy(this DocumentController doc, List<KeyController> excludeKeys = null, List<KeyController> dontCopyKeys = null)
         {
             var refs = new List<ReferenceController>();
-            var docIds = new Dictionary<DocumentController, DocumentController>();
-            var copy   = doc.makeCopy(ref refs, ref docIds, excludeKeys, dontCopyKeys);
-            foreach (var d2 in docIds)
+            var oldToNewDocMappings = new Dictionary<DocumentController, DocumentController>();
+            var copy = doc.makeCopy(ref refs, ref oldToNewDocMappings, excludeKeys, dontCopyKeys);
+            foreach (var oldToNewDoc in oldToNewDocMappings)
             {
                 foreach (var r in refs)
                 {
-                    var rDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
-                    if (rDoc != null)
-                    {
-                        string rId = rDoc.DocumentId;
-                        if (rId == d2.Key.GetId())
-                            rDoc.ChangeFieldDoc(d2.Value.GetId());
-                    }
+                    var referenceDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
+                    if (referenceDoc?.DocumentId == oldToNewDoc.Key.GetId()) // if reference pointed to a doc that got copied
+                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value.GetId());  // then update the reference to point to the new doc
                 }
             }
             return copy;
@@ -593,8 +590,12 @@ namespace Dash
             return DSL.GetFuncName(controller);
         }
 
-        private static DocumentController makeCopy(this DocumentController doc, ref List<ReferenceController> refs,
-                ref Dictionary<DocumentController, DocumentController> docs, List<KeyController> excludeKeys, List<KeyController> dontCopyKeys)
+        static DocumentController makeCopy(
+                this DocumentController doc, 
+                ref List<ReferenceController> refs,
+                ref Dictionary<DocumentController, DocumentController> oldToNewDocMappings, 
+                List<KeyController> excludeKeys, 
+                List<KeyController> dontCopyKeys)
         {
             if (excludeKeys == null)
             {
@@ -604,13 +605,13 @@ namespace Dash
                 return doc;
             if (doc.GetField(KeyStore.AbstractInterfaceKey, true) != null)
                 return doc;
-            if (docs.ContainsKey(doc))
-                return docs[doc];
+            if (oldToNewDocMappings.ContainsKey(doc))
+                return oldToNewDocMappings[doc];
 
             //TODO tfs: why do we make a delegate in copy?
             var copy = doc.GetPrototype()?.MakeDelegate() ??
                             new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), doc.DocumentType);
-            docs.Add(doc, copy);
+            oldToNewDocMappings.Add(doc, copy);
 
             var fields = new Dictionary<KeyController, FieldControllerBase>();
 
@@ -621,26 +622,23 @@ namespace Dash
                 else if (dontCopyKeys != null && dontCopyKeys.Contains(kvp.Key)) //  point to the same field data.
                     fields[kvp.Key] = kvp.Value;
                 else if (kvp.Value is DocumentController)
-                    fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref docs, excludeKeys, dontCopyKeys);
+                    fields[kvp.Key] = kvp.Value.DereferenceToRoot<DocumentController>(new Context(doc)).makeCopy(ref refs, ref oldToNewDocMappings, excludeKeys, dontCopyKeys);
                 else if (kvp.Value is ListController<DocumentController>)
                 {
                     var docList = new List<DocumentController>();
                     foreach (var d in kvp.Value.DereferenceToRoot<ListController<DocumentController>>(new Context(doc)).TypedData)
                     {
-                        docList.Add(d.makeCopy(ref refs, ref docs, excludeKeys, dontCopyKeys));
+                        docList.Add(d.makeCopy(ref refs, ref oldToNewDocMappings, excludeKeys, dontCopyKeys));
                     }
                     fields[kvp.Key] = new ListController<DocumentController>(docList);
                 }
-                else if (kvp.Value is ReferenceController)
-                    fields[kvp.Key] = kvp.Value.Copy();
+                else if (kvp.Value is ReferenceController refCtrl)
+                {
+                    fields[kvp.Key] = refCtrl.Copy();
+                    refs.Add(fields[kvp.Key]as ReferenceController);
+                }
                 else
                     fields[kvp.Key] = kvp.Value.Copy();
-
-                if (kvp.Value is ReferenceController)
-                {
-                    refs.Add(fields[kvp.Key] as ReferenceController);
-                }
-
             }
             copy.SetFields(fields, true);
 
