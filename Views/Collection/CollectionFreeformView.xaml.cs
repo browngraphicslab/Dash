@@ -727,9 +727,10 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            RemoveHandler(KeyDownEvent, previewTextHandler);
             var text = KeyCodeToUnicode(e.Key);
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+                return;
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             if (previewTextbox.Visibility != Visibility.Collapsed)
             {
                 e.Handled = true;
@@ -784,7 +785,7 @@ namespace Dash
             var virtualKeyCode = (uint)key;
 
             string character = null;
-
+            
             // take care of symbols
             if (key == VirtualKey.Space)
             {
