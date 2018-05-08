@@ -122,7 +122,6 @@ namespace Dash
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
-                FocusedDocument = this;
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
             };
@@ -541,6 +540,14 @@ namespace Dash
         {
             xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
         }
+        
+        /// <summary>
+        /// Ensures the menu flyout is shown on right tap.
+        /// </summary>
+        public void ForceLeftTapped()
+        {
+            this.DocumentView_OnTapped(null, null);
+        }
 
         /// <summary>
         /// Deletes the document from the view.
@@ -633,6 +640,7 @@ namespace Dash
         {
             if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
             {
+                FocusedDocument = this;
                 ToFront();
                 var d = new List<DocumentView>(new DocumentView[] { this });
                 //foreach (DocumentView doc in d)
