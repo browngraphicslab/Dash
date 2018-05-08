@@ -111,7 +111,7 @@ namespace Dash
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            addViewModels(CollectionController.TypedData);
+            addViewModels(CollectionController?.TypedData);
             ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             _lastDoc = ContainerDocument;
         }
@@ -193,13 +193,14 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents)
         {
-            using (BindableDocumentViewModels.DeferRefresh())   
-            {
-                foreach (var documentController in documents)
+            if (documents != null)
+                using (BindableDocumentViewModels.DeferRefresh())   
                 {
-                    DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    foreach (var documentController in documents)
+                    {
+                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                    }
                 }
-            }
         }
 
         void removeViewModels(List<DocumentController> documents)
