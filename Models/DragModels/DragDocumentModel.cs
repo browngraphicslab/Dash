@@ -45,17 +45,14 @@ namespace Dash.Models.DragModels
         }
 
         /// <summary>
-        ///     hack to stop people from dragging a collection on itself get the parent doc of the collection
-        ///     and then compare data docs, if they're equal then return
+        /// Tests whether dropping the document would create a cycle and, if so, returns false
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
         public bool CanDrop(FrameworkElement sender)
         {
-            var parentDocDataDoc = ((sender as CollectionView) ?? sender?.GetFirstAncestorOfType<CollectionView>())?.ParentDocument?.ViewModel
-                ?.DataDocument;
-            if (parentDocDataDoc != null && DraggedDocument.GetDataDocument().Equals(parentDocDataDoc))
-                return false;
+            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() || ShowViewCopy || MainPage.Instance.IsCtrlPressed()))
+                return cview.ViewModel.CanDrop(DraggedDocument);
             return true;
         }
 

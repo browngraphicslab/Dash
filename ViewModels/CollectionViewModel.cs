@@ -227,6 +227,32 @@ namespace Dash
             }
         }
 
+
+        bool createsCycle(DocumentController newDoc)
+        {
+            var curLayout = ContainerDocument.GetActiveLayout() ?? ContainerDocument;
+            var newLayout = newDoc.GetActiveLayout() ?? newDoc;
+            if (newLayout.DocumentType.Equals(CollectionBox.DocumentType) && curLayout.GetDataDocument().Equals(newLayout.GetDataDocument()))
+                return true;
+            if (newLayout.DocumentType.Equals(CollectionBox.DocumentType))
+            {
+                var newDocList = newLayout.GetDereferencedField(KeyStore.DataKey, null) as ListController<DocumentController>;
+                foreach (var subDoc in newDocList.TypedData)
+                {
+                    var subLayout = subDoc.GetActiveLayout() ?? subDoc;
+                    if (subLayout.DocumentType.Equals(CollectionBox.DocumentType))
+                    {
+                        if (curLayout.GetDataDocument().Equals(subLayout.GetDataDocument()))
+                            return true;
+                        if (createsCycle(subDoc))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// Adds a document to the given collectionview.
         /// </summary>
@@ -234,17 +260,13 @@ namespace Dash
         /// <param name="context"></param>
         public void AddDocument(DocumentController doc)
         {
-            if (doc.DocumentType.Equals(DashConstants.TypeStore.CollectionDocument))
+            if (!createsCycle(doc))
             {
-                var coll = doc.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-                if (coll.Data.Contains(doc))
-                    return;
+                doc.CaptureNeighboringContext();
+
+                // just update the collection, the colllection will update our view automatically
+                CollectionController.Add(doc);
             }
-            
-            doc.CaptureNeighboringContext();
-            
-            // just update the collection, the colllection will update our view automatically
-            CollectionController.Add(doc);
         }
 
         public void RemoveDocuments(List<DocumentController> documents)
@@ -693,7 +715,7 @@ namespace Dash
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-                if (dragModel.CanDrop(sender as FrameworkElement))
+                    if (dragModel.CanDrop(sender as FrameworkElement))
                 {
                     //var draggedDocument = dragModel.GetDraggedDocument();
                     //if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
@@ -710,6 +732,11 @@ namespace Dash
             }
 
             e.Handled = true;
+        }
+
+        public bool CanDrop(DocumentController doc)
+        {
+            return !createsCycle(doc);
         }
 
         /// <summary>
@@ -775,6 +802,15 @@ namespace Dash
             this.HighlightPotentialDropTarget(sender as UserControl);
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+            {
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+                if (dragModel.CanDrop(sender as FrameworkElement)) 
+                    e.AcceptedOperation = DataPackageOperation.None;
+
+            } 
 
             e.DragUIOverride.IsContentVisible = true;
 
