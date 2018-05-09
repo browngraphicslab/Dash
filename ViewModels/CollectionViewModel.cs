@@ -303,6 +303,17 @@ namespace Dash
             set { SetProperty(ref _canDragItems, value); }
         }
 
+
+        /// <summary>
+        /// Determines whether a document can be added to the collection based on whether it would create a layout cycle.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        public bool CanDrop(DocumentController doc)
+        {
+            return !createsCycle(doc);
+        }
+
         public ListViewSelectionMode ItemSelectionMode
         {
             get { return _itemSelectionMode; }
@@ -734,11 +745,6 @@ namespace Dash
             e.Handled = true;
         }
 
-        public bool CanDrop(DocumentController doc)
-        {
-            return !createsCycle(doc);
-        }
-
         /// <summary>
         /// If you drop a collection, the collection serves as a layout template for all the documents in the collection and changes the way they are displayed.
         /// TODO: This needs an explicit GUI drop target for setting a template...
@@ -807,7 +813,7 @@ namespace Dash
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-                if (dragModel.CanDrop(sender as FrameworkElement)) 
+                if (!dragModel.CanDrop(sender as FrameworkElement)) 
                     e.AcceptedOperation = DataPackageOperation.None;
 
             } 
