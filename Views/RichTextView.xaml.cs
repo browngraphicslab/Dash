@@ -240,7 +240,7 @@ namespace Dash
                     var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
                     }
                     else if (target.StartsWith("http"))
                     {
@@ -261,7 +261,7 @@ namespace Dash
                 foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
                 {
                     var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                    if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
+                    if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
                     {
                         var mprect = dvm.GetBoundingRect(MainPage.Instance);
                         var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -285,7 +285,7 @@ namespace Dash
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).GetDropDocument(new Point(), true), true);
+                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
