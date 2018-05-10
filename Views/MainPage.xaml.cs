@@ -408,6 +408,7 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
@@ -450,8 +451,16 @@ namespace Dash
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                e.Handled = true;
+            }
+
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
+               if (FocusManager.GetFocusedElement() is TextBox)
+                    return;
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
                 foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
                     if (c.SelectedDocs.Count() > 0)
