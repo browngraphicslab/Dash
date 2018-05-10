@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Dash.Controllers;
+using Dash.Converters;
+using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,9 +10,6 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Dash.Controllers;
-using Dash.Converters;
-using DashShared;
 
 namespace Dash
 {
@@ -377,6 +377,70 @@ namespace Dash
             return cont.TypeInfo == TypeInfo.Reference || cont.TypeInfo == rawField?.TypeInfo;
         }
 
+
+        /// <summary>
+        /// Removes a value from a list field, and then propagates that change to all delegates
+        /// of this document.
+        /// </summary>
+        /// <param name="key">the key for the list field being modified</param>
+        /// <param name="value">the value being removed from the list</param>
+        public void RemoveFromListField<T>(KeyController key, T value) where T: FieldControllerBase
+        {
+            GetDereferencedField<ListController<T>>(key, null)?.Remove(value);
+
+            foreach (var delegDoc in GetDelegates().TypedData)
+            {
+                var items = delegDoc.GetField<ListController<T>>(key, true);
+                items?.Remove(value);
+                // if we're removing a document then we need to check if our delegates contain a delegate of the removed document and remove that.
+                if (value is DocumentController && items != null)
+                {
+                    foreach (var delegateValue in items.Data.OfType<DocumentController>().Where((d) => d.IsDelegateOf((value as DocumentController).Id)).ToArray())
+                    {
+                        delegDoc.RemoveFromListField<DocumentController>(key, delegateValue);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a value to a list field, and then propagates that change to all delegates
+        /// of this document. This includes copying any datadocument self-references so that they 
+        /// will reference the delegate.
+        /// </summary>
+        /// <param name="key">the key for the list field being modified</param>
+        /// <param name="value">the value being added to the list</param>
+        public void AddToListField<T>(KeyController key, T value) where T: FieldControllerBase
+        {
+            GetDereferencedField<ListController<T>>(key, null)?.Add(value);
+
+            foreach (var d in GetDelegates().TypedData)
+            {
+                var items = d.GetField<ListController<T>>(key, true);
+                var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
+                mapping.Add(this, d);
+                if (value is DocumentController)
+                {
+                    // if we're adding a document, then we really add a delegate of the document to facilitate copy on write
+                    var delgateValue = (value as DocumentController).MakeDelegate();
+                    delgateValue.MapDocuments(mapping);
+
+                    // bcz: if we added a document that references a field on this document, then
+                    //      we need to add a field to our delegates that points to a field on the mapped delegate.  
+                    //      For copy-on-write semantics,
+                    //      we want the default value of the field to be a reference to the prototype's field
+                    foreach (var f in EnumDisplayableFields())
+                        if ((mapping[this] as DocumentController).GetField(f.Key, true) == null)
+                            (mapping[this] as DocumentController).SetField(f.Key, new DocumentReferenceController(Id, f.Key, true), true);
+
+                    d.AddToListField(key, delgateValue);
+                }
+                else
+                {
+                    items.Add(value);
+                }
+            }
+        }
 
         // == CYCLE CHECKING ==
         #region Cycle Checking

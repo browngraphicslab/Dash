@@ -264,35 +264,10 @@ namespace Dash
             {
                 doc.CaptureNeighboringContext();
 
-                // just update the collection, the colllection will update our view automatically
-                CollectionController.Add(doc);
-                addDocumentToDelegates(doc);
+                ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
             }
         }
 
-        /// <summary>
-        /// Propagates document additions to all delegates of this CollectionView.  This includes
-        /// copying any datadocument self-references so that they will reference the delegate.
-        /// </summary>
-        /// <param name="doc"></param>
-        void addDocumentToDelegates(DocumentController doc)
-        {
-            var origDocContext = ContainerDocument.GetDataDocument();
-            foreach (var d in origDocContext.GetDelegates().TypedData)
-            {
-                var items = d.GetField<ListController<DocumentController>>(KeyStore.DataKey, true);
-                var mapping = new Dictionary<FieldControllerBase, FieldControllerBase>();
-                mapping.Add(origDocContext, d);
-                var delegDoc = doc.MakeDelegate();
-                delegDoc.MapDocuments(mapping);
-                items.Add(delegDoc);
-                // bcz: shouldn't have to explicitly mask the fields like this, but since we don't have copy-on-write, we need to.
-                // Note: bindings might need to be changed to create copy-on-write
-                foreach (var f in origDocContext.EnumDisplayableFields())
-                    if ((mapping[origDocContext] as DocumentController).GetField(f.Key, true) == null)
-                        (mapping[origDocContext] as DocumentController).SetField(f.Key, new DocumentReferenceController(origDocContext.Id, f.Key, true), true);
-            }
-        }
 
         public void RemoveDocuments(List<DocumentController> documents)
         {
@@ -308,25 +283,7 @@ namespace Dash
         public void RemoveDocument(DocumentController document)
         {
             // just update the collection, the colllection will update our view automatically
-            CollectionController.Remove(document);
-            removeDocumentFromDelegates(document);
-        }
-
-        /// <summary>
-        /// Propagates document removals to all delegates of this CollectionView. 
-        /// </summary>
-        /// <param name="document"></param>
-        void removeDocumentFromDelegates(DocumentController document)
-        {
-            foreach (var d in ContainerDocument.GetDataDocument().GetDelegates().TypedData)
-            {
-                var items = d.GetField<ListController<DocumentController>>(KeyStore.DataKey, true);
-                foreach (var i in items.TypedData.ToArray())
-                    if (i.GetAllPrototypes().Contains(document))
-                    {
-                        items.Remove(i);
-                    }
-            }
+            ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
         }
 
         #endregion
