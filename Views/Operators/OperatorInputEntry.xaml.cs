@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Windows.UI;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,10 +35,17 @@ namespace Dash
         public OperatorInputEntry()
         {
             this.InitializeComponent();
+            
         }
 
+        /// <summary>
+        /// Handles dropping data onto the input operator ellipse.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UIElement_OnDrop(object sender, DragEventArgs e)
         {
+            // make sure drop data is a document
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
@@ -44,7 +53,10 @@ namespace Dash
                 _refDoc = dragData.DraggedDocument?.GetDataDocument();
                 var opDoc = OperatorFieldReference.GetDocumentController(null);
                 var el = sender as FrameworkElement;
+                
+
                 var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
+                xEllipse.Stroke = new SolidColorBrush(Colors.Red);
                 if (dragData.DraggedKey != null)
                 {
                     opDoc.SetField(key, new DocumentReferenceController(_refDoc.Id, dragData.DraggedKey), true);
@@ -85,13 +97,20 @@ namespace Dash
         {
             UIElement_OnDragEnter(sender, e);
         }
+
+        /// <summary>
+        /// For hovering over operator ellipse.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UIElement_OnDragEnter(object sender, DragEventArgs e)
         {
-            // set the input type
+            // set the types of data this operator input can handle
             var el = sender as FrameworkElement;
-            var opField = OperatorFieldReference.DereferenceToRoot<OperatorController>(null);
+            var opField = OperatorFieldReference.DereferenceToRoot<ListController<OperatorController>>(null).TypedData.First();
             var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key;
             _inputType = opField.Inputs.First(i => i.Key.Equals(key)).Value.Type;
+
 
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
@@ -103,7 +122,8 @@ namespace Dash
                     // the key we're dropping on
                     // the type of the field we're dragging
                     var fieldType = _refDoc.GetRootFieldType(dragData.DraggedKey);
-                    // if the field we're dragging from and the field we're dragging too are the same then let the user link otherwise don't let them do anything
+                    // if the field we're dragging from and the field we're dragging too are the same (todo: or convertible)
+                    // then let the user link otherwise don't let them do anything
                     e.AcceptedOperation = _inputType.HasFlag(fieldType) ? DataPackageOperation.Link : DataPackageOperation.None;
                 }
                 else //There's just a document, and a key needs to be chosen later, so accept for now

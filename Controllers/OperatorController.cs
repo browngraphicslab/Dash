@@ -171,7 +171,7 @@ namespace Dash
             // to chase down pointers
         }
 
-        public sealed override FieldModelController<OperatorModel> Copy()
+        public sealed override FieldControllerBase Copy()
         {
             var operatorCopy = GetDefaultController();
             Debug.Assert(operatorCopy is FieldModelController<OperatorModel>);

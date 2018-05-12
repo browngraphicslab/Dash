@@ -6,8 +6,6 @@ using Windows.Foundation;
 using CsvHelper;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
-using static Dash.NoteDocuments;
-
 namespace Dash
 {
     public class CsvToDashUtil : IFileParser

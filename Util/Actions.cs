@@ -1,7 +1,6 @@
 ﻿using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -24,7 +23,7 @@ namespace Dash
             //newDoc.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), where, new Size(400, 400)).Document, true, true);
 
             //collection.ViewModel.AddDocument(newDoc, null);
-            collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, where), null);
+            collection.ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, where));
 
             //DBTest.DBDoc.AddChild(newDoc);
         }
@@ -36,7 +35,7 @@ namespace Dash
             var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);
             var newDoc = cnote.Document;
             
-            collection.ViewModel.AddDocument(newDoc, null);
+            collection.ViewModel.AddDocument(newDoc);
             //DBTest.DBDoc.AddChild(newDoc);
         }
 
@@ -52,7 +51,7 @@ namespace Dash
                 //var w = docController.GetWidthField().Data;
                 //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
-            collectionViewModel.AddDocument(docController, null);
+            collectionViewModel.AddDocument(docController);
         }
 
         #region Ink Commands
@@ -99,9 +98,5 @@ namespace Dash
         
         #endregion
 
-        public static void ChangeTheme(ICollectionView collectionView, DragEventArgs e)
-        {
-            MainPage.Instance.ThemeChange();
-        }
     }
 }

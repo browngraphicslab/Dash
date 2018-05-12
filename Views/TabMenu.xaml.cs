@@ -50,7 +50,7 @@ namespace Dash
 
         public void AddToFreeform(DocumentController controller)
         {
-            _addsToThisCollection.ViewModel.AddDocument(controller, null);
+            _addsToThisCollection.ViewModel.AddDocument(controller);
         }
 
         // TODO comment this is the public interface to the tab menu thats it! maybe change the signature and pass in
@@ -125,7 +125,7 @@ namespace Dash
         {
             var list = new List<ITabItemViewModel>
             {
-                new CreateOpTabItemViewModel("Document", Util.AdornmentDoc),
+                new CreateOpTabItemViewModel("Group", Util.AdornmentDoc),
                 new CreateOpTabItemViewModel("Collection", Util.BlankCollection),
                 new CreateOpTabItemViewModel("Note", Util.BlankNote)
             };

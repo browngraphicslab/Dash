@@ -88,7 +88,7 @@ namespace Dash
             return StringSearchModel.False;
         }
 
-        public override FieldModelController<TextModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new TextController(Data);
         }

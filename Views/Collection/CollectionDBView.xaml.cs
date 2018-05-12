@@ -38,7 +38,7 @@ namespace Dash
                     if (key != null)
                     {
                         var derefField = d.GetDataDocument().GetDereferencedField<TextController>(key, null)?.Data;
-                        var rnote = new NoteDocuments.RichTextNote(derefField ?? "<empty>").Document;
+                        var rnote = new RichTextNote(derefField ?? "<empty>").Document;
                         rnote.GetDataDocument().SetField(CollectionDBView.SelectedKey, new TextController(term), true);
                         return rnote;
                     }
@@ -62,7 +62,6 @@ namespace Dash
 
         private void CollectionDBView_DataContextChanged(object sender, DataContextChangedEventArgs args)
         {
-            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             updateChart(new Context(ParentDocument));
         }   

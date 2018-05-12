@@ -44,6 +44,23 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
+            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+            //if (args != null && dargs == null)
+            //{
+            //    return;
+            //}
+
+            //string updatedKeyName = null;
+            //if (dargs != null)
+            //{
+            //    if (!(dargs.FieldArgs is DocumentController.DocumentFieldUpdatedEventArgs dargs2))
+            //    {
+            //        return;
+            //    }
+
+            //    updatedKeyName = dargs2.Reference.FieldKey.Name;
+            //}
+
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
@@ -52,7 +69,11 @@ namespace Dash
                 {
                     if (key.Key.Name.Replace(" ", "").Equals(keyName))
                     {
-                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        //if (updatedKeyName?.Equals(keyName) ?? true)
+                        {
+                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        }
+
                         return;
                     }
                 }
@@ -61,7 +82,11 @@ namespace Dash
                 {
                     if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
                     {
-                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        //if (updatedKeyName?.ToLower().Equals(keyName) ?? true)
+                        {
+                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        }
+
                         return;
                     }
                 }
@@ -71,7 +96,11 @@ namespace Dash
                 {
                     if (key.Key.Name.Replace(" ", "").Contains(keyName) && keyName.Length  >= 3)
                     {
-                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        //if (updatedKeyName?.Contains(keyName) ?? true)
+                        {
+                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        }
+
                         return;
                     }
                 }
@@ -80,7 +109,11 @@ namespace Dash
                 {
                     if (key.Key.Name.Replace(" ", "").ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
                     {
-                        outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        //if (updatedKeyName?.ToLower().Contains(keyName) ?? true)
+                        {
+                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
+                        }
+
                         return;
                     }
                 }

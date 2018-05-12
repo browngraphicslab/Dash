@@ -70,6 +70,11 @@ namespace Dash
                 SetExpression(XTextBox.Text);
         }
 
+        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         private bool SetExpression(string text)
         {
             TextBoxLoaded = false;
@@ -128,7 +133,7 @@ namespace Dash
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Collapse_Value(this);
+            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -139,12 +144,15 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private EditableScriptViewModel _oldViewModel;
         private void EditableScriptBox_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (ViewModel == null)
+            if (ViewModel == null || ViewModel == _oldViewModel)
             {
                 return;
             }
+
+            _oldViewModel = ViewModel;
             FieldBinding<FieldControllerBase> binding = new FieldBinding<FieldControllerBase>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),

@@ -5,6 +5,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType("colTitle")]
     public class CollectionTitleOperatorController : OperatorController
     {
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -38,14 +39,19 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             TextController output = null;
-
+            
             DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
                 firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
-                output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
+                // bcz: this is a hack to avoid infinite recursion when the first document in a collection
+                // is  databox whose DataContext is the collection.  This needs to be replaced with a more general
+                // mechanism of identifying and halting an evaluation cycle
+                if (firstDoc?.DocumentType.Equals(DataBox.DocumentType) == true)
+                    output = new TextController(firstDoc.GetDereferencedField(KeyStore.DataKey, null).ToString());
+                else output = firstDoc?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.TitleKey, null);
             }
 
             // bcz: this would be useful if we knew what was changed about the list item document.  If the title is changed, we only care about the first document;

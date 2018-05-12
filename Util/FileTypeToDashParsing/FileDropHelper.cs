@@ -7,7 +7,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -86,7 +85,7 @@ namespace Dash
                 if (documentController != null)
                 { 
                     documentController.GetPositionField().Data = where;
-                    collectionViewModel.AddDocument(documentController, null);
+                    collectionViewModel.AddDocument(documentController);
                 }
             }
 
@@ -126,7 +125,7 @@ namespace Dash
                     }
                 }
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
-                collectionViewModel.AddDocument(cnote.Document, null);
+                collectionViewModel.AddDocument(cnote.Document);
             }
             else
             {

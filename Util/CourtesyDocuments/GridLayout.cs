@@ -11,6 +11,7 @@ namespace Dash
     class GridLayout : CourtesyDocument
     {
         public static readonly DocumentType DocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
+        private static readonly string PrototypeId = "0F5A4B9A-44BA-4FFE-9A35-0818BCD038A6";
 
         public static readonly KeyController GridRowsTypeKey = new KeyController("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
         public static readonly KeyController GridRowsValueKey = new KeyController("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
@@ -19,29 +20,8 @@ namespace Dash
 
         public GridLayout(Point position, Size size)
         {
-            var fields = DefaultLayoutFields(position, size,
-                new ListController<DocumentController>());
-            Document = new DocumentController(fields, DocumentType);
-        }
-
-        public GridLayout(Point position) : this(position, new Size(double.NaN, double.NaN))
-        {
-            
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            var fields = DefaultLayoutFields(position, size, new ListController<DocumentController>());
+            SetupDocument(DocumentType, PrototypeId, "GridLayout Prototype Layout", fields);
         }
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,

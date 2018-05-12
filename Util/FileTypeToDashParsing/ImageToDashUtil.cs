@@ -14,6 +14,20 @@ namespace Dash
 {
     public class ImageToDashUtil : IFileParser
     {
+
+        /// <summary>
+        /// Parse a file and save it to the local filesystem
+        /// </summary>
+        public async Task<DocumentController> ParseFileAsync(StorageFile file)
+        {
+            var localFile = await CopyFileToLocal(file);
+
+            var title = file.DisplayName;
+
+            return await CreateImageBoxFromLocalFile(localFile, title);
+        }
+
+
         /// <summary>
         /// Parse a file and save it to the local filesystem
         /// </summary>
@@ -81,6 +95,26 @@ namespace Dash
         }
 
         /// <summary>
+        /// Copy a file to the local file system, returns a refernece to the file in the local filesystem
+        /// </summary>
+        private static async Task<StorageFile> CopyFileToLocal(StorageFile file)
+        {
+            var localFile = await CreateUniqueLocalFile();
+
+            // if the uri filepath is a local file then copy it locally
+            if (!file.FileType.EndsWith(".url"))
+            {
+                await file.CopyAndReplaceAsync(localFile);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            return localFile;
+        }
+
+        /// <summary>
         /// Create a unique file in the local folder
         /// </summary>
         private static async Task<StorageFile> CreateUniqueLocalFile()
@@ -109,19 +143,7 @@ namespace Dash
         {
             var imgSize = await GetImageSize(localFile);
 
-            // create a backing document for the image
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
-                [KeyStore.WidthFieldKey] = new NumberController(imgSize.Width),
-                [KeyStore.HeightFieldKey] = new NumberController(imgSize.Height),
-            };
-            if (title != null) fields[KeyStore.TitleKey] = new TextController(title);
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-            // return an image box, by setting the height to NaN the image height automatically sizes
-            // based on the width according to the aspect ratio
-            return new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
+            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgSize.Width, double.NaN), title).Document;
         }
 
         /// <summary>

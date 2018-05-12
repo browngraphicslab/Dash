@@ -15,9 +15,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
 using static Dash.FieldControllerBase;
-using static Dash.NoteDocuments;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -38,6 +38,8 @@ namespace Dash
         /// </summary>
         Dictionary<int, ITextCharacterFormat> _originalCharFormat = new Dictionary<int, ITextCharacterFormat>();
 
+        private int NoteFontSize => SettingsView.Instance.NoteFontSize;
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -50,6 +52,7 @@ namespace Dash
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
@@ -58,6 +61,8 @@ namespace Dash
                 setSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
+
+            xSearchBox.KeyUp += (s, e) => e.Handled = true;
 
             xSearchBox.QuerySubmitted += (s,e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
@@ -77,7 +82,8 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) => {
+            xRichEditBox.KeyUp += (s, e) => 
+            {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
                     getDocView().DeleteDocument(true);
                 e.Handled = true;
@@ -86,6 +92,15 @@ namespace Dash
             xRichEditBox.ContextMenuOpening += (s,e) => e.Handled = true; // suppresses the Cut, Copy, Paste, Undo, Select All context menu from the native view
 
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Gray) { Opacity = 0.5 };
+
+            var sizeBinding = new Binding
+            {
+                Source = SettingsView.Instance,
+                Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
+                Mode = BindingMode.OneWay
+            };
+            xRichEditBox.SetBinding(FontSizeProperty, sizeBinding); 
+
         }
 
         public void UpdateDocumentFromXaml()
@@ -96,15 +111,27 @@ namespace Dash
                 setContainerHeight();
 
                 // auto-generate key/value pairs by scanning the text
-                var reg = new Regex("[a-zA-Z 0-9]*:[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
+                var reg = new Regex("[a-zA-Z 0-9]*:=[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
                 var matches = reg.Matches(getReadableText());
                 foreach (var str in matches)
                 {
-                    var split = str.ToString().Split(':');
+                    var split = str.ToString().Split(":=");
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    DataDocument.SetField(KeyController.LookupKeyByName(key, true), new TextController(value), true);
+                    var keycontroller = KeyController.LookupKeyByName(key, true);
+                    var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+                    if (containerDoc != null)
+                    {
+                        var containerData = containerDoc.ContainerDocument.GetDataDocument();
+                        containerData.SetField(keycontroller, new RichTextController(new RichTextModel.RTD(value)), true);
+                        var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
+                        var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                        dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                        dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
+                        containerDoc.AddDocument(dbox);
+                        //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
+                    }
                 }
             }
         }
@@ -174,7 +201,7 @@ namespace Dash
         string _lastXamlRTFText = "";
         void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
@@ -187,7 +214,8 @@ namespace Dash
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
-                    _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                    if (!_originalCharFormat.ContainsKey(s))
+                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
@@ -195,6 +223,7 @@ namespace Dash
         }
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = false;
             var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
@@ -211,7 +240,7 @@ namespace Dash
                     var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
                     }
                     else if (target.StartsWith("http"))
                     {
@@ -223,6 +252,7 @@ namespace Dash
                         }
                     }
                 }
+                e.Handled = true;
             }
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {
@@ -231,7 +261,7 @@ namespace Dash
                 foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
                 {
                     var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                    if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
+                    if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
                     {
                         var mprect = dvm.GetBoundingRect(MainPage.Instance);
                         var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -255,7 +285,7 @@ namespace Dash
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).GetDropDocument(new Point(), true), true);
+                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -271,15 +301,24 @@ namespace Dash
         /// <param name="e"></param>
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsAltPressed() && !e.Key.Equals(VirtualKey.Shift))
+            if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
                 getDataDoc().CaptureNeighboringContext();
             }
-            else if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
+
+            if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
-                getDocView().HandleShiftEnter();
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                getDocView().HandleShiftEnter();
+                e.Handled = true;
+            }
+            else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
+            {
+                xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
+                xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
+                getDocView().HandleCtrlEnter();
+                e.Handled = true;
             }
             else if (this.IsAltPressed()) // opens the format options flyout 
             {
@@ -296,6 +335,7 @@ namespace Dash
                 }
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
+                e.Handled = true;
             }
             else if (this.IsTabPressed())
             {
@@ -308,13 +348,16 @@ namespace Dash
                 {
                     case VirtualKey.N:
                         xRichEditBox.Document.Redo();
+                        e.Handled = true;
                         break;
                     case VirtualKey.H:
                         this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
+                        e.Handled = true;
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
                         xSearchBox.Focus(FocusState.Programmatic);
+                        e.Handled = true;
                         break;
                     case VirtualKey.L:
                         if (this.IsShiftPressed())
@@ -327,6 +370,7 @@ namespace Dash
                             {
                                 xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                             }
+                            e.Handled = true;
                         }
                         break;
                 }
@@ -534,8 +578,9 @@ namespace Dash
                 }
             }
         }
+
         #endregion
-        
+
         #region commented out code
 
         //void XRichEditBox_KeyUp(object sender, KeyRoutedEventArgs e)

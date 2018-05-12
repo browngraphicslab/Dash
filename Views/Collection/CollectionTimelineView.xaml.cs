@@ -365,6 +365,13 @@ namespace Dash
                     if (docContexts != null)
                         foreach (var dc in docContexts)
                             _contextList.Add(new TimelineElementViewModel(dc, dvm));
+                    else
+                    {
+                        // if there is no web context stored for a document, create a context from the ModifiedTimestamp instead
+                        var dateObject = (DateTime)(dvm.DataDocument.GetDereferencedField(KeyStore.ModifiedTimestampKey, null).GetValue(new Context()));
+                        var documentTicks = dateObject.Ticks;
+                        _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks}, dvm));
+                    }
                 }
                 UpdateMetadataMinAndMax();
             }

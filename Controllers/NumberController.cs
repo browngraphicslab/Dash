@@ -85,7 +85,7 @@ namespace Dash
             return Data.ToString().Contains(searchString) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
         }
 
-        public override FieldModelController<NumberModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new NumberController(Data);
         }

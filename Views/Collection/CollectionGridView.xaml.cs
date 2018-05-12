@@ -29,11 +29,12 @@ namespace Dash
         private void CollectionGridView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+            e.Handled = true;
         }
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            if (this.IsCtrlPressed())
             {
                 var point = e.GetCurrentPoint(this);
 

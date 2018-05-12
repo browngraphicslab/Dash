@@ -114,7 +114,7 @@ namespace Dash
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
-        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey).Data;}
+        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point(0,0);}
 
         protected bool Equals(DocumentViewModel other)
         {
@@ -163,7 +163,7 @@ namespace Dash
         /// <param name="context"></param>
         void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
+            // if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
                 // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
                 //   bcz: need some better mechanism than this....
                 if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||

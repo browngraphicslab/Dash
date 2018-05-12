@@ -6,8 +6,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!--<Grid Background="{x:Bind Background, Mode=OneWay}">-->
-
     <Grid x:Name="xBackground" Background="Transparent">
         <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"
@@ -21,6 +19,7 @@
                    TextWrapping="Wrap" 
                    DoubleTapped="XTextBlock_DoubleTapped"></TextBlock>
         <TextBox x:Name="XTextBox"
+                   x:FieldModifier="public"
                  x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
                  FontSize="{x:Bind FontSize, Mode=OneWay}"
                  FontWeight="{x:Bind FontWeight, Mode=OneWay}"
@@ -35,6 +34,7 @@
                  PointerWheelChanged="XTextBox_OnPointerWheelChanged"
                  ManipulationDelta="XTextBox_OnManipulationDelta"
                  KeyDown="XTextBox_OnKeyDown"
+                 KeyUp="XTextBox_KeyUp"
                  LostFocus="XTextBox_OnLostFocus"
                  Loaded="XTextBox_OnLoaded"></TextBox>
     </Grid>

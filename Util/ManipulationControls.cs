@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Point = Windows.Foundation.Point;
 using DashShared;
 
@@ -133,9 +134,18 @@ namespace Dash
             }
         }
         
+        /// <summary>
+        /// Old code to align when a DocumentView is being resized. This should be put back in soon.
+        /// </summary>
+        /// <param name="translate"></param>
+        /// <param name="sizeChange"></param>
+        /// <param name="shiftTop"></param>
+        /// <param name="shiftLeft"></param>
+        /// <returns></returns>
         public Rect ResizeAlign(Point translate, Point sizeChange, bool shiftTop, bool shiftLeft)
         {
-            MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
@@ -217,35 +227,89 @@ namespace Dash
             }
 
         }
-        public Point SimpleAlign(Point translate)
+
+        public Point SimpleAlign(Point originalTranslate)
         {
-            MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             //Don't do any alignment if simply panning the collection
-            var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var collectionFreeformView =
+                ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
             if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
-                return translate;
+                return originalTranslate;
 
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
             var parentDocumentAxesBefore = AlignmentAxes(boundsBeforeTranslation);
 
-            var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + translate.X, boundsBeforeTranslation.Y + translate.Y, boundsBeforeTranslation.Width, boundsBeforeTranslation.Height);
-            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel).ToList().Contains(vm));
+            var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + originalTranslate.X,
+                boundsBeforeTranslation.Y + originalTranslate.Y, boundsBeforeTranslation.Width,
+                boundsBeforeTranslation.Height);
+            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm =>
+                vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel)
+                    .ToList().Contains(vm));
             var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
 
-            double distanceThreshold = 1000;
+            double distanceThreshold = 1000; //How close the X and Y positions have to be for alignment to happen.
             double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
-            foreach(var documentView in listOfSiblings)
+            foreach (var documentView in listOfSiblings)
             {
                 var documentBounds = InteractiveBounds(documentView);
                 var documentAxes = AlignmentAxes(documentBounds);
                 //To avoid the visual clutter of aligning to document views in a large workspace, we currently ignore any document views that are further than some threshold
-
-                if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold || Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
+                if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold ||
+                    Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
                     continue;
 
+
+                var translateAfterFirstAlignment = originalTranslate;
+                bool alignedToX = false;
+                //Check every y-aligned axis (xmin, xmid, xmax), align to the first available one
+                for (int parentAxis = 0; parentAxis < 3 && (!alignedToX); parentAxis++)
+                {
+                    for (int otherAxis = 0; otherAxis < 3; otherAxis++)
+                    {
+                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
+                        var distance = Math.Abs(delta);
+
+                        if (distance < 15)
+                        {
+                            if ((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
+                                continue;
+
+                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
+                            translateAfterFirstAlignment = new Point(delta, originalTranslate.Y);
+                            alignedToX = true;
+                            break;
+                        }
+                    }
+                }
+
+                //Check every x-aligned axis, align to the first available one, while also maintaining the alignment to any x-aligned axis found above
+                for (int parentAxis = 3; parentAxis < 6; parentAxis++)
+                {
+                    for (int otherAxis = 3; otherAxis < 6; otherAxis++)
+                    {
+                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
+                        var distance = Math.Abs(delta);
+                        if (distance < 15)
+                        {
+
+                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
+                                continue;
+
+                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translateAfterFirstAlignment.X, delta));
+                            return new Point(translateAfterFirstAlignment.X, delta);
+
+                        }
+                    }
+                }
+
+                if (alignedToX)
+                    return translateAfterFirstAlignment;
+                /*
                 //For every axis in the ParentDocument
-                for(int parentAxis = 0; parentAxis < 6; parentAxis++)
+                for (int parentAxis = 0; parentAxis < 6; parentAxis++)
                 {
                     for(int otherAxis = 3 * (parentAxis/3); otherAxis < 3* (parentAxis/3) + 3; otherAxis++)
                     {
@@ -256,29 +320,31 @@ namespace Dash
                         //If X axis
                         if(parentAxis < 3 && distance < 15)
                         {
-                            if((translate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((translate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
+                            if((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
                                 continue;
 
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, translate.Y));
-                            return new Point(delta, translate.Y);
+                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
+                            return new Point(delta, originalTranslate.Y);
                         }
                         if(parentAxis >=3 && distance < 15)
                         {
 
-                            if ((translate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((translate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
+                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
                                 continue;
 
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translate.X, delta));
-                            return new Point(translate.X, delta);
+                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(originalTranslate.X, delta));
+                            return new Point(originalTranslate.X, delta);
 
                         }
+                }       
+             */
 
-                    }
-                    
-                }
             }
+       
+    
+            
 
-            return translate ;
+            return originalTranslate ;
             
         }
 
@@ -289,9 +355,8 @@ namespace Dash
         }
         private void ShowPreviewLine(double[] parentDocumentAxes, double[] otherDocumentAxes, AlignmentAxis parentAxis, AlignmentAxis otherAxis, Point point)
         {
-            MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Visible;
-
             Point p1, p2;
+            Line line = null;
             //If X axis
             if((int) parentAxis < 3)
             {
@@ -299,6 +364,7 @@ namespace Dash
                 p2.X = otherDocumentAxes[(int)otherAxis];
                 p1.Y = Math.Min(parentDocumentAxes[(int)AlignmentAxis.YMin], otherDocumentAxes[(int)AlignmentAxis.YMin]);
                 p2.Y = Math.Max(parentDocumentAxes[(int)AlignmentAxis.YMax], otherDocumentAxes[(int)AlignmentAxis.YMax]);
+                line = MainPage.Instance.VerticalAlignmentLine;
 
             }
             else
@@ -307,17 +373,18 @@ namespace Dash
                 p2.Y = otherDocumentAxes[(int)otherAxis];
                 p1.X = Math.Min(parentDocumentAxes[(int)AlignmentAxis.XMin], otherDocumentAxes[(int)AlignmentAxis.XMin]);
                 p2.X = Math.Max(parentDocumentAxes[(int)AlignmentAxis.XMax], otherDocumentAxes[(int)AlignmentAxis.XMax]);
+                line = MainPage.Instance.HorizontalAlignmentLine;
 
             }
             var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 
-
+            line.Visibility = Windows.UI.Xaml.Visibility.Visible;
             var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.xItemsControl.ItemsPanelRoot);
             var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.xItemsControl.ItemsPanelRoot);
-            MainPage.Instance.AlignmentLine.X1 = screenPoint1.X;
-            MainPage.Instance.AlignmentLine.Y1 = screenPoint1.Y;
-            MainPage.Instance.AlignmentLine.X2 = screenPoint2.X;
-            MainPage.Instance.AlignmentLine.Y2 = screenPoint2.Y;
+            line.X1 = screenPoint1.X;
+            line.Y1 = screenPoint1.Y;
+            line.X2 = screenPoint2.X;
+            line.Y2 = screenPoint2.Y;
 
         }
 
@@ -405,7 +472,7 @@ namespace Dash
             //Add ParentDocument to collection
             if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
             {
-                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController, null);
+                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController);
             }
 
             _documentsToRemoveAfterManipulation = new List<DocumentController>()
@@ -688,7 +755,8 @@ namespace Dash
         {
             if (e == null || !e.Handled)
             {
-                MainPage.Instance.AlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
                 var docRoot = ParentDocument;
                 

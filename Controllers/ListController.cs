@@ -209,6 +209,13 @@ namespace Dash
 
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
 
+        public override void Remove(FieldControllerBase fmc)
+        {
+            if (fmc is T)
+            {
+                Remove((T)fmc);
+            }
+        }
         public override void Add(FieldControllerBase fmc)
         {
             if (fmc is T)
@@ -233,7 +240,7 @@ namespace Dash
             });
         }
 
-        public override FieldModelController<ListModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new ListController<T>(new List<T>(TypedData));
         }

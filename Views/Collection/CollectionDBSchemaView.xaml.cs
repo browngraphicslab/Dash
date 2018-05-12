@@ -149,7 +149,7 @@ namespace Dash
                         var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
                         xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
                         dc.Selected = false;
-                        var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                        var direction = this.IsShiftPressed() ? -1 : 1;
                         var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                         var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                         updateEditBox(recordViewModel.RecordFields[column]);
@@ -173,7 +173,7 @@ namespace Dash
         {
             try
             {
-                var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                var direction = this.IsShiftPressed() ? -1 : 1;
                 if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
                 {
                     direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
@@ -262,7 +262,6 @@ namespace Dash
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
                 UpdateFields(new Context(ParentDocument)); 
@@ -329,7 +328,7 @@ namespace Dash
                     });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db) => db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
+                foreach (var d in dbDocs.Select((db) => db.GetDataDocument()))
                 {
                     //if (d.GetField(RegexOperatorController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -468,32 +467,15 @@ namespace Dash
         {
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
-            var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
             this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
-
-        // TODO lsm wrote this here it's a hack we should definitely remove this
-        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
-        {
-            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)
-                ?.DocumentType;
-            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
-            {
-                var layoutDoc = new KeyValueDocumentBox(dataDoc);
-
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
-                dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
-            }
-
-            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
-        }
+        
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (var vm in args.Items.Select((item) => item as CollectionDBSchemaRecordViewModel))
             {
-                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
                 args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -526,7 +508,7 @@ namespace Dash
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote(), null);
+            ViewModel.AddDocument(Util.BlankNote());
             e.Handled = true;
         }
 

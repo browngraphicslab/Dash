@@ -231,6 +231,7 @@ namespace Dash
             Action<object> setTouchInput = Actions.SetTouchInput;
             Action<object> setMouseInput = Actions.SetMouseInput;
             Action<object> setNoInput = Actions.SetNoInput;
+
             var setPenModel = new RadialActionModel("Pen", (Symbol) 0xEDC6)
             {
                 GenericAction = setPenInput,

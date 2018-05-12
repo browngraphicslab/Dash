@@ -18,6 +18,7 @@ namespace Dash
 
     public interface IFieldBinding
     {
+        String Tag { get; set; }
         BindingMode Mode { get; set; }
         Context Context { get; set; }
         void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context);
@@ -29,6 +30,7 @@ namespace Dash
 
     public class FieldBinding<TField, TDefault> : IFieldBinding where TField : FieldControllerBase where TDefault : FieldControllerBase, new()
     {
+        public String Tag { get; set; }
         public BindingMode Mode { get; set; }
         public DocumentController Document;
         public KeyController Key;
@@ -45,7 +47,6 @@ namespace Dash
         //Debug stuff
         //Tag that can be set on a binding that will be printed if the binding fails
         //so that you can know which exact binding is failing
-        public String Tag;
 
         public void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context)
         {
@@ -202,7 +203,7 @@ namespace Dash
                 _bindingMap[element] = new Dictionary<DependencyProperty, Action>();
             }
 
-            //Debug.Assert(!_bindingMap[element].ContainsKey(property));
+            Debug.Assert(!_bindingMap[element].ContainsKey(property));
             _bindingMap[element][property] = removeBinding;
         }
 
@@ -222,7 +223,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context))
+                    //if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
@@ -230,7 +231,7 @@ namespace Dash
                 };
 
             bool loaded = false;
-            if (element.IsInVisualTree())
+            if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
@@ -288,7 +289,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context))
+                    //if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
@@ -308,7 +309,7 @@ namespace Dash
             bool loaded = false;
             long token = -1;
 
-            if (element.IsInVisualTree())
+            if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);

@@ -16,11 +16,11 @@ namespace Dash
     public class WebBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("1C17B38F-C9DC-465D-AC3E-43EA105D18C6", "Web Box");
+        private static readonly string PrototypeId = "9190B041-CC40-4B32-B99B-E7A1CDE3C1C9";
         public WebBox(FieldControllerBase refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
-            Document = new DocumentController(fields, DocumentType);
-            //SetLayoutForDocument(Document, Document);
+            SetupDocument(DocumentType, PrototypeId, "WebBox Prototype Layout", fields);
         }
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
@@ -183,20 +183,19 @@ namespace Dash
             if (parent == null)
                 return;
 
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
+            var shiftState = web.IsShiftPressed();
             switch (e.Value as string)
             {
-                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;
+                case "2":    web.Tag = new ManipulationControlHelper(web, null, shiftState); break;  // "2" is the 2nd mouse button = "Right" button
                 case "move": parent.DocumentView_PointerEntered(null, null);
                              (web.Tag as ManipulationControlHelper)?.PointerMoved(web, null); break;
-                case "leave": { if (!parent.IsPointerOver())
-                                    parent.DocumentView_PointerExited(null, null);
-                                break;
-                              }
-                case "up":  parent.ToFront();
-                            (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
-                             web.Tag = null; break;
+                case "leave": if (!parent.IsPointerOver())
+                                   parent.DocumentView_PointerExited(null, null);
+                              break;
+                case "up":    parent.ToFront();
+                              if (DocumentView.FocusedDocument != parent)
+                                  parent.ForceLeftTapped();
+                              web.Tag = null; break;
             }
         }
 
@@ -207,16 +206,6 @@ namespace Dash
                 args.Cancel = true;
                 MainPage.Instance.WebContext?.SetUrl(args.Uri.AbsoluteUri);
             }
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            throw new NotImplementedException();
         }
     }
 }

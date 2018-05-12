@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using Dash.Controllers;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 
 namespace Dash.Models.DragModels
@@ -44,17 +45,14 @@ namespace Dash.Models.DragModels
         }
 
         /// <summary>
-        ///     hack to stop people from dragging a collection on itself get the parent doc of the collection
-        ///     and then compare data docs, if they're equal then return
+        /// Tests whether dropping the document would create a cycle and, if so, returns false
         /// </summary>
         /// <param name="sender"></param>
         /// <returns></returns>
         public bool CanDrop(FrameworkElement sender)
         {
-            var parentDocDataDoc = ((sender as CollectionView) ?? sender?.GetFirstAncestorOfType<CollectionView>())?.ParentDocument?.ViewModel
-                ?.DataDocument;
-            if (parentDocDataDoc != null && DraggedDocument.GetDataDocument().Equals(parentDocDataDoc))
-                return false;
+            if (sender is CollectionView cview && (MainPage.Instance.IsShiftPressed() || ShowViewCopy || MainPage.Instance.IsCtrlPressed()))
+                return cview.ViewModel.CanDrop(DraggedDocument);
             return true;
         }
 
@@ -68,7 +66,10 @@ namespace Dash.Models.DragModels
             {
                 var dbox = new DataBox(new DocumentReferenceController(DraggedDocument.Id, DraggedKey), where.X,
                     where.Y).Document;
+                dbox.Tag = "DraggedKey doc";
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);
+                //dbox.SetField(KeyStore.DataKey,
+                //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
                 dbox.SetField(KeyStore.TitleKey, new TextController(DraggedKey.Name), true);
                 return dbox;
             }

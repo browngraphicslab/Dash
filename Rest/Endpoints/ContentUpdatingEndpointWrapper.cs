@@ -9,6 +9,7 @@ namespace Dash
     public class ContentUpdatingEndpointWrapper<T> : IModelEndpoint<T> where T : EntityBase
     {
         private IModelEndpoint<T> _endpoint;
+
         public ContentUpdatingEndpointWrapper(IModelEndpoint<T> endpoint)
         {
             _endpoint = endpoint;
@@ -136,6 +137,11 @@ namespace Dash
         public Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
         {
             return _endpoint.GetDocumentsByQuery(query, GetSuccessFunc(success), error);
+        }
+
+        public Dictionary<string, string> GetBackups()
+        {
+            return _endpoint.GetBackups();
         }
     }
 }

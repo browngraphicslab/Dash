@@ -48,7 +48,7 @@
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
-            <TextBlock Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" Text="{x:Bind Path=_dataContextDocument.Title}"></TextBlock>
+            <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
 
             <!--close button-->
                 <AppBarButton Height="40" Margin="0,0,0,0" Foreground="White" Background="Transparent"
@@ -92,7 +92,7 @@
                 <!--field listview-->
                 <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
                         Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                        SelectionMode="None" CanDragItems="True" DragItemsStarting="xFieldListView_DragItemsStarting" ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -105,7 +105,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:EditableScriptBox></local:EditableScriptBox>
+                            <local:EditableScriptBox PointerPressed="EditableScriptBox_PointerPressed"></local:EditableScriptBox>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 

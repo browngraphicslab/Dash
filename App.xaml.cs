@@ -25,12 +25,15 @@ namespace Dash
         /// </summary>
         public App()
         {
+#if !DEBUG
             HockeyClient.Current.Configure("76a6328a3b574146b9d1a171d67f9af2");
+#endif
             Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
             this.Resuming += OnResuming;
         }
+
 
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
@@ -76,7 +79,6 @@ namespace Dash
                 {
                     KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(BackgroundBox.DocumentType, BackgroundBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DBSearchOperatorBox.DocumentType, DBSearchOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView);

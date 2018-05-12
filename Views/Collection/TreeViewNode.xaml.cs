@@ -99,8 +99,7 @@ namespace Dash
                     {
                         XIconBox.Symbol = Symbol.Library;
                     }
-                    var collectionViewModel = new CollectionViewModel(
-                        new DocumentFieldReference(dvm.DocumentController.GetDataDocument().Id, KeyStore.DataKey));
+                    var collectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.DataKey);
                     CollectionTreeView.DataContext =
                         collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();

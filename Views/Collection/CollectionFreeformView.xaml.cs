@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using static Dash.NoteDocuments;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.System;
 using Windows.UI.Core;
@@ -65,12 +64,17 @@ namespace Dash
                 {
                     MakeInkCanvas();
                 }
+                UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
                 ViewModel?.Loaded(true);
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             };
             Unloaded += (sender, e) =>
             {
-                ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                if (ViewModel != null)
+                {
+                    ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                }
+
                 _lastViewModel?.Loaded(false);
                 _lastViewModel = null;
             };
@@ -88,7 +92,7 @@ namespace Dash
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(dvm.DocumentController.GetViewCopy());
-            var snap = new NoteDocuments.CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;
         }
@@ -278,6 +282,8 @@ namespace Dash
         /// <param name="e"></param>
         void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            if (ViewModel == null) return;
+
             if (e.PropertyName == nameof(CollectionViewModel.TransformGroup))
             {
 
@@ -422,6 +428,7 @@ namespace Dash
         Point     _marqueeAnchor;
         bool      _isMarqueeActive;
         private MarqueeInfo mInfo;
+        object    _marqueeKeyHandler = null;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -441,6 +448,11 @@ namespace Dash
             xOuterGrid.ReleasePointerCapture(e.Pointer);
         }
 
+        /// <summary>
+        /// Handles mouse movement.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
@@ -468,8 +480,10 @@ namespace Dash
                         StrokeDashArray = new DoubleCollection { 5, 2 },
                         CompositeMode = ElementCompositeMode.SourceOver
                     };
-                    MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
-                    MainPage.Instance.AddHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown), true);
+                    if (_marqueeKeyHandler != null)
+                        MainPage.Instance.RemoveHandler(KeyDownEvent, _marqueeKeyHandler);
+                    _marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
+                    MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
                     _marquee.AllowFocusOnInteraction = true;
                     SelectionCanvas.Children.Add(_marquee);
 
@@ -491,23 +505,34 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Handles mouse movement. Starts drawing Marquee selection.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
-            if (XInkCanvas.IsTopmost() &&
-                (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                 !args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)
+            // marquee on left click by default
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
             {
-                if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                    DeselectAll();
+                if (XInkCanvas.IsTopmost() &&
+                    (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
+                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
+                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                     ((!args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
+                {
+                    if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
+                        DeselectAll();
 
-                xOuterGrid.CapturePointer(args.Pointer);
-                _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
-                _isMarqueeActive = true;
-                PreviewTextbox_LostFocus(null, null);
-                ParentDocument.ManipulationMode = ManipulationModes.None;
-                args.Handled = true;
-                xOuterGrid.PointerMoved -= OnPointerMoved;
-                xOuterGrid.PointerMoved += OnPointerMoved;
+                    xOuterGrid.CapturePointer(args.Pointer);
+                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    _isMarqueeActive = true;
+                    PreviewTextbox_LostFocus(null, null);
+                    ParentDocument.ManipulationMode = ManipulationModes.None;
+                    args.Handled = true;
+                    xOuterGrid.PointerMoved -= OnPointerMoved;
+                    xOuterGrid.PointerMoved += OnPointerMoved;
+                }
             }
         }
 
@@ -523,7 +548,7 @@ namespace Dash
                     var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
                     
                     ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                 }
                 if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
@@ -533,13 +558,13 @@ namespace Dash
                     if (e.Key == VirtualKey.C)
                     {
                         ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                     }
 
                     if (e.Key == VirtualKey.T)
                     {
                         ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document, null);
+                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                     }
 
                     foreach (var v in viewsinMarquee)
@@ -547,7 +572,7 @@ namespace Dash
                 }
                 if (e.Key == VirtualKey.G)
                 {
-                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height), null);
+                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundBox.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height));
                 }
                 DeselectAll();
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
@@ -592,7 +617,6 @@ namespace Dash
         {
             if (XInkCanvas.IsTopmost())
             {
-                DeselectAll();
                 _isMarqueeActive = false;
                 RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
@@ -605,8 +629,8 @@ namespace Dash
             {
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Visibility.Collapsed;
                 previewTextbox.Visibility = Visibility.Visible;
+                AddHandler(KeyDownEvent, previewTextHandler, false);
                 previewTextbox.Text = string.Empty;
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
                 previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -627,18 +651,27 @@ namespace Dash
             _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
+            MainPage.Instance.DeselectAllDocuments();
         }
         
+        /// <summary>
+        /// Selects all of the documents in selected. Works on a view-specific level.
+        /// </summary>
+        /// <param name="selected"></param>
         public void SelectDocs(IEnumerable<DocumentView> selected)
         {
             SelectionCanvas.Children.Clear();
 
-            _selectedDocs.AddRange(selected);
-            
-            foreach (var doc in SelectedDocs)
+            foreach (var doc in selected)
             {
-                doc.SetSelectionBorder(true);
+                if (!_selectedDocs.Contains(doc))
+                {
+                    _selectedDocs.Add(doc);
+                    doc.SetSelectionBorder(true);
+                }
             }
+
+            MainPage.Instance.SelectDocuments(_selectedDocs);
         }
 
         #endregion
@@ -666,8 +699,12 @@ namespace Dash
 
         TextBox previewTextbox { get; set; }
 
+        object previewTextHandler = null;
         void MakePreviewTextbox()
         {
+            if (previewTextHandler == null)
+                previewTextHandler = new KeyEventHandler(PreviewTextbox_KeyDown);
+
             previewTextbox = new TextBox
             {
                 Width = 200,
@@ -675,7 +712,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
-            AddHandler(KeyDownEvent, new KeyEventHandler(PreviewTextbox_KeyDown), true);
+            previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
@@ -683,15 +720,17 @@ namespace Dash
 
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
         }
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
-            if (text is null) return;
+            if (string.IsNullOrEmpty(text))
+                return;
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             if (previewTextbox.Visibility != Visibility.Collapsed)
             {
                 e.Handled = true;
@@ -721,19 +760,32 @@ namespace Dash
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
         }
+        public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
+        {
+            if (!loadingPermanentTextbox)
+            {
+                if (resetBuffer)
+                    previewTextBuffer = "";
+                loadingPermanentTextbox = true;
+                var containerData = ViewModel.ContainerDocument.GetDataDocument();
+                var keycontroller = KeyController.LookupKeyByName(keyname, true);
+                containerData.SetField(keycontroller, new TextController("<default>"), true);
+                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                dbox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
+                dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                Actions.DisplayDocument(ViewModel, dbox, where);
+            }
+        }
 
         string KeyCodeToUnicode(VirtualKey key)
         {
 
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift)
-                .HasFlag(CoreVirtualKeyStates.Down);
-            var capState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
-                .HasFlag(CoreVirtualKeyStates.Down) || CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock)
-                               .HasFlag(CoreVirtualKeyStates.Locked);
+            var shiftState = this.IsShiftPressed();
+            var capState   = this.IsCapsPressed();
             var virtualKeyCode = (uint)key;
 
             string character = null;
-
+            
             // take care of symbols
             if (key == VirtualKey.Space)
             {
@@ -748,8 +800,7 @@ namespace Dash
             //Take care of letters
             if (virtualKeyCode >= 65 && virtualKeyCode <= 90)
             {
-                if (shiftState == false && capState == false ||
-                    shiftState && capState)
+                if ((!shiftState && !capState) || (shiftState && capState))
                 {
                     character = key.ToString().ToLower();
                 }
@@ -806,7 +857,6 @@ namespace Dash
             //Take care of numpad numbers
             if (virtualKeyCode >= 96 && virtualKeyCode <= 105)
             {
-
                 character = (virtualKeyCode - 96).ToString();
             }
 
@@ -831,12 +881,30 @@ namespace Dash
                         richEditBox.GotFocus += RichEditBox_GotFocus;
                         richEditBox.Focus(FocusState.Programmatic);
                     }
+                    var textBox = documentView.GetDescendantsOfType<EditableTextBlock>().FirstOrDefault();
+                    if (textBox != null)
+                    {
+                        textBox.Loaded -= TextBox_Loaded;
+                        textBox.Loaded += TextBox_Loaded;
+                    }
                 }
             }
 
         }
+
+        private void TextBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableTextBlock;
+            textBox.Loaded -= TextBox_Loaded;
+            textBox.MakeEditable();
+            textBox.XTextBox.GotFocus -= TextBox_GotFocus;
+            textBox.XTextBox.GotFocus += TextBox_GotFocus;
+            textBox.XTextBox.Focus(FocusState.Programmatic);
+        }
+
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
+            RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
@@ -846,6 +914,17 @@ namespace Dash
             richEditBox.Document.Selection.SetRange(0, 0);
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
+        }
+        void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as TextBox;
+
+            RemoveHandler(KeyDownEvent, previewTextHandler);
+            previewTextbox.Visibility = Visibility.Collapsed;
+            loadingPermanentTextbox = false;
+            var text = previewTextBuffer;
+            textBox.GotFocus -= TextBox_GotFocus;
+            previewTextbox.Text = string.Empty;
         }
 
         #endregion
