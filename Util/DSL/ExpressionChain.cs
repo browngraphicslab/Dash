@@ -20,7 +20,7 @@ namespace Dash
         {
             var exps = _expressions.ToArray();
             var length = exps.Count();
-            for(int i = 0; i < length - 1; i++)
+            for(int i = 0; i < length; i++)
             {
                 exps[i].Execute(state);
             }
