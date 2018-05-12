@@ -4,6 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Zu.TypeScript;
+using Zu.TypeScript.TsParser;
+using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
@@ -19,7 +22,7 @@ namespace Dash
         public static char VariableSettingCharacter = '=';
         public static void TEST()
         {
-            TestParse("a = 1; b = {test}; {hello}", "let(a,1,let(b,{test},{hello}))");
+            //TestParse("a = 1; b = {test}; {hello}", "let(a,1,let(b,{test},{hello}))");
 
             TestNumber("a = 1; add(3,add(a, 6))", 10);
             TestNumber("a = 1; b = 9; add(3,add(a, b))", 13);
@@ -60,7 +63,12 @@ namespace Dash
 
         public static string ParseMultiLineToSingleLine(string multiLineScript)
         {
-            Debug.Assert(multiLineScript != null);
+            if (string.IsNullOrWhiteSpace(multiLineScript))
+            {
+                return multiLineScript;
+            }
+
+
             multiLineScript = multiLineScript?.Trim();
             while (multiLineScript[multiLineScript.Length - 1] == LineDelimiterCharacter)
             {
@@ -113,9 +121,11 @@ namespace Dash
 
         private static string ConcatMultipleLines(ScriptLine[] lines)
         {
+
             string script = OperatorScriptParser.StringOpeningCharacters[0].ToString() + OperatorScriptParser.StringClosingCharacters[0];
 
-            for (int i = lines.Length -1; i >= 0; i--)
+            int i = lines.Length - 1;
+            while (i >= 0)
             {
                 var line = lines[i];
                 if(line.Type == LineType.Return)
@@ -124,11 +134,12 @@ namespace Dash
                     {
                         script = line.GetLine();
                     }
+                    lines[i] = new ScriptLetLine("___", line.GetLine());
                     continue;
                 }
                 else
                 {
-                    if (i == lines.Length - 1)
+                    if (i == lines.Length - 1) //if this is the last line but also is a let line,
                     {
                         script = (line as ScriptLetLine).GetDishScript((line as ScriptLetLine).GetVariableName());
                     }
@@ -137,6 +148,8 @@ namespace Dash
                         script = (line as ScriptLetLine).GetDishScript(script);
                     }
                 }
+
+                i--;
             }
             return script;
         }
@@ -150,7 +163,49 @@ namespace Dash
         private static ScriptLine ParseLine(string line)
         {
             Debug.Assert(line != null);
-            line = line?.Trim();
+
+            try
+            {
+                var parser = new TypeScriptAST(line + ";");
+                var descendants = parser.GetDescendants().ToArray();
+                var statements = descendants.OfType<ExpressionStatement>().ToArray();
+                var binaryExpressions = descendants.OfType<BinaryExpression>().ToArray();
+
+                var isBinaryExpression = binaryExpressions.Any();
+
+                if (isBinaryExpression)
+                {
+                    Debug.Assert(binaryExpressions.Length == 1, "Not an issue, just wanted to see if this is possible.  Can delete thiis assert if it is getting annoying");
+                    var expr = binaryExpressions[0];
+
+                    var equals = expr.Children.OfType<Token>().Where(i => i.Kind == SyntaxKind.EqualsToken).ToArray();
+
+                    if (equals.Any())
+                    {
+                        var equalToken = equals[0];
+
+                        var first = line.substring(0, equalToken.NodeStart);
+                        var second = line.substring(equalToken.End.Value);
+
+                        if (DSL.IsValidScript(first))
+                        {
+                            var letLine = new ScriptLetLine(first.Trim(), second.Trim());
+                            return letLine;
+                        }
+
+
+                    }
+
+                }
+
+                line = line?.Trim();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Typescript parsing error");
+            }
+
+
             var allEncapsulatingCharacters = OperatorScriptParser.EncapsulatingCharacterPairsIgnoringInternals.Concat(OperatorScriptParser.EncapsulatingCharacterPairsTrackingInternals).ToArray();
             var ignoreValueClosingChars = new HashSet<char>(OperatorScriptParser.EncapsulatingCharacterPairsIgnoringInternals.Select(i => i.Value));
 

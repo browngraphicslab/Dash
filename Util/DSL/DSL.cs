@@ -220,7 +220,7 @@ namespace Dash
         /// <returns></returns>
         public static bool IsValidScript(string script)
         {
-            return GetScriptError(script) != null;
+            return GetScriptError(script) == null;
         }
 
         /// <summary>

@@ -126,6 +126,7 @@ namespace Dash
 
             OperatorScriptParser.TEST();
             MultiLineOperatorScriptParser.TEST();
+            TypescriptToOperatorParser.TEST();
 
             BrowserView.ForceInit();
 

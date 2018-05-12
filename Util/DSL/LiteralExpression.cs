@@ -15,6 +15,11 @@
             return field;
         }
 
+        public FieldControllerBase GetField()
+        {
+            return field;
+        }
+
         public override FieldControllerBase CreateReference(ScriptState state)
         {
             if (field is TextController && false)

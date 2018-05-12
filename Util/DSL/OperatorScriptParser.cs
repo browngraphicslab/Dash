@@ -390,6 +390,47 @@ namespace Dash
 
             if (parts.FunctionName.Equals(DSL.GetFuncName<LetOperatorController>()))
             {
+                if (parameters[LetOperatorController.VariableNameKey] is FunctionExpression 
+                    && (parameters[LetOperatorController.VariableNameKey] as FunctionExpression).GetOperatorName().Equals(DSL.GetFuncName<GetFieldOperatorController>())) //if the variable name is a dot notation, use the let field expression
+                {
+                    var funcExpr = (parameters[LetOperatorController.VariableNameKey] as FunctionExpression);
+                    var e = funcExpr.GetFuncParams()[GetFieldOperatorController.InputDocumentKey];
+                    if (e is VariableExpression varExpr)
+                    {
+                        var variableName = varExpr.GetVariableName();
+                        var fieldName = funcExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey] as LiteralExpression;
+                        var continueExpr = parameters[LetOperatorController.ContinuedExpressionKey];
+                        if (variableName != null && fieldName != null && continueExpr != null && fieldName.GetField() is TextController)
+                        {
+                            return new ExpressionChain(new ScriptExpression[]{
+                                new FunctionExpression(DSL.GetFuncName<SetFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                { SetFieldOperatorController.InputDocumentKey, varExpr},
+                                { SetFieldOperatorController.FieldValueKey, parameters[LetOperatorController.VariableValueKey]},
+                                { SetFieldOperatorController.KeyNameKey, fieldName},
+                            }),
+                                continueExpr
+                            });
+                        }
+                    }
+                    else if (e is FunctionExpression function)
+                    {
+                        var fieldName = funcExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey] as LiteralExpression;
+                        var continueExpr = parameters[LetOperatorController.ContinuedExpressionKey];
+                        if (fieldName != null && continueExpr != null && fieldName.GetField() is TextController)
+                        {
+                            return new ExpressionChain(new ScriptExpression[]{
+                                new FunctionExpression(DSL.GetFuncName<SetFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                {
+                                    { SetFieldOperatorController.InputDocumentKey, function},
+                                    { SetFieldOperatorController.FieldValueKey, parameters[LetOperatorController.VariableValueKey]},
+                                    { SetFieldOperatorController.KeyNameKey, fieldName},
+                                }),
+                                continueExpr
+                            });
+                        }
+                    }
+                }
                 return new LetExpression(
                     (parameters[LetOperatorController.VariableNameKey] as VariableExpression).GetVariableName(), 
                     parameters[LetOperatorController.VariableValueKey], 
@@ -514,7 +555,7 @@ namespace Dash
                 if (c == ParameterDelimiterCharacter)
                 {
                     kvp = ParseKeyValue(innerFunctionParameters.Substring(startIndex, i - startIndex), functionKeys, ++parameterIndex, functionName);
-                    if (toReturn.ContainsKey(kvp.Key))
+                    if (kvp.Key ==  null || toReturn.ContainsKey(kvp.Key))
                     {
                         throw new ScriptException(new ParameterProvidedMultipleTimesScriptErrorModel(functionName, kvp.Key));
                     }

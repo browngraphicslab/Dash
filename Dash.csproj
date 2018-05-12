@@ -254,6 +254,7 @@
     <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
+    <Compile Include="Util\DSL\ExpressionChain.cs" />
     <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
@@ -268,6 +269,7 @@
     <Compile Include="Util\DSL\ScriptState.cs" />
     <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
     <Compile Include="Util\DSL\State.cs" />
+    <Compile Include="Util\DSL\TypescriptToOperatorParser.cs" />
     <Compile Include="Util\DSL\VariableExpression.cs" />
     <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
@@ -1214,6 +1216,9 @@
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0-preview1-26216-02</Version>
+    </PackageReference>
+    <PackageReference Include="TypeScriptAST">
+      <Version>1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
       <Version>1.21.0</Version>
