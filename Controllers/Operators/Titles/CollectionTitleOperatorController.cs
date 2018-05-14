@@ -61,7 +61,7 @@ namespace Dash
             //    listArgs?.ChangedDocuments.Contains(firstDoc) == false)
             //    return;
 
-            outputs[ComputedTitle] = output != null ? output : new TextController("Untitled") { ReadOnly = true };
+            outputs[ComputedTitle] = new TextController(output?.Data ?? "Untitled") { ReadOnly = true };
         }
 
         public override FieldControllerBase GetDefaultController()

@@ -49,6 +49,12 @@ namespace Dash
             this.InitializeComponent();
         }
 
+        public void MakeEditable()
+        {
+            SetExpression(XTextBlock.Text);
+            TextBoxLoaded = true;
+        }
+
         private void XTextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             e.Handled = true;

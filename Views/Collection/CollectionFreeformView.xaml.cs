@@ -887,9 +887,25 @@ namespace Dash
                         textBox.Loaded -= TextBox_Loaded;
                         textBox.Loaded += TextBox_Loaded;
                     }
+                    var editableScriptBox = documentView.GetDescendantsOfType<EditableScriptView>().FirstOrDefault();
+                    if (editableScriptBox != null)
+                    {
+                        editableScriptBox.Loaded -= EditableScriptView_Loaded;
+                        editableScriptBox.Loaded += EditableScriptView_Loaded;
+                    }
                 }
             }
 
+        }
+
+        private void EditableScriptView_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableScriptView;
+            textBox.Loaded -= EditableScriptView_Loaded;
+            textBox.MakeEditable();
+            textBox.XTextBox.GotFocus -= TextBox_GotFocus;
+            textBox.XTextBox.GotFocus += TextBox_GotFocus;
+            textBox.XTextBox.Focus(FocusState.Programmatic);
         }
 
         private void TextBox_Loaded(object sender, RoutedEventArgs e)

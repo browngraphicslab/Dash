@@ -25,6 +25,7 @@
                            Padding="10"
                            ></TextBlock>
         <TextBox x:Name="XTextBox"
+                         x:FieldModifier="public"
                          x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
                          FontSize="{x:Bind FontSize, Mode=OneWay}"
                          FontWeight="{x:Bind FontWeight, Mode=OneWay}"
