@@ -51,6 +51,7 @@ namespace Dash
             Debug.Assert(s.GetValue(null).Equals(correctValue));
         }
 
+
         /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.
         /// This method should throw exceptions if the string is not a valid script.
@@ -312,6 +313,7 @@ namespace Dash
                 case SyntaxKind.SwitchKeyword:
                     break;
                 case SyntaxKind.ThisKeyword:
+                    return new VariableExpression("this");
                     break;
                 case SyntaxKind.ThrowKeyword:
                     break;

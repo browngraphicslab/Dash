@@ -65,62 +65,60 @@ namespace Dash
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
                 var fields = doc.EnumFields().ToArray();
-                foreach (var key in fields) //check exact string equality
-                {
-                    if (key.Key.Name.Replace(" ", "").Equals(keyName))
-                    {
-                        //if (updatedKeyName?.Equals(keyName) ?? true)
-                        {
-                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
-                        }
 
-                        return;
-                    }
+                var controller = FindInDocFields(doc, fields, keyName);
+
+                var dataDoc = doc.GetDataDocument();
+                if (controller == null && ! doc.Equals(dataDoc))
+                {
+                    fields = dataDoc.EnumFields().ToArray();
+                    controller = FindInDocFields(dataDoc, fields, keyName);
                 }
 
-                foreach (var key in fields) //check to lower string equality
-                {
-                    if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
-                    {
-                        //if (updatedKeyName?.ToLower().Equals(keyName) ?? true)
-                        {
-                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
-                        }
-
-                        return;
-                    }
-                }
-
-
-                foreach (var key in fields) //check exact string contains
-                {
-                    if (key.Key.Name.Replace(" ", "").Contains(keyName) && keyName.Length  >= 3)
-                    {
-                        //if (updatedKeyName?.Contains(keyName) ?? true)
-                        {
-                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
-                        }
-
-                        return;
-                    }
-                }
-
-                foreach (var key in fields) //check to lower stirng contains
-                {
-                    if (key.Key.Name.Replace(" ", "").ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
-                    {
-                        //if (updatedKeyName?.ToLower().Contains(keyName) ?? true)
-                        {
-                            outputs[ResultFieldKey] = key.Value.DereferenceToRoot(new Context(doc));
-                        }
-
-                        return;
-                    }
-                }
-
-                outputs[ResultFieldKey] = new TextController("Key Not Found");
-
+                outputs[ResultFieldKey] = controller ?? new TextController();
             }
+        }
+
+        private FieldControllerBase FindInDocFields(DocumentController doc,
+            KeyValuePair<KeyController, FieldControllerBase>[] fields, string keyName)
+        {
+            foreach (var key in fields) //check exact string equality
+            {
+                if (key.Key.Name.Replace(" ", "").Equals(keyName))
+                {
+
+                    return key.Value.DereferenceToRoot(new Context(doc));
+                }
+            }
+
+            foreach (var key in fields) //check to lower string equality
+            {
+                if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
+                {
+                    return key.Value.DereferenceToRoot(new Context(doc));
+                }
+            }
+
+
+            foreach (var key in fields) //check exact string contains
+            {
+                if (key.Key.Name.Replace(" ", "").Contains(keyName) && keyName.Length >= 3)
+                {
+                    return key.Value.DereferenceToRoot(new Context(doc));
+                }
+            }
+
+            foreach (var key in fields) //check to lower stirng contains
+            {
+                if (key.Key.Name.Replace(" ", "").ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
+                {
+                    return key.Value.DereferenceToRoot(new Context(doc));
+                }
+            }
+
+
+
+            return null;
         }
     }
 }
