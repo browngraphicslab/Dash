@@ -770,10 +770,10 @@ namespace Dash
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
                 var keycontroller = KeyController.LookupKeyByName(keyname, true);
                 containerData.SetField(keycontroller, new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
-                dbox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
-                dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-                Actions.DisplayDocument(ViewModel, dbox, where);
+                var ebox = new EditableScriptBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                ebox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
+                ebox.SetField(KeyStore.DocumentContextKey, containerData, true);
+                Actions.DisplayDocument(ViewModel, ebox, where);
             }
         }
 

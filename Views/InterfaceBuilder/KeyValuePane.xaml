@@ -105,7 +105,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:EditableScriptBox PointerPressed="EditableScriptBox_PointerPressed"></local:EditableScriptBox>
+                            <local:EditableScriptView PointerPressed="EditableScriptView_PointerPressed"></local:EditableScriptView>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 

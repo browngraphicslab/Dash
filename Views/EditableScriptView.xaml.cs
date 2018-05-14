@@ -15,12 +15,13 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class EditableScriptBox : INotifyPropertyChanged
+    public sealed partial class EditableScriptView : INotifyPropertyChanged
     {
 
 
@@ -43,7 +44,7 @@ namespace Dash
         }
 
 
-        public EditableScriptBox()
+        public EditableScriptView()
         {
             this.InitializeComponent();
         }
@@ -91,6 +92,17 @@ namespace Dash
             return true;
         }
 
+        void UserControl_Drop(object sender, DragEventArgs e)
+        {
+            if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                var dropModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropModel, true);
+               // DataContext = new EditableScriptViewModel(new DocumentFieldReference(dropModel.Id, KeyStore.TitleKey));
+                e.Handled = true;
+            }
+        }
+
         private string GetRootExpression()
         {
             return ViewModel?.Reference.DereferenceToRoot(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
@@ -125,7 +137,7 @@ namespace Dash
             xBackground.Height = 120;
             xBackground.VerticalAlignment = VerticalAlignment.Top;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Expand_Value(this);
+            kvp?.Expand_Value(this);
         }
 
         public void CollapseBox()
@@ -145,7 +157,7 @@ namespace Dash
         }
 
         private EditableScriptViewModel _oldViewModel;
-        private void EditableScriptBox_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void EditableScriptView_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (ViewModel == null || ViewModel == _oldViewModel)
             {
@@ -153,14 +165,13 @@ namespace Dash
             }
 
             _oldViewModel = ViewModel;
-            FieldBinding<FieldControllerBase> binding = new FieldBinding<FieldControllerBase>
+            var binding = new FieldBinding<FieldControllerBase>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,
                 Context = ViewModel.Context,
                 Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-                
+                Mode = BindingMode.TwoWay,
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
         }

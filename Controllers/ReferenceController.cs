@@ -99,7 +99,7 @@ namespace Dash
             var copyOnWrite = (doc.GetField(FieldKey) is DocumentReferenceController dref3) ? (dref3.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite: false;
             var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
             if (refValue.Item2 is string s)
-                return doc.ParseDocField(FieldKey, s, field, copyOnWrite);
+                return doc.ParseDocField(FieldKey, s, field, copyOnWrite || field.ReadOnly);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
                 doc.SetField<RichTextController>(FieldKey, rtd, true);

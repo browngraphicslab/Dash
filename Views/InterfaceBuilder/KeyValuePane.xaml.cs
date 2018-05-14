@@ -286,18 +286,20 @@ namespace Dash
 
         public void Expand_Value(object sender)
         {
-            var valuebox = sender as EditableScriptBox;
+            var valuebox = sender as EditableScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            key.Style = Resources["ExpandBox"] as Style;
+            if (key != null)
+                key.Style = Resources["ExpandBox"] as Style;
         }
 
         public void Collapse_Value(object sender)
         {
-            var valuebox = sender as EditableScriptBox;
+            var valuebox = sender as EditableScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            key.Style = Resources["CollapseBox"] as Style;
+            if (key != null)
+                key.Style = Resources["CollapseBox"] as Style;
         }
         
         private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
@@ -311,7 +313,7 @@ namespace Dash
             }
         }
 
-        private void EditableScriptBox_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void EditableScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }

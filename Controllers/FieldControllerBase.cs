@@ -14,6 +14,13 @@ namespace Dash
     {
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
+        /// <summary>
+        ///  Used to flag a field as not being able to be modified.
+        ///  Example: When an operator's output is not defined, it may return a Controller for a default field value.
+        ///  If someone wants to edit this value, this will indicate that a new Controller needs to be created
+        ///  instead of modifying the value in this controller.
+        /// </summary>
+        public bool ReadOnly = false;
         public abstract TypeInfo TypeInfo { get; }
         public virtual TypeInfo RootTypeInfo => TypeInfo;
         public event FieldUpdatedHandler FieldModelUpdated;

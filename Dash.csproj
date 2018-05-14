@@ -225,6 +225,7 @@
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
@@ -385,8 +386,8 @@
     <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
       <DependentUpon>TreeNode.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\EditableScriptBox.xaml.cs">
-      <DependentUpon>EditableScriptBox.xaml</DependentUpon>
+    <Compile Include="Views\EditableScriptView.xaml.cs">
+      <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
@@ -855,7 +856,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\EditableScriptBox.xaml">
+    <Page Include="Views\EditableScriptView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
