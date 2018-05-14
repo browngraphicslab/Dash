@@ -34,8 +34,7 @@ namespace Dash
         {
             try
             {
-                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                var interpreted = OperatorScriptParser.Interpret(singleLineScript, _state);
+                var interpreted = TypescriptToOperatorParser.Interpret(script, _state);
                 if (_updateState)
                 {
                     _state = (State<string>.GetTrackedState(_state.TrackingId) as ScriptState) ?? _state;
@@ -57,8 +56,7 @@ namespace Dash
         {
             try
             {
-                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                var controller = OperatorScriptParser.GetOperatorControllerForScript(singleLineScript, _state);
+                var controller = TypescriptToOperatorParser.GetOperatorControllerForScript(script, _state);
                 return controller;
             }
             catch (DSLException e)
@@ -125,8 +123,7 @@ namespace Dash
         {
             try
             {
-                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                return OperatorScriptParser.Interpret(singleLineScript);
+                return TypescriptToOperatorParser.Interpret(script);
             }
             catch (DSLException e)
             {
@@ -151,8 +148,7 @@ namespace Dash
         {
             try
             {
-                var singleLineScript = MultiLineOperatorScriptParser.ParseMultiLineToSingleLine(script);
-                return OperatorScriptParser.GetOperatorControllerForScript(singleLineScript);
+                return TypescriptToOperatorParser.GetOperatorControllerForScript(script);
             }
             catch (DSLException e)
             {
