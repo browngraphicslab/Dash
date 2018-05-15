@@ -103,7 +103,7 @@ namespace Dash
             if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dropModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropModel, true);
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, new TextController("==fs(\"" + dropModel.Title + " Type:Image\")"), true);
                // DataContext = new EditableScriptViewModel(new DocumentFieldReference(dropModel.Id, KeyStore.TitleKey));
                 e.Handled = true;
             }
@@ -180,6 +180,16 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
+            var dbox = new DataBox(new DocumentReferenceController(binding.Document.Id, binding.Key)).Document;
+            var dview = new DocumentView() { DataContext = new DocumentViewModel(dbox) };
+            dview.IsHitTestVisible = false;
+            void fieldChanged(FieldControllerBase ss, FieldUpdatedEventArgs ee, Context c)
+            {
+                dview.DataContext = new DocumentViewModel(dbox);
+            }
+            var dataUpdated = new FieldControllerBase.FieldUpdatedHandler(fieldChanged);
+            binding.Document.AddFieldUpdatedListener(binding.Key, dataUpdated);
+           // this.xDataBoxContainer.Children.Add(dview);
         }
     }
 }

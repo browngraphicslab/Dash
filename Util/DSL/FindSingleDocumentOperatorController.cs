@@ -61,7 +61,7 @@ namespace Dash
             {
                 var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
 
-                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).First();
+                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).FirstOrDefault();
             }
             else
             {

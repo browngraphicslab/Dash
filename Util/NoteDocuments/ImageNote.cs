@@ -7,7 +7,7 @@ namespace Dash
 {
     public class ImageNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("80577E19-5AE6-4BEF-940C-E516CE154684", "Rich Text Note");
+        public static DocumentType DocumentType = new DocumentType("80577E19-5AE6-4BEF-940C-E516CE154684", "Image Note");
         static string _prototypeID = "36AF28B6-5EEF-48E2-9C4E-3698C77AE005";
         protected override DocumentController createPrototype(string prototypeID)
         {

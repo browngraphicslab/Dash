@@ -119,6 +119,8 @@ namespace Dash.Controllers
          */
         public override StringSearchModel SearchForString(string searchString)
         {
+            if (searchString == null)
+                return new StringSearchModel(Data.ToString("G"));
             return Data.ToString("G").Contains(searchString) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
         }
     }

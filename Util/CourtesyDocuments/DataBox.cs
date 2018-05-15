@@ -21,6 +21,10 @@ namespace Dash
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
+            if (data is TextController txt && txt.Data.StartsWith("=="))
+            {
+                data = DSL.InterpretUserInput(txt.Data).DereferenceToRoot(null);
+            }
 
             if (data is ImageController)
             {

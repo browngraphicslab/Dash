@@ -20,7 +20,7 @@ namespace Dash
             var inputs = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var parameter in _parameters)
             {
-                inputs.Add(parameter.Key, parameter.Value.Execute(state));
+                inputs.Add(parameter.Key, parameter.Value?.Execute(state));
             }
 
             try

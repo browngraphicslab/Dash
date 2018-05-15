@@ -7,13 +7,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     AllowDrop="True"
+     VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
     Drop="UserControl_Drop"
     d:DesignHeight="300"
     d:DesignWidth="400"
     DataContextChanged="EditableScriptView_OnDataContextChanged">
 
-    <Grid x:Name="xBackground" Background="Transparent" Height="60" VerticalAlignment="Center">
-        <TextBlock x:Name="XTextBlock"
+    <Grid x:Name="xBackground" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xDataBoxContainer" DoubleTapped="XTextBlock_DoubleTapped" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <TextBlock x:Name="XTextBlock"
                            x:FieldModifier="public"
                            FontSize="{x:Bind FontSize, Mode=OneWay}"
                            FontWeight="{x:Bind FontWeight, Mode=OneWay}"
@@ -21,9 +23,9 @@
                            HorizontalAlignment="Stretch"
                            VerticalAlignment="Top"
                            TextWrapping="Wrap" 
-                           DoubleTapped="XTextBlock_DoubleTapped"
                            Padding="10"
                            ></TextBlock>
+        </Grid>
         <TextBox x:Name="XTextBox"
                          x:FieldModifier="public"
                          x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
@@ -32,7 +34,6 @@
                          Foreground="{x:Bind Foreground}"
                          Background="{x:Bind Background}"
                          HorizontalAlignment="Stretch" 
-                         VerticalAlignment="Top" 
                          TextWrapping="Wrap" 
                          BorderThickness="0" 
                          PointerWheelChanged="XTextBox_OnPointerWheelChanged"
