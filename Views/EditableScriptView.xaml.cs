@@ -85,7 +85,6 @@ namespace Dash
         private bool SetExpression(string text)
         {
             TextBoxLoaded = false;
-            XTextBlock.Visibility = Visibility.Visible;
             try
             {
                 FieldControllerBase field = DSL.InterpretUserInput(text, state:  ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
@@ -123,7 +122,7 @@ namespace Dash
         {
             if (TextBoxLoaded)
             {
-                SetExpression(XTextBox.Text);
+               // SetExpression(XTextBox.Text);
             }
             CollapseBox();
         }
@@ -148,6 +147,7 @@ namespace Dash
 
         public void CollapseBox()
         {
+            XTextBlock.Visibility = Visibility.Visible;
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();

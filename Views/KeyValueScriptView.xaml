@@ -16,13 +16,11 @@
     <Grid x:Name="xBackground" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid x:Name="xDataBoxContainer" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"></ColumnDefinition>
+                <ColumnDefinition x:Name="xFormulaColumn" Width="0"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="XTextBox" Grid.Column="0"
                          x:FieldModifier="public"
-                         IsReadOnly="True"
-                         IsEnabled="False"
                          FontSize="{x:Bind FontSize, Mode=OneWay}"
                          FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                          Foreground="{x:Bind Foreground}"
@@ -30,8 +28,19 @@
                          HorizontalAlignment="Stretch" 
                          TextWrapping="Wrap" 
                          BorderThickness="0" 
-                         Padding="10"></TextBox>
-            <local:DocumentView x:Name="xFieldValue" Grid.Column="1" IsHitTestVisible="False"></local:DocumentView>
+                         Padding="10">
+                <FlyoutBase.AttachedFlyout>
+                    <MenuFlyout x:Name="Flyout">
+                        <MenuFlyout.Items>
+                            <MenuFlyoutItem x:Name="xFlyoutItem">
+                            </MenuFlyoutItem>
+                        </MenuFlyout.Items>
+                    </MenuFlyout>
+                </FlyoutBase.AttachedFlyout>
+            </TextBox>
+            <Grid  Grid.Column="1">
+                <local:DocumentView x:Name="xFieldValue" IsHitTestVisible="False"/>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

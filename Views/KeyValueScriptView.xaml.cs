@@ -37,8 +37,12 @@ namespace Dash
             DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
-                XTextBox.IsEnabled = true;
-                XTextBox.IsReadOnly = false;
+                if (this.xFieldValue.ViewModel.DocumentController.GetField(KeyStore.DataKey).DereferenceToRoot(null) is ListController<DocumentController> listOfDocs)
+                {
+                    xFlyoutItem.Text = XTextBox.Text;
+                    Flyout.ShowAt(xFieldValue);
+                }
+                else xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
             };
             KeyDown += (s, e) => {
                 if (e.Key == Windows.System.VirtualKey.Enter)
@@ -47,7 +51,6 @@ namespace Dash
             KeyUp += (s, e) => e.Handled = true;
             LostFocus += (s, e) =>
             {
-                SetExpression(XTextBox.Text);
                 CollapseBox();
             };
         }
@@ -55,8 +58,7 @@ namespace Dash
         {
             try
             {
-                XTextBox.IsReadOnly = true;
-                XTextBox.IsEnabled = false;
+                xFormulaColumn.Width = new GridLength(0);
                 FieldControllerBase field = DSL.InterpretUserInput(text, state: ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
@@ -113,6 +115,7 @@ namespace Dash
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
+            kvp?.Collapse_Value(this);
             kvp?.Collapse_Value(this);
         }
 
