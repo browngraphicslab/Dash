@@ -57,7 +57,7 @@ namespace Dash
             }
             else
             {
-                var field = Document.GetDereferencedField<TField>(Key, context);
+                var field = XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference ? Document.GetField<TField>(Key) : Document.GetDereferencedField<TField>(Key, context);
                 if (field != null)
                 {
                     var converter = Converter;

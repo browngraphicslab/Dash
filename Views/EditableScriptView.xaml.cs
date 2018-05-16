@@ -180,16 +180,6 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
-            var dbox = new DataBox(new DocumentReferenceController(binding.Document.Id, binding.Key)).Document;
-            var dview = new DocumentView() { DataContext = new DocumentViewModel(dbox) };
-            dview.IsHitTestVisible = false;
-            void fieldChanged(FieldControllerBase ss, FieldUpdatedEventArgs ee, Context c)
-            {
-                dview.DataContext = new DocumentViewModel(dbox);
-            }
-            var dataUpdated = new FieldControllerBase.FieldUpdatedHandler(fieldChanged);
-            binding.Document.AddFieldUpdatedListener(binding.Key, dataUpdated);
-           // this.xDataBoxContainer.Children.Add(dview);
         }
     }
 }

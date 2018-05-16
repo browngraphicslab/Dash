@@ -286,7 +286,7 @@ namespace Dash
 
         public void Expand_Value(object sender)
         {
-            var valuebox = sender as EditableScriptView;
+            var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
             if (key != null)
@@ -295,7 +295,7 @@ namespace Dash
 
         public void Collapse_Value(object sender)
         {
-            var valuebox = sender as EditableScriptView;
+            var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
             if (key != null)
@@ -313,7 +313,7 @@ namespace Dash
             }
         }
 
-        private void EditableScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void KeyValueScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
         }
