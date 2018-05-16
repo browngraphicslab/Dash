@@ -248,11 +248,47 @@ namespace Dash
                             MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
+                            nearest = FindNearestDisplayedBrowser(pt, target);
+                            if (nearest != null)
+                            {
+                                if (this.IsCtrlPressed())
+                                    nearest.DeleteDocument();
+                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                            }
+                            else
+                            {
+                                theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
+                                Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                            }
                         }
                     }
                 }
                 e.Handled = true;
+            }
+            DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
+
+                return nearest;
             }
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {

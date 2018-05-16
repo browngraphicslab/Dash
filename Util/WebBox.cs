@@ -195,6 +195,7 @@ namespace Dash
                 case "up":    parent.ToFront();
                               if (DocumentView.FocusedDocument != parent)
                                   parent.ForceLeftTapped();
+                              (web.Tag as ManipulationControlHelper)?.PointerReleased(web, null);
                               web.Tag = null; break;
             }
         }
