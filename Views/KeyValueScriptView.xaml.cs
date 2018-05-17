@@ -42,11 +42,18 @@ namespace Dash
                     xFlyoutItem.Text = XTextBox.Text;
                     Flyout.ShowAt(xFieldValue);
                 }
-                else xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
+                else
+                {
+                    xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
+                    xValueColumn.Width = new GridLength(0);
+                    Focus(FocusState.Programmatic);
+                }
             };
             KeyDown += (s, e) => {
                 if (e.Key == Windows.System.VirtualKey.Enter)
                     SetExpression(XTextBox.Text);
+                if (e.Key == Windows.System.VirtualKey.Escape)
+                    MainPage.Instance.Focus(FocusState.Programmatic);
             };
             KeyUp += (s, e) => e.Handled = true;
             LostFocus += (s, e) =>
@@ -58,8 +65,7 @@ namespace Dash
         {
             try
             {
-                xFormulaColumn.Width = new GridLength(0);
-                FieldControllerBase field = DSL.InterpretUserInput(text, state: ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                var field = DSL.InterpretUserInput(text, state: ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)
@@ -77,28 +83,30 @@ namespace Dash
                 var dragModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel);
                 if (dragModel.DraggedKey != null && dragModel.DraggedKey.Equals(ViewModel.Key) && dragModel.DraggedDocument.Equals(ViewModel.Reference.GetDocumentController(ViewModel.Context)))
                 {
+                    // don't allow droping a field on itself
                     return;
                 }
-                var data = dragModel.DraggedKey != null ? dragModel.DraggedDocument.GetDereferencedField(dragModel.DraggedKey, null) : dragModel.DraggedDocument.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null);
+                var data = dragModel.DraggedKey != null ? dragModel.DraggedDocument.GetDereferencedField(dragModel.DraggedKey, null) : 
+                                         dragModel.DraggedDocument.GetDataDocument().GetDereferencedField(KeyStore.DataKey, null);
                 if (data != null)
                 {
                     var fieldData = ViewModel.Reference.DereferenceToRoot(ViewModel.Context);
                     if (!fieldData.TypeInfo.Equals(data.TypeInfo))
                     {
-                        var noWifiDialog = new ContentDialog
+                        var changeTypeDialog = new ContentDialog
                         {
                             Title = "Change field data type?",
                             Content = "Assigning this data will change the data type of this field.",
                             PrimaryButtonText = "OK",
                             SecondaryButtonText = "Cancel"
                         };
-                        var result = await noWifiDialog.ShowAsync();
+                        var result = await changeTypeDialog.ShowAsync();
                         if (result != ContentDialogResult.Primary)
                             return;
                     }
                 }
                 var dropDocument = dragModel.DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, new TextController("==fs(\"" + dropDocument.Title + " Type:Image\")"), true);
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
             }
         }
 
@@ -112,6 +120,8 @@ namespace Dash
 
         public void CollapseBox()
         {
+            xFormulaColumn.Width = new GridLength(0);
+            xValueColumn.Width = new GridLength(1, GridUnitType.Star);
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();

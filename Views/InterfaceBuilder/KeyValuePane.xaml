@@ -69,7 +69,7 @@
                 </Grid.ColumnDefinitions>
                 <!--key listview-->
                 <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
+                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="True" DragItemsStarting="xKeyListView_DragItemsStarting"
                     ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem" x:Name="CollapseBox">
@@ -84,7 +84,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:EditableScriptViewModel">
-                            <TextBlock Text="{x:Bind Key.Name}"></TextBlock>
+                            <TextBlock Text="{x:Bind Key.Name}"  PointerPressed="KeyValueScriptView_PointerPressed"></TextBlock>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

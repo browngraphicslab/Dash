@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash.Controllers;
 using DashShared;
+using System;
 
 namespace Dash
 {
@@ -23,7 +24,11 @@ namespace Dash
 
             if (data is TextController txt && txt.Data.StartsWith("=="))
             {
-                data = DSL.InterpretUserInput(txt.Data).DereferenceToRoot(null);
+                try
+                {
+                    data = DSL.InterpretUserInput(txt.Data)?.DereferenceToRoot(null);
+                }
+                catch (Exception) { }
             }
             //if (data is ListController<DocumentController> documentList)
             //{

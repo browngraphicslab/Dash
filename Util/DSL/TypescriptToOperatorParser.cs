@@ -95,7 +95,7 @@ namespace Dash
             try
             {
                 var se = ParseToExpression(script);
-                return se.CreateReference(state ?? new ScriptState());
+                return se?.CreateReference(state ?? new ScriptState());
 
             }
             catch (ScriptException scriptException)

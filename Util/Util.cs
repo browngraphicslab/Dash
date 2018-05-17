@@ -484,7 +484,7 @@ namespace Dash
 
         public static DocumentController AdornmentWithPosition(BackgroundBox.AdornmentShape shape, Point pos, double width=200, double height=200)
         {
-            return new BackgroundBox(shape, pos.X, pos.Y, width, height).Document;
+            return new BackgroundNote(shape, pos,new Size(width, height)).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs

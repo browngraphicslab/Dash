@@ -341,8 +341,10 @@ namespace Dash
                     }
                     else if (curField is DocumentController)
                     {
-                        //TODO tfs: fix this
-                        throw new NotImplementedException();
+                        Debug.WriteLine("Warning: changing document field into a text field");
+                        SetField(key, new TextController(textInput), true);
+                        //TODO tfs: fix this 
+                        //throw new NotImplementedException();
                         //curField = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     }
                     else if (curField is ListController<DocumentController> lc)

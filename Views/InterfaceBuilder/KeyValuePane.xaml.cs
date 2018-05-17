@@ -306,7 +306,8 @@ namespace Dash
         {
             foreach (var m in args.Items)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
+                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -316,6 +317,17 @@ namespace Dash
         private void KeyValueScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        private void xKeyListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        {
+            foreach (var m in args.Items)
+            {
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                break;
+            }
         }
     }
 }

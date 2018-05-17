@@ -235,7 +235,7 @@ namespace Dash
                                 finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
-                                    NavigateToDocumentInWorkspace(document);
+                                    NavigateToDocumentInWorkspace(document, false);
                                     vm.Content.Loaded -= finalHandler;
                                 };
 
@@ -254,7 +254,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document))
+                                    if (!NavigateToDocumentInWorkspace(document, false))
                                     {
                                         handler(null, null);
                                     }
@@ -267,7 +267,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     coll.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document))
+                                    if (!NavigateToDocumentInWorkspace(document, false))
                                     {
                                         handler(null, null);
                                     }
@@ -290,13 +290,13 @@ namespace Dash
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document)
+        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null)
             {
-                return NavigateToDocument(coll, null, coll, document);
+                return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
             }
             return false;
         }
@@ -340,54 +340,22 @@ namespace Dash
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null && document != null)
             {
-                return NavigateToDocumentAnimated(coll, null, coll, document);
+                return NavigateToDocument(coll, null, coll, document, true, true);
             }
             return false;
         }
 
-        public bool NavigateToDocumentAnimated(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
-        {
-            if (collection?.ViewModel?.DocumentViewModels == null)
-            {
-                return false;
-            }
-
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
-                {
-                    var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
-                        new Point(
-                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
-                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-
-
-
-                    var pt = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(0, 0));
-                    var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
-                    var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
-
-                    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    return true;
-                }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
-                {
-                    if (NavigateToDocumentAnimated(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
-                        return true;
-                }
-            return false;
-
-        }
-        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
+        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+            {
+                var dmd = dm.DocumentController.GetDataDocument();
+                var dd = document.GetDataDocument();
+                if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
@@ -396,14 +364,17 @@ namespace Dash
                         new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-                    root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    if (animated)
+                        root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
                 {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document, animated, compareDataDocuments))
                         return true;
                 }
+            }
             return false;
         }
 

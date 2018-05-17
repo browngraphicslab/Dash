@@ -27,24 +27,13 @@ namespace Dash
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
             return new ImageBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
-        public static DocumentController TEMPLATE { get; set; }
         public ImageNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)
         {
-            if (TEMPLATE == null)
-            {
-                var dataDocument = makeDataDelegate(new ImageController(location));
-                Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
-                Document.Tag = "Image Note Layout " + icount;
-                dataDocument.Tag = "Image Note Data" + icount++;
-            }
-            else
-            {
-                Document = TEMPLATE.GetDataInstance();
-                Document.GetDataDocument().SetField(KeyStore.DataKey, new ImageController(location), true);
-                if (!string.IsNullOrEmpty(title))
-                    Document.GetDataDocument().SetField(KeyStore.TitleKey, new TextController(title), true);
-            }
+            var dataDocument = makeDataDelegate(new ImageController(location));
+            Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
+            Document.Tag = "Image Note Layout " + icount;
+            dataDocument.Tag = "Image Note Data" + icount++;
         }
     }
 }

@@ -287,6 +287,7 @@
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />

@@ -233,7 +233,7 @@ namespace Dash
                 {
                     if (this.IsCtrlPressed())
                         nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
                 }
                 else
                 {
@@ -253,7 +253,7 @@ namespace Dash
                             {
                                 if (this.IsCtrlPressed())
                                     nearest.DeleteDocument();
-                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
                             }
                             else
                             {

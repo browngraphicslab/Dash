@@ -101,9 +101,8 @@ namespace Dash
         {
             if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                var dropModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, new TextController("==fs(\"" + dropModel.Title + " Type:Image\")"), true);
-               // DataContext = new EditableScriptViewModel(new DocumentFieldReference(dropModel.Id, KeyStore.TitleKey));
+                var dropDocument = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
                 e.Handled = true;
             }
         }
