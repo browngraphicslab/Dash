@@ -85,7 +85,6 @@ namespace Dash
         private bool SetExpression(string text)
         {
             TextBoxLoaded = false;
-            XTextBlock.Visibility = Visibility.Visible;
             try
             {
                 FieldControllerBase field = DSL.InterpretUserInput(text, state:  ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
@@ -103,7 +102,7 @@ namespace Dash
             if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dropModel = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
-                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropModel, true);
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, new TextController("==fs(\"" + dropModel.Title + " Type:Image\")"), true);
                // DataContext = new EditableScriptViewModel(new DocumentFieldReference(dropModel.Id, KeyStore.TitleKey));
                 e.Handled = true;
             }
@@ -123,7 +122,7 @@ namespace Dash
         {
             if (TextBoxLoaded)
             {
-                SetExpression(XTextBox.Text);
+               // SetExpression(XTextBox.Text);
             }
             CollapseBox();
         }
@@ -148,6 +147,7 @@ namespace Dash
 
         public void CollapseBox()
         {
+            XTextBlock.Visibility = Visibility.Visible;
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();

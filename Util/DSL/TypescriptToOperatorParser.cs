@@ -829,7 +829,6 @@ namespace Dash
 
                     var func = new FunctionExpression(callExpr.IdentifierStr, parameters);
                     return func;
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

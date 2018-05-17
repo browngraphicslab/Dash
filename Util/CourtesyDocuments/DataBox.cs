@@ -21,6 +21,14 @@ namespace Dash
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
+            if (data is TextController txt && txt.Data.StartsWith("=="))
+            {
+                data = DSL.InterpretUserInput(txt.Data).DereferenceToRoot(null);
+            }
+            //if (data is ListController<DocumentController> documentList)
+            //{
+            //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
+            //}
 
             if (data is ImageController)
             {
@@ -34,7 +42,8 @@ namespace Dash
             {
                 var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
                 return CollectionBox.MakeView(documentController, context);
-            } else if (data is DocumentController dc)
+            }
+            else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document
                 FrameworkElement view = null;

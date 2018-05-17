@@ -23,6 +23,9 @@ namespace Dash
             var ebox = new EditableScriptView();
             ebox.ViewModel = new EditableScriptViewModel(new DocumentFieldReference(fref.DocumentId, fref.FieldKey));
             ebox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
+            ebox.HorizontalAlignment = HorizontalAlignment.Stretch;
+            ebox.VerticalAlignment = VerticalAlignment.Stretch;
+            SetupBindings(ebox, documentController, context);
             return ebox;
         }
     }

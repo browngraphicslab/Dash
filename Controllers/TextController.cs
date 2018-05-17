@@ -75,6 +75,9 @@ namespace Dash
 
             _lowerData = String.IsNullOrEmpty(_lowerData) ? ((Model as TextModel)?.Data?.ToLower() ?? "") : _lowerData;
 
+            if (searchString == null)
+                return new StringSearchModel("");
+
             if (Data != null)
             {
                 var index = _lowerData.IndexOf(searchString);
