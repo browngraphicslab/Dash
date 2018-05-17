@@ -152,8 +152,8 @@ namespace Dash
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            OperatorScriptParser.TEST();
-            MultiLineOperatorScriptParser.TEST();
+            //OperatorScriptParser.TEST();
+            //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
             BrowserView.ForceInit();

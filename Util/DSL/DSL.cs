@@ -204,7 +204,7 @@ namespace Dash
         /// <param name="script"></param>
         public static string GetScriptError(string script)
         {
-            return OperatorScriptParser.GetScriptError(script);
+            return TypescriptToOperatorParser.GetScriptError(script);
         }
 
 
@@ -227,7 +227,9 @@ namespace Dash
         /// <returns></returns>
         public static string GetScriptForOperatorTree(FieldControllerBase fieldController, Context context = null)
         {
-            return (fieldController is TextController) ? OperatorScriptParser.StringOpeningCharacters[0] + fieldController.GetValue(context).ToString() + OperatorScriptParser.StringClosingCharacters[0] : fieldController.GetValue(context).ToString();
+            return (fieldController is TextController) ? 
+                '"' + fieldController.GetValue(context).ToString() +'"' : 
+                fieldController.GetValue(context).ToString();
         }
     }
 }

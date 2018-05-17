@@ -26,7 +26,7 @@ namespace Dash
             var fieldData = DereferenceData ? (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) : refField as ReferenceController;
             if (fieldData == null && !(refField is ReferenceController))
             {
-                fieldData = refField;
+                fieldData = !DereferenceData && !(refField is IList)? "==" + refField : refField;
             }
 
             // convert ListControllers to a string representation

@@ -52,9 +52,9 @@ namespace Dash
 
             var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
 
-            var stringScriptToExecute = $"{exec}(Script:parseSearchString({{{searchQuery}}}))";
+            var stringScriptToExecute = $"{exec}(Script:parseSearchString(\"{searchQuery}\"))";
 
-            var interpreted = OperatorScriptParser.Interpret(stringScriptToExecute);
+            var interpreted = TypescriptToOperatorParser.Interpret(stringScriptToExecute);
             var resultDict = interpreted as DocumentController;
 
             if (resultDict != null)

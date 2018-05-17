@@ -24,8 +24,8 @@
         {
             if (field is TextController && false)
             {
-                return new TextController(OperatorScriptParser.StringOpeningCharacters[0] + ((TextController) field).Data +
-                                          OperatorScriptParser.StringClosingCharacters[0]);
+                return new TextController('"' + ((TextController) field).Data +
+                                         '"');
             }
             return field;
         }

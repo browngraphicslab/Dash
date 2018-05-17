@@ -77,7 +77,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            return "=="+OperatorScriptParser.GetScriptForOperatorTree(this, context);
+            return TypescriptToOperatorParser.GetScriptForOperatorTree(this, context);
 
             /*
             var refDoc = GetDocumentController(context);

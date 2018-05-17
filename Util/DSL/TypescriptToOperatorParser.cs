@@ -51,6 +51,49 @@ namespace Dash
             Debug.Assert(s.GetValue(null).Equals(correctValue));
         }
 
+        /// <summary>
+        /// Public method to call to COMPILE but not Execute a Dish script.  
+        /// This will return the helpful error message of the invalid script, or NULL if the script compiled correctly.
+        /// 
+        /// This is slightly faster than actually executing a script so if you are repeatedly checking the validity of a Dish script without needing the return value, call this.
+        /// 
+        /// AS YOU SHOULD KNOW, JUST BECAUSE IT WILL COMPILE DOESN'T MEAN IT WILL RETURN A VALID VALUE WHEN EXECUTED.   
+        /// For instance: add(5, 'hello world') will compile but obviously not return a valid value.
+        /// </summary>
+        /// <param name="script"></param>
+        public static string GetScriptError(string script)
+        {
+            try
+            {
+                ParseToExpression(script);
+                return null;
+            }
+            catch (ScriptException scriptException)
+            {
+                return scriptException.Error.GetHelpfulString();
+            }
+        }
+
+
+        public static string GetScriptForOperatorTree(ReferenceController operatorReference, Context context = null)
+        {
+            var doc = operatorReference.GetDocumentController(context);
+            var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
+
+            if (op == null)
+                return "FIXME in OperatorScriptParser";
+            var funcName = op.TypedData.First().GetDishName();
+            var script = funcName + "(";
+            var middle = new List<string>();
+            foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))
+            {
+                Debug.Assert(doc.GetField(inputKey) != null);
+                middle.Add(DSL.GetScriptForOperatorTree(doc.GetField(inputKey)));
+            }
+            return script + string.Join(",", middle) + ")";
+        }
+
+
 
         /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.
@@ -558,8 +601,9 @@ namespace Dash
                                     {SetFieldOperatorController.FieldValueKey, rightBinExpr},
                                 });
                             }
-
                             throw new Exception("Unknown usage of equals in binary expression");
+
+
                         default:
                             throw new Exception("Unkown binary expression type");
                     }

@@ -262,7 +262,6 @@
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
     <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\MultiLineOperatorScriptParser.cs" />
     <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptException.cs" />
@@ -295,7 +294,6 @@
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
-    <Compile Include="Util\DSL\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
