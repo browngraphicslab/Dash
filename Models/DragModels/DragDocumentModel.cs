@@ -21,16 +21,21 @@ namespace Dash.Models.DragModels
         /// </summary>
         public bool ShowViewCopy;
 
+        /// <summary>
+        /// True if the drag should create a link on the target to the dragged document
+        /// </summary>
+        public bool CreateLink;
 
         /// <summary>
         ///     Drag the passed in document
         /// </summary>
         /// <param name="doc">the document to be dragged</param>
         /// <param name="showView">true to get a view copy, false to get the key value pane</param>
-        public DragDocumentModel(DocumentController doc, bool showView)
+        public DragDocumentModel(DocumentController doc, bool showView, bool createLink = false)
         {
             DraggedDocument = doc;
             ShowViewCopy = showView;
+            CreateLink = createLink;
         }
 
         /// <summary>

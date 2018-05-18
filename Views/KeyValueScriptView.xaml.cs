@@ -44,6 +44,9 @@ namespace Dash
                 }
                 else
                 {
+                    if (ViewModel?.Reference?.GetDocumentController(ViewModel.Context)?.GetField(ViewModel.Reference.FieldKey) is ReferenceController &&
+                        !this.XTextBox.Text.StartsWith("=="))
+                        this.XTextBox.Text = "==" + this.XTextBox.Text;
                     xFormulaColumn.Width = new GridLength(1, GridUnitType.Star);
                     xValueColumn.Width = new GridLength(0);
                     Focus(FocusState.Programmatic);
