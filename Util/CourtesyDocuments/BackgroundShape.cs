@@ -11,12 +11,12 @@ using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 { 
-    public class BackgroundBox : CourtesyDocument
+    public class BackgroundShape : CourtesyDocument
     {
         /// <summary>
      /// The document type which is uniquely associated with pdf boxes
      /// </summary>
-        public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Box");
+        public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Shape");
 
         public enum AdornmentShape {
             Elliptical,
@@ -30,9 +30,10 @@ namespace Dash
         /// </summary>
         private static string PrototypeId = "88A3B7F5-7828-4251-ACFC-E56428316203";
 
-        public BackgroundBox(FieldControllerBase refToBackground, double x = 0, double y = 0, double w = 200, double h = 200)
+        public BackgroundShape(FieldControllerBase refToBackground, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToBackground);
+            fields.Add(KeyStore.AdornmentKey, new TextController("true"));
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
@@ -82,21 +83,12 @@ namespace Dash
                     shape.Content = innerRectangle;
                     break;
             }
-            
-            shape.Loaded += Background_Loaded;
 
             SetupBindings(shape, docController, context);
 
             BindShape(shape, docController, context);
 
             return shape;
-        }
-
-        private static void Background_Loaded(object sender, RoutedEventArgs e)
-        {
-            var docView = (sender as UIElement).GetFirstAncestorOfType<DocumentView>();
-            var cp = docView.GetFirstAncestorOfType<ContentPresenter>();
-            Canvas.SetZIndex(cp, -100);
         }
     }
 }

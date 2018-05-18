@@ -57,6 +57,28 @@ namespace Dash
         /// </summary>
         public Point InteractiveManipulationScale;
 
+        public bool IsAdornmentGroup
+        {
+            get
+            {
+                return DocumentController.GetDereferencedField<TextController>(KeyStore.AdornmentKey, null)?.Data == "true";
+            }
+            set
+            {
+                DocumentController.SetField<TextController>(KeyStore.AdornmentKey, IsAdornmentGroup ? "false" : "true", true);
+            }
+        }
+        public bool FitToParent
+        {
+            get
+            {
+                return DocumentController.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
+            }
+            set
+            {
+                DocumentController.SetField<TextController>(KeyStore.CollectionFitToParentKey, FitToParent ? "false" : "true", true);
+            }
+        }
         public Brush BackgroundBrush
         {
             get

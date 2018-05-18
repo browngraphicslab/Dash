@@ -173,6 +173,12 @@ namespace Dash
                 contextMenu.Items.Add(viewCollectionPreview);
                 elementsToBeRemoved.Add(viewCollectionPreview);
 
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                var fitToParent = new MenuFlyoutItem() { Text = "Toggle Fit To Parent" };
+                fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+                contextMenu.Items.Add(fitToParent);
+                elementsToBeRemoved.Add(fitToParent);
+
                 Unloaded += (sender, e) =>
                 {
                     foreach (var flyoutItem in elementsToBeRemoved)

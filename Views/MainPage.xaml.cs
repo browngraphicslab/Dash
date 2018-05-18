@@ -463,7 +463,7 @@ namespace Dash
                         {
                             if (presenter.Content is DocumentViewModel dvm)
                             {
-                                if (dvm.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                                if (dvm.IsAdornmentGroup)
                                 {
                                     var dv = d.GetFirstDescendantOfType<DocumentView>();
                                     var hit = dv.IsHitTestVisible;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using DashShared;
 using Windows.Foundation;
-using static Dash.BackgroundBox;
+using static Dash.BackgroundShape;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -21,7 +21,7 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 //[KeyStore.DataKey]              = new TextController("adornment shape description"),
-                [KeyStore.AbstractInterfaceKey] = new TextController("Background Note Data API"),
+                [KeyStore.AbstractInterfaceKey] = new TextController("Background Note Data API")
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Background data prototype" };
 
@@ -32,7 +32,7 @@ namespace Dash
         DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
         {
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-            return new BackgroundBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            return new BackgroundShape(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
         public BackgroundNote(AdornmentShape shape, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)

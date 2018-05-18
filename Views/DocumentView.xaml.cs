@@ -25,12 +25,12 @@ namespace Dash
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
        
         /// <summary>
-        /// Contains methods which allow the document to be moved around a free form canvas
+        /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
         public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
-        
+
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
@@ -107,12 +107,14 @@ namespace Dash
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 PositionContextPreview();
             }
-            Loaded += (sender, e) => {
+            Loaded += (sender, e) =>
+            {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
+                SetZLayer();
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
@@ -214,10 +216,10 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () => {
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var backgroundBoxes = SelectedDocuments().Where((dv) => dv.ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType)).ToList();
+                var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!this.IsShiftPressed() && ParentCollection.CurrentView is CollectionFreeformView cview)
                 {
-                    backgroundBoxes.ForEach((dv) =>
+                    adornmentGroups.ForEach((dv) =>
                     {
                         cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
                     });
@@ -237,7 +239,7 @@ namespace Dash
                     d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                     d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
                 });
-                if (ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                if (ViewModel.IsAdornmentGroup)
                 {
                     if (ParentCollection.CurrentView is CollectionFreeformView cview)
                     {
@@ -253,6 +255,27 @@ namespace Dash
                 if (this.IsShiftPressed())
                     xMenuFlyout.Hide();
             };
+        }
+
+        /// <summary>
+        /// Sets the 2D stacking layer ("Z" value) of the document.
+        /// If the document is marked as being an adormnment, we want to place it below all other documents
+        /// </summary>
+        void SetZLayer()
+        {
+            if (ViewModel.IsAdornmentGroup)
+            {
+                var cp = this.GetFirstAncestorOfType<ContentPresenter>();
+                int curZ = 0;
+                var parCanvas = cp.GetFirstDescendantOfType<Canvas>();
+                if (parCanvas != null)
+                {
+                    foreach (var c in parCanvas.Children)
+                        if (Canvas.GetZIndex(c) < curZ)
+                            curZ = Canvas.GetZIndex(c);
+                    Canvas.SetZIndex(cp, curZ - 1);
+                }
+            }
         }
 
         /// <summary> 
@@ -527,7 +550,7 @@ namespace Dash
         /// </summary>
         public void ToFront()
         {
-            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
+            if (ParentCollection == null || ViewModel?.IsAdornmentGroup == true)
                 return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -638,7 +661,7 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            if (ViewModel.IsAdornmentGroup)
             {
                 FocusedDocument = this;
                 ToFront();
@@ -765,6 +788,20 @@ namespace Dash
         {
             foreach (var doc in SelectedDocuments())
                 doc.KeyValueViewDocument();
+        }
+        private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var docView in SelectedDocuments())
+            {
+                docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                SetZLayer();
+            }
+        }
+        public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.FitToParent = !ViewModel.FitToParent;
+            if (ViewModel.FitToParent)
+                this.GetFirstDescendantOfType<CollectionView>()?.ViewModel.FitContents();
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }

@@ -134,7 +134,7 @@ namespace Dash
                             newText = VideoToTxt(doc, minMax);
                             break;
                         case "Background Box":
-                            newText = BackgroundBoxToTxt(doc, minMax);
+                            newText = BackgroundShapeToTxt(doc, minMax);
                             break; 
                         case "Collection Box":
                             newText = await CollectionToTxt(doc, minMax);
@@ -420,7 +420,7 @@ namespace Dash
                    "<div style=\"width: "+ colWidth + "px; border: 1px solid black; \">" + "<img style=\"width: 100%;\" src=\"" + colTitle + ".png\"/>" + "</div></a>";
         }
         
-        private static string BackgroundBoxToTxt(DocumentController doc, List<double> minMax)
+        private static string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
             // get shape of box
