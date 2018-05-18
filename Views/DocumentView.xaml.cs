@@ -194,6 +194,23 @@ namespace Dash
                     args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                ViewModel.DecorationState = false;
+            };
+
+            // setup LinkEllipse
+            AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
+            AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
+            xAnnotateEllipseBorder.PointerPressed += (sender, e) => {
+                this.ManipulationMode = ManipulationModes.None;
+                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            };
+            xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+            xAnnotateEllipseBorder.DragStarting += (sender, args) =>
+            {
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, true);
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                ViewModel.DecorationState = false;
             };
 
             // setup Title Icon
@@ -896,10 +913,10 @@ namespace Dash
 
         void This_DragOver(object sender, DragEventArgs e)
         {
-            xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
-            ViewModel.DecorationState = ViewModel?.Undecorated == false;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
+            xFooter.Visibility = xHeader.Visibility = dragModel?.CreateLink != true ? Visibility.Visible : Visibility.Collapsed;
+            ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            
             if (dragModel?.DraggedKey != null)
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

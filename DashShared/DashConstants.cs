@@ -159,6 +159,8 @@ namespace DashShared
             public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
             public static KeyModel AdornmentKey = new KeyModel("FF3329BD-AA78-46E4-9A42-47CAB1E62123", "Is Adornment");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");
+            public static KeyModel LinkFromFieldKey = new KeyModel("9A3191FF-C8E6-472F-ABE5-B5A250D49D59", "Link From");
+            public static KeyModel LinkToFieldKey = new KeyModel("649A7F35-C428-49EC-B914-5746E2590DAC", "Link To");
             public static KeyModel PdfVOffsetFieldKey = new KeyModel("8990098B-83D2-4817-A275-82D8282ECD79", "_PdfVOffset"); 
             public static KeyModel ScaleCenterFieldKey = new KeyModel("FE4IMA9J-NOE9-3NGS-G09Q-JFOE9038S82S" , "_Scale Center");
             public static KeyModel ScaleAmountFieldKey = new KeyModel("AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE", "_Scale Amount");

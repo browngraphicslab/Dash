@@ -322,7 +322,12 @@ namespace Dash
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).DraggedDocument, true);
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                if (dragModel.CreateLink)
+                {
+                    dragModel.DraggedDocument.Link(getDataDoc());
+                } else
+                    linkDocumentToSelection(dragModel.DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {

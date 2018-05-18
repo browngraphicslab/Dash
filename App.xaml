@@ -41,6 +41,7 @@
             <Color x:Key="MainTextColor">#FF333333</Color>
             <Color x:Key="TitleTextColor">#FF454545</Color>
             <Color x:Key="ActivationColor">#f4aa42</Color>
+            <Color x:Key="LinkActivationColor">Green</Color>
             <Color x:Key="InverseColor">#ededed</Color>
 
 
@@ -53,6 +54,7 @@
             <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentHighlightBackgroundColor}" />
             <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
             <SolidColorBrush x:Key="FieldHandleColor" Color="{StaticResource ActivationColor}"/>
+            <SolidColorBrush x:Key="LinkHandleColor" Color="{StaticResource LinkActivationColor}"/>
             <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
             <SolidColorBrush x:Key="SelectionHandleColor" Color="{StaticResource ActivationColor}"/>
             <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
@@ -669,7 +671,7 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
 
-            <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
+            <Style TargetType="Ellipse" x:Key="xFieldHandle">
                 <Setter Property="Fill" Value="{StaticResource FieldHandleColor}" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
@@ -677,8 +679,27 @@
                 <Setter Property="Stroke" Value="Transparent"></Setter>
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
-            <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
+            <Style TargetType="Ellipse" x:Key="xFieldHandleHighlighted">
                 <Setter Property="Fill" Value="Gold" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+
+
+
+            <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
+                <Setter Property="Fill" Value="{StaticResource LinkHandleColor}" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+            <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
+                <Setter Property="Fill" Value="LightGreen" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>

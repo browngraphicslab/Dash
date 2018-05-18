@@ -725,8 +725,13 @@ namespace Dash
             else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-                    if (dragModel.CanDrop(sender as FrameworkElement))
+                if (dragModel.CreateLink)
+                {
+                    var note = new RichTextNote("See Also", where).Document;
+                    dragModel.DraggedDocument.Link(note);
+                    AddDocument(note);
+                }
+                else if (dragModel.CanDrop(sender as FrameworkElement))
                 {
                     //var draggedDocument = dragModel.GetDraggedDocument();
                     //if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&

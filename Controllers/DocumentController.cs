@@ -366,6 +366,20 @@ namespace Dash
             return true;
         }
 
+        public void Link(DocumentController target)
+        {
+            var linkDocument = new RichTextNote("LINK").Document;
+
+            var oldSource = target.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+            var sources = oldSource?.TypedData ?? new List<DocumentController>();
+            sources.Add(linkDocument);
+            target.GetDataDocument().SetField(KeyStore.LinkFromKey, new ListController<DocumentController>(sources), true);
+
+            var oldlinks = GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+            var links = oldlinks?.TypedData ?? new List<DocumentController>();
+            links.Add(linkDocument);
+            GetDataDocument().SetField(KeyStore.LinkToKey, new ListController<DocumentController>(links), true);
+        }
         
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
         {

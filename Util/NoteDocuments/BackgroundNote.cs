@@ -21,7 +21,8 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 //[KeyStore.DataKey]              = new TextController("adornment shape description"),
-                [KeyStore.AbstractInterfaceKey] = new TextController("Background Note Data API")
+                [KeyStore.AbstractInterfaceKey] = new TextController("Background Note Data API"),
+                //[KeyStore.TitleKey] = new TextController("Background Shape")
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Background data prototype" };
 
@@ -44,6 +45,7 @@ namespace Dash
             var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
             // set fields based on the parameters
             dataDocument.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
+            dataDocument.SetField(KeyStore.TitleKey, new TextController("Background : " + hexColor), true);
 
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             Document.Tag = "Background Note Layout " + bcount;
