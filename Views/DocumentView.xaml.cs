@@ -250,10 +250,10 @@ namespace Dash
 
             MenuFlyout = xMenuFlyout;
 
-            xMenuFlyout.Opened += (s, e) =>
+            MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
-                    xMenuFlyout.Hide();
+                    MenuFlyout.Hide();
             };
         }
 
@@ -561,7 +561,7 @@ namespace Dash
         /// </summary>
         public void ForceRightTapContextMenu()
         {
-            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
+            MenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
         }
         
         /// <summary>
