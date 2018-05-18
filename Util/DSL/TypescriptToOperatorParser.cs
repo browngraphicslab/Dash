@@ -688,7 +688,7 @@ namespace Dash
                         return new ExpressionChain(varDeclList.Declarations.Select(ParseToExpression));
                     }
 
-                    Debug.Assert(varDeclList.Declarations.Any());
+                    //Debug.Assert(varDeclList.Declarations.Any());
 
                     return ParseToExpression(varDeclList.Declarations[0]);
 
