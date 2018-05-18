@@ -52,6 +52,7 @@ namespace Dash
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
                 DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
