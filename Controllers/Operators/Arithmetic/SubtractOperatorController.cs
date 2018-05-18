@@ -4,6 +4,7 @@ using DashShared;
 
 namespace Dash
 {
+    [OperatorType("minus", "subtract")]
     public class SubtractOperatorController : OperatorController
     {
         public SubtractOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
