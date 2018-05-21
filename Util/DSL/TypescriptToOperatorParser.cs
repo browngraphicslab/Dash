@@ -688,7 +688,7 @@ namespace Dash
                         return new ExpressionChain(varDeclList.Declarations.Select(ParseToExpression));
                     }
 
-                    Debug.Assert(varDeclList.Declarations.Any());
+                    //Debug.Assert(varDeclList.Declarations.Any());
 
                     return ParseToExpression(varDeclList.Declarations[0]);
 
@@ -850,7 +850,16 @@ namespace Dash
                     break;
                 case SyntaxKind.NumericLiteral:
                     var numberLiteral = node as NumericLiteral;
-                    var parsedNumber = double.Parse(numberLiteral.Text);
+                    double parsedNumber;
+                    try
+                    {
+                        parsedNumber = double.Parse(numberLiteral.Text);
+                    }
+                    catch (OverflowException overflow)
+                    {
+                        parsedNumber = double.PositiveInfinity;
+                    }
+
                     return new LiteralExpression(new NumberController(parsedNumber));
                     break;
                 case SyntaxKind.StringLiteral:

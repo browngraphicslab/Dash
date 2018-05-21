@@ -295,6 +295,7 @@
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
+    <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="TagCloud\ComponentFactory.cs" />

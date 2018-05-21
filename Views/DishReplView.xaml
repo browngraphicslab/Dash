@@ -18,7 +18,7 @@
             <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Grid Margin="0,0,0,5">
+                    <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="20" />
                             <RowDefinition Height="20" />
@@ -31,7 +31,7 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
             </ScrollViewer>
-        <TextBox Grid.Row="1" KeyDown="TextInputKeyDown" Height="50">
+        <TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50">
             
         </TextBox>
     </Grid>
