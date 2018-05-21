@@ -908,6 +908,10 @@ namespace Dash
                 }
                 
                 e.Handled = true;
+            } else if (dragModel?.CreateLink != null)
+            {
+                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
+                e.Handled = true;
             }
         }
 
