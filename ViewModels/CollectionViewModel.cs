@@ -45,6 +45,8 @@ namespace Dash
             _isLoaded = isLoaded;
             if (isLoaded)
             {
+                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey,        collectionFieldChanged); // remove in case it was already added through SetCollectionRef
+                ContainerDocument.AddFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
@@ -52,13 +54,14 @@ namespace Dash
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
                 ActualSizeFieldChanged(null, null, null);
+                _lastDoc = ContainerDocument;
             }
             else
             {
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
-                ContainerDocument.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
                 _lastDoc = null;
             }
         }

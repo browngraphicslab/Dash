@@ -305,8 +305,7 @@ namespace Dash
                             binding.ConvertToXaml(element, property, binding.Context);
                     }
                 };
-
-            bool loaded = false;
+            
             long token = -1;
 
             if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
@@ -314,47 +313,37 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-                loaded = true;
+                element.Unloaded += OnElementOnUnloaded;
+            }
+            else
+            {
+                element.Loaded += OnElementOnLoaded;
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                if (loaded)
-                {
-                    binding.Remove(handler);
-                    element.UnregisterPropertyChangedCallback(property, token);
-                    token = -1;
-                    loaded = false;
-                }
+                binding.Remove(handler);
+                element.UnregisterPropertyChangedCallback(property, token);
+                token = -1;
+                element.Loaded += OnElementOnLoaded;
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                if (!loaded)
-                {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                    token = element.RegisterPropertyChangedCallback(property, callback);
-                    loaded = true;
-                }
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Add(handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
+                element.Unloaded += OnElementOnUnloaded;
             }
-
-            element.Unloaded += OnElementOnUnloaded;
-
-            element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
+                element.Loaded   -= OnElementOnLoaded;
                 element.Unloaded -= OnElementOnUnloaded;
-                if (loaded)
+                binding.Remove(handler);
+                if (token != -1)
                 {
-                    binding.Remove(handler);
-                    if (token != -1)
-                    {
-                        element.UnregisterPropertyChangedCallback(property, token);
-                    }
-                    loaded = false;
+                    element.UnregisterPropertyChangedCallback(property, token);
                 }
             }
 

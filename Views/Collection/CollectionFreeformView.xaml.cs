@@ -70,9 +70,9 @@ namespace Dash
             };
             Unloaded += (sender, e) =>
             {
-                if (ViewModel != null)
+                if (_lastViewModel != null)
                 {
-                    ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                    _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 }
 
                 _lastViewModel?.Loaded(false);
@@ -87,11 +87,11 @@ namespace Dash
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
-        public DocumentController Snapshot()
+        public DocumentController Snapshot(bool copyData=false)
         {
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(dvm.DocumentController.GetViewCopy());
+                controllers.Add(copyData  ? dvm.DocumentController.GetDataCopy():dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;

@@ -280,7 +280,7 @@ namespace Dash
         /// </summary>
         void SetZLayer()
         {
-            if (ViewModel.IsAdornmentGroup)
+            if (ViewModel?.IsAdornmentGroup == true)
             {
                 var cp = this.GetFirstAncestorOfType<ContentPresenter>();
                 int curZ = 0;
