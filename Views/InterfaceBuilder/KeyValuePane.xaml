@@ -60,7 +60,7 @@
         </Grid>
 
         <!--scrolling fields-->
-        <ScrollViewer Name="xFieldsScroller" MaxHeight="500" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <!--key value lists-->
             <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>

@@ -205,7 +205,17 @@ namespace Dash
             if (args.Uri != null)
             {
                 args.Cancel = true;
-                MainPage.Instance.WebContext?.SetUrl(args.Uri.AbsoluteUri);
+                if (MainPage.Instance.WebContext != null)
+                    MainPage.Instance.WebContext.SetUrl(args.Uri.AbsoluteUri);
+                else
+                {
+                    var docSize = sender.GetFirstAncestorOfType<DocumentView>().ViewModel.ActualSize;
+                    var docPos = sender.GetFirstAncestorOfType<DocumentView>().ViewModel.Position;
+                    var docViewPt = new Point(docPos.X + docSize.X, docPos.Y);
+                    var theDoc = FileDropHelper.GetFileType(args.Uri.AbsoluteUri) == FileType.Image ? new ImageNote(args.Uri, new Point()).Document :
+                        new HtmlNote(args.Uri.ToString(), args.Uri.AbsoluteUri, new Point(), new Size(200, 300)).Document;
+                    Actions.DisplayDocument(sender.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(docViewPt));
+                }
             }
         }
     }

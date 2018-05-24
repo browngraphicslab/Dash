@@ -483,7 +483,8 @@ namespace Dash
         {
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
-                FileDropHelper.HandleDrop(where, dvp, this);
+                var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
+                AddDocument(droppedDoc);
             }
             else if (dvp.Contains(StandardDataFormats.Bitmap))
             {
@@ -519,7 +520,8 @@ namespace Dash
             await encoder.FlushAsync();
             var dp = new DataPackage();
             dp.SetStorageItems(new IStorageItem[] { savefile });
-            FileDropHelper.HandleDrop(where, dp.GetView(), this);
+            var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
+            AddDocument(droppedDoc);
         }
 
         /// <summary>
@@ -529,6 +531,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move;
             else
@@ -552,14 +555,16 @@ namespace Dash
             {
                 try
                 {
-                    FileDropHelper.HandleDrop(where, e.DataView, this);
+                    var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
+                    AddDocument(droppedDoc);
+                    return;
                 }
                 catch (Exception exception)
                 {
                     Debug.WriteLine(exception);
                 }
             }
-            else if (e.DataView?.Contains(StandardDataFormats.Html) == true)
+            if (e.DataView?.Contains(StandardDataFormats.Html) == true)
             {
                 var html = await e.DataView.GetHtmlFormatAsync();
 
@@ -664,7 +669,15 @@ namespace Dash
                     await reader.LoadAsync((uint)streamWithContent.Size);
                     reader.ReadBytes(buffer);
                 }
-                var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
+                var localFile = await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+                localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
+
+                var img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
+                AddDocument(img);
+                var t = new ImageNote(new Uri(localFile.FolderRelativeId));
+                // var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
                 AddDocument(t.Document);
             }
             else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
@@ -749,8 +762,6 @@ namespace Dash
                     AddDocument(dragModel.GetDropDocument(where));
                 }
             }
-
-            e.Handled = true;
         }
 
         /// <summary>
