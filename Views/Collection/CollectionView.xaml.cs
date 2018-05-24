@@ -33,11 +33,11 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
-        public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
+        public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
             InitializeComponent();
-            _viewType = viewType;
+            _viewType = vm.ViewType;
             DataContext = vm;
 
             Unloaded += CollectionView_Unloaded;
@@ -249,9 +249,8 @@ namespace Dash
             CurrentView.Loaded -= CurrentView_Loaded;
             CurrentView.Loaded += CurrentView_Loaded;
             xContentControl.Content = CurrentView;
-            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data;
-            if (curViewType != _viewType.ToString())
-                ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
+            if (ViewModel.ViewType != _viewType)
+                ViewModel.ViewType = viewType;
         }
 
         private void CurrentView_Loaded(object sender, RoutedEventArgs e)

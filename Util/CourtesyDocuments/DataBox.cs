@@ -45,7 +45,6 @@ namespace Dash
 			}
             else if (data is ListController<DocumentController> docList)
             {
-                var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
                 return CollectionBox.MakeView(documentController, context);
             }
             else if (data is DocumentController dc)

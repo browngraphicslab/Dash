@@ -68,17 +68,6 @@ namespace Dash
                 DocumentController.SetField<TextController>(KeyStore.AdornmentKey, IsAdornmentGroup ? "false" : "true", true);
             }
         }
-        public bool FitToParent
-        {
-            get
-            {
-                return DocumentController.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
-            }
-            set
-            {
-                DocumentController.SetField<TextController>(KeyStore.CollectionFitToParentKey, FitToParent ? "false" : "true", true);
-            }
-        }
         public Brush BackgroundBrush
         {
             get

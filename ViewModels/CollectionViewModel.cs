@@ -125,8 +125,7 @@ namespace Dash
         /// </summary>
         public void FitContents()
         {
-            if (ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey,null)?.Data == "true" &&
-                ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null).Data == CollectionView.CollectionViewType.Freeform.ToString())
+            if (FitToParent &&  ViewType == CollectionView.CollectionViewType.Freeform)
             {
                 var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
                 var r = Rect.Empty;
@@ -304,6 +303,28 @@ namespace Dash
         {
             get { return _canDragItems; }
             set { SetProperty(ref _canDragItems, value); }
+        }
+        public bool FitToParent
+        {
+            get
+            {
+                return ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
+            }
+            set
+            {
+                ContainerDocument.SetField<TextController>(KeyStore.CollectionFitToParentKey, value ? "true" : "false", true);
+            }
+        }
+        public CollectionView.CollectionViewType ViewType
+        {
+            get
+            {
+                return Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            }
+            set
+            {
+                ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
+            }
         }
 
 
@@ -583,8 +604,16 @@ namespace Dash
                 );
 
                 var splits = new Regex("<").Split(html);
-                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0);
+                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
                 var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+                {
+                    var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
+                    var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                    var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
+                    AddDocument(imgNote.Document);
+                    return;
+                }
                 var strings = text.Split(new char[] { '\r' });
                 var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
                 foreach (var str in html.Split(new char[] { '\r' }))
@@ -618,11 +647,10 @@ namespace Dash
                     {
                         var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
                         var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                        var i = new AnnotatedImage(new Uri(src), "", 100, double.NaN, where.X, where.Y);
+                        var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
                         related.Add(i.Document);
                     }
-                    var cnote = new CollectionNote(new Point(), CollectionView.CollectionViewType.Page, collectedDocuments: related).Document;
-                    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), cnote, true);//
+                    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
                     //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
                     htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
                     foreach (var str in strings)
