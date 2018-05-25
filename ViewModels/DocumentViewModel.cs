@@ -175,11 +175,14 @@ namespace Dash
         void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             // if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
-                // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
-                //   bcz: need some better mechanism than this....
-                if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                    LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || 
-                    LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+            // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
+            //   bcz: need some better mechanism than this....
+            if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs && largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+                    ;
+                else
                     Content = null; // forces layout to be recomputed by listeners who will access Content
         }
         /// <summary>

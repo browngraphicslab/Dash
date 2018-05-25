@@ -24,7 +24,7 @@
         </StackPanel.Resources>
         <Grid x:Name="XHeader"> 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="15"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
@@ -42,6 +42,6 @@
             </Border>
              <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" />
         </Grid>
-        <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" />
+        <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" />
     </StackPanel>
 </UserControl>

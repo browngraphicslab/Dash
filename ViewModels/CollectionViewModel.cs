@@ -771,9 +771,26 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 if (dragModel.CreateLink)
                 {
-                    var note = new RichTextNote("See Also", where).Document;
-                    dragModel.DraggedDocument.Link(note);
-                    AddDocument(note);
+                    if (MainPage.Instance.IsShiftPressed())
+                    {
+                        var links = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData;
+                        var targets = links.SelectMany((d) => d.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData).ToList();
+                        var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, targets);
+                        AddDocument(cnote.Document);
+                    }
+                    else
+                    if (MainPage.Instance.IsCtrlPressed())
+                    {
+                        var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
+                            dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData);
+                        AddDocument(cnote.Document);
+                    }
+                    else
+                    {
+                        var note = new RichTextNote("<annotation>", where).Document;
+                        dragModel.DraggedDocument.Link(note);
+                        AddDocument(note);
+                    }
                 }
                 else if (dragModel.CanDrop(sender as FrameworkElement))
                 {

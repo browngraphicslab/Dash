@@ -86,7 +86,11 @@ namespace Dash
             xRichEditBox.KeyUp += (s, e) => 
             {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
-                    getDocView().DeleteDocument(true);
+                {
+                    var docView = getDocView();
+                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                        docView.DeleteDocument(true);
+                }
                 e.Handled = true;
             };
 
@@ -189,7 +193,18 @@ namespace Dash
                     xRichEditBox.Measure(new Size(ActualWidth, 1000));
                     if (relative != null)
                     {
-                        var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                        double pad = 0;
+                        foreach (var child in relative.Children.OfType<FrameworkElement>())
+                            if (child != this)
+                            {
+                                if (child is RichTextView rview)
+                                {
+                                    rview.xRichEditBox.Measure(new Size(rview.ActualWidth, 1000));
+                                    pad += rview.DesiredSize.Height;
+                                }
+                                else
+                                    pad += child.ActualHeight;
+                            }
                         relative.Height = xRichEditBox.DesiredSize.Height + pad;
                     }
                 }

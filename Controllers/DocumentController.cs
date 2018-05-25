@@ -368,7 +368,7 @@ namespace Dash
 
         public void Link(DocumentController target)
         {
-            var linkDocument = new RichTextNote("LINK").Document;
+            var linkDocument = new RichTextNote("<link description>").Document;
 
             var oldSource = target.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
             var sources = oldSource?.TypedData ?? new List<DocumentController>();
@@ -379,6 +379,8 @@ namespace Dash
             var links = oldlinks?.TypedData ?? new List<DocumentController>();
             links.Add(linkDocument);
             GetDataDocument().SetField(KeyStore.LinkToKey, new ListController<DocumentController>(links), true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkFromKey, new ListController<DocumentController>(this), true);
+            linkDocument.GetDataDocument().SetField(KeyStore.LinkToKey, new ListController<DocumentController>(target), true);
         }
         
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)

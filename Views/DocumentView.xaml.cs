@@ -851,88 +851,119 @@ namespace Dash
 
         #endregion
 
+
         void This_Drop(object sender, DragEventArgs e)
         {
-            var footer = sender == this.xFooter;
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-            if (dragModel?.DraggedKey != null)
+            if (dragModel?.CreateLink != null)
             {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
 
-                var newFieldDoc = dragModel.GetDropDocument(new Point());
-                newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
-                newFieldDoc.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                newFieldDoc.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
-                var activeLayout = ViewModel.LayoutDocument;
-                if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
+
+                e.Handled = true;
+            }
+        }
+        void FooterDrop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.CreateLink != null)
+            {
+                var note = new RichTextNote("<annotation>").Document;
+                dragModel.DraggedDocument.Link(note);
+                drop(true, note);
+            }
+            else
+                drop(true, dragModel.GetDropDocument(new Point()));
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.Handled = true;
+        }
+        void HeaderDrop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.CreateLink != null)
+            {
+                var note = new RichTextNote("<annotation>").Document;
+                dragModel.DraggedDocument.Link(note);
+                drop(false, note);
+            }
+            else
+                drop(false, dragModel.GetDropDocument(new Point()));
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.Handled = true;
+        }
+    
+        void drop(bool footer, DocumentController newFieldDoc)
+        {
+            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+           
+           // newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
+            newFieldDoc.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            newFieldDoc.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
+            var activeLayout = ViewModel.LayoutDocument;
+            if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+            {
+                if (activeLayout.GetField(KeyStore.DataKey, true) == null)
                 {
-                    if (activeLayout.GetField(KeyStore.DataKey, true) == null)
-                    {
-                        var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
-                        if (!footer)
-                            fields.Insert(0, newFieldDoc);
-                        else fields.Add(newFieldDoc);
-                        activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                    }
-                    else
-                    {
-                        var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                        if (!footer)
-                            listCtrl.Add(newFieldDoc, 0);
-                        else listCtrl.Add(newFieldDoc);
-                    }
+                    var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
+                    if (!footer)
+                        fields.Insert(0, newFieldDoc);
+                    else fields.Add(newFieldDoc);
+                    activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
                 }
                 else
                 {
-                    var curLayout = activeLayout;
-                    if (ViewModel.DocumentController?.GetActiveLayout() != null) // wrap existing activeLayout into a new StackPanel activeLayout
-                    {
-                        curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                        curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
-                        curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                        curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-                    }
-                    else  // need to create a stackPanel activeLayout and add the document to it
-                    {
-                        curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
-                        curLayout.Tag = "StackPanel DocView Layout";
-                        curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                        curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-                        curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    }
-                    activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
-                    activeLayout.Tag = "StackLayout";
-                    activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
-                    activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
-                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
-                    activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
+                    var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                    if (!footer)
+                        listCtrl.Add(newFieldDoc, 0);
+                    else listCtrl.Add(newFieldDoc);
                 }
-                
-                e.Handled = true;
-            } else if (dragModel?.CreateLink != null)
+            }
+            else
             {
-                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
-                e.Handled = true;
+                var curLayout = activeLayout;
+                if (ViewModel.DocumentController?.GetActiveLayout() != null) // wrap existing activeLayout into a new StackPanel activeLayout
+                {
+                    curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                    curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
+                    curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                    curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                }
+                else  // need to create a stackPanel activeLayout and add the document to it
+                {
+                    curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
+                    curLayout.Tag = "StackPanel DocView Layout";
+                    curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                    curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                    curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                }
+                activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
+                activeLayout.Tag = "StackLayout";
+                activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
+                activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
+                activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
+                activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
         }
 
         void This_DragOver(object sender, DragEventArgs e)
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            xFooter.Visibility = xHeader.Visibility = dragModel?.CreateLink != true ? Visibility.Visible : Visibility.Collapsed;
+            xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             
-            if (dragModel?.DraggedKey != null)
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-                e.DragUIOverride.IsContentVisible = true;
+            e.DragUIOverride.IsContentVisible = true;
 
-                e.Handled = true;
-            }
+            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)
