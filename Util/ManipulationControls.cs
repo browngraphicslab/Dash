@@ -37,12 +37,6 @@ namespace Dash
         public event OnManipulationStartedHandler OnManipulatorStarted;
 
 
-        /// <summary>
-        /// At every ManipulationDelta, store the translate. 
-        /// </summary>
-        private Point _translateLastManipulationDelta;
-
-
         private double _accumulatedTranslateAfterSnappingX;
         private double _accumulatedTranslateAfterSnappingY;
 
@@ -307,6 +301,13 @@ namespace Dash
 
                 if (alignedToX || alignedToY)
                 {
+                    var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+                    var scale = cfw.ViewModel.TransformGroup.ScaleAmount;
+                    double alignmentX = -(translateAfterSecondAlignment.X + offsetX  - originalTranslate.X) * scale.X;
+                    double alignmentY = -(translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
+                    //Move mouse by the alignment offset
+                    var old = Window.Current.CoreWindow.PointerPosition;
+                    Window.Current.CoreWindow.PointerPosition = new Point(old.X + alignmentX, old.Y + alignmentY);
 
                     return new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
                 }
@@ -325,7 +326,7 @@ namespace Dash
             double accumulatedDistanceThreshold = 4.0; // How much distance the node must be moved to get out of alignment TODO: Refactor this to be dependent on zoom level
 
             //If already snapped
-            if (Math.Abs(parentLine - targetLine) < 0.0001)
+            if (Math.Abs(parentLine - targetLine) < 0.001) //Was running into bugs cause
             {
                 if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold) //Break away from alignment
                 {
@@ -345,8 +346,8 @@ namespace Dash
                     //acc += delta;
                     return false;
                 }
-                acc = 0;
                 //Snapping for the first time.
+                acc = 0;
                 return true;
             }
             return false;
