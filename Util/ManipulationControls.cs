@@ -325,15 +325,13 @@ namespace Dash
             double accumulatedDistanceThreshold = 4.0; // How much distance the node must be moved to get out of alignment TODO: Refactor this to be dependent on zoom level
 
             //If already snapped
-            if (parentLine == targetLine)
+            if (Math.Abs(parentLine - targetLine) < 0.0001)
             {
                 if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold) //Break away from alignment
                 {
-                    Debug.WriteLine(mouseOffset);
                     mouseOffset += acc;
                     return false;
                 }
-                Debug.WriteLine("Accumulating... " + delta.ToString());
                 acc += delta;
                 return true; //Snap and accumulate
             }
@@ -341,22 +339,13 @@ namespace Dash
             //If we're under the snap distance threshold...
             else if (Math.Abs(parentLineAfter - targetLine) < distanceThreshold)
             {
-                Debug.WriteLine("Delta " + delta.ToString());
-                Debug.WriteLine("Parent " + parentLine.ToString());
-                Debug.WriteLine("Target " + targetLine.ToString());
-                Debug.WriteLine("Parent After" + parentLineAfter.ToString());
-
-
                 //If moving away from the target line, we shouldn't snap
                 if ((parentLine < targetLine && delta < 0) || (parentLine > targetLine && delta > 0))
                 {
                     //acc += delta;
-                    Debug.WriteLine("Moving away... ");
                     return false;
                 }
-                Debug.WriteLine("Snapping 1st time ");
                 acc = 0;
-
                 //Snapping for the first time.
                 return true;
             }
