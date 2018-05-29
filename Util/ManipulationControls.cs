@@ -28,6 +28,7 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
 
+
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
@@ -36,8 +37,14 @@ namespace Dash
         public event OnManipulationStartedHandler OnManipulatorStarted;
 
 
-        private List<DocumentController> _documentsToRemoveAfterManipulation = new List<DocumentController>();
+        /// <summary>
+        /// At every ManipulationDelta, store the translate. 
+        /// </summary>
+        private Point _translateLastManipulationDelta;
 
+
+        private double _accumulatedTranslateAfterSnappingX;
+        private double _accumulatedTranslateAfterSnappingY;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -233,6 +240,7 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
+            var speedThreshold = 5;
             //Don't do any alignment if simply panning the collection
             var collectionFreeformView =
                 ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
@@ -269,19 +277,18 @@ namespace Dash
                 {
                     for (int otherAxis = 0; otherAxis < 3; otherAxis++)
                     {
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
+                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis]; 
+                        //var distance = Math.Abs(delta);
 
-                        if (distance < 15)
+                        if (ShouldSnap(parentDocumentAxesBefore[parentAxis], documentAxes[otherAxis], originalTranslate.X, ref _accumulatedTranslateAfterSnappingX))
                         {
-                            if ((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
                             ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
                             translateAfterFirstAlignment = new Point(delta, originalTranslate.Y);
                             alignedToX = true;
                             break;
+
                         }
+                    
                     }
                 }
 
@@ -291,63 +298,55 @@ namespace Dash
                     for (int otherAxis = 3; otherAxis < 6; otherAxis++)
                     {
                         var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
-                        if (distance < 15)
+                        //var distance = Math.Abs(delta);
+
+                        if (ShouldSnap(parentDocumentAxesBefore[parentAxis], documentAxes[otherAxis], originalTranslate.Y, ref _accumulatedTranslateAfterSnappingY))
                         {
-
-                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
                             ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translateAfterFirstAlignment.X, delta));
                             return new Point(translateAfterFirstAlignment.X, delta);
 
-                        }
+                        }       
                     }
                 }
 
                 if (alignedToX)
                     return translateAfterFirstAlignment;
-                /*
-                //For every axis in the ParentDocument
-                for (int parentAxis = 0; parentAxis < 6; parentAxis++)
-                {
-                    for(int otherAxis = 3 * (parentAxis/3); otherAxis < 3* (parentAxis/3) + 3; otherAxis++)
-                    {
-
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
-                        
-                        //If X axis
-                        if(parentAxis < 3 && distance < 15)
-                        {
-                            if((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
-                            return new Point(delta, originalTranslate.Y);
-                        }
-                        if(parentAxis >=3 && distance < 15)
-                        {
-
-                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(originalTranslate.X, delta));
-                            return new Point(originalTranslate.X, delta);
-
-                        }
-                }       
-             */
 
             }
-       
-    
-            
-
             return originalTranslate ;
             
         }
 
+        private bool ShouldSnap(double parentLine, double targetLine, double delta, ref double acc)
+        {
+            double parentLineAfter = parentLine + delta;
+            double thresh = 2;
+            //double acc = 0;
+           
+            //If already snapped
+            if (parentLine == targetLine)
+            {
+                if (Math.Abs(parentLineAfter + acc - targetLine) > thresh)
+                    return false;
+                acc += delta;
+                return true;
+            }
+            
+            //If we're under the snap distance threshold...
+            else if (Math.Abs(parentLineAfter - targetLine) < thresh)
+            {
+                //If moving away from the parent line, we shouldn't snap
+                if ((parentLine < targetLine && delta < 0) || (parentLine > targetLine && delta > 0))
+                    return false;
+
+                //set acc to 0
+                acc = 0;
+                return true;
+            }
+            
+
+            return false;
+        }
         private void ShowPreviewLine(Rect boundsBeforeAlignment, double[] otherDocumentAxes, AlignmentAxis parentAxis,  AlignmentAxis otherAxis, Point alignmentTranslation)
         {
             double[] axesAfterAlignment = AlignmentAxes(new Rect(boundsBeforeAlignment.X + alignmentTranslation.X, boundsBeforeAlignment.Y + alignmentTranslation.Y, boundsBeforeAlignment.Width, boundsBeforeAlignment.Height));
@@ -429,70 +428,8 @@ namespace Dash
 
         }
 
-        private Point SimpleSnapPoint(Rect snappingTo, Side snappingToSide)
-        {
-            Rect parentDocumentBounds = ParentDocument.ViewModel.Bounds;
-
-            Point newTopLeftPoint;
-            switch (snappingToSide)
-            {
-                case Side.Top:
-                    newTopLeftPoint = new Point(parentDocumentBounds.X, snappingTo.Top - parentDocumentBounds.Height);
-                    break;
-                case Side.Bottom:
-                    newTopLeftPoint = new Point(parentDocumentBounds.X, snappingTo.Bottom);
-                    break;
-                case Side.Left:
-                    newTopLeftPoint = new Point(snappingTo.Left - parentDocumentBounds.Width, parentDocumentBounds.Y);
-                    break;
-                case Side.Right:
-                    newTopLeftPoint = new Point(snappingTo.Right, parentDocumentBounds.Y);
-                    break;
-            }
-
-            return newTopLeftPoint;
-        }
 
 
-        private void SnapToCollection(Tuple<DocumentView, Side, double> closest)
-        {
-            var collection = closest.Item1;
-            var side = closest.Item2;
-
-            var newCollectionBoundingBoxNullable = BoundingBox(ParentDocument.ViewModel, collection.ViewModel);
-            if (!newCollectionBoundingBoxNullable.HasValue)
-                return;
-            var newCollectionBoundingBox = newCollectionBoundingBoxNullable.Value;
-
-            //Translate and resize the collection using bounding box
-            collection.ViewModel.Position = new Point(newCollectionBoundingBox.X, newCollectionBoundingBox.Y);
-            collection.ViewModel.Width = newCollectionBoundingBox.Width;
-            collection.ViewModel.Height = newCollectionBoundingBox.Height;
-
-            //Add ParentDocument to collection
-            if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-            {
-                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController);
-            }
-
-            _documentsToRemoveAfterManipulation = new List<DocumentController>()
-            {
-                ParentDocument.ViewModel.DocumentController
-            };
-
-
-            //Readjust the translates so that they are relative to the bounding box
-            ParentDocument.ViewModel.Position = new Point(ParentDocument.ViewModel.Bounds.X - newCollectionBoundingBox.X, ParentDocument.ViewModel.Bounds.Y - newCollectionBoundingBox.Y);
-
-        }
-        private Tuple<DocumentViewModel, Side, double> GetClosestDocumentView(Rect bounds)
-        {
-            //Get a list of all DocumentViews hittested using the ParentDocument's bounds + some threshold
-            var allDocumentViewsHit = HitTestFromSides(bounds);
-
-            //Return closest DocumentView (using the double that represents the confidence) or null
-            return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
-        }
 
         private List<Tuple<DocumentViewModel, Side, double>> HitTestFromSides(Rect currentBoundingBox)
         {
@@ -731,6 +668,7 @@ namespace Dash
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
+                //_translateLastManipulationDelta = delta;
 
                 e.Handled = true;
             }
@@ -763,21 +701,10 @@ namespace Dash
                 var pos = docRoot.RootPointerPos();
                 var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
                 
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () =>
-                    {
-                        if (_documentsToRemoveAfterManipulation.Any())
-                        {
-                            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-                            currentCollection?.ViewModel.RemoveDocuments(_documentsToRemoveAfterManipulation);
-                            _documentsToRemoveAfterManipulation.Clear();
-                        }
-
-                        docRoot.MoveToContainingCollection(overlappedViews);
-                    }));
 
                 OnManipulatorCompleted?.Invoke();
-
+                _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
+                //_translateLastManipulationDelta = new Point();
                 if (e != null)
                 {
                     e.Handled = true;
