@@ -247,7 +247,7 @@ namespace Dash
                 return originalTranslate;
 
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
-            var parentDocumentAxesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
+            var parentDocumentLinesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
 
             var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + originalTranslate.X,
                 boundsBeforeTranslation.Y + originalTranslate.Y, boundsBeforeTranslation.Width,
@@ -255,15 +255,16 @@ namespace Dash
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm =>
                 vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel)
                     .ToList().Contains(vm));
-            var parentDocumentAxesAfter = AlignmentLinesFromRect(parentDocumentBounds);
+            var parentDocumentLinesAfter = AlignmentLinesFromRect(parentDocumentBounds);
+
+            double offsetX = 0;
+            double offsetY = 0;
 
             double distanceThreshold = 1000; //How close the X and Y positions have to be for alignment to happen.
             foreach (var documentView in listOfSiblings)
             {
-                double offsetX = 0;
-                double offsetY = 0;
                 var documentBounds = InteractiveBounds(documentView);
-                var documentAxes = AlignmentLinesFromRect(documentBounds);
+                var documentLines = AlignmentLinesFromRect(documentBounds);
                 //To avoid the visual clutter of aligning to document views in a large workspace, we currently ignore any document views that are further than some threshold
                 if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold ||
                     Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
@@ -272,36 +273,32 @@ namespace Dash
 
                 var translateAfterFirstAlignment = originalTranslate;
                 bool alignedToX = false;
-                //Check every y-aligned line (xmin, xmid, xmax), align to the first available one
-                for (int parentAxis = 0; parentAxis < 3 && (!alignedToX); parentAxis++)
+                //Check every x-aligned line (xmin, xmid, xmax), align to the first available one
+                for (int parentLine = 0; parentLine < 3 && (!alignedToX); parentLine++)
                 {
-                    for (int otherAxis = 0; otherAxis < 3; otherAxis++)
+                    for (int targetLine = 0; targetLine < 3; targetLine++)
                     {
-                        if (SnapTriggered(parentDocumentAxesBefore[parentAxis], documentAxes[otherAxis], originalTranslate.X, ref _accumulatedTranslateAfterSnappingX, ref offsetX))
+                        if (SnapTriggered(parentDocumentLinesBefore[parentLine], documentLines[targetLine], originalTranslate.X, ref _accumulatedTranslateAfterSnappingX, ref offsetX))
                         {
-                            translateAfterFirstAlignment.X = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentLine)parentAxis, (AlignmentLine)otherAxis, translateAfterFirstAlignment);
+                            translateAfterFirstAlignment.X = documentLines[targetLine] - parentDocumentLinesBefore[parentLine];
+                            ShowPreviewLine(boundsBeforeTranslation, documentLines, (AlignmentLine)parentLine, (AlignmentLine)targetLine, translateAfterFirstAlignment);
                             alignedToX = true;
                             break;
                         }
-
                     }
                 }
 
                 var translateAfterSecondAlignment = translateAfterFirstAlignment;
                 bool alignedToY = false;
-                //Check every x-aligned line, align to the first available one, while also maintaining the alignment to any x-aligned line found above
-                for (int parentAxis = 3; parentAxis < 6 && (!alignedToY); parentAxis++)
+                //Check every y-aligned line, align to the first available one, while also maintaining the alignment to any x-aligned line found above
+                for (int parentLine = 3; parentLine < 6 && (!alignedToY); parentLine++)
                 {
-                    for (int otherAxis = 3; otherAxis < 6; otherAxis++)
+                    for (int otherLine = 3; otherLine < 6; otherLine++)
                     {
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        //var distance = Math.Abs(delta);
-
-                        if (SnapTriggered(parentDocumentAxesBefore[parentAxis], documentAxes[otherAxis], originalTranslate.Y, ref _accumulatedTranslateAfterSnappingY, ref offsetY))
+                        if (SnapTriggered(parentDocumentLinesBefore[parentLine], documentLines[otherLine], originalTranslate.Y, ref _accumulatedTranslateAfterSnappingY, ref offsetY))
                         {
-                            translateAfterSecondAlignment.Y = delta;
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentLine)parentAxis, (AlignmentLine)otherAxis, translateAfterSecondAlignment);
+                            translateAfterSecondAlignment.Y = documentLines[otherLine] - parentDocumentLinesBefore[parentLine];
+                            ShowPreviewLine(boundsBeforeTranslation, documentLines, (AlignmentLine)parentLine, (AlignmentLine)otherLine, translateAfterSecondAlignment);
                             alignedToY = true;
                             break;
                         }
@@ -310,43 +307,56 @@ namespace Dash
 
                 if (alignedToX || alignedToY)
                 {
-                    return translateAfterSecondAlignment;
+
+                    return new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
                 }
 
             }
-            return originalTranslate ;
-            
+            //return originalTranslate ;
+            return new Point(originalTranslate.X + offsetX, originalTranslate.Y + offsetY);
+
+
         }
 
-        private bool SnapTriggered(double parentLine, double targetLine, double delta, ref double acc, ref double offset)
+        private bool SnapTriggered(double parentLine, double targetLine, double delta, ref double acc, ref double mouseOffset)
         {
             double parentLineAfter = parentLine + delta;
-            double distanceThreshold = 2; //TODO: Refactor this to be dependent on zoom level
-            double accumulatedDistanceThreshold = 6; // How much distance the node must be moved to get out of alignment TODO: Refactor this to be dependent on zoom level
+            double distanceThreshold = 1.0; //TODO: Refactor this to be dependent on zoom level
+            double accumulatedDistanceThreshold = 4.0; // How much distance the node must be moved to get out of alignment TODO: Refactor this to be dependent on zoom level
 
             //If already snapped
             if (parentLine == targetLine)
             {
-                Debug.WriteLine("Current translate: " + delta.ToString());
-                Debug.WriteLine(acc);
-                if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold)
+                if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold) //Break away from alignment
                 {
-                    offset = delta;
+                    Debug.WriteLine(mouseOffset);
+                    mouseOffset += acc;
                     return false;
                 }
+                Debug.WriteLine("Accumulating... " + delta.ToString());
                 acc += delta;
-                return true;
+                return true; //Snap and accumulate
             }
             
             //If we're under the snap distance threshold...
             else if (Math.Abs(parentLineAfter - targetLine) < distanceThreshold)
             {
-                acc = 0;
+                Debug.WriteLine("Delta " + delta.ToString());
+                Debug.WriteLine("Parent " + parentLine.ToString());
+                Debug.WriteLine("Target " + targetLine.ToString());
+                Debug.WriteLine("Parent After" + parentLineAfter.ToString());
+
+
                 //If moving away from the target line, we shouldn't snap
-                if ((parentLine < targetLine && delta <= 0) || (parentLine > targetLine && delta >= 0))
+                if ((parentLine < targetLine && delta < 0) || (parentLine > targetLine && delta > 0))
                 {
+                    //acc += delta;
+                    Debug.WriteLine("Moving away... ");
                     return false;
                 }
+                Debug.WriteLine("Snapping 1st time ");
+                acc = 0;
+
                 //Snapping for the first time.
                 return true;
             }
@@ -391,8 +401,6 @@ namespace Dash
             line.Y2 = screenPoint2.Y;
 
         }
-
-
 
         //END OF NEW SNAPPING
 
