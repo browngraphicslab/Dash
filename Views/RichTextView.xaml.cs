@@ -110,6 +110,8 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
+            if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
+                return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null && Text != null)
             {
                 convertTextFromXamlRTF();
@@ -155,9 +157,11 @@ namespace Dash
             return getDataDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
                    getLayoutDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
         }
+        DocumentController _lastDoc = null;
         void               setSelected(string query)
         {
-            getDataDoc().SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+            _lastDoc = getDataDoc() ?? _lastDoc;
+            _lastDoc?.SetField<TextController>(CollectionDBView.SelectedKey,query, true);
         }
         string             getReadableText()
         {
@@ -413,7 +417,8 @@ namespace Dash
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
-                        xSearchBox.Focus(FocusState.Programmatic);
+                        xSearchBoxPanel.UpdateLayout();
+                        xSearchBox.GetFirstDescendantOfType<TextBox>()?.Focus(FocusState.Programmatic);
                         e.Handled = true;
                         break;
                     case VirtualKey.L:
@@ -445,6 +450,8 @@ namespace Dash
 
             void UnLoaded(object s, RoutedEventArgs e)
             {
+                ClearSearchHighlights(true);
+                setSelected("");
                 UnregisterPropertyChangedCallback(TextProperty, id);
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
                 Unloaded -= UnLoaded;
@@ -544,6 +551,8 @@ namespace Dash
 
         private void MatchQuery(string query)
         {
+            if (getDocView() == null)
+                return;
             this.ClearSearchHighlights();
             _nextMatch = 0;
             _prevQueryLength = query == null ? 0 : query.Length;
@@ -595,7 +604,7 @@ namespace Dash
         /// Clears the highlights that result from searching within the xRichEditBox (to make sure that
         /// original highlights wouldn't get erased)
         /// </summary>
-        private void ClearSearchHighlights()
+        private void ClearSearchHighlights(bool silent=false)
         {
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
             var keys = _originalCharFormat.Keys;
@@ -606,7 +615,8 @@ namespace Dash
                 xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
-            UpdateDocumentFromXaml();
+            if (!silent)
+                UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
         }
 

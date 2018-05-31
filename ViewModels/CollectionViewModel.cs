@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
-
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
@@ -499,7 +498,7 @@ namespace Dash
 
             return showField;
         }
-
+       
         public async void Paste(DataPackageView dvp, Point where)
         {
             if (dvp.Contains(StandardDataFormats.StorageItems))
@@ -510,6 +509,38 @@ namespace Dash
             else if (dvp.Contains(StandardDataFormats.Bitmap))
             {
                 PasteBitmap(dvp, where);
+            }
+            else if (dvp.Contains(StandardDataFormats.Rtf))
+            {
+                var text = await dvp.GetRtfAsync();
+                if (text != "")
+                {
+                    var postitNote = new RichTextNote(text: "hello", size: new Size(300, double.NaN)).Document;
+                    postitNote.GetDataDocument().SetField(KeyStore.DataKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                    Actions.DisplayDocument(this, postitNote, where);
+                }
+            }
+            else if (dvp.Contains(StandardDataFormats.Html) && false)
+            { //Create an instance for word app
+                //Microsoft.Office.Interop.Word.Application winword = new Microsoft.Office.Interop.Word.Application();
+
+                ////Set animation status for word application
+                //winword.ShowAnimation = false;
+
+                ////Set status for word application is to be visible or not.
+                //winword.Visible = false;
+
+                ////Create a missing variable for missing value
+                //object missing = System.Reflection.Missing.Value;
+
+                ////Create a new document
+                //Microsoft.Office.Interop.Word.Document document = winword.Documents.Add(ref missing, ref missing, ref missing, ref missing);
+                //document.Content.Paste();
+                //document.Content.Select();
+                //var dvp2 = Clipboard.GetContent();
+                //if (dvp2.Contains(StandardDataFormats.Rtf))
+                //{
+                //}
             }
             else if (dvp.Contains(StandardDataFormats.Text))
             {
