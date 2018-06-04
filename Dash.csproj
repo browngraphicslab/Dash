@@ -366,6 +366,7 @@
     <Compile Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml.cs">
       <DependentUpon>CollectionSubtoolbar.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\ICommandBarBased.cs" />
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>

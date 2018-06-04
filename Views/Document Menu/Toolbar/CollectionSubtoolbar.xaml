@@ -11,7 +11,7 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar>
+        <CommandBar x:Name="xCollectionCommandbar" IsSticky="True">
             <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
         </CommandBar>
             <ComboBox x:Name="xViewModesDropdown" SelectedIndex="1" SelectedValue="View Modes" Width="200" Margin="8" SelectionChanged="ViewModesDropdown_OnSelectionChanged">

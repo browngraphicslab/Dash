@@ -22,16 +22,17 @@
                 <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
                 <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"/>
 
-                <AppBarSeparator x:Name="xSepTwo"/>
+                <AppBarSeparator x:Name="xSepOne"/>
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
                 <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
                 <AppBarButton x:Name="xAddImage" Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
                 <AppBarButton x:Name="xAddVideo" Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
-                <AppBarSeparator x:Name="xSepThree"/>
+                <AppBarSeparator x:Name="xSepTwo"/>
                 <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy" />
                 <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete" />
 
             </ctrl:CommandBar>
+            <Rectangle x:Name="xPadding" Opacity="0" Width="300" Height="11"/>
             <StackPanel Margin="0,12,0,0">
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />
                 <dash:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar" />

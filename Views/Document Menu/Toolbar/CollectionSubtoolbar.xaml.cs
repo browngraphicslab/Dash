@@ -13,16 +13,18 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Views.Document_Menu.Toolbar;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash {
 
-    public sealed partial class CollectionSubtoolbar : UserControl
+    public sealed partial class CollectionSubtoolbar : UserControl, ICommandBarBased
     {
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
+            xCollectionCommandbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
         }
 
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
@@ -62,6 +64,11 @@ namespace Dash {
                     Debug.WriteLine("Timeline View selected");
                     break;
             }
+        }
+
+        public CommandBar GetCommandBar()
+        {
+            return xCollectionCommandbar;
         }
     }
 }

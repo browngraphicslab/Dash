@@ -10,9 +10,9 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar x:Name="xImageCommandbar">
+        <CommandBar x:Name="xImageCommandbar" IsSticky="True">
             <CommandBar.Content>
-                <ComboBox x:Name="SizeCombo" SelectedIndex="0" Margin="10" Height="35" Width="150" RenderTransformOrigin="0.622,1.119">
+                <ComboBox x:Name="SizeCombo" SelectedIndex="0" Margin="13" Height="35" Width="150" RenderTransformOrigin="0.622,1.119">
                     <ComboBoxItem Content="Scale to Size"/>
                     <ComboBoxItem Content="Stretch"/>
                     <ComboBoxItem Content="Clipped"/>
