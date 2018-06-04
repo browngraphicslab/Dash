@@ -234,6 +234,13 @@ namespace Dash
                     var x = pt1.Data.X;
                     var y = pt1.Data.Y;
 
+                    var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+                    var width = 0;
+                    if (rawWidth != "NaN")
+                    {
+                        width = Int32.Parse(doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString());
+                    }
+
                     if (x < minX)
                     {
                         minX = x;
@@ -243,9 +250,9 @@ namespace Dash
                         minY = y;
                     }
 
-                    if (x > maxX)
+                    if (x + width > maxX)
                     {
-                        maxX = x;
+                        maxX = x + width;
                     }
                     if (y > maxY)
                     {
@@ -255,10 +262,11 @@ namespace Dash
             }
 
             var minMax = new List<double>();
-            minMax.Add(minX);
+            //add numbers for margins
+            minMax.Add(minX - (minX * .1));
             minMax.Add(maxX);
-            minMax.Add(minY);
-            minMax.Add(maxY);
+            minMax.Add(minY - (minY * .1));
+            minMax.Add(maxY + (maxY * .2));
             return minMax;
         }
 
