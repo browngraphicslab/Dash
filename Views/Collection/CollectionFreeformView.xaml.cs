@@ -70,11 +70,7 @@ namespace Dash
             };
             Unloaded += (sender, e) =>
             {
-                if (ViewModel != null)
-                {
-                    ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-                }
-
+                if (ViewModel != null) ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 _lastViewModel?.Loaded(false);
                 _lastViewModel = null;
             };
@@ -301,7 +297,10 @@ namespace Dash
                         return currentScale;
                     }
 
+                    if (ViewModel == null) return;
+
                     var transformation = ViewModel.TransformGroup;
+
                     // calculate the translate delta
                     var translateDelta = new TranslateTransform
                     {
@@ -596,7 +595,6 @@ namespace Dash
         {
             if (XInkCanvas.IsTopmost())
             {
-                DeselectAll();
                 _isMarqueeActive = false;
                 RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
@@ -631,8 +629,13 @@ namespace Dash
             _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
+            MainPage.Instance.DeselectAllDocuments();
         }
         
+        /// <summary>
+        /// Selects all of the documents in selected.
+        /// </summary>
+        /// <param name="selected"></param>
         public void SelectDocs(IEnumerable<DocumentView> selected)
         {
             SelectionCanvas.Children.Clear();
@@ -643,6 +646,8 @@ namespace Dash
             {
                 doc.SetSelectionBorder(true);
             }
+
+            MainPage.Instance.SelectDocuments(selected);
         }
 
         #endregion

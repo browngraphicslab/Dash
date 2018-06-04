@@ -1,0 +1,27 @@
+﻿<UserControl
+    x:Class="Dash.CollectionSubtoolbar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Windows.UI.Xaml.Controls"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <CommandBar>
+            <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
+        </CommandBar>
+            <ComboBox x:Name="xViewModesDropdown" SelectedIndex="1" SelectedValue="View Modes" Width="200" Margin="8" SelectionChanged="ViewModesDropdown_OnSelectionChanged">
+                <ComboBoxItem Content="Freeform"/>
+                <ComboBoxItem Content="Grid" />
+                <ComboBoxItem Content="Page"/>
+                <ComboBoxItem Content="Database"/>
+                <ComboBoxItem Content="Schema"/>
+                <ComboBoxItem Content="Tree"/>
+                <ComboBoxItem Content="Timeline"/>
+            </ComboBox>
+    </Grid>
+</UserControl>

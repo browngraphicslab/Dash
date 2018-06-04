@@ -17,6 +17,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views.Document_Menu;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -33,8 +34,24 @@ namespace Dash
         public BrowserView          WebContext => BrowserView.Current;
         public DocumentController   MainDocument { get; private set; }
         public DocumentView         MainDocView { get { return xMainDocView; } set { xMainDocView = value; } }
+        
+        // relating to system wide selected items
+        public DocumentView xMapDocumentView;
+        private  IEnumerable<DocumentView> SelectedDocuments; // currently selected documents
+        private MenuToolbar Toolbar;
+        public void DeselectAllDocuments()
+        {
+            SelectedDocuments = new List<DocumentView>();
+            Toolbar.Update(SelectedDocuments);
+        }
+        public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
+        public void SelectDocuments(IEnumerable<DocumentView> docs)
+        {
+            SelectedDocuments = docs;
+            Toolbar.Update(docs);
+        }
 
-        public DocumentView         xMapDocumentView;
+    public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()
         {
@@ -69,6 +86,9 @@ namespace Dash
             xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
+
+            Toolbar = new MenuToolbar(xCanvas);
+
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -134,6 +154,11 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
+        /// <summary>
+        /// Updates the workspace currently displayed on the canvas.
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <returns></returns>
         public bool SetCurrentWorkspace(DocumentController workspace)
         {
             //prevents us from trying to enter the main document.  Can remove this for further extensibility but it doesn't work yet
@@ -175,6 +200,12 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Given a Workspace document (collection freeform), displays the workspace on the main canvas
+        /// and centers on a specific document.
+        /// </summary>
+        /// <param name="workspace"></param>
+        /// <param name="document"></param>
         public void SetCurrentWorkspaceAndNavigateToDocument(DocumentController workspace, DocumentController document)
         {
             RoutedEventHandler handler = null;
@@ -246,6 +277,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Centers the main canvas view to a given document.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
         public bool NavigateToDocumentInWorkspace(DocumentController document)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
@@ -507,6 +543,12 @@ namespace Dash
         {
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
+        }
+
+        //@Main toolbar
+        private void AddCustomButtons()
+        {
+
         }
     }
 }

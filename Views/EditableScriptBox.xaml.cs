@@ -46,6 +46,8 @@ namespace Dash
         public EditableScriptBox()
         {
             this.InitializeComponent();
+
+            
         }
 
         private void XTextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -93,6 +95,7 @@ namespace Dash
 
         private string GetExpression()
         {
+            if (ViewModel.Context == null) return null;
             return ViewModel?.Reference.Dereference(ViewModel.Context)?.GetValue(ViewModel.Context)?.ToString();
         }
 
@@ -120,7 +123,7 @@ namespace Dash
             xBackground.Height = 120;
             xBackground.VerticalAlignment = VerticalAlignment.Top;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Expand_Value(this);
+            kvp?.Expand_Value(this);
         }
 
         public void CollapseBox()
@@ -128,7 +131,7 @@ namespace Dash
             xBackground.Height = 60;
             xBackground.VerticalAlignment = VerticalAlignment.Center;
             var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp.Collapse_Value(this);
+            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

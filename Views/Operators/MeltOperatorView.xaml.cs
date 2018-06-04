@@ -77,7 +77,7 @@ namespace Dash
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             // get all the headers from a collection
             var collection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-            var typedHeaders = Util.GetTypedHeaders(collection);
+            var typedHeaders = Util.GetDisplayableTypedHeaders(collection);
 
             // reset all the headers
             InputHeaders.Clear();

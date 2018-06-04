@@ -192,6 +192,7 @@
     <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
+    <Compile Include="Converters\DocumentAndKeyToEditableScriptBoxConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
@@ -331,6 +332,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionDBSchemaColumn.xaml.cs">
+      <DependentUpon>CollectionDBSchemaColumn.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -352,6 +356,18 @@
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
+      <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml.cs">
+      <DependentUpon>CollectionSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
+      <DependentUpon>MenuToolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
+      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
@@ -802,6 +818,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\Collection\CollectionDBSchemaColumn.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Collection\CollectionTimelineView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -827,6 +847,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
