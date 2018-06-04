@@ -42,6 +42,7 @@ namespace Dash
         private double PAGEHEIGHT = 900.0;
 
         private int imgCount = 0;
+        private int vidCount = 0;
 
 
         public async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
@@ -65,6 +66,7 @@ namespace Dash
 
                 //create folders to save media - images, videos, etc
                 await folder.CreateFolderAsync("imgs", CreationCollisionOption.ReplaceExisting);
+                await folder.CreateFolderAsync("vids", CreationCollisionOption.ReplaceExisting);
 
                 //save names of all collections for linking pruposes
                 List<String> colNames = new List<string>();
@@ -132,12 +134,7 @@ namespace Dash
                 var dataDocs = collection.GetDataDocument()
                     .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
 
-                //create a list of key value pairs that link each doc to its point
-                // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
-
                 OrderElements(dataDocs);
-
-                Debug.WriteLine("data " + dataDocs);
 
                 var minMax = BorderVal(dataDocs);
 
@@ -330,12 +327,12 @@ namespace Dash
             var uriRaw = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null);
             if (uriRaw != null)
             {
-                var olduri = uriRaw.Data.ToString();
+                var olduri = uriRaw.ToString();
                 
                 //create image with unique title
                 var imgTitle = "img" + imgCount;
                 imgCount++;
-                CreateImage(olduri, imgTitle);
+                CopyFile(olduri, imgTitle, "vids");
 
                 var uri = "imgs\\" + imgTitle;
 
@@ -357,18 +354,35 @@ namespace Dash
         private string VideoToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
-            var uri = doc.GetDereferencedField(KeyStore.DataKey, null).ToString();
+            var uriRaw = doc.GetDereferencedField(KeyStore.DataKey, null);
+            if (uriRaw != null)
+            {
+                var olduri = uriRaw.ToString();
+                
+                //create image with unique title
+                var vidTitle = "vid" + vidCount;
+                vidCount++;
+                CopyFile(olduri, vidTitle, "vids");
 
-            //get image width and height
-            var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+                var uri = "vids\\" + vidTitle; 
 
-            var margins = getMargin(doc, minMax);
 
-            //return uri with HTML video formatting
-            return "<video width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
-                   "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 1; \" controls>" +
-                   "<source src=\"" + uri + "\" >" +
-                   "Your browser does not support the video tag. </ video >";
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML video formatting
+                return "<video width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
+                       "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] +
+                       "px;  z-index: 1; \" controls>" +
+                       "<source src=\"" + uri + "\" >" +
+                       "Your browser does not support the video tag. </ video >";
+            }
+            else
+            {
+                return "";
+            }
         }
 
         private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
@@ -559,23 +573,23 @@ namespace Dash
             }
         }
 
-        private async void CreateImage(string rawUrl, string title)
+        private async void CopyFile(string rawUrl, string title, string type)
         {
-            //need to save locally
             if (folder != null)
             {
                 
                 StorageFolder localFolder =
                     Windows.Storage.ApplicationData.Current.LocalFolder;
-                int pathLength = localFolder.Path.Length + 9;
+                int pathLength = localFolder.Path.Length + 3;
 
+                //get path without local folder
                 string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
 
                 
                 StorageFile imgFile = await localFolder.GetFileAsync(url);
+                StorageFolder imgFolder = await folder.GetFolderAsync(type);
 
-                StorageFolder imgFolder = await folder.GetFolderAsync("imgs");
-
+                //copy imgFile from rawUrl to type folder in export folder
                 await imgFile.CopyAsync(imgFolder, title);
             }
         }
