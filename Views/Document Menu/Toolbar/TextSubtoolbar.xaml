@@ -8,22 +8,47 @@
     mc:Ignorable="d"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
-    xmlns:common="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons.Common"
+    xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
     xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
+
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
-       
+       <!-- <ColorPicker x:Name="highColorPicker"
+                     ColorSpectrumShape="Ring"
+                     IsColorPreviewVisible="True"
+                     IsColorChannelTextInputVisible="False"
+                     IsHexInputVisible="False"/>
+
+        <Rectangle Height="50" Width="50">
+            <Rectangle.Fill>
+                <SolidColorBrush Color="{x:Bind highColorPicker.Color, Mode=OneWay}"/>
+            </Rectangle.Fill>
+        </Rectangle>
+-->
         <controls:TextToolbar
+            
             x:Name="xDashTextSubtoolbar"
-            Visibility="Visible">
+            Visibility="Visible"
+            Background="LightGray"
+            >
             <!--remove Link button from default text toolbar-->
             <controls:TextToolbar.ButtonModifications>
                 <buttons:DefaultButton Type="Link" IsVisible="False"/>
             </controls:TextToolbar.ButtonModifications>
+            
+            <!-- Add highlight button 
+            <controls:TextToolbar.CustomButtons>
+                <buttons:ToolbarButton
+                    Name="Highlight"
+                    Icon="Highlight"
+                    Position="1"  />
+            </controls:TextToolbar.CustomButtons>
+            -->
+            
         </controls:TextToolbar>
-        
+
 
     </Grid>
 </UserControl>

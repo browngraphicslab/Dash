@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using CsvHelper.Configuration.Attributes;
 using Dash.Views.Document_Menu.Toolbar;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -95,7 +96,8 @@ namespace Dash
             allSeparators = tempSeparators;
 
             this.SetUpBaseMenu();
-        }
+			//this.RotateToolbar();
+		}
 
         // == METHODS ==
         /// <summary>
@@ -139,74 +141,78 @@ namespace Dash
         /// <param name="docs"></param>
         public void Update(IEnumerable<DocumentView> docs)
         {
-            Debug.WriteLine("");
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
-            toggleSelectOptions(docs.Count() > 0);
-
-            // just single select
-            if (docs.Count() == 1)
+            if (state == State.Expanded)
             {
-                var selection = docs.First();
+                Debug.WriteLine("");
+                if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
+                toggleSelectOptions(docs.Count() > 0);
 
-                // Text controls
-                var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
-                if (text != null)
+                // just single select
+                if (docs.Count() == 1)
                 {
-                    xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-                    subtoolbarElement = xTextToolbar;
-                }
+                    var selection = docs.First();
 
-                // Image controls
-                var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(selection);
-                if (image != null)
-                {
-                    subtoolbarElement = xImageToolbar;
-                    xImageToolbar.SetImageBinding(selection);
-                }
-
-                // Collection controls  
-                var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                if (col != null)
-                {
-                    CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                    subtoolbarElement = xCollectionToolbar;
-                }
-                //If the user has clicked on valid content (text, image, video, etc)...
-                if (subtoolbarElement != null)
-                {
-                    xToolbar.IsOpen = false;
-                    //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
-                    if (subtoolbarElement is ICommandBarBased toOpen)
+                    // Text controls
+                    var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
+                    if (text != null)
                     {
-                        toOpen.GetCommandBar().IsOpen = true;
-                        //Displays padding in stack panel only if the menu isn't collapsed
-                        if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
+                        xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                        xTextToolbar.SetCurrTextBox(text);
+                        subtoolbarElement = xTextToolbar;
+                    }
+
+                    // Image controls
+                    var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(selection);
+                    if (image != null)
+                    {
+                        subtoolbarElement = xImageToolbar;
+                        xImageToolbar.SetImageBinding(selection);
+                    }
+
+                    // Collection controls  
+                    var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                    if (col != null)
+                    {
+                        CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                        subtoolbarElement = xCollectionToolbar;
+                    }
+                    //If the user has clicked on valid content (text, image, video, etc)...
+                    if (subtoolbarElement != null)
+                    {
+                        xToolbar.IsOpen = false;
+                        //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
+                        if (subtoolbarElement is ICommandBarBased toOpen)
+                        {
+                            toOpen.GetCommandBar().IsOpen = true;
+                            //Displays padding in stack panel only if the menu isn't collapsed
+                            if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
+                        }
+                        else
+                        {
+                            //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                            xPadding.Visibility = Visibility.Collapsed;
+                        }
                     }
                     else
                     {
-                        //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
-                        xPadding.Visibility = Visibility.Collapsed;
+                        //If nothing is selected, open/label the main menu toolbar
+                        if (state == State.Expanded) xToolbar.IsOpen = true;
                     }
+                }
+                else if (docs.Count<DocumentView>() > 1)
+                {
+                    // TODO: multi select
                 }
                 else
                 {
-                    //If nothing is selected, open/label the main menu toolbar
-                    if (state == State.Expanded) xToolbar.IsOpen = true;
+                    subtoolbarElement = null;
                 }
-            }
-            else if (docs.Count<DocumentView>() > 1)
-            {
-                // TODO: multi select
-            }
-            else
-            {
-                subtoolbarElement = null;
-            }
 
-            //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
-            if (subtoolbarElement != null && state == State.Expanded)
-            {
-                subtoolbarElement.Visibility = Visibility.Visible;
+                //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
+                if (subtoolbarElement != null && state == State.Expanded)
+                {
+                    subtoolbarElement.Visibility = Visibility.Visible;
+                }
             }
         }
 
@@ -350,6 +356,7 @@ namespace Dash
                 xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
                 xCollapse.Label = "";
                 ToggleVisibility(Visibility.Collapsed);
+                subtoolbarElement = null;
             }
         }
 
@@ -370,12 +377,18 @@ namespace Dash
             foreach (var b in allButtons) { b.Visibility = status; }
             foreach (var s in allSeparators) { s.Visibility = status; }
 
-            xPadding.Visibility = status;
+            xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement == xTextToolbar) ? Visibility.Collapsed : Visibility.Visible) : status;
             if (subtoolbarElement != null)
             {
                 subtoolbarElement.Visibility = status;
             }
         }
+
+	    private void RotateToolbar()
+	    {
+		    //xStackPanel.RenderTransform.TryTransform();
+			xStackPanel.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
+	    }
     }
 
 }

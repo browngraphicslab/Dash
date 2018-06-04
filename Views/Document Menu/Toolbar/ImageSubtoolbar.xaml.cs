@@ -81,16 +81,7 @@ namespace Dash
              //   temp.SetSource(stream);
              //   var replaced = new Image {Source = temp};
 
-                var parser = new ImageToDashUtil();
-	            var replacementDoc = await parser.ParseFileAsync(replacement);
-	            if (replacementDoc != null)
-	            {
-	                var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    mainPageCollectionView.ViewModel.RemoveDocument(currentDocControl);
-	                replacementDoc.GetPositionField().Data = currentDocControl.GetPositionField().Data;
-	                mainPageCollectionView.ViewModel.AddDocument(replacementDoc, null);
-	                currentDocView.ViewModel.DocumentController = replacementDoc;
-	            }
+	            currentDocControl.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true);
             }
 	    }
 

@@ -341,7 +341,7 @@ namespace Dash
                         xRichEditBox.Document.Redo();
                         break;
                     case VirtualKey.H:
-                        this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
+                        this.Highlight(Colors.Yellow, true); // using RichTextFormattingHelper extenions
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
