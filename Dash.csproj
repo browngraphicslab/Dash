@@ -151,6 +151,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -198,6 +199,7 @@
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
+    <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
@@ -223,6 +225,7 @@
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
+    <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
@@ -282,10 +285,12 @@
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
@@ -364,6 +369,9 @@
     <Compile Include="Browser\BrowserView.cs" />
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DockedView.xaml.cs">
+      <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -831,6 +839,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DockedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>    
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

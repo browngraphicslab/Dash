@@ -232,7 +232,6 @@ namespace Dash
                 composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
-
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }

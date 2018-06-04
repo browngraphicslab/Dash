@@ -315,6 +315,51 @@ namespace Dash
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
+        public void TransformDelta(Point moveTo)
+        {
+            var scaleAmount = new Point(ViewModel.InteractiveManipulationScale.X, ViewModel.InteractiveManipulationScale.Y);
+
+            ViewModel.InteractiveManipulationPosition = moveTo;
+            RenderTransform =
+                TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> {moveTo, scaleAmount});
+        }
+        
+        /// <summary>
+        /// Handles keypress events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            if (!this.IsF1Pressed())
+                ShowLocalContext(false);
+        }
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (this.IsF1Pressed() && this.IsPointerOver())
+            {
+                ShowLocalContext(true);
+            }
+            if (this.IsF2Pressed() && this.IsPointerOver())
+            {
+                ShowSelectedContext();
+            }
+            
+            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
+                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
+                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
+                var focused = docView == this;
+
+                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                {
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        HandleShiftEnter();
+                }
+            }
+        }
+
         public void ShowLocalContext(bool showContext)
         {
             if (ViewModel == null)
@@ -714,13 +759,14 @@ namespace Dash
         }
 
         #region UtilityFuncions
-        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+
+        public CollectionView GetCollectionToMoveTo(List<DocumentView> overlappedViews)
         {
             var selectedDocs = SelectedDocuments();
-
             var collection = this.GetFirstAncestorOfType<CollectionView>();
+
             if (collection == null || ViewModel == null || selectedDocs == null)
-                return false;
+                return null;
 
             foreach (var nestedDocument in overlappedViews)
             {
@@ -729,23 +775,38 @@ namespace Dash
                 {
                     if (!nestedCollection.Equals(collection))
                     {
-                        foreach (var selDoc in selectedDocs)
-                        {
-                            var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
-                                new Point();
-                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
-                            collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-
-                        }
-                        return true;
+                        return nestedCollection;
                     }
-                    else break;
                 }
             }
-            return false;
+
+            return null;
         }
+
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+        {
+            var selectedDocs = SelectedDocuments();
+
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            var nestedCollection = GetCollectionToMoveTo(overlappedViews);
+
+            if (nestedCollection == null)
+            {
+                return false;
+            }
+            
+            foreach (var selDoc in selectedDocs)
+            {
+                var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                    new Point();
+                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+                collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+            }
+            return true;
+        }
+
         public void HandleShiftEnter()
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();

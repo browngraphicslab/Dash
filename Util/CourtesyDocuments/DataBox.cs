@@ -43,6 +43,10 @@ namespace Dash
 			{
 				return VideoBox.MakeView(documentController, context);
 			}
+            else if (data is AudioController)
+            {
+                return AudioBox.MakeView(documentController, context);
+            }
             else if (data is ListController<DocumentController> docList)
             {
                 return CollectionBox.MakeView(documentController, context);
