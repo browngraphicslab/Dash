@@ -30,24 +30,35 @@ namespace Dash
 {
     //Windows.Storage.ApplicationData.Current.LocalFolder;
 
-    public static class ExportToTxt
+    public class ExportToTxt
     {
-        private static StorageFolder folder;
-        private static List<String> UsedUrlNames = new List<string>();
+        private StorageFolder folder;
+        private List<String> UsedUrlNames = new List<string>();
 
         //define the max width and height coordinates in html and dash for conversion
-        private static double PAGEWIDTH = 900.0;
-        private static double PAGEHEIGHT = 900.0;
+        private double PAGEWIDTH = 900.0;
+        private double PAGEHEIGHT = 900.0;
 
 
-        public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
+        public async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
 
             //allow the user to pick a folder to save all the files
-            folder = await PickFolder();
+            StorageFolder outerFolder = await PickFolder();
 
-            if (folder != null)
+            if (outerFolder != null)
             {
+                // Get the current date in good string format for file name
+                DateTime thisDay = DateTime.Now;
+                var dayR = thisDay.Date.ToString();
+                string day = dayR.Split(' ')[0].Replace('/', '.');
+                string timeR = thisDay.TimeOfDay.ToString();
+                string time = timeR.Split('.')[0].Replace(':', '.');
+                string daytimeString = "export_" + day + "_" + time;
+
+                //create a folder inside selected folder to save this export
+                folder = await outerFolder.CreateFolderAsync(daytimeString, CreationCollisionOption.ReplaceExisting);
+
                 //save names of all collections for linking pruposes
                 List<String> colNames = new List<string>();
 
@@ -56,8 +67,16 @@ namespace Dash
                 {
                     //CollectionToTxt returns the content that must be added to a file
                     var colContent = await CollectionContent(collectionDoc);
-                    string colTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
-                        .ToString();
+                    FieldControllerBase rawTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null);
+                    string colTitle;
+                    if (rawTitle == null)
+                    {
+                        colTitle = "Untitled";
+                    }
+                    else
+                    {
+                        colTitle = rawTitle.ToString();
+                    }
 
                     //make sure there isn't already reference to colTitle
                     int count = 1;
@@ -96,7 +115,7 @@ namespace Dash
             }
         }
 
-        public static async Task<List<string>> CollectionContent(DocumentController collection)
+        public async Task<List<string>> CollectionContent(DocumentController collection)
         {
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
@@ -110,6 +129,8 @@ namespace Dash
                 // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
 
                 OrderElements(dataDocs);
+
+                Debug.WriteLine("data " + dataDocs);
 
                 var minMax = BorderVal(dataDocs);
 
@@ -165,7 +186,7 @@ namespace Dash
             }  
         }
 
-        private static void OrderElements(List<DocumentController> docs)
+        private void OrderElements(List<DocumentController> docs)
         {
             // This shows calling the Sort(Comparison(T) overload using 
             // an anonymous method for the Comparison delegate. 
@@ -194,7 +215,7 @@ namespace Dash
             });
         }
 
-        private static List<double> BorderVal(List<DocumentController> docs)
+        private List<double> BorderVal(List<DocumentController> docs)
         {
             double minX = Double.PositiveInfinity;
             double maxX = Double.NegativeInfinity;
@@ -239,7 +260,7 @@ namespace Dash
             return minMax;
         }
 
-        private static List<double> getMargin(DocumentController doc, List<double> minMax)
+        private List<double> getMargin(DocumentController doc, List<double> minMax)
         {
             var marginLeft = 0.0;
             var marginRight = 0.0;
@@ -270,7 +291,7 @@ namespace Dash
             return margins;
         }
 
-        private static double dashToHtml(double val, List<double> minMax)
+        private double dashToHtml(double val, List<double> minMax)
         {
             var min = minMax[0];
             var max = minMax[1];
@@ -280,7 +301,7 @@ namespace Dash
         }
 
 
-        private static string TextToTxt(DocumentController doc, List<double> minMax)
+        private string TextToTxt(DocumentController doc, List<double> minMax)
         {
             var rawText = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null);
             if (rawText != null)
@@ -296,7 +317,7 @@ namespace Dash
             }
         }
 
-        private static string ImageToTxt(DocumentController doc, List<double> minMax)
+        private string ImageToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
             var uriRaw = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null);
@@ -318,7 +339,7 @@ namespace Dash
             }
         }
 
-        private static string VideoToTxt(DocumentController doc, List<double> minMax)
+        private string VideoToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
             var uri = doc.GetDereferencedField(KeyStore.DataKey, null).ToString();
@@ -335,7 +356,7 @@ namespace Dash
                    "Your browser does not support the video tag. </ video >";
         }
 
-        private static async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
+        private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
             //get text that must be added to file for this collection
             var colText = await CollectionContent(col);
@@ -420,7 +441,7 @@ namespace Dash
                    "<div style=\"width: "+ colWidth + "px; border: 1px solid black; \">" + "<img style=\"width: 100%;\" src=\"" + colTitle + ".png\"/>" + "</div></a>";
         }
         
-        private static string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
+        private string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
             // get shape of box
@@ -455,7 +476,7 @@ namespace Dash
             return text;
         }
 
-        private static string KeyValToTxt(DocumentController doc, List<double> minMax)
+        private string KeyValToTxt(DocumentController doc, List<double> minMax)
         {
             //make table with document fields
             var margins = getMargin(doc, minMax);
@@ -472,7 +493,7 @@ namespace Dash
             return text + "</table>";
         }
 
-        private static async Task<StorageFolder> PickFolder()
+        private async Task<StorageFolder> PickFolder()
         {
             StorageFolder stFolder;
             if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
@@ -500,7 +521,7 @@ namespace Dash
         }
 
 
-        private static async void CreateFile(List<string> text, string title)
+        private async void CreateFile(List<string> text, string title)
         {
             if (folder != null)
             {
@@ -523,7 +544,7 @@ namespace Dash
             }
         }
 
-        private static async void CreateImage(string url, string title)
+        private async void CreateImage(string url, string title)
         {
             if (folder != null)
             {
@@ -546,10 +567,11 @@ namespace Dash
         }
 
 
-        private static async void CreateIndex(List<string> subCollections, String name)
+        private async void CreateIndex(List<string> subCollections, String name)
         {
             List<String> htmlContent = new List<string>();
-            htmlContent.Add("<center><h1 style=\"font-size: 70px;\">" + name + "</h1></center><br>");
+            htmlContent.Add("<center><h1 style=\"font-size: 70px; margin-bottom: -30px;\">Dash</h1></center><br>");
+            htmlContent.Add("<center><h2>" + name + "</h2></center><br>");
             foreach (var colName in subCollections)
             {
                 //make link to this collection
