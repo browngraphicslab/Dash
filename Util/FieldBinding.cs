@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
@@ -43,6 +44,11 @@ namespace Dash
 
         public IValueConverter Converter;
         public object ConverterParameter;
+
+        public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
+        {
+            Tag = "Binding set at line " + lineNumber + " from " + caller + " in file " + path;
+        }
 
         //Debug stuff
         //Tag that can be set on a binding that will be printed if the binding fails
@@ -153,7 +159,13 @@ namespace Dash
         }
     }
 
-    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase { }
+    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase
+    {
+        public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "",
+            [CallerFilePath] string path = "") : base(lineNumber, caller, path)
+        {
+        }
+    }
 
     public static class BindingExtension
     {
