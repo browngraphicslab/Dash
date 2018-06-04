@@ -22,7 +22,8 @@ namespace Dash
         Json,
         Csv,
         Pdf,
-        Text
+        Text,
+        Audio
     }
 
     /// <summary>
@@ -150,7 +151,9 @@ namespace Dash
                     return await new ImageToDashUtil().ParseFileAsync(fileData, dataView);
 				case FileType.Video:
 					return await new VideoToDashUtil().ParseFileAsync(fileData, dataView);
-				case FileType.Web:
+                case FileType.Audio:
+                    return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
+                case FileType.Web:
                     var link = await dataView.GetWebLinkAsync();
                     return new HtmlNote(link.AbsoluteUri, where: where).Document;
                 case FileType.Pdf:
@@ -226,9 +229,10 @@ namespace Dash
                 return FileType.Image;
 			if (filepath.EndsWith(".mp4") ||
 				filepath.EndsWith(".avi") ||
-				filepath.EndsWith(".mov") ||
-				filepath.EndsWith(".mp3"))
-				return FileType.Video;
+				filepath.EndsWith(".mov"))
+                return FileType.Video;
+            if (filepath.EndsWith(".mp3"))
+                return FileType.Audio;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;
 
