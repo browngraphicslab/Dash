@@ -158,7 +158,7 @@ namespace Dash
                         case "Video Box":
                             newText = VideoToTxt(doc, minMax);
                             break;
-                        case "Background Box":
+                        case "Background Shape":
                             newText = BackgroundShapeToTxt(doc, minMax);
                             break; 
                         case "Collection Box":
@@ -168,7 +168,7 @@ namespace Dash
                             newText = KeyValToTxt(doc, minMax);
                             break;
                         default:
-                            newText = null;
+                            newText = "";
                             break;
                     }
 
@@ -235,11 +235,11 @@ namespace Dash
                     var y = pt1.Data.Y;
 
                     var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
-                    var width = 0;
+                    var width = 0;/*
                     if (rawWidth != "NaN")
                     {
-                        width = Int32.Parse(doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString());
-                    }
+                        width = Int32.Parse(rawWidth);
+                    }*/
 
                     if (x < minX)
                     {
@@ -480,8 +480,14 @@ namespace Dash
         {
             var text = "";
             // get shape of box
-            var shape = doc.GetDereferencedField(KeyStore.AdornmentShapeKey, null).ToString();
-            var colorC = doc.GetDereferencedField(KeyStore.BackgroundColorKey, null).ToString();
+
+            //TODO: Identify shape of object
+            var shape = "Rectangular";
+
+            //var shape = doc.GetDereferencedField(KeyStore.AdornmentShapeKey, null).ToString();
+            var colorC = doc.GetDereferencedField(KeyStore.DocumentContextKey, null).ToString();
+
+
             //convert color to colro code used by html
             var color = "#" + colorC.Substring(3, 6) + colorC.Substring(1, 2);
             var width = doc.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString();
