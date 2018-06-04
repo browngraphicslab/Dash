@@ -3,6 +3,7 @@ using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -275,11 +276,14 @@ namespace Dash
             XTextBlock.Visibility = Visibility.Visible;
         }
 
+
         private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
+            //finish rename on enter
             if (e.Key == VirtualKey.Enter)
             {
-                XTextBlock.Focus(FocusState.Programmatic);
+                xBorder.Visibility = Visibility.Collapsed;
+                XTextBlock.Visibility = Visibility.Visible;
             }
         }
 
