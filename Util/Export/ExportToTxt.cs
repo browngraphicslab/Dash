@@ -15,11 +15,13 @@ using System.Xml.Schema;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
 using DashShared;
@@ -38,6 +40,8 @@ namespace Dash
         //define the max width and height coordinates in html and dash for conversion
         private double PAGEWIDTH = 900.0;
         private double PAGEHEIGHT = 900.0;
+
+        private int imgCount = 0;
 
 
         public async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
@@ -58,6 +62,9 @@ namespace Dash
 
                 //create a folder inside selected folder to save this export
                 folder = await outerFolder.CreateFolderAsync(daytimeString, CreationCollisionOption.ReplaceExisting);
+
+                //create folders to save media - images, videos, etc
+                await folder.CreateFolderAsync("imgs", CreationCollisionOption.ReplaceExisting);
 
                 //save names of all collections for linking pruposes
                 List<String> colNames = new List<string>();
@@ -323,7 +330,15 @@ namespace Dash
             var uriRaw = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null);
             if (uriRaw != null)
             {
-                var uri = uriRaw.Data.ToString();
+                var olduri = uriRaw.Data.ToString();
+                
+                //create image with unique title
+                var imgTitle = "img" + imgCount;
+                imgCount++;
+                CreateImage(olduri, imgTitle);
+
+                var uri = folder.Path + "\\imgs\\" + imgTitle;
+
                 //get image width and height
                 var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
 
@@ -544,26 +559,24 @@ namespace Dash
             }
         }
 
-        private async void CreateImage(string url, string title)
+        private async void CreateImage(string rawUrl, string title)
         {
             //need to save locally
             if (folder != null)
             {
-                var filename = title + ".img";
-                var file = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
+                
+                StorageFolder localFolder =
+                    Windows.Storage.ApplicationData.Current.LocalFolder;
+                int pathLength = localFolder.Path.Length + 9;
 
-                HttpClient client = new HttpClient();
+                string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
 
-                byte[] responseBytes = await client.GetByteArrayAsync(url);
-                var stream = await file.OpenAsync(FileAccessMode.ReadWrite);
+                
+                StorageFile imgFile = await localFolder.GetFileAsync(url);
 
-                using (var outputStream = stream.GetOutputStreamAt(0))
-                {
-                    DataWriter writer = new DataWriter(outputStream);
-                    writer.WriteBytes(responseBytes);
-                    writer.StoreAsync();
-                    outputStream.FlushAsync();
-                }
+                StorageFolder imgFolder = await folder.GetFolderAsync("imgs");
+
+                await imgFile.CopyAsync(imgFolder, title);
             }
         }
 
