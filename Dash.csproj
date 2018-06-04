@@ -151,6 +151,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -198,6 +199,7 @@
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
+    <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
