@@ -337,7 +337,7 @@ namespace Dash
                 imgCount++;
                 CreateImage(olduri, imgTitle);
 
-                var uri = folder.Path + "\\imgs\\" + imgTitle;
+                var uri = "imgs\\" + imgTitle;
 
                 //get image width and height
                 var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
