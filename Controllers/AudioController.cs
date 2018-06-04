@@ -86,7 +86,7 @@ namespace Dash
 
         public override FieldControllerBase Copy()
         {
-            return new VideoController(AudioFieldModel.Data);
+            return new AudioController(AudioFieldModel.Data);
         }
     }
 }
