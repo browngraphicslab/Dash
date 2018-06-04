@@ -11,7 +11,7 @@
     Drop="UserControl_Drop"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    DataContextChanged="EditableScriptView_OnDataContextChanged">
+    DataContextChanged="EditableScriptView_OnDataContextChanged" d:DataContext="{d:DesignInstance local:EditableScriptViewModel }">
 
     <Grid x:Name="xBackground" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid x:Name="xDataBoxContainer" DoubleTapped="XTextBlock_DoubleTapped" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
