@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 
@@ -44,6 +45,11 @@ namespace Dash
         public IValueConverter Converter;
         public object ConverterParameter;
 
+        public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "", [CallerFilePath] string path = "")
+        {
+            Tag = "Binding set at line " + lineNumber + " from " + caller + " in file " + path;
+        }
+
         //Debug stuff
         //Tag that can be set on a binding that will be printed if the binding fails
         //so that you can know which exact binding is failing
@@ -57,7 +63,7 @@ namespace Dash
             }
             else
             {
-                var field = Document.GetDereferencedField<TField>(Key, context);
+                var field = XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DontDereference ? Document.GetField<TField>(Key) : Document.GetDereferencedField<TField>(Key, context);
                 if (field != null)
                 {
                     var converter = Converter;
@@ -153,7 +159,13 @@ namespace Dash
         }
     }
 
-    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase { }
+    public class FieldBinding<T> : FieldBinding<T, TextController> where T : FieldControllerBase
+    {
+        public FieldBinding([CallerLineNumber] int lineNumber = 0, [CallerMemberName] string caller = "",
+            [CallerFilePath] string path = "") : base(lineNumber, caller, path)
+        {
+        }
+    }
 
     public static class BindingExtension
     {
@@ -223,7 +235,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context))
+                    //if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
@@ -289,7 +301,7 @@ namespace Dash
 
                     }
                     else
-                    if (binding.Context.IsCompatibleWith(context))
+                    //if (binding.Context.IsCompatibleWith(context))
                     {
                         var equals = binding.Context.DocContextList.Where((d) => (d.DocumentType.Type == null || (!d.DocumentType.Type.Contains("Box") && !d.DocumentType.Type.Contains("Layout"))) && !context.DocContextList.Contains(d));
                         binding.ConvertToXaml(element, property, equals.Count() == 0 ? context : binding.Context);
@@ -305,8 +317,7 @@ namespace Dash
                             binding.ConvertToXaml(element, property, binding.Context);
                     }
                 };
-
-            bool loaded = false;
+            
             long token = -1;
 
             if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
@@ -314,47 +325,37 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-                loaded = true;
+                element.Unloaded += OnElementOnUnloaded;
+            }
+            else
+            {
+                element.Loaded += OnElementOnLoaded;
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                if (loaded)
-                {
-                    binding.Remove(handler);
-                    element.UnregisterPropertyChangedCallback(property, token);
-                    token = -1;
-                    loaded = false;
-                }
+                binding.Remove(handler);
+                element.UnregisterPropertyChangedCallback(property, token);
+                token = -1;
+                element.Loaded += OnElementOnLoaded;
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                if (!loaded)
-                {
-                    binding.ConvertToXaml(element, property, binding.Context);
-                    binding.Add(handler);
-                    token = element.RegisterPropertyChangedCallback(property, callback);
-                    loaded = true;
-                }
+                binding.ConvertToXaml(element, property, binding.Context);
+                binding.Add(handler);
+                token = element.RegisterPropertyChangedCallback(property, callback);
+                element.Unloaded += OnElementOnUnloaded;
             }
-
-            element.Unloaded += OnElementOnUnloaded;
-
-            element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {
-                element.Loaded -= OnElementOnLoaded;
+                element.Loaded   -= OnElementOnLoaded;
                 element.Unloaded -= OnElementOnUnloaded;
-                if (loaded)
+                binding.Remove(handler);
+                if (token != -1)
                 {
-                    binding.Remove(handler);
-                    if (token != -1)
-                    {
-                        element.UnregisterPropertyChangedCallback(property, token);
-                    }
-                    loaded = false;
+                    element.UnregisterPropertyChangedCallback(property, token);
                 }
             }
 

@@ -9,32 +9,19 @@
 
     <!-- 
     HOW TO STYLE YOUR NODES
-    1. All nodes should be contained in a grid or similar structure which has
-    the xNodeContainerType property applied. i.e.:
-    
-    <Grid Style="{StaticResource xNodeContainerGrid}">
-    </Grid>
-    
-    2. For nodes with a title, create a title textblock as follows:
-    <TextBlock Style="{StaticResource xTitleStyle}">
-    
-    3. Create the insides of the nodes. Some additional styles are reccomended:
-    <Button Style="{StaticResource xAccentButtonStyle}": displays buttons in accent color
+    - Use as many of the globally defined colors as you can to make future editing easier.
+    - Add global styles in this page in an appropriate section as you go. 
+    - Access a style w/in Xaml with Background="{StaticResource WindowsBlue}" StaticResource
     
     ADD AS YOU GO
     - If you're styling more than a few elements manually, you probably want to
     create a XAML style for it and apply it. If you think your style will be useful
     to others, add it to the GLOBAL section. Otherwise, create a section that entails
-    the category of your styles (i.e. COLLECTION VIEW STYLES). For small, one-off styles,
-    just toss them in the MISC category.
+    the category of your styles (i.e. COLLECTION VIEW STYLES). For styles that will
+    not be reused, 
     
     - Be nice to your fellow programmers. Throw in a comment saying what the style does if
-    it's not obvious frm the name. 
-    
-    MANIPULATION NODES
-    - Add this code to every UI child element (within a given node) who you don't want the
-    user to be able to move its parent node while clicking it
-    <Property="ManipulationMode" Value="Scale"></Setter>
+    it's not obvious from the name. 
     
     -->
     <Application.Resources>
@@ -43,7 +30,7 @@
             <!-- NUMBERS, THICKNESSES -->
             <x:Double x:Key="DocumentOpacity">.9</x:Double>
             <x:Double x:Key="DefaultFontSize">14</x:Double>
-            <x:Double x:Key="DefaultTitleFontSize">30</x:Double>
+            <x:Double x:Key="DefaultTitleFontSize">24</x:Double>
             <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
             <!-- COLORS -->
@@ -55,6 +42,7 @@
             <Color x:Key="MainTextColor">#FF333333</Color>
             <Color x:Key="TitleTextColor">#FF454545</Color>
             <Color x:Key="ActivationColor">#f4aa42</Color>
+            <Color x:Key="LinkActivationColor">Green</Color>
             <Color x:Key="InverseColor">#ededed</Color>
 
 
@@ -67,6 +55,7 @@
             <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentHighlightBackgroundColor}" />
             <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
             <SolidColorBrush x:Key="FieldHandleColor" Color="{StaticResource ActivationColor}"/>
+            <SolidColorBrush x:Key="LinkHandleColor" Color="{StaticResource LinkActivationColor}"/>
             <SolidColorBrush x:Key="InputHandleColor" Color="{StaticResource WindowsBlueColor}"/>
             <SolidColorBrush x:Key="SelectionHandleColor" Color="{StaticResource ActivationColor}"/>
             <SolidColorBrush x:Key="DragHighlight" Color="#33A2A2A2"/>
@@ -732,7 +721,7 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
 
-            <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
+            <Style TargetType="Ellipse" x:Key="xFieldHandle">
                 <Setter Property="Fill" Value="{StaticResource FieldHandleColor}" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
@@ -740,8 +729,27 @@
                 <Setter Property="Stroke" Value="Transparent"></Setter>
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
-            <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
+            <Style TargetType="Ellipse" x:Key="xFieldHandleHighlighted">
                 <Setter Property="Fill" Value="Gold" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+
+
+
+            <Style TargetType="Ellipse" x:Key="xFieldLinkHandle">
+                <Setter Property="Fill" Value="{StaticResource LinkHandleColor}" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+            <Style TargetType="Ellipse" x:Key="xFieldLinkHandleHighlighted">
+                <Setter Property="Fill" Value="LightGreen" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>

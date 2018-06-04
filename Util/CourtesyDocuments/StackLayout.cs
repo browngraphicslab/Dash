@@ -85,6 +85,24 @@ namespace Dash
             {
                 stack.Width = docController.GetWidthField(context)?.Data ?? stack.Width;
             }
+            stack.SizeChanged += Stack_SizeChanged;
+
+            void Stack_SizeChanged(object sender, SizeChangedEventArgs e)
+            {
+                foreach (var child in stack.Children)
+                    if (child is FrameworkElement fe)
+                        if (fe.DataContext is DocumentViewModel dview)
+                        {
+                            dview.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
+                        }
+                        else if (fe.DataContext is CollectionViewModel cview)
+                        {
+
+                            cview.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
+
+                        }
+           
+            }
             SetupBindings(stack, docController, context);
 
             return stack;

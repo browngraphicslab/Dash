@@ -42,7 +42,7 @@ namespace Dash
         {
             try
             {
-                var result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
+                var result = TypescriptToOperatorParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "");
                 outputs[ResultKey] = result;
             }
             catch (InvalidDishScriptException dishScriptException)

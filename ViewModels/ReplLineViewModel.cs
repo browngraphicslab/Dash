@@ -8,11 +8,53 @@ namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-        public ReplLineViewModel(string lineText, string valueText, FieldControllerBase outputValue)
+        //TODO have this value be dragged out onto the workspace
+        //this is the stored value of every line;
+        private FieldControllerBase _value;
+        public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
         {
             _outputValue = outputValue;
             LineText = lineText;
-            LineValueText = valueText;
+            LineValueText = GetValueFromResult(value);
+            _value = value;
+        }
+
+        private string GetValueFromResult(FieldControllerBase controller)
+        {
+            string result;
+            try
+            {
+                if (controller != null)
+                {
+                    if (controller is ReferenceController)
+                    {
+                        var r = (ReferenceController)controller;
+                        result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
+                    }
+                    else
+                    {
+
+                        result = controller is BaseListController
+                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
+                            : controller?.GetValue(null)?.ToString();
+                    }
+
+                }
+                else
+                {
+                    result = "error, result controller was null";
+                }
+            }
+            catch (DSLException e)
+            {
+                result = e.GetHelpfulString();
+            }
+            catch (Exception e)
+            {
+                result = "Unknown annoying error occurred : " + e.StackTrace;
+            }
+
+            return result;
         }
 
         private string _lineText = "";

@@ -11,12 +11,12 @@ using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 namespace Dash
 { 
-    public class BackgroundBox : CourtesyDocument
+    public class BackgroundShape : CourtesyDocument
     {
         /// <summary>
      /// The document type which is uniquely associated with pdf boxes
      /// </summary>
-        public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Box");
+        public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Shape");
 
         public enum AdornmentShape {
             Elliptical,
@@ -30,14 +30,10 @@ namespace Dash
         /// </summary>
         private static string PrototypeId = "88A3B7F5-7828-4251-ACFC-E56428316203";
 
-        public BackgroundBox(AdornmentShape shape, double x = 0, double y = 0, double w = 200, double h = 200)
+        public BackgroundShape(FieldControllerBase refToBackground, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-            var r = new Random();
-            var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
-            // set fields based on the parameters
-            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
-            fields.Add(KeyStore.BackgroundColorKey, new TextController(hexColor));
-            fields.Add(KeyStore.AdornmentShapeKey, new TextController(shape.ToString()));
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToBackground);
+            fields.Add(KeyStore.AdornmentKey, new TextController("true"));
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
@@ -47,20 +43,24 @@ namespace Dash
             var backgroundBinding = new FieldBinding<TextController>()
             {
                 Mode = BindingMode.TwoWay,
-                Document = docController,
+                Document = docController.GetDataDocument(),
                 Key = KeyStore.BackgroundColorKey,
                 Converter = new StringToBrushConverter(),
-                Context = context
+                Context = context,
+                Tag = "BackgroundShape Fill"
             };
+            (Outelement.Content as Shape).AddFieldBinding(Shape.FillProperty, backgroundBinding);
+            (Outelement.Content as Shape).Fill = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Red);
 
             var binding = new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
-                Key = KeyStore.AdornmentShapeKey,
+                Key = KeyStore.DataKey,
                 Context = context,
                 Converter = new ShapeNameToShapeConverter(),
-                ConverterParameter = backgroundBinding
+                ConverterParameter = backgroundBinding,
+                Tag = "BackgroundShape Content"
             };
             
             Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
@@ -85,21 +85,12 @@ namespace Dash
                     shape.Content = innerRectangle;
                     break;
             }
-            
-            shape.Loaded += Background_Loaded;
 
             SetupBindings(shape, docController, context);
 
             BindShape(shape, docController, context);
 
             return shape;
-        }
-
-        private static void Background_Loaded(object sender, RoutedEventArgs e)
-        {
-            var docView = (sender as UIElement).GetFirstAncestorOfType<DocumentView>();
-            var cp = docView.GetFirstAncestorOfType<ContentPresenter>();
-            Canvas.SetZIndex(cp, -100);
         }
     }
 }
