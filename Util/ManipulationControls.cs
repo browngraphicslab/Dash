@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
 
@@ -28,6 +29,9 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
 
+        // for docking
+        public double ManipulationStartX { get; set; }
+        public double ManipulationStartY { get; set; }
 
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
@@ -394,12 +398,134 @@ namespace Dash
 
         }
 
+        private (Point p1, Point p2) PreviewLine(Rect snappingTo, Side snappingToSide)
+        {
+            Rect parentDocumentBounds = ParentDocument.ViewModel.Bounds;
+
+            Point point1 = new Point();
+            Point point2 = new Point();
+
+            switch (snappingToSide)
+            {
+                case Side.Top:
+                    point1.Y = point2.Y = snappingTo.Top;
+                    point1.X = Math.Min(parentDocumentBounds.Left, snappingTo.Left);
+                    point2.X = Math.Max(parentDocumentBounds.Right, snappingTo.Right);
+                    break;
+                case Side.Bottom:
+                    point1.Y = point2.Y = snappingTo.Bottom;
+                    point1.X = Math.Min(parentDocumentBounds.Left, snappingTo.Left);
+                    point2.X = Math.Max(parentDocumentBounds.Right, snappingTo.Right);
+                    break;
+                case Side.Left:
+                    point1.X = point2.X = snappingTo.Left;
+                    point1.Y = Math.Min(parentDocumentBounds.Top, snappingTo.Top);
+                    point2.Y = Math.Max(parentDocumentBounds.Bottom, snappingTo.Bottom);
+                    break;
+                case Side.Right:
+                    point1.X = point2.X = snappingTo.Right;
+                    point1.Y = Math.Min(parentDocumentBounds.Top, snappingTo.Top);
+                    point2.Y = Math.Max(parentDocumentBounds.Bottom, snappingTo.Bottom);
+                    break;
+            }
+
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+
+            var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.xItemsControl.ItemsPanelRoot);
+
+            return (screenPoint1, screenPoint2);
+
+        }
+
+        private Point SimpleSnapPoint(Rect snappingTo, Side snappingToSide)
+        {
+            Rect parentDocumentBounds = ParentDocument.ViewModel.Bounds;
+
+            Point newTopLeftPoint;
+            switch (snappingToSide)
+            {
+                case Side.Top:
+                    newTopLeftPoint = new Point(parentDocumentBounds.X, snappingTo.Top - parentDocumentBounds.Height);
+                    break;
+                case Side.Bottom:
+                    newTopLeftPoint = new Point(parentDocumentBounds.X, snappingTo.Bottom);
+                    break;
+                case Side.Left:
+                    newTopLeftPoint = new Point(snappingTo.Left - parentDocumentBounds.Width, parentDocumentBounds.Y);
+                    break;
+                case Side.Right:
+                    newTopLeftPoint = new Point(snappingTo.Right, parentDocumentBounds.Y);
+                    break;
+            }
+
+            return newTopLeftPoint;
+        }
+
+        private void Dock(bool preview)
+        {
+            DockDirection overlappedDirection = GetDockIntersection();
+
+            if (overlappedDirection != DockDirection.None)
+            {
+                if (preview)
+                {
+                    MainPage.Instance.HighlightDock(overlappedDirection);
+                }
+                else
+                {
+                    ParentDocument.ViewModel.XPos = ManipulationStartX;
+                    ParentDocument.ViewModel.YPos = ManipulationStartY;
+                    MainPage.Instance.UnhighlightDock();
+                    MainPage.Instance.Dock(ParentDocument, overlappedDirection);
+                }   
+            }
+            else
+            {
+                MainPage.Instance.UnhighlightDock();
+            }
+        }
+
+        private DockDirection GetDockIntersection()
+        {
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
+            var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
+            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
+            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
+            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
+
+            if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Right;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Left;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Top;
+            }
+            if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Bottom;
+            }
+
+            return DockDirection.None;
+        }
+
+
         //END OF NEW SNAPPING
 
 
 
         #endregion
-
+            
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -431,6 +557,9 @@ namespace Dash
                 return;
             }
 
+            ManipulationStartX = ParentDocument.ViewModel.XPos;
+            ManipulationStartY = ParentDocument.ViewModel.YPos;
+
             OnManipulatorStarted?.Invoke();
 
             if (e != null)
@@ -457,6 +586,7 @@ namespace Dash
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
+                
                 //_translateLastManipulationDelta = delta;
 
                 e.Handled = true;
@@ -484,6 +614,7 @@ namespace Dash
                 nestedCollection?.Highlight();
                 _previouslyHighlightedCollectionView = nestedCollection;
             }
+            Dock(true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -495,6 +626,8 @@ namespace Dash
                 _previouslyHighlightedCollectionView?.Unhighlight();
 
                 OnManipulatorCompleted?.Invoke();
+                Dock(false);
+
                 _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
                 //_translateLastManipulationDelta = new Point();
                 if (e != null)

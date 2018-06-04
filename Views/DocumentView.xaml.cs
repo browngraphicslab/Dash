@@ -315,6 +315,51 @@ namespace Dash
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
+        public void TransformDelta(Point moveTo)
+        {
+            var scaleAmount = new Point(ViewModel.InteractiveManipulationScale.X, ViewModel.InteractiveManipulationScale.Y);
+
+            ViewModel.InteractiveManipulationPosition = moveTo;
+            RenderTransform =
+                TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> {moveTo, scaleAmount});
+        }
+        
+        /// <summary>
+        /// Handles keypress events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            if (!this.IsF1Pressed())
+                ShowLocalContext(false);
+        }
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (this.IsF1Pressed() && this.IsPointerOver())
+            {
+                ShowLocalContext(true);
+            }
+            if (this.IsF2Pressed() && this.IsPointerOver())
+            {
+                ShowSelectedContext();
+            }
+            
+            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
+                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
+                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
+                var focused = docView == this;
+
+                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                {
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        HandleShiftEnter();
+                }
+            }
+        }
+
         public void ShowLocalContext(bool showContext)
         {
             if (ViewModel == null)

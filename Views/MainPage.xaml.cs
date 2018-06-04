@@ -16,8 +16,15 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Dash.Views.Document_Menu;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Toolkit.Uwp.UI;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views;
 using Dash.Views.Document_Menu;
 using Dash.Controllers;
 
@@ -42,6 +49,9 @@ namespace Dash
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
         private bool IsPresentationModeToggled = false;
+
+        private bool[] _firstDock = {true, true, true, true};
+        private DockedView[] _lastDockedViews = {null, null, null, null};
 
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
@@ -88,6 +98,7 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
+                xMainDocView.ViewModel.DisableDecorations = true;
 
                 xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             };
@@ -528,10 +539,6 @@ namespace Dash
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            args.Cancel = true;
-        }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
         void setupMapView(DocumentController mainDocumentCollection)
@@ -560,11 +567,172 @@ namespace Dash
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
-        
-        //@Main toolbar
-        private void AddCustomButtons()
+
+        public void Dock(DocumentView toDock, DockDirection dir)
         {
+            DocumentController context = toDock.ViewModel.DocumentController;
+            DocumentView copiedView = new DocumentView()
+            {
+                DataContext = new DocumentViewModel(context.GetViewCopy()),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+
+            copiedView.ViewModel.Width = Double.NaN;
+            copiedView.ViewModel.Height = Double.NaN;
+            copiedView.ViewModel.DisableDecorations = true;
+
+            DockedView dockedView = new DockedView(dir);
+            dockedView.ChangeView(copiedView);
+            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
+
+            if (_firstDock[(int) dir])
+            {
+                switch (dir)
+                {
+                    case DockDirection.Left:
+                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 2, 1, 0, 5);
+                        break;
+                    case DockDirection.Right:
+                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 6, 1, 0, 5);
+                        break;
+                    case DockDirection.Top:
+                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 0, 1);
+                        break;
+                    case DockDirection.Bottom:
+                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 4, 1);
+                        break;
+                }
+                
+                xOuterGrid.Children.Add(dockedView);
+                _firstDock[(int) dir] = false;
+                _lastDockedViews[(int) dir] = dockedView;
+            }
+            else
+            {
+                DockedView tail = _lastDockedViews[(int) dir];
+                tail.ChangeNestedView(dockedView);
+                dockedView.PreviousView = tail;
+                _lastDockedViews[(int) dir] = dockedView;
+            }
+            
         }
+
+        private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
+        {
+            Grid.SetColumn(e, col);
+            Grid.SetColumnSpan(e, colSpan);
+            Grid.SetRow(e, row);
+            Grid.SetRowSpan(e, rowSpan);
+        }
+
+        public void HighlightDock(DockDirection dir)
+        {
+            switch (dir)
+            {
+                case DockDirection.Left:
+                    xDockLeft.Opacity = 0.4;
+                    break;
+                case DockDirection.Right:
+                    xDockRight.Opacity = 0.4;
+                    break;
+                case DockDirection.Top:
+                    xDockTop.Opacity = 0.4;
+                    break;
+                case DockDirection.Bottom:
+                    xDockBottom.Opacity = 0.4;
+                    break;
+            }
+        }
+
+        public void UnhighlightDock()
+        {
+            xDockRight.Opacity = 0;
+            xDockLeft.Opacity = 0;
+            xDockTop.Opacity = 0;
+            xDockBottom.Opacity = 0;
+        }
+
+        public void Undock(DockedView undock)
+        {
+            // means it's the last NestedView
+            if (undock.NestedView == null)
+            {
+                // means it's also the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            xLeftDockSplitterColumn.Width = new GridLength(0);
+                            xLeftDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Right:
+                            xRightDockSplitterColumn.Width = new GridLength(0);
+                            xRightDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Top:
+                            xTopDockSplitterRow.Height = new GridLength(0);
+                            xTopDockRow.Height = new GridLength(0);
+                            break;
+                        case DockDirection.Bottom:
+                            xBottomDockSplitterRow.Height = new GridLength(0);
+                            xBottomDockRow.Height = new GridLength(0);
+                            break;
+                    }
+                    xOuterGrid.Children.Remove(undock);
+                    _firstDock[(int) undock.Direction] = true;
+                    _lastDockedViews[(int) undock.Direction] = null;
+                }
+                else
+                {
+                    undock.PreviousView.ClearNestedView();
+                    _lastDockedViews[(int) undock.Direction] = undock.PreviousView;
+                }
+            }
+            else
+            {
+                // means it's the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    var newFirst = undock.ClearNestedView();
+                    newFirst.PreviousView = null;
+                    xOuterGrid.Children.Remove(undock);
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            SetGridPosition(newFirst, 2, 1, 0, 5);
+                            break;
+                        case DockDirection.Right:
+                            SetGridPosition(newFirst, 6, 1, 0, 5);
+                            break;
+                        case DockDirection.Top:
+                            SetGridPosition(newFirst, 4, 1, 0, 1);
+                            break;
+                        case DockDirection.Bottom:
+                            SetGridPosition(newFirst, 4, 1, 4, 1);
+                            break;
+                    }
+                    xOuterGrid.Children.Add(newFirst);
+                }
+                else
+                {
+                    var newNext = undock.ClearNestedView();
+                    newNext.PreviousView = undock.PreviousView;
+                    undock.PreviousView.ChangeNestedView(newNext);
+                }
+            }
+        }
+        
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;

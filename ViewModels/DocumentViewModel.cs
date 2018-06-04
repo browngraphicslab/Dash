@@ -159,8 +159,14 @@ namespace Dash
         public bool DecorationState
         {
             get => _decorationState;
-            set => SetProperty(ref _decorationState, value);
+            set
+            {
+                if (!DisableDecorations) SetProperty(ref _decorationState, value);
+                else SetProperty(ref _decorationState, false);
+            }
         }
+
+        public bool DisableDecorations { get; set; } = false;
 
 
         // == FIELD UPDATED EVENT HANDLERS == 
