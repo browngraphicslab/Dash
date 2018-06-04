@@ -16,18 +16,20 @@
         <StackPanel>
 
             <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
+                <AppBarToggleButton x:Name="xCollapse" Background="Red"  Icon="BackToWindow"  Label="Collapse"  Unchecked="XCollapse_OnUnchecked"  Checked="XCollapse_OnChecked"/>
+                <!--<AppBarSeparator x:Name="xSepOne"/>-->
                 <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
-                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
-                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
+                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"/>
 
-                <AppBarSeparator/>
+                <AppBarSeparator x:Name="xSepTwo"/>
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
-                <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
-                <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Copy" IsEnabled="False" x:Name="xCopy" Opacity="0.5" Label="Duplicate" Click="Copy" />
-                <AppBarButton Icon="Delete" IsEnabled="False"  x:Name="xDelete" Opacity="0.5" Label="Delete" Click="Delete" />
+                <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
+                <AppBarButton x:Name="xAddImage" Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
+                <AppBarButton x:Name="xAddVideo" Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
+                <AppBarSeparator x:Name="xSepThree"/>
+                <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy" />
+                <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete" />
 
             </ctrl:CommandBar>
             <StackPanel Margin="0,12,0,0">

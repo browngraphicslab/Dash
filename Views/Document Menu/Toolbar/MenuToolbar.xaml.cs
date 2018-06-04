@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -262,6 +263,46 @@ namespace Dash
                 }
                 //add error message for null file?
             }
+        }
+
+        private void XCollapse_OnChecked(object sender, RoutedEventArgs e)
+        {
+            xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
+            xCollapse.Label = "Expand";
+            xCollapse.Background = new SolidColorBrush(Colors.Green);
+            ToggleVisibility(Visibility.Collapsed);
+            xToolbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
+        }
+
+        private void XCollapse_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
+            xCollapse.Label = "Collapse";
+            xCollapse.Background = new SolidColorBrush(Colors.Red);
+            ToggleVisibility(Visibility.Visible);
+            xToolbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Visible;
+        }
+
+        private void ToggleVisibility(Visibility status)
+        {
+            //xSepOne.Visibility = status;
+
+            xTouch.Visibility = status;
+            xInk.Visibility = status;
+            xGroup.Visibility = status;
+
+            xSepTwo.Visibility = status;
+
+            xAddImage.Visibility = status;
+            xAddVideo.Visibility = status;
+            xAddGroup.Visibility = status;
+
+            xSepThree.Visibility = status;
+
+            xCopy.Visibility = status;
+            xDelete.Visibility = status;
+
+            if (subtoolbarElement != null) subtoolbarElement.Visibility = status;
         }
     }
 
