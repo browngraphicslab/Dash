@@ -24,7 +24,7 @@
         </ListView.ItemsPanel>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <local:EditableScriptBox></local:EditableScriptBox>
+                <local:EditableScriptView></local:EditableScriptView>
             </DataTemplate>
         </ListView.ItemTemplate>
     </ListView>
