@@ -46,19 +46,21 @@ namespace Dash
                 Document = docController.GetDataDocument(),
                 Key = KeyStore.BackgroundColorKey,
                 Converter = new StringToBrushConverter(),
-                Context = context
+                Context = context,
+                Tag = "BackgroundShape Fill"
             };
             (Outelement.Content as Shape).AddFieldBinding(Shape.FillProperty, backgroundBinding);
             (Outelement.Content as Shape).Fill = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Red);
 
             var binding = new FieldBinding<TextController>()
             {
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Context = context,
                 Converter = new ShapeNameToShapeConverter(),
-                ConverterParameter = backgroundBinding
+                ConverterParameter = backgroundBinding,
+                Tag = "BackgroundShape Content"
             };
             
             Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
