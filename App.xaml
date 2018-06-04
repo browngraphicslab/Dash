@@ -2,6 +2,7 @@
     x:Class="Dash.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:local="using:Dash">
 
     <!-- Application-wide XAML stylesheet-->
@@ -137,6 +138,56 @@
                 <Setter Property="Padding" Value="0"></Setter>
             </Style>
 
+
+            <Style TargetType="localMicrosoft:GridSplitter">
+
+                <Setter Property="IsTabStop" Value="True" />
+
+                <Setter Property="UseSystemFocusVisuals" Value="True" />
+
+                <Setter Property="IsFocusEngagementEnabled" Value="True" />
+
+                <Setter Property="Background" Value="LightGray" />
+
+                <Setter Property="Foreground" Value="White" />
+
+                <Setter Property="ResizeBehavior" Value="BasedOnAlignment" />
+
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+
+                <Setter Property="ResizeDirection" Value="Auto" />
+
+                <Setter Property="FontSize" Value="13" />
+
+                <Setter Property="Template">
+
+                    <Setter.Value>
+
+                        <ControlTemplate TargetType="localMicrosoft:GridSplitter">
+
+                            <Grid Background="{TemplateBinding Background}">
+
+                                <Grid>
+                                    <TextBlock HorizontalAlignment="Center"
+                                               IsHitTestVisible="False"
+                                               VerticalAlignment="Center"
+                                               Text="&#xE784;"
+                                               Foreground="Black"
+                                               FontFamily="Segoe MDL2 Assets" />
+
+</Grid>
+            
+            </Grid>
+            
+            </ControlTemplate>
+            
+            </Setter.Value>
+            
+            </Setter>
+            
+            </Style>
+
+
             <!-- gray border on textboxes -->
             <Style TargetType="TextBox">
                 <!-- prevents node from moving while mouse is over UI element-->
@@ -184,7 +235,6 @@
                                         <VisualState x:Name="Focused">
                                             <Storyboard>
                                                 <!--
-
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="PlaceholderTextContentPresenter">
                                                 <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlPageTextChromeBlackMediumLowBrush}"/>
                                             </ObjectAnimationUsingKeyFrames>
@@ -1005,4 +1055,5 @@
         </ResourceDictionary>
     </Application.Resources>
 </Application>
+  
   
