@@ -175,8 +175,6 @@ namespace Dash
                     //add text to list for specificed cases
                     if (newText != null)
                     {
-                        Debug.WriteLine("<span>" + newText + "</span>");
-
                         fileText.Add("<span>" + newText + "</span>");
                     }
                 }
@@ -330,9 +328,9 @@ namespace Dash
                 var olduri = uriRaw.ToString();
                 
                 //create image with unique title
-                var imgTitle = "img" + imgCount;
+                var imgTitle = "img" + imgCount + ".jpg";
                 imgCount++;
-                CopyFile(olduri, imgTitle, "vids");
+                CopyFile(olduri, imgTitle, "imgs");
 
                 var uri = "imgs\\" + imgTitle;
 
@@ -360,7 +358,7 @@ namespace Dash
                 var olduri = uriRaw.ToString();
                 
                 //create image with unique title
-                var vidTitle = "vid" + vidCount;
+                var vidTitle = "vid" + vidCount + ".mp4";
                 vidCount++;
                 CopyFile(olduri, vidTitle, "vids");
 
@@ -377,12 +375,12 @@ namespace Dash
                        "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] +
                        "px;  z-index: 1; \" controls>" +
                        "<source src=\"" + uri + "\" >" +
-                       "Your browser does not support the video tag. </ video >";
+                       "Your browser does not support the video tag. </video>";
             }
             else
             {
                 return "";
-            }
+            } 
         }
 
         private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
@@ -565,9 +563,9 @@ namespace Dash
                     {
                         mergedText = mergedText + word;
                     }
-
-                        //add String to file
-                        await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
+                    
+                    //add String to file
+                    await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
                    
                 }
             }
