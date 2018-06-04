@@ -57,7 +57,7 @@ namespace Dash
                 var valueQuery = (inputs[ValueQueryKey] as TextController)?.Data?.ToLower() ?? "";
 
                 var tree = DocumentTree.MainPageTree;
-                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "({ })") as ListController<DocumentController>;
+                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
                
                 Debug.Assert(allResults != null);
                 var stringContainResults = allResults.TypedData

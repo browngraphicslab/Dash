@@ -34,7 +34,7 @@ namespace Dash
 
         private void CollectionGridView_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            if (this.IsCtrlPressed())
             {
                 var point = e.GetCurrentPoint(this);
 
@@ -105,6 +105,12 @@ namespace Dash
                     ViewModel.RemoveDocument(dvm.DocumentController);
                 }
             }
+        }
+
+        private void Viewbox_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var dv = ((sender as Border).Child as Viewbox).Child as DocumentView;
+            MainPage.Instance.NavigateToDocumentInWorkspace(dv.ViewModel.DocumentController, true, true);
         }
     }
 }

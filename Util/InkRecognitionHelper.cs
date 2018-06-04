@@ -241,7 +241,7 @@ namespace Dash
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,
                 region.BoundingRect.Height);
-            FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController, null);
+            FreeformInkControl.FreeformView.ViewModel.AddDocument(documentController);
             DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
         }
 
@@ -312,7 +312,7 @@ namespace Dash
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
-            if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
+            if (addToFreeformView) FreeformInkControl.FreeformView.ViewModel.AddDocument(doc);
             return doc;
         }
 

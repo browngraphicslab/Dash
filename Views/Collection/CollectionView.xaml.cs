@@ -33,11 +33,13 @@ namespace Dash
         /// </summary>
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
-        public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
+        public event Action<object, RoutedEventArgs> CurrentViewLoaded;
+
+        public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
             InitializeComponent();
-            _viewType = viewType;
+            _viewType = vm.ViewType;
             DataContext = vm;
 
             Unloaded += CollectionView_Unloaded;
@@ -49,6 +51,11 @@ namespace Dash
             PointerPressed += OnPointerPressed;
         }
 
+        /// <summary>
+        /// Begins panning events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
@@ -63,7 +70,8 @@ namespace Dash
                     new ManipulationControlHelper(this, args.Pointer, true); // manipulate the top-most collection view
 
                     args.Handled = true;
-                } else 
+                }
+                else
                     if (parentParentFreeform != null)
                         CurrentView.ManipulationMode = ManipulationModes.None;
             }
@@ -78,7 +86,14 @@ namespace Dash
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
-        { 
+        {
+            // ParentDocument can be null if we are rendering collections for thumbnails
+            if (ParentDocument == null)
+            {
+                SetView(_viewType);
+                return;
+            }
+
             ParentDocument.StyleCollection(this);
             
             #region CollectionView context menu 
@@ -102,7 +117,7 @@ namespace Dash
                 newCollection.Click += (sender, e) =>
                 {
                     var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
-                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt), null); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
+                    ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
                 };
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);
@@ -154,12 +169,17 @@ namespace Dash
                     viewCollectionAs.Items.Add(vtype);
                 }
 
-
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
                 viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
                 contextMenu.Items.Add(viewCollectionPreview);
                 elementsToBeRemoved.Add(viewCollectionPreview);
+
+                // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
+                var fitToParent = new MenuFlyoutItem() { Text = "Toggle Fit To Parent" };
+                fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+                contextMenu.Items.Add(fitToParent);
+                elementsToBeRemoved.Add(fitToParent);
 
                 Unloaded += (sender, e) =>
                 {
@@ -228,11 +248,18 @@ namespace Dash
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
             }
+            CurrentView.Loaded -= CurrentView_Loaded;
+            CurrentView.Loaded += CurrentView_Loaded;
             xContentControl.Content = CurrentView;
-            var curViewType = ParentDocument?.ViewModel?.LayoutDocument?.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data;
-            if (curViewType != _viewType.ToString())
-                ParentDocument?.ViewModel?.LayoutDocument?.SetField(KeyStore.CollectionViewTypeKey, new TextController(viewType.ToString()), true);
+            if (ViewModel.ViewType != _viewType)
+                ViewModel.ViewType = viewType;
         }
+
+        private void CurrentView_Loaded(object sender, RoutedEventArgs e)
+        {
+            CurrentViewLoaded?.Invoke(sender, e);
+        }
+
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
