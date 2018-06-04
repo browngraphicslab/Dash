@@ -7,6 +7,7 @@
                     xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:documentMenu="using:Dash.Views.Document_Menu"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
@@ -57,7 +58,6 @@
             </Button>
         </StackPanel>
 
-
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" 
             x:Name="xSplitter"
             Grid.Column="1" Width="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
@@ -81,8 +81,11 @@
         <!--TextBlock x:Name="CollapseButton" Grid.Column="1" FontFamily="Segoe MDL2 Assets" FontWeight="Bold" FontSize="30" Text="&#xE700;" VerticalAlignment="Top" HorizontalAlignment="Left" Tapped="CollapseButton_OnTapped" Margin="12,5,0,0"></-->
 
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Line x:Name="AlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+
         </Canvas>
+        
         <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

@@ -10,7 +10,7 @@
     d:DesignWidth="400">
 
     <StackPanel Orientation="Horizontal" Padding="0" VerticalAlignment="Center" Background="Transparent">
-        <Ellipse Style="{StaticResource xInputLinkHandle}"
+        <Ellipse Style="{StaticResource xInputLinkHandle}" x:Name="xEllipse" Stroke="White"
                                      Drop="UIElement_OnDrop" DragEnter="UIElement_OnDragEnter" DragOver="Ellipse_DragOver"
                                      Fill="{Binding Value.Type, Mode = TwoWay, Converter={StaticResource TypeToFillConverter}}"/>
         <Grid>

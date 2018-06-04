@@ -1205,37 +1205,36 @@ namespace Dash
         void setupPrototypeFieldChangedListeners(FieldControllerBase newField)
         {
             var prototype = newField as DocumentController;
-            if (prototype != null)
-            {
-                /// <summary>
-                /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
-                /// </summary>
-                void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                {
-                    var dargs = (DocumentFieldUpdatedEventArgs)args;
-                    dargs.FromDelegate = true;
-                    prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
-                };
-                FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+            if (prototype == null) return;
 
-                /// <summary>
-                /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
-                /// the field that was modified on the prototype
-                /// </summary>
-                void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+            /// <summary>
+            /// generates DoucumentFieldUpdated events on the prototype when a Field is changed
+            /// </summary>
+            void TriggerPrototypeDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            {
+                var dargs = (DocumentFieldUpdatedEventArgs)args;
+                dargs.FromDelegate = true;
+                prototype.OnDocumentFieldUpdated((DocumentController)sender, dargs, c, false);
+            };
+            FieldModelUpdated += TriggerPrototypeDocumentFieldUpdated;
+
+            /// <summary>
+            /// generates fieldUpdatedEvents when the prototype field has changed unless this document has overridden
+            /// the field that was modified on the prototype
+            /// </summary>
+            void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
+            {
+                var updateArgs = (DocumentFieldUpdatedEventArgs)args;
+                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
-                    var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                    if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
-                    {
-                        OnDocumentFieldUpdated(this,
-                            new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
-                                new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
-                                updateArgs.FieldArgs, false), new Context(this), true);
-                    }
+                    OnDocumentFieldUpdated(this,
+                        new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,
+                            new DocumentFieldReference(GetId(), updateArgs.Reference.FieldKey),
+                            updateArgs.FieldArgs, false), new Context(this), true);
                 }
-                prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
-                prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
             }
+            prototype.PrototypeFieldUpdated -= TriggerDocumentFieldUpdatedFromPrototype;
+            prototype.PrototypeFieldUpdated += TriggerDocumentFieldUpdatedFromPrototype;
         }
 
         bool doesAnythingMaskThisField(KeyController field, Context c)

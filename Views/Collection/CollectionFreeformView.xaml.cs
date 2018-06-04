@@ -595,7 +595,6 @@ namespace Dash
         {
             if (XInkCanvas.IsTopmost())
             {
-                DeselectAll();
                 _isMarqueeActive = false;
                 RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
@@ -630,8 +629,13 @@ namespace Dash
             _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
+            MainPage.Instance.DeselectAllDocuments();
         }
         
+        /// <summary>
+        /// Selects all of the documents in selected.
+        /// </summary>
+        /// <param name="selected"></param>
         public void SelectDocs(IEnumerable<DocumentView> selected)
         {
             SelectionCanvas.Children.Clear();
@@ -642,6 +646,8 @@ namespace Dash
             {
                 doc.SetSelectionBorder(true);
             }
+
+            MainPage.Instance.SelectDocuments(selected);
         }
 
         #endregion
