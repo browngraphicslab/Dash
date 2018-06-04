@@ -12,7 +12,7 @@
 
     <Grid>
         <controls:TextToolbar
-            x:Name="xDashMenuToolBar"
+            x:Name="xDashTextSubtoolbar"
             Visibility="Visible">
         </controls:TextToolbar>
 
