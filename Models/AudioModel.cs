@@ -9,9 +9,9 @@ namespace Dash
 {
 
     /// <summary>
-    /// A Field Model which holds video data
+    /// A Field Model which holds audio data
     /// </summary>
-    [FieldModelTypeAttribute(TypeInfo.Video)]
+    [FieldModelTypeAttribute(TypeInfo.Audio)]
     public class AudioModel : FieldModel
     {
 
@@ -53,9 +53,9 @@ namespace Dash
 
 
         /// <summary>
-        /// Create a new Video Field Model which represents the video pointed to by the <paramref name="data"/>
+        /// Create a new Audio Field Model which represents the audio pointed to by the <paramref name="data"/>
         /// </summary>
-        /// <param name="data">The uri that the video this field model encapsulates is sourced from</param>
+        /// <param name="data">The uri that the audio this field model encapsulates is sourced from</param>
         public AudioModel(Uri path, string id = null) : base(id)
         {
             Data = path;
