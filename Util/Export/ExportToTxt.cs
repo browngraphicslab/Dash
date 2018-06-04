@@ -15,11 +15,13 @@ using System.Xml.Schema;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
+using Windows.Media.Capture;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers;
 using DashShared;
@@ -30,24 +32,42 @@ namespace Dash
 {
     //Windows.Storage.ApplicationData.Current.LocalFolder;
 
-    public static class ExportToTxt
+    public class ExportToTxt
     {
-        private static StorageFolder folder;
-        private static List<String> UsedUrlNames = new List<string>();
+        private StorageFolder folder;
+        private List<String> UsedUrlNames = new List<string>();
 
         //define the max width and height coordinates in html and dash for conversion
-        private static double PAGEWIDTH = 900.0;
-        private static double PAGEHEIGHT = 900.0;
+        private double PAGEWIDTH = 900.0;
+        private double PAGEHEIGHT = 900.0;
+
+        private int imgCount = 0;
+        private int vidCount = 0;
 
 
-        public static async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
+        public async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
 
             //allow the user to pick a folder to save all the files
-            folder = await PickFolder();
+            StorageFolder outerFolder = await PickFolder();
 
-            if (folder != null)
+            if (outerFolder != null)
             {
+                // Get the current date in good string format for file name
+                DateTime thisDay = DateTime.Now;
+                var dayR = thisDay.Date.ToString();
+                string day = dayR.Split(' ')[0].Replace('/', '.');
+                string timeR = thisDay.TimeOfDay.ToString();
+                string time = timeR.Split('.')[0].Replace(':', '.');
+                string daytimeString = "export_" + day + "_" + time;
+
+                //create a folder inside selected folder to save this export
+                folder = await outerFolder.CreateFolderAsync(daytimeString, CreationCollisionOption.ReplaceExisting);
+
+                //create folders to save media - images, videos, etc
+                await folder.CreateFolderAsync("imgs", CreationCollisionOption.ReplaceExisting);
+                await folder.CreateFolderAsync("vids", CreationCollisionOption.ReplaceExisting);
+
                 //save names of all collections for linking pruposes
                 List<String> colNames = new List<string>();
 
@@ -56,8 +76,16 @@ namespace Dash
                 {
                     //CollectionToTxt returns the content that must be added to a file
                     var colContent = await CollectionContent(collectionDoc);
-                    string colTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
-                        .ToString();
+                    FieldControllerBase rawTitle = collectionDoc.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null);
+                    string colTitle;
+                    if (rawTitle == null)
+                    {
+                        colTitle = "Untitled";
+                    }
+                    else
+                    {
+                        colTitle = rawTitle.ToString();
+                    }
 
                     //make sure there isn't already reference to colTitle
                     int count = 1;
@@ -96,7 +124,7 @@ namespace Dash
             }
         }
 
-        public static async Task<List<string>> CollectionContent(DocumentController collection)
+        public async Task<List<string>> CollectionContent(DocumentController collection)
         {
             //Get all the Document Controller in the collection
             //The document controllers are saved as the Data Field in each collection
@@ -105,9 +133,6 @@ namespace Dash
             {
                 var dataDocs = collection.GetDataDocument()
                     .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-
-                //create a list of key value pairs that link each doc to its point
-                // var docToPt = new List<KeyValuePair<DocumentController, List<double>>>();
 
                 OrderElements(dataDocs);
 
@@ -150,8 +175,6 @@ namespace Dash
                     //add text to list for specificed cases
                     if (newText != null)
                     {
-                        Debug.WriteLine("<span>" + newText + "</span>");
-
                         fileText.Add("<span>" + newText + "</span>");
                     }
                 }
@@ -165,7 +188,7 @@ namespace Dash
             }  
         }
 
-        private static void OrderElements(List<DocumentController> docs)
+        private void OrderElements(List<DocumentController> docs)
         {
             // This shows calling the Sort(Comparison(T) overload using 
             // an anonymous method for the Comparison delegate. 
@@ -194,7 +217,7 @@ namespace Dash
             });
         }
 
-        private static List<double> BorderVal(List<DocumentController> docs)
+        private List<double> BorderVal(List<DocumentController> docs)
         {
             double minX = Double.PositiveInfinity;
             double maxX = Double.NegativeInfinity;
@@ -211,6 +234,13 @@ namespace Dash
                     var x = pt1.Data.X;
                     var y = pt1.Data.Y;
 
+                    var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+                    var width = 0;
+                    if (rawWidth != "NaN")
+                    {
+                        width = Int32.Parse(doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString());
+                    }
+
                     if (x < minX)
                     {
                         minX = x;
@@ -220,9 +250,9 @@ namespace Dash
                         minY = y;
                     }
 
-                    if (x > maxX)
+                    if (x + width > maxX)
                     {
-                        maxX = x;
+                        maxX = x + width;
                     }
                     if (y > maxY)
                     {
@@ -232,14 +262,15 @@ namespace Dash
             }
 
             var minMax = new List<double>();
-            minMax.Add(minX);
+            //add numbers for margins
+            minMax.Add(minX - (minX * .1));
             minMax.Add(maxX);
-            minMax.Add(minY);
-            minMax.Add(maxY);
+            minMax.Add(minY - (minY * .1));
+            minMax.Add(maxY + (maxY * .2));
             return minMax;
         }
 
-        private static List<double> getMargin(DocumentController doc, List<double> minMax)
+        private List<double> getMargin(DocumentController doc, List<double> minMax)
         {
             var marginLeft = 0.0;
             var marginRight = 0.0;
@@ -270,7 +301,7 @@ namespace Dash
             return margins;
         }
 
-        private static double dashToHtml(double val, List<double> minMax)
+        private double dashToHtml(double val, List<double> minMax)
         {
             var min = minMax[0];
             var max = minMax[1];
@@ -280,7 +311,7 @@ namespace Dash
         }
 
 
-        private static string TextToTxt(DocumentController doc, List<double> minMax)
+        private string TextToTxt(DocumentController doc, List<double> minMax)
         {
             var rawText = doc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null);
             if (rawText != null)
@@ -296,13 +327,21 @@ namespace Dash
             }
         }
 
-        private static string ImageToTxt(DocumentController doc, List<double> minMax)
+        private string ImageToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
             var uriRaw = doc.GetDereferencedField<ImageController>(KeyStore.DataKey, null);
             if (uriRaw != null)
             {
-                var uri = uriRaw.Data.ToString();
+                var olduri = uriRaw.ToString();
+                
+                //create image with unique title
+                var imgTitle = "img" + imgCount + ".jpg";
+                imgCount++;
+                CopyFile(olduri, imgTitle, "imgs");
+
+                var uri = "imgs\\" + imgTitle;
+
                 //get image width and height
                 var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
 
@@ -318,24 +357,41 @@ namespace Dash
             }
         }
 
-        private static string VideoToTxt(DocumentController doc, List<double> minMax)
+        private string VideoToTxt(DocumentController doc, List<double> minMax)
         {
             //string version of the image uri
-            var uri = doc.GetDereferencedField(KeyStore.DataKey, null).ToString();
+            var uriRaw = doc.GetDereferencedField(KeyStore.DataKey, null);
+            if (uriRaw != null)
+            {
+                var olduri = uriRaw.ToString();
+                
+                //create image with unique title
+                var vidTitle = "vid" + vidCount + ".mp4";
+                vidCount++;
+                CopyFile(olduri, vidTitle, "vids");
 
-            //get image width and height
-            var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+                var uri = "vids\\" + vidTitle; 
 
-            var margins = getMargin(doc, minMax);
 
-            //return uri with HTML video formatting
-            return "<video width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
-                   "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 1; \" controls>" +
-                   "<source src=\"" + uri + "\" >" +
-                   "Your browser does not support the video tag. </ video >";
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML video formatting
+                return "<video width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
+                       "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] +
+                       "px;  z-index: 1; \" controls>" +
+                       "<source src=\"" + uri + "\" >" +
+                       "Your browser does not support the video tag. </video>";
+            }
+            else
+            {
+                return "";
+            } 
         }
 
-        private static async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
+        private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
             //get text that must be added to file for this collection
             var colText = await CollectionContent(col);
@@ -420,7 +476,7 @@ namespace Dash
                    "<div style=\"width: "+ colWidth + "px; border: 1px solid black; \">" + "<img style=\"width: 100%;\" src=\"" + colTitle + ".png\"/>" + "</div></a>";
         }
         
-        private static string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
+        private string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
             // get shape of box
@@ -455,7 +511,7 @@ namespace Dash
             return text;
         }
 
-        private static string KeyValToTxt(DocumentController doc, List<double> minMax)
+        private string KeyValToTxt(DocumentController doc, List<double> minMax)
         {
             //make table with document fields
             var margins = getMargin(doc, minMax);
@@ -472,7 +528,7 @@ namespace Dash
             return text + "</table>";
         }
 
-        private static async Task<StorageFolder> PickFolder()
+        private async Task<StorageFolder> PickFolder()
         {
             StorageFolder stFolder;
             if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
@@ -500,7 +556,7 @@ namespace Dash
         }
 
 
-        private static async void CreateFile(List<string> text, string title)
+        private async void CreateFile(List<string> text, string title)
         {
             if (folder != null)
             {
@@ -515,41 +571,41 @@ namespace Dash
                     {
                         mergedText = mergedText + word;
                     }
-
-                        //add String to file
-                        await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
+                    
+                    //add String to file
+                    await Windows.Storage.FileIO.WriteTextAsync(stFile, mergedText);
                    
                 }
             }
         }
 
-        private static async void CreateImage(string url, string title)
+        private async void CopyFile(string rawUrl, string title, string type)
         {
             if (folder != null)
             {
-                var filename = title + ".img";
-                var file = await folder.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
+                
+                StorageFolder localFolder =
+                    Windows.Storage.ApplicationData.Current.LocalFolder;
+                int pathLength = localFolder.Path.Length + 3;
 
-                HttpClient client = new HttpClient();
+                //get path without local folder
+                string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
 
-                byte[] responseBytes = await client.GetByteArrayAsync(url);
-                var stream = await file.OpenAsync(FileAccessMode.ReadWrite);
+                
+                StorageFile imgFile = await localFolder.GetFileAsync(url);
+                StorageFolder imgFolder = await folder.GetFolderAsync(type);
 
-                using (var outputStream = stream.GetOutputStreamAt(0))
-                {
-                    DataWriter writer = new DataWriter(outputStream);
-                    writer.WriteBytes(responseBytes);
-                    writer.StoreAsync();
-                    outputStream.FlushAsync();
-                }
+                //copy imgFile from rawUrl to type folder in export folder
+                await imgFile.CopyAsync(imgFolder, title);
             }
         }
 
 
-        private static async void CreateIndex(List<string> subCollections, String name)
+        private async void CreateIndex(List<string> subCollections, String name)
         {
             List<String> htmlContent = new List<string>();
-            htmlContent.Add("<center><h1 style=\"font-size: 70px;\">" + name + "</h1></center><br>");
+            htmlContent.Add("<center><h1 style=\"font-size: 70px; margin-bottom: -30px;\">Dash</h1></center><br>");
+            htmlContent.Add("<center><h2>" + name + "</h2></center><br>");
             foreach (var colName in subCollections)
             {
                 //make link to this collection
