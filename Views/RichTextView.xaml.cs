@@ -310,9 +310,10 @@ namespace Dash
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleCtrlEnter();
             }
-            else if (this.IsAltPressed()) // opens the format options flyout 
+			/**
+			else if (this.IsAltPressed()) // opens the format options flyout 
             {
-                if (xFormattingMenuView == null)
+				if (xFormattingMenuView == null)
                 {
                     xFormattingMenuView = new FormattingMenuView();
                     // store a clone of character format after initialization as default format
@@ -326,6 +327,7 @@ namespace Dash
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
             }
+		*/
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
