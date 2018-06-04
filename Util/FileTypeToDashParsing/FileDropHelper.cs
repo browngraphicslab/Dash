@@ -231,7 +231,8 @@ namespace Dash
 				filepath.EndsWith(".avi") ||
 				filepath.EndsWith(".mov"))
                 return FileType.Video;
-            if (filepath.EndsWith(".mp3"))
+            if (filepath.EndsWith(".mp3") ||
+                filepath.EndsWith(".wav"))
                 return FileType.Audio;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;
