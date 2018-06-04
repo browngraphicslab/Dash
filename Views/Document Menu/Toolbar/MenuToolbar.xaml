@@ -15,7 +15,7 @@
     <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
         <StackPanel>
 
-            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True">
+            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" IsSticky="True">
                 <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
                 <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
                 <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>

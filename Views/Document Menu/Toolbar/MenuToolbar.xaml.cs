@@ -58,7 +58,6 @@ namespace Dash
 				Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
 			};
 
-
 			// list of buttons that are enabled only if there is 1 or more selected documents
 			AppBarButton[] buttons = { xCopy, xDelete };
             docSpecificButtons = buttons;
@@ -110,6 +109,7 @@ namespace Dash
                 {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
                     subtoolbarElement = xTextToolbar;
+					System.Diagnostics.Debug.WriteLine("YO THIS IS BEING CALLED");
                 }
 
                 // Image controls

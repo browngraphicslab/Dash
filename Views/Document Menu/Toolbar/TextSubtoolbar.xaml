@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
@@ -14,6 +15,10 @@
         <controls:TextToolbar
             x:Name="xDashMenuToolBar"
             Visibility="Visible">
+            <!--remove Link button from default text toolbar-->
+            <controls:TextToolbar.ButtonModifications>
+                <buttons:DefaultButton Type="Link" IsVisible="False"/>
+            </controls:TextToolbar.ButtonModifications>
         </controls:TextToolbar>
 
     </Grid>
