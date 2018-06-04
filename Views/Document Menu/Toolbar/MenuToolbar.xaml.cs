@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using CsvHelper.Configuration.Attributes;
 using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
+using System.Runtime.InteropServices;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
