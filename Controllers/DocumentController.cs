@@ -28,6 +28,8 @@ namespace Dash
 
         public event EventHandler DocumentDeleted;
 
+        public object Tag = null;
+
         public override string ToString()
         {
             return Title;
@@ -690,6 +692,7 @@ namespace Dash
             // get the old value of the field
             FieldControllerBase oldField;
             proto._fields.TryGetValue(key, out oldField);
+            var overwrittenField = (forceMask && !this.Equals(proto)) ? null : oldField;
 
             // if the old and new field reference the exact same controller then we're done
             if (!ReferenceEquals(oldField, field))
@@ -700,7 +703,7 @@ namespace Dash
                 //}
 
                 field.SaveOnServer();
-                oldField?.DisposeField();
+                overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
                 doc.DocumentModel.Fields[key.Id] = field == null ? "" : field.Model.Id;
@@ -1225,7 +1228,7 @@ namespace Dash
             void TriggerDocumentFieldUpdatedFromPrototype(FieldControllerBase sender, FieldUpdatedEventArgs args, Context updateContext)
             {
                 var updateArgs = (DocumentFieldUpdatedEventArgs)args;
-                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey) && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
+                if (!_fields.ContainsKey(updateArgs.Reference.FieldKey)  && !doesAnythingMaskThisField(updateArgs.Reference.FieldKey, updateContext))// updateContext.IsCompatibleWith(new Context(this)))  // if this document overrides its prototypes value, then no event occurs since the field doesn't change
                 {
                     OnDocumentFieldUpdated(this,
                         new DocumentFieldUpdatedEventArgs(updateArgs.OldValue, updateArgs.NewValue, FieldUpdatedAction.Update,

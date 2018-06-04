@@ -148,6 +148,8 @@ namespace Dash
                 activeLayout = doc.MakeDelegate();
                 activeLayout.SetField(KeyStore.DocumentContextKey, copiedData, true); // point the inherited layout at the copied document
                 newDoc = activeLayout;
+                newDoc.Tag = "CollectionInstance Layout";
+                copiedData.Tag = "CollectionInstance Data";
             }
             else if (docContext == null && activeLayout != null) // has a layout
             {
@@ -563,9 +565,9 @@ namespace Dash
             {
                 foreach (var r in refs)
                 {
-                    if (r is DocumentReferenceController)
+                    var rDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
+                    if (rDoc != null)
                     {
-                        var rDoc = (DocumentReferenceController)r;
                         string rId = rDoc.DocumentId;
                         if (rId == d2.Key.GetId())
                             rDoc.ChangeFieldDoc(d2.Value.GetId());
