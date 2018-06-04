@@ -5,15 +5,26 @@
     xmlns:local="using:Dash.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <Grid>
         <StackPanel>
-            <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36"/>
-            <Button>Play Presentation</Button>
-            <TextBlock Text="Outline"/>
+            <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
+            <ListView ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="dash:DocumentViewModel">
+                        <TextBlock Text="{x:Bind LayoutDocument.Title}"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <CommandBar HorizontalAlignment="Center">
+                <AppBarButton Icon="Back" Label="Back" Click="BackButton_Click"/>
+                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
+                <AppBarButton Icon="Forward" Label="Next" Click="NextButton_Click"/>
+            </CommandBar>
         </StackPanel>
     </Grid>
 </UserControl>

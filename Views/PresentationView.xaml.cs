@@ -19,9 +19,26 @@ namespace Dash.Views
 {
     public sealed partial class PresentationView : UserControl
     {
+        public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
+
         public PresentationView()
         {
             this.InitializeComponent();
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PlayStopButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

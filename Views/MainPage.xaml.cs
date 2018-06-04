@@ -754,8 +754,7 @@ namespace Dash
         {
             IsPresentationModeToggled = !IsPresentationModeToggled;
             xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            xUtilSplitterColumn.Width = IsPresentationModeToggled ? new GridLength(15) : new GridLength(0);
-            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(200) : new GridLength(0);
+            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(300) : new GridLength(0);
         }
     }
 }

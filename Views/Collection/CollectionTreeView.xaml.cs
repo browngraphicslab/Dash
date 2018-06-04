@@ -120,7 +120,7 @@ namespace Dash
 
         public void TogglePresentationMode(bool on)
         {
-            presentationModeButton.Background = on ? new SolidColorBrush(Color.FromArgb(255, 61, 122, 172)) : new SolidColorBrush(Color.FromArgb(255, 141, 195, 239));
+            presentationModeButton.Background = on ? new SolidColorBrush(Color.FromArgb(255, 141, 195, 239)) : new SolidColorBrush(Color.FromArgb(255, 61, 122, 172));
         }
     }
 }
