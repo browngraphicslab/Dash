@@ -46,7 +46,7 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
-            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+"({" + searchTerm + "})";
+            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+ "(\"" + searchTerm + "\")";
         }
 
         private string WrapInDictifyFunc(string resultsString)
@@ -70,12 +70,12 @@ namespace Dash
             //TODO check if func exists
             if (!DSL.FuncNameExists(funcName))
             {
-                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "({" + funcName + "},{" + paramName + "})";
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
             }
 
             if (OperatorScript.GetFirstInputType(funcName) == DashShared.TypeInfo.Text)
             {
-                return funcName + "({" + paramName + "})";
+                return funcName + "(\"" + paramName + "\")";
             }
 
             return funcName + "(" + paramName + ")";

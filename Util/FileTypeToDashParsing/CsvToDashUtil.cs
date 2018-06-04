@@ -6,14 +6,14 @@ using Windows.Foundation;
 using CsvHelper;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
-using static Dash.NoteDocuments;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
     public class CsvToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             Stream stream;
             // if the uri filepath is a local file then copy it locally

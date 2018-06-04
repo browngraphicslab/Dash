@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using DashShared;
 using Windows.UI.Xaml.Controls;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {

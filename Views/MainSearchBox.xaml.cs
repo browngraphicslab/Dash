@@ -73,12 +73,12 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
-                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "({" + text + "}))");
+                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
             catch (DSLException e)
             {
-
+                Debug.WriteLine("Search Failed");
             }
             
             if (resultDict == null)
@@ -122,7 +122,7 @@ namespace Dash
 
             var tree = DocumentTree.MainPageTree;
 
-            foreach (var list in lists.OrderBy(i => i.Count))
+            foreach (var list in lists.Where(i => i.Any()).OrderBy(i => i.Count))
             {
                 yield return SearchHelper.ChooseHelpfulSearchResult(list, originalSearch);
             }
@@ -315,7 +315,7 @@ namespace Dash
             public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
             {
                 Debug.Assert(resultDocs.Any());
-                return resultDocs.First();
+                return resultDocs.FirstOrDefault();
             }
 
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
@@ -726,6 +726,7 @@ namespace Dash
             {
                 var documentTree = DocumentTree.MainPageTree;
                 var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
+                var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
                     int foundCount = 0;

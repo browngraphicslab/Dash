@@ -31,6 +31,8 @@ namespace Dash
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformation, bool isAbsolute);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
+        private bool IsMouseScrollOn => SettingsView.Instance.MouseScrollOn; 
+
         /// <summary>
         /// Created a manipulation control to move element
         /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
@@ -55,7 +57,14 @@ namespace Dash
         {
             e.Handled = true;
 
-            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
+            if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control) ^ IsMouseScrollOn) //scroll
+            {
+                var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
+                var x = e.KeyModifiers.HasFlag(VirtualKeyModifiers.Shift) ? scrollAmount  : 0;
+                OnManipulatorTranslatedOrScaled?.Invoke(
+                    new TransformGroupData(new Point(x, scrollAmount - x), new Point(1, 1)), false);
+            }
+            else //scale
             {
                 var point = e.GetCurrentPoint(_freeformView);
 
@@ -66,13 +75,9 @@ namespace Dash
                 ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
-                    OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position), false);
-            }
-            else
-            {
-                var scrollAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta / 3.0f;
-                var x = Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down) ? scrollAmount : 0;
-                OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(x, scrollAmount-x), new Point(1,1)), false);
+                    OnManipulatorTranslatedOrScaled?.Invoke(
+                        new TransformGroupData(new Point(), new Point(scaleAmount, scaleAmount), point.Position),
+                        false);
             }
         }
         public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -90,8 +95,7 @@ namespace Dash
         /// </summary>
         private void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.RightButton).HasFlag(CoreVirtualKeyStates.Down) ||
-                Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || _freeformView.IsRightBtnPressed() || _freeformView.IsCtrlPressed())
             {
                 var pointerPosition = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(new Point());
                 var pointerPosition2 = MainPage.Instance.TransformToVisual(_freeformView.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(e.Delta.Translation);

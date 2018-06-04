@@ -7,7 +7,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -23,7 +22,8 @@ namespace Dash
         Json,
         Csv,
         Pdf,
-        Text
+        Text,
+        Audio
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ namespace Dash
         /// <param name="where"></param>
         /// <param name="e"></param>
         /// <param name="collectionViewModel"></param>
-        public static async void HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
+        public static async Task<DocumentController> HandleDrop(Point where, DataPackageView dataView, CollectionViewModel collectionViewModel)
         {
             // get all the files from the drag event
             var files = (await dataView.GetStorageItemsAsync()).OfType<IStorageFile>().ToList();
@@ -84,9 +84,9 @@ namespace Dash
                 var fileType = await GetFileData(files.First(), dataView);
                 var documentController = await ParseFileAsync(fileType, where, dataView);
                 if (documentController != null)
-                { 
+                {
                     documentController.GetPositionField().Data = where;
-                    collectionViewModel.AddDocument(documentController, null);
+                    return documentController;
                 }
             }
 
@@ -126,12 +126,13 @@ namespace Dash
                     }
                 }
                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Schema, 200, 200, outputCollection);
-                collectionViewModel.AddDocument(cnote.Document, null);
+                return cnote.Document;
             }
             else
             {
                 throw new ArgumentException("The drag event did not contain any storage items");
             }
+            return null;
         }
 
         // TODO comment this method - LM
@@ -141,22 +142,24 @@ namespace Dash
             switch (fileData.Filetype)
             {
                 case FileType.Ppt:
-                    return await new PptToDashUtil().ParseFileAsync(fileData);
+                    return await new PptToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Json:
-                    return await new JsonToDashUtil().ParseFileAsync(fileData);
+                    return await new JsonToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Csv:
-                    return await new CsvToDashUtil().ParseFileAsync(fileData);
+                    return await new CsvToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Image:
-                    return await new ImageToDashUtil().ParseFileAsync(fileData);
+                    return await new ImageToDashUtil().ParseFileAsync(fileData, dataView);
 				case FileType.Video:
-					return await new VideoToDashUtil().ParseFileAsync(fileData);
-				case FileType.Web:
+					return await new VideoToDashUtil().ParseFileAsync(fileData, dataView);
+                case FileType.Audio:
+                    return await new AudioToDashUtil().ParseFileAsync(fileData, dataView);
+                case FileType.Web:
                     var link = await dataView.GetWebLinkAsync();
                     return new HtmlNote(link.AbsoluteUri, where: where).Document;
                 case FileType.Pdf:
-                    return await new PdfToDashUtil().ParseFileAsync(fileData);
+                    return await new PdfToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Text:
-                    return await new TextToDashUtil().ParseFileAsync(fileData);
+                    return await new TextToDashUtil().ParseFileAsync(fileData, dataView);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(fileData.Filetype), fileData.Filetype, null);
             }
@@ -205,7 +208,7 @@ namespace Dash
         }
 
 
-        private static FileType? GetFileType(string filepath)
+        public static FileType? GetFileType(string filepath)
         {
             filepath = filepath.ToLower();
             if (filepath.EndsWith(".pdf"))
@@ -226,9 +229,10 @@ namespace Dash
                 return FileType.Image;
 			if (filepath.EndsWith(".mp4") ||
 				filepath.EndsWith(".avi") ||
-				filepath.EndsWith(".mov") ||
-				filepath.EndsWith(".mp3"))
-				return FileType.Video;
+				filepath.EndsWith(".mov"))
+                return FileType.Video;
+            if (filepath.EndsWith(".mp3"))
+                return FileType.Audio;
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;
 

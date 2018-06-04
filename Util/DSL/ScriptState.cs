@@ -52,6 +52,16 @@ namespace Dash
             return new ScriptState(existingState, trackingId);
         }
 
+        /// <summary>
+        /// HACK
+        /// </summary>
+        /// <param name="variableName"></param>
+        /// <param name="value"></param>
+        public void ModifyStateDirectly(string variableName, FieldControllerBase value)
+        {
+            _dictionary[variableName] = value;
+        }
+
         public static ScriptState ContentAware()
         {
             return new ScriptState(new Dictionary<string, FieldControllerBase>()

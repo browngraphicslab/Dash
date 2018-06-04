@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("in")]
+    [OperatorType("coll", "inside")]
     public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
@@ -49,7 +49,7 @@ namespace Dash
             {
                 var term = searchTerm.Data.ToLower();
                 var tree = DocumentTree.MainPageTree;
-                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "({ })") as ListController<DocumentController>;
+                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
                 var final = allResults.TypedData.Where(doc => doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey) != null &&
                                                   tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).Parents.Any(
                                                       p => p?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data?.ToLower()?.Contains(term) == true));

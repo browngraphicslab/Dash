@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash.Controllers;
 using DashShared;
+using System;
 
 namespace Dash
 {
@@ -13,22 +14,26 @@ namespace Dash
 
         public DataBox(FieldControllerBase refToData, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-
-            w = h = double.NaN;
-            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToData);
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
-        }
-
-        public override FrameworkElement makeView(DocumentController documentController, Context context)
-        {
-            return MakeView(documentController, context);
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(double.NaN, double.NaN), refToData);
+            SetupDocument(DocumentType, PrototypeId, "Data Box Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController documentController, Context context)
         {
             var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
 
+            if (data is TextController txt && txt.Data.StartsWith("=="))
+            {
+                try
+                {
+                    data = DSL.InterpretUserInput(txt.Data)?.DereferenceToRoot(null);
+                }
+                catch (Exception) { }
+            }
+            //if (data is ListController<DocumentController> documentList)
+            //{
+            //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
+            //}
 
             if (data is ImageController)
             {
@@ -38,11 +43,15 @@ namespace Dash
 			{
 				return VideoBox.MakeView(documentController, context);
 			}
+            else if (data is AudioController)
+            {
+                return AudioBox.MakeView(documentController, context);
+            }
             else if (data is ListController<DocumentController> docList)
             {
-                var typeString = (documentController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? CollectionView.CollectionViewType.Grid.ToString();
                 return CollectionBox.MakeView(documentController, context);
-            } else if (data is DocumentController dc)
+            }
+            else if (data is DocumentController dc)
             {
                 // hack to check if the dc is a view document
                 FrameworkElement view = null;
@@ -68,20 +77,6 @@ namespace Dash
                 return RichTextBox.MakeView(documentController, context);
             }
             return new Grid();
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            return ContentController<FieldModel>.GetController<DocumentController>(PrototypeId) ??
-                   InstantiatePrototypeLayout();
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var defaultText = new TextController("Default Data");
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), defaultText);
-            var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
-            return prototypeDocument;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Dash
             // set the operator and title field
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.OperatorKey] = opController,
+                [KeyStore.OperatorKey] = new ListController<OperatorController>(new OperatorController[] { opController }),
                 [KeyStore.TitleKey] = new TextController(title ?? "")
             };
 

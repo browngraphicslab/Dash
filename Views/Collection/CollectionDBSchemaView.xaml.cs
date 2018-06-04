@@ -321,34 +321,15 @@ namespace Dash
         {
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
-            var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
-            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument
-                .SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
+            var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
-
-        // TODO lsm wrote this here it's a hack we should definitely remove this
-        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
-        {
-            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)
-                ?.DocumentType;
-            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
-            {
-                var layoutDoc = new KeyValueDocumentBox(dataDoc);
-
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
-                dataDoc.SetActiveLayout(layoutDoc.Document, true, false);
-            }
-
-            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
-        }
-
+        
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (var vm in args.Items.Select(item => item as CollectionDBSchemaRecordViewModel))
             {
-                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
                 args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
                 args.Data.RequestedOperation =
@@ -388,8 +369,7 @@ namespace Dash
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote(), null);
-            CollectionDBView_DataContextChanged(null, null);
+            ViewModel.AddDocument(Util.BlankNote());
             e.Handled = true;
         }
 

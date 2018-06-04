@@ -47,7 +47,7 @@
         <ListView x:Name="xRecordsView"  x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
                   SelectionMode="Extended"
-                  Background="#f6f6f6"
+                  Background="{ThemeResource DBCollectionBrush}"
                   CanDragItems="True"
                   CanReorderItems="True"
                   AllowDrop="True"

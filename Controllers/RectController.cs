@@ -62,7 +62,7 @@ namespace Dash
             return $"({Data})";
         }
 
-        public override FieldModelController<RectModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new RectController(Data);
         }
