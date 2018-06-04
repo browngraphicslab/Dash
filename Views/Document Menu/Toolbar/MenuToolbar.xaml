@@ -24,6 +24,7 @@
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
                 <AppBarButton Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
                 <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
+                <AppBarButton Icon="Cut" Label="Clip Image" Click="Clip_Image_On_Click"/>
                 <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarButton Icon="Audio" Label="Add Audio" Click="Add_Audio_On_Click"/>
                 <AppBarSeparator/>

@@ -291,6 +291,11 @@ namespace Dash
                 //add error message for null file?
             }
         }
+
+        private void Clip_Image_On_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 
 }
