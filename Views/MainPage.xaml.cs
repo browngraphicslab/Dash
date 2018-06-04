@@ -41,6 +41,7 @@ namespace Dash
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
+        private bool IsPresentationModeToggled = false;
 
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
@@ -579,6 +580,12 @@ namespace Dash
         private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+        }
+
+        public void TogglePresentationMode()
+        {
+            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
+            IsPresentationModeToggled = !IsPresentationModeToggled;
         }
     }
 }

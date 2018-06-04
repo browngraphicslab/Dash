@@ -39,7 +39,12 @@
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="15" x:Name="xPageSplitter"/>
             <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
+            <ColumnDefinition Width="0" x:Name="UtilSplitterColumn"/>
+            <ColumnDefinition Width="0" x:Name="UtilTabColumn"/>
         </Grid.ColumnDefinitions>
+
+        <localMicrosoft:GridSplitter Grid.Column="3" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
+
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
         <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
