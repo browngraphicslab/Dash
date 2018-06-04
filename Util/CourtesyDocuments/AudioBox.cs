@@ -11,8 +11,8 @@ namespace Dash
 {
     class AudioBox : CourtesyDocument
     {
-        public static DocumentType DocumentType = new DocumentType("7C4D8D1A-4E2B-45F4-A148-17EAFB4356B2", "Audio Box");
-        private static readonly string PrototypeId = "513A5CEB-90FE-45A6-911E-1E46E933B553";
+        public static DocumentType DocumentType = new DocumentType("41D7DF1F-4E3B-4770-9041-36835FF171FC", "Audio Box");
+        private static readonly string PrototypeId = "77E99E16-560C-4BB4-9FCD-E7A6F8CD5517";
         private static Uri DefaultAudiooUri => new Uri("ms-appx://Dash/Assets/DefaultAudio.mp3");
 
         public AudioBox(FieldControllerBase refToAudio, double x = 0, double y = 0, double w = 320, double h = 180)

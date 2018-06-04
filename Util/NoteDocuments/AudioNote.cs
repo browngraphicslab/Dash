@@ -7,8 +7,8 @@ namespace Dash
 {
     public class AudioNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("E9D1BEAF-8D88-4C00-958B-A1C7DB3AB560", "Audio Note");
-        static string _prototypeID = "9D2573C1-1FA2-49ED-9C38-425224D9F685";
+        public static DocumentType DocumentType = new DocumentType("4C19B898-69D9-40A4-85B6-AD4AFFD5F679", "Audio Note");
+        static string _prototypeID = "EDA4F2E9-690A-4FD5-A397-1A3ED68299FD";
         protected override DocumentController createPrototype(string prototypeID)
         {
             var fields = new Dictionary<KeyController, FieldControllerBase>
