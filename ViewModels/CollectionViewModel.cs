@@ -640,7 +640,8 @@ namespace Dash
                     </style>"
                 );
                 html = html.Substring(html.IndexOf("<html>", StringComparison.Ordinal));
-                html = new Regex("< *br(?<tags>.*?)>").Replace(html, "<br ${tags} />");
+                html = new Regex("< *br (?<tags>.*?)>").Replace(html, "<br ${tags} />");
+                html = new Regex("< *img (?<tags>.*?)>").Replace(html, "<img ${tags} />");
 
                 WordDocument d = new WordDocument();
                 d.EnsureMinimal();
@@ -652,12 +653,12 @@ namespace Dash
                 arr = mem.ToArray();
                 string rtf = Encoding.Default.GetString(arr);
                 var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
-                var matches = new Regex(".*:.*").Matches(rtf);
-                foreach (var match in matches)
-                {
-                    var pair = new Regex(":").Split(match.ToString());
-                    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
-                }
+                //var matches = new Regex(".*:.*").Matches(rtf);
+                //foreach (var match in matches)
+                //{
+                //    var pair = new Regex(":").Split(match.ToString());
+                //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
+                //}
                 AddDocument(t.Document);
 
                 //var splits = new Regex("<").Split(html);
