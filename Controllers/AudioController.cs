@@ -24,17 +24,17 @@ namespace Dash
         }
 
 
-        public VideoModel VideoFieldModel => Model as VideoModel;
+        public AudioModel AudioFieldModel => Model as AudioModel;
 
 
         public Uri MediaSource
         {
-            get => VideoFieldModel.Data;
+            get => AudioFieldModel.Data;
             set
             {
-                if (VideoFieldModel.Data != value)
+                if (AudioFieldModel.Data != value)
                 {
-                    VideoFieldModel.Data = value;
+                    AudioFieldModel.Data = value;
                     OnFieldModelUpdated(null);
                 }
             }
@@ -42,7 +42,7 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            var data = (Model as VideoModel)?.Data;
+            var data = (Model as AudioModel)?.Data;
             if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString)))
             {
                 return new StringSearchModel(data.AbsoluteUri);
@@ -52,7 +52,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new VideoController(new Uri("ms-appx:///Assets/DefaultVideo.mp4"));
+            return new AudioController(new Uri("ms-appx:///Assets/DefaultAudio.mp3"));
         }
 
         public override object GetValue(Context context)
@@ -77,16 +77,16 @@ namespace Dash
             set => MediaSource = value;
         }
 
-        public override TypeInfo TypeInfo => TypeInfo.Video;
+        public override TypeInfo TypeInfo => TypeInfo.Audio;
 
         public override string ToString()
         {
-            return VideoFieldModel.Data.AbsolutePath;
+            return AudioFieldModel.Data.AbsolutePath;
         }
 
         public override FieldControllerBase Copy()
         {
-            return new VideoController(VideoFieldModel.Data);
+            return new VideoController(AudioFieldModel.Data);
         }
     }
 }
