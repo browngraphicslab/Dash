@@ -546,6 +546,7 @@ namespace Dash
 
         private async void CreateImage(string url, string title)
         {
+            //need to save locally
             if (folder != null)
             {
                 var filename = title + ".img";
