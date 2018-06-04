@@ -46,16 +46,23 @@ namespace Dash
         public MenuToolbar(Canvas canvas)
         {
             this.InitializeComponent();
-            MenuToolbar.Instance = this;
+			
+			MenuToolbar.Instance = this;
             _parentCanvas = canvas;
             mode = MouseMode.TakeNote;
             checkedButton = xTouch;
 
-            // list of buttons that are enabled only if there is 1 or more selected documents
-            AppBarButton[] buttons = { xCopy, xDelete };
+			//move toolbar to ideal location on start-up
+			Loaded += (sender, args) =>
+			{
+				Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+			};
+
+			// list of buttons that are enabled only if there is 1 or more selected documents
+			AppBarButton[] buttons = { xCopy, xDelete };
             docSpecificButtons = buttons;
             this.SetUpBaseMenu();
-        }
+		}
 
         // == METHODS ==
         /// <summary>
@@ -102,6 +109,7 @@ namespace Dash
                 {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
                     subtoolbarElement = xTextToolbar;
+					System.Diagnostics.Debug.WriteLine("YO THIS IS BEING CALLED");
                 }
 
                 // Image controls
@@ -133,9 +141,10 @@ namespace Dash
         private void SetUpBaseMenu()
         {
             _parentCanvas.Children.Add(this);
-            //Canvas.SetLeft(this, 325);
-            //Canvas.SetTop(this, 10);
-        }
+			
+			//Canvas.SetLeft(this, 325);
+			//Canvas.SetTop(this, 10);
+		}
 
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
