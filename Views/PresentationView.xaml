@@ -10,6 +10,10 @@
     d:DesignWidth="400">
 
     <Grid>
-        <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36"/>
+        <StackPanel>
+            <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36"/>
+            <Button>Play Presentation</Button>
+            <TextBlock Text="Outline"/>
+        </StackPanel>
     </Grid>
 </UserControl>

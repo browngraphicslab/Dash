@@ -542,6 +542,9 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PresentationView.xaml.cs">
+      <DependentUpon>PresentationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
@@ -837,9 +840,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DockedView.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>    
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1025,6 +1028,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PresentationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

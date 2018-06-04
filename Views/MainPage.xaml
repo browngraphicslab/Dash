@@ -22,6 +22,8 @@
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="0" x:Name="xRightDockSplitterColumn"/>
             <ColumnDefinition Width="0" x:Name="xRightDockColumn"/>
+            <ColumnDefinition Width="0" x:Name="xUtilSplitterColumn"/>
+            <ColumnDefinition Width="0" x:Name="xUtilTabColumn"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="0" x:Name="xTopDockRow"/>
@@ -31,8 +33,8 @@
             <RowDefinition Height="0" x:Name="xBottomDockRow"/>
         </Grid.RowDefinitions>
 
-        <localMicrosoft:GridSplitter Grid.Column="3" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
-
+        <localMicrosoft:GridSplitter Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
+        <views:PresentationView Grid.Column="8" Grid.Row="0" Grid.RowSpan="5" Width="Stretch"/>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
 
