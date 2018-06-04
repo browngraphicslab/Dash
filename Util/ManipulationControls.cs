@@ -37,6 +37,8 @@ namespace Dash
         public event OnManipulationStartedHandler OnManipulatorStarted;
 
 
+        private CollectionView _previouslyHighlightedCollectionView = null;
+        
         private double _accumulatedTranslateAfterSnappingX;
         private double _accumulatedTranslateAfterSnappingY;
 
@@ -474,6 +476,14 @@ namespace Dash
             {
                 OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position));
             }
+
+            var nestedCollection = ParentDocument.GetCollectionToMoveTo(GetOverlappedViews());
+            if ((nestedCollection == null && _previouslyHighlightedCollectionView != null) || nestedCollection != null && !nestedCollection.Equals(_previouslyHighlightedCollectionView))
+            {
+                _previouslyHighlightedCollectionView?.Unhighlight();
+                nestedCollection?.Highlight();
+                _previouslyHighlightedCollectionView = nestedCollection;
+            }
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -482,12 +492,7 @@ namespace Dash
             {
                 MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
-                var docRoot = ParentDocument;
-                
-                var pos = docRoot.RootPointerPos();
-                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-                
+                _previouslyHighlightedCollectionView?.Unhighlight();
 
                 OnManipulatorCompleted?.Invoke();
                 _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
@@ -498,7 +503,13 @@ namespace Dash
                 }
             }
         }
-        
+
+        private List<DocumentView> GetOverlappedViews()
+        {
+            var pos = ParentDocument.RootPointerPos();
+            return VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
+        }
+
         public void Dispose()
         {
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;
