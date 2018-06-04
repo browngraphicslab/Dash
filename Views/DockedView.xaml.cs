@@ -50,9 +50,6 @@ namespace Dash.Views
             Grid.SetColumnSpan(view, 2);
             Grid.SetRow(view, 0);
             Grid.SetRowSpan(view, 2);
-            
-            NestedView.HorizontalAlignment = HorizontalAlignment.Stretch;
-            NestedView.VerticalAlignment = VerticalAlignment.Stretch;
 
             xMainDockedView.Children.Clear();
             xMainDockedView.Children.Add(view);

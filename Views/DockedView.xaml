@@ -35,7 +35,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Button Tapped="xCloseButton_Tapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                    Grid.Column="1" Grid.Row="0" x:Name="xCloseButton" Opacity="1" Margin="5" Background="White">
+                    Grid.Column="1" Grid.Row="0" x:Name="xCloseButton" Opacity="1" Margin="5" Background="Transparent">
                 <SymbolIcon Symbol="Cancel"/>
             </Button>
         </Grid>
