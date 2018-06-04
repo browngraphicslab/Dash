@@ -25,16 +25,28 @@ namespace Dash
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
        
         /// <summary>
-        /// Contains methods which allow the document to be moved around a free form canvas
+        /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
         public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
-        
+
         public MenuFlyout MenuFlyout { get; set; }
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
+
+        static DocumentView _focusedDocument;
+        // the document that has input focus (logically similar to keyboard focus but different since Images, etc can't be keyboard focused).
+        static public DocumentView FocusedDocument
+        {
+            get => _focusedDocument;
+            set
+            {
+                System.Diagnostics.Debug.WriteLine("Focusing on " + value.ViewModel.DocumentController.Tag);
+                _focusedDocument = value;
+            }
+        } 
 
         /// <summary>
         /// The width of the context preview
@@ -84,7 +96,8 @@ namespace Dash
                                                                new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey)) {
                         Converter = new TransformGroupMultiConverter(),
                         Context = new Context(doc),
-                        Mode = BindingMode.OneWay
+                        Mode = BindingMode.OneWay,
+                        Tag = "RenderTransform multi binding in DocumentView"
                     };
                 this.AddFieldBinding(RenderTransformProperty, binding);
             }
@@ -94,36 +107,25 @@ namespace Dash
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 PositionContextPreview();
             }
-            Loaded += (sender, e) => {
+            Loaded += (sender, e) =>
+            {
                 updateBindings(null, null);
                 DataContextChanged += (s, a) => updateBindings(null, null);
-                Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp   += CoreWindow_KeyUp;
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
+                SetZLayer();
             };
-            Unloaded += (sender, e) =>
-            {
-                Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
-                Window.Current.CoreWindow.KeyUp   -= CoreWindow_KeyUp;
-                SizeChanged -= sizeChangedHandler;
-            };
-
-            AddHandler(PointerPressedEvent, new PointerEventHandler((sender, e) =>
-            {
-                var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
-                ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
-            }), true);
+            Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
             PointerPressed += (sender, e) =>
             {
-                //var right = e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-                //var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                //var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
-                //ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
+                ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
+                MainPage.Instance.Focus(FocusState.Programmatic);
+                e.Handled = ManipulationMode != ManipulationModes.None;
             };
 
             PointerEntered += DocumentView_PointerEntered;
@@ -182,16 +184,33 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
-                if (selected?.Count() > 0)
-                {
-                    args.Data.Properties[nameof(List<DragDocumentModel>)] =
-                            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
-                }
-                else
+                //var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                //if (selected?.Count() > 0)
+                //{
+                //    args.Data.Properties[nameof(List<DragDocumentModel>)] =
+                //            new List<DragDocumentModel>(selected.Select((s) => new DragDocumentModel(s, true)));
+                //}
+                //else
                     args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false);
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                ViewModel.DecorationState = false;
+            };
+
+            // setup LinkEllipse
+            AnnotateEllipseHighlight.PointerExited += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
+            AnnotateEllipseUnhighlight.PointerEntered += (sender, e) => AnnotateEllipseHighlight.Visibility = Visibility.Visible;
+            xAnnotateEllipseBorder.PointerPressed += (sender, e) => {
+                this.ManipulationMode = ManipulationModes.None;
+                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            };
+            xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+            xAnnotateEllipseBorder.DragStarting += (sender, args) =>
+            {
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, true);
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                ViewModel.DecorationState = false;
             };
 
             // setup Title Icon
@@ -213,16 +232,19 @@ namespace Dash
             ManipulationControls = new ManipulationControls(this);
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () => {
-                if (!this.IsShiftPressed() && ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
+                var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                if (!this.IsShiftPressed() && ParentCollection.CurrentView is CollectionFreeformView cview)
                 {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    adornmentGroups.ForEach((dv) =>
                     {
-                        cview.SelectDocs(cview.DocsInMarquee(new Rect(ViewModel.Position, new Size(ActualWidth, ActualHeight))));
-                    }
+                        cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
+                    });
                 }
+                // initialize the cached values of position and scale for each manipulated document  
                 SelectedDocuments().ForEach((d) =>
                 {
-                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;  // initialize the cached values of position and scale
+                    d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position; 
                         d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
                 });
             };
@@ -234,7 +256,7 @@ namespace Dash
                     d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                     d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
                 });
-                if (ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                if (ViewModel.IsAdornmentGroup)
                 {
                     if (ParentCollection.CurrentView is CollectionFreeformView cview)
                     {
@@ -245,11 +267,32 @@ namespace Dash
 
             MenuFlyout = xMenuFlyout;
 
-            xMenuFlyout.Opened += (s, e) =>
+            MenuFlyout.Opened += (s, e) =>
             {
                 if (this.IsShiftPressed())
-                    xMenuFlyout.Hide();
+                    MenuFlyout.Hide();
             };
+        }
+
+        /// <summary>
+        /// Sets the 2D stacking layer ("Z" value) of the document.
+        /// If the document is marked as being an adormnment, we want to place it below all other documents
+        /// </summary>
+        void SetZLayer()
+        {
+            if (ViewModel?.IsAdornmentGroup == true)
+            {
+                var cp = this.GetFirstAncestorOfType<ContentPresenter>();
+                int curZ = 0;
+                var parCanvas = cp.GetFirstDescendantOfType<Canvas>();
+                if (parCanvas != null)
+                {
+                    foreach (var c in parCanvas.Children)
+                        if (Canvas.GetZIndex(c) < curZ)
+                            curZ = Canvas.GetZIndex(c);
+                    Canvas.SetZIndex(cp, curZ - 1);
+                }
+            }
         }
 
         /// <summary> 
@@ -270,39 +313,6 @@ namespace Dash
             ViewModel.InteractiveManipulationPosition = translate;
             ViewModel.InteractiveManipulationScale = scaleAmount; 
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
-        }
-        
-        /// <summary>
-        /// Handles keypress events.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
-        {
-            if (!this.IsF1Pressed())
-                ShowLocalContext(false);
-        }
-        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
-        {
-            if (this.IsF1Pressed() && this.IsPointerOver())
-            {
-                ShowLocalContext(true);
-            }
-            if (this.IsF2Pressed() && this.IsPointerOver())
-            {
-                ShowSelectedContext();
-            }
-            
-            var focused = (FocusManager.GetFocusedElement() as FrameworkElement)?.DataContext as DocumentViewModel;
-
-            if (ViewModel != null && ViewModel.Equals(focused) && 
-                this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift) && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
-            {
-                // don't shift enter on KeyValue documents (since they already display the key/value adding)
-                if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
-                    !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
-                    HandleShiftEnter();
-            }
         }
 
         public void ShowLocalContext(bool showContext)
@@ -557,7 +567,7 @@ namespace Dash
         /// </summary>
         public void ToFront()
         {
-            if (ParentCollection == null || ViewModel?.DocumentController?.DocumentType?.Equals(BackgroundBox.DocumentType) == true)
+            if (ParentCollection == null || ViewModel?.IsAdornmentGroup == true)
                 return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
@@ -568,7 +578,15 @@ namespace Dash
         /// </summary>
         public void ForceRightTapContextMenu()
         {
-            xMenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
+            MenuFlyout.ShowAt(this, MainPage.Instance.TransformToVisual(this).TransformPoint(this.RootPointerPos()));
+        }
+        
+        /// <summary>
+        /// Ensures the menu flyout is shown on right tap.
+        /// </summary>
+        public void ForceLeftTapped()
+        {
+            this.DocumentView_OnTapped(null, null);
         }
 
         /// <summary>
@@ -585,6 +603,7 @@ namespace Dash
                 {
                     (ParentCollection.CurrentView as CollectionFreeformView)?.RenderPreviewTextbox(ViewModel.Position);
                 }
+                MainPage.Instance.DeselectDocument(this);
             }
         }
 
@@ -595,8 +614,8 @@ namespace Dash
         {
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
-
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetCopy(null), null);
+            var doc = ViewModel.DocumentController.GetCopy(null);
+            ParentCollection?.ViewModel.AddDocument(doc);
         }
 
         /// <summary>
@@ -607,7 +626,7 @@ namespace Dash
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
 
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetViewCopy(null));
             //xDelegateStatusCanvas.Visibility = ViewModel.DocumentController.HasDelegatesOrPrototype ? Visibility.Visible : Visibility.Collapsed;  // TODO theoretically the binding should take care of this..
         }
 
@@ -616,7 +635,7 @@ namespace Dash
         /// </summary>
         private void KeyValueViewDocument()
         {
-            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias(), null);
+            ParentCollection?.ViewModel.AddDocument(ViewModel.DocumentController.GetKeyValueAlias());
         }
 
         /// <summary>
@@ -641,8 +660,9 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            //xTargetContentGrid.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            xTargetContentGrid.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
+            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
@@ -658,22 +678,26 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!ViewModel.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+            if (ViewModel.IsAdornmentGroup)
             {
+                FocusedDocument = this;
                 ToFront();
-                List<DocumentView> d = new List<DocumentView>();
-                d.Add(this);
+                var d = new List<DocumentView>(new DocumentView[] { this });
                 //foreach (DocumentView doc in d)
                 //{
                 //    System.Diagnostics.Debug.WriteLine(doc.ToString());
                 //}
-                (ParentCollection?.CurrentView as CollectionFreeformView)?.DeselectAll();
-                (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectDocs(d);
+                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
+                {
+                    if (!this.IsShiftPressed())
+                        cfview.DeselectAll();
+                    cfview.SelectDocs(d);
+                    if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                    {
+                        cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    }
+                }
             }
-			if (ViewModel.DocumentController.DocumentType.Equals(VideoBox.DocumentType))
-			{
-				//ViewModel.DocumentController.GetVideo().Pause();
-			}
         }
 
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -711,7 +735,7 @@ namespace Dash
                             var where = nestedCollection.CurrentView is CollectionFreeformView ?
                                 Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                                 new Point();
-                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where), null);
+                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
                             collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
 
                         }
@@ -749,6 +773,15 @@ namespace Dash
 
             collection.LoadNewActiveTextBox("", where, true);
         }
+        public void HandleCtrlEnter()
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var docCanvas = this.GetFirstAncestorOfType<Canvas>();
+            if (collection == null) return;
+            var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
+            var dtext = this.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data ?? "";
+            collection.LoadNewDataBox(dtext, where, true);
+        }
 
         #endregion
         #region Context menu click handlers
@@ -773,7 +806,25 @@ namespace Dash
             foreach (var doc in SelectedDocuments())
                 doc.KeyValueViewDocument();
         }
-        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y)), null) ; }
+        private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var docView in SelectedDocuments())
+            {
+                docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
+                SetZLayer();
+            }
+        }
+        public void MenuFlyoutItemFitToParent_Click(object sender, RoutedEventArgs e)
+        {
+            var collectionView = this.GetFirstDescendantOfType<CollectionView>();
+            if (collectionView != null)
+            {
+                collectionView.ViewModel.FitToParent = !collectionView.ViewModel.FitToParent;
+                if (collectionView.ViewModel.FitToParent)
+                    collectionView.ViewModel.FitContents();
+            }
+        }
+        public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
         private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
@@ -800,82 +851,119 @@ namespace Dash
 
         #endregion
 
+
         void This_Drop(object sender, DragEventArgs e)
         {
-            var footer = sender == this.xFooter;
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-
-            if (dragModel?.DraggedKey != null)
+            if (dragModel?.CreateLink != null)
             {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
 
-                var newField = dragModel.GetDropDocument(new Point());
-                newField.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
-                newField.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                newField.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
-                var activeLayout = ViewModel.LayoutDocument;
-                if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
+
+                e.Handled = true;
+            }
+        }
+        void FooterDrop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.CreateLink != null)
+            {
+                var note = new RichTextNote("<annotation>").Document;
+                dragModel.DraggedDocument.Link(note);
+                drop(true, note);
+            }
+            else
+                drop(true, dragModel.GetDropDocument(new Point()));
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.Handled = true;
+        }
+        void HeaderDrop(object sender, DragEventArgs e)
+        {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+
+            if (dragModel?.CreateLink != null)
+            {
+                var note = new RichTextNote("<annotation>").Document;
+                dragModel.DraggedDocument.Link(note);
+                drop(false, note);
+            }
+            else
+                drop(false, dragModel.GetDropDocument(new Point()));
+
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+
+            e.Handled = true;
+        }
+    
+        void drop(bool footer, DocumentController newFieldDoc)
+        {
+            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+           
+           // newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
+            newFieldDoc.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            newFieldDoc.SetField<NumberController>(KeyStore.PositionFieldKey, new Point(100,100), true);
+            var activeLayout = ViewModel.LayoutDocument;
+            if (activeLayout?.DocumentType.Equals(StackLayout.DocumentType) == true) // activeLayout is a stack
+            {
+                if (activeLayout.GetField(KeyStore.DataKey, true) == null)
                 {
-                    if (activeLayout.GetField(KeyStore.DataKey, true) == null)
-                    {
-                        var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
-                        if (!footer)
-                            fields.Insert(0, newField);
-                        else fields.Add(newField);
-                        activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
-                    }
-                    else
-                    {
-                        var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                        if (!footer)
-                            listCtrl.Add(newField, 0);
-                        else listCtrl.Add(newField);
-                    }
+                    var fields = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData.ToArray().ToList();
+                    if (!footer)
+                        fields.Insert(0, newFieldDoc);
+                    else fields.Add(newFieldDoc);
+                    activeLayout.SetField(KeyStore.DataKey, new ListController<DocumentController>(fields), true);
                 }
                 else
                 {
-                    var curLayout = activeLayout;
-                    if (ViewModel.DocumentController?.GetActiveLayout() != null) // wrap existing activeLayout into a new StackPanel activeLayout
-                    {
-                        curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
-                        curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
-                        curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                        curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-                    }
-                    else  // need to create a stackPanel activeLayout and add the document to it
-                    {
-                        curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
-                        curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                        curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-                        curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    }
-                    activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newField, footer ? newField : curLayout }).Document;
-                    activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
-                    activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
-                    activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
-                    activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
-                    ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
+                    var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                    if (!footer)
+                        listCtrl.Add(newFieldDoc, 0);
+                    else listCtrl.Add(newFieldDoc);
                 }
-                
-                e.Handled = true;
+            }
+            else
+            {
+                var curLayout = activeLayout;
+                if (ViewModel.DocumentController?.GetActiveLayout() != null) // wrap existing activeLayout into a new StackPanel activeLayout
+                {
+                    curLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                    curLayout.SetVerticalAlignment(VerticalAlignment.Stretch);
+                    curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                    curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                }
+                else  // need to create a stackPanel activeLayout and add the document to it
+                {
+                    curLayout = activeLayout.MakeCopy() as DocumentController; // ViewModel's DocumentController is this activeLayout so we can't nest that or we get an infinite recursion
+                    curLayout.Tag = "StackPanel DocView Layout";
+                    curLayout.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                    curLayout.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                    curLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                }
+                activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout: newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
+                activeLayout.Tag = "StackLayout";
+                activeLayout.SetField<PointController>(KeyStore.PositionFieldKey, ViewModel.Position, true);
+                activeLayout.SetField<NumberController>(KeyStore.WidthFieldKey, ViewModel.ActualSize.X, true);
+                activeLayout.SetField<NumberController>(KeyStore.HeightFieldKey, ViewModel.ActualSize.Y + 32, true);
+                activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
+                ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
         }
 
         void This_DragOver(object sender, DragEventArgs e)
         {
+            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
             xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+            
+            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-            if (dragModel?.DraggedKey != null)
-            {
-                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+            e.DragUIOverride.IsContentVisible = true;
 
-                e.DragUIOverride.IsContentVisible = true;
-
-                e.Handled = true;
-            }
+            e.Handled = true;
         }
 
         public void This_DragLeave(object sender, DragEventArgs e)

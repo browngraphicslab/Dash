@@ -80,5 +80,12 @@ namespace Dash
         /// <param name="error"></param>
         /// <returns></returns>
         Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase;
+
+
+        /// <summary>
+        /// Returns a list of backups in the format, pretty print string, connection string (i.e. path, connect to database etc...)
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, string> GetBackups();
     }
 }

@@ -41,7 +41,7 @@
         </ListView.ItemContainerStyle>
         <ListView.ItemTemplate>
             <DataTemplate>
-                <local:EditableScriptBox/>
+                <local:EditableScriptView/>
             </DataTemplate>
         </ListView.ItemTemplate>
 

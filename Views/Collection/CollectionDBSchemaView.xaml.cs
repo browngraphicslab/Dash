@@ -348,7 +348,7 @@ namespace Dash
         {
             foreach (var vm in args.Items.Select(item => item as CollectionDBSchemaRecordViewModel))
             {
-                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
                 args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
                 args.Data.RequestedOperation =
@@ -388,8 +388,8 @@ namespace Dash
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote(), null);
-            CollectionDBView_DataContextChanged(null, null);
+            ViewModel.AddDocument(Util.BlankNote());
+            CollectionDBView_DataContextChanged(null, null); //TODO Why do we need to call this?
             e.Handled = true;
         }
 

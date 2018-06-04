@@ -15,12 +15,13 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class EditableScriptBox : INotifyPropertyChanged
+    public sealed partial class EditableScriptView : INotifyPropertyChanged
     {
 
 
@@ -43,11 +44,17 @@ namespace Dash
         }
 
 
-        public EditableScriptBox()
+        public EditableScriptView()
         {
             this.InitializeComponent();
 
             
+        }
+
+        public void MakeEditable()
+        {
+            SetExpression(XTextBlock.Text);
+            TextBoxLoaded = true;
         }
 
         private void XTextBlock_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -72,10 +79,14 @@ namespace Dash
                 SetExpression(XTextBox.Text);
         }
 
+        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         private bool SetExpression(string text)
         {
             TextBoxLoaded = false;
-            XTextBlock.Visibility = Visibility.Visible;
             try
             {
                 FieldControllerBase field = DSL.InterpretUserInput(text, state:  ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
@@ -86,6 +97,16 @@ namespace Dash
                 return false;
             }
             return true;
+        }
+
+        void UserControl_Drop(object sender, DragEventArgs e)
+        {
+            if (ViewModel != null && e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            {
+                var dropDocument = (e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel).DraggedDocument;
+                ViewModel?.Reference.GetDocumentController(null).SetField(ViewModel?.Reference.FieldKey, dropDocument.GetViewCopy(), true);
+                e.Handled = true;
+            }
         }
 
         private string GetRootExpression()
@@ -103,9 +124,8 @@ namespace Dash
         {
             if (TextBoxLoaded)
             {
-                SetExpression(XTextBox.Text);
+               // SetExpression(XTextBox.Text);
             }
-            CollapseBox();
         }
 
         private void XTextBox_OnLoaded(object sender, RoutedEventArgs e)
@@ -114,24 +134,6 @@ namespace Dash
             XTextBox.Focus(FocusState.Programmatic);
             XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
-
-            ExpandBox();
-        }
-
-        public void ExpandBox()
-        {
-            xBackground.Height = 120;
-            xBackground.VerticalAlignment = VerticalAlignment.Top;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Expand_Value(this);
-        }
-
-        public void CollapseBox()
-        {
-            xBackground.Height = 60;
-            xBackground.VerticalAlignment = VerticalAlignment.Center;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -142,20 +144,22 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void EditableScriptBox_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private EditableScriptViewModel _oldViewModel;
+        private void EditableScriptView_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (ViewModel == null)
+            if (ViewModel == null || ViewModel == _oldViewModel)
             {
                 return;
             }
-            FieldBinding<FieldControllerBase> binding = new FieldBinding<FieldControllerBase>
+
+            _oldViewModel = ViewModel;
+            var binding = new FieldBinding<FieldControllerBase>
             {
                 Document = ViewModel.Reference.GetDocumentController(ViewModel.Context),
                 Key = ViewModel.Reference.FieldKey,
                 Context = ViewModel.Context,
                 Converter = new ObjectToStringConverter(),
-                Mode = BindingMode.OneWay,
-                
+                Mode = BindingMode.TwoWay,
             };
             XTextBlock.AddFieldBinding(TextBlock.TextProperty, binding);
         }

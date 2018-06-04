@@ -9,13 +9,14 @@ using Windows.Storage;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using Newtonsoft.Json.Linq;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
     public class JsonToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             string jsonText;
 

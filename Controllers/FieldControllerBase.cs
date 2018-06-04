@@ -14,13 +14,18 @@ namespace Dash
     {
         public delegate void FieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context);
 
+        /// <summary>
+        ///  Used to flag a field as not being able to be modified.
+        ///  Example: When an operator's output is not defined, it may return a Controller for a default field value.
+        ///  If someone wants to edit this value, this will indicate that a new Controller needs to be created
+        ///  instead of modifying the value in this controller.
+        /// </summary>
+        public bool ReadOnly = false;
         public abstract TypeInfo TypeInfo { get; }
         public virtual TypeInfo RootTypeInfo => TypeInfo;
-
         public event FieldUpdatedHandler FieldModelUpdated;
-
         public object Tag = null;
-
+            
         public FieldControllerBase(FieldModel model) : base(model)
         {
         }
@@ -70,12 +75,14 @@ namespace Dash
             return new List<DocumentController>();
         }
 
-        public abstract FieldControllerBase GetCopy();
-
         public virtual bool CheckType(FieldControllerBase fmc)
         {
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
+
+        public abstract FieldControllerBase Copy();
+
+        public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return null; }
 
         /// <summary>
         /// Returns the type of this field as a string. Can override this for more complex
@@ -106,7 +113,7 @@ namespace Dash
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(double.NaN);
             tb.Document.SetWidth(double.NaN);
-            return tb.makeView(tb.Document, context);
+            return TextingBox.MakeView(tb.Document, context);
         }
 
         public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id)

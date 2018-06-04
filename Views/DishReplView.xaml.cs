@@ -6,6 +6,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -23,24 +24,71 @@ namespace Dash
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private DSL _dsl;
 
+        private int _currentHistoryIndex = 0;
+
         public DishReplView()
         {
             this.InitializeComponent();
             this.DataContext = new DishReplViewModel();
             _dsl = new DSL(ScriptState.ContentAware(), true);
+            xTextBox.GotFocus += XTextBoxOnGotFocus;
+            xTextBox.LostFocus += XTextBoxOnLostFocus;
         }
+
+        private void XTextBoxOnLostFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            Window.Current.CoreWindow.KeyUp -= CoreWindowOnKeyUp;
+        }
+
+        private void XTextBoxOnGotFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
+        }
+
+        private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            switch (args.VirtualKey)
+            {
+                case VirtualKey.Up:
+                    _currentHistoryIndex++;
+                    xTextBox.Text = ViewModel.Items.ElementAt(Math.Max(0,ViewModel.Items.Count - _currentHistoryIndex))?.LineText?.Substring(3) ?? xTextBox.Text;
+                    break;
+                case VirtualKey.Down:
+                    _currentHistoryIndex = Math.Max(1, _currentHistoryIndex - 1);
+                    xTextBox.Text = ViewModel.Items.ElementAt(Math.Max(0, ViewModel.Items.Count - _currentHistoryIndex))?.LineText?.Substring(3) ?? xTextBox.Text;
+                    break;
+            }
+        }
+
 
         private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
         {
             var textBox = sender as TextBox;
             if (e.OriginalKey == VirtualKey.Enter)
             {
+                _currentHistoryIndex = 0;
                 var currentText = textBox.Text;
                 textBox.Text = "";
-                var returnValue = _dsl.Run(currentText) as TextController;
-                ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue.Data, new TextController("test")));
+                FieldControllerBase returnValue;
+                try
+                {
+                    returnValue = _dsl.Run(currentText, true);
+                }
+                catch (Exception ex)
+                {
+                    returnValue = new TextController("There was an error: "+ex.StackTrace);
+                }
+
+                ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
                 xScrollViewer.ScrollToVerticalOffset(int.MaxValue);
             }
+        }
+
+        private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var line = (sender as FrameworkElement).DataContext as ReplLineViewModel;
+
+            var test = MainPage.Instance.MainDocument.GetDataDocument();
         }
     }
 }

@@ -27,8 +27,8 @@
                 >
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="#20000000" BorderThickness="1" CornerRadius="5">
-                        <Viewbox>
+                    <Border BorderBrush="#20000000" Background="#01111111" BorderThickness="1" CornerRadius="5" Tapped="Viewbox_Tapped">
+                        <Viewbox >
                             <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
                         </Viewbox>
                     </Border>

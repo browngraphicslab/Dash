@@ -76,7 +76,7 @@ namespace Dash
 
         private void LoadContext()
         {
-            if (_contextPreview == null)
+            if (_contextPreview == null && ViewModel.DocumentContext.GetImage() != null)
             {
                 _contextPreview = new ContextPreview(ViewModel.DocumentContext)
                 {
@@ -84,6 +84,9 @@ namespace Dash
                     Height = ContextPreviewActualHeight,
                 };
                 xDocHolder.Children.Add(_contextPreview);
+            } else
+            {
+                xLowerLine2.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -99,7 +102,7 @@ namespace Dash
 
             if (docText != null)
             {
-                thumbnailImageViewDoc = new NoteDocuments.PostitNote(docText).Document;
+                thumbnailImageViewDoc = new PostitNote(docText).Document;
             }
             else
             {

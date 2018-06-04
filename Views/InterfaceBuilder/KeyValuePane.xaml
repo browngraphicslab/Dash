@@ -48,7 +48,7 @@
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
-            <TextBlock Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" Text="{x:Bind Path=_dataContextDocument.Title}"></TextBlock>
+            <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
 
             <!--close button-->
                 <AppBarButton Height="40" Margin="0,0,0,0" Foreground="White" Background="Transparent"
@@ -60,7 +60,7 @@
         </Grid>
 
         <!--scrolling fields-->
-        <ScrollViewer Name="xFieldsScroller" MaxHeight="500" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+        <ScrollViewer Name="xFieldsScroller" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <!--key value lists-->
             <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -69,7 +69,7 @@
                 </Grid.ColumnDefinitions>
                 <!--key listview-->
                 <ListView Name="xKeyListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="False"
+                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" CanDragItems="True" DragItemsStarting="xKeyListView_DragItemsStarting"
                     ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem" x:Name="CollapseBox">
@@ -84,7 +84,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:EditableScriptViewModel">
-                            <TextBlock Text="{x:Bind Key.Name}"></TextBlock>
+                            <TextBlock Text="{x:Bind Key.Name}"  PointerPressed="KeyValueScriptView_PointerPressed"></TextBlock>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -92,7 +92,7 @@
                 <!--field listview-->
                 <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
                         Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                        SelectionMode="None" CanDragItems="False" ItemsSource="{x:Bind ListItemSource}">
+                        SelectionMode="None" CanDragItems="True" DragItemsStarting="xFieldListView_DragItemsStarting" ItemsSource="{x:Bind ListItemSource}">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -101,11 +101,12 @@
                             <Setter Property="Margin" Value="0" />
                             <Setter Property="BorderThickness" Value="0,0,.1,.1" />
                             <Setter Property="BorderBrush" Value="LightGray" />
+                            <Setter Property="Height" Value="60" />
                         </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <local:EditableScriptBox></local:EditableScriptBox>
+                            <local:KeyValueScriptView PointerPressed="KeyValueScriptView_PointerPressed"></local:KeyValueScriptView>
                         </DataTemplate>
                     </ListView.ItemTemplate>
 

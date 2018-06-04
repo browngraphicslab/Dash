@@ -17,11 +17,13 @@ namespace Dash
             _context = null;
         }
 
+        public bool DereferenceData { get; set; } = true;
+
         public override string ConvertDataToXaml(object refField, object parameter = null)
         {
 
             // convert references to a string representation
-            var fieldData = (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context);
+            var fieldData = DereferenceData ? (refField as ReferenceController)?.DereferenceToRoot(_context)?.GetValue(_context) : refField as ReferenceController;
             if (fieldData == null && !(refField is ReferenceController))
             {
                 fieldData = refField;

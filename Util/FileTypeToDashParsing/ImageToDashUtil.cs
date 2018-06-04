@@ -9,6 +9,9 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.ApplicationModel.DataTransfer;
+using System.IO;
+using System.Linq;
 
 namespace Dash
 {
@@ -31,9 +34,10 @@ namespace Dash
         /// <summary>
         /// Parse a file and save it to the local filesystem
         /// </summary>
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData,
+            DataPackageView dataView=null)
         {
-            var localFile = await CopyFileToLocal(fileData);
+            var localFile = await CopyFileToLocal(fileData, dataView);
 
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
 
@@ -77,14 +81,32 @@ namespace Dash
         /// <summary>
         /// Copy a file to the local file system, returns a refernece to the file in the local filesystem
         /// </summary>
-        private static async Task<StorageFile> CopyFileToLocal(FileData fileData)
+        private static async Task<StorageFile> CopyFileToLocal(FileData fileData,
+            DataPackageView dataView)
         {
             var localFile = await CreateUniqueLocalFile();
 
             // if the uri filepath is a local file then copy it locally
             if (!fileData.File.FileType.EndsWith(".url"))
             {
-                await fileData.File.CopyAndReplaceAsync(localFile);
+                try
+                {
+                    await fileData.File.CopyAndReplaceAsync(localFile);
+                }
+                catch (Exception)
+                {
+                    var bmp = await dataView.GetBitmapAsync();
+                    IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+                    byte[] buffer = new byte[streamWithContent.Size];
+                    using (DataReader reader = new DataReader(streamWithContent))
+                    {
+                        await reader.LoadAsync((uint)streamWithContent.Size);
+                        reader.ReadBytes(buffer);
+                    }
+                    var localFolder = ApplicationData.Current.LocalFolder;
+                    var uniqueFilePath = UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
+                    localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
+                }
             }
             // otherwise stream it from the internet
             else
@@ -139,23 +161,11 @@ namespace Dash
         /// <summary>
         /// Convert a local file which stores an image into an ImageBox, if the title is null the ImageBox doesn't have a Title
         /// </summary>
-        private static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
+        public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
         {
             var imgSize = await GetImageSize(localFile);
 
-            // create a backing document for the image
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
-                [KeyStore.WidthFieldKey] = new NumberController(imgSize.Width),
-                [KeyStore.HeightFieldKey] = new NumberController(imgSize.Height),
-            };
-            if (title != null) fields[KeyStore.TitleKey] = new TextController(title);
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-            // return an image box, by setting the height to NaN the image height automatically sizes
-            // based on the width according to the aspect ratio
-            return new ImageBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
+            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgSize.Width, double.NaN), title).Document;
         }
 
         /// <summary>

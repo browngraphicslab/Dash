@@ -40,9 +40,17 @@ namespace Dash
             double sum = 0;
             foreach (var value in inputs.Values)
             {
-                var controller = value as NumberController;
-                if (controller != null)
+                if (value is NumberController controller)
+                {
                     sum += controller.Data;
+                }else if (value is TextController text)
+                {
+                    double d;
+                    if (double.TryParse(text.Data, out d))
+                    {
+                        sum += d;
+                    }
+                }
             }
 
             outputs[SumKey] = new NumberController(sum);

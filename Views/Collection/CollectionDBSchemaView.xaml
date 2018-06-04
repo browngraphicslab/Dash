@@ -12,7 +12,7 @@
     Tapped="OnTapped"
     d:DesignWidth="400">
 
-    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="#CCFFFFFF" >
+    <Grid x:Name="xOuterGrid" SizeChanged="xOuterGrid_SizeChanged" Loaded="xOuterGrid_Loaded" Background="{ThemeResource DBCollectionBrush}" >
         <Grid.RowDefinitions>
             <RowDefinition x:Name="xHeaderArea" Height="42"></RowDefinition>
             <RowDefinition x:Name="xDataArea" Height="*"></RowDefinition>
@@ -47,7 +47,7 @@
         <ListView x:Name="xRecordsView"  x:FieldModifier="public"  Style="{StaticResource xSchemaListView}"
                   Grid.Row="1" 
                   SelectionMode="Extended"
-                  Background="#f6f6f6"
+                  Background="{ThemeResource DBCollectionBrush}"
                   CanDragItems="True"
                   CanReorderItems="True"
                   AllowDrop="True"

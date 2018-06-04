@@ -27,10 +27,6 @@ namespace Dash
 			this.InitializeComponent();
 		}
 
-	    internal void SetMenuToolBarBinding(EditableImage image)
-	    {
-	    }
-
 	    /**
          * Prevents command bar from hiding labels on click by setting isOpen to true every time it begins to close.
         */

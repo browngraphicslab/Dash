@@ -58,6 +58,8 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             var data = (Model as ImageModel)?.Data;
+            if (searchString == null)
+                return new StringSearchModel(data.AbsoluteUri);
             if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString)))
             {
                 return new StringSearchModel(data.AbsoluteUri);
@@ -93,7 +95,7 @@ namespace Dash
             return ImageFieldModel.Data.AbsolutePath;
         }
 
-        public override FieldModelController<ImageModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new ImageController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }
