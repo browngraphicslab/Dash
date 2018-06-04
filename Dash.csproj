@@ -225,6 +225,7 @@
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
+    <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
