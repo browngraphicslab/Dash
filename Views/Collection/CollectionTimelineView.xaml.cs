@@ -77,12 +77,7 @@ namespace Dash
 
 
     public sealed partial class CollectionTimelineView : ICollectionView
-    {
-
-        private readonly Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler> _docViewModelToHandler =
-            new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
-        
-        private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
+    {   
 
         public TimelineMetadata Metadata { get; }
         public CollectionViewModel ViewModel { get; set; }
@@ -93,15 +88,13 @@ namespace Dash
 
         // timeline element layout
         public List<double> DisplayedXPositions { get; private set; }
-        private double CurrentXPosition;
         public static double LastDisplayedPosition = 0;
 
+        private double CurrentXPosition;
         private double CurrentTopY; // how tall the element is vertically
-
         private double _minGap = 30; // the minimum width between timeline elements
         private double _maxGap = 300; // the maximum width between timeline elements
-
-        public double Scale; // the current scale
+        public double Scale = 0.9; // the current scale
 
 
         /// <summary>
@@ -121,6 +114,8 @@ namespace Dash
             {
                 LeftRightMargin = 160
             };
+
+            //Todo: make sortkey work for other keys
             SortKey = KeyStore.ModifiedTimestampKey;
 
             Loaded += CollectionTimelineView_Loaded;
@@ -158,7 +153,6 @@ namespace Dash
 
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
         {
-            Scale = .9;
             SetTimelineFormatting();
         }
 
@@ -211,6 +205,9 @@ namespace Dash
             // reset position trackers and position elements
             CurrentXPosition = 0;
             CurrentTopY = 30;
+
+            // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
+            // PositionElement only works when elements are passed in in an increasing order
             foreach (var element in _contextList.OrderBy(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks).ToList())
             {
                 PositionElement(element);
@@ -280,8 +277,9 @@ namespace Dash
         private double CalculateXPosition(TimelineElementViewModel tevm)
         {
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
+            // if the max and min time are the same, use arbitrary small constant (10)
             if (totalTime == 0) totalTime = 10;
-            Debug.Assert(totalTime != 0);
+
             var normOffset = (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
@@ -326,6 +324,7 @@ namespace Dash
             if (!_contextList.Any()) return;
             try
             {
+                // find the earliest and latest modified times in document
                 Metadata.MinTime = _contextList.Min(vm =>
                     vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
                         .GetValue(new Context()).ToDateTime().Ticks);
@@ -371,7 +370,9 @@ namespace Dash
                 _contextList.Clear();
                 foreach (var dvm in viewModel.DocumentViewModels)
                 {
+                    // add all document viewmodels as timeline element view models
                     _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm));
+                    // add an event listener for the document to listen to when sortkey changes
                     dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
                 UpdateMetadataMinAndMax();
@@ -400,12 +401,14 @@ namespace Dash
         {
             switch (e.Action)
             {
+                // Todo
                 case NotifyCollectionChangedAction.Add:
                     AddViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
+                    RemoveViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     break;
@@ -416,6 +419,26 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Remove a list of viewmodels from the document and re-organize the timeline
+        /// </summary>
+        /// <param name="removedViewModels"></param>
+        private void RemoveViewModels(IEnumerable<DocumentViewModel> removedViewModels)
+        {
+            foreach (var vm in removedViewModels)
+            {
+                _contextList.Remove(new TimelineElementViewModel(new DocumentContext(), vm));
+                vm.DataDocument.RemoveFieldUpdatedListener(SortKey, SortKeyModified);
+            }
+
+            UpdateMetadataMinAndMax();
+            SortKeyModified(null, null, null);
+        }
+
+        /// <summary>
+        /// Create a list of viewmodels from the document and re-organize the timeline
+        /// </summary>
+        /// <param name="newViewModels"></param>
         private void AddViewModels(IEnumerable<DocumentViewModel> newViewModels)
         {
             foreach (var vm in newViewModels)
@@ -428,19 +451,16 @@ namespace Dash
             SortKeyModified(null, null, null);
         }
 
+        private void test()
+        {
+            UpdateMetadataMinAndMax();
+        }
+
         private void SortKeyModified(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             UpdateMetadataMinAndMax();
             SetTimelineFormatting();
             //Initialize(ViewModel);
-        }
-
-        private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)
-        {
-            var webContextList =
-                vm.DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            webContextList?.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
-            return webContextList;
         }
 
         #endregion
