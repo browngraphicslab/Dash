@@ -63,10 +63,11 @@ namespace Dash
                     .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data)
                         .DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound)).ToArray(); */
 
+                //TODO: get outputs
+                toReturn = allResults;
+
             }
-
-            //TODO: get outputs
-
+            
             outputs[ResultsKey] = toReturn;
         }
 
