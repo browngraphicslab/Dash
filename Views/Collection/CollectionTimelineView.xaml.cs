@@ -22,6 +22,7 @@ namespace Dash
         public double ActualWidth { get; set; }
         public double ActualHeight { get; set; }
         public double LeftRightMargin { get; set; }
+
     }
 
     public class TimelineElementViewModel : ViewModelBase
@@ -87,6 +88,7 @@ namespace Dash
         public TimelineMetadata Metadata { get; }
         public CollectionViewModel ViewModel { get; set; }
         public event Action MetadataUpdated;
+        public KeyController SortKey { get; set; }
 
         private ObservableCollection<TimelineElementViewModel> _contextList;
 
@@ -120,6 +122,7 @@ namespace Dash
             {
                 LeftRightMargin = 160
             };
+            SortKey = KeyStore.ModifiedTimestampKey;
 
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
@@ -176,8 +179,6 @@ namespace Dash
             // refresh this list
             DisplayedXPositions = new List<double>();
 
-            
-
             // set scrollviewer to be the same dimensions as the screen
             xScrollViewer.Width = ActualWidth;
             xScrollViewer.Height = ActualHeight;
@@ -211,14 +212,14 @@ namespace Dash
             // reset position trackers and position elements
             CurrentXPosition = 0;
             CurrentTopY = 30;
-            foreach (var element in _contextList.OrderBy(vm => vm.DocumentContext.CreationTimeTicks).ToList())
+            foreach (var element in _contextList.OrderBy(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks).ToList())
             {
                 PositionElement(element);
             }
 
             // rescale and reposition elements, and set display type (above or below)
-            var offset = _contextList.First(vm => vm.DocumentContext.CreationTimeTicks == Metadata.MinTime).PositionX - 100;
-            var scaleFactor = width / _contextList.First(vm => vm.DocumentContext.CreationTimeTicks == Metadata.MaxTime).PositionX;
+            var offset = _contextList.First(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks == Metadata.MinTime).PositionX - 100;
+            var scaleFactor = width / _contextList.First(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks  == Metadata.MaxTime).PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
@@ -274,14 +275,15 @@ namespace Dash
         /// <summary>
         /// Finds the expected x position of the element from the timestamp
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="tevm"></param>
         /// <param name="metadata"></param>
         /// <returns></returns>
-        private double CalculateXPosition(TimelineElementViewModel context)
+        private double CalculateXPosition(TimelineElementViewModel tevm)
         {
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
+            if (totalTime == 0) totalTime = 10;
             Debug.Assert(totalTime != 0);
-            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - Metadata.MinTime) / totalTime;
+            var normOffset = (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
@@ -325,8 +327,12 @@ namespace Dash
             if (!_contextList.Any()) return;
             try
             {
-                Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
-                Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
+                Metadata.MinTime = _contextList.Min(vm =>
+                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                        .GetValue(new Context()).ToDateTime().Ticks);
+                Metadata.MaxTime = _contextList.Max(vm =>
+                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                        .GetValue(new Context()).ToDateTime().Ticks);
 
                 MetadataUpdated?.Invoke();
             }
@@ -350,6 +356,7 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            DataContext
             if (!(DataContext as CollectionViewModel).Equals(_oldViewModel))
             {
                 DataContextChanged -= OnDataContextChanged;
@@ -370,19 +377,8 @@ namespace Dash
                 _contextList.Clear();
                 foreach (var dvm in viewModel.DocumentViewModels)
                 {
-                    var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
-                        .Select(i => i.Data.CreateObject<DocumentContext>());
-                    if (docContexts != null)
-                        foreach (var dc in docContexts)
-                            _contextList.Add(new TimelineElementViewModel(dc, dvm));
-                    else
-                    {
-                        // if there is no web context stored for a document, create a context from the ModifiedTimestamp instead
-                        var dateObject = (DateTime)(dvm.DataDocument.GetDereferencedField(KeyStore.ModifiedTimestampKey, null).GetValue(new Context()));
-                        var documentTicks = dateObject.Ticks;
-                        _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks}, dvm));
-                    }
-                    dvm.DataDocument.AddFieldUpdatedListener(KeyStore.ModifiedTimestampKey, ModifiedTimesUpdated);
+                    _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm));
+                    dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
                 UpdateMetadataMinAndMax();
                 SetTimelineFormatting();
@@ -454,8 +450,7 @@ namespace Dash
                     switch (properArgs.ListAction)
                     {
                         case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                .CreateObject<DocumentContext>()))
+                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data.CreateObject<DocumentContext>()))
                                 _contextList.Add(new TimelineElementViewModel(dc, vm));
                             UpdateMetadataMinAndMax();
                             break;
@@ -479,9 +474,11 @@ namespace Dash
             }
         }
 
-        private void ModifiedTimesUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void SortKeyModified(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            Initialize(ViewModel);
+            UpdateMetadataMinAndMax();
+            SetTimelineFormatting();
+            //Initialize(ViewModel);
         }
 
         private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)

@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.UI;
 using Flurl.Util;
+using Syncfusion.UI.Xaml.Controls;
 using Zu.TypeScript.TsTypes;
 
 
@@ -61,6 +62,11 @@ namespace Dash
             Loaded += TimelineElement_Loaded;
         }
 
+        private void OnSortKeyChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            OnDataContextChanged(null, null);
+        }
+
 
         #region loading
 
@@ -69,8 +75,8 @@ namespace Dash
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
-            xTimeBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortDateString();
-            xDateBlock.Text = ViewModel.DocumentContext.CreationTimeStamp.ToShortTimeString();
+            xTimeBlock.Text = ViewModel.DocumentViewModel.DocumentController.GetDataDocument().GetField(KeyStore.ModifiedTimestampKey).GetValue(new Context()).ToDateTime().ToShortDateString();
+            xDateBlock.Text = ViewModel.DocumentViewModel.DocumentController.GetDataDocument().GetField(KeyStore.ModifiedTimestampKey).GetValue(new Context()).ToDateTime().ToShortTimeString();
 
 
             UpdateTimelinePosition();
