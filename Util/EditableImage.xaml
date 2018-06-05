@@ -5,12 +5,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="xCanvas"
-    mc:Ignorable="d" >
+    mc:Ignorable="d"
+    Foreground="Beige">
 
-    <!--image-->
-    <Canvas PointerMoved="Canvas_PointerMoved" PointerReleased="Canvas_PointerReleased" PointerPressed="Canvas_PointerPressed">
-        <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache"/>
-        <Rectangle x:Name="xRect" StrokeThickness="4" Stroke="#FFEA18A7" Visibility="Collapsed"></Rectangle>
-    </Canvas>
-    
+   
+    <Grid x:Name="yeet" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" PointerPressed="Grid_PointerPressed">
+        <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" Width="500" CacheMode="BitmapCache"/>
+        <Rectangle x:Name="xRect" StrokeThickness="4" Stroke="Black" Fill="White" Opacity="0.2" Visibility="Collapsed"></Rectangle>
+    </Grid>
+
 </UserControl>
