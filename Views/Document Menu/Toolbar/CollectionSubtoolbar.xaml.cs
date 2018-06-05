@@ -13,22 +13,33 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Views.Document_Menu.Toolbar;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash {
 
-    public sealed partial class CollectionSubtoolbar : UserControl
+    public sealed partial class CollectionSubtoolbar : UserControl, ICommandBarBased
     {
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
+            FormatDropdownMenu();
+        }
+
+        private void FormatDropdownMenu()
+        {
+            xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
         }
 
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: Dismantle current selection (which must be a collection if the collection bar is showing)
             Debug.WriteLine("COLLECTION DISMANTLED/BROKEN!");
+            xCollectionCommandbar.IsOpen = true;
+            xCollectionCommandbar.IsEnabled = true;
         }
 
         private void ViewModesDropdown_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -62,6 +73,12 @@ namespace Dash {
                     Debug.WriteLine("Timeline View selected");
                     break;
             }
+        }
+
+        public void CommandBarOpen(bool status)
+        {
+            xCollectionCommandbar.IsOpen = status;
+            xCollectionCommandbar.IsEnabled = true;
         }
     }
 }

@@ -58,6 +58,11 @@ namespace Dash
             SelectedDocuments = docs;
             Toolbar.Update(docs);
         }
+        public void AddToAndUpdateSelectedDocuments(DocumentView toAdd)
+        {
+            SelectedDocuments = new List<DocumentView> { toAdd };
+            Toolbar.Update(SelectedDocuments);
+        }
 
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
