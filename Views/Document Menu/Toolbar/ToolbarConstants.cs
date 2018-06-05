@@ -11,5 +11,9 @@ namespace Dash
         public const int ComboBoxWidth = 200;
         public const int ComboBoxHeight = 35;
         public const int ComboBoxMargin = 13;
+
+		//BUTTON DIMENSIONS
+	    public const double ButtonWidth = 70;
+	
     }
 }

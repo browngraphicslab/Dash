@@ -43,7 +43,7 @@ namespace Dash
 			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
 	        _currBox = null;
 			//add an additional sub-toolbar for further operations
-	        this.AddButton("Font", Symbol.Font, 8);
+	        this.AddButton("Font", Symbol.Font, 9);
 			//this.AddCustomButtons();
         }
 
