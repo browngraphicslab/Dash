@@ -633,7 +633,7 @@ namespace Dash
         {
             if (folder != null)
             {
-                if (count == 0)
+                if (count == 1)
                 {
                     //create folder to save media - images, videos, etc
                     await folder.CreateFolderAsync(type, CreationCollisionOption.ReplaceExisting);
