@@ -8,5 +8,9 @@
     mc:Ignorable="d" >
 
     <!--image-->
-    <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache"/>
+    <Canvas PointerMoved="Canvas_PointerMoved" PointerReleased="Canvas_PointerReleased" PointerPressed="Canvas_PointerPressed">
+        <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache"/>
+        <Rectangle x:Name="xRect" StrokeThickness="4" Stroke="#FFEA18A7" Visibility="Collapsed"></Rectangle>
+    </Canvas>
+    
 </UserControl>
