@@ -69,6 +69,12 @@ namespace Dash
         {
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
+            documentViewModel.DocumentController.GetDataDocument().FieldModelUpdated += DocumentController_FieldModelUpdated;
+        }
+
+        private void DocumentController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            Debug.WriteLine(context.ContainsDataKey(KeyStore.ModifiedTimestampKey));
         }
         #endregion
     }
