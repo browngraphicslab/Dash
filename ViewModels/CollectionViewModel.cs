@@ -35,22 +35,22 @@ namespace Dash
         bool           _isLoaded = false;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-
+        
+        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        {
+            OnPropertyChanged(nameof(TransformGroup));
+        }
+        void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (!MainPage.Instance.IsShiftPressed())
+                FitContents();   // pan/zoom collection so all of its contents are visible
+        }
+        
         public void Loaded(bool isLoaded)
         {
-            void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-            {
-                OnPropertyChanged(nameof(TransformGroup));
-            }
-            void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-            {
-                if (!MainPage.Instance.IsShiftPressed())
-                    FitContents();   // pan/zoom collection so all of its contents are visible
-            }
             _isLoaded = isLoaded;
             if (isLoaded)
             {
-                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey,        collectionFieldChanged); // remove in case it was already added through SetCollectionRef
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
@@ -61,12 +61,12 @@ namespace Dash
                 ActualSizeFieldChanged(null, null, null);
                 _lastDoc = ContainerDocument;
             }
-            else
+            else 
             {
                 _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 _lastDoc = null;
             }
         }
@@ -114,13 +114,24 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
-            _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+            Loaded(false);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             DocumentViewModels.Clear();
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
             addViewModels(CollectionController?.TypedData);
-            ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+            if (_isLoaded)
+            {
+                Loaded(true);
+                //ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+            }
             _lastDoc = ContainerDocument;
         }
 
@@ -1006,6 +1017,7 @@ namespace Dash
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
+
 
         #endregion
 
