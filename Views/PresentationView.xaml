@@ -13,18 +13,43 @@
     <Grid>
         <StackPanel>
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
-            <ListView ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="dash:DocumentViewModel">
-                        <TextBlock Text="{x:Bind LayoutDocument.Title}"/>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
             <CommandBar HorizontalAlignment="Center">
                 <AppBarButton Icon="Back" Label="Back" Click="BackButton_Click"/>
                 <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
                 <AppBarButton Icon="Forward" Label="Next" Click="NextButton_Click"/>
             </CommandBar>
+            <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ListView ItemsSource="{x:Bind ViewModel.PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:IntWrapper">
+                            <TextBlock Text="{x:Bind Number}" FontSize="20" Foreground="LightGray"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <ListView ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True" AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="dash:DocumentViewModel">
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{x:Bind LayoutDocument.Title}" FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
+                                <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

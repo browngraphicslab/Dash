@@ -107,7 +107,7 @@
         <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
         <localMicrosoft:GridSplitter Grid.Row="1" Grid.Column="4"/>
         <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
-        <views:PresentationView Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" HorizontalAlignment="Stretch" Margin="20"/>
+        <views:PresentationView x:Name="xPresentationView" Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" HorizontalAlignment="Stretch" Margin="20"/>
     </Grid>
 </Page>
 

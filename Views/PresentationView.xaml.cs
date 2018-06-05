@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -24,6 +25,7 @@ namespace Dash.Views
         public PresentationView()
         {
             this.InitializeComponent();
+            DataContext = new PresentationViewModel();
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -39,6 +41,11 @@ namespace Dash.Views
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             throw new NotImplementedException();
+        }
+
+        private void DeletePin(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).Tag as DocumentViewModel);
         }
     }
 }
