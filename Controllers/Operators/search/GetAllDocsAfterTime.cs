@@ -54,7 +54,10 @@ namespace Dash
 
                 Debug.Assert(allResults != null);
 
+                var data = allResults.Data;
+
                 //field _searchResulthelptask
+
                 /*
                 var stringContainResults = allResults.TypedData
                     .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data)

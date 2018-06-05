@@ -74,6 +74,7 @@ namespace Dash
             try
             {
                 //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
+                text = text.Replace("\"", "\\\"");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }

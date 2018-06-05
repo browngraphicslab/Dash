@@ -105,7 +105,6 @@ namespace Dash
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
 
             //this splits string into parts, seperated by spaces or quotes
-            /*
             List<string> partsL = new List<string>();
             int lastCut = 0;
             bool inQuote = false;
@@ -125,7 +124,6 @@ namespace Dash
                     else
                     {
                         inQuote = true;
-                      //  lastCut = i;
                     }
                 } else if (currChar == ' ' && !inQuote)
                 {
@@ -135,7 +133,8 @@ namespace Dash
                     {
                         partsL.Add(newstring);
                     }
-                } else if (i == inputString.Length - 1)
+                }
+                if (i == inputString.Length - 1)
                 {
                     //add last string
                     var newstring = inputString.Substring(lastCut, i - lastCut + 1);
@@ -146,9 +145,7 @@ namespace Dash
                 }
             }
 
-            string[] parts = partsL.ToArray(); */
-
-            var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = partsL.ToArray(); 
 
             if (parts.Length < 1)
             {
