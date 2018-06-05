@@ -31,12 +31,21 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True" AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click">
+                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
+                          AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click" RightTapped="PinnedNodesListView_OnRightTapped">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         </Style>
                     </ListView.ItemContainerStyle>
+                    <ListView.Resources>
+                        <MenuFlyout x:Name="PinnedNodeFlyout" Closed="Flyout_Closed">
+                            <MenuFlyout.Items>
+                                <MenuFlyoutItem x:Name="Edit" Text="Edit Name" Click="Edit_OnClick"/>
+                                <MenuFlyoutItem x:Name="Reset" Text="Reset Name" Click="Reset_OnClick"/>
+                            </MenuFlyout.Items>
+                        </MenuFlyout>
+                    </ListView.Resources>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="dash:DocumentViewModel">
                             <Grid HorizontalAlignment="Stretch">
@@ -44,7 +53,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind LayoutDocument.Title}" FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
+                                <local:PresentationViewTextBox FontSize="16" Grid.Column="0" HorizontalAlignment="Stretch"/>
                                 <Button Tag="{Binding}" Click="DeletePin" HorizontalAlignment="Stretch" Background="Transparent" Opacity="0.3" Grid.Column="1"><SymbolIcon Symbol="Delete"/></Button>
                             </Grid>
                         </DataTemplate>
