@@ -481,11 +481,6 @@ namespace Dash
 
         private void ModifiedTimesUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var properArgs = args as ListController<TextController>.ListFieldUpdatedEventArgs;
-            foreach (var cDoc in properArgs.ChangedDocuments.Select(i => i.Data.CreateObject<DocumentContext>()))
-            {
-                var cDocClone = _contextList.First(vm => vm.)
-            }
             Initialize(ViewModel);
         }
 
