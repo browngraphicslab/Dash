@@ -14,7 +14,7 @@ namespace Dash
     public partial class EditableImage
     {
 
-        //public Image Image => xImage;
+        public Image Image => xImage;
         private PointerPoint p1;
         private PointerPoint p2;
         private bool isLeft;
@@ -26,23 +26,32 @@ namespace Dash
 
         }
 
+
+
         private void Grid_PointerPressed(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
 
-            if (e.GetCurrentPoint(xImage).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p1 = e.GetCurrentPoint(xImage);
+                p1 = e.GetCurrentPoint(this);
                 isLeft = true;
+                transform.X = p1.Position.X;
+                transform.Y = p1.Position.Y;
             }
 
         }
 
         private void Grid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(xImage).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p2 = e.GetCurrentPoint(xImage);
+                p2 = e.GetCurrentPoint(this);
                 hasDragged = true;
+                xRect.Visibility = Windows.UI.Xaml.Visibility.Visible;
+               
+
+                xRect.Width = (int)Math.Abs(p2.Position.X - p1.Position.X);
+                xRect.Height = (int)Math.Abs(p2.Position.Y - p1.Position.Y);
 
             }
 
@@ -51,16 +60,13 @@ namespace Dash
         private async void Grid_PointerReleased(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
 
-            if (isLeft && hasDragged && !e.GetCurrentPoint(xImage).Properties.IsLeftButtonPressed)
+            if (isLeft && hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p2 = e.GetCurrentPoint(xImage);
+                p2 = e.GetCurrentPoint(this);
 
+                xRect.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-                xRect.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xRect.Width = (int)Math.Abs(p2.Position.X - p1.Position.X);
-                xRect.Height = (int)Math.Abs(p2.Position.Y - p1.Position.Y);
-                xRect.SetValue(Canvas.LeftProperty, (p1.Position.X < p2.Position.X) ? p1.Position.X : p2.Position.X);
-                xRect.SetValue(Canvas.TopProperty, (p1.Position.Y < p2.Position.Y) ? p1.Position.Y : p2.Position.Y);
+            
                 await Task.Delay(100);
                 RectangleGeometry geometry = new RectangleGeometry();
                 geometry.Rect = new Rect(p1.Position, p2.Position);
