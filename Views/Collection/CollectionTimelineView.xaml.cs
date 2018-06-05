@@ -83,7 +83,6 @@ namespace Dash
             new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
         
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
-        private CollectionViewModel _oldViewModel;
 
         public TimelineMetadata Metadata { get; }
         public CollectionViewModel ViewModel { get; set; }
@@ -356,18 +355,13 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            DataContext
-            if (!(DataContext as CollectionViewModel).Equals(_oldViewModel))
-            {
-                DataContextChanged -= OnDataContextChanged;
-                RemoveViewModelEvents(ViewModel);
-                ViewModel = DataContext as CollectionViewModel; ;
-                // make the new ViewModel listen to events
-                AddViewModelEvents(ViewModel);
-                Initialize(ViewModel);
-                DataContextChanged += OnDataContextChanged;
-                _oldViewModel = ViewModel;
-            }
+            DataContextChanged -= OnDataContextChanged;
+            RemoveViewModelEvents(ViewModel);
+            ViewModel = DataContext as CollectionViewModel; ;
+            // make the new ViewModel listen to events
+            AddViewModelEvents(ViewModel);
+            Initialize(ViewModel);
+            DataContextChanged += OnDataContextChanged;
         }
 
         private void Initialize(CollectionViewModel viewModel)
@@ -407,71 +401,31 @@ namespace Dash
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
+                    AddViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    UntrackViewModels(e.OldItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    UntrackViewModels(e.OldItems.Cast<DocumentViewModel>());
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    UntrackViewModels(new List<DocumentViewModel>(_trackedViewModels));
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void UntrackViewModels(IEnumerable<DocumentViewModel> viewModels)
+        private void AddViewModels(IEnumerable<DocumentViewModel> newViewModels)
         {
-            foreach (var vm in viewModels)
+            foreach (var vm in newViewModels)
             {
-                _trackedViewModels.Remove(vm);
-                vm.DataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
+                _contextList.Add(new TimelineElementViewModel(new DocumentContext(), vm));
+                vm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
             }
-        }
 
-        private void TrackViewModels(IEnumerable<DocumentViewModel> viewModels)
-        {
-            foreach (var vm in viewModels)
-            {
-                _trackedViewModels.Add(vm);
-                var dataDocument = vm.DataDocument;
-
-                void Handler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-                {
-                    var properArgs = args as ListController<TextController>.ListFieldUpdatedEventArgs;
-                    Debug.Assert(properArgs != null, "Make sure the way we store webContexts hasn't changed");
-                    switch (properArgs.ListAction)
-                    {
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data.CreateObject<DocumentContext>()))
-                                _contextList.Add(new TimelineElementViewModel(dc, vm));
-                            UpdateMetadataMinAndMax();
-                            break;
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                .CreateObject<DocumentContext>()))
-                                _contextList.Add(new TimelineElementViewModel(dc, vm));
-                            UpdateMetadataMinAndMax();
-                            break;
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                            throw new NotImplementedException();
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
-                            throw new NotImplementedException();
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                dataDocument.AddFieldUpdatedListener(KeyStore.WebContextKey, Handler);
-                _docViewModelToHandler[vm] = Handler;
-            }
+            UpdateMetadataMinAndMax();
+            SortKeyModified(null, null, null);
         }
 
         private void SortKeyModified(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
