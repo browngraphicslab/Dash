@@ -486,27 +486,32 @@ namespace Dash
         {
             var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
+
+            Debug.WriteLine(ParentDocument.ActualWidth);
+
             var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
-            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
-            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
-            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
-
             if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
             {
                 return DockDirection.Right;
             }
+
+            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
             {
                 return DockDirection.Left;
             }
+
+            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
             {
                 return DockDirection.Top;
             }
+
+            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
             if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
             {
                 return DockDirection.Bottom;
