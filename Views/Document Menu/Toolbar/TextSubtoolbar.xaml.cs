@@ -27,8 +27,14 @@ namespace Dash
 {
     public sealed partial class TextSubtoolbar : UserControl
     {
-	    private RichEditBox _currBox;
+	    /// <summary>
+	    /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
+	    /// </summary>
+
+		private RichEditBox _currBox;
 	    private Color _highlightColor;
+	    private FormattingMenuView _menuView = null;
+	    private DocumentView _docs;
 
         public TextSubtoolbar()
         {
@@ -36,50 +42,44 @@ namespace Dash
 			//instantiate formatter to create custom buttons
 			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
 	        _currBox = null;
-	        this.AddCustomButtons();
+			//add an additional sub-toolbar for further operations
+	        this.AddButton("Font", Symbol.Font, 8);
+			//this.AddCustomButtons();
         }
 
-
+		/**
+		 * Binds the text toolbar with the most recently selected text box for editing purposes.
+		 */
         public void SetMenuToolBarBinding(RichEditBox selection)
         {
             xDashTextSubtoolbar.Editor = selection;
         }
 
-	    public void AddCustomButtons()
-	    {
-			this.AddButton("Highlight", Symbol.Highlight, 4);
-		    this.AddButton("Color", Symbol.FontColor, 5);
-		    this.AddButton("Font", Symbol.Font, 6);
-		    this.AddButton("+", Symbol.FontIncrease, 7);
-		    this.AddButton("-", Symbol.FontDecrease, 8);
-		}
-
+		/**
+		 * Helper method for adding custom buttons.
+		 */
         public void AddButton(String name, Symbol icon, int position)
         {
-            //ToolbarButton button = xDashTextSubtoolbar.GetDefaultButton(ButtonType.Headers);
-            //button.Visibility = Visibility.Collapsed;
+           //instantiate ToolbarButton & set properties
 	        ToolbarButton button = new ToolbarButton
 	        {
 		        Name = name,
 		        Icon = new SymbolIcon(icon),
 		        Position = position,
-	        };
+	        }; //add to toolbar
 	        xDashTextSubtoolbar.CustomButtons.Add(button);
+	        
+			//add appropriate handlers
 	        switch (button.Name)
 	        {
-				case "Highlight":
+				case "Font":
 					button.Tapped += (sender, args) =>
 					{
-						this.HighlightOnTapped();
+						this.FontOnTapped();
 					};
 					break;
-
-				case "Color":
-					button.Tapped += (sender, args) =>
-					{
-						this.ColorOnTapped();
-					};
-					break;
+				
+					//add more buttons here!
 
 				default:
 					break;
@@ -89,43 +89,46 @@ namespace Dash
             xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator { Position = position + 1 });
         }
 
+		/**
+		 *  Sets the current text box used for editing
+		 */
 	    public void SetCurrTextBox(RichEditBox box)
 	    {
 		    _currBox = box;
 	    }
 
-	    private void HighlightOnTapped()
+		/**
+		 * Setter for the documnentview of the richedittextbox, used for accessing text edit methods
+		 */
+	    public void SetDocs(DocumentView docs)
+	    {
+		    _docs = docs;
+	    }
+
+		/**
+		 * When the Font Button is clicked, the font menu visibility is toggled, giving user access to additional editing operations like font style, etc.
+		 */
+	    private void FontOnTapped()
 		{ 
 		    if (_currBox != null)
 		    {
-				//if text is highlighted already, un-highlight
-			    if (_currBox.Document.Selection.CharacterFormat.BackgroundColor == Colors.Yellow)
+			    if (_menuView == null)
 			    {
-				    _currBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.White;
+					//create a formatting menu and bind it to the currently selected richEditBox's view
+				    _menuView = new FormattingMenuView();
+				    _menuView.richTextView = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichTextView>(_docs);
+				    _menuView.xRichEditBox = _currBox;
+					//add the menu to the stack panel
+				    xStack.Children.Add(_menuView);
 			    }
 			    else
 			    {
-					//set background color of selected text to current highlight color
-				    _currBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
-				}
-				//unselect selected text
-			    _currBox.Document.Selection.SetRange(0, 0);
+					//if the font menu is already visisble, close it
+				    xStack.Children.Remove(_menuView);
+				    _menuView = null;
+			    }
 		    }
-		
 		}
-
-	    private void ColorOnTapped()
-	    {
-		    if (_currBox != null)
-		    {
-				//set font color of selected text to current color
-				_currBox.Document.Selection.CharacterFormat.ForegroundColor = Colors.Red;
-			    //unselect selected text
-			    _currBox.Document.Selection.SetRange(0, 0);
-		    }
-
-	    }
-
 
 
 	}

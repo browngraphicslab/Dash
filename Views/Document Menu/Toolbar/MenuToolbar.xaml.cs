@@ -48,7 +48,6 @@ namespace Dash
         public MenuToolbar(Canvas canvas)
         {
             this.InitializeComponent();
-			
 			MenuToolbar.Instance = this;
             _parentCanvas = canvas;
             mode = MouseMode.TakeNote;
@@ -111,6 +110,7 @@ namespace Dash
                 if (text != null)
                 {
                     xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(docs.First()));
+	                xTextToolbar.SetDocs(docs.First());
 	                xTextToolbar.SetCurrTextBox(text);
                     subtoolbarElement = xTextToolbar;
                 }
@@ -139,6 +139,8 @@ namespace Dash
                 subtoolbarElement = null;
             }
             if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
+
+
         }
 
         private void SetUpBaseMenu()
