@@ -38,20 +38,16 @@ namespace Dash
         Canvas _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
         List<DocumentView> _selectedDocs = new List<DocumentView>();
-        public DocumentView ParentDocument => GetParentDocument();
+        public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public ViewManipulationControls ViewManipulationControls { get; set; }
         public bool TagMode { get; set; }
         public KeyController TagKey { get; set; }
-        public CollectionViewModel ViewModel { get => GetViewModel(); }
+        public abstract CollectionViewModel ViewModel { get; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
 
         // TODO: get canvas in derived class
         public abstract Canvas GetCanvas();
-        // TODO: get parentdoc of derived class
-        public abstract DocumentView GetParentDocument();
-        // TODO: get datacontext of derived class
-        public abstract CollectionViewModel GetViewModel();
         // TODO: get itemscontrol of derived class
         public abstract ItemsControl GetItemsControl();
         // TODO: get win2d canvascontrol of derived class
@@ -66,6 +62,7 @@ namespace Dash
         public abstract Rectangle GetDropIndicationRectangle();
         // TODO: get inkcanvas of derived class
         public abstract Canvas GetInkHostCanvas();
+
         protected void OnLoad(object sender, RoutedEventArgs e)
         {
             MakePreviewTextbox();
@@ -121,7 +118,7 @@ namespace Dash
         }
 
 
-        protected DocumentController Snapshot(bool copyData = false)
+        public DocumentController Snapshot(bool copyData = false)
         {
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
@@ -138,7 +135,7 @@ namespace Dash
         /// </summary>
         Storyboard _storyboard1, _storyboard2;
 
-        protected void Move(TranslateTransform translate)
+        public void Move(TranslateTransform translate)
         {
             var composite = new TransformGroup();
             composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
@@ -148,7 +145,7 @@ namespace Dash
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
-        protected void MoveAnimated(TranslateTransform translate)
+        public void MoveAnimated(TranslateTransform translate)
         {
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
@@ -242,7 +239,7 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
+        protected void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             // calculate the translate delta
             var translateDelta = new TranslateTransform
@@ -464,7 +461,7 @@ namespace Dash
         private MarqueeInfo mInfo;
         object _marqueeKeyHandler = null;
 
-        void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        protected void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
             {
@@ -487,7 +484,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
             {
@@ -544,7 +541,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        protected void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
@@ -648,7 +645,7 @@ namespace Dash
         // TODO: likely to need to modify for standard view (should note typing be enabled in standard?)
         #region Activation
 
-        void OnTapped(object sender, TappedRoutedEventArgs e)
+        protected void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (XInkCanvas.IsTopmost())
             {
@@ -904,7 +901,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        protected void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             if (sender is DocumentView documentView)
             {
