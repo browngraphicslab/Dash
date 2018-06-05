@@ -28,10 +28,10 @@
         <TextBox x:Name="XFilterBox" FontSize="12" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
         <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3">
-            <Button x:Name="makePdf" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="MakePdf_OnTapped">Export to HTML
+            <Button x:Name="makePdf" TabIndex="-1" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
             <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="TogglePresentationMode">Presentation Mode</Button>
-            <Button HorizontalAlignment="Stretch" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
+            <Button TabIndex="-1" HorizontalAlignment="Stretch" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
             </Button>
         </StackPanel>
 

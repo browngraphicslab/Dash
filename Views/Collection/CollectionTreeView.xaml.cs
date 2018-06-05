@@ -74,45 +74,12 @@ namespace Dash
             //so a data file is made for each element in this list
             var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
 
+            ExportToTxt newExport = new ExportToTxt();
+
             //Now call function in ExportToTxt that converts all collections to files
-           ExportToTxt.DashToTxt(collectionDataDocs);
+           newExport.DashToTxt(collectionDataDocs);
         }
-
-
-        /*
-        async void Save(Stream stream, string filename)
-        {
-
-            stream.Position = 0;
-
-            StorageFile stFile;
-            if (!(Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.Phone.UI.Input.HardwareButtons")))
-            {
-                FileSavePicker savePicker = new FileSavePicker();
-                savePicker.DefaultFileExtension = ".pdf";
-                savePicker.SuggestedFileName = "Sample";
-                savePicker.FileTypeChoices.Add("Adobe PDF Document", new List<string>() {".pdf"});
-                stFile = await savePicker.PickSaveFileAsync();
-            }
-            else
-            {
-                StorageFolder local = Windows.Storage.ApplicationData.Current.LocalFolder;
-                stFile = await local.CreateFileAsync(filename, CreationCollisionOption.ReplaceExisting);
-            }
-
-            if (stFile != null)
-            {
-                Windows.Storage.Streams.IRandomAccessStream fileStream =
-                    await stFile.OpenAsync(FileAccessMode.ReadWrite);
-                Stream st = fileStream.AsStreamForWrite();
-                st.Write((stream as MemoryStream).ToArray(), 0, (int) stream.Length);
-                st.Flush();
-                st.Dispose();
-                fileStream.Dispose();
-            }
-        }
-
-    */
+        
         private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
         {
             MainPage.Instance.TogglePresentationMode();
