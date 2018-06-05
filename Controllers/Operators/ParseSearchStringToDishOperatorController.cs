@@ -70,7 +70,6 @@ namespace Dash
             //this returns a string that more closely follows function syntax
             //TODO check if func exists
 
-            //TODO: M - make the function name start, end exist
             if (!DSL.FuncNameExists(funcName))
             {
                 return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
@@ -105,9 +104,52 @@ namespace Dash
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
 
-            //TODO - M - dont parse things in quotes
+            //this splits string into parts, seperated by spaces or quotes
+            /*
+            List<string> partsL = new List<string>();
+            int lastCut = 0;
+            bool inQuote = false;
+            for (int i = 0; i < inputString.Length; i++)
+            {
+               var currChar = inputString.Substring(i, 1)[0];
+               if (currChar == '"')
+                {
+                    if (inQuote)
+                    {
+                        //add string from last quote to this quote
+                        var quotedString = inputString.Substring(lastCut, i - lastCut + 1);
+                        partsL.Add(quotedString);
+                        lastCut = i + 1;
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                      //  lastCut = i;
+                    }
+                } else if (currChar == ' ' && !inQuote)
+                {
+                    var newstring = inputString.Substring(lastCut, i - lastCut);
+                    lastCut = i + 1;
+                    if (newstring != "")
+                    {
+                        partsL.Add(newstring);
+                    }
+                } else if (i == inputString.Length - 1)
+                {
+                    //add last string
+                    var newstring = inputString.Substring(lastCut, i - lastCut + 1);
+                    if (newstring != "")
+                    {
+                        partsL.Add(newstring);
+                    }
+                }
+            }
+
+            string[] parts = partsL.ToArray(); */
 
             var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
             if (parts.Length < 1)
             {
                 outputs[ScriptKey] = new TextController("");
