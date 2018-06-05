@@ -4,11 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
-using DashShared;
-using Windows.UI.Xaml.Controls;
 using Windows.System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Syncfusion.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,7 +21,6 @@ namespace Dash
         public double ActualWidth { get; set; }
         public double ActualHeight { get; set; }
         public double LeftRightMargin { get; set; }
-
     }
 
     public class TimelineElementViewModel : ViewModelBase
@@ -54,14 +52,19 @@ namespace Dash
         public double TitleY;
         public double PositionX;
 
-
-        public enum DisplayType { Above, Below, Hidden};
+        public enum DisplayType
+        {
+            Above,
+            Below,
+            Hidden
+        }
 
         public DisplayType CurrDisplay;
 
         #endregion
 
         #region constructors
+
         public TimelineElementViewModel()
         {
         }
@@ -77,32 +80,24 @@ namespace Dash
 
 
     public sealed partial class CollectionTimelineView : ICollectionView
-    {   
+    {
+        public static double LastDisplayedPosition;
 
-        public TimelineMetadata Metadata { get; }
-        public CollectionViewModel ViewModel { get; set; }
-        public event Action MetadataUpdated;
-        public KeyController SortKey { get; set; }
-
-        private ObservableCollection<TimelineElementViewModel> _contextList;
-
-        // timeline element layout
-        public List<double> DisplayedXPositions { get; private set; }
-        public static double LastDisplayedPosition = 0;
+        private readonly ObservableCollection<TimelineElementViewModel> _contextList;
+        private readonly double _maxGap = 300; // the maximum width between timeline elements
+        private readonly double _minGap = 30; // the minimum width between timeline elements
+        private double CurrentTopY; // how tall the element is vertically
 
         private double CurrentXPosition;
-        private double CurrentTopY; // how tall the element is vertically
-        private double _minGap = 30; // the minimum width between timeline elements
-        private double _maxGap = 300; // the maximum width between timeline elements
         public double Scale = 0.9; // the current scale
 
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public CollectionTimelineView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _contextList = new ObservableCollection<TimelineElementViewModel>();
             DisplayedXPositions = new List<double>();
@@ -122,9 +117,17 @@ namespace Dash
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
         }
 
+        public TimelineMetadata Metadata { get; }
+        public KeyController SortKey { get; set; }
+
+        // timeline element layout
+        public List<double> DisplayedXPositions { get; private set; }
+        public CollectionViewModel ViewModel { get; set; }
+        public event Action MetadataUpdated;
+
 
         /// <summary>
-        /// Changes timeline scale (zooms in and out)
+        ///     Changes timeline scale (zooms in and out)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -138,7 +141,7 @@ namespace Dash
                 if (!(scaleFactor < 1 && Scale * scaleFactor < .85))
                 {
                     // Find scroll offset to maintain the scale center roughly at the position of the cursor
-                    var scrollShift = (e.GetCurrentPoint(this).Position.X) * Scale * (scaleFactor - 1);
+                    var scrollShift = e.GetCurrentPoint(this).Position.X * Scale * (scaleFactor - 1);
 
                     // Change scale of timeline and update view and scroll position
                     Scale *= scaleFactor;
@@ -147,6 +150,7 @@ namespace Dash
                     var scrollTo = xScrollViewer.HorizontalOffset + scrollShift;
                     xScrollViewer.ChangeView(scrollTo, null, null, true);
                 }
+
                 e.Handled = true;
             }
         }
@@ -157,15 +161,24 @@ namespace Dash
         }
 
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {            
+        {
             SetTimelineFormatting();
         }
 
+        #region Selection
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        #endregion
+
 
         #region Timeline formatting
-        
+
         /// <summary>
-        /// Formats the timeline based on current size
+        ///     Formats the timeline based on current size
         /// </summary>
         private void SetTimelineFormatting()
         {
@@ -178,7 +191,7 @@ namespace Dash
 
             // find new width and layout elements and timeline
             var scaledWidth = Scale * ActualWidth;
-          
+
             LayoutTimelineElements(scaledWidth);
 
             Metadata.ActualHeight = ActualHeight;
@@ -189,18 +202,14 @@ namespace Dash
         }
 
 
-
         #region Timeline Element Positioning
 
         /// <summary>
-        /// Spaces out all the timeline elements
+        ///     Spaces out all the timeline elements
         /// </summary>
         public void LayoutTimelineElements(double width)
         {
-            if(_contextList.Count < 1)
-            {
-                return;
-            }
+            if (_contextList.Count < 1) return;
 
             // reset position trackers and position elements
             CurrentXPosition = 0;
@@ -208,14 +217,17 @@ namespace Dash
 
             // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
             // PositionElement only works when elements are passed in in an increasing order
-            foreach (var element in _contextList.OrderBy(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks).ToList())
-            {
-                PositionElement(element);
-            }
+            foreach (var element in _contextList.OrderBy(vm =>
+                vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context())
+                    .ToDateTime().Ticks).ToList()) PositionElement(element);
 
             // rescale and reposition elements, and set display type (above or below)
-            var offset = _contextList.First(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks == Metadata.MinTime).PositionX - 100;
-            var scaleFactor = width / _contextList.First(vm => vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks  == Metadata.MaxTime).PositionX;
+            var offset = _contextList.First(vm =>
+                             vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                                 .GetValue(new Context()).ToDateTime().Ticks == Metadata.MinTime).PositionX - 100;
+            var scaleFactor = width / _contextList.First(vm =>
+                                  vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                                      .GetValue(new Context()).ToDateTime().Ticks == Metadata.MaxTime).PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
@@ -232,7 +244,6 @@ namespace Dash
                 LastDisplayedPosition = element.PositionX;
                 element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
                 DisplayedXPositions.Add(element.PositionX);
-
             }
             else
             {
@@ -241,7 +252,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Positions a specific element along the timeline
+        ///     Positions a specific element along the timeline
         /// </summary>
         /// <param name="element"></param>
         private void PositionElement(TimelineElementViewModel element)
@@ -252,24 +263,19 @@ namespace Dash
 
             // adjust gaps if necessary
             if (gapDistance < _minGap)
-            {
                 x = CurrentXPosition + _minGap;
-            }
-            else if (gapDistance > _maxGap)
-            {
-                x = CurrentXPosition + _maxGap;
-            }
+            else if (gapDistance > _maxGap) x = CurrentXPosition + _maxGap;
             CurrentXPosition = x;
             element.PositionX = x;
 
-            //stacking vertically
+            // stacking vertically
             element.TitleY = CurrentTopY;
             CurrentTopY += 40;
             if (CurrentTopY > 200) CurrentTopY = 30;
         }
 
         /// <summary>
-        /// Finds the expected x position of the element from the timestamp
+        ///     Finds the expected x position of the element from the timestamp
         /// </summary>
         /// <param name="tevm"></param>
         /// <param name="metadata"></param>
@@ -280,13 +286,15 @@ namespace Dash
             // if the max and min time are the same, use arbitrary small constant (10)
             if (totalTime == 0) totalTime = 10;
 
-            var normOffset = (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
+            var normOffset =
+                (double) (tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                              .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
 
         /// <summary>
-        /// Returns whether or not to display a timeline element
+        ///     Returns whether or not to display a timeline element
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
@@ -294,20 +302,16 @@ namespace Dash
         {
             // return false to hide current timeline element if it is too close to another displayed element
             foreach (var pos in DisplayedXPositions)
-            {
                 if (Math.Abs(x - pos) < 200)
-                {
                     return false;
-                }
-            }
             return true;
         }
 
         #endregion
 
-    
+
         /// <summary>
-        /// sets the width of the timeline shape
+        ///     sets the width of the timeline shape
         /// </summary>
         /// <param name="width"></param>
         private void SetTimelineWidth(double width)
@@ -338,7 +342,6 @@ namespace Dash
             {
                 Debug.WriteLine(e);
             }
-
         }
 
         #endregion
@@ -356,7 +359,8 @@ namespace Dash
         {
             DataContextChanged -= OnDataContextChanged;
             RemoveViewModelEvents(ViewModel);
-            ViewModel = DataContext as CollectionViewModel; ;
+            ViewModel = DataContext as CollectionViewModel;
+            ;
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
@@ -375,6 +379,7 @@ namespace Dash
                     // add an event listener for the document to listen to when sortkey changes
                     dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
+
                 UpdateMetadataMinAndMax();
                 SetTimelineFormatting();
             }
@@ -392,9 +397,7 @@ namespace Dash
         private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
-            {
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-            }
         }
 
         private void DocumentViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -420,7 +423,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Remove a list of viewmodels from the document and re-organize the timeline
+        ///     Remove a list of viewmodels from the document and re-organize the timeline
         /// </summary>
         /// <param name="removedViewModels"></param>
         private void RemoveViewModels(IEnumerable<DocumentViewModel> removedViewModels)
@@ -436,7 +439,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Create a list of viewmodels from the document and re-organize the timeline
+        ///     Create a list of viewmodels from the document and re-organize the timeline
         /// </summary>
         /// <param name="newViewModels"></param>
         private void AddViewModels(IEnumerable<DocumentViewModel> newViewModels)
@@ -451,26 +454,11 @@ namespace Dash
             SortKeyModified(null, null, null);
         }
 
-        private void test()
-        {
-            UpdateMetadataMinAndMax();
-        }
-
+        // Sort the modified key
         private void SortKeyModified(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             UpdateMetadataMinAndMax();
             SetTimelineFormatting();
-            //Initialize(ViewModel);
-        }
-
-        #endregion
-
-        #region Selection
-        
-        
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
         }
 
         #endregion
