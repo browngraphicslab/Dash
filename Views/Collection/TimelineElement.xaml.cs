@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.UI;
 using Flurl.Util;
+using Zu.TypeScript.TsTypes;
 
 
 namespace Dash
@@ -60,12 +61,6 @@ namespace Dash
             Loaded += TimelineElement_Loaded;
         }
 
-        private void TimelineElement_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Debug.WriteLine(e.PropertyName);
-            ParentTimeline.UpdateTimeStamp();
-        }
-
 
         #region loading
 
@@ -80,7 +75,6 @@ namespace Dash
 
             UpdateTimelinePosition();
             LoadContext();
-
         }
 
         private void LoadContext()
@@ -129,6 +123,7 @@ namespace Dash
         private void UpdateTimelinePosition()
         {
             var vm = DataContext as TimelineElementViewModel;
+            if (vm == null) return;
 
             // set vertical stacking height
             xTopY.Height = new GridLength(vm.TitleY);

@@ -69,13 +69,8 @@ namespace Dash
         {
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
-            documentViewModel.DocumentController.GetDataDocument().FieldModelUpdated += DocumentController_FieldModelUpdated;
         }
 
-        private void DocumentController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            Debug.WriteLine(context.ContainsDataKey(KeyStore.ModifiedTimestampKey));
-        }
         #endregion
     }
 
@@ -93,7 +88,7 @@ namespace Dash
         public CollectionViewModel ViewModel { get; set; }
         public event Action MetadataUpdated;
 
-        private readonly ObservableCollection<TimelineElementViewModel> _contextList;
+        private ObservableCollection<TimelineElementViewModel> _contextList;
 
         // timeline element layout
         public List<double> DisplayedXPositions { get; private set; }
@@ -216,14 +211,14 @@ namespace Dash
             // reset position trackers and position elements
             CurrentXPosition = 0;
             CurrentTopY = 30;
-            foreach (var element in _contextList)
+            foreach (var element in _contextList.OrderBy(vm => vm.DocumentContext.CreationTimeTicks).ToList())
             {
                 PositionElement(element);
             }
 
             // rescale and reposition elements, and set display type (above or below)
-            var offset = _contextList[0].PositionX - 100;
-            var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
+            var offset = _contextList.First(vm => vm.DocumentContext.CreationTimeTicks == Metadata.MinTime).PositionX - 100;
+            var scaleFactor = width / _contextList.First(vm => vm.DocumentContext.CreationTimeTicks == Metadata.MaxTime).PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
@@ -372,6 +367,7 @@ namespace Dash
         {
             if (viewModel != null)
             {
+                _contextList.Clear();
                 foreach (var dvm in viewModel.DocumentViewModels)
                 {
                     var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
@@ -386,23 +382,10 @@ namespace Dash
                         var documentTicks = dateObject.Ticks;
                         _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks}, dvm));
                     }
+                    dvm.DataDocument.AddFieldUpdatedListener(KeyStore.ModifiedTimestampKey, ModifiedTimesUpdated);
                 }
                 UpdateMetadataMinAndMax();
                 SetTimelineFormatting();
-            }
-        }
-
-        public void UpdateTimeStamp()
-        {
-            if (ViewModel != null)
-            {
-                _contextList.Clear();
-                foreach (var dvm in ViewModel.DocumentViewModels)
-                {
-                    var date = (DateTime)(dvm.DataDocument?.GetDereferencedField(KeyStore.ModifiedTimestampKey, null).GetValue(new Context()));
-                    var documentTicks = date.Ticks;
-                    _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks }, dvm));
-                }
             }
         }
 
@@ -494,6 +477,16 @@ namespace Dash
                 dataDocument.AddFieldUpdatedListener(KeyStore.WebContextKey, Handler);
                 _docViewModelToHandler[vm] = Handler;
             }
+        }
+
+        private void ModifiedTimesUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            var properArgs = args as ListController<TextController>.ListFieldUpdatedEventArgs;
+            foreach (var cDoc in properArgs.ChangedDocuments.Select(i => i.Data.CreateObject<DocumentContext>()))
+            {
+                var cDocClone = _contextList.First(vm => vm.)
+            }
+            Initialize(ViewModel);
         }
 
         private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)
