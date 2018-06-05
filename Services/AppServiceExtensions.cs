@@ -23,7 +23,7 @@ namespace Dash
         private IServiceProvider RegisterServices()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalEverythingEndpoint>();
+            serviceCollection.AddSingleton<IModelEndpoint<FieldModel>, LocalSqlLiteEndpoint>();
             return serviceCollection.BuildServiceProvider();
         }
 

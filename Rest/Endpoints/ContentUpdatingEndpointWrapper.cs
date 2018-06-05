@@ -17,7 +17,17 @@ namespace Dash
 
         private void AddModelsToControllers(IEnumerable<EntityBase> models)
         {
-            var entityBases = models as IList<EntityBase> ?? models.ToList();
+            HashSet<EntityBase> entities = new HashSet<EntityBase>();
+            foreach (var entityBase in models)
+            {
+                entities.Add(entityBase);
+                if (entityBase is FieldModel fieldModel)
+                {
+                    entities.UnionWith(TrackDownReferences(fieldModel));
+                }
+            }
+
+            var entityBases = entities.ToList();
             var docs = entityBases.OfType<DocumentModel>().ToArray();
 
             foreach (var model in docs)
@@ -156,6 +166,72 @@ namespace Dash
         public Dictionary<string, string> GetBackups()
         {
             return _endpoint.GetBackups();
+        }
+
+        protected HashSet<FieldModel> TrackDownReferences(FieldModel field)
+        {
+            switch (field)
+            {
+                case DocumentModel doc:
+                    return TrackDownReferences(doc);
+                case ListModel list:
+                    return TrackDownReferences(list);
+                case DocumentReferenceModel dref:
+                    return TrackDownReferences(dref);
+                case PointerReferenceModel pref:
+                    return TrackDownReferences(pref);
+                default:
+                    return new HashSet<FieldModel> { field };
+            }
+        }
+
+        private HashSet<FieldModel> TrackDownReferences(DocumentModel doc)
+        {
+            var fields = new HashSet<FieldModel> {doc};
+
+            foreach (var kvp in doc.Fields)
+            {
+                fields.Add(kvp.Key.CreateObject<KeyModel>());
+                var field = kvp.Value.CreateObject<FieldModel>();
+                fields.Add(field);
+                fields.UnionWith(TrackDownReferences(field));
+            }
+
+            return fields;
+        }
+
+        private HashSet<FieldModel> TrackDownReferences(ListModel list)
+        {
+            var fields = new HashSet<FieldModel> {list};
+
+            foreach (var f in list.Data)
+            {
+                var field = f.CreateObject<FieldModel>();
+                fields.Add(field);
+                fields.UnionWith(TrackDownReferences(field));
+            }
+
+            return fields;
+        }
+
+        private HashSet<FieldModel> TrackDownReferences(PointerReferenceModel pref)
+        {
+            var fields = new HashSet<FieldModel> {pref};
+
+            fields.Add(pref.KeyId.CreateObject<KeyModel>());
+            fields.UnionWith(TrackDownReferences(pref.ReferenceFieldModelId.CreateObject<FieldModel>()));
+
+            return fields;
+        }
+
+        private HashSet<FieldModel> TrackDownReferences(DocumentReferenceModel dref)
+        {
+            var fields = new HashSet<FieldModel> {dref};
+
+            fields.Add(dref.KeyId.CreateObject<KeyModel>());
+            fields.UnionWith(TrackDownReferences(dref.DocumentId.CreateObject<FieldModel>()));
+
+            return fields;
         }
     }
 }

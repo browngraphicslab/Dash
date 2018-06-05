@@ -51,8 +51,8 @@ namespace Dash
 
             var addDocCommand = new SqliteCommand
             {
-                //CommandText = @"INSERT OR REPLACE INTO `Fields` VALUES (@id, @field);",
-                CommandText = @"INSERT INTO `Fields` VALUES (@id, @field);",
+                CommandText = @"INSERT OR REPLACE INTO `Fields` VALUES (@id, @field);",
+                //CommandText = @"INSERT INTO `Fields` VALUES (@id, @field);",
                 Connection = _db,
             };
             addDocCommand.Parameters.AddWithValue("@id", newDocument.Id);
@@ -112,7 +112,7 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
-            var fieldModels = new List<FieldModel>();
+            List<FieldModel> fieldModels;
 
             var getDocCommand = new SqliteCommand
             {
@@ -124,10 +124,7 @@ namespace Dash
             try
             {
                 var reader = getDocCommand.ExecuteReader();
-                while (reader.Read())
-                {
-                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
-                }
+                fieldModels = GetFieldModels(reader);
             }
             catch (SqliteException e)
             {
@@ -140,6 +137,18 @@ namespace Dash
             Debug.WriteLine($"GetDocument: {watch.ElapsedMilliseconds}");
 
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
+        }
+
+        private List<FieldModel> GetFieldModels(SqliteDataReader reader)
+        {
+            var fieldModels = new List<FieldModel>();
+            while (reader.Read())
+            {
+                var fm = reader.GetString(0).CreateObject<FieldModel>();
+                fieldModels.Add(fm);
+            }
+
+            return fieldModels;
         }
 
         public async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success,
@@ -175,14 +184,11 @@ namespace Dash
                 Connection = _db
             };
 
-            var fieldModels = new List<FieldModel>();
+            List<FieldModel> fieldModels;
             try
             {
                 var reader = getAllDocsCommand.ExecuteReader();
-                while (reader.Read())
-                {
-                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
-                }
+                fieldModels = GetFieldModels(reader);
 
                 fieldModels = fieldModels.Where(query.Func).ToList();
             }
@@ -209,14 +215,11 @@ namespace Dash
                 Connection = _db
             };
 
-            var fieldModels = new List<FieldModel>();
+            List<FieldModel> fieldModels;
             try
             {
                 var reader = getAllDocsCommand.ExecuteReader();
-                while (reader.Read())
-                {
-                    fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
-                }
+                fieldModels = GetFieldModels(reader);
 
                 fieldModels = fieldModels.Where(query.Func).ToList();
             }
@@ -278,7 +281,7 @@ namespace Dash
             foreach (var doc in documents)
             {
 
-                var fieldModels = new List<FieldModel>();
+                List<FieldModel> fieldModels;
 
                 var getDocCommand = new SqliteCommand
                 {
@@ -290,10 +293,7 @@ namespace Dash
                 try
                 {
                     var reader = getDocCommand.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        fieldModels.Add(reader.GetString(0).CreateObject<FieldModel>());
-                    }
+                    fieldModels = GetFieldModels(reader);
                 }
                 catch (SqliteException e)
                 {
