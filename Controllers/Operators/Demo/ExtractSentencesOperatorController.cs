@@ -51,7 +51,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("D9EE3561-0A30-4DA9-B11A-859CABCF237B", "Sentence Analyzer");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;

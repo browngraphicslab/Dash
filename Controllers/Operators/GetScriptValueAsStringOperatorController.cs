@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using DashShared;
 
 namespace Dash
@@ -40,17 +42,45 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("99E9328B-7341-403F-819B-26CDAB2F9A51", "Exec to string");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             string result;
             try
             {
-                result = OperatorScriptParser.Interpret((inputs[ScriptKey] as TextController)?.Data ?? "").GetValue(null).ToString();
+                var script = inputs[ScriptKey] as TextController;
+                var dsl = new DSL(ScriptState.ContentAware());
+                var scriptToRun = (script)?.Data ?? "";
+                var controller = dsl.Run(scriptToRun, true);
+                if (controller != null)
+                {
+                    if (controller is ReferenceController)
+                    {
+                        var r = (ReferenceController) controller;
+                        result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
+                    }
+                    else
+                    {
+
+                        result = controller is BaseListController
+                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
+                            : controller?.GetValue(null)?.ToString();
+                    }
+
+                }
+                else
+                {
+                    result = "error";
+                }
             }
-            catch (OperatorScriptParser.InvalidDishScriptException e)
+            catch (DSLException e)
             {
-                result = e.ScriptErrorModel.GetHelpfulString();
+                result = e.GetHelpfulString();
             }
+            catch (Exception e)
+            {
+                result = "Unknown annoying error occurred : "+e.StackTrace;
+            }
+
             outputs[ResultKey] = new TextController(result);
         }
     }

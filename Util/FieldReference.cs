@@ -36,6 +36,11 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        public void SetField(FieldControllerBase field, Context c)
+        {
+            GetDocumentController(c).SetField(FieldKey, field, true);
+        }
+
         /// <summary>
         /// Resolve this reference field model to the lowest delegate in the given context
         /// </summary>
@@ -46,6 +51,7 @@ namespace Dash
 
         public FieldControllerBase Dereference(Context context)
         {
+            context = null;
             FieldControllerBase controller;
             if (context != null)
             {
@@ -58,14 +64,10 @@ namespace Dash
             if (doc != null)
             {
                 context = new Context(context);
-                var newContext = context;
-                if (doc.ShouldExecute(context, FieldKey))
+                var newContext = doc.ShouldExecute(context, FieldKey, null, false);
+                if (newContext.TryDereferenceToRoot(this, out controller))
                 {
-                    newContext = doc.Execute(context, false);
-                    if (newContext.TryDereferenceToRoot(this, out controller))
-                    {
-                        return controller;
-                    }
+                    return controller;
                 }
 
                 var fmc = GetDocumentController(newContext)?.GetField(FieldKey);
@@ -79,10 +81,11 @@ namespace Dash
         {
             context = new Context(context);
             context.AddDocumentContext(GetDocumentController(context));
+            context = null;
             FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceController)
             {
-                context.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
+                context?.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
                 reference = reference.Dereference(context);
             }
 

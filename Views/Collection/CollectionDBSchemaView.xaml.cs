@@ -5,9 +5,12 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Controllers.Operators;
+using Dash.Views;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using DashShared;
 using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
@@ -24,6 +27,11 @@ namespace Dash
         private DocumentController _parentDocument;
 
         private ObjectToStringConverter converter = new ObjectToStringConverter();
+
+        // This list stores the fields added in the schema view (not originally in the documents)
+        private List<KeyController> _schemaFieldsNotInDocs;
+
+
         public CollectionDBSchemaView()
         {
             this.InitializeComponent();
@@ -32,6 +40,14 @@ namespace Dash
             MinWidth = MinHeight = 50;
             xHeaderView.ItemsSource = SchemaHeaders;
             xEditTextBox.AddHandler(KeyDownEvent, new KeyEventHandler( xEditTextBox_KeyDown), true);
+            Drop += CollectionDBSchemaView_Drop;
+
+            _schemaFieldsNotInDocs = new List<KeyController>();
+        }
+
+        private void CollectionDBSchemaView_Drop(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
         }
 
         private void SchemaHeaders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -133,7 +149,7 @@ namespace Dash
                         var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
                         xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
                         dc.Selected = false;
-                        var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                        var direction = this.IsShiftPressed() ? -1 : 1;
                         var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                         var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                         updateEditBox(recordViewModel.RecordFields[column]);
@@ -157,7 +173,7 @@ namespace Dash
         {
             try
             {
-                var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                var direction = this.IsShiftPressed() ? -1 : 1;
                 if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
                 {
                     direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
@@ -197,7 +213,30 @@ namespace Dash
         private void SetFieldValue(CollectionDBSchemaRecordFieldViewModel dc)
         {
             //TODO tfs: on my branch we used new Context(dc.Document) for context instead of null?
-            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey,null));
+            var field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+            if (field == null)
+            {
+
+
+                var key = dc.HeaderViewModel.FieldKey;
+                FieldControllerBase fmController = new TextController("something went wrong");
+                var stringValue = xEditTextBox.Text;
+
+                dc.Document.GetDataDocument().ParseDocField(key, xEditTextBox.Text);
+                dc.Document.GetDataDocument().ParseDocField(key, xEditTextBox.Text);
+
+                fmController = dc.Document.GetDataDocument().GetField(key);
+
+                // If this field does not yet exist for the document, make one with the inputted text
+                if (fmController == null)
+                {
+                    //TODO make this create the correct field type (with text parsing?)
+                    dc.Document.GetDataDocument().SetField(key, new TextController(xEditTextBox.Text), true);
+                }
+            }
+            field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
+
+            dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, field);
             dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
@@ -223,10 +262,9 @@ namespace Dash
 
         private void CollectionDBView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ViewModel.OutputKey = KeyStore.CollectionOutputKey;
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>()?.ViewModel?.DocumentController;
             if (ParentDocument != null)
-                UpdateFields(new Context(ParentDocument));
+                UpdateFields(new Context(ParentDocument)); 
         }
 
 
@@ -280,12 +318,17 @@ namespace Dash
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
-                { 
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, 
-                                                     FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)  });
+                {
+                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel()
+                    {
+                        SchemaView = this,
+                        SchemaDocument = ParentDocument,
+                        Width = 150,
+                        FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)
+                    });
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
-                foreach (var d in dbDocs.Select((db)=> db.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? db))
+                foreach (var d in dbDocs.Select((db) => db.GetDataDocument()))
                 {
                     //if (d.GetField(RegexOperatorController.TextKey) == null &&
                     //    d.GetField(KeyStore.DocumentTextKey) != null)
@@ -302,6 +345,19 @@ namespace Dash
                         if (!f.Key.Name.StartsWith("_") && !SchemaHeadersContains(f.Key))
                             SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f.Key });
                 }
+
+                // Add to the header the fields that are not in the documents but has been added to the schema view by the user
+                // if the field is already being displayed (the user has added this field to a document by entered a value), remove it from the list
+                foreach (var f in _schemaFieldsNotInDocs)
+                    if (!f.Name.StartsWith("_") && !SchemaHeadersContains(f))
+                    {
+                        SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f });
+                    }
+                    else
+                    {
+                        _schemaFieldsNotInDocs.Remove(f);
+                    }
+
                 SchemaHeaders.CollectionChanged += SchemaHeaders_CollectionChanged;
 
                 // add all the records
@@ -411,32 +467,15 @@ namespace Dash
         {
             var vm = e.AddedItems.FirstOrDefault() as CollectionDBSchemaRecordViewModel;
             if (vm == null) return;
-            var recordDoc = GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+            var recordDoc = vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
             this.GetFirstAncestorOfType<DocumentView>().ViewModel.DataDocument.SetField(KeyStore.SelectedSchemaRow, recordDoc, true);
         }
-
-        // TODO lsm wrote this here it's a hack we should definitely remove this
-        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
-        {
-            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)
-                ?.DocumentType;
-            if (!isLayout && (layoutDocType == null || layoutDocType.Equals(DefaultLayout.DocumentType)))
-            {
-                var layoutDoc = new KeyValueDocumentBox(dataDoc);
-
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
-                dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
-            }
-
-            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
-        }
+        
         private void XRecordsView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (var vm in args.Items.Select((item) => item as CollectionDBSchemaRecordViewModel))
             {
-                GetLayoutFromDataDocAndSetDefaultLayout(vm.Document);
+                vm.Document.GetLayoutFromDataDocAndSetDefaultLayout();
                 // bcz: this ends up dragging only the last document -- next to extend DragDocumentModel to support collections of documents
                 args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(vm.Document, true);
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
@@ -464,6 +503,20 @@ namespace Dash
         private void xRecordsView_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // Add a new document to the schema view
+            ViewModel.AddDocument(Util.BlankNote());
+            e.Handled = true;
+        }
+
+        private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // Add a new field to the schema view
+            _schemaFieldsNotInDocs.Add(new KeyController());
+            UpdateFields(new Context(ParentDocument));
         }
     }
 }

@@ -9,13 +9,14 @@ using Windows.Storage;
 using Windows.Storage.Streams;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
     public class PdfToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             var localFile = await CopyFileToLocal(fileData);
             var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;

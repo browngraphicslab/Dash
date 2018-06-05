@@ -28,7 +28,7 @@ namespace Dash
             {
                 return new PointToStringConverter();
             }
-            if (controller is ImageController || controller is VideoController)
+            if (controller is ImageController || controller is VideoController || controller is AudioController)
             {
                 return new UriToStringConverter();
             }

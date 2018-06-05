@@ -32,10 +32,13 @@ namespace Dash
                     CollectionPageView_DataContextChanged(null, null);
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
+                if (xThumbs.Items.Count > 0)
+                    xThumbs.SelectedIndex = 0;
             };
             xThumbs.SizeChanged += (sender, e) =>
             {
-                FitPageButton_Click(null, null);
+                if (CurPage?.Content is CollectionView cview)
+                    cview.ViewModel.FitContents();
                 foreach (var t in ViewModel.ThumbDocumentViewModels)
                     t.Width = xThumbs.ActualWidth;
             };
@@ -69,8 +72,8 @@ namespace Dash
                 DocumentController thumbnailImageViewDoc = null;
                 if (!string.IsNullOrEmpty(pageDoc.Title))
                 {
-                    thumbnailImageViewDoc = new NoteDocuments.PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
-                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
+                    thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
+                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
                 }
                 else
                 {
@@ -207,81 +210,35 @@ namespace Dash
                     CurPage.DataDocument.SetField(DisplayKey, data, true);
                     var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
-                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
+                    xDocView.DataContext = new DocumentViewModel(CurPage.LayoutDocument) { Undecorated = true };
                 }
             }
         }
         public DocumentViewModel CurPage
         {
-            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : this.xDocView.DataContext as DocumentViewModel; }
+            get { return (xThumbs.SelectedIndex < PageDocumentViewModels.Count && xThumbs.SelectedIndex >= 0) ? PageDocumentViewModels[xThumbs.SelectedIndex] : xDocView.DataContext as DocumentViewModel; }
             set
             {
                 xDocView.DataContext = value;
 
-                var binding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = value.DataDocument,
-                    Key = KeyStore.TitleKey,
-                    Tag = "CurPage Title Binding"
-                };
-
-                if (value.Content is CollectionView)
-                {
-                    value.Content.Loaded -= Content_Loaded;
-                    value.Content.Loaded += Content_Loaded;
-                }
-
                 SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
                 
-                var cview = (CurPage?.Content as CollectionView);
-                if (cview != null)
+                if (value?.Content is CollectionView cview)
                 {
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-                    cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
+                    void Cview_Loaded(object sender, RoutedEventArgs e)
+                    {
+                        void ContainerDocument_FieldModelUpdated(FieldControllerBase s, FieldUpdatedEventArgs args, Context context)
+                        {
+                            cview.ViewModel.FitContents();
+                        }
+                        cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
+                        cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
+                        cview.ViewModel.FitContents();
+                    }
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
                 }
-            }
-        }
-
-        private void ContainerDocument_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            var cview = (CurPage?.Content as CollectionView);
-            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
-        }
-
-        private void Cview_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cview = sender as CollectionView;
-            cview.ViewModel.ContainerDocument.FieldModelUpdated -= ContainerDocument_FieldModelUpdated;
-            cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
-            (cview?.CurrentView as CollectionFreeformView)?.ViewManipulationControls?.FitToParent();
-        }
-
-        private void Content_Loaded(object sender, RoutedEventArgs e)
-        {
-            var cv = sender as CollectionView;
-            if (cv != null)
-            {
-                var _element = cv.CurrentView as CollectionFreeformView;
-                if (_element is CollectionFreeformView)
-                {
-                    _element.Loaded -= _element_Loaded;
-                    _element.Loaded += _element_Loaded;
-                }
-                cv.Loaded -= Content_Loaded;
-            }
-        }
-
-        private void _element_Loaded(object sender, RoutedEventArgs e)
-        {
-            var _element = sender as CollectionFreeformView;
-            if (_element is CollectionFreeformView)
-            {
-                _element.ViewManipulationControls.FitToParent();
-                _element.Loaded -= _element_Loaded;
             }
         }
         
@@ -372,13 +329,7 @@ namespace Dash
                 xThumbs.SelectedIndex = Math.Min(PageDocumentViewModels.Count - 1, ind + 1);
             }
         }
-
-        private void FitPageButton_Click(object sender, RoutedEventArgs e)
-        {
-            var _element = ((CurPage?.Content as CollectionView)?.CurrentView as CollectionFreeformView);
-            _element?.ViewManipulationControls?.FitToParent();
-        }
-
+        
         private void xThumbs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var ind = xThumbs.SelectedIndex;
@@ -477,6 +428,37 @@ namespace Dash
         private void xThumbs_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        /// <summary>
+        /// When left-dragging, we need to "handle" the manipulation since the splitter doesn't do that and the manipulation will 
+        /// propagate to the ManipulationControls which will start moving the parent document.
+        /// When right-dragging, we want to terminate the manipulation and let the parent document use its ManipulationControlHelper to drag the document.
+        /// The helper is setup in the CollectionView's PointerPressed handler;
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xSplitter_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (!this.IsRightBtnPressed())
+                e.Handled = true;
+            else e.Complete();
+         }
+
+        /// <summary>
+        /// when we're left-dragging the splitter, we don't want to let events fall through to the ManipulationControls which would cancel the manipulation.
+        /// Since the splitter doesn't handle it's own drag events, we do it here.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xSplitter_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true; 
+        }
+
+        private void xSplitter_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

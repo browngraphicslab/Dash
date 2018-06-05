@@ -10,41 +10,15 @@ namespace Dash
 {
     public class FreeFormDocument : CourtesyDocument
     {
+        public static DocumentType DocumentType = DashConstants.TypeStore.FreeFormDocumentType;
+
         private static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
 
         public FreeFormDocument(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
-            Document = GetLayoutPrototype().MakeDelegate();
-            var layoutDocumentCollection = new ListController<DocumentController>(layoutDocuments);
-            var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
-            Document.SetFields(fields, true); //TODO add fields to constructor parameters     
-
-            Document.SetField(KeyStore.IconTypeFieldKey, new NumberController((double)IconTypeEnum.Api), true);
-        }
-
-        public FreeFormDocument() : this(new List<DocumentController>()) { }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var layoutDocCollection = new ListController<DocumentController>(new List<DocumentController>());
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-            var prototypeDocument = new DocumentController(fields, DashConstants.TypeStore.FreeFormDocumentType, PrototypeId);
-            return prototypeDocument;
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
+            var fields = DefaultLayoutFields(position, size, new ListController<DocumentController>(layoutDocuments));
+            fields.Add(KeyStore.IconTypeFieldKey, new NumberController((double)IconTypeEnum.Api));
+            SetupDocument(DocumentType, PrototypeId, "FreeFormDocument Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)

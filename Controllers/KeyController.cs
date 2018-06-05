@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using DashShared;
 
 namespace Dash
 {
     //Abstract class from "KeyController<T>" should inherit.
+    [DebuggerDisplay( "{Name}")]
     public class KeyController : FieldModelController<KeyModel>
     {
 
@@ -13,7 +15,6 @@ namespace Dash
             set
             {
                 KeyModel.Name = value;
-                UpdateOnServer();
                 OnFieldModelUpdated(null);
             }
         }
@@ -118,7 +119,7 @@ namespace Dash
                 new KeyController(DashShared.UtilShared.GenerateNewId(), name) : null;
         }
 
-        public override FieldModelController<KeyModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return this;
         }
@@ -152,7 +153,7 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            return Name.ToLower().Contains(searchString) ? new StringSearchModel(Name) : StringSearchModel.False;
+            return searchString == null ||  Name.ToLower().Contains(searchString) ? new StringSearchModel(Name) : StringSearchModel.False;
         }
 
         public override FieldControllerBase GetDefaultController()

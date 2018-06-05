@@ -9,6 +9,7 @@ namespace Dash
     public class ContentUpdatingEndpointWrapper<T> : IModelEndpoint<T> where T : EntityBase
     {
         private IModelEndpoint<T> _endpoint;
+
         public ContentUpdatingEndpointWrapper(IModelEndpoint<T> endpoint)
         {
             _endpoint = endpoint;
@@ -150,6 +151,11 @@ namespace Dash
         public bool CheckAllDocuments(IEnumerable<T> documents)
         {
             return _endpoint.CheckAllDocuments(documents);
+        }
+
+        public Dictionary<string, string> GetBackups()
+        {
+            return _endpoint.GetBackups();
         }
     }
 }

@@ -37,7 +37,7 @@ namespace Dash
 
         private bool _textBoxLoaded = false;
 
-        private bool TextBoxLoaded
+        public bool TextBoxLoaded
         {
             get => _textBoxLoaded;
             set
@@ -69,6 +69,11 @@ namespace Dash
             TextBoxLoaded = true;
         }
 
+        public void MakeEditable()
+        {
+            SetExpression(Text);
+            TextBoxLoaded = true;
+        }
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
             if (TextBoxLoaded)
@@ -104,7 +109,10 @@ namespace Dash
 
         private string GetExpression()
         {
-            return TargetFieldController?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString();
+            var reference = TargetFieldController?.Dereference(TargetDocContext);
+            if (reference is DocumentReferenceController dref && (dref.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite)
+                return XTextBlock.Text;
+            return reference?.GetValue(TargetDocContext)?.ToString();
         }
 
         private void SetExpression(string expression)
@@ -129,6 +137,11 @@ namespace Dash
             {
                 SetExpression(XTextBox.Text);
             }
+        }
+
+        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

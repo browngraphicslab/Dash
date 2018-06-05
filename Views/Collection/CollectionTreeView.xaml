@@ -14,7 +14,7 @@
         <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#686868</SolidColorBrush>
     </UserControl.Resources>
 
-    <Grid Background="#556666">
+    <Grid Background="{ThemeResource TreeviewBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -25,9 +25,14 @@
         <Grid Background="{StaticResource WindowsBlue}" Grid.Row="0">
             <TextBlock TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}"  Foreground="#EEFFFF" Padding="0,7">My Workspaces</TextBlock>
     </Grid>
-        <TextBox x:Name="XFilterBox" FontSize="16" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
-        <local:TreeViewCollectionNode x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
-        <Button Grid.Row="3"  HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
+        <TextBox x:Name="XFilterBox" FontSize="12" Grid.Row="1" Margin="10" BorderBrush="#445555" Foreground="#001111" Background="#eeccdddd" BorderThickness="1.5" PlaceholderText="filter notes"></TextBox>
+        <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"></local:TreeViewCollectionNode>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3">
+            <Button x:Name="makePdf" TabIndex="-1" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
+            <Button TabIndex="-1" HorizontalAlignment="Stretch" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
+            </Button>
+        </StackPanel>
+
     </Grid>
 </UserControl>

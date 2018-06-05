@@ -97,5 +97,11 @@ namespace Dash
         void HasDocument(T model, Action<bool> success, Action<Exception> error);
 
         bool CheckAllDocuments(IEnumerable<T> documents);
+
+        /// <summary>
+        /// Returns a list of backups in the format, pretty print string, connection string (i.e. path, connect to database etc...)
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<string, string> GetBackups();
     }
 }

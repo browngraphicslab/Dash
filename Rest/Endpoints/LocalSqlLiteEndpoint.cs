@@ -322,6 +322,11 @@ namespace Dash
             return true;
 
         }
+
+        public Dictionary<string, string> GetBackups()
+        {
+            return new Dictionary<string, string>();
+        }
     }
 
 }

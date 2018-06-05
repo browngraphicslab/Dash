@@ -11,17 +11,17 @@
     <AssemblyName>Dash</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.16299.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.16299.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.17134.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17134.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>7B7B63286BC54858CDA0CF1D357A3922DCEAE142</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>102900712F8D559B6BF28D3E358030F881201953</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -151,6 +151,7 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="Controllers\AudioController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -174,12 +175,18 @@
     <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
+    <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
@@ -187,9 +194,11 @@
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
+    <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
+    <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
@@ -197,6 +206,7 @@
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
+    <Compile Include="Models\RatedSearchResult.cs" />
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
@@ -212,8 +222,11 @@
     <Compile Include="Rest\Endpoints\LocalSqlLiteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
-    <Compile Include="Util\CourtesyDocuments\BackgroundBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
+    <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
@@ -224,8 +237,44 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\DashException.cs" />
+    <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\Export\ExportToTxt.cs" />
+    <Compile Include="Util\DSL\DSLException.cs" />
+    <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionParts.cs" />
+    <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
+    <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
+    <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
+    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\LetExpression.cs" />
+    <Compile Include="Util\DSL\ExpressionChain.cs" />
+    <Compile Include="Util\DSL\LetOperatorController.cs" />
+    <Compile Include="Util\DSL\LiteralExpression.cs" />
+    <Compile Include="Util\DSL\MapOperatorController.cs" />
+    <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptException.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\ScriptExecutionException.cs" />
+    <Compile Include="Util\DSL\ScriptExpression.cs" />
+    <Compile Include="Util\DSL\ScriptState.cs" />
+    <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
+    <Compile Include="Util\DSL\State.cs" />
+    <Compile Include="Util\DSL\TypescriptToOperatorParser.cs" />
+    <Compile Include="Util\DSL\VariableExpression.cs" />
+    <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
@@ -234,13 +283,22 @@
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
+    <Compile Include="Util\FileTypeToDashParsing\AudioToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
+    <Compile Include="Util\NoteDocuments\AudioNote.cs" />
+    <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
+    <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
+    <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
+    <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\PostitNote.cs" />
+    <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
+    <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
-    <Compile Include="Util\OperatorScriptParser.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
+    <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="TagCloud\ComponentFactory.cs" />
@@ -277,11 +335,15 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
     <Compile Include="TypeToFillConverter.cs" />
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
+    <Compile Include="ViewModels\DishReplViewModel.cs" />
+    <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
@@ -289,6 +351,9 @@
     </Compile>
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\MarqueeInfo.xaml.cs">
+      <DependentUpon>MarqueeInfo.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\TimelineElement.xaml.cs">
       <DependentUpon>TimelineElement.xaml</DependentUpon>
@@ -303,16 +368,36 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DockedView.xaml.cs">
+      <DependentUpon>DockedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
+      <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml.cs">
+      <DependentUpon>CollectionSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
+      <DependentUpon>MenuToolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
+      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DishReplView.xaml.cs">
+      <DependentUpon>DishReplView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
       <DependentUpon>TreeNode.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\EditableScriptView.xaml.cs">
+      <DependentUpon>EditableScriptView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FieldPreview.xaml.cs">
       <DependentUpon>FieldPreview.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\CourtesyDocuments\DBSearchOperatorBox.cs" />
     <Compile Include="Util\FileTypeToDashParsing\CsvToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileDropHelper.cs" />
     <Compile Include="Util\FileTypeToDashParsing\FileParser.cs" />
@@ -339,6 +424,7 @@
       <DependentUpon>CollectionDBView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\KeyFieldContainer.cs" />
+    <Compile Include="Views\Floating.cs" />
     <Compile Include="Views\FormattingMenu.xaml.cs">
       <DependentUpon>FormattingMenu.xaml</DependentUpon>
     </Compile>
@@ -347,6 +433,9 @@
     </Compile>
     <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
       <DependentUpon>KeyValueSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\KeyValueScriptView.xaml.cs">
+      <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainSearchBox.xaml.cs">
       <DependentUpon>MainSearchBox.xaml</DependentUpon>
@@ -366,17 +455,8 @@
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Radial Menu\RadialColorPicker.xaml.cs">
-      <DependentUpon>RadialColorPicker.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Operators\MeltOperatorView.xaml.cs">
       <DependentUpon>MeltOperatorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Radial Menu\RadialMenuSlider.xaml.cs">
-      <DependentUpon>RadialMenuSlider.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Ink\InkSettingsPane.xaml.cs">
-      <DependentUpon>InkSettingsPane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CollectionViewModelBindingSource.cs" />
     <Compile Include="Util\FreeformInkControl.cs" />
@@ -463,29 +543,12 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Tab Menu\GenericSearchView.xaml.cs">
       <DependentUpon>GenericSearchView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\RadialActionModel.cs" />
-    <Compile Include="Models\RadialItemModel.cs" />
-    <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="RadialMenu\CenterButton.xaml.cs" />
-    <Compile Include="RadialMenu\ColorExtensions.cs" />
-    <Compile Include="RadialMenu\Colors.cs" />
-    <Compile Include="RadialMenu\Floating.cs" />
-    <Compile Include="RadialMenu\InnerPieSlicePath.cs" />
-    <Compile Include="RadialMenu\ListSubMenu.xaml.cs" />
-    <Compile Include="RadialMenu\MenuBase.cs" />
-    <Compile Include="RadialMenu\MeterSubmenu.xaml.cs" />
-    <Compile Include="RadialMenu\MeterSubmenuPath.cs" />
-    <Compile Include="RadialMenu\OuterPieSlicePath.cs" />
-    <Compile Include="RadialMenu\PathBase.cs" />
-    <Compile Include="RadialMenu\Pie.xaml.cs" />
-    <Compile Include="RadialMenu\PieSlice.xaml.cs" />
-    <Compile Include="RadialMenu\RadialMenu.xaml.cs" />
-    <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
-    <Compile Include="RadialMenu\Shims.cs" />
-    <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Util\DocumentFieldReference.cs" />
     <Compile Include="Util\DocumentPointerFieldReference.cs" />
@@ -496,7 +559,6 @@
     </Compile>
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
-    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
@@ -640,9 +702,6 @@
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Radial Menu\RadialMenuView.xaml.cs">
-      <DependentUpon>RadialMenuView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\InterfaceBuilder\PositionSettings.xaml.cs">
       <DependentUpon>PositionSettings.xaml</DependentUpon>
     </Compile>
@@ -746,11 +805,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Collection\CollectionTimelineView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\MarqueeInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -770,11 +837,39 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\DockedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>    
+    <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DishReplView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Document Menu\TreeMenuNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\TreeNode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditableScriptView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -818,6 +913,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\KeyValueScriptView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainSearchBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -843,18 +942,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PdfView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Radial Menu\RadialColorPicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Radial Menu\RadialMenuSlider.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Ink\InkSettingsPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -942,41 +1029,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="RadialMenu\CenterButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\ListSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\MeterSubMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\Pie.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\PieSlice.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\RadialMenu.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\RadialMenuButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="RadialMenu\Styles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\RichTextSettings.xaml">
       <SubType>Designer</SubType>
@@ -1005,10 +1064,6 @@
     <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\CollectionSettings.xaml">
       <SubType>Designer</SubType>
@@ -1058,10 +1113,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\Radial Menu\RadialMenuView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\InterfaceBuilder\PositionSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1090,6 +1141,7 @@
     <ProjectReference Include="DashShared\DashShared.csproj">
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -1101,7 +1153,7 @@
       <Version>7.1.0</Version>
     </PackageReference>
     <PackageReference Include="Flurl.Http">
-      <Version>2.3.0</Version>
+      <Version>2.3.1</Version>
     </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
@@ -1113,7 +1165,7 @@
       <Version>2.2.3</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
-      <Version>5.2.4</Version>
+      <Version>5.2.6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite">
       <Version>2.0.1</Version>
@@ -1122,22 +1174,25 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>2.1.0-preview1-final</Version>
+      <Version>2.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.8</Version>
+      <Version>6.1.5</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Office.Interop.Word">
+      <Version>15.0.4797.1003</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.ProjectOxford.Vision">
       <Version>1.0.393</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp">
-      <Version>2.2.0</Version>
+      <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI">
-      <Version>2.2.0</Version>
+      <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Toolkit.Uwp.UI.Controls">
-      <Version>2.2.0</Version>
+      <Version>3.0.0</Version>
     </PackageReference>
     <PackageReference Include="NeoSmart.AsyncLock">
       <Version>0.3.0.2</Version>
@@ -1146,13 +1201,16 @@
       <Version>11.0.2</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
-      <Version>16.1.0.26</Version>
+      <Version>16.1.0.24</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
-      <Version>4.5.0-preview1-26216-02</Version>
+      <Version>4.5.0</Version>
+    </PackageReference>
+    <PackageReference Include="TypeScriptAST">
+      <Version>1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Win2D.uwp">
-      <Version>1.21.0</Version>
+      <Version>1.23.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup />
@@ -1160,10 +1218,11 @@
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Dash_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

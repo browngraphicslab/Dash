@@ -9,6 +9,8 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using System.IO;
+using Windows.UI.Xaml.Markup;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -43,10 +45,99 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteSearch(sender);
+                ExecuteDishSearch(sender);
 
             }
             _currentSearch = sender.Text.ToLower(); ;
+        }
+
+
+        private void ExecuteDishSearch(AutoSuggestBox searchBox)
+        {
+            if (searchBox == null)
+            {
+                return;
+            }
+
+
+            var text = searchBox.Text.ToLower();
+            (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                ExecuteSearch(searchBox);
+                return;
+            }
+
+            var maxSearchResultSize = 75;
+            DocumentController resultDict = null;
+            try
+            {
+                var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
+                resultDict = interpreted as DocumentController;
+            }
+            catch (DSLException e)
+            {
+                Debug.WriteLine("Search Failed");
+            }
+            
+            if (resultDict == null)
+            {
+                return;
+            }
+            Debug.Assert(resultDict != null);
+
+            var vms = new List<SearchResultViewModel>();
+            var tree = DocumentTree.MainPageTree;
+            var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
+
+            foreach (var doc in docs)
+            {
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
+                newVm.DocumentCollection = tree.GetNodeFromViewId(newVm.Id).Parents.FirstOrDefault()?.ViewDocument;
+                vms.Add(newVm);
+            }
+            
+            var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
+            Debug.WriteLine("Search Results: " + first.Length);
+            foreach (var searchResultViewModel in first)
+            {
+                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+            }
+        }
+
+        public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
+            DocumentController searchResultsDictionary, string originalSearch)
+        {
+            var lists = new List<List<DocumentController>>();
+
+            foreach (var kvp in searchResultsDictionary.EnumFields(true))
+            {
+                var list = kvp.Value as ListController<DocumentController>;
+                if (list != null)
+                {
+                    lists.Add(list.TypedData);
+                }
+            }
+
+            var tree = DocumentTree.MainPageTree;
+
+            foreach (var list in lists.Where(i => i.Any()).OrderBy(i => i.Count))
+            {
+                yield return SearchHelper.ChooseHelpfulSearchResult(list, originalSearch);
+            }
+        }
+
+        private void Grid_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var docTapped = ContentController<FieldModel>.GetController<DocumentController>(((sender as Grid).DataContext as SearchResultViewModel)?.Id);
+            MainPage.Instance.HighlightDoc(docTapped, true);
+        }
+
+        private void Grid_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var docTapped = ContentController<FieldModel>.GetController<DocumentController>(((sender as Grid).DataContext as SearchResultViewModel)?.Id);
+            MainPage.Instance.HighlightDoc(docTapped, false);
         }
 
         private void ExecuteSearch(AutoSuggestBox searchBox)
@@ -130,7 +221,7 @@ namespace Dash
         {
             if (!string.IsNullOrEmpty(_currentSearch))
             {
-                ExecuteSearch(sender as AutoSuggestBox);
+                ExecuteDishSearch(sender as AutoSuggestBox);
             }
         }
 
@@ -215,6 +306,18 @@ namespace Dash
                 return CleanByType(SearchOverCollection(string.Join(' ', searchParts.Select(i => i.ToLower())), collectionDocument));
             }
 
+            /// <summary>
+            /// TODO NICK
+            /// </summary>
+            /// <param name="resultDocs"></param>
+            /// <param name="originalSearch"></param>
+            /// <returns></returns>
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
+            {
+                Debug.Assert(resultDocs.Any());
+                return resultDocs.FirstOrDefault();
+            }
+
             public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,
                 DocumentController collectionDocument = null, DocumentController thisController = null)
             {
@@ -240,6 +343,54 @@ namespace Dash
                     .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             }
 
+            public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
+            {
+                var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var doc = ContentController<FieldModel>.GetController<DocumentController>(id.Data);
+                var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
+                var helpText = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey);
+
+                return new SearchResultViewModel(title?.Data, helpText?.Data, id?.Data, doc, null, true);
+            }
+
+            /*
+            public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string search)
+            {
+                var srmvs = LocalSearch(search);
+                List<DocumentController> list = new List<DocumentController>();
+                foreach (var srvm in srmvs)
+                {
+                    var doc = new DocumentController();
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ViewDocument.Id), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(srvm.Title), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.ContextualText), true);
+                    list.Add(doc);
+                }
+                return list;
+            }
+            */
+            public static IEnumerable<DocumentController> SearchAllDocumentsForSingleTerm(string singleTerm)
+            {
+                var tree = DocumentTree.MainPageTree;
+                var srmvs = GetRatedSearchResultsForSingleTermSearch(singleTerm);
+                List<DocumentController> list = new List<DocumentController>();
+                foreach (var srvm in srmvs)
+                {
+                    var node = tree.GetNodeFromViewId(srvm.ResultDocumentViewId);
+                    var doc = new DocumentController();
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ResultDocumentViewId), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title + " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")), true);
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.HelpfulText), true);
+                    list.Add(doc);
+                }
+                return list;
+            }
+
+            private static IEnumerable<RatedSearchResult> GetRatedSearchResultsForSingleTermSearch(string singleTerm)
+            {
+                //TODO TFS fill this in from scratch
+                return LocalSearch(singleTerm).Select(i => new RatedSearchResult(){HelpfulText =  i.ContextualText, ResultDocumentViewId = i.ViewDocument.Id, Rating = 1});
+            }
 
             private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
             {
@@ -575,6 +726,7 @@ namespace Dash
             {
                 var documentTree = DocumentTree.MainPageTree;
                 var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
+                var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();
                 foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
                 {
                     int foundCount = 0;
@@ -585,7 +737,7 @@ namespace Dash
                     foreach (var kvp in documentController.EnumDisplayableFields())
                     {
                         var keySearch = kvp.Key.SearchForString(searchString);
-                        var fieldSearch = kvp.Value.SearchForString(searchString);
+                        var fieldSearch = kvp.Value.Dereference(new Context(documentController))?.SearchForString(searchString) ?? StringSearchModel.False;
 
                         string topText = null;
                         if (fieldSearch.StringFound)

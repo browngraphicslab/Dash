@@ -57,6 +57,24 @@ namespace Dash
             }
         }
 
+        public Dictionary<string, string> GetBackups()
+        {
+            var dict = new Dictionary<string, string>();
+
+            var directoryInfo = new DirectoryInfo(ApplicationData.Current.LocalFolder.Path);
+            var fileInfos = directoryInfo.GetFiles();
+            foreach (var fileInfo in fileInfos)
+            {
+                if (!fileInfo.Name.Contains("_backup_")) continue;
+                var splitInfo = fileInfo.Name.Split(new[] { "_backup_" }, StringSplitOptions.None);
+                var ticks = long.Parse(splitInfo[0]);
+                var prettyTime = new DateTime(ticks).ToString("MM/dd/yyyy h:mm tt");
+                dict[prettyTime] = fileInfo.FullName;
+            }
+
+            return dict;
+        }
+
         /// <summary>
         /// Event handler called every tme interval that saves the current version of your objects
         /// </summary>
@@ -132,9 +150,9 @@ namespace Dash
             try
             {
                 var doc = GetModel(id);
-                var args = new RestRequestReturnArgs()
+                var args = new RestRequestReturnArgs
                 {
-                    ReturnedObjects = new List<EntityBase>()
+                    ReturnedObjects = new List<EntityBase>
                     {
                         doc.CreateObject<T>()
                     }

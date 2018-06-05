@@ -156,7 +156,11 @@ namespace DashShared
             public static KeyModel TextWrappingKey = new KeyModel("FF488D09-BBB7-4158-A5E4-0C4530DF2F56", "Text Wrapping");
             public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "Background Color");
             public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
+            public static KeyModel AdornmentKey = new KeyModel("FF3329BD-AA78-46E4-9A42-47CAB1E62123", "Is Adornment");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");
+            public static KeyModel LinkFromFieldKey = new KeyModel("9A3191FF-C8E6-472F-ABE5-B5A250D49D59", "Link From");
+            public static KeyModel LinkToFieldKey = new KeyModel("649A7F35-C428-49EC-B914-5746E2590DAC", "Link To");
+            public static KeyModel PdfVOffsetFieldKey = new KeyModel("8990098B-83D2-4817-A275-82D8282ECD79", "_PdfVOffset"); 
             public static KeyModel ScaleCenterFieldKey = new KeyModel("FE4IMA9J-NOE9-3NGS-G09Q-JFOE9038S82S" , "_Scale Center");
             public static KeyModel ScaleAmountFieldKey = new KeyModel("AOEKMA9J-IP37-96HI-VJ36-IHFI39AHI8DE", "_Scale Amount");
             public static KeyModel IconTypeFieldKey = new KeyModel("ICON7D27-FA81-4D88-B2FA-42B7888525AF", "_IconType");
@@ -165,7 +169,7 @@ namespace DashShared
             public static KeyModel HeaderKey = new KeyModel("93CF85C8-5522-4B00-927A-943982250729", "Header");
             public static KeyModel CollectionOutputKey = new KeyModel("D4FD93F5-A3DA-41CF-8FB2-3C7A659B7850", "Collection Output");
             public static KeyModel OperatorKey = new KeyModel("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
-            public static KeyModel OperatorCacheKey = new KeyModel("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041", "Operator Cache");
+            public static KeyModel OperatorCacheKey = new KeyModel("1B1409DE-4BA5-4515-9BB4-B15AE8CC0041", "_Operator Cache");
             public static KeyModel ParsedFieldsKey = new KeyModel("385D06F3-96A7-4ADF-B806-50DAB4488FD6", "_Parsed Fields");
             public static KeyModel WebContextKey = new KeyModel("EFD56382-F8BA-45D2-86D3-085974EF4D9D", "_WebContext");
             public static KeyModel ModifiedTimestampKey = new KeyModel("CAAD33A3-DE94-42CF-A54A-F85C5F04940E", "ModifiedTime");
@@ -173,8 +177,7 @@ namespace DashShared
             public static KeyModel WorkspaceHistoryKey = new KeyModel("D0630828-1488-4F7B-B0D7-9E89EF05497F", "_Workspace History");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
-            public static KeyModel ActualWidthKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualWidth");
-            public static KeyModel ActualHeightKey = new KeyModel("79FAD6CD-6C67-4BA5-A669-69F60038438A", "_ActualHeight"); 
+            public static KeyModel ActualSizeKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualSize");
             public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
         }

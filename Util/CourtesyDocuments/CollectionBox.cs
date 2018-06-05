@@ -4,6 +4,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using DashShared;
 using System;
+using static Dash.DocumentController;
 
 namespace Dash
 {
@@ -12,6 +13,7 @@ namespace Dash
     /// </summary>
     public class CollectionBox : CourtesyDocument
     {
+        public static DocumentType DocumentType = DashConstants.TypeStore.CollectionBoxType;
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
 
@@ -24,35 +26,9 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             fields[KeyStore.CollectionViewTypeKey] = new TextController(viewType.ToString());
             fields[KeyStore.InkDataKey] = new InkController();
-
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetFields(fields, true);
-            
-        }
-
-        protected override DocumentController GetLayoutPrototype()
-        {
-            var prototype = ContentController<FieldModel>.GetController<DocumentController>(PrototypeId);
-            if (prototype == null)
-            {
-                prototype = InstantiatePrototypeLayout();
-            }
-            return prototype;
-        }
-
-        protected override DocumentController InstantiatePrototypeLayout()
-        {
-            var docController = new ListController<DocumentController>(new List<DocumentController>());
-            var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docController);
             fields[KeyStore.IconTypeFieldKey] = new NumberController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
-            fields[KeyStore.AbstractInterfaceKey] = new TextController("CollectionBox Layout");
 
-            return new DocumentController(fields, DashConstants.TypeStore.CollectionBoxType, PrototypeId);
-        }
-
-        public override FrameworkElement makeView(DocumentController docController, Context context)
-        {
-            return MakeView(docController, context);
+            SetupDocument(DocumentType, PrototypeId, "Collection Box Prototype Layout", fields);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
@@ -62,15 +38,17 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
             Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(new DocumentFieldReference(docController.Id, KeyStore.DataKey), context)
-            { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
-
-            // set the view type (i.e. list, grid, freeform)
-            var typeString = (docController.GetField(KeyStore.CollectionViewTypeKey) as TextController)?.Data ?? DefaultCollectionView;
-            var viewType   = (CollectionView.CollectionViewType) Enum.Parse(typeof(CollectionView.CollectionViewType), typeString);
-            var view       = new CollectionView(collectionViewModel,  viewType);
+            var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey) { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
+            
+            var view  = new CollectionView(collectionViewModel);
 
             SetupBindings(view, docController, context);
+
+            void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            {
+                collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
+            }
+            docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
             
             return view;
         }

@@ -92,7 +92,7 @@ namespace Dash.Controllers
         /*
          * Returns a copy of this instance of DateTimeController (Data field is preserved)
          */
-        public override FieldModelController<DateTimeModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new DateTimeController(Data);
         }
@@ -120,6 +120,8 @@ namespace Dash.Controllers
          */
         public override StringSearchModel SearchForString(string searchString)
         {
+            if (searchString == null)
+                return new StringSearchModel(Data.ToString("G"));
             return Data.ToString("G").Contains(searchString) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
         }
     }

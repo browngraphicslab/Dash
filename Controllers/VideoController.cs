@@ -91,7 +91,7 @@ namespace Dash
 			return VideoFieldModel.Data.AbsolutePath;
 		}
 
-		public override FieldModelController<VideoModel> Copy()
+		public override FieldControllerBase Copy()
 		{
 			return new VideoController(VideoFieldModel.Data);
 		}

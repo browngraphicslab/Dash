@@ -4,7 +4,10 @@ namespace Dash
 {
     public class NumberController : FieldModelController<NumberModel>
     {
-        public NumberController() : this(0) { }
+        public NumberController() : this(0)
+        {
+
+        }
 
         public NumberController(double data = 0) : base(new NumberModel(data))
         {
@@ -13,7 +16,7 @@ namespace Dash
 
         public NumberController(NumberModel numberFieldModel) : base(numberFieldModel)
         {
-            
+
         }
 
         public override void Init()
@@ -42,7 +45,8 @@ namespace Dash
             var data = value as double?;
             if (value is double?)
             {
-                Data = (double)data.Value;
+                if (Data != (double)data.Value)
+                    Data = (double)data.Value;
                 return true;
             }
             if (value is double dub)
@@ -80,10 +84,10 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            return Data.ToString().Contains(searchString) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
+            return searchString == null || Data.ToString().Contains(searchString) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
         }
 
-        public override FieldModelController<NumberModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new NumberController(Data);
         }

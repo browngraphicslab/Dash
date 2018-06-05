@@ -25,7 +25,6 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using LightBuzz.SMTP;
 using Newtonsoft.Json;
-using static Dash.NoteDocuments;
 
 namespace Dash
 {
@@ -135,22 +134,6 @@ namespace Dash
             {
                 X = p.X,
                 Y = p.Y
-            };
-        }
-
-        /// <summary>
-        ///     Forcefully bind FrameworkElement size to parent document size. Use sparingly and only when XAML is being too
-        ///     stubborn
-        /// </summary>
-        /// <param name="toBind"></param>
-        public static void ForceBindHeightToParentDocumentHeight(FrameworkElement toBind)
-        {
-            var parent = toBind.GetFirstAncestorOfType<DocumentView>();
-            if (parent == null) return;
-            parent.SizeChanged += (ss, ee) =>
-            {
-                toBind.Width = parent.ActualWidth;
-                toBind.Height = parent.ActualHeight;
             };
         }
 
@@ -499,15 +482,15 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController AdornmentWithPosition(BackgroundBox.AdornmentShape shape, Point pos, double width=200, double height=200)
+        public static DocumentController AdornmentWithPosition(BackgroundShape.AdornmentShape shape, Point pos, double width=200, double height=200)
         {
-            return new BackgroundBox(shape, pos.X, pos.Y, width, height).Document;
+            return new BackgroundNote(shape, pos,new Size(width, height)).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController AdornmentDoc()
         {
-            return AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, new Point(0, 0));
+            return AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, new Point(0, 0));
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
@@ -525,7 +508,7 @@ namespace Dash
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController BlankNote()
         {
-            return new NoteDocuments.RichTextNote().Document;
+            return new RichTextNote().Document;
         }
 
         /// <summary>

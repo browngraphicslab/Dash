@@ -37,7 +37,7 @@ namespace Dash
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
             var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();

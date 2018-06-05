@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
@@ -45,8 +46,12 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+"(Term:{" + searchTerm + "})";
+            return OperatorScript.GetDishOperatorName<SearchOperatorController>()+ "(\"" + searchTerm + "\")";
+        }
+
+        private string WrapInDictifyFunc(string resultsString)
+        {
+            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "("+resultsString+")";
         }
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
@@ -57,11 +62,41 @@ namespace Dash
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return OperatorScript.GetDishOperatorName<IntersectByValueOperatorController>() + "(A:" + search1 + ",B:" + search2 + ")";
+            return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        private string WrapInParameterizedFunction(string funcName, string paramName)
+        {
+            //TODO check if func exists
+            if (!DSL.FuncNameExists(funcName))
+            {
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
+            }
+
+            if (OperatorScript.GetFirstInputType(funcName) == DashShared.TypeInfo.Text)
+            {
+                return funcName + "(\"" + paramName + "\")";
+            }
+
+            return funcName + "(" + paramName + ")";
+        }
+
+        private string GetBasicSearchResultsFromSearchPart(string searchPart)
+        {
+            searchPart = searchPart?.ToLower() ?? " ";
+            if (searchPart.Contains(":"))
+            {
+                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
+                return WrapInParameterizedFunction(parts[0], parts[1]);
+            }
+            else
+            {
+                return WrapSearchTermInFunction(searchPart);
+            }
+        }
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
@@ -71,7 +106,8 @@ namespace Dash
                 outputs[ScriptKey] = new TextController("");
                 return;
             }
-            var searches = new Stack<string>(parts.Select(WrapSearchTermInFunction));
+
+            var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
             while (searches.Count() > 1)
             {
                 var search1 = searches.Pop();

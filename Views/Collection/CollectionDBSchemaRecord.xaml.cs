@@ -51,25 +51,8 @@ namespace Dash
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataDoc, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-            
-            GetLayoutFromDataDocAndSetDefaultLayout(dataDoc);
-        }
 
-        // TODO lsm wrote this here it's a hack we probably want to do this in places other than the schema record
-        private static DocumentController GetLayoutFromDataDocAndSetDefaultLayout(DocumentController dataDoc)
-        {
-            var isLayout = dataDoc.GetField(KeyStore.DocumentContextKey) != null;
-            var layoutDocType = (dataDoc.GetField(KeyStore.ActiveLayoutKey) as DocumentController)?.DocumentType;
-            if (!isLayout && (layoutDocType == null || layoutDocType.Equals( DefaultLayout.DocumentType)))
-            {
-                var layoutDoc = new KeyValueDocumentBox(dataDoc);
-
-                layoutDoc.Document.SetField(KeyStore.WidthFieldKey, new NumberController(300), true);
-                layoutDoc.Document.SetField(KeyStore.HeightFieldKey, new NumberController(100), true);
-                dataDoc.SetActiveLayout(layoutDoc.Document, forceMask: true, addToLayoutList: false);
-            }
-
-            return isLayout ? dataDoc : dataDoc.GetActiveLayout(null);
+            dataDoc.GetLayoutFromDataDocAndSetDefaultLayout();
         }
     }
 

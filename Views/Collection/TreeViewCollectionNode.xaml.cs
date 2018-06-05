@@ -53,7 +53,7 @@ namespace Dash
                     {
                         var tv = noda.GetFirstDescendantOfType<TreeViewNode>();
                         var tc = noda.GetFirstDescendantOfType<TreeViewCollectionNode>();
-                        if (d.DocumentType.Equals(NoteDocuments.CollectionNote.DocumentType))
+                        if (d.DocumentType.Equals(CollectionNote.DocumentType))
                         {
                             tc.Highlight(document, flag);
                         }

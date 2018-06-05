@@ -80,7 +80,7 @@ namespace Dash
             return $"({Data})";
         }
 
-        public override FieldModelController<PointModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new PointController(Data);
         }

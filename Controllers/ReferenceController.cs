@@ -14,12 +14,14 @@ namespace Dash
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
 
         }
+
+        DocumentController _lastDoc = null;
         public override void Init()
         {
             FieldKey = ContentController<FieldModel>.GetController<KeyController>(((ReferenceModel)Model).KeyId);
-            var docController = GetDocumentController(null);
-            docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc = GetDocumentController(null);
+            _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         protected void DocFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
@@ -31,8 +33,7 @@ namespace Dash
 
         public override void DisposeField()
         {
-            var docController = GetDocumentController(null);
-            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+            _lastDoc?.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
         public KeyController FieldKey { get; set; }
@@ -76,6 +77,9 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
+            return TypescriptToOperatorParser.GetScriptForOperatorTree(this, context);
+
+            /*
             var refDoc = GetDocumentController(context);
             var opField = refDoc.GetDereferencedField(KeyStore.OperatorKey, context) as OperatorController;
             if (opField != null)
@@ -86,19 +90,19 @@ namespace Dash
                 str = str.TrimEnd(',') + ")";
                 return str;
             }
-            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
+            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;*/
         }
         public override bool TrySetValue(object value)
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
+            var copyOnWrite = (doc.GetField(FieldKey) is DocumentReferenceController dref3) ? (dref3.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite: false;
             var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
             if (refValue.Item2 is string s)
-                return doc.ParseDocField(FieldKey, s, field);
+                return doc.ParseDocField(FieldKey, s, field, copyOnWrite || field?.ReadOnly == true);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
-                var rtfield = doc.GetFieldOrCreateDefault<RichTextController>(FieldKey);
-                rtfield.Data = rtd;
+                doc.SetField<RichTextController>(FieldKey, rtd, true);
                 return true;
             }
 

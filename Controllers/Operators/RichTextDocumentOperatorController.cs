@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
+    [OperatorType("docText")]
     public class RichTextDocumentOperatorController : OperatorController
     {
 
@@ -37,7 +38,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("A0BB0580-31E8-441E-907A-8A9C74224964", "Doc Text");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var richTextController = inputs[KeyStore.DataKey] as RichTextController;
             if (richTextController != null)

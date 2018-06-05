@@ -57,6 +57,17 @@ namespace Dash
         /// </summary>
         public Point InteractiveManipulationScale;
 
+        public bool IsAdornmentGroup
+        {
+            get
+            {
+                return DocumentController.GetDereferencedField<TextController>(KeyStore.AdornmentKey, null)?.Data == "true";
+            }
+            set
+            {
+                DocumentController.SetField<TextController>(KeyStore.AdornmentKey, IsAdornmentGroup ? "false" : "true", true);
+            }
+        }
         public Brush BackgroundBrush
         {
             get
@@ -113,16 +124,8 @@ namespace Dash
             get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.ScaleAmountFieldKey, null)?.Data ?? new Point(1, 1);
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
-        public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualWidth * Scale.X, ActualHeight * Scale.Y));
-        public double ActualHeight { get; private set; }
-        public double ActualWidth { get; private set; }
-        public void UpdateActualSize(double actualwidth, double actualheight)
-        {
-            ActualWidth = actualwidth;
-            ActualHeight = actualheight;
-            LayoutDocument.SetField<NumberController>(KeyStore.ActualWidthKey, ActualWidth, true);
-            LayoutDocument.SetField<NumberController>(KeyStore.ActualHeightKey, ActualHeight, true);
-        }
+        public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
+        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point(0,0);}
 
         protected bool Equals(DocumentViewModel other)
         {
@@ -156,8 +159,14 @@ namespace Dash
         public bool DecorationState
         {
             get => _decorationState;
-            set => SetProperty(ref _decorationState, value);
+            set
+            {
+                if (!DisableDecorations) SetProperty(ref _decorationState, value);
+                else SetProperty(ref _decorationState, false);
+            }
         }
+
+        public bool DisableDecorations { get; set; } = false;
 
 
         // == FIELD UPDATED EVENT HANDLERS == 
@@ -171,11 +180,15 @@ namespace Dash
         /// <param name="context"></param>
         void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
-                // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
-                //   bcz: need some better mechanism than this....
-                if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                    LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+            // if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
+            // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
+            //   bcz: need some better mechanism than this....
+            if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs && largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+                    ;
+                else
                     Content = null; // forces layout to be recomputed by listeners who will access Content
         }
         /// <summary>
