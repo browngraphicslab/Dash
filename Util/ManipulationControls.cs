@@ -147,7 +147,7 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-            var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
             if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
                 return ParentDocument.ViewModel.Bounds;
 

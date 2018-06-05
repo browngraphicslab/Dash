@@ -21,7 +21,7 @@ namespace Dash
     public class ViewManipulationControls : IDisposable
     {
         private bool _processManipulation;
-        private CollectionFreeformView _freeformView;
+        private CollectionFreeformBase _freeformView;
         public double MinScale { get; set; } = .2;
         public double MaxScale { get; set; } = 5.0;
         public double ElementScale { get; set; } = 1.0;
@@ -41,7 +41,7 @@ namespace Dash
         /// <param name="doesRespondToManipulationDelta"></param>
         /// <param name="doesRespondToPointerWheel"></param>
         /// <param name="borderRegions"></param>
-        public ViewManipulationControls(CollectionFreeformView element)
+        public ViewManipulationControls(CollectionFreeformBase element)
         {
             _freeformView = element;
             _processManipulation = true;
