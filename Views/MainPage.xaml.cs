@@ -754,12 +754,14 @@ namespace Dash
         {
             IsPresentationModeToggled = !IsPresentationModeToggled;
             xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
-            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(300) : new GridLength(0);
+            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
         }
 
         public void PinToPresentation(DocumentViewModel viewModel)
         {
             xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            if (!IsPresentationModeToggled)
+                TogglePresentationMode();
         }
     }
 }

@@ -10,13 +10,14 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Padding="20">
         <StackPanel>
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
-            <CommandBar HorizontalAlignment="Center">
-                <AppBarButton Icon="Back" Label="Back" Click="BackButton_Click"/>
+            <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
+                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3"/>
                 <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
-                <AppBarButton Icon="Forward" Label="Next" Click="NextButton_Click"/>
+                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3"/>
+                <AppBarButton x:Name="ResetButton" Icon="Undo" Label="Reset" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3"/>
             </CommandBar>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -30,7 +31,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <ListView ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True" AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1">
+                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True" AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
