@@ -1,0 +1,40 @@
+﻿<UserControl
+    x:Class="Dash.CollectionStandardView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:dash="using:Dash"
+    mc:Ignorable="d"
+    ManipulationMode="All"
+    d:DataContext="{d:DesignInstance local:CollectionViewModel}"
+    >
+
+    <ItemsControl x:Name="xItemsControl"
+                  x:FieldModifier="public"
+                  ItemsSource="{Binding DocumentViewModels}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <Canvas x:Name="xCollectionCanvas"
+                        x:FieldModifier="public"
+                        Background="Transparent"
+                        Width="0"
+                        Height="0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Left"
+                        RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
+                >
+                </Canvas>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <dash:DocumentView
+                    BindRenderTransform="True"
+                />
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

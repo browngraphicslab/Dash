@@ -127,7 +127,7 @@ namespace Dash
         {
             var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(
                 p.Position, FreeformInkControl.SelectionCanvas,
-                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot)));
+                FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot)));
             //check for linearity
             if (!IsLinear(inkPoints)) return false;
             var point1 = inkPoints[0];
@@ -220,17 +220,17 @@ namespace Dash
             //Get preexisting documents within circle by transforming points to collection space and using LassoHelper to get contained docs.
             var lassoPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds())
                 .Select(p => Util.PointTransformFromVisual(p, FreeformInkControl.SelectionCanvas,
-                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
+                    FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot as Canvas)));
             var selectedDocuments = FreeformInkControl.LassoHelper.GetSelectedDocuments(lassoPoints);
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
-                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+                FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot as Canvas);
             recognizedDocuments.AddRange(selectedDocuments.Select(view => (view.DataContext as DocumentViewModel).DocumentController));
             foreach (var doc in recognizedDocuments)
             {
                 var ogPos = doc.GetPositionField().Data;
                 var newPos = Util.PointTransformFromVisual(ogPos,
-                    FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
+                    FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot, FreeformInkControl.SelectionCanvas);
                 var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
                 doc.GetPositionField().Data = relativePos;
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
@@ -259,7 +259,7 @@ namespace Dash
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
             var position = Util.PointTransformFromVisual(topLeft, FreeformInkControl.SelectionCanvas,
-                FreeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+                FreeformInkControl.FreeformView.GetItemsControl().ItemsPanelRoot as Canvas);
             var fields = new Dictionary<KeyController, FieldControllerBase>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
             var layoutDocs = new List<DocumentController>();
@@ -448,7 +448,7 @@ namespace Dash
         private Dictionary<Rect, DocumentView> GetDocViewRects()
         {
             Dictionary<Rect, DocumentView> dict = new Dictionary<Rect, DocumentView>();
-            IEnumerable<DocumentViewModel> parameters = FreeformInkControl.FreeformView.xItemsControl.Items.OfType<DocumentViewModel>();
+            IEnumerable<DocumentViewModel> parameters = FreeformInkControl.FreeformView.GetItemsControl().Items.OfType<DocumentViewModel>();
             foreach (var param in parameters)
             {
                 var doc = param.DocumentController;
@@ -462,8 +462,8 @@ namespace Dash
                     Width = width,
                     Height = height
                 };
-                if (FreeformInkControl.FreeformView.xItemsControl.ItemContainerGenerator != null && FreeformInkControl
-                        .FreeformView.xItemsControl
+                if (FreeformInkControl.FreeformView.GetItemsControl().ItemContainerGenerator != null && FreeformInkControl
+                        .FreeformView.GetItemsControl()
                         .ContainerFromItem(param) is ContentPresenter contentPresenter)
                     dict[rect] =
                         contentPresenter.GetFirstDescendantOfType<DocumentView>();

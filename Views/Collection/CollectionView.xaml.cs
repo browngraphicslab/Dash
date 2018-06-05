@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
+using Dash.Views.Collection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -14,7 +15,8 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Standard
+        }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
@@ -242,6 +244,10 @@ namespace Dash
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
+                    break;
+                case CollectionViewType.Standard:
+                    if (CurrentView is CollectionStandardView) return;
+                    CurrentView = new CollectionStandardView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

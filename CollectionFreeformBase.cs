@@ -1,97 +1,132 @@
-﻿using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using Microsoft.Graphics.Canvas.UI.Xaml;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.System;
-using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Animation;
-using Dash.Annotations;
 using Dash.Views.Collection;
-using DashShared;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Office.Interop.Word;
 using NewControls.Geometry;
+using Point = Windows.Foundation.Point;
+using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
+using Task = System.Threading.Tasks.Task;
+using Window = Windows.UI.Xaml.Window;
+using DashShared;
 
-// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : ICollectionView
+    public abstract class CollectionFreeformBase: UserControl, ICollectionView
     {
-        MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
+        MatrixTransform _transformBeingAnimated;// Transform being updated during animation
+        Canvas _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
-        List<DocumentView>  _selectedDocs = new List<DocumentView>();
-
-        public ViewManipulationControls  ViewManipulationControls { get; set; }
-        public bool                      TagMode { get; set; }
-        public KeyController             TagKey { get; set; }
-        public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
+        List<DocumentView> _selectedDocs = new List<DocumentView>();
+        public DocumentView ParentDocument => GetParentDocument();
+        //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
+        public ViewManipulationControls ViewManipulationControls { get; set; }
+        public bool TagMode { get; set; }
+        public KeyController TagKey { get; set; }
+        public CollectionViewModel ViewModel { get => GetViewModel(); }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
-        public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
 
-        public CollectionFreeformView()
+        // TODO: get canvas in derived class
+        public abstract Canvas GetCanvas();
+        // TODO: get parentdoc of derived class
+        public abstract DocumentView GetParentDocument();
+        // TODO: get datacontext of derived class
+        public abstract CollectionViewModel GetViewModel();
+        // TODO: get itemscontrol of derived class
+        public abstract ItemsControl GetItemsControl();
+        // TODO: get win2d canvascontrol of derived class
+        public abstract CanvasControl GetBackgroundCanvas();
+        // TODO: get outergrid of derived class
+        public abstract Grid GetOuterGrid();
+        // TODO: get tagbox of derived class
+        public abstract AutoSuggestBox GetTagBox();
+        // TODO: get selectioncanvas of derived class
+        public abstract Canvas GetSelectionCanvas();
+        // TODO: get dropindicationrect of derived class
+        public abstract Rectangle GetDropIndicationRectangle();
+        // TODO: get inkcanvas of derived class
+        public abstract Canvas GetInkHostCanvas();
+        protected void OnLoad(object sender, RoutedEventArgs e)
         {
-            InitializeComponent();
-            DataContextChanged += (s, args) => _lastViewModel = ViewModel;
-            Loaded += (sender, e) =>
+            MakePreviewTextbox();
+
+            //make and add selectioncanvas 
+            SelectionCanvas = new Canvas();
+            Canvas.SetLeft(SelectionCanvas, -30000);
+            Canvas.SetTop(SelectionCanvas, -30000);
+            GetInkHostCanvas().Children.Add(SelectionCanvas);
+
+            if (InkController != null)
             {
-                MakePreviewTextbox();
-
-                //make and add selectioncanvas 
-                SelectionCanvas = new Canvas();
-                Canvas.SetLeft(SelectionCanvas, -30000);
-                Canvas.SetTop(SelectionCanvas, -30000);
-                InkHostCanvas.Children.Add(SelectionCanvas);
-
-                if (InkController != null)
-                {
-                    MakeInkCanvas();
-                }
-                UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
-                ViewModel?.Loaded(true);
-                ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-            };
-            Unloaded += (sender, e) =>
-            {
-                if (_lastViewModel != null)
-                {
-                    _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-                }
-
-                _lastViewModel?.Loaded(false);
-                _lastViewModel = null;
-            };
-            xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
-            xOuterGrid.PointerExited   += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            xOuterGrid.SizeChanged     += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
-            xOuterGrid.PointerPressed  += OnPointerPressed;
-            xOuterGrid.PointerReleased += OnPointerReleased;
-            ViewManipulationControls = new ViewManipulationControls(this);
-            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+                MakeInkCanvas();
+            }
+            UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
+            ViewModel?.Loaded(true);
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
 
-        public DocumentController Snapshot(bool copyData=false)
+        protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
+        {
+            _lastViewModel = ViewModel;
+        }
+
+        protected void OnUnload(object sender, RoutedEventArgs e)
+        {
+            if (_lastViewModel != null)
+            {
+                _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
+
+            _lastViewModel?.Loaded(false);
+            _lastViewModel = null;
+        }
+
+        protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+        }
+
+        protected void OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+        }
+
+        protected void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var grid = sender as Grid;
+            if (grid?.Clip != null)
+            {
+                grid.Clip.Rect = new Rect(0, 0, grid.ActualWidth, grid.ActualHeight);
+            }
+        }
+
+
+        protected DocumentController Snapshot(bool copyData = false)
         {
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(copyData  ? dvm.DocumentController.GetDataCopy():dvm.DocumentController.GetViewCopy());
+                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
+            // TODO: should it work for standard view?
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;
@@ -103,17 +138,17 @@ namespace Dash
         /// </summary>
         Storyboard _storyboard1, _storyboard2;
 
-        public void Move(TranslateTransform translate)
+        protected void Move(TranslateTransform translate)
         {
             var composite = new TransformGroup();
-            composite.Children.Add((xItemsControl.ItemsPanelRoot as Canvas).RenderTransform);
+            composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform);
             composite.Children.Add(translate);
 
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
-        public void MoveAnimated(TranslateTransform translate)
+        protected void MoveAnimated(TranslateTransform translate)
         {
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
             if (old == null)
@@ -176,18 +211,17 @@ namespace Dash
             _storyboard1.Completed += Storyboard1OnCompleted;
         }
 
-        void Storyboard1OnCompleted(object sender, object e)
+        protected void Storyboard1OnCompleted(object sender, object e)
         {
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             _storyboard1.Completed -= Storyboard1OnCompleted;
         }
 
-        void CompositionTargetOnRendering(object sender, object e)
+        protected void CompositionTargetOnRendering(object sender, object e)
         {
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
-
         DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
         {
 
@@ -241,12 +275,12 @@ namespace Dash
 
         #region BackgroundTiling
 
-        bool             _resourcesLoaded;
+        bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
-        const double     NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        const float      BackgroundOpacity = 1.0f;
+        const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        const float BackgroundOpacity = 1.0f;
 
-        void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        protected void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
             var task = Task.Run(async () =>
             {
@@ -265,7 +299,7 @@ namespace Dash
             args.TrackAsyncAction(task.AsAsyncAction());
         }
 
-        void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        protected void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if (_resourcesLoaded)
             {
@@ -280,7 +314,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        protected void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (ViewModel == null) return;
 
@@ -334,7 +368,7 @@ namespace Dash
                         (float)aliasSafeScale,
                         (float)matrix.OffsetX,
                         (float)matrix.OffsetY);
-                    xBackgroundCanvas.Invalidate();
+                    GetBackgroundCanvas().Invalidate();
                 }
             }
         }
@@ -370,32 +404,32 @@ namespace Dash
 
         public void ShowTagKeyBox()
         {
-            TagKeyBox.Visibility = Visibility.Visible;
-            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, xOuterGrid);
-            TagKeyBox.RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
+            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Visible;
+            var mousePos = Util.PointTransformFromVisual(this.RootPointerPos(), Window.Current.Content, GetOuterGrid());
+            GetTagBox().RenderTransform = new TranslateTransform { X = mousePos.X, Y = mousePos.Y };
         }
 
         public void HideTagKeyBox()
         {
-            TagKeyBox.Visibility = Visibility.Collapsed;
+            GetTagBox().Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
-        void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        protected void TagKeyBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var keys = ContentController<FieldModel>.GetControllers<KeyController>();
                 var names = keys.Where(k => !k.Name.StartsWith("_"));
-                TagKeyBox.ItemsSource = names;
+                GetTagBox().ItemsSource = names;
             }
         }
 
-        void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        protected void TagKeyBox_OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             sender.Text = ((KeyController)args.SelectedItem).Name;
         }
 
-        void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        protected void TagKeyBox_OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             if (args.ChosenSuggestion != null)
             {
@@ -425,27 +459,27 @@ namespace Dash
         #region Marquee Select
 
         Rectangle _marquee;
-        Point     _marqueeAnchor;
-        bool      _isMarqueeActive;
+        Point _marqueeAnchor;
+        bool _isMarqueeActive;
         private MarqueeInfo mInfo;
-        object    _marqueeKeyHandler = null;
+        object _marqueeKeyHandler = null;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                    GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 SelectDocs(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
-                SelectionCanvas.Children.Remove(_marquee);
+                GetSelectionCanvas().Children.Remove(_marquee);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
                 _isMarqueeActive = false;
                 e.Handled = true;
             }
 
-            xOuterGrid.PointerMoved -= OnPointerMoved;
-            xOuterGrid.ReleasePointerCapture(e.Pointer);
+            GetOuterGrid().PointerMoved -= OnPointerMoved;
+            GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
         /// <summary>
@@ -457,9 +491,9 @@ namespace Dash
         {
             if (_isMarqueeActive)
             {
-                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                var dX  = pos.X - _marqueeAnchor.X;
-                var dY =  pos.Y - _marqueeAnchor.Y;
+                var pos = args.GetCurrentPoint(GetSelectionCanvas()).Position;
+                var dX = pos.X - _marqueeAnchor.X;
+                var dY = pos.Y - _marqueeAnchor.Y;
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -485,10 +519,10 @@ namespace Dash
                     _marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
                     MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
                     _marquee.AllowFocusOnInteraction = true;
-                    SelectionCanvas.Children.Add(_marquee);
+                    GetSelectionCanvas().Children.Add(_marquee);
 
                     mInfo = new MarqueeInfo();
-                    SelectionCanvas.Children.Add(mInfo);
+                    GetSelectionCanvas().Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -498,7 +532,7 @@ namespace Dash
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
                     args.Handled = true;
-                   
+
                     Canvas.SetLeft(mInfo, newAnchor.X);
                     Canvas.SetTop(mInfo, newAnchor.Y + newHeight);
                 }
@@ -517,21 +551,21 @@ namespace Dash
             {
                 if (XInkCanvas.IsTopmost() &&
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
-                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
-                       // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
-                     ((!args.GetCurrentPoint(xOuterGrid).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
+                    ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
+                        // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                        ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
                         DeselectAll();
 
-                    xOuterGrid.CapturePointer(args.Pointer);
-                    _marqueeAnchor = args.GetCurrentPoint(SelectionCanvas).Position;
+                    GetOuterGrid().CapturePointer(args.Pointer);
+                    _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
                     _isMarqueeActive = true;
                     PreviewTextbox_LostFocus(null, null);
                     ParentDocument.ManipulationMode = ManipulationModes.None;
                     args.Handled = true;
-                    xOuterGrid.PointerMoved -= OnPointerMoved;
-                    xOuterGrid.PointerMoved += OnPointerMoved;
+                    GetOuterGrid().PointerMoved -= OnPointerMoved;
+                    GetOuterGrid().PointerMoved += OnPointerMoved;
                 }
             }
         }
@@ -541,12 +575,12 @@ namespace Dash
             if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
             {
                 var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                    GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
                 if (e.Key == VirtualKey.A)
                 {
                     var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
                     var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                    
+
                     ViewModel.AddDocument(
                         new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                 }
@@ -583,16 +617,16 @@ namespace Dash
         public List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
-            if (xItemsControl.ItemsPanelRoot != null)
+            if (GetItemsControl().ItemsPanelRoot != null)
             {
-                var docs = xItemsControl.ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null && d.IsHitTestVisible))
+                var docs = GetItemsControl().ItemsPanelRoot.Children;
+                foreach (var documentView in docs.Select((d) => d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null && d.IsHitTestVisible))
                 {
                     var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
-                        selectedDocs.Add( documentView);
+                        selectedDocs.Add(documentView);
                     }
                 }
             }
@@ -606,11 +640,12 @@ namespace Dash
 
         public void SetDropIndicationFill(Brush fill)
         {
-            XDropIndicationRectangle.Fill = fill;
+            GetDropIndicationRectangle().Fill = fill;
         }
 
         #endregion
 
+        // TODO: likely to need to modify for standard view (should note typing be enabled in standard?)
         #region Activation
 
         void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -629,7 +664,7 @@ namespace Dash
             {
                 Canvas.SetLeft(previewTextbox, where.X);
                 Canvas.SetTop(previewTextbox, where.Y);
-                previewTextbox.Visibility = Visibility.Visible;
+                previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 AddHandler(KeyDownEvent, previewTextHandler, false);
                 previewTextbox.Text = string.Empty;
                 previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
@@ -640,10 +675,10 @@ namespace Dash
         #endregion
 
         #region SELECTION
-        
+
         public void DeselectAll()
         {
-            SelectionCanvas?.Children?.Clear();
+            GetSelectionCanvas()?.Children?.Clear();
             foreach (var doc in SelectedDocs)
             {
                 doc.SetSelectionBorder(false);
@@ -653,14 +688,14 @@ namespace Dash
             _isMarqueeActive = false;
             MainPage.Instance.DeselectAllDocuments();
         }
-        
+
         /// <summary>
         /// Selects all of the documents in selected. Works on a view-specific level.
         /// </summary>
         /// <param name="selected"></param>
         public void SelectDocs(IEnumerable<DocumentView> selected)
         {
-            SelectionCanvas.Children.Clear();
+            GetSelectionCanvas().Children.Clear();
 
             foreach (var doc in selected)
             {
@@ -689,10 +724,10 @@ namespace Dash
         {
             XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
 
-            //InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
+            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
-            InkHostCanvas.Children.Add(XInkCanvas);
+            GetInkHostCanvas().Children.Add(XInkCanvas);
         }
 
         bool loadingPermanentTextbox;
@@ -710,10 +745,10 @@ namespace Dash
                 Width = 200,
                 Height = 50,
                 Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Visibility.Collapsed
+                Visibility = Windows.UI.Xaml.Visibility.Collapsed
             };
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
-            InkHostCanvas.Children.Add(previewTextbox);
+            GetInkHostCanvas().Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             previewTextbox.LostFocus += PreviewTextbox_LostFocus;
         }
@@ -721,7 +756,7 @@ namespace Dash
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
         }
 
@@ -731,14 +766,14 @@ namespace Dash
             if (string.IsNullOrEmpty(text))
                 return;
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            if (previewTextbox.Visibility != Visibility.Collapsed)
+            if (previewTextbox.Visibility != Windows.UI.Xaml.Visibility.Collapsed)
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
                 if (text == "v" && this.IsCtrlPressed())
                 {
                     ViewModel.Paste(Clipboard.GetContent(), where);
-                    previewTextbox.Visibility = Visibility.Collapsed;
+                    previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 }
                 else
                 {
@@ -782,11 +817,11 @@ namespace Dash
         {
 
             var shiftState = this.IsShiftPressed();
-            var capState   = this.IsCapsPressed();
+            var capState = this.IsCapsPressed();
             var virtualKeyCode = (uint)key;
 
             string character = null;
-            
+
             // take care of symbols
             if (key == VirtualKey.Space)
             {
@@ -838,7 +873,7 @@ namespace Dash
             if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
             {
                 var shifted = ((shiftState != false || capState != false) &&
-                    (!shiftState || !capState));
+                               (!shiftState || !capState));
                 switch (virtualKeyCode)
                 {
                     case 186: character = shifted ? ":" : ";"; break;
@@ -922,7 +957,7 @@ namespace Dash
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             var richEditBox = sender as RichEditBox;
@@ -937,7 +972,7 @@ namespace Dash
             var textBox = sender as TextBox;
 
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Visibility.Collapsed;
+            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             textBox.GotFocus -= TextBox_GotFocus;
@@ -945,5 +980,7 @@ namespace Dash
         }
 
         #endregion
+
     }
+
 }
