@@ -146,6 +146,7 @@ namespace Dash
                     string docType = doc.DocumentType.Type;
                     //create diffrent output for different document types by calling helper functions
                     string newText;
+                    //TODO TFS: This switch statement should switch on DocumentType instead of the string contained in DocumentType
                     switch (docType) 
                     {
                         case "Rich Text Box":
