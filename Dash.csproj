@@ -175,6 +175,7 @@
     <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
@@ -842,7 +843,7 @@
     <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>    
+    </Page>
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
