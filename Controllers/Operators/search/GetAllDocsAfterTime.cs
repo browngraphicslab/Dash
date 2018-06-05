@@ -50,7 +50,7 @@ namespace Dash
             if (!string.IsNullOrEmpty(time))
             {
                 var tree = DocumentTree.MainPageTree;
-                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
+               var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
 
                 Debug.Assert(allResults != null);
 

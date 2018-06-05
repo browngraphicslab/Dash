@@ -86,12 +86,15 @@ namespace Dash
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
             searchPart = searchPart?.ToLower() ?? " ";
-            if (searchPart.Contains(":"))
+            //if the part is a quote, it ignores the colon
+            if (searchPart.Contains(":") && searchPart[0] != '"')
             {
-                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
-                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
+                //   Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+
+                //splits after first colon
+                var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
-                 return WrapInParameterizedFunction(parts[0], parts[1]);
+               return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -117,6 +120,7 @@ namespace Dash
                     {
                         //add string from last quote to this quote
                         var quotedString = inputString.Substring(lastCut, i - lastCut + 1);
+                        quotedString = quotedString.Replace("\"", "\\\"");
                         partsL.Add(quotedString);
                         lastCut = i + 1;
                         inQuote = false;
@@ -138,6 +142,7 @@ namespace Dash
                 {
                     //add last string
                     var newstring = inputString.Substring(lastCut, i - lastCut + 1);
+                    newstring = newstring.Replace("\"", "\\\"");
                     if (newstring != "")
                     {
                         partsL.Add(newstring);
