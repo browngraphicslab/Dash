@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using Windows.UI.Xaml.Controls;
 using Windows.System;
+using Syncfusion.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -80,6 +81,7 @@ namespace Dash
             new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
         
         private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
+        private CollectionViewModel _oldViewModel;
 
         public TimelineMetadata Metadata { get; }
         public CollectionViewModel ViewModel { get; set; }
@@ -198,7 +200,7 @@ namespace Dash
         /// <summary>
         /// Spaces out all the timeline elements
         /// </summary>
-        private void LayoutTimelineElements(double width)
+        public void LayoutTimelineElements(double width)
         {
             if(_contextList.Count < 1)
             {
@@ -347,11 +349,17 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            RemoveViewModelEvents(ViewModel);
-            ViewModel = DataContext as CollectionViewModel;;
-            // make the new ViewModel listen to events
-            AddViewModelEvents(ViewModel);
-            Initialize(ViewModel);
+            if (!(DataContext as CollectionViewModel).Equals(_oldViewModel))
+            {
+                DataContextChanged -= OnDataContextChanged;
+                RemoveViewModelEvents(ViewModel);
+                ViewModel = DataContext as CollectionViewModel; ;
+                // make the new ViewModel listen to events
+                AddViewModelEvents(ViewModel);
+                Initialize(ViewModel);
+                DataContextChanged += OnDataContextChanged;
+                _oldViewModel = ViewModel;
+            }
         }
 
         private void Initialize(CollectionViewModel viewModel)
@@ -374,6 +382,21 @@ namespace Dash
                     }
                 }
                 UpdateMetadataMinAndMax();
+                SetTimelineFormatting();
+            }
+        }
+
+        public void UpdateTimeStamp()
+        {
+            if (ViewModel != null)
+            {
+                _contextList.Clear();
+                foreach (var dvm in ViewModel.DocumentViewModels)
+                {
+                    var date = (DateTime)(dvm.DataDocument?.GetDereferencedField(KeyStore.ModifiedTimestampKey, null).GetValue(new Context()));
+                    var documentTicks = date.Ticks;
+                    _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks }, dvm));
+                }
             }
         }
 

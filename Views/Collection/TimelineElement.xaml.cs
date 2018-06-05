@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -8,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Windows.UI;
+using Flurl.Util;
 
 
 namespace Dash
@@ -31,6 +33,7 @@ namespace Dash
         /// </summary>
         private UIElement _contextPreview;
 
+        private long _time;
         private double _ellipseSize = 18;
         private double _offsetX = 200;
         private double _offsetY = 492;
@@ -55,6 +58,12 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Loaded += TimelineElement_Loaded;
+        }
+
+        private void TimelineElement_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.WriteLine(e.PropertyName);
+            ParentTimeline.UpdateTimeStamp();
         }
 
 
