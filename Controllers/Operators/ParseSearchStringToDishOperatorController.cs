@@ -67,7 +67,10 @@ namespace Dash
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
         {
+            //this returns a string that more closely follows function syntax
             //TODO check if func exists
+
+            //TODO: M - make the function name start, end exist
             if (!DSL.FuncNameExists(funcName))
             {
                 return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
@@ -88,7 +91,8 @@ namespace Dash
             {
                 Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
                 var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
-                return WrapInParameterizedFunction(parts[0], parts[1]);
+                //created a key field query function with both parts as parameters if parts[0] isn't a function name
+                 return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -114,6 +118,7 @@ namespace Dash
                 var search2 = searches.Pop();
                 searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
             }
+            //now we have one long script string to run
             outputs[ScriptKey] = new TextController(searches.First());
         }
     }
