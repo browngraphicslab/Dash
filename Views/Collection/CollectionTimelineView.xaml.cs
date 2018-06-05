@@ -275,7 +275,7 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Finds the expected x position of the element from the timestamp
+        ///     Finds the expected x position of the element from the modified time of the element
         /// </summary>
         /// <param name="tevm"></param>
         /// <param name="metadata"></param>
@@ -285,7 +285,7 @@ namespace Dash
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
             // if the max and min time are the same, use arbitrary small constant (10)
             if (totalTime == 0) totalTime = 10;
-
+            
             var normOffset =
                 (double) (tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
                               .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
@@ -321,20 +321,22 @@ namespace Dash
             xScrollViewCanvas.Width = width;
         }
 
-
+        /// <summary>
+        ///     updates the start and end points of the timeline relative to other points
+        /// </summary>
         private void UpdateMetadataMinAndMax()
         {
             // if context list is empty we can't update anything
             if (!_contextList.Any()) return;
             try
             {
+                // lambda f(x) that retrieves value of key from viewmodel
+                Func<TimelineElementViewModel, long> getValues = vm =>
+                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                        .GetValue(new Context()).ToDateTime().Ticks;
                 // find the earliest and latest modified times in document
-                Metadata.MinTime = _contextList.Min(vm =>
-                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                        .GetValue(new Context()).ToDateTime().Ticks);
-                Metadata.MaxTime = _contextList.Max(vm =>
-                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                        .GetValue(new Context()).ToDateTime().Ticks);
+                Metadata.MinTime = _contextList.Min(getValues);
+                Metadata.MaxTime = _contextList.Max(getValues);
 
                 MetadataUpdated?.Invoke();
             }
@@ -358,15 +360,16 @@ namespace Dash
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             DataContextChanged -= OnDataContextChanged;
+
             RemoveViewModelEvents(ViewModel);
             ViewModel = DataContext as CollectionViewModel;
-            ;
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
+
             DataContextChanged += OnDataContextChanged;
         }
-
+        
         private void Initialize(CollectionViewModel viewModel)
         {
             if (viewModel != null)
