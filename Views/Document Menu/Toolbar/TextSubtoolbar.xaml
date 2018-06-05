@@ -38,7 +38,7 @@
             >
             <!--remove Link button from default text toolbar-->
             <controls:TextToolbar.ButtonModifications >
-                <buttons:DefaultButton Type="Link" IsVisible="False"/>
+                <buttons:DefaultButton Type="Link" IsVisible="False" />
             </controls:TextToolbar.ButtonModifications>
             
             <!-- Add highlight button 

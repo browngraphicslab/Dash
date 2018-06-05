@@ -174,6 +174,7 @@ namespace Dash
 
                     // Text controls
                     var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
+					System.Diagnostics.Debug.WriteLine("TEXT IS SELECTED");
                     if (text != null)
                     {
                         xTextToolbar.SetMenuToolBarBinding(
@@ -408,7 +409,7 @@ namespace Dash
             if (subtoolbarElement != null)
             {
                 subtoolbarElement.Visibility = status;
-                if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
+                //if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
             }
         }
 
@@ -435,6 +436,25 @@ namespace Dash
                 if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
             }
         }
-    }
+
+	    public void SwitchTheme(bool nightModeOn)
+	    {
+			
+			//toggle night mode styles
+		    if (nightModeOn)
+		    {
+			    xToolbar.Foreground = new SolidColorBrush(Colors.White);
+		    }
+		    else
+		    {
+			    xToolbar.Foreground = new SolidColorBrush(Colors.Black);
+		    }
+
+		    //ensure toolbar is visible
+		    xToolbar.IsEnabled = true;
+		    xToolbar.Visibility = Visibility.Visible;
+
+		}
+	}
 
 }

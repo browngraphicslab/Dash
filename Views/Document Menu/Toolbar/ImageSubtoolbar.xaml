@@ -12,7 +12,7 @@
     <Grid>
         <CommandBar x:Name="xImageCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
-                <ComboBox x:Name="xScaleOpetionsDropdown" SelectedIndex="0" VerticalAlignment="Center">
+                <ComboBox x:Name="xScaleOpetionsDropdown" SelectedIndex="0">
                     <ComboBoxItem Content="Scale to Size"/>
                     <ComboBoxItem Content="Stretch"/>
                     <ComboBoxItem Content="Clipped"/>

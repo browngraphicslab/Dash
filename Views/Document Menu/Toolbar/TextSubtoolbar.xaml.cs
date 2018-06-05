@@ -32,7 +32,6 @@ namespace Dash
 	    /// </summary>
 
 		private RichEditBox _currBox;
-	    private Color _highlightColor;
 	    private FormattingMenuView _menuView = null;
 	    private DocumentView _docs;
 
@@ -43,8 +42,7 @@ namespace Dash
 			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
 	        _currBox = null;
 			//add an additional sub-toolbar for further operations
-	        this.AddButton("Font", Symbol.Font, 9);
-			//this.AddCustomButtons();
+	        this.AddButton("Font", Symbol.Add, 0);
         }
 
 		/**
@@ -66,6 +64,8 @@ namespace Dash
 		        Name = name,
 		        Icon = new SymbolIcon(icon),
 		        Position = position,
+				Background = new SolidColorBrush(Colors.LightSlateGray),
+				Width = 70,
 	        }; //add to toolbar
 	        xDashTextSubtoolbar.CustomButtons.Add(button);
 	        
@@ -115,21 +115,28 @@ namespace Dash
 			    if (_menuView == null)
 			    {
 					//create a formatting menu and bind it to the currently selected richEditBox's view
-				    _menuView = new FormattingMenuView();
+				    _menuView = new FormattingMenuView(this);
 				    _menuView.richTextView = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichTextView>(_docs);
 				    _menuView.xRichEditBox = _currBox;
 					//add the menu to the stack panel
 				    xStack.Children.Add(_menuView);
-			    }
-			    else
-			    {
-					//if the font menu is already visisble, close it
-				    xStack.Children.Remove(_menuView);
-				    _menuView = null;
+					//collapse other text menu
+				    xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
 			    }
 		    }
 		}
 
+		/**
+		 * Used to toggle between text sub-menus
+		 */
+	    public void CloseSubMenu()
+	    {
+			xStack.Children.Remove(_menuView);
+		    _menuView = null;
+			//restore other menu
+		    xDashTextSubtoolbar.Visibility = Visibility.Visible;
+
+		}
 
 	}
 }
