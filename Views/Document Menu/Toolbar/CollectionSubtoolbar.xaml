@@ -11,17 +11,19 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar x:Name="xCollectionCommandbar" IsSticky="True">
+        <CommandBar x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
+            <CommandBar.Content>
+                <ComboBox x:Name="xViewModesDropdown" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged">
+                    <ComboBoxItem Content="Freeform"/>
+                    <ComboBoxItem Content="Grid" />
+                    <ComboBoxItem Content="Page"/>
+                    <ComboBoxItem Content="Database"/>
+                    <ComboBoxItem Content="Schema"/>
+                    <ComboBoxItem Content="Tree"/>
+                    <ComboBoxItem Content="Timeline"/>
+                </ComboBox>
+            </CommandBar.Content>
             <AppBarButton x:Name="xBreakGroup" Icon="Cut" Click="BreakGroup_OnClick" Label="Break"/>
         </CommandBar>
-            <ComboBox x:Name="xViewModesDropdown" SelectedIndex="1" SelectedValue="View Modes" Width="200" Margin="8" SelectionChanged="ViewModesDropdown_OnSelectionChanged">
-                <ComboBoxItem Content="Freeform"/>
-                <ComboBoxItem Content="Grid" />
-                <ComboBoxItem Content="Page"/>
-                <ComboBoxItem Content="Database"/>
-                <ComboBoxItem Content="Schema"/>
-                <ComboBoxItem Content="Tree"/>
-                <ComboBoxItem Content="Timeline"/>
-            </ComboBox>
     </Grid>
 </UserControl>

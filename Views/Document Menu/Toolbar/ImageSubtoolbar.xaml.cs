@@ -31,13 +31,20 @@ namespace Dash
         public ImageSubtoolbar()
 		{
 			this.InitializeComponent();
-		    xImageCommandbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
+		    FormatDropdownMenu();
 		}
 
-	    /**
+        private void FormatDropdownMenu()
+        {
+            xScaleOpetionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            xScaleOpetionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            xScaleOpetionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
+        }
+
+        /**
          * Prevents command bar from hiding labels on click by setting isOpen to true every time it begins to close.
         */
-		private void CommandBar_Closing(object sender, object e)
+        private void CommandBar_Closing(object sender, object e)
 		{
 			xImageCommandbar.IsOpen = true;
 		}
@@ -51,15 +58,16 @@ namespace Dash
 		private void Replace_Click(object sender, RoutedEventArgs e)
 		{
             ReplaceImage();
-		    var open = xImageCommandbar.IsOpen;
 		    xImageCommandbar.IsOpen = true;
 		}
 
-	    public CommandBar GetCommandBar()
+	    public void CommandBarOpen(bool status)
 	    {
-	        return xImageCommandbar;
+	        xImageCommandbar.IsOpen = status;
+	        xImageCommandbar.IsEnabled = true;
+	        xImageCommandbar.Visibility = Visibility.Visible;
 	    }
-
+        
 	    private async void ReplaceImage()
 	    {
 	        var imagePicker = new FileOpenPicker
@@ -74,15 +82,7 @@ namespace Dash
 	        imagePicker.FileTypeFilter.Add(".svg");
 
 	        var replacement = await imagePicker.PickSingleFileAsync();
-	        if (replacement != null)
-	        {
-	            //var stream = await replacement.OpenAsync(FileAccessMode.Read);
-             //   var temp = new BitmapImage();
-             //   temp.SetSource(stream);
-             //   var replaced = new Image {Source = temp};
-
-	            currentDocControl.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true);
-            }
+	        if (replacement != null) { currentDocControl.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true); }
 	    }
 
         internal void SetImageBinding(DocumentView selection)

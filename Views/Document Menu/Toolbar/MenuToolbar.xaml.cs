@@ -69,8 +69,8 @@ namespace Dash
         public MenuToolbar(Canvas canvas)
         {
             this.InitializeComponent();
-			
-			MenuToolbar.Instance = this;
+
+            MenuToolbar.Instance = this;
             _parentCanvas = canvas;
             mode = MouseMode.TakeNote;
             state = State.Expanded;
@@ -80,25 +80,26 @@ namespace Dash
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
-			{
-				Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
-			};
+            {
+                Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+            };
 
-			// list of buttons that are enabled only if there is 1 or more selected documents
-			AppBarButton[] buttons = { xCopy, xDelete };
+            // list of buttons that are enabled only if there is 1 or more selected documents
+            AppBarButton[] buttons = {xCopy, xDelete};
             docSpecificButtons = buttons;
 
             //List of all buttons on main menu toolbar - used for collapsing and rotation
-            ButtonBase[] tempButtons = { xCopy, xDelete, xAddGroup, xAddImage, xAddVideo, xGroup, xInk, xTouch }; //ADD NEW BUTTONS HERE!!!
+            ButtonBase[] tempButtons =
+                {xCopy, xDelete, xAddGroup, xAddImage, xAddVideo, xGroup, xInk, xTouch}; //ADD NEW BUTTONS HERE!!!
             allButtons = tempButtons;
-            
+
             //List of all button separators
-            AppBarSeparator[] tempSeparators = { xSepOne, xSepTwo }; //ADD NEW SEPARATORS HERE!!!
+            AppBarSeparator[] tempSeparators = {xSepOne, xSepTwo}; //ADD NEW SEPARATORS HERE!!!
             allSeparators = tempSeparators;
 
             this.SetUpBaseMenu();
-			//this.RotateToolbar();
-		}
+            //this.RotateToolbar();
+        }
 
         // == METHODS ==
         /// <summary>
@@ -134,7 +135,7 @@ namespace Dash
                 b.Opacity = o;
             }
         }
-        
+
 
         /// <summary>
         /// Updates the toolbar with the data from the current selected. TODO: bindings with this to MainPage.SelectedDocs?
@@ -144,23 +145,14 @@ namespace Dash
         {
             if (state == State.Expanded)
             {
-                Debug.WriteLine("");
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
+
                 toggleSelectOptions(docs.Count() > 0);
 
                 // just single select
                 if (docs.Count() == 1)
                 {
                     var selection = docs.First();
-
-                    // Text controls
-                    var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
-                    if (text != null)
-                    {
-                        xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-                        xTextToolbar.SetCurrTextBox(text);
-                        subtoolbarElement = xTextToolbar;
-                    }
 
                     // Image controls
                     var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(selection);
@@ -174,9 +166,21 @@ namespace Dash
                     var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
                     if (col != null)
                     {
-                        CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                        CollectionView thisCollection =
+                            VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
                         subtoolbarElement = xCollectionToolbar;
                     }
+
+                    // Text controls
+                    var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
+                    if (text != null)
+                    {
+                        xTextToolbar.SetMenuToolBarBinding(
+                            VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                        xTextToolbar.SetCurrTextBox(text);
+                        subtoolbarElement = xTextToolbar;
+                    }
+
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
@@ -184,7 +188,7 @@ namespace Dash
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                         if (subtoolbarElement is ICommandBarBased toOpen)
                         {
-                            toOpen.GetCommandBar().IsOpen = true;
+                            toOpen.CommandBarOpen(true);
                             //Displays padding in stack panel only if the menu isn't collapsed
                             if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
                         }
@@ -210,20 +214,14 @@ namespace Dash
                 }
 
                 //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
-                if (subtoolbarElement != null && state == State.Expanded)
-                {
-                    subtoolbarElement.Visibility = Visibility.Visible;
-                }
+                if (subtoolbarElement != null && state == State.Expanded) subtoolbarElement.Visibility = Visibility.Visible;
             }
         }
 
         private void SetUpBaseMenu()
         {
             _parentCanvas.Children.Add(this);
-			
-			//Canvas.SetLeft(this, 325);
-			//Canvas.SetTop(this, 10);
-		}
+        }
 
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
@@ -243,10 +241,11 @@ namespace Dash
                 d.DeleteDocument();
             }
         }
-        
+
 
         // controls which MouseMode is currently activated
         AppBarToggleButton checkedButton = null;
+
         private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             if (checkedButton != sender as AppBarToggleButton)
@@ -271,10 +270,10 @@ namespace Dash
             }
         }
 
-		/**
-		* When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
-	   */
-		private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+        /**
+        * When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
+       */
+        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var imagePicker = new FileOpenPicker
             {
@@ -296,10 +295,13 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
-                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        var mainPageCollectionView =
+                            MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                        var where = Util.GetCollectionFreeFormPoint(
+                            mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController, null);
+                        MainPage.Instance.AddToAndUpdateSelectedDocuments(new DocumentView());
                     }
                 }
             }
@@ -332,11 +334,15 @@ namespace Dash
                 {
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    var mainPageCollectionView =
+                        MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(
+                        mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel
+                        .AddDocument(docController, null);
                 }
+
                 //add error message for null file?
             }
         }
@@ -369,27 +375,54 @@ namespace Dash
             xCollapse.Label = "Collapse";
             xCollapse.Background = new SolidColorBrush(Colors.Red);
             ToggleVisibility(Visibility.Visible);
-            xToolbar.IsOpen = (subtoolbarElement == null);
-            if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased cmd) cmd.GetCommandBar().IsOpen = true;
+            xToolbar.IsOpen = subtoolbarElement == null;
         }
 
         private void ToggleVisibility(Visibility status)
         {
-            foreach (var b in allButtons) { b.Visibility = status; }
-            foreach (var s in allSeparators) { s.Visibility = status; }
+            foreach (var b in allButtons)
+            {
+                b.Visibility = status;
+            }
 
-            xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement == xTextToolbar) ? Visibility.Collapsed : Visibility.Visible) : status;
+            foreach (var s in allSeparators)
+            {
+                s.Visibility = status;
+            }
+
+            xPadding.Visibility = (status == Visibility.Visible)
+                ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed)
+                : status;
             if (subtoolbarElement != null)
             {
                 subtoolbarElement.Visibility = status;
+                if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
             }
         }
 
-	    private void RotateToolbar()
-	    {
-		    //xStackPanel.RenderTransform.TryTransform();
-			xStackPanel.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
-	    }
+        private void RotateToolbar()
+        {
+            //xStackPanel.RenderTransform.TryTransform();
+            xStackPanel.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
+        }
+
+        private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (state == State.Expanded && state == State.Collapsed)
+            {
+                xToolbar.IsOpen = true;
+                if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(false);
+            }
+        }
+
+        private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (state == State.Expanded && state == State.Collapsed)
+            {
+                xToolbar.IsOpen = subtoolbarElement == null;
+                if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+            }
+        }
     }
 
 }

@@ -18,7 +18,7 @@
                 <RotateTransform CenterX="0" CenterY="0" Angle="0">
                 </RotateTransform>
             </StackPanel.RenderTransform>
-            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" IsSticky="True" >
+            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" IsSticky="True" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
                
                 <AppBarToggleButton x:Name="xCollapse" Background="Red"  Icon="BackToWindow"  Label="Collapse"  Unchecked="XCollapse_OnUnchecked"  Checked="XCollapse_OnChecked"/>
                 <!--<AppBarSeparator x:Name="xSepOne"/>-->

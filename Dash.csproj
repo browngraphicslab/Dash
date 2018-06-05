@@ -377,6 +377,7 @@
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>

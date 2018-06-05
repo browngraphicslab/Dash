@@ -24,13 +24,22 @@ namespace Dash {
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
-            xCollectionCommandbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
+            FormatDropdownMenu();
+        }
+
+        private void FormatDropdownMenu()
+        {
+            xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
         }
 
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: Dismantle current selection (which must be a collection if the collection bar is showing)
             Debug.WriteLine("COLLECTION DISMANTLED/BROKEN!");
+            xCollectionCommandbar.IsOpen = true;
+            xCollectionCommandbar.IsEnabled = true;
         }
 
         private void ViewModesDropdown_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -66,9 +75,10 @@ namespace Dash {
             }
         }
 
-        public CommandBar GetCommandBar()
+        public void CommandBarOpen(bool status)
         {
-            return xCollectionCommandbar;
+            xCollectionCommandbar.IsOpen = status;
+            xCollectionCommandbar.IsEnabled = true;
         }
     }
 }

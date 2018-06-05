@@ -7,8 +7,8 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash.Views.Document_Menu.Toolbar
 {
-    interface ICommandBarBased
+    public interface ICommandBarBased
     {
-        CommandBar GetCommandBar();
+        void CommandBarOpen(bool status);
     }
 }
