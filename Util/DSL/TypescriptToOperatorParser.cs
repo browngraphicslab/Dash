@@ -114,6 +114,7 @@ namespace Dash
             _currentScriptExecutions.Add(hash);
             try
             {
+                //turn script string into function expression
                 var se = ParseToExpression(script);
                 var exec = se.Execute(state ?? new ScriptState());
                 return exec;

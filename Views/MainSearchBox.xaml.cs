@@ -73,6 +73,7 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
+                //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
