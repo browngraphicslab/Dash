@@ -9,7 +9,7 @@
     Background="Beige">
     
     <Grid x:Name="yeet" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" PointerPressed="Grid_PointerPressed">
-        <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" Width="500" CacheMode="BitmapCache">
+        <Image x:Name="xImage"  VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill" Width="500" CacheMode="BitmapCache">
             <!--<Image.Clip x:Name="clip">
                 <RectangleGeometry x:Name="rectgeo"></RectangleGeometry>
             </Image.Clip>-->

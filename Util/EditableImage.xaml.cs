@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml.Media;
 using Windows.Foundation;
 using System.Diagnostics;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Dash
@@ -77,11 +80,17 @@ namespace Dash
 
                 Point point = new Point(rectgeo.Rect.X, rectgeo.Rect.Y);
 
+                ScaleTransform transform = new ScaleTransform();
+                //transform.CenterX = p1.Position.X + xRect.Width/2;
+                //transform.CenterY = p1.Position.Y + xRect.Height/2;
+                //transform.ScaleX = xRect.Width / docView.Width;
+                //transform.ScaleY = xRect.Height / docView.Height;
+                //docView.RenderTransform = transform;
+                
+                //docView.ViewModel.Width = xRect.Width;
+                //docView.ViewModel.Height = xRect.Height;
 
-
-                docView.ViewModel.Position = point;
-                docView.ViewModel.Width = xRect.Width;
-                docView.ViewModel.Height = xRect.Height;
+               
 
                 isLeft = false;
                 hasDragged = false;
@@ -89,6 +98,8 @@ namespace Dash
             }
 
         }
+
+      
 
 
     }
