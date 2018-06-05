@@ -68,15 +68,21 @@ namespace Dash
 
             
                 await Task.Delay(100);
-                RectangleGeometry geometry = new RectangleGeometry();
-                geometry.Rect = new Rect(p1.Position, p2.Position);
-                xImage.Clip = geometry;
+                RectangleGeometry rectgeo = new RectangleGeometry();
+                rectgeo.Rect = new Rect(p1.Position.X, p1.Position.Y, xRect.Width, xRect.Height);
+                
+                xImage.Clip = rectgeo;
+
                 var docView = this.GetFirstAncestorOfType<DocumentView>();
-                Point point = new Point(geometry.Rect.X, geometry.Rect.Y);
+
+                Point point = new Point(rectgeo.Rect.X, rectgeo.Rect.Y);
+
+
+
                 docView.ViewModel.Position = point;
-                docView.ViewModel.Width = geometry.Rect.Width;
-                docView.ViewModel.Height = geometry.Rect.Height;
-                xRect.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                docView.ViewModel.Width = xRect.Width;
+                docView.ViewModel.Height = xRect.Height;
+
                 isLeft = false;
                 hasDragged = false;
 
