@@ -234,7 +234,7 @@ namespace Dash
             ManipulationControls.OnManipulatorStarted += () => {
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
                 var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
-                if (!this.IsShiftPressed() && ParentCollection.CurrentView is CollectionFreeformView cview)
+                if (!this.IsShiftPressed() && ParentCollection?.CurrentView is CollectionFreeformView cview)
                 {
                     adornmentGroups.ForEach((dv) =>
                     {
@@ -723,7 +723,7 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup)
+            if (!ViewModel.IsAdornmentGroup)
             {
                 FocusedDocument = this;
                 ToFront();

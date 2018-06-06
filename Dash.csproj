@@ -847,8 +847,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DockedView.xaml">
-      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
@@ -1210,6 +1210,9 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Syncfusion.DocIO.UWP">
+      <Version>16.1.0.37</Version>
     </PackageReference>
     <PackageReference Include="Syncfusion.SfPdfViewer.UWP46">
       <Version>16.1.0.24</Version>
