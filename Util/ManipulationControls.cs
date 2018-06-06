@@ -557,15 +557,16 @@ namespace Dash
                 return;
             }
 
+            if (e != null)
+            {
+                e.Handled = true;
+            }
+
             ManipulationStartX = ParentDocument.ViewModel.XPos;
             ManipulationStartY = ParentDocument.ViewModel.YPos;
 
             OnManipulatorStarted?.Invoke();
 
-            if (e != null)
-            {
-                e.Handled = true;
-            }
         }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.

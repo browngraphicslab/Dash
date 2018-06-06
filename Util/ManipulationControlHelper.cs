@@ -36,7 +36,7 @@ namespace Dash
                 _eventElement.CapturePointer(pointer);
 
             var nestings = _eventElement.GetAncestorsOfType<CollectionView>().ToList();
-            var manipTarget = nestings.Count() < 2 || drillDown ? _eventElement : nestings[nestings.Count - 2];
+            var manipTarget = (nestings.Count() < 2 || drillDown) ? _eventElement : nestings[nestings.Count - 2];
             var docAncestors = manipTarget.GetAncestorsOfType<DocumentView>().ToList();
             _manipulationDocumentTarget = docAncestors[docAncestors.Count > 3 ? 1 : 0];// manipTarget.GetFirstAncestorOfType<DocumentView>();
             freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
