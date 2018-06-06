@@ -42,7 +42,7 @@ namespace Dash
         {
             // create the image
 
-           var editableImage = new EditableImage(docController.GetDereferencedField(KeyStore.DataKey, context) as ImageController);
+           var editableImage = new EditableImage(docController, context);
            
             var image = editableImage.Image;
 

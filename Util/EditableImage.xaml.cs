@@ -12,6 +12,7 @@ using Windows.Storage.Streams;
 using Windows.Storage;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.UI.Xaml.Data;
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Dash
@@ -28,15 +29,18 @@ namespace Dash
         private bool hasDragged;
         public RectangleGeometry rectgeo;
         private ImageController _imgctrl;
-
+        private DocumentController _docCtrl;
+        private Context _context;
       
        
 
-        public EditableImage(ImageController imgctrl)
+        public EditableImage(DocumentController docCtrl, Context context)
         {
             InitializeComponent();
             rectgeo = new RectangleGeometry();
-            _imgctrl = imgctrl;
+            _docCtrl = docCtrl;
+            _context = context;
+            _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
         }
 
@@ -150,19 +154,56 @@ namespace Dash
                 cropBmp = new WriteableBitmap((int)width, (int)height);
                 Stream pixStream = cropBmp.PixelBuffer.AsStream();
                 pixStream.Write(pixels, 0, (int)(width * height * 4));
+                
 
             }
 
             if (cropBmp != null)
             {
+                //TODO: setup image binding with new controller
                 Image.Source = cropBmp;
+                //var keyCtrl = KeyStore.DataKey;
+                //var docType =
+                //new DocumentController();
+                //SetupImageBinding(Image, _docCtrl, _context);
             }
         }
-
-
-
-
-
-
+        private static void SetupImageBinding(Image image, DocumentController controller,
+           Context context)
+        {
+            var data = controller.GetField(KeyStore.DataKey);
+            if (data is ReferenceController)
+            {
+                var reference = data as ReferenceController;
+                var dataDoc = reference.GetDocumentController(context);
+                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
+                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                    {
+                        var doc = (DocumentController)sender;
+                        var dargs =
+                            (DocumentController.DocumentFieldUpdatedEventArgs)args;
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
+                            return;
+                        BindImageSource(image, doc, c, reference.FieldKey);
+                    });
+            }
+            BindImageSource(image, controller, context, KeyStore.DataKey);
+        }
+        protected static void BindImageSource(Image image, DocumentController docController, Context context,
+           KeyController key)
+        {
+            var data = docController.GetDereferencedField(key, context) as ImageController;
+            if (data == null)
+                return;
+            var binding = new FieldBinding<ImageController>
+            {
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.OneWay,
+                Context = context,
+                Converter = UriToBitmapImageConverter.Instance
+            };
+            image.AddFieldBinding(Image.SourceProperty, binding);
+        }
     }
 }
