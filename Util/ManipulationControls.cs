@@ -42,7 +42,7 @@ namespace Dash
 
 
         private CollectionView _previouslyHighlightedCollectionView = null;
-        
+
         private double _accumulatedTranslateAfterSnappingX;
         private double _accumulatedTranslateAfterSnappingY;
 
@@ -113,7 +113,7 @@ namespace Dash
         {
             double[] lines = new double[6];
             lines[(int)AlignmentLine.XMin] = bounds.Left;
-            lines[(int)AlignmentLine.XMid] = bounds.Left + bounds.Width/2.0;
+            lines[(int)AlignmentLine.XMid] = bounds.Left + bounds.Width / 2.0;
             lines[(int)AlignmentLine.XMax] = bounds.Right;
             lines[(int)AlignmentLine.YMin] = bounds.Top;
             lines[(int)AlignmentLine.YMid] = bounds.Top + bounds.Height / 2.0;
@@ -140,7 +140,7 @@ namespace Dash
                     throw new ArgumentOutOfRangeException(nameof(line), line, null);
             }
         }
-        
+
         /// <summary>
         /// Old code to align when a DocumentView is being resized. This should be put back in soon.
         /// </summary>
@@ -160,7 +160,7 @@ namespace Dash
 
             var parentDocumentBoundsBefore = ParentDocument.ViewModel.Bounds;
             var parentDocumentBoundsAfter = new Rect(parentDocumentBoundsBefore.X + translate.X, parentDocumentBoundsBefore.Y + translate.Y,
-                                                                                        Math.Max(ParentDocument.MinWidth, parentDocumentBoundsBefore.Width + sizeChange.X), 
+                                                                                        Math.Max(ParentDocument.MinWidth, parentDocumentBoundsBefore.Width + sizeChange.X),
                                                                                         Math.Max(ParentDocument.MinHeight, parentDocumentBoundsBefore.Height + sizeChange.Y));
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels; //.Where(vm => vm != ParentDocument.ViewModel);
             var parentAxesBefore = AlignmentLinesFromRect(ParentDocument.ViewModel.Bounds);
@@ -185,14 +185,14 @@ namespace Dash
                         var distance = Math.Abs(deltaBefore);
 
                         if ((distance > 15) ||
-                            (!axisPos && parentAxesAfter[(int) parentDocumentAxis] <= documentAxes[(int) otherDocumentAxis] - thresh) || 
-                            ((axisPos && parentAxesAfter[(int) parentDocumentAxis] >= documentAxes[(int) otherDocumentAxis] + thresh)))
+                            (!axisPos && parentAxesAfter[(int)parentDocumentAxis] <= documentAxes[(int)otherDocumentAxis] - thresh) ||
+                            ((axisPos && parentAxesAfter[(int)parentDocumentAxis] >= documentAxes[(int)otherDocumentAxis] + thresh)))
                             continue;
 
 
                         ShowPreviewLine(parentDocumentBoundsBefore, documentAxes, parentDocumentAxis, otherDocumentAxis, new Point(deltaBefore, translate.Y));
                         return BoundsAfterResizeAligningAxis(parentDocumentAxis, deltaBefore);
-                        
+
 
                     }
                 }
@@ -309,7 +309,7 @@ namespace Dash
                 {
                     var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
                     var scale = cfw.ViewModel.TransformGroup.ScaleAmount;
-                    double alignmentX = -(translateAfterSecondAlignment.X + offsetX  - originalTranslate.X) * scale.X;
+                    double alignmentX = -(translateAfterSecondAlignment.X + offsetX - originalTranslate.X) * scale.X;
                     double alignmentY = -(translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
                     //Move mouse by the alignment offset
                     var old = Window.Current.CoreWindow.PointerPosition;
@@ -342,7 +342,7 @@ namespace Dash
                 acc += delta;
                 return true; //Snap and accumulate
             }
-            
+
             //If we're under the snap distance threshold...
             else if (Math.Abs(parentLineAfter - targetLine) < distanceThreshold)
             {
@@ -358,7 +358,7 @@ namespace Dash
             }
             return false;
         }
-        private void ShowPreviewLine(Rect boundsBeforeAlignment, double[] otherDocumentAxes, AlignmentLine parentAxis,  AlignmentLine otherAxis, Point alignmentTranslation)
+        private void ShowPreviewLine(Rect boundsBeforeAlignment, double[] otherDocumentAxes, AlignmentLine parentAxis, AlignmentLine otherAxis, Point alignmentTranslation)
         {
             double[] axesAfterAlignment = AlignmentLinesFromRect(new Rect(boundsBeforeAlignment.X + alignmentTranslation.X, boundsBeforeAlignment.Y + alignmentTranslation.Y, boundsBeforeAlignment.Width, boundsBeforeAlignment.Height));
             ShowPreviewLine(axesAfterAlignment, otherDocumentAxes, parentAxis, otherAxis, alignmentTranslation);
@@ -368,7 +368,7 @@ namespace Dash
             Point p1, p2;
             Line line = null;
             //If X line
-            if((int) parentAxis < 3)
+            if ((int)parentAxis < 3)
             {
                 p1.X = otherDocumentAxes[(int)otherAxis];
                 p2.X = otherDocumentAxes[(int)otherAxis];
@@ -485,7 +485,7 @@ namespace Dash
                     ParentDocument.ViewModel.YPos = ManipulationStartY;
                     MainPage.Instance.UnhighlightDock();
                     MainPage.Instance.Dock(ParentDocument, overlappedDirection);
-                }   
+                }
             }
             else
             {
@@ -542,7 +542,7 @@ namespace Dash
 
 
         #endregion
-            
+
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -566,7 +566,8 @@ namespace Dash
             }
         }
 
-        public void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        // DO NOT ADD NEW CODE INTO THIS METHOD (see overloaded method with no parameters below). This one is ONLY for dealing with unique eventargs-related stuff.
+        private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
@@ -574,18 +575,26 @@ namespace Dash
                 return;
             }
 
-            ManipulationStartX = ParentDocument.ViewModel.XPos;
-            ManipulationStartY = ParentDocument.ViewModel.YPos;
-
-            OnManipulatorStarted?.Invoke();
+            ElementOnManipulationStarted();
 
             if (e != null)
             {
                 e.Handled = true;
             }
         }
+
+        // If you want to add new code into the ElementOnManipulationStarted handler, use this one. It will always be called.
+        public void ElementOnManipulationStarted()
+        {
+            ManipulationStartX = ParentDocument.ViewModel.XPos;
+            ManipulationStartY = ParentDocument.ViewModel.YPos;
+
+            OnManipulatorStarted?.Invoke();
+        }
+
         /// <summary>
-        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
+        /// Applies manipulation controls (zoom, translate) in the grid manipulation event. Note that this event does NOT always fire: TranslateAndScale should be the
+        /// method to add code in so ALL documents will have access to the code.
         /// </summary>
         void ElementOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
@@ -603,14 +612,15 @@ namespace Dash
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
-                
+
                 //_translateLastManipulationDelta = delta;
 
                 e.Handled = true;
             }
         }
         /// <summary>
-        /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
+        /// Applies manipulation controls (zoom, translate) in the grid manipulation event. This is the only "manipulationdelta"-esque method
+        /// that ALL documents use.
         /// </summary>
         /// <param name="e">passed in frm routed event args</param>
         /// <param name="grouped"></param>
@@ -634,24 +644,32 @@ namespace Dash
             Dock(true);
         }
 
-        public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        // DO NOT ADD CODE INTO THIS METHOD: add into the overloaded ElementOnManipulationCompleted method below. Not all documents will
+        // fire this method.
+        private void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             if (e == null || !e.Handled)
             {
-                MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                _previouslyHighlightedCollectionView?.Unhighlight();
+                ElementOnManipulationCompleted();
 
-                OnManipulatorCompleted?.Invoke();
-                Dock(false);
-
-                _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
-                //_translateLastManipulationDelta = new Point();
                 if (e != null)
                 {
                     e.Handled = true;
                 }
             }
+        }
+
+        // If you want to add code that runs after ANY document's manipulation is completed, use this method.
+        public void ElementOnManipulationCompleted()
+        {
+            MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            _previouslyHighlightedCollectionView?.Unhighlight();
+
+            OnManipulatorCompleted?.Invoke();
+            Dock(false);
+
+            _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
         }
 
         private List<DocumentView> GetOverlappedViews()
