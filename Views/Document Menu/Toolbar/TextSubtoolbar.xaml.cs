@@ -31,8 +31,7 @@ namespace Dash
 
     public sealed partial class TextSubtoolbar : UserControl
     {
-        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
-            "Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
         public Orientation Orientation
         {

@@ -81,7 +81,8 @@ namespace Dash
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             checkedButton = xTouch;
-            xToolbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
+            xPadding.Width = ToolbarConstants.PaddingLong;
+            xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
 
@@ -121,23 +122,7 @@ namespace Dash
             }; //ADD NEW SEPARATORS HERE!!!
             allSeparators = tempSeparators;
 
-            //List of all button rotate transforms - used for vertical/horizontal toggling
-            RotateTransform[] tempTransforms =
-            {
-                rotateDelete,
-                rotateCopy,
-                rotateVideo,
-                rotateImage,
-                rotateGroup,
-                rotateGroupToggle,
-                rotateTouchToggle,
-                rotateInkToggle,
-                rotateCollapseToggle
-            }; //ADD NEW ROTATE TRANSFORMS HERE!!!
-            buttonRotations = tempTransforms;
-
             this.SetUpBaseMenu();
-            //this.RotateToolbar();
         }
 
         private void SetUpOrientationBindings()
@@ -234,7 +219,7 @@ namespace Dash
                         xTextToolbar.SetMenuToolBarBinding(
                             VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
                         xTextToolbar.SetCurrTextBox(text);
-	                    xTextToolbar.SetDocs(docs.First());
+	                    xTextToolbar.SetDocs(selection);
 						subtoolbarElement = xTextToolbar;
                     }
 
@@ -485,7 +470,8 @@ namespace Dash
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
             AdjustComboBoxes();
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
-            xPadding.Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
+            xPadding.Width = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingLong : ToolbarConstants.PaddingShort;
+            xPadding.Height = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingShort : ToolbarConstants.PaddingLong;
         }
 
         private void AdjustComboBoxes()
@@ -545,7 +531,7 @@ namespace Dash
             }
         }
 
-	    public void SwitchTheme(bool nightModeOn)
+        public void SwitchTheme(bool nightModeOn)
 	    {
 			
 			//toggle night mode styles

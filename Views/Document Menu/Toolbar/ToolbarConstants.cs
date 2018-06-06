@@ -8,6 +8,7 @@ namespace Dash
 {
     public static class ToolbarConstants
     {
+        //COMBO BOX DIMENSIONS
         public const int ComboBoxWidth = 200;
         public const int ComboBoxHeight = 35;
         public const int ComboBoxMargin = 13;
@@ -18,6 +19,8 @@ namespace Dash
 		//TOOLBAR DIMENSIONS
 		public const double ToolbarHeight = 50;
 
-	
+        //PADDING DIMENSIONS
+        public const double PaddingShort = 10;
+        public const double PaddingLong = 200;
     }
 }
