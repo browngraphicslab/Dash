@@ -27,6 +27,16 @@ namespace Dash
 {
     public sealed partial class TextSubtoolbar : UserControl
     {
+
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+            "Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
+
+        public Orientation Orientation
+        {
+            get { return (Orientation) GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+
 	    private RichEditBox _currBox;
 	    private Color _highlightColor;
 

@@ -41,6 +41,12 @@ namespace Dash
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
 
+        public enum UpdateMode
+        {
+            Deselect,
+            Select
+        }
+
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
         {
@@ -57,11 +63,6 @@ namespace Dash
         {
             SelectedDocuments = docs;
             Toolbar.Update(docs);
-        }
-        public void AddToAndUpdateSelectedDocuments(DocumentView toAdd)
-        {
-            SelectedDocuments = new List<DocumentView> { toAdd };
-            Toolbar.Update(SelectedDocuments);
         }
 
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
