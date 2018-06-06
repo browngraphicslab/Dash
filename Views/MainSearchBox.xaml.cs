@@ -22,6 +22,7 @@ namespace Dash
         private string _currentSearch = "";
         
         public const string SearchCollectionDragKey = "Search Collection";
+        
 
         public MainSearchBox()
         {
@@ -115,19 +116,45 @@ namespace Dash
         {
             //first unhightlight old results
             //list of all collections
-            //var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
 
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+                
+           
+            foreach (var coll in allCollections)
+            {
+                unHighlightDocs(coll);
+            }
+
+            //now highlight new search results
             foreach (var doc in docs)
             {
                 var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
-                MainPage.Instance.HighlightDoc(resultDoc, false, true);
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1);  
 
                 //TODO: when search is unfocused, change thichkness back to 0
             }
         }
+
+        public static void unHighlightDocs(DocumentController coll)
+        {
+            var colDocs = coll.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            //unhighlight each doc in collection
+            foreach (var doc in colDocs)
+            {
+                MainPage.Instance.HighlightDoc(doc, false, 2);
+                if (doc.DocumentType.ToString() == "Collection Box")
+                {
+                    unHighlightDocs(doc);
+                }
+            }
+        }
+
+
 
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
             DocumentController searchResultsDictionary, string originalSearch)

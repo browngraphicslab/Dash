@@ -319,7 +319,7 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag, bool search=false)
+        public void HighlightDoc(DocumentController document, bool? flag, int search=0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
@@ -329,18 +329,13 @@ namespace Dash
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, bool search)
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, int search)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
                     //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
-                    if (search)
-                    {
-                        //if search parameter
-                        dm.SearchHighlightState = new Thickness(8);
-                    }
-                    else
+                    if (search == 0)
                     {
                         if (flag == null)
                             dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
@@ -348,6 +343,16 @@ namespace Dash
                             dm.DecorationState = (dm.Undecorated == false);
                         else if (flag == false)
                             dm.DecorationState = false;
+                    }
+                    else if(search == 1)
+                    {
+                        //highlight doc
+                        dm.SearchHighlightState = new Thickness(8);
+                    }
+                    else
+                    {
+                        //unhighlight doc
+                        dm.SearchHighlightState = new Thickness(0);
                     }
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
