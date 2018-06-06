@@ -99,7 +99,9 @@ namespace Dash
                 GlobalInkSettings.Opacity = 1;
                 xMainDocView.ViewModel.DisableDecorations = true;
 
-                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                treeContext.Loaded(true);
+                xMainTreeView.DataContext = treeContext;
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
