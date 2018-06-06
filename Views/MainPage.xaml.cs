@@ -734,9 +734,13 @@ namespace Dash
         
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var isVisible = xSettingsView.Visibility == Visibility.Visible;
-            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            Toolbar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+        }
+
+        public void ToggleSettingsVisibility(bool changeToVisible)
+        {
+            xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
+            Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
