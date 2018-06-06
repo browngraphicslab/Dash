@@ -221,18 +221,10 @@ namespace Dash
             {
                 xDocView.DataContext = value;
 
-                var binding = new FieldBinding<TextController>()
-                {
-                    Mode = BindingMode.OneWay,
-                    Document = value.DataDocument,
-                    Key = KeyStore.TitleKey,
-                    Tag = "CurPage Title Binding"
-                };
-
                 SetHackBodyDoc(DisplayKey, DisplayString); // TODO order of these maters cause of writing body doc
                 SetHackCaptionText(CaptionKey);
                 
-                if (value.Content is CollectionView cview)
+                if (value?.Content is CollectionView cview)
                 {
                     void Cview_Loaded(object sender, RoutedEventArgs e)
                     {

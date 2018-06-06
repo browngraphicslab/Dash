@@ -77,7 +77,7 @@ namespace Dash
 
         public override object GetValue(Context context)
         {
-            return "=="+OperatorScriptParser.GetScriptForOperatorTree(this, context);
+            return TypescriptToOperatorParser.GetScriptForOperatorTree(this, context);
 
             /*
             var refDoc = GetDocumentController(context);
@@ -96,9 +96,10 @@ namespace Dash
         {
             var refValue = (Tuple<Context,object>)value;
             var doc = GetDocumentController(refValue.Item1);
+            var copyOnWrite = (doc.GetField(FieldKey) is DocumentReferenceController dref3) ? (dref3.ReferenceFieldModel as DocumentReferenceModel).CopyOnWrite: false;
             var field = doc.GetDereferencedField<FieldControllerBase>(FieldKey, refValue.Item1);
             if (refValue.Item2 is string s)
-                return doc.ParseDocField(FieldKey, s, field);
+                return doc.ParseDocField(FieldKey, s, field, copyOnWrite || field?.ReadOnly == true);
             if (refValue.Item2 is RichTextModel.RTD rtd)
             {
                 doc.SetField<RichTextController>(FieldKey, rtd, true);
@@ -137,7 +138,5 @@ namespace Dash
             var controller = GetDocumentController(null);
             controller?.UpdateOnServer();
         }
-
-        public abstract FieldModelController<ReferenceModel> CopyForDelegate(Dictionary<DocumentController, DocumentController> mapping);
     }
 }

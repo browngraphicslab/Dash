@@ -375,7 +375,7 @@ namespace Dash
                         var where = Util.GetCollectionFreeFormPoint(
                             mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                         docController.GetPositionField().Data = where;
-                        mainPageCollectionView.ViewModel.AddDocument(docController, null);
+                        mainPageCollectionView.ViewModel.AddDocument(docController);
                     }
                 }
             }
@@ -411,7 +411,35 @@ namespace Dash
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
                     var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
+                }
+                //add error message for null file?
+            }
+        }
+
+        private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
+        {
+            //instantiates a file picker, set to open in user's audio library
+            var picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+
+            picker.FileTypeFilter.Add(".mp3");
+      
+
+            //awaits user upload of audio 
+            var files = await picker.PickMultipleFilesAsync();
+
+            if (files != null)
+            {
+                foreach (Windows.Storage.StorageFile file in files)
+                {
+                    //create a doc controller for the audio, set position, and add to canvas
+                    var docController = await new AudioToDashUtil().ParseFileAsync(file);
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    docController.GetPositionField().Data = where;
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
 
                 //add error message for null file?

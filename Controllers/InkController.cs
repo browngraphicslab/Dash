@@ -84,7 +84,7 @@ namespace Dash
             return false;
         }
 
-        public override FieldModelController<InkModel> Copy()
+        public override FieldControllerBase Copy()
         {
             return new InkController(InkData);
         }

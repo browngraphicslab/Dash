@@ -68,7 +68,6 @@
                         <RotateTransform x:Name="rotateDelete" Angle="0" CenterX="32" CenterY="32"/>
                     </AppBarButton.RenderTransform>
                 </AppBarButton>
-
             </ctrl:CommandBar>
             <Rectangle x:Name="xPadding" Opacity="0" Width="0" Visibility="Collapsed" Height="11"/>
             <StackPanel Margin="0,12,0,0">

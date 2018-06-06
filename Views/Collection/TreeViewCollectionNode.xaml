@@ -11,7 +11,7 @@
     x:Name="XControl"
     DataContextChanged="TreeViewCollectionNode_OnDataContextChanged">
 
-    <Grid Background="Transparent" HorizontalAlignment="Center" Margin="0,0,0,6">
+    <Grid x:Name="xLayoutRoot" x:FieldModifier="public" Background="Transparent" HorizontalAlignment="Center" >
        <ListView x:Name="xListView"
                  ItemsSource="{Binding BindableDocumentViewModels}" 
                  SelectionMode="None" ScrollViewer.VerticalScrollBarVisibility="Hidden"
@@ -19,12 +19,12 @@
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-                    <Setter Property="Padding" Value="5,0,25,0"></Setter>
-                    <Setter Property="Margin" Value="0,-7,0,-7"></Setter>
+                    <Setter Property="MinHeight" Value="0"></Setter>
+                    <Setter Property="MinWidth" Value="0"></Setter>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
-                                <Border Name="Border" BorderBrush="Transparent" BorderThickness="2">
+                                <Border Name="Border" BorderBrush="Transparent" BorderThickness="0.5">
                                     <ContentPresenter />
                                 </Border>
                             </ControlTemplate>
@@ -34,7 +34,7 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:DocumentViewModel">
-                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}"></local:TreeViewNode>
+                    <local:TreeViewNode Margin="0 0 0 0" FilterString="{Binding ElementName=XControl, Path=FilterString}" AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}"></local:TreeViewNode>
               </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 

@@ -5,6 +5,7 @@ using Windows.Storage;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
 using System.Diagnostics;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
@@ -13,7 +14,7 @@ namespace Dash
 		/// <summary>
 		/// Parse a file and save it to the local filesystem
 		/// </summary>
-		public async Task<DocumentController> ParseFileAsync(FileData fileData)
+		public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
 		{
 			var localFile = await CopyFileToLocal(fileData);
 

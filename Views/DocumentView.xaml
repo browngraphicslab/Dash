@@ -38,6 +38,7 @@
                 <MenuFlyoutItem Text="Fields" Click="MenuFlyoutItemFields_Click"/>
                 <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                 <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Toggle As Adornment" Click="MenuFlyoutItemToggleAsAdornment_Click"/>
                 <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
                 <MenuFlyoutItem Text="Launch app" Click="MenuFlyoutLaunch_Click"/>
                 <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
@@ -60,17 +61,24 @@
                                Height="32"
                     />
         </Border>
-
-        <!--grid to hold the inner content of the document-->
-        <Grid Name="xTargetContentGrid">
-            <!-- Container for document fields view -->
+        
+        <!-- border to allow document to be highlighted when selected-->
+        <Border Name="xTargetBorder"> 
+                <!-- Container for document fields view -->
             <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
-        </Grid>
+        </Border>
 
         <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
             <Grid  >
-                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
-                <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
+                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}"/>
+                <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}"
+                         Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+        <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -30, 0">
+            <Grid  >
+                <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
+                <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
                          Visibility="Collapsed"/>
             </Grid>
         </Border>
@@ -101,8 +109,8 @@
                  x:FieldModifier="public"/>
 
         <Button x:Name="xFooter" Foreground="Black" 
-    AllowDrop="True" Background="White" Opacity="0.75" Content="- footer -"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Visibility="Collapsed" Drop="This_Drop"/>
+    AllowDrop="True" Background="White" Opacity="0.75" Content="- footer -"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Visibility="Collapsed" Drop="FooterDrop"/>
         <Button x:Name="xHeader" Foreground="Black"
-    AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="This_Drop"/>
+    AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>
     </Grid>
 </UserControl>

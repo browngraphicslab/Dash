@@ -65,32 +65,32 @@ namespace Dash
         /// </summary>
         /// <param name="docSet"></param>
         /// <returns></returns>
-        public bool IsCompatibleWith(Context c)
-        {
-            if (c == null)
-            {
-                return true;
-            }
-            var docSetList = new List<DocumentController>(c.DocContextList);
-            for (int i = 0; i < docSetList.Count; i++)
-            {
-                var dcb = docSetList[i];
-                var dcbPrototype = dcb.GetAllPrototypes().First();
-                bool skip = false;
-                for (int j = i+1; j < docSetList.Count && !skip; j++)
-                    if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
-                    {
-                        skip = true;
-                    }
-                if (!skip)
-                {
-                    var deepestRelative = GetDeepestDelegateOf(dcbPrototype.GetId());
-                    if (deepestRelative != null && deepestRelative != dcb.GetId())
-                        return false;
-                }
-            }
-            return true;
-        }
+        //public bool IsCompatibleWith(Context c)
+        //{
+        //    if (c == null)
+        //    {
+        //        return true;
+        //    }
+        //    var docSetList = new List<DocumentController>(c.DocContextList);
+        //    for (int i = 0; i < docSetList.Count; i++)
+        //    {
+        //        var dcb = docSetList[i];
+        //        var dcbPrototype = dcb.GetAllPrototypes().First();
+        //        bool skip = false;
+        //        for (int j = i+1; j < docSetList.Count && !skip; j++)
+        //            if (docSetList[j].GetAllPrototypes().First().Equals(dcbPrototype))
+        //            {
+        //                skip = true;
+        //            }
+        //        if (!skip)
+        //        {
+        //            var deepestRelative = GetDeepestDelegateOf(dcbPrototype.GetId());
+        //            if (deepestRelative != null && deepestRelative != dcb.GetId())
+        //                return false;
+        //        }
+        //    }
+        //    return true;
+        //}
 
         public FieldControllerBase Dereference(ReferenceController reference)
         {

@@ -31,7 +31,7 @@ namespace Dash
             _eventElement = eventElement;
             _eventElement.AddHandler(UIElement.PointerReleasedEvent, release_hdlr, true);
             _eventElement.AddHandler(UIElement.PointerMovedEvent, move_hdlr, true);
-            var shiftState = CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var shiftState = _eventElement.IsShiftPressed();
             if (!shiftState && pointer != null)
                 _eventElement.CapturePointer(pointer);
 
@@ -52,15 +52,15 @@ namespace Dash
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
             pointerPressed(_eventElement, null);
         }
+
         public void pointerPressed(object sender, PointerRoutedEventArgs e)
         {
             _numMovements = 0;
-            var pointerPosition = MainPage.Instance
-                .TransformToVisual(_manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core
-                    .CoreWindow.GetForCurrentThread().PointerPosition);
+            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
             _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted(null, null);
-            _manipulationDocumentTarget.DocumentView_PointerEntered(null, null);
+            _manipulationDocumentTarget.DocumentView_PointerEntered(null, null); 
+            MainPage.Instance.Focus(FocusState.Programmatic);
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace Dash
             _numMovements++;
             var parentCollectionTransform = freeformCanvas?.RenderTransform as MatrixTransform;
             if (parentCollectionTransform == null || _manipulationDocumentTarget.ManipulationControls == null) return;
-
-            var pointerPosition = MainPage.Instance.TransformToVisual(_manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(CoreWindow.GetForCurrentThread().PointerPosition);
+            
+            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             var translationBeforeAlignment = new Point(pointerPosition.X - _rightDragLastPosition.X, pointerPosition.Y - _rightDragLastPosition.Y);
             
             _rightDragLastPosition = pointerPosition;
@@ -102,8 +102,8 @@ namespace Dash
                 n.ManipulationMode = ManipulationModes.All;
             if (_collection != null)
                 _collection.CurrentView.ManipulationMode = ManipulationModes.All;
-
-            var pointerPosition = MainPage.Instance.TransformToVisual(_manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>()).TransformPoint(Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition);
+            
+            var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
 
             var delta = new Point(pointerPosition.X - _rightDragStartPosition.X, pointerPosition.Y - _rightDragStartPosition.Y);
             var dist = Math.Sqrt(delta.X * delta.X + delta.Y * delta.Y);
