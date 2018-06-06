@@ -723,7 +723,7 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup)
+            if (!ViewModel.IsAdornmentGroup)
             {
                 FocusedDocument = this;
                 ToFront();
