@@ -70,7 +70,10 @@ namespace Dash
             };
             Unloaded += (sender, e) =>
             {
-                if (ViewModel != null) ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                if (_lastViewModel != null)
+                {
+                    _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                }
                 _lastViewModel?.Loaded(false);
                 _lastViewModel = null;
             };
