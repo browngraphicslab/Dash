@@ -76,7 +76,8 @@ namespace Dash
         {
         }
 
-        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel, KeyController sortKey)
+        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel,
+            KeyController sortKey)
         {
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
@@ -292,7 +293,7 @@ namespace Dash
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
             // if the max and min time are the same, use arbitrary small constant (10)
             if (totalTime == 0) totalTime = 10;
-            
+
             var normOffset =
                 (double) (tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
                               .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
@@ -376,7 +377,7 @@ namespace Dash
 
             DataContextChanged += OnDataContextChanged;
         }
-        
+
         private void Initialize(CollectionViewModel viewModel)
         {
             if (viewModel != null)

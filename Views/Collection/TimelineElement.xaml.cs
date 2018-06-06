@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -22,6 +21,8 @@ namespace Dash
         private const double ContextPreviewActualHeight = 250;
 
         private const double ContextPreviewActualWidth = 200;
+        private readonly double _offsetX = 200;
+        private readonly double _offsetY = 492;
 
         /// <summary>
         ///     A reference to the context preview
@@ -29,8 +30,6 @@ namespace Dash
         private UIElement _contextPreview;
 
         private double _ellipseSize = 18;
-        private readonly double _offsetX = 200;
-        private readonly double _offsetY = 492;
 
         private long _time;
 
@@ -44,17 +43,18 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             Loaded += TimelineElement_Loaded;
         }
-        
+
+        public TimelineElementViewModel ViewModel { get; private set; }
+        public CollectionTimelineView ParentTimeline { get; private set; }
+
         // remove field listener when unloaded
         private void TimelineElement_Unloaded(object sender, RoutedEventArgs e)
         {
             if (ViewModel == null) return;
-            ViewModel.DocumentViewModel.DocumentController.GetDataDocument().RemoveFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
+            ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
+                .RemoveFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
             Unloaded -= TimelineElement_Unloaded;
         }
-
-        public TimelineElementViewModel ViewModel { get; private set; }
-        public CollectionTimelineView ParentTimeline { get; private set; }
 
         #region loading
 
@@ -69,18 +69,21 @@ namespace Dash
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 
+            // initializes timeline element, position, and display
             UpdateTimelinePosition();
             LoadContext();
-            
-            ViewModel.DocumentViewModel.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
+
+            ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
+                .AddFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
         }
-        
+
         // this checks for a data change in the viewmodel document controller (ie when text is changed)
         private void OnViewModelDataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             OnDataContextChanged(null, null);
         }
 
+        // loads the display used for the timeline element
         private void LoadContext()
         {
             if (_contextPreview == null && ViewModel.DocumentContext.GetImage() != null)
@@ -99,7 +102,8 @@ namespace Dash
         }
 
         /// <summary>
-        ///     updates the text that is displayed by the timeline. called when either the timeline element's data context has changed or when the timeline element viewmodel's data context has changed.
+        ///     updates the text that is displayed by the timeline. called when either the timeline element's data context has
+        ///     changed or when the timeline element viewmodel's data context has changed.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
@@ -113,14 +117,16 @@ namespace Dash
                 .GetDereferencedField<RichTextController>(KeyStore.DataKey, null)
                 ?.Data; //NoteDocuments.RichTextNote.RTFieldKey
             var docText =
-                ViewModel.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)
+                ViewModel.DocumentViewModel.DataDocument
+                    .GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)
                     ?.Data ?? richText?.ToString() ?? null;
 
             if (docText != null)
                 thumbnailImageViewDoc = new PostitNote(docText).Document;
             else
                 thumbnailImageViewDoc =
-                    (ViewModel.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as
+                    (ViewModel.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey,
+                             null) as
                          DocumentController ?? ViewModel.DocumentViewModel.DocumentController).GetViewCopy();
             thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
             ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc)
