@@ -506,6 +506,7 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
+			Toolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)

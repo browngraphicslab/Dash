@@ -361,6 +361,9 @@
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\CustomButtonFormatter.cs" />
+    <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
+      <DependentUpon>DropDownTextButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
     </Compile>
@@ -823,6 +826,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

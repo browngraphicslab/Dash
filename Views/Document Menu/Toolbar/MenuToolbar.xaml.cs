@@ -75,6 +75,7 @@ namespace Dash
         {
             this.InitializeComponent();
 
+
             MenuToolbar.Instance = this;
             _parentCanvas = canvas;
             mode = MouseMode.TakeNote;
@@ -87,7 +88,7 @@ namespace Dash
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -206,8 +207,8 @@ namespace Dash
                 // just single select
                 if (docs.Count() == 1)
                 {
-                    var selection = docs.First();
-
+	                var selection = docs.First();
+                
                     // Image controls
                     var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(selection);
                     if (image != null)
@@ -227,12 +228,14 @@ namespace Dash
 
                     // Text controls
                     var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
+					System.Diagnostics.Debug.WriteLine("TEXT IS SELECTED");
                     if (text != null)
                     {
                         xTextToolbar.SetMenuToolBarBinding(
                             VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
                         xTextToolbar.SetCurrTextBox(text);
-                        subtoolbarElement = xTextToolbar;
+	                    xTextToolbar.SetDocs(docs.First());
+						subtoolbarElement = xTextToolbar;
                     }
 
                     //If the user has clicked on valid content (text, image, video, etc)...
@@ -272,6 +275,22 @@ namespace Dash
                 //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
                 if (subtoolbarElement != null && state == State.Expanded) subtoolbarElement.Visibility = Visibility.Visible;
             }
+            else if (docs.Count<DocumentView>() > 1)
+            {
+                // TODO: multi select
+            }
+            else
+            {
+                subtoolbarElement = null;
+            }
+			//set proper subtoolbar to visible
+	        if (subtoolbarElement != null)
+	        {
+				xFloating.AdjustPositionForExpansion(ToolbarConstants.ToolbarHeight, 0);
+		        subtoolbarElement.Visibility = Visibility.Visible;
+				//xFloating.Floating_SizeChanged(null, null);
+	        }
+
         }
 
         private void SetUpBaseMenu()
@@ -497,6 +516,24 @@ namespace Dash
                 xToolbar.IsOpen = subtoolbarElement == null;
             }
         }
-    }
 
+	    public void SwitchTheme(bool nightModeOn)
+	    {
+			
+			//toggle night mode styles
+		    if (nightModeOn)
+		    {
+			    xToolbar.Foreground = new SolidColorBrush(Colors.White);
+		    }
+		    else
+		    {
+			    xToolbar.Foreground = new SolidColorBrush(Colors.Black);
+		    }
+
+		    //ensure toolbar is visible
+		    xToolbar.IsEnabled = true;
+		    xToolbar.Visibility = Visibility.Visible;
+
+		}
+	}
 }

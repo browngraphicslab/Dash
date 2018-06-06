@@ -14,28 +14,31 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
-       <!-- <ColorPicker x:Name="highColorPicker"
-                     ColorSpectrumShape="Ring"
-                     IsColorPreviewVisible="True"
-                     IsColorChannelTextInputVisible="False"
-                     IsHexInputVisible="False"/>
+  
 
-        <Rectangle Height="50" Width="50">
-            <Rectangle.Fill>
-                <SolidColorBrush Color="{x:Bind highColorPicker.Color, Mode=OneWay}"/>
-            </Rectangle.Fill>
-        </Rectangle>
+    <StackPanel x:Name="xStack">
+        <!--   <ColorPicker x:Name="highColorPicker"
+                 ColorSpectrumShape="Ring"
+                 IsColorPreviewVisible="True"
+                 IsColorChannelTextInputVisible="False"
+                 IsHexInputVisible="False"/>
+
+    <Rectangle Height="50" Width="50">
+        <Rectangle.Fill>
+            <SolidColorBrush Color="{x:Bind highColorPicker.Color, Mode=OneWay}"/>
+        </Rectangle.Fill>
+    </Rectangle>
 -->
         <controls:TextToolbar
             
             x:Name="xDashTextSubtoolbar"
             Visibility="Visible"
             Background="LightGray"
+            
             >
             <!--remove Link button from default text toolbar-->
-            <controls:TextToolbar.ButtonModifications>
-                <buttons:DefaultButton Type="Link" IsVisible="False"/>
+            <controls:TextToolbar.ButtonModifications >
+                <buttons:DefaultButton Type="Link" IsVisible="False" />
             </controls:TextToolbar.ButtonModifications>
             
             <!-- Add highlight button 
@@ -48,7 +51,15 @@
             -->
             
         </controls:TextToolbar>
-
-
-    </Grid>
+        
+       <!-- <ColorPicker x:Name="xColorPicker"
+                     ColorSpectrumShape=""
+                     IsColorPreviewVisible="False"
+                     IsColorChannelTextInputVisible="False"
+                     IsHexInputVisible="False"
+                     Visibility="Visible"
+                     Width="500"/>
+-->
+        
+    </StackPanel>
 </UserControl>
