@@ -10,6 +10,7 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using System.IO;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -49,7 +50,7 @@ namespace Dash
                 ExecuteDishSearch(sender);
 
             }
-            _currentSearch = sender.Text.ToLower(); ;
+            _currentSearch = sender.Text.ToLower();
         }
 
 
@@ -60,6 +61,8 @@ namespace Dash
                 return;
             }
 
+            //first unhightlight old results
+            unHighlightAllDocs();
 
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
@@ -96,7 +99,7 @@ namespace Dash
 
             //highlight doc results
             HighlightSearchResults(docs.ToList<DocumentController>());
-            
+
             foreach (var doc in docs)
             {
                 var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
@@ -110,32 +113,34 @@ namespace Dash
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
+            
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs)
         {
-            //first unhightlight old results
-            //list of all collections
-
-            var allCollections =
-                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
-                
-           
-            foreach (var coll in allCollections)
-            {
-                unHighlightDocs(coll);
-            }
-
-            //now highlight new search results
+            //highlight new search results
             foreach (var doc in docs)
             {
                 var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
-                MainPage.Instance.HighlightDoc(resultDoc, false, 1);  
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+            }
+        }
 
-                //TODO: when search is unfocused, change thichkness back to 0
+        public static void unHighlightAllDocs()
+        {
+
+            //TODO:call this when search is unfocused
+
+            //list of all collections
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+
+            foreach (var coll in allCollections)
+            {
+                unHighlightDocs(coll);
             }
         }
 
@@ -919,8 +924,6 @@ namespace Dash
 
             e.Handled = true;
         }
-
-    
     }
 }
 
