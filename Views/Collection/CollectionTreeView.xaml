@@ -30,6 +30,7 @@
         <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Row="3">
             <Button x:Name="makePdf" TabIndex="-1" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="MakePdf_OnTapped">Export to HTML
             </Button>
+            <Button x:Name="presentationModeButton" HorizontalAlignment="Stretch" Background="{StaticResource AccentGreen}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="TogglePresentationMode">Presentation Mode</Button>
             <Button TabIndex="-1" HorizontalAlignment="Stretch" Background="{ThemeResource WorkspaceButtonBrush}" Foreground="#DDEEFFFF" Padding="0,5" Tapped="UIElement_OnTapped">Add Workspace
             </Button>
         </StackPanel>

@@ -48,6 +48,7 @@ namespace Dash
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
+        private bool IsPresentationModeToggled = false;
 
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
@@ -753,6 +754,20 @@ namespace Dash
         private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+        }
+
+        public void TogglePresentationMode()
+        {
+            IsPresentationModeToggled = !IsPresentationModeToggled;
+            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
+            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
+        }
+
+        public void PinToPresentation(DocumentViewModel viewModel)
+        {
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            if (!IsPresentationModeToggled)
+                TogglePresentationMode();
         }
     }
 }

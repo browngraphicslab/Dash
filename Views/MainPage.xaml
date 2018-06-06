@@ -22,6 +22,7 @@
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="0" x:Name="xRightDockSplitterColumn"/>
             <ColumnDefinition Width="0" x:Name="xRightDockColumn"/>
+            <ColumnDefinition Width="0" x:Name="xUtilTabColumn"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="0" x:Name="xTopDockRow"/>
@@ -106,6 +107,7 @@
         <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
         <localMicrosoft:GridSplitter Grid.Row="1" Grid.Column="4"/>
         <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
+        <views:PresentationView x:Name="xPresentationView" Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" HorizontalAlignment="Stretch"/>
     </Grid>
 </Page>
 

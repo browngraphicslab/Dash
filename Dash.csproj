@@ -545,6 +545,13 @@
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\PresentationView.xaml.cs">
+      <DependentUpon>PresentationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PresentationViewModel.cs" />
+    <Compile Include="Views\PresentationViewTextBox.xaml.cs">
+      <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
@@ -1028,6 +1035,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PresentationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PresentationViewTextBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

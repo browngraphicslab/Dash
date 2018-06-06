@@ -1032,5 +1032,10 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
+
+        private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.PinToPresentation(ViewModel);
+        }
     }
 }
