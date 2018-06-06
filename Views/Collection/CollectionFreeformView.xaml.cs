@@ -73,7 +73,6 @@ namespace Dash
                 {
                     _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 }
-                
                 _lastViewModel = null;
             };
             xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
