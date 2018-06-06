@@ -211,10 +211,8 @@ namespace Dash
         /// <returns></returns>
         public static bool RemoveController(string Id)
         {
-            IController<T> outC;
-            T outM;
-            _controllers.TryRemove(Id, out outC);
-            _models.TryRemove(Id, out outM);
+            _controllers.TryRemove(Id, out var outC);
+            _models.TryRemove(Id, out var outM);
             return outC != null && outM != null;
         }
 
@@ -225,6 +223,14 @@ namespace Dash
         {
             _controllers = new ConcurrentDictionary<string, IController<T>>();
             _models = new ConcurrentDictionary<string, T>();
+        }
+
+        /// <summary>
+        /// Resets the content controller so that it can be reused with other databases loaded
+        /// </summary>
+        public static void Reset()
+        {
+            ClearAllControllersAndModels();
         }
 
         /// <summary>

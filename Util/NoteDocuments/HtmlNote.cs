@@ -28,9 +28,11 @@ namespace Dash
 
         DocumentController CreateLayout(DocumentController dataDocument, Point where, Size size)
         {
-            return new WebBox(getDataReference(dataDocument), where.X, where.Y, size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height).Document;
+            size = new Size(size.Width == 0 ? 400 : size.Width, size.Height == 0 ? 400 : size.Height);
+            return new WebBox(getDataReference(dataDocument), where.X, where.Y, size.Width, size.Height).Document;
         }
 
+        static int hcount = 1;
         public HtmlNote(string text = "", string title = "", Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
@@ -41,6 +43,8 @@ namespace Dash
             base(_prototypeID)
         {
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
+            Document.Tag = "Html Note Layout " + hcount;
+            dataDocument.Tag = "Html Note Data" + hcount++;
         }
     }
 }

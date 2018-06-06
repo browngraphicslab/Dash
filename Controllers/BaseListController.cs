@@ -16,6 +16,7 @@ namespace Dash
 
         public abstract TypeInfo ListSubTypeInfo { get; }
 
+        public abstract void Remove(FieldControllerBase fmc);
         public abstract void Add(FieldControllerBase fmc);
         public abstract void AddRange(IList<FieldControllerBase> fmcs);
 

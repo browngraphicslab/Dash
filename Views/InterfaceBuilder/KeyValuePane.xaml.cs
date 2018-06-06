@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using static Dash.OperatorScriptParser;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -195,6 +194,7 @@ namespace Dash
         {
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.DeleteDocument();
+            e.Handled = true;
         }
 
         private void Icon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -285,21 +285,40 @@ namespace Dash
 
         public void Expand_Value(object sender)
         {
-            var valuebox = sender as EditableScriptBox;
+            var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            key.Style = Resources["ExpandBox"] as Style;
+            if (key != null)
+                key.Style = Resources["ExpandBox"] as Style;
         }
 
         public void Collapse_Value(object sender)
         {
-            var valuebox = sender as EditableScriptBox;
+            var valuebox = sender as KeyValueScriptView;
             var index = ListItemSource.IndexOf(valuebox.ViewModel);
             var key = xKeyListView.ContainerFromIndex(index) as ListViewItem;
-            key.Style = Resources["CollapseBox"] as Style;
+            if (key != null)
+                key.Style = Resources["CollapseBox"] as Style;
         }
         
         private void xFieldListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
+        {
+            foreach (var m in args.Items)
+            {
+                var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
+                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+                break;
+            }
+        }
+
+        private void KeyValueScriptView_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = e.GetCurrentPoint(this).Properties.IsRightButtonPressed ? ManipulationModes.All : ManipulationModes.None;
+        }
+
+        private void xKeyListView_DragItemsStarting(object sender, DragItemsStartingEventArgs args)
         {
             foreach (var m in args.Items)
             {
