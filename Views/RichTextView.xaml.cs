@@ -381,9 +381,11 @@ namespace Dash
                 getDocView().HandleCtrlEnter();
                 e.Handled = true;
             }
-            else if (this.IsAltPressed()) // opens the format options flyout 
+			
+			/**
+			else if (this.IsAltPressed()) // opens the format options flyout 
             {
-                if (xFormattingMenuView == null)
+				if (xFormattingMenuView == null)
                 {
                     xFormattingMenuView = new FormattingMenuView();
                     // store a clone of character format after initialization as default format
@@ -398,6 +400,8 @@ namespace Dash
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
                 e.Handled = true;
             }
+	*/
+		
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -412,8 +416,7 @@ namespace Dash
                         e.Handled = true;
                         break;
                     case VirtualKey.H:
-                        this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
-                        e.Handled = true;
+                        this.Highlight(Colors.Yellow, true); // using RichTextFormattingHelper extenions
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
