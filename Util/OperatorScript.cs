@@ -61,7 +61,7 @@ namespace Dash
 
         private static void PrintDocumentation(string funcName, OperatorController op)
         {
-            var doc = funcName + "( " + string.Join(',', op.Inputs.Select(i => " "+i.Value.Type.ToString() + "  "+  i.Key.Name.ToLower())) + " );";
+            var doc = op.Outputs[0].Value.ToString()+"   "+funcName + "( " + string.Join(',', op.Inputs.Select(i => " "+i.Value.Type.ToString() + "  "+  i.Key.Name.ToLower())) + " );";
             FunctionDocumentation += doc + "         \n";
             Debug.WriteLine(doc);
         }

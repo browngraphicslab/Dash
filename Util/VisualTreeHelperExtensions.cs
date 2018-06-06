@@ -117,13 +117,28 @@ namespace Dash
             return Window.Current.Content != null && dob.GetAncestors().Contains(Window.Current.Content);
         }
 
+        /// <summary>
+        /// Position of default input pointer relative to the UIelement
+        /// </summary>
+        /// <param name="dob"></param>
+        /// <returns></returns>
+        public static Point PointerPos(this UIElement dob)
+        {
+            var threadPos = CoreWindow.GetForCurrentThread().PointerPosition;
+            return MainPage.Instance.TransformToVisual(dob).TransformPoint(threadPos);
+        }
+        
+        /// <summary>
+        /// Position of default pointer relative to the application
+        /// </summary>
+        /// <param name="dob"></param>
+        /// <returns></returns>
         public static Point RootPointerPos(this UIElement dob)
         {
             var pointerPosition = Windows.UI.Core.CoreWindow.GetForCurrentThread().PointerPosition;
             var x = pointerPosition.X - Window.Current.Bounds.X;
             var y = pointerPosition.Y - Window.Current.Bounds.Y;
-            var pos = new Point(x, y);
-            return pos;
+            return new Point(x, y);
         }
 
         public static bool IsPointerOver(this UIElement dob)
@@ -193,6 +208,11 @@ namespace Dash
         public static bool IsShiftPressed(this FrameworkElement f)
         {
             return Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        }
+        public static bool IsCapsPressed(this FrameworkElement f)
+        {
+            return CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock).HasFlag(CoreVirtualKeyStates.Down) ||
+                   CoreWindow.GetForCurrentThread().GetKeyState(VirtualKey.CapitalLock).HasFlag(CoreVirtualKeyStates.Locked);
         }
         public static bool IsAltPressed(this FrameworkElement f)
         {

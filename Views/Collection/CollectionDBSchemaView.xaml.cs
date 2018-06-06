@@ -149,7 +149,7 @@ namespace Dash
                         var field = dc.Document.GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
                         xEditTextBox.Text = field?.GetValue(null)?.ToString() ?? "<null>";
                         dc.Selected = false;
-                        var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                        var direction = this.IsShiftPressed() ? -1 : 1;
                         var column = (xRecordsView.Items[dc.Row] as CollectionDBSchemaRecordViewModel).RecordFields.IndexOf(dc);
                         var recordViewModel = xRecordsView.Items[Math.Max(0, Math.Min(xRecordsView.Items.Count - 1, dc.Row + direction))] as CollectionDBSchemaRecordViewModel;
                         updateEditBox(recordViewModel.RecordFields[column]);
@@ -173,7 +173,7 @@ namespace Dash
         {
             try
             {
-                var direction = (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down)) ? -1 : 1;
+                var direction = this.IsShiftPressed() ? -1 : 1;
                 if (e.Key == Windows.System.VirtualKey.Down || e.Key == Windows.System.VirtualKey.Up)
                 {
                     direction = e.Key == Windows.System.VirtualKey.Down ? 1 : e.Key == Windows.System.VirtualKey.Up ? -1 : direction;
@@ -508,7 +508,7 @@ namespace Dash
         private void AddRow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new document to the schema view
-            ViewModel.AddDocument(Util.BlankNote(), null);
+            ViewModel.AddDocument(Util.BlankNote());
             e.Handled = true;
         }
 

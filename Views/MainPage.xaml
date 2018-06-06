@@ -1,52 +1,57 @@
 ﻿<Page 
-    xmlns:my="using:Microsoft.Toolkit.Uwp.UI.Controls" 
     x:Class="Dash.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
-                    xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:Dash.Views"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </Page.Resources>
 
-    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0">
-        <Grid.Resources>
-            <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                                xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls">
 
-                <Style TargetType="localMicrosoft:GridSplitter">
-                    <Setter Property="IsTabStop" Value="True"></Setter>
-                    <Setter Property="UseSystemFocusVisuals" Value="True"></Setter>
-                    <Setter Property="IsFocusEngagementEnabled" Value="True"></Setter>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="localMicrosoft:GridSplitter">
-                                <Grid Background="{TemplateBinding Background}">
-                                    <ContentPresenter Content="{TemplateBinding Element}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-                                </Grid>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-
-            </ResourceDictionary>
-        </Grid.Resources>
+    <Grid x:Name="xOuterGrid" x:FieldModifier="public" Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
-            <ColumnDefinition Width="15" x:Name="xPageSplitter"/>
-            <ColumnDefinition MinWidth="50" Width="*" x:Name="xMainDocViewColumn"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="0" x:Name="xLeftDockColumn"/>
+            <ColumnDefinition Width="0" x:Name="xLeftDockSplitterColumn"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="0" x:Name="xRightDockSplitterColumn"/>
+            <ColumnDefinition Width="0" x:Name="xRightDockColumn"/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0" x:Name="xTopDockRow"/>
+            <RowDefinition Height="0" x:Name="xTopDockSplitterRow"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="0" x:Name="xBottomDockSplitterRow"/>
+            <RowDefinition Height="0" x:Name="xBottomDockRow"/>
+        </Grid.RowDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
-        <local:DocumentView x:Name="xMainDocView" Grid.Column="2" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
 
-
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
-            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+        <Grid Grid.Column="4" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="15"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="15"/>
+            </Grid.RowDefinitions>
+            <local:DocumentView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+            <Rectangle Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockLeft" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockRight" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockTop" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockBottom" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
+        </Grid>
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="4" Grid.Row="2">
+        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
             </Grid>
             <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
@@ -57,42 +62,21 @@
             </Button>
         </StackPanel>
 
-        <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" />
+        <local:SettingsView x:Name="xSettingsView" Grid.Column="4" Grid.Row="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" />
 
-
-        <Grid x:Name="xSettingsGrid" Grid.Column="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
+        <Grid x:Name="xSettingsGrid" Grid.Column="4" Grid.Row="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
             <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
             <SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>
         </Grid>
 
+        <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
 
-        <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus" 
-            x:Name="xSplitter"
-            Grid.Column="1" Width="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
-                ResizeDirection="Auto"
-                Background="{ThemeResource GridSplitterBrush}"
-                Foreground="White" 
-                FontSize="13">
-            <localMicrosoft:GridSplitter.Element>
-                <Grid GettingFocus="TextBlock_GettingFocus">
-                    <TextBlock HorizontalAlignment="Center" 
-                                   IsHitTestVisible="False"
-                                   VerticalAlignment="Center"  
-                                    GettingFocus="TextBlock_GettingFocus"
-                                    Text="&#xE784;"
-                                   Foreground="Black" 
-                                   FontFamily="Segoe MDL2 Assets">
-                    </TextBlock>
-                </Grid>
-            </localMicrosoft:GridSplitter.Element>
-        </localMicrosoft:GridSplitter>
-
-        <Canvas x:Name="xCanvas" ZIndex="30"  Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
         </Canvas>
 
-        <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xLeftGrid" Grid.Column="0" Grid.Row="0" Grid.RowSpan="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="15" x:Name="xTreeSplitter"/>
@@ -102,6 +86,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="25" />
+                    <!--<RowDefinition Height="750" />-->
                 </Grid.RowDefinitions>
 
                 <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
@@ -112,26 +97,15 @@
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
 
             <localMicrosoft:GridSplitter 
-                GettingFocus="TextBlock_GettingFocus" 
-                x:Name="xLeftSplitter"
-                Grid.Row="1" Height="15" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch"
-                ResizeDirection="Auto"
-                Background="{ThemeResource GridSplitterBrush}"
-                Foreground="White" 
-                FontSize="13">
-                <localMicrosoft:GridSplitter.Element>
-                    <Grid GettingFocus="TextBlock_GettingFocus">
-                        <TextBlock HorizontalAlignment="Center" 
-                                   IsHitTestVisible="False"
-                                   VerticalAlignment="Center"  
-                                    GettingFocus="TextBlock_GettingFocus"
-                                    Text="&#xE784;"
-                                   Foreground="Black" 
-                                   FontFamily="Segoe MDL2 Assets">
-                        </TextBlock>
-                    </Grid>
-                </localMicrosoft:GridSplitter.Element>
-            </localMicrosoft:GridSplitter>
+                Grid.Row="1" Height="15"/>
+
         </Grid>
+        
+        <!--Dock gridsplitters-->
+        <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="5"/>
+        <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
+        <localMicrosoft:GridSplitter Grid.Row="1" Grid.Column="4"/>
+        <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
     </Grid>
 </Page>
+

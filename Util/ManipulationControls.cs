@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
 
@@ -28,6 +29,10 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
         public double ElementScale { get; set; } = 1.0;
 
+        // for docking
+        public double ManipulationStartX { get; set; }
+        public double ManipulationStartY { get; set; }
+
         public delegate void OnManipulationCompletedHandler();
         public delegate void OnManipulationStartedHandler();
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
@@ -36,8 +41,10 @@ namespace Dash
         public event OnManipulationStartedHandler OnManipulatorStarted;
 
 
-        private List<DocumentController> _documentsToRemoveAfterManipulation = new List<DocumentController>();
-
+        private CollectionView _previouslyHighlightedCollectionView = null;
+        
+        private double _accumulatedTranslateAfterSnappingX;
+        private double _accumulatedTranslateAfterSnappingY;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -97,40 +104,40 @@ namespace Dash
             }.TransformBounds(new Rect(0, 0, dvm.ActualSize.X * dvm.InteractiveManipulationScale.X, dvm.ActualSize.Y * dvm.InteractiveManipulationScale.Y));
         }
 
-        enum AlignmentAxis
+        enum AlignmentLine
         {
             XMin, XMid, XMax, YMin, YMid, YMax
         }
 
-        double[] AlignmentAxes(Rect bounds)
+        double[] AlignmentLinesFromRect(Rect bounds)
         {
-            double[] axes = new double[6];
-            axes[(int)AlignmentAxis.XMin] = bounds.Left;
-            axes[(int)AlignmentAxis.XMid] = bounds.Left + bounds.Width/2.0;
-            axes[(int)AlignmentAxis.XMax] = bounds.Right;
-            axes[(int)AlignmentAxis.YMin] = bounds.Top;
-            axes[(int)AlignmentAxis.YMid] = bounds.Top + bounds.Height / 2.0;
-            axes[(int)AlignmentAxis.YMax] = bounds.Bottom;
-            return axes;
+            double[] lines = new double[6];
+            lines[(int)AlignmentLine.XMin] = bounds.Left;
+            lines[(int)AlignmentLine.XMid] = bounds.Left + bounds.Width/2.0;
+            lines[(int)AlignmentLine.XMax] = bounds.Right;
+            lines[(int)AlignmentLine.YMin] = bounds.Top;
+            lines[(int)AlignmentLine.YMid] = bounds.Top + bounds.Height / 2.0;
+            lines[(int)AlignmentLine.YMax] = bounds.Bottom;
+            return lines;
         }
 
 
         //START OF NEW SNAPPING
 
-        private static AlignmentAxis[] getAlignableAxis(AlignmentAxis axis)
+        private static AlignmentLine[] GetAlignableLines(AlignmentLine line)
         {
-            switch (axis)
+            switch (line)
             {
-                case AlignmentAxis.XMin:
-                case AlignmentAxis.XMid:
-                case AlignmentAxis.XMax:
-                    return new AlignmentAxis[] { AlignmentAxis.XMin, AlignmentAxis.XMid, AlignmentAxis.XMax };
-                case AlignmentAxis.YMin:
-                case AlignmentAxis.YMid:
-                case AlignmentAxis.YMax:
-                    return new AlignmentAxis[] { AlignmentAxis.YMin, AlignmentAxis.YMid, AlignmentAxis.YMax };
+                case AlignmentLine.XMin:
+                case AlignmentLine.XMid:
+                case AlignmentLine.XMax:
+                    return new AlignmentLine[] { AlignmentLine.XMin, AlignmentLine.XMid, AlignmentLine.XMax };
+                case AlignmentLine.YMin:
+                case AlignmentLine.YMid:
+                case AlignmentLine.YMax:
+                    return new AlignmentLine[] { AlignmentLine.YMin, AlignmentLine.YMid, AlignmentLine.YMax };
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
+                    throw new ArgumentOutOfRangeException(nameof(line), line, null);
             }
         }
         
@@ -156,8 +163,8 @@ namespace Dash
                                                                                         Math.Max(ParentDocument.MinWidth, parentDocumentBoundsBefore.Width + sizeChange.X), 
                                                                                         Math.Max(ParentDocument.MinHeight, parentDocumentBoundsBefore.Height + sizeChange.Y));
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels; //.Where(vm => vm != ParentDocument.ViewModel);
-            var parentAxesBefore = AlignmentAxes(ParentDocument.ViewModel.Bounds);
-            var parentAxesAfter = AlignmentAxes(parentDocumentBoundsAfter);
+            var parentAxesBefore = AlignmentLinesFromRect(ParentDocument.ViewModel.Bounds);
+            var parentAxesAfter = AlignmentLinesFromRect(parentDocumentBoundsAfter);
             double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
 
             //Find the document we will snap to when resized - optionally resize 
@@ -165,14 +172,14 @@ namespace Dash
             {
                 if (document == ParentDocument.ViewModel) continue;
                 var documentBounds = InteractiveBounds(document);
-                var documentAxes = AlignmentAxes(documentBounds);
+                var documentAxes = AlignmentLinesFromRect(documentBounds);
                 //Check four sides of the document view (hopefully, we can resize from multiple places one day!) 
-                AlignmentAxis[] relevantAxes = ReleventAxes(shiftTop, shiftLeft);
+                AlignmentLine[] relevantAxes = ReleventAxes(shiftTop, shiftLeft);
 
                 foreach (var parentDocumentAxis in relevantAxes)
                 {
                     bool axisPos = parentAxesAfter[(int)parentDocumentAxis] >= parentAxesBefore[(int)parentDocumentAxis];
-                    foreach (var otherDocumentAxis in getAlignableAxis(parentDocumentAxis))
+                    foreach (var otherDocumentAxis in GetAlignableLines(parentDocumentAxis))
                     {
                         var deltaBefore = documentAxes[(int)otherDocumentAxis] - parentAxesBefore[(int)parentDocumentAxis];
                         var distance = Math.Abs(deltaBefore);
@@ -193,34 +200,34 @@ namespace Dash
             return parentDocumentBoundsAfter;
         }
 
-        private AlignmentAxis[] ReleventAxes(bool shiftTop, bool shiftLeft)
+        private AlignmentLine[] ReleventAxes(bool shiftTop, bool shiftLeft)
         {
-            List<AlignmentAxis> axes = new List<AlignmentAxis>();
+            List<AlignmentLine> lines = new List<AlignmentLine>();
             if (shiftTop)
-                axes.Add(AlignmentAxis.YMin);
+                lines.Add(AlignmentLine.YMin);
             else
-                axes.Add(AlignmentAxis.YMax);
+                lines.Add(AlignmentLine.YMax);
 
             if (shiftLeft)
-                axes.Add(AlignmentAxis.XMin);
+                lines.Add(AlignmentLine.XMin);
             else
-                axes.Add(AlignmentAxis.XMax);
+                lines.Add(AlignmentLine.XMax);
 
-            return axes.ToArray();
+            return lines.ToArray();
         }
 
-        private Rect BoundsAfterResizeAligningAxis(AlignmentAxis axisBeingAligned, double deltaBefore)
+        private Rect BoundsAfterResizeAligningAxis(AlignmentLine axisBeingAligned, double deltaBefore)
         {
             var parentDocumentBoundsBefore = ParentDocument.ViewModel.Bounds;
             switch (axisBeingAligned)
             {
-                case AlignmentAxis.XMin:
+                case AlignmentLine.XMin:
                     return new Rect(parentDocumentBoundsBefore.X + deltaBefore, parentDocumentBoundsBefore.Y, parentDocumentBoundsBefore.Width + deltaBefore, parentDocumentBoundsBefore.Height);
-                case AlignmentAxis.XMax:
+                case AlignmentLine.XMax:
                     return new Rect(parentDocumentBoundsBefore.X, parentDocumentBoundsBefore.Y, parentDocumentBoundsBefore.Width + deltaBefore, parentDocumentBoundsBefore.Height);
-                case AlignmentAxis.YMin:
+                case AlignmentLine.YMin:
                     return new Rect(parentDocumentBoundsBefore.X, parentDocumentBoundsBefore.Y + deltaBefore, parentDocumentBoundsBefore.Width, parentDocumentBoundsBefore.Height + deltaBefore);
-                case AlignmentAxis.YMax:
+                case AlignmentLine.YMax:
                     return new Rect(parentDocumentBoundsBefore.X, parentDocumentBoundsBefore.Y, parentDocumentBoundsBefore.Width, parentDocumentBoundsBefore.Height + deltaBefore);
                 default:
                     return parentDocumentBoundsBefore;
@@ -240,7 +247,7 @@ namespace Dash
                 return originalTranslate;
 
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
-            var parentDocumentAxesBefore = AlignmentAxes(boundsBeforeTranslation);
+            var parentDocumentLinesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
 
             var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + originalTranslate.X,
                 boundsBeforeTranslation.Y + originalTranslate.Y, boundsBeforeTranslation.Width,
@@ -248,14 +255,16 @@ namespace Dash
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm =>
                 vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel)
                     .ToList().Contains(vm));
-            var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
+            var parentDocumentLinesAfter = AlignmentLinesFromRect(parentDocumentBounds);
+
+            double offsetX = 0;
+            double offsetY = 0;
 
             double distanceThreshold = 1000; //How close the X and Y positions have to be for alignment to happen.
-            double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
             foreach (var documentView in listOfSiblings)
             {
                 var documentBounds = InteractiveBounds(documentView);
-                var documentAxes = AlignmentAxes(documentBounds);
+                var documentLines = AlignmentLinesFromRect(documentBounds);
                 //To avoid the visual clutter of aligning to document views in a large workspace, we currently ignore any document views that are further than some threshold
                 if (Math.Abs(documentBounds.X - parentDocumentBounds.X) > distanceThreshold ||
                     Math.Abs(documentBounds.Y - parentDocumentBounds.Y) > distanceThreshold)
@@ -264,106 +273,107 @@ namespace Dash
 
                 var translateAfterFirstAlignment = originalTranslate;
                 bool alignedToX = false;
-                //Check every y-aligned axis (xmin, xmid, xmax), align to the first available one
-                for (int parentAxis = 0; parentAxis < 3 && (!alignedToX); parentAxis++)
+                //Check every x-aligned line (xmin, xmid, xmax), align to the first available one
+                for (int parentLine = 0; parentLine < 3 && (!alignedToX); parentLine++)
                 {
-                    for (int otherAxis = 0; otherAxis < 3; otherAxis++)
+                    for (int targetLine = 0; targetLine < 3; targetLine++)
                     {
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
-
-                        if (distance < 15)
+                        if (SnapTriggered(parentDocumentLinesBefore[parentLine], documentLines[targetLine], originalTranslate.X, ref _accumulatedTranslateAfterSnappingX, ref offsetX))
                         {
-                            if ((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
-                            translateAfterFirstAlignment = new Point(delta, originalTranslate.Y);
+                            translateAfterFirstAlignment.X = documentLines[targetLine] - parentDocumentLinesBefore[parentLine];
+                            ShowPreviewLine(boundsBeforeTranslation, documentLines, (AlignmentLine)parentLine, (AlignmentLine)targetLine, translateAfterFirstAlignment);
                             alignedToX = true;
                             break;
                         }
                     }
                 }
 
-                //Check every x-aligned axis, align to the first available one, while also maintaining the alignment to any x-aligned axis found above
-                for (int parentAxis = 3; parentAxis < 6; parentAxis++)
+                var translateAfterSecondAlignment = translateAfterFirstAlignment;
+                bool alignedToY = false;
+                //Check every y-aligned line, align to the first available one, while also maintaining the alignment to any x-aligned line found above
+                for (int parentLine = 3; parentLine < 6 && (!alignedToY); parentLine++)
                 {
-                    for (int otherAxis = 3; otherAxis < 6; otherAxis++)
+                    for (int otherLine = 3; otherLine < 6; otherLine++)
                     {
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
-                        if (distance < 15)
+                        if (SnapTriggered(parentDocumentLinesBefore[parentLine], documentLines[otherLine], originalTranslate.Y, ref _accumulatedTranslateAfterSnappingY, ref offsetY))
                         {
-
-                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(translateAfterFirstAlignment.X, delta));
-                            return new Point(translateAfterFirstAlignment.X, delta);
-
+                            translateAfterSecondAlignment.Y = documentLines[otherLine] - parentDocumentLinesBefore[parentLine];
+                            ShowPreviewLine(boundsBeforeTranslation, documentLines, (AlignmentLine)parentLine, (AlignmentLine)otherLine, translateAfterSecondAlignment);
+                            alignedToY = true;
+                            break;
                         }
                     }
                 }
 
-                if (alignedToX)
-                    return translateAfterFirstAlignment;
-                /*
-                //For every axis in the ParentDocument
-                for (int parentAxis = 0; parentAxis < 6; parentAxis++)
+                if (alignedToX || alignedToY)
                 {
-                    for(int otherAxis = 3 * (parentAxis/3); otherAxis < 3* (parentAxis/3) + 3; otherAxis++)
-                    {
+                    var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+                    var scale = cfw.ViewModel.TransformGroup.ScaleAmount;
+                    double alignmentX = -(translateAfterSecondAlignment.X + offsetX  - originalTranslate.X) * scale.X;
+                    double alignmentY = -(translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
+                    //Move mouse by the alignment offset
+                    var old = Window.Current.CoreWindow.PointerPosition;
+                    Window.Current.CoreWindow.PointerPosition = new Point(old.X + alignmentX, old.Y + alignmentY);
 
-                        var delta = documentAxes[otherAxis] - parentDocumentAxesBefore[parentAxis];
-                        var distance = Math.Abs(delta);
-                        
-                        //If X axis
-                        if(parentAxis < 3 && distance < 15)
-                        {
-                            if((originalTranslate.X <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.X >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(delta, originalTranslate.Y));
-                            return new Point(delta, originalTranslate.Y);
-                        }
-                        if(parentAxis >=3 && distance < 15)
-                        {
-
-                            if ((originalTranslate.Y <= 0 && parentDocumentAxesAfter[parentAxis] <= documentAxes[otherAxis] - thresh) || ((originalTranslate.Y >= 0 && parentDocumentAxesAfter[parentAxis] >= documentAxes[otherAxis] + thresh)))
-                                continue;
-
-                            ShowPreviewLine(boundsBeforeTranslation, documentAxes, (AlignmentAxis)parentAxis, (AlignmentAxis)otherAxis, new Point(originalTranslate.X, delta));
-                            return new Point(originalTranslate.X, delta);
-
-                        }
-                }       
-             */
+                    return new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
+                }
 
             }
-       
-    
-            
+            //return originalTranslate ;
+            return new Point(originalTranslate.X + offsetX, originalTranslate.Y + offsetY);
 
-            return originalTranslate ;
-            
+
         }
 
-        private void ShowPreviewLine(Rect boundsBeforeAlignment, double[] otherDocumentAxes, AlignmentAxis parentAxis,  AlignmentAxis otherAxis, Point alignmentTranslation)
+        private bool SnapTriggered(double parentLine, double targetLine, double delta, ref double acc, ref double mouseOffset)
         {
-            double[] axesAfterAlignment = AlignmentAxes(new Rect(boundsBeforeAlignment.X + alignmentTranslation.X, boundsBeforeAlignment.Y + alignmentTranslation.Y, boundsBeforeAlignment.Width, boundsBeforeAlignment.Height));
+            double parentLineAfter = parentLine + delta;
+            double distanceThreshold = 1.0; //TODO: Refactor this to be dependent on zoom level
+            double accumulatedDistanceThreshold = 4.0; // How much distance the node must be moved to get out of alignment TODO: Refactor this to be dependent on zoom level
+
+            //If already snapped
+            if (Math.Abs(parentLine - targetLine) < 0.001) //Was running into bugs cause
+            {
+                if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold) //Break away from alignment
+                {
+                    mouseOffset += acc;
+                    return false;
+                }
+                acc += delta;
+                return true; //Snap and accumulate
+            }
+            
+            //If we're under the snap distance threshold...
+            else if (Math.Abs(parentLineAfter - targetLine) < distanceThreshold)
+            {
+                //If moving away from the target line, we shouldn't snap
+                if ((parentLine < targetLine && delta < 0) || (parentLine > targetLine && delta > 0))
+                {
+                    //acc += delta;
+                    return false;
+                }
+                //Snapping for the first time.
+                acc = 0;
+                return true;
+            }
+            return false;
+        }
+        private void ShowPreviewLine(Rect boundsBeforeAlignment, double[] otherDocumentAxes, AlignmentLine parentAxis,  AlignmentLine otherAxis, Point alignmentTranslation)
+        {
+            double[] axesAfterAlignment = AlignmentLinesFromRect(new Rect(boundsBeforeAlignment.X + alignmentTranslation.X, boundsBeforeAlignment.Y + alignmentTranslation.Y, boundsBeforeAlignment.Width, boundsBeforeAlignment.Height));
             ShowPreviewLine(axesAfterAlignment, otherDocumentAxes, parentAxis, otherAxis, alignmentTranslation);
         }
-        private void ShowPreviewLine(double[] parentDocumentAxes, double[] otherDocumentAxes, AlignmentAxis parentAxis, AlignmentAxis otherAxis, Point point)
+        private void ShowPreviewLine(double[] parentDocumentAxes, double[] otherDocumentAxes, AlignmentLine parentAxis, AlignmentLine otherAxis, Point point)
         {
             Point p1, p2;
             Line line = null;
-            //If X axis
+            //If X line
             if((int) parentAxis < 3)
             {
                 p1.X = otherDocumentAxes[(int)otherAxis];
                 p2.X = otherDocumentAxes[(int)otherAxis];
-                p1.Y = Math.Min(parentDocumentAxes[(int)AlignmentAxis.YMin], otherDocumentAxes[(int)AlignmentAxis.YMin]);
-                p2.Y = Math.Max(parentDocumentAxes[(int)AlignmentAxis.YMax], otherDocumentAxes[(int)AlignmentAxis.YMax]);
+                p1.Y = Math.Min(parentDocumentAxes[(int)AlignmentLine.YMin], otherDocumentAxes[(int)AlignmentLine.YMin]);
+                p2.Y = Math.Max(parentDocumentAxes[(int)AlignmentLine.YMax], otherDocumentAxes[(int)AlignmentLine.YMax]);
                 line = MainPage.Instance.VerticalAlignmentLine;
 
             }
@@ -371,8 +381,8 @@ namespace Dash
             {
                 p1.Y = otherDocumentAxes[(int)otherAxis];
                 p2.Y = otherDocumentAxes[(int)otherAxis];
-                p1.X = Math.Min(parentDocumentAxes[(int)AlignmentAxis.XMin], otherDocumentAxes[(int)AlignmentAxis.XMin]);
-                p2.X = Math.Max(parentDocumentAxes[(int)AlignmentAxis.XMax], otherDocumentAxes[(int)AlignmentAxis.XMax]);
+                p1.X = Math.Min(parentDocumentAxes[(int)AlignmentLine.XMin], otherDocumentAxes[(int)AlignmentLine.XMin]);
+                p2.X = Math.Max(parentDocumentAxes[(int)AlignmentLine.XMax], otherDocumentAxes[(int)AlignmentLine.XMax]);
                 line = MainPage.Instance.HorizontalAlignmentLine;
 
             }
@@ -387,7 +397,6 @@ namespace Dash
             line.Y2 = screenPoint2.Y;
 
         }
-
 
         private (Point p1, Point p2) PreviewLine(Rect snappingTo, Side snappingToSide)
         {
@@ -453,227 +462,87 @@ namespace Dash
             return newTopLeftPoint;
         }
 
-
-        private void SnapToCollection(Tuple<DocumentView, Side, double> closest)
+        private void Dock(bool preview)
         {
-            var collection = closest.Item1;
-            var side = closest.Item2;
-
-            var newCollectionBoundingBoxNullable = BoundingBox(ParentDocument.ViewModel, collection.ViewModel);
-            if (!newCollectionBoundingBoxNullable.HasValue)
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control) ==
+                CoreVirtualKeyStates.Down)
+            {
+                MainPage.Instance.UnhighlightDock();
                 return;
-            var newCollectionBoundingBox = newCollectionBoundingBoxNullable.Value;
-
-            //Translate and resize the collection using bounding box
-            collection.ViewModel.Position = new Point(newCollectionBoundingBox.X, newCollectionBoundingBox.Y);
-            collection.ViewModel.Width = newCollectionBoundingBox.Width;
-            collection.ViewModel.Height = newCollectionBoundingBox.Height;
-
-            //Add ParentDocument to collection
-            if (collection.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType))
-            {
-                collection.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(ParentDocument.ViewModel.DocumentController, null);
             }
 
-            _documentsToRemoveAfterManipulation = new List<DocumentController>()
+            DockDirection overlappedDirection = GetDockIntersection();
+
+            if (overlappedDirection != DockDirection.None)
             {
-                ParentDocument.ViewModel.DocumentController
-            };
-
-
-            //Readjust the translates so that they are relative to the bounding box
-            ParentDocument.ViewModel.Position = new Point(ParentDocument.ViewModel.Bounds.X - newCollectionBoundingBox.X, ParentDocument.ViewModel.Bounds.Y - newCollectionBoundingBox.Y);
-
-        }
-        private Tuple<DocumentViewModel, Side, double> GetClosestDocumentView(Rect bounds)
-        {
-            //Get a list of all DocumentViews hittested using the ParentDocument's bounds + some threshold
-            var allDocumentViewsHit = HitTestFromSides(bounds);
-
-            //Return closest DocumentView (using the double that represents the confidence) or null
-            return allDocumentViewsHit.FirstOrDefault(item => item.Item3 == allDocumentViewsHit.Max(i2 => i2.Item3)); //Sadly no better argmax one-liner 
-        }
-
-        private List<Tuple<DocumentViewModel, Side, double>> HitTestFromSides(Rect currentBoundingBox)
-        {
-            var documentViewsAboveThreshold = new List<Tuple<DocumentViewModel, Side, double>>();
-            var containingCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            Debug.Assert(containingCollection != null);
-
-            var listOfSiblings = containingCollection.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
-            Side[] sides = { Side.Top, Side.Bottom, Side.Left, Side.Right };
-            foreach (var side in sides)
-            {
-                var sideRect = CalculateAligningRectangleForSide(side, currentBoundingBox, ALIGNING_RECTANGLE_SENSITIVITY, ALIGNING_RECTANGLE_SENSITIVITY);
-                foreach (var sibling in listOfSiblings)
+                if (preview)
                 {
-                    Rect intersection = sideRect;
-                    intersection.Intersect(InteractiveBounds(sibling)); //Mutates intersection
-
-                    var confidence = CalculateSnappingConfidence(side, sideRect, sibling);
-                    if (!intersection.IsEmpty && confidence >= ALIGNMENT_THRESHOLD)
-                    {
-                        documentViewsAboveThreshold.Add(new Tuple<DocumentViewModel, Side, double>(sibling, side, confidence));
-                    }
+                    MainPage.Instance.HighlightDock(overlappedDirection);
                 }
+                else
+                {
+                    ParentDocument.ViewModel.XPos = ManipulationStartX;
+                    ParentDocument.ViewModel.YPos = ManipulationStartY;
+                    MainPage.Instance.UnhighlightDock();
+                    MainPage.Instance.Dock(ParentDocument, overlappedDirection);
+                }   
             }
-            return documentViewsAboveThreshold;
+            else
+            {
+                MainPage.Instance.UnhighlightDock();
+            }
         }
+
+        private DockDirection GetDockIntersection()
+        {
+            var actualX = ParentDocument.ViewModel.ActualSize.X * ParentDocument.ViewModel.Scale.X *
+                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey).Data.X;
+            var actualY = ParentDocument.ViewModel.ActualSize.Y * ParentDocument.ViewModel.Scale.Y *
+                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey).Data.Y;
+
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(actualX, actualY));
+
+            var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Right;
+            }
+
+            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Left;
+            }
+
+            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Top;
+            }
+
+            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
+            if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
+            {
+                return DockDirection.Bottom;
+            }
+
+            return DockDirection.None;
+        }
+
 
         //END OF NEW SNAPPING
 
 
 
-
-
-        private Rect? BoundingBox(DocumentViewModel doc1, DocumentViewModel doc2, double padding = 0)
-        {
-            if (doc1 == null || doc2 == null)
-            {
-                return null;
-            }
-            var minX = Math.Min(doc1.Bounds.X, doc2.Bounds.X);
-            var minY = Math.Min(doc1.Bounds.Y, doc2.Bounds.Y);
-
-            var maxX = Math.Max(doc1.Bounds.Right, doc2.Bounds.Right);
-            var maxY = Math.Max(doc1.Bounds.Bottom, doc2.Bounds.Bottom);
-            return new Rect(new Point(minX - padding, minY - padding), new Point(maxX + padding, maxY + padding));
-        }
-
-
-
-        /// <summary>
-        /// Places the TemporaryRectangle in the location where the document view being manipulation would be dragged.
-        /// </summary>
-        /// <param name="currentBoundingBox"></param>
-        /// <param name="closestDocumentView"></param>
-        private void PreviewSnap(Rect currentBoundingBox, Tuple<DocumentView, Side, double> closestDocumentView)
-        {
-            if (closestDocumentView == null) return;
-
-            var docRoot = ParentDocument;
-
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-
-            var documentView = closestDocumentView.Item1;
-            var side = closestDocumentView.Item2;
-
-            var closestBoundsInCollectionSpace = documentView.ViewModel.Bounds;
-            var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
-
-            //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
-            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.xItemsControl.ItemsPanelRoot);
-
-        }
-
-
-        private double CalculateSnappingConfidence(Side side, Rect hitTestRect, DocumentViewModel otherDocumentView)
-        {
-            Rect otherDocumentViewBoundingBox = InteractiveBounds(otherDocumentView); // otherDocumentView.GetBoundingBoxScreenSpace();
-
-            var midX = hitTestRect.X + hitTestRect.Width / 2;
-            var midY = hitTestRect.Y + hitTestRect.Height / 2;
-
-            double distanceToMid = -1;
-
-            //Get normalized x or y distance from the complementary edge of the other DocumentView and the midpoint of the hitTestRect
-            switch (side)
-            {
-                case Side.Top:
-                    distanceToMid = Math.Abs(midY - (otherDocumentViewBoundingBox.Y + otherDocumentViewBoundingBox.Height));
-                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Height);
-                    return distanceToMid * GetSharedRectWidthProportion(hitTestRect, otherDocumentViewBoundingBox);
-                case Side.Bottom:
-                    distanceToMid = Math.Abs(otherDocumentViewBoundingBox.Y - midY);
-                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Height);
-                    return distanceToMid * GetSharedRectWidthProportion(hitTestRect, otherDocumentViewBoundingBox);
-                case Side.Left:
-                    distanceToMid = Math.Abs(midX - (otherDocumentViewBoundingBox.X + otherDocumentViewBoundingBox.Width));
-                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Width);
-                    return distanceToMid * GetSharedRectHeightProportion(hitTestRect, otherDocumentViewBoundingBox);
-                case Side.Right:
-                    distanceToMid = Math.Abs(otherDocumentViewBoundingBox.X - midX);
-                    distanceToMid = 1.0f - Math.Min(1.0, distanceToMid / hitTestRect.Width);
-                    return distanceToMid * GetSharedRectHeightProportion(hitTestRect, otherDocumentViewBoundingBox);
-            }
-            return distanceToMid;
-        }
-
-
-        private Rect CalculateAligningRectangleForSide(Side side, Point topLeftPoint, Point bottomRightPoint, double w, double h)
-        {
-            Point newTopLeft, newBottomRight;
-
-            switch (side)
-            {
-                case Side.Top:
-                    newTopLeft = new Point(topLeftPoint.X, topLeftPoint.Y - h);
-                    newBottomRight = new Point(bottomRightPoint.X, topLeftPoint.Y);
-                    break;
-                case Side.Bottom:
-                    newTopLeft = new Point(topLeftPoint.X, bottomRightPoint.Y);
-                    newBottomRight = new Point(bottomRightPoint.X, bottomRightPoint.Y + h);
-                    break;
-                case Side.Left:
-                    newTopLeft = new Point(topLeftPoint.X - w, topLeftPoint.Y);
-                    newBottomRight = new Point(topLeftPoint.X, bottomRightPoint.Y);
-                    break;
-                case Side.Right:
-                    newTopLeft = new Point(bottomRightPoint.X, topLeftPoint.Y);
-                    newBottomRight = new Point(bottomRightPoint.X + w, bottomRightPoint.Y);
-                    break;
-            }
-            return new Rect(newTopLeft, newBottomRight);
-        }
-
-        private Rect CalculateAligningRectangleForSide(Side side, Rect boundingBox, double w, double h)
-        {
-            Point topLeftPoint = new Point(boundingBox.X, boundingBox.Y);
-            Point bottomRightPoint = new Point(boundingBox.X + boundingBox.Width, boundingBox.Y + boundingBox.Height);
-            return CalculateAligningRectangleForSide(side, topLeftPoint, bottomRightPoint, w, h);
-        }
-
-        private double GetSharedRectWidthProportion(Rect source, Rect target)
-        {
-            var targetMin = target.X;
-            var targetMax = target.X + target.Width;
-
-            var sourceStart = Math.Max(targetMin, source.X);
-            var sourceEnd = Math.Min(targetMax, source.X + source.Width);
-            return (sourceEnd - sourceStart) / source.Width;
-        }
-
-        private double GetSharedRectHeightProportion(Rect source, Rect target)
-        {
-            var targetMin = target.Y;
-            var targetMax = target.Y + target.Height;
-
-            var sourceStart = Math.Max(targetMin, source.Y);
-            var sourceEnd = Math.Min(targetMax, source.Y + source.Height);
-
-            return (sourceEnd - sourceStart) / source.Height;
-        }
-        /*
-        /// <summary>
-        /// Returns the bounding box in screen space of a FrameworkElement.
-        /// 
-        /// TODO: move this to a more logical place, such as a Util class or an extension class
-        /// </summary>
-        /// <returns></returns>
-        private Rect GetBoundingBox(FrameworkElement element)
-        {
-            Point topLeftObjectPoint = new Point(0, 0);
-            Point bottomRightObjectPoint = new Point(element.ActualWidth, element.ActualHeight);
-
-            var topLeftPoint = Util.PointTransformFromVisual(topLeftObjectPoint, element);
-            var bottomRightPoint = Util.PointTransformFromVisual(bottomRightObjectPoint, element);
-
-            return new Rect(topLeftPoint, bottomRightPoint);
-        }
-        */
-
         #endregion
-
+            
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
@@ -705,6 +574,9 @@ namespace Dash
                 return;
             }
 
+            ManipulationStartX = ParentDocument.ViewModel.XPos;
+            ManipulationStartY = ParentDocument.ViewModel.YPos;
+
             OnManipulatorStarted?.Invoke();
 
             if (e != null)
@@ -731,6 +603,8 @@ namespace Dash
 
                 TranslateAndScale(e.Position, deltaAfterAlignment, e.Delta.Scale);
                 //DetectShake(sender, e);
+                
+                //_translateLastManipulationDelta = delta;
 
                 e.Handled = true;
             }
@@ -749,6 +623,15 @@ namespace Dash
             {
                 OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(translate, new Point(scaleFactor, scaleFactor), position));
             }
+
+            var nestedCollection = ParentDocument.GetCollectionToMoveTo(GetOverlappedViews());
+            if ((nestedCollection == null && _previouslyHighlightedCollectionView != null) || nestedCollection != null && !nestedCollection.Equals(_previouslyHighlightedCollectionView))
+            {
+                _previouslyHighlightedCollectionView?.Unhighlight();
+                nestedCollection?.Highlight();
+                _previouslyHighlightedCollectionView = nestedCollection;
+            }
+            Dock(true);
         }
 
         public void ElementOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -757,34 +640,26 @@ namespace Dash
             {
                 MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
-                var docRoot = ParentDocument;
-                
-                var pos = docRoot.RootPointerPos();
-                var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
-                
-                docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(
-                    () =>
-                    {
-                        if (_documentsToRemoveAfterManipulation.Any())
-                        {
-                            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-                            currentCollection?.ViewModel.RemoveDocuments(_documentsToRemoveAfterManipulation);
-                            _documentsToRemoveAfterManipulation.Clear();
-                        }
-
-                        docRoot.MoveToContainingCollection(overlappedViews);
-                    }));
+                _previouslyHighlightedCollectionView?.Unhighlight();
 
                 OnManipulatorCompleted?.Invoke();
+                Dock(false);
 
+                _accumulatedTranslateAfterSnappingX = _accumulatedTranslateAfterSnappingY = 0;
+                //_translateLastManipulationDelta = new Point();
                 if (e != null)
                 {
                     e.Handled = true;
                 }
             }
         }
-        
+
+        private List<DocumentView> GetOverlappedViews()
+        {
+            var pos = ParentDocument.RootPointerPos();
+            return VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
+        }
+
         public void Dispose()
         {
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;

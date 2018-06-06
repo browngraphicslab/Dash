@@ -482,15 +482,15 @@ namespace Dash
             slope = sCo / ssX;
         }
 
-        public static DocumentController AdornmentWithPosition(BackgroundBox.AdornmentShape shape, Point pos, double width=200, double height=200)
+        public static DocumentController AdornmentWithPosition(BackgroundShape.AdornmentShape shape, Point pos, double width=200, double height=200)
         {
-            return new BackgroundBox(shape, pos.X, pos.Y, width, height).Document;
+            return new BackgroundNote(shape, pos,new Size(width, height)).Document;
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs
         public static DocumentController AdornmentDoc()
         {
-            return AdornmentWithPosition(BackgroundBox.AdornmentShape.Elliptical, new Point(0, 0));
+            return AdornmentWithPosition(BackgroundShape.AdornmentShape.Elliptical, new Point(0, 0));
         }
 
         // TODO remove this method or match it up with the methods in Actions.cs

@@ -19,11 +19,14 @@ namespace Dash
         public static KeyController HeightFieldKey = new KeyController(DashConstants.KeyStore.HeightFieldKey);
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
+        public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
         public static KeyController AdornmentShapeKey = new KeyController(DashConstants.KeyStore.AdornmentShapeKey);
         public static KeyController PositionFieldKey = new KeyController(DashConstants.KeyStore.PositionFieldKey);
+        public static KeyController LinkFromKey = new KeyController(DashConstants.KeyStore.LinkFromFieldKey);
+        public static KeyController LinkToKey = new KeyController(DashConstants.KeyStore.LinkToFieldKey);
         public static KeyController PdfVOffsetFieldKey = new KeyController(new KeyModel("8990098B-83D2-4817-A275-82D8282ECD79", "_PdfVOffset"));
         public static KeyController ScaleAmountFieldKey = new KeyController(DashConstants.KeyStore.ScaleAmountFieldKey);
         public static KeyController IconTypeFieldKey = new KeyController(DashConstants.KeyStore.IconTypeFieldKey);
@@ -54,7 +57,7 @@ namespace Dash
         }
 
 
-        public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "_CollectionFitToParent");
+        public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "CollectionFitToParent");
 
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "_Horizontal Alignment");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "_Vertical Alignment");

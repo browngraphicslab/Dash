@@ -267,10 +267,10 @@ namespace Dash
                 [KeyStore.VerticalAlignmentKey] = new TextController(VerticalAlignment.Stretch.ToString()),
                 [KeyStore.ActualSizeKey] = new PointController(double.NaN, double.NaN),
                 
-        };
-
+            };
             if (data != null)
                 fields.Add(KeyStore.DataKey, data);
+
             return fields;
         }
 
