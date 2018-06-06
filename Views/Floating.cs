@@ -315,7 +315,7 @@
 			TranslateTransform moveTransform = new TranslateTransform();
 			moveTransform.X = 0;
 			moveTransform.Y = 0;
-			_border.RenderTransform = moveTransform;
+			this.RenderTransform = moveTransform;
 
 			// Create a duration of .5 seconds.
 			Duration duration = new Duration(TimeSpan.FromSeconds(.5));
@@ -352,12 +352,13 @@
 
 				//var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
 				//this.SetControlPosition(Canvas.GetLeft(_border), Window.Current.Bounds.Height - topLeft.Y);
+				
+				//_expanding = false;
+				moveTransform.X = moveTransform.X - xDist;
+				moveTransform.Y = moveTransform.Y - yDist + 15;
+				Canvas.SetTop(_border, yPos -15);
+				
 				/*
-				_expanding = false;
-				moveTransform.X = -xDist;
-				moveTransform.Y = -yDist;
-				FrameworkElement el = GetClosestParentWithSize(this);
-
 				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
 
 				double elSize = _border.ActualHeight;
