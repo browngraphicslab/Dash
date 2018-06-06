@@ -65,13 +65,15 @@ namespace Dash
                     MakeInkCanvas();
                 }
                 UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
-                ViewModel?.Loaded(true);
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             };
             Unloaded += (sender, e) =>
             {
-                if (ViewModel != null) ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-                _lastViewModel?.Loaded(false);
+                if (_lastViewModel != null)
+                {
+                    _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+                }
+                
                 _lastViewModel = null;
             };
             xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);

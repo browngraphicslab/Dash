@@ -325,19 +325,20 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-                element.Unloaded += OnElementOnUnloaded;
+               // element.Unloaded += OnElementOnUnloaded;
             }
             else
             {
-                element.Loaded += OnElementOnLoaded;
+               // element.Loaded += OnElementOnLoaded;
             }
 
+            element.Loaded += OnElementOnLoaded;
+            element.Unloaded += OnElementOnUnloaded;
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
                 binding.Remove(handler);
                 element.UnregisterPropertyChangedCallback(property, token);
                 token = -1;
-                element.Loaded += OnElementOnLoaded;
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
@@ -345,7 +346,6 @@ namespace Dash
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-                element.Unloaded += OnElementOnUnloaded;
             }
 
             void RemoveBinding()

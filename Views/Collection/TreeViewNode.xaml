@@ -38,7 +38,7 @@
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
                     CanDrag="True" DragStarting="XTextBlock_OnDragStarting"></TextBlock>
             <Border x:Name="xBorder" Grid.Column="1" Background="White" Visibility="Collapsed">
-                <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyUp="XTextBox_OnKeyUp" />
+                <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
              <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Foreground="#FFEEFFFF" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" />
         </Grid>
