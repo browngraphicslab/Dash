@@ -97,9 +97,6 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
-                xMainDocView.ViewModel.DisableDecorations = true;
-
-                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -156,6 +153,9 @@ namespace Dash
                 lastWorkspace.SetHeight(double.NaN);
 
                 MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+                MainDocView.ViewModel.DisableDecorations = true;
+
+                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
 
                 setupMapView(lastWorkspace);
             }

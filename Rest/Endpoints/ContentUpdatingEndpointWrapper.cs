@@ -15,15 +15,15 @@ namespace Dash
             _endpoint = endpoint;
         }
 
-        private void AddModelsToControllers(IEnumerable<EntityBase> models)
+        private async Task AddModelsToControllers(IEnumerable<EntityBase> models)
         {
-            HashSet<EntityBase> entities = new HashSet<EntityBase>();
-            foreach (var entityBase in models)
+            HashSet<FieldModel> entities = new HashSet<FieldModel>();//If not everything is a field model this should be changed
+            foreach (var entityBase in models.Cast<FieldModel>())
             {
                 entities.Add(entityBase);
                 if (entityBase is FieldModel fieldModel)
                 {
-                    entities.UnionWith(TrackDownReferences(fieldModel));
+                    await TrackDownReferences(fieldModel, entities);
                 }
             }
 
@@ -83,7 +83,7 @@ namespace Dash
         {
             async Task func(RestRequestReturnArgs arg)
             {
-                AddModelsToControllers(arg.ReturnedObjects);
+                await AddModelsToControllers(arg.ReturnedObjects);
                 await success?.Invoke(arg);
             }
 
@@ -94,7 +94,7 @@ namespace Dash
         {
             async Task func(RestRequestReturnArgs arg)
             {
-                AddModelsToControllers(arg.ReturnedObjects);
+                await AddModelsToControllers(arg.ReturnedObjects);
                 await success?.Invoke(arg.ReturnedObjects.OfType<V>());
             }
 
@@ -168,70 +168,61 @@ namespace Dash
             return _endpoint.GetBackups();
         }
 
-        protected HashSet<FieldModel> TrackDownReferences(FieldModel field)
+        protected async Task TrackDownReferences(FieldModel field, HashSet<FieldModel> fields)
         {
+            fields.Add(field);
             switch (field)
             {
                 case DocumentModel doc:
-                    return TrackDownReferences(doc);
+                    await TrackDownReferences(doc, fields);
+                    break;
                 case ListModel list:
-                    return TrackDownReferences(list);
+                    await TrackDownReferences(list, fields);
+                    break;
                 case DocumentReferenceModel dref:
-                    return TrackDownReferences(dref);
+                    await TrackDownReferences(dref, fields);
+                    break;
                 case PointerReferenceModel pref:
-                    return TrackDownReferences(pref);
-                default:
-                    return new HashSet<FieldModel> { field };
+                    await TrackDownReferences(pref, fields);
+                    break;
             }
         }
 
-        private HashSet<FieldModel> TrackDownReferences(DocumentModel doc)
+        private async Task AddReferences(HashSet<FieldModel> fields, IEnumerable<string> ids)
         {
-            var fields = new HashSet<FieldModel> {doc};
-
-            foreach (var kvp in doc.Fields)
-            {
-                fields.Add(kvp.Key.CreateObject<KeyModel>());
-                var field = kvp.Value.CreateObject<FieldModel>();
-                fields.Add(field);
-                fields.UnionWith(TrackDownReferences(field));
-            }
-
-            return fields;
+            await _endpoint.GetDocuments(ids, async (args) => {
+                var results = args.ReturnedObjects.Cast<FieldModel>().ToList();//Even if there are other types of Entity bases, they should never be in a document if they aren't field models
+                foreach (var res in results)
+                {
+                    if (fields.Contains(res)) continue;
+                        await TrackDownReferences(res, fields);
+                }
+            },
+            ex => throw ex);
         }
 
-        private HashSet<FieldModel> TrackDownReferences(ListModel list)
+        private async Task TrackDownReferences(DocumentModel doc, HashSet<FieldModel> fields)
         {
-            var fields = new HashSet<FieldModel> {list};
+            var subFields = new List<string>();
+            subFields.AddRange(doc.Fields.Keys);
+            subFields.AddRange(doc.Fields.Values);
 
-            foreach (var f in list.Data)
-            {
-                var field = f.CreateObject<FieldModel>();
-                fields.Add(field);
-                fields.UnionWith(TrackDownReferences(field));
-            }
-
-            return fields;
+            await AddReferences(fields, subFields);
         }
 
-        private HashSet<FieldModel> TrackDownReferences(PointerReferenceModel pref)
+        private async Task TrackDownReferences(ListModel list, HashSet<FieldModel> fields)
         {
-            var fields = new HashSet<FieldModel> {pref};
-
-            fields.Add(pref.KeyId.CreateObject<KeyModel>());
-            fields.UnionWith(TrackDownReferences(pref.ReferenceFieldModelId.CreateObject<FieldModel>()));
-
-            return fields;
+            await AddReferences(fields, list.Data);
         }
 
-        private HashSet<FieldModel> TrackDownReferences(DocumentReferenceModel dref)
+        private async Task TrackDownReferences(PointerReferenceModel pref, HashSet<FieldModel> fields)
         {
-            var fields = new HashSet<FieldModel> {dref};
+            await AddReferences(fields, new [] {pref.KeyId, pref.ReferenceFieldModelId});
+        }
 
-            fields.Add(dref.KeyId.CreateObject<KeyModel>());
-            fields.UnionWith(TrackDownReferences(dref.DocumentId.CreateObject<FieldModel>()));
-
-            return fields;
+        private async Task TrackDownReferences(DocumentReferenceModel dref, HashSet<FieldModel> fields)
+        {
+            await AddReferences(fields, new[] {dref.KeyId, dref.DocumentId});
         }
     }
 }

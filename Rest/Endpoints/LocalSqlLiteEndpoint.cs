@@ -154,7 +154,33 @@ namespace Dash
         public async Task GetDocuments(IEnumerable<string> ids, Func<RestRequestReturnArgs, Task> success,
             Action<Exception> error)
         {
-            throw new NotImplementedException();
+            var watch = Stopwatch.StartNew();
+
+            List<FieldModel> fieldModels;
+
+            var getDocCommand = new SqliteCommand
+            {
+                CommandText = @"SELECT field from Fields WHERE `id` IN @ids;",
+                Connection = _db
+            };
+            getDocCommand.Parameters.AddWithValue("@id", id);
+
+            try
+            {
+                var reader = getDocCommand.ExecuteReader();
+                fieldModels = GetFieldModels(reader);
+            }
+            catch (SqliteException e)
+            {
+                error?.Invoke(e);
+                return;
+            }
+
+
+            watch.Stop();
+            Debug.WriteLine($"GetDocuments: {watch.ElapsedMilliseconds}");
+
+            success?.Invoke(new RestRequestReturnArgs(fieldModels));
         }
 
         public async Task GetDocuments<V>(IEnumerable<string> ids, Func<IEnumerable<V>, Task> success,
