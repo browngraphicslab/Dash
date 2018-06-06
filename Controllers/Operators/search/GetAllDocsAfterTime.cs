@@ -44,28 +44,43 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
             var toReturn = new ListController<DocumentController>();
 
-            if (!string.IsNullOrEmpty(time))
+            var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
+            
+            try
             {
-                var tree = DocumentTree.MainPageTree;
-               var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
+                DateTime givenTime = DateTime.Parse(time);
 
-                Debug.Assert(allResults != null);
+                if (!string.IsNullOrEmpty(time))
+                {
+                    var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
 
-                var data = allResults.Data;
+                    Debug.Assert(allResults != null);
 
-                //field _searchResulthelptask
+                    DocumentController data = allResults.Data[0].DereferenceToRoot<DocumentController>(null);
 
-                /*
-                var stringContainResults = allResults.TypedData
-                    .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data)
-                        .DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound)).ToArray(); */
+                    var docTimeS = data.GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
+                    DateTime docTime = DateTime.Parse(docTimeS);
 
-                //TODO: get outputs
-                toReturn = allResults;
 
+
+                    //field _searchResulthelptask
+
+                    /*
+                    var stringContainResults = allResults.TypedData
+                        .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data)
+                            .DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound)).ToArray(); */
+
+                    //TODO: get outputs
+                    toReturn = allResults;
+
+                }
+            }
+            catch (Exception e)
+            {
+                //invalid time input
+               Debug.WriteLine("Invalid time input");
             }
             
             outputs[ResultsKey] = toReturn;
