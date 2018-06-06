@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Text.RegularExpressions;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -19,6 +20,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
+using Syncfusion.DocIO;
+using Syncfusion.DocIO.DLS;
+using Color = Windows.UI.Color;
+using Size = Windows.Foundation.Size;
+
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
@@ -29,22 +35,22 @@ namespace Dash
         bool           _isLoaded = false;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-
+        
+        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        {
+            OnPropertyChanged(nameof(TransformGroup));
+        }
+        void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (!MainPage.Instance.IsShiftPressed())
+                FitContents();   // pan/zoom collection so all of its contents are visible
+        }
+        
         public void Loaded(bool isLoaded)
         {
-            void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-            {
-                OnPropertyChanged(nameof(TransformGroup));
-            }
-            void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-            {
-                if (!MainPage.Instance.IsShiftPressed())
-                    FitContents();   // pan/zoom collection so all of its contents are visible
-            }
             _isLoaded = isLoaded;
             if (isLoaded)
             {
-                ContainerDocument.RemoveFieldUpdatedListener(CollectionKey,        collectionFieldChanged); // remove in case it was already added through SetCollectionRef
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
@@ -55,12 +61,12 @@ namespace Dash
                 ActualSizeFieldChanged(null, null, null);
                 _lastDoc = ContainerDocument;
             }
-            else
+            else 
             {
                 _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey,           collectionFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+                _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
                 _lastDoc = null;
             }
         }
@@ -108,13 +114,24 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
-            _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+            Loaded(false);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+            //_lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             DocumentViewModels.Clear();
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
             addViewModels(CollectionController?.TypedData);
-            ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+            if (_isLoaded)
+            {
+                Loaded(true);
+                //ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
+                //ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
+            }
             _lastDoc = ContainerDocument;
         }
 
@@ -633,71 +650,92 @@ namespace Dash
                       }
                     </style>"
                 );
+                html = html.Substring(html.IndexOf("<html>", StringComparison.Ordinal));
+                html = new Regex("< *br (?<tags>.*?)>").Replace(html, "<br ${tags} />");
+                html = new Regex("< *img (?<tags>.*?)>").Replace(html, "<img ${tags} />");
 
-                var splits = new Regex("<").Split(html);
-                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-                var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
-                if (string.IsNullOrEmpty(text) && imgs.Count == 1)
-                {
-                    var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
-                    var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                    var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
-                    AddDocument(imgNote.Document);
-                    return;
-                }
-                var strings = text.Split(new char[] { '\r' });
-                var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-                foreach (var str in html.Split(new char[] { '\r' }))
-                {
-                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
-                    if (matches.Count != 0)
-                    {
-                        htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
-                        break;
-                    }
-                }
+                WordDocument d = new WordDocument();
+                d.EnsureMinimal();
+                d.LastParagraph.AppendHTML(html);
+                MemoryStream mem = new MemoryStream();
+                d.Save(mem, FormatType.Rtf);
+                mem.Position = 0;
+                byte[] arr = new byte[mem.Length];
+                arr = mem.ToArray();
+                string rtf = Encoding.Default.GetString(arr);
+                var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
+                //var matches = new Regex(".*:.*").Matches(rtf);
+                //foreach (var match in matches)
+                //{
+                //    var pair = new Regex(":").Split(match.ToString());
+                //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
+                //}
+                AddDocument(t.Document);
 
-                if (imgs.Count() == 0)
-                {
-                    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
-                    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
-                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
-                    if (title == "")
-                        foreach (var match in matches)
-                        {
-                            var pair = new Regex(":").Split(match.ToString());
-                            htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
-                        }
-                    else
-                        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
-                }
-                else
-                {
-                    var related = new List<DocumentController>();
-                    foreach (var img in imgs)
-                    {
-                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                        var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                        related.Add(i.Document);
-                    }
-                    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
-                    //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
-                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
-                    foreach (var str in strings)
-                    {
-                        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
-                        if (matches.Count != 0)
-                        {
-                            foreach (var match in matches)
-                            {
-                                var pair = new Regex(":").Split(match.ToString());
-                                htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
-                            }
-                        }
-                    }
-                }
-                AddDocument(htmlNote);
+                //var splits = new Regex("<").Split(html);
+                //var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
+                //var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                //if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+                //{
+                //    var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
+                //    var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                //    var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
+                //    AddDocument(imgNote.Document);
+                //    return;
+                //}
+                //var strings = text.Split(new char[] { '\r' });
+                //var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
+                //foreach (var str in html.Split(new char[] { '\r' }))
+                //{
+                //    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                //    if (matches.Count != 0)
+                //    {
+                //        htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                //        break;
+                //    }
+                //}
+
+                //if (imgs.Count() == 0)
+                //{
+                //    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
+                //    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                //    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                //    if (title == "")
+                //        foreach (var match in matches)
+                //        {
+                //            var pair = new Regex(":").Split(match.ToString());
+                //            htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                //        }
+                //    else
+                //        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
+                //}
+                //else
+                //{
+                //    var related = new List<DocumentController>();
+                //    foreach (var img in imgs)
+                //    {
+                //        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                //        var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                //        var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                //        related.Add(i.Document);
+                //    }
+                //    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
+                //    //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
+                //    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                //    foreach (var str in strings)
+                //    {
+                //        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                //        if (matches.Count != 0)
+                //        {
+                //            foreach (var match in matches)
+                //            {
+                //                var pair = new Regex(":").Split(match.ToString());
+                //                htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                //            }
+                //        }
+                //    }
+                //}
+                //AddDocument(htmlNote);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
             {
@@ -979,6 +1017,7 @@ namespace Dash
             (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
+
 
         #endregion
 

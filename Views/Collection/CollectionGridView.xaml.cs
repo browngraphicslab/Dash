@@ -21,7 +21,7 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             AddHandler(PointerPressedEvent, new PointerEventHandler(CollectionGridView_PointerPressed), true);
-            //Unloaded += CollectionGridView_Unloaded;
+       
 
             PointerWheelChanged += CollectionGridView_PointerWheelChanged;
         }
