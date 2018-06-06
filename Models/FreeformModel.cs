@@ -1,6 +1,0 @@
-﻿namespace Dash
-{
-    class FreeformModel
-    {
-    }
-}
