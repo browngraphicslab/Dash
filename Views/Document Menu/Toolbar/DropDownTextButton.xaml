@@ -1,0 +1,23 @@
+﻿<UserControl
+    x:Class="Dash.Views.Document_Menu.Toolbar.DropDownTextButton"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views.Document_Menu.Toolbar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <ComboBox  x:Name="xFontsCombo" 
+                   Height="35" Width="200" 
+                   ItemsSource="{x:Bind fonts}" 
+                   DisplayMemberPath="Source" 
+                   SelectionChanged="Font_Selected" 
+                   Foreground="Black" 
+                   PlaceholderText="Font" 
+                   FontSize="12">
+        </ComboBox>
+    </Grid>
+</UserControl>
