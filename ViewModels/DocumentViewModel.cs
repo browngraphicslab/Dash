@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        int _searchHighlightState = 10;
         FrameworkElement _content = null;
         
         // == CONSTRUCTOR ==
@@ -164,6 +165,13 @@ namespace Dash
                 if (!DisableDecorations) SetProperty(ref _decorationState, value);
                 else SetProperty(ref _decorationState, false);
             }
+        }
+
+
+        public int SearchHighlightState
+        {
+            get => _searchHighlightState;
+            set { _searchHighlightState = value; }
         }
 
         public bool DisableDecorations { get; set; } = false;

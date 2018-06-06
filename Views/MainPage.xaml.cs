@@ -332,6 +332,8 @@ namespace Dash
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
+                    dm.SearchHighlightState = 8;
+
                     if (flag == null)
                         dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
                     else if (flag == true)

@@ -2,10 +2,10 @@
     x:Class="Dash.DocumentView"
     x:Name="Root"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:Dash"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     d:DesignWidth="400"
@@ -13,8 +13,7 @@
     AllowDrop="True"
     DragOver="This_DragOver"
     DragLeave="This_DragLeave"
-    Drop="This_Drop"
-    xmlns:localConverters="using:Dash.Converters">
+    Drop="This_Drop">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="Root"></FadeOutThemeAnimation>
@@ -61,11 +60,14 @@
                                Height="32"
                     />
         </Border>
-        
-        <!-- border to allow document to be highlighted when selected-->
-        <Border Name="xTargetBorder"> 
+
+        <!-- border to highlight search results-->
+        <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" >
+            <!-- border to allow document to be highlighted when selected-->
+            <Border Name="xTargetBorder">
                 <!-- Container for document fields view -->
-            <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
+                <ContentPresenter x:Name="xContentPresenter" x:FieldModifier="public" Content="{Binding Content}" />
+            </Border>
         </Border>
 
         <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">

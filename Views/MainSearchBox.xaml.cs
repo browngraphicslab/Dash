@@ -93,6 +93,9 @@ namespace Dash
             var tree = DocumentTree.MainPageTree;
             var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
 
+            //highlight doc results
+            HighlightSearchResults(docs.ToList<DocumentController>());
+            
             foreach (var doc in docs)
             {
                 var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
@@ -106,6 +109,17 @@ namespace Dash
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
+        }
+
+        public static void HighlightSearchResults(List<DocumentController> docs)
+        {
+            var id = docs[0].GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+            DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
+            var me = resultDoc;
+
+            //make border thickness of DocHighlight for each doc 8
+
+            //when search is unfocused, change thichkness back to 0
         }
 
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
