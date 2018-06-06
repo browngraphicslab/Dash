@@ -113,13 +113,20 @@ namespace Dash
 
         public static void HighlightSearchResults(List<DocumentController> docs)
         {
-            var id = docs[0].GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
-            DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
-            var me = resultDoc;
+            //first unhightlight old results
+            //list of all collections
+            //var collectionDataDocs = ViewModel.CollectionController.TypedData.Select(dc => dc.GetDataDocument());
 
-            //make border thickness of DocHighlight for each doc 8
+            foreach (var doc in docs)
+            {
+                var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
-            //when search is unfocused, change thichkness back to 0
+                //make border thickness of DocHighlight for each doc 8
+                MainPage.Instance.HighlightDoc(resultDoc, false, true);
+
+                //TODO: when search is unfocused, change thichkness back to 0
+            }
         }
 
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
@@ -885,6 +892,8 @@ namespace Dash
 
             e.Handled = true;
         }
+
+    
     }
 }
 

@@ -16,7 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
-        Thickness _searchHighlightState = new Thickness(10);
+        Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
         
         // == CONSTRUCTOR ==
