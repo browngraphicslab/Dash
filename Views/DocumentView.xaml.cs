@@ -753,6 +753,11 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            DocumentView_PointerEntered();
+        }
+
+        public void DocumentView_PointerEntered()
+        {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);

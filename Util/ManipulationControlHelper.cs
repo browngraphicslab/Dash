@@ -58,8 +58,8 @@ namespace Dash
             _numMovements = 0;
             var pointerPosition = _manipulationDocumentTarget.GetFirstAncestorOfType<ContentPresenter>().PointerPos();
             _rightDragStartPosition = _rightDragLastPosition = pointerPosition;
-            _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted(null, null);
-            _manipulationDocumentTarget.DocumentView_PointerEntered(null, null); 
+            _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationStarted();
+            _manipulationDocumentTarget.DocumentView_PointerEntered(); 
             MainPage.Instance.Focus(FocusState.Programmatic);
         }
 
@@ -114,7 +114,7 @@ namespace Dash
                     _eventElement.GetFirstAncestorOfType<DocumentView>()?.ForceRightTapContextMenu();
             }
             else
-                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted(null, null);
+                _manipulationDocumentTarget.ManipulationControls?.ElementOnManipulationCompleted();
             if (e != null)
                 e.Handled = true;
         }
