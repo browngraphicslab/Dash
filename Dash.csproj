@@ -839,8 +839,6 @@
     <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-<<<<<<< HEAD
-=======
     </Page>    
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
@@ -857,7 +855,6 @@
     <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
->>>>>>> b54292b967a34c6d22fa5ae7e6173ba0aab644a8
     </Page>
     <Page Include="Views\DishReplView.xaml">
       <SubType>Designer</SubType>
