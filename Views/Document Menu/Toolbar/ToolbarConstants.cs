@@ -14,6 +14,10 @@ namespace Dash
 
 		//BUTTON DIMENSIONS
 	    public const double ButtonWidth = 70;
+
+		//TOOLBAR DIMENSIONS
+		public const double ToolbarHeight = 50;
+
 	
     }
 }

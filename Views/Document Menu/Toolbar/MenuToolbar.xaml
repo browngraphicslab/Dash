@@ -12,14 +12,17 @@
     d:DesignWidth="800">
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
-    <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
+    <dash:Floating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
         <StackPanel Name="xStackPanel" Orientation="Vertical">
             <StackPanel.RenderTransform>
                 <RotateTransform CenterX="0" CenterY="0" Angle="0">
                 </RotateTransform>
             </StackPanel.RenderTransform>
+
+        
+
             <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" IsSticky="True" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" >
-               
+                
                 <AppBarToggleButton x:Name="xCollapse" Background="Red"  Icon="BackToWindow"  Label="Collapse"  Unchecked="XCollapse_OnUnchecked"  Checked="XCollapse_OnChecked"/>
                 <!--<AppBarSeparator x:Name="xSepOne"/>-->
                 <AppBarToggleButton x:Name="xTouch" Icon="Rename" Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked" />

@@ -82,7 +82,7 @@ namespace Dash
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                Floating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -227,7 +227,13 @@ namespace Dash
             {
                 subtoolbarElement = null;
             }
-            if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Visible;
+			//set proper subtoolbar to visible
+	        if (subtoolbarElement != null)
+	        {
+				xFloating.AdjustPositionForExpansion(ToolbarConstants.ToolbarHeight, 0);
+		        subtoolbarElement.Visibility = Visibility.Visible;
+				//xFloating.Floating_SizeChanged(null, null);
+	        }
 
         }
 
@@ -372,11 +378,13 @@ namespace Dash
             //If not, collapses toolbar and changes its icon
             else
             {
-                state = State.Collapsed;
+				//xFadeAnimation.Begin();
+				state = State.Collapsed;
                 xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
                 xCollapse.Label = "";
                 ToggleVisibility(Visibility.Collapsed);
                 subtoolbarElement = null;
+				
             }
         }
 
