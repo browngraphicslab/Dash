@@ -238,6 +238,7 @@ namespace Dash
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
+                        AdjustComboBoxes();
                         if (xStackPanel.Orientation == Orientation.Vertical) xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                         if (subtoolbarElement is ICommandBarBased toOpen)
@@ -433,7 +434,19 @@ namespace Dash
 
         private void RotateToolbar()
         {
-            Orientation = Orientation == Orientation.Vertical ? Orientation.Horizontal : Orientation.Vertical;
+            Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
+            //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
+            AdjustComboBoxes();
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
+            xPadding.Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void AdjustComboBoxes()
+        {
+            if (subtoolbarElement is ICommandBarBased cmd)
+            {
+                cmd.GetComboBox().Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)

@@ -10,5 +10,6 @@ namespace Dash.Views.Document_Menu.Toolbar
     public interface ICommandBarBased
     {
         void CommandBarOpen(bool status);
+        ComboBox GetComboBox();
     }
 }

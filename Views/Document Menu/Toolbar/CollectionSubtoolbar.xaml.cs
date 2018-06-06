@@ -31,6 +31,11 @@ namespace Dash {
             set { SetValue(OrientationProperty, value); }
         }
 
+        public ComboBox GetComboBox()
+        {
+            return xViewModesDropdown;
+        }
+
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();

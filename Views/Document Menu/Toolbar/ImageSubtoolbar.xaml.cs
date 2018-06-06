@@ -35,6 +35,11 @@ namespace Dash
 	        set { SetValue(OrientationProperty, value); }
 	    }
 
+        public ComboBox GetComboBox()
+        {
+            return xScaleOptionsDropdown;
+        }
+
 	    private DocumentView currentDocView;
 	    private DocumentController currentDocControl;
         public ImageSubtoolbar()
@@ -57,9 +62,9 @@ namespace Dash
 
         private void FormatDropdownMenu()
         {
-            xScaleOpetionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xScaleOpetionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xScaleOpetionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
+            xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
         }
 
         /**
