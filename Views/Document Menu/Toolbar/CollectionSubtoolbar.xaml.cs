@@ -21,10 +21,37 @@ namespace Dash {
 
     public sealed partial class CollectionSubtoolbar : UserControl, ICommandBarBased
     {
+
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+            "Orientation", typeof(Orientation), typeof(CollectionSubtoolbar), new PropertyMetadata(default(Orientation)));
+
+        public Orientation Orientation
+        {
+            get { return (Orientation) GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+
+        public ComboBox GetComboBox()
+        {
+            return xViewModesDropdown;
+        }
+
         public CollectionSubtoolbar()
         {
             this.InitializeComponent();
             FormatDropdownMenu();
+
+            xCollectionCommandbar.Loaded += delegate
+            {
+                var sp = xCollectionCommandbar.GetFirstDescendantOfType<StackPanel>();
+                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath(nameof(Orientation)),
+                    Mode = BindingMode.OneWay
+                });
+                Visibility = Visibility.Collapsed;
+            };
         }
 
         private void FormatDropdownMenu()

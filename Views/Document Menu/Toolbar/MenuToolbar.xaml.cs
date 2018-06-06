@@ -17,6 +17,7 @@ using CsvHelper.Configuration.Attributes;
 using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Runtime.InteropServices;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,6 +28,15 @@ namespace Dash
     /// </summary>
     public sealed partial class MenuToolbar : UserControl
     {
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+            "Orientation", typeof(Orientation), typeof(MenuToolbar), new PropertyMetadata(default(Orientation)));
+
+        public Orientation Orientation
+        {
+            get { return (Orientation)GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+
         // == STATIC ==
         public static MenuToolbar Instance;
 
@@ -45,21 +55,16 @@ namespace Dash
             Collapsed
         }
 
-        public enum Orientation
-        {
-            Vertical,
-            Horizontal
-        }
 
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
         private AppBarButton[] docSpecificButtons;
         private ButtonBase[] allButtons;
+        private RotateTransform[] buttonRotations;
         private AppBarSeparator[] allSeparators;
         private Canvas _parentCanvas;
         private MouseMode mode;
         private State state;
-        private Orientation orientation;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -75,9 +80,10 @@ namespace Dash
             _parentCanvas = canvas;
             mode = MouseMode.TakeNote;
             state = State.Expanded;
-            orientation = Orientation.Vertical;
             checkedButton = xTouch;
             xToolbar.OverflowButtonVisibility = CommandBarOverflowButtonVisibility.Collapsed;
+
+            xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
@@ -86,20 +92,73 @@ namespace Dash
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
-            AppBarButton[] buttons = {xCopy, xDelete};
+            AppBarButton[] buttons =
+            {
+                xCopy,
+                xDelete
+            };
             docSpecificButtons = buttons;
 
             //List of all buttons on main menu toolbar - used for collapsing and rotation
             ButtonBase[] tempButtons =
-                {xCopy, xDelete, xAddGroup, xAddImage, xAddVideo, xGroup, xInk, xTouch}; //ADD NEW BUTTONS HERE!!!
+            {
+                xCopy,
+                xDelete,
+                xAddGroup,
+                xAddImage,
+                xAddVideo,
+                xGroup,
+                xInk,
+                xTouch
+            }; //ADD NEW BUTTONS HERE!!!
             allButtons = tempButtons;
 
             //List of all button separators
-            AppBarSeparator[] tempSeparators = {xSepOne, xSepTwo}; //ADD NEW SEPARATORS HERE!!!
+            AppBarSeparator[] tempSeparators =
+            {
+                xSepOne,
+                xSepTwo
+            }; //ADD NEW SEPARATORS HERE!!!
             allSeparators = tempSeparators;
+
+            //List of all button rotate transforms - used for vertical/horizontal toggling
+            RotateTransform[] tempTransforms =
+            {
+                rotateDelete,
+                rotateCopy,
+                rotateVideo,
+                rotateImage,
+                rotateGroup,
+                rotateGroupToggle,
+                rotateTouchToggle,
+                rotateInkToggle,
+                rotateCollapseToggle
+            }; //ADD NEW ROTATE TRANSFORMS HERE!!!
+            buttonRotations = tempTransforms;
 
             this.SetUpBaseMenu();
             //this.RotateToolbar();
+        }
+
+        private void SetUpOrientationBindings()
+        {
+            var binding = new Binding
+            {
+                Mode = BindingMode.OneWay,
+                Source = this,
+                Path = new PropertyPath(nameof(Orientation))
+            };
+            var inverseBinding = new Binding
+            {
+                Mode = BindingMode.OneWay,
+                Source = this,
+                Path = new PropertyPath(nameof(Orientation)),
+                Converter = new OrientationInverter()
+        };
+
+            var sp = xToolbar.GetFirstDescendantOfType<StackPanel>();
+            sp.SetBinding(StackPanel.OrientationProperty, binding);
+            xStackPanel.SetBinding(StackPanel.OrientationProperty, inverseBinding);
         }
 
         // == METHODS ==
@@ -115,11 +174,6 @@ namespace Dash
         public State GetState()
         {
             return state;
-        }
-
-        public Orientation GetOrientation()
-        {
-            return orientation;
         }
 
         /// <summary>
@@ -187,7 +241,8 @@ namespace Dash
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
-                        xToolbar.IsOpen = false;
+                        AdjustComboBoxes();
+                        if (xStackPanel.Orientation == Orientation.Vertical) xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                         if (subtoolbarElement is ICommandBarBased toOpen)
                         {
@@ -213,6 +268,7 @@ namespace Dash
                 }
                 else
                 {
+                    xToolbar.IsOpen = true;
                     subtoolbarElement = null;
                 }
 
@@ -319,7 +375,6 @@ namespace Dash
                             mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController, null);
-                        MainPage.Instance.AddToAndUpdateSelectedDocuments(new DocumentView());
                     }
                 }
             }
@@ -352,50 +407,14 @@ namespace Dash
                 {
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
-                    var mainPageCollectionView =
-                        MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(
-                        mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                     docController.GetPositionField().Data = where;
-                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel
-                        .AddDocument(docController, null);
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController, null);
                 }
 
                 //add error message for null file?
             }
-        }
-
-        private void XCollapse_OnChecked(object sender, RoutedEventArgs e)
-        {
-            //Toggles vertical/horizontal orientation if shift is pressed
-            if (xCollapse.IsShiftPressed())
-            {
-                xToolbar.IsOpen = true;
-                orientation = (orientation == Orientation.Horizontal) ? Orientation.Vertical : Orientation.Horizontal;
-                Debug.WriteLine("Toggle Orientation");
-            }
-            //If not, collapses toolbar and changes its icon
-            else
-            {
-				//xFadeAnimation.Begin();
-				state = State.Collapsed;
-                xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
-                xCollapse.Label = "";
-                ToggleVisibility(Visibility.Collapsed);
-                subtoolbarElement = null;
-				
-            }
-        }
-
-        private void XCollapse_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            //Expands toolbar and reopens it as long as nothing is selected
-            state = State.Expanded;
-            xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
-            xCollapse.Label = "Collapse";
-            xCollapse.Background = new SolidColorBrush(Colors.Red);
-            ToggleVisibility(Visibility.Visible);
-            xToolbar.IsOpen = subtoolbarElement == null;
         }
 
         private void ToggleVisibility(Visibility status)
@@ -410,9 +429,7 @@ namespace Dash
                 s.Visibility = status;
             }
 
-            xPadding.Visibility = (status == Visibility.Visible)
-                ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed)
-                : status;
+            xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
             if (subtoolbarElement != null)
             {
                 subtoolbarElement.Visibility = status;
@@ -420,10 +437,34 @@ namespace Dash
             }
         }
 
+        private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
+        {
+            public override Orientation ConvertDataToXaml(Orientation data, object parameter = null)
+            {
+                return data == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
+            }
+
+            public override Orientation ConvertXamlToData(Orientation xaml, object parameter = null)
+            {
+                return xaml == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
+            }
+        }
+
         private void RotateToolbar()
         {
-            //xStackPanel.RenderTransform.TryTransform();
-            xStackPanel.Orientation = Windows.UI.Xaml.Controls.Orientation.Vertical;
+            Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
+            //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
+            AdjustComboBoxes();
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
+            xPadding.Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void AdjustComboBoxes()
+        {
+            if (subtoolbarElement is ICommandBarBased cmd)
+            {
+                cmd.GetComboBox().Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -441,6 +482,37 @@ namespace Dash
             {
                 xToolbar.IsOpen = subtoolbarElement == null;
                 if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+            }
+        }
+
+        private void XCollapse_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (state == State.Expanded)
+            {
+                if (xToolbar.IsShiftPressed())
+                {
+                    xToolbar.IsOpen = true;
+                    RotateToolbar();
+                }
+                else
+                {
+                    state = State.Collapsed;
+                    xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
+                    xCollapse.Label = "";
+                    xCollapse.Background = new SolidColorBrush(Colors.Blue);
+                    ToggleVisibility(Visibility.Collapsed);
+                    subtoolbarElement = null;
+                }
+            }
+            else
+            {
+                //Expands toolbar and reopens it as long as nothing is selected
+                state = State.Expanded;
+                xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
+                xCollapse.Label = "Collapse";
+                xCollapse.Background = new SolidColorBrush(Colors.Red);
+                ToggleVisibility(Visibility.Visible);
+                xToolbar.IsOpen = subtoolbarElement == null;
             }
         }
 
@@ -463,5 +535,4 @@ namespace Dash
 
 		}
 	}
-
 }

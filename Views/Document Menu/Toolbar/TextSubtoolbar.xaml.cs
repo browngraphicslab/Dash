@@ -25,15 +25,25 @@ using Windows.UI.Text;
 
 namespace Dash
 {
+    /// <summary>
+    /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
+    /// </summary>
+
     public sealed partial class TextSubtoolbar : UserControl
     {
-	    /// <summary>
-	    /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
-	    /// </summary>
+        public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+            "Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
 
-		private RichEditBox _currBox;
-	    private FormattingMenuView _menuView = null;
-	    private DocumentView _docs;
+        public Orientation Orientation
+        {
+            get { return (Orientation) GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+
+	    private RichEditBox _currBox;
+	    private Color _highlightColor;
+        private FormattingMenuView _menuView = null;
+        private DocumentView _docs;
 
         public TextSubtoolbar()
         {

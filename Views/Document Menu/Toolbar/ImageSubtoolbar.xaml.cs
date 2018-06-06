@@ -26,19 +26,45 @@ namespace Dash
 	 */
 	public sealed partial class ImageSubtoolbar : UserControl, ICommandBarBased
 	{
+	    public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
+	        "Orientation", typeof(Orientation), typeof(ImageSubtoolbar), new PropertyMetadata(default(Orientation)));
+
+	    public Orientation Orientation
+	    {
+	        get { return (Orientation) GetValue(OrientationProperty); }
+	        set { SetValue(OrientationProperty, value); }
+	    }
+
+        public ComboBox GetComboBox()
+        {
+            return xScaleOptionsDropdown;
+        }
+
 	    private DocumentView currentDocView;
 	    private DocumentController currentDocControl;
         public ImageSubtoolbar()
-		{
+        {
 			this.InitializeComponent();
 		    FormatDropdownMenu();
+
+		    xImageCommandbar.Loaded += delegate
+		    {
+		        var sp = xImageCommandbar.GetFirstDescendantOfType<StackPanel>();
+		        sp.SetBinding(StackPanel.OrientationProperty, new Binding
+		        {
+		            Source = this,
+		            Path = new PropertyPath(nameof(Orientation)),
+		            Mode = BindingMode.OneWay
+		        });
+		        Visibility = Visibility.Collapsed;
+		    };
 		}
 
         private void FormatDropdownMenu()
         {
-            xScaleOpetionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
-            xScaleOpetionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xScaleOpetionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
+            xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
+            xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
+            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
         }
 
         /**
