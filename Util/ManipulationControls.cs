@@ -460,6 +460,13 @@ namespace Dash
 
         private void Dock(bool preview)
         {
+            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control) ==
+                CoreVirtualKeyStates.Down)
+            {
+                MainPage.Instance.UnhighlightDock();
+                return;
+            }
+
             DockDirection overlappedDirection = GetDockIntersection();
 
             if (overlappedDirection != DockDirection.None)
@@ -484,10 +491,15 @@ namespace Dash
 
         private DockDirection GetDockIntersection()
         {
-            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(ParentDocument.ActualWidth, ParentDocument.ActualHeight));
+            var actualX = ParentDocument.ViewModel.ActualSize.X * ParentDocument.ViewModel.Scale.X *
+                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey).Data.X;
+            var actualY = ParentDocument.ViewModel.ActualSize.Y * ParentDocument.ViewModel.Scale.Y *
+                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey).Data.Y;
 
-            Debug.WriteLine(ParentDocument.ActualWidth);
+            var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
+                new Size(actualX, actualY));
 
             var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
