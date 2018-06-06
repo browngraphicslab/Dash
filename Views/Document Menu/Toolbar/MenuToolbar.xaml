@@ -22,7 +22,7 @@
                
                 <AppBarToggleButton x:Name="xCollapse" Background="Red"  Icon="BackToWindow"  Label="Collapse"  Unchecked="XCollapse_OnUnchecked"  Checked="XCollapse_OnChecked"/>
                 <!--<AppBarSeparator x:Name="xSepOne"/>-->
-                <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked" />
+                <AppBarToggleButton x:Name="xTouch" Icon="Rename" Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked" />
                 <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
                 <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"/>
 
