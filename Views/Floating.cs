@@ -6,13 +6,11 @@
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
-	using Windows.UI.Xaml.Media;
-	using Windows.UI.Xaml.Media.Animation;
 
-	/// <summary>
-	/// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
-	/// </summary>
-	[TemplatePart(Name = BorderPartName, Type = typeof(Border))]
+    /// <summary>
+    /// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
+    /// </summary>
+    [TemplatePart(Name = BorderPartName, Type = typeof(Border))]
     public class Floating : ContentControl
     {
         private const string BorderPartName = "DraggingBorder";
@@ -26,13 +24,6 @@
         public static readonly DependencyProperty ShouldManiuplateChildProperty =
             DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(Floating), new PropertyMetadata(false));
         private Border _border;
-		private bool _expanding;
-
-		private double CurrCanvasTop
-		{
-			get { return (double)_border.GetValue(Canvas.TopProperty); }
-			set { _border.SetValue(Canvas.TopProperty, value); }
-		}
 
         /// <summary>
         /// Prevents the Floating control from manipulating it's content
@@ -49,7 +40,6 @@
         {
             DefaultStyleKey = typeof(Floating);
             ShouldManipulateChild = true;
-			_expanding = false;
         }
 
         /// <summary>
@@ -124,7 +114,7 @@
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void Floating_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void Floating_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             var left = Canvas.GetLeft(_border);
             var top = Canvas.GetTop(_border);
@@ -218,22 +208,10 @@
                 position = AdjustedPosition(rect, parentRect);
             }
 
-			if (_expanding && (Math.Abs(Canvas.GetTop(_border) - position.Y) > 1 || Math.Abs(Canvas.GetLeft(_border) - position.X) > 1))
-			{
-				this.MoveAnimation(-(Canvas.GetLeft(_border) - position.X), -(Canvas.GetTop(_border) - position.Y), position.Y);
-				// Set new position
-				//Canvas.SetLeft(_border, position.X);
-				//Canvas.SetTop(_border, position.Y);
-			}
-			else
-			{
-				// Set new position
-				Canvas.SetLeft(_border, position.X);
-				Canvas.SetTop(_border, position.Y);
-			}
-			
-
-		}
+            // Set new position
+            Canvas.SetLeft(_border, position.X);
+            Canvas.SetTop(_border, position.Y);
+        }
 
         /// <summary>
         /// Returns the adjusted the topleft position of a rectangle so that is stays within a parent rectangle.
@@ -280,134 +258,5 @@
 
             return element;
         }
-
-	    /// <summary>
-	    /// Adjusts position of floating object to account for an expansion
-	    /// </summary>
-		public void AdjustPositionForExpansion(double height, double width)
-	    {
-		    if (IsBoundByScreen)
-		    {
-				_expanding = true;
-				FrameworkElement el = GetClosestParentWithSize(this);
-
-				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
-
-				double elSize = _border.ActualHeight;
-				double topY = Canvas.GetTop(_border);
-
-				double newLowY =  topY + elSize + height;
-
-				//if expansion would cause the object to extend past the bottom of the screen, adjust y position by the difference
-				if (newLowY >= Window.Current.Bounds.Height)
-				{
-					this.ManipulateControlPosition(0, Window.Current.Bounds.Height - newLowY);
-				}
-				_expanding = false;
-			}
-	   
-	    }
-
-		public void MoveAnimation(double xDist, double yDist, double yPos)
-		{
-			System.Diagnostics.Debug.WriteLine("CANVAS GET TOP Before" + Canvas.GetLeft(_border));
-			// Create the transform
-			TranslateTransform moveTransform = new TranslateTransform();
-			moveTransform.X = 0;
-			moveTransform.Y = 0;
-			_border.RenderTransform = moveTransform;
-
-			// Create a duration of .5 seconds.
-			Duration duration = new Duration(TimeSpan.FromSeconds(.5));
-			// Create two DoubleAnimations and set their properties.
-			DoubleAnimation myDoubleAnimationX = new DoubleAnimation();
-			DoubleAnimation myDoubleAnimationY = new DoubleAnimation();
-			myDoubleAnimationX.Duration = duration;
-			myDoubleAnimationY.Duration = duration;
-			Storyboard justintimeStoryboard = new Storyboard();
-			justintimeStoryboard.Duration = duration;
-			justintimeStoryboard.Children.Add(myDoubleAnimationX);
-			justintimeStoryboard.Children.Add(myDoubleAnimationY);
-			Storyboard.SetTarget(myDoubleAnimationX, moveTransform);
-			Storyboard.SetTarget(myDoubleAnimationY, moveTransform);
-
-			// Set the X and Y properties of the Transform to be the target properties
-			// of the two respective DoubleAnimations.
-			Storyboard.SetTargetProperty(myDoubleAnimationX, "X");
-			Storyboard.SetTargetProperty(myDoubleAnimationY, "Y");
-			myDoubleAnimationX.To = xDist;
-			myDoubleAnimationY.To = yDist - 15;
-
-			// Make the Storyboard a resource.
-			//LayoutRoot.Resources.Add("justintimeStoryboard", justintimeStoryboard);
-			// Begin the animation.
-			justintimeStoryboard.Begin();
-
-			//SOMEHOW SET CANVAS BACK TO ORIGINAL POSITIONING
-			
-			
-			justintimeStoryboard.Completed += (s, e) =>
-			{
-				//FrameworkElement el = GetClosestParentWithSize(this);
-
-				//var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
-				//this.SetControlPosition(Canvas.GetLeft(_border), Window.Current.Bounds.Height - topLeft.Y);
-				/*
-				_expanding = false;
-				moveTransform.X = -xDist;
-				moveTransform.Y = -yDist;
-				FrameworkElement el = GetClosestParentWithSize(this);
-
-				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
-
-				double elSize = _border.ActualHeight;
-				double topY = Canvas.GetTop(_border);
-
-				double newLowY = topY + elSize + 50;
-
-				//if expansion would cause the object to extend past the bottom of the screen, adjust y position by the difference
-				if (newLowY >= Window.Current.Bounds.Height)
-				{
-					this.SetControlPosition(0, Window.Current.Bounds.Height - newLowY);
-				}
-				*/
-			};
-			
-		}
-
-		public void MoveAnimation2(double xDist, double yDist)
-		{
-			// Create the transform
-			//TranslateTransform moveTransform = new TranslateTransform();
-			//moveTransform.X = 0;
-			//moveTransform.Y = 0;
-			//_border.RenderTransform = moveTransform;
-
-			// Create a duration of .5 seconds.
-			Duration duration = new Duration(TimeSpan.FromSeconds(.5));
-			// Create two DoubleAnimations and set their properties.
-			//DoubleAnimation myDoubleAnimationX = new DoubleAnimation();
-			DoubleAnimation myDoubleAnimationY = new DoubleAnimation();
-			//myDoubleAnimationX.Duration = duration;
-			myDoubleAnimationY.Duration = duration;
-			Storyboard fadeAnimation = new Storyboard();
-			fadeAnimation.Duration = duration;
-			//fadeAnimation.Children.Add(myDoubleAnimationX);
-			fadeAnimation.Children.Add(myDoubleAnimationY);
-			//Storyboard.SetTarget(myDoubleAnimationX, _border);
-			Storyboard.SetTarget(myDoubleAnimationY, this);
-			//_border.SetValue(Canvas.LeftProperty, 4);
-			// Set the X and Y properties of the Transform to be the target properties
-			// of the two respective DoubleAnimations.
-			//Storyboard.SetTargetProperty((Canvas.Left), "X");
-			Storyboard.SetTargetProperty(myDoubleAnimationY, "Top");
-			//myDoubleAnimationX.To = xDist;
-			myDoubleAnimationY.To = yDist;
-
-			// Make the Storyboard a resource.
-			//LayoutRoot.Resources.Add("justintimeStoryboard", justintimeStoryboard);
-			// Begin the animation.
-			fadeAnimation.Begin();
-		}
-	}
+    }
 }

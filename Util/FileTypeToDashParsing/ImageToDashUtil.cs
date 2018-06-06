@@ -44,11 +44,6 @@ namespace Dash
             return await CreateImageBoxFromLocalFile(localFile, title);
         }
 
-        public static async Task<Uri> GetLocalURI(StorageFile file)
-        {
-            return new Uri((await CopyFileToLocal(file)).Path);
-        }
-
         /// <summary>
         /// Parse a bitmap and save it to the local filesystem
         /// </summary>

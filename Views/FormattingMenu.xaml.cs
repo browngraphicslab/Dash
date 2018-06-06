@@ -7,7 +7,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -42,15 +41,13 @@ namespace Dash
 
         #endregion
 
-	    private TextSubtoolbar _textToolbar;
-
         /// <summary>
         /// Constructor
         /// </summary>
-        public FormattingMenuView(TextSubtoolbar textToolbar)
+        public FormattingMenuView()
         {
             this.InitializeComponent();
-	        _textToolbar = textToolbar;
+
             Loaded += FormattingMenuView_Loaded;
         }
 
@@ -301,15 +298,7 @@ namespace Dash
 
         #endregion
 
-		/**
-		 * Calls the toolbar to switch sub-menus when the back button is tapped.
-		 */
-	    private void BackButton_Tapped(object sender, TappedRoutedEventArgs e)
-	    {
-		    _textToolbar.CloseSubMenu();
-	    }
-
-	}
+    }
 
 
 }

@@ -370,9 +370,8 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\CustomButtonFormatter.cs" />
-    <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
-      <DependentUpon>DropDownTextButton.xaml</DependentUpon>
+    <Compile Include="Views\DockedView.xaml.cs">
+      <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -380,7 +379,6 @@
     <Compile Include="Views\Document Menu\Toolbar\CollectionSubtoolbar.xaml.cs">
       <DependentUpon>CollectionSubtoolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\ICommandBarBased.cs" />
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
@@ -390,7 +388,6 @@
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
     <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
       <DependentUpon>TreeMenuNode.xaml</DependentUpon>
     </Compile>
@@ -842,10 +839,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
+    <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
+    </Page>    
     <Page Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

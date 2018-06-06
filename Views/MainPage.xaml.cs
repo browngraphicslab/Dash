@@ -72,11 +72,6 @@ namespace Dash
             SelectedDocuments = docs;
             Toolbar.Update(docs);
         }
-        public void AddToAndUpdateSelectedDocuments(DocumentView toAdd)
-        {
-            SelectedDocuments = new List<DocumentView> { toAdd };
-            Toolbar.Update(SelectedDocuments);
-        }
 
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
@@ -525,8 +520,7 @@ namespace Dash
 
         public void ThemeChange(bool nightModeOn)
         {
-            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
-			Toolbar.SwitchTheme(nightModeOn);
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)

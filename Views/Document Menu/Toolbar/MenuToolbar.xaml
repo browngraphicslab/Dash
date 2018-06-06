@@ -12,35 +12,26 @@
     d:DesignWidth="800">
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
-    <dash:Floating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
-        <StackPanel Name="xStackPanel" Orientation="Vertical">
-            <StackPanel.RenderTransform>
-                <RotateTransform CenterX="0" CenterY="0" Angle="0">
-                </RotateTransform>
-            </StackPanel.RenderTransform>
+    <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
+        <StackPanel>
 
-        
+            <ctrl:CommandBar x:Name="xToolbar" IsOpen="False">
+                <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
+                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
 
-            <ctrl:CommandBar x:Name="xToolbar" IsOpen="True" IsSticky="True" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited" >
-                
-                <AppBarToggleButton x:Name="xCollapse" Background="Red"  Icon="BackToWindow"  Label="Collapse"  Unchecked="XCollapse_OnUnchecked"  Checked="XCollapse_OnChecked"/>
-                <!--<AppBarSeparator x:Name="xSepOne"/>-->
-                <AppBarToggleButton x:Name="xTouch" Icon="Rename" Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked" />
-                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
-                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"/>
-
-                <AppBarSeparator x:Name="xSepOne"/>
+                <AppBarSeparator/>
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
-                <AppBarButton x:Name="xAddImage" Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
-                <AppBarButton x:Name="xAddVideo" Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
-                <AppBarButton x:Name="xAddAudio" Icon="Audio" Label="Add Audio" Click="Add_Audio_On_Click"/>
-                <AppBarSeparator x:Name="xSepTwo"/>
-                <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy" />
-                <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete" />
+                <AppBarButton Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
+                <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
+                <AppBarButton Icon="Cut" Label="Clip Image" Click="Clip_Image_On_Click"/>
+                <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
+                <AppBarButton Icon="Audio" Label="Add Audio" Click="Add_Audio_On_Click"/>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Copy" IsEnabled="False" x:Name="xCopy" Opacity="0.5" Label="Duplicate" Click="Copy" />
+                <AppBarButton Icon="Delete" IsEnabled="False"  x:Name="xDelete" Opacity="0.5" Label="Delete" Click="Delete" />
 
             </ctrl:CommandBar>
-            <Rectangle x:Name="xPadding" Opacity="0" Width="300" Height="11"/>
             <StackPanel Margin="0,12,0,0">
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />
                 <dash:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar" />
