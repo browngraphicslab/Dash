@@ -275,7 +275,6 @@ namespace Dash
 		        subtoolbarElement.Visibility = Visibility.Visible;
 				//xFloating.Floating_SizeChanged(null, null);
 	        }
-
         }
 
         private void SetUpBaseMenu()
