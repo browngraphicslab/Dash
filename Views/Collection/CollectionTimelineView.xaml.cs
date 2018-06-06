@@ -30,6 +30,7 @@ namespace Dash
         private DocumentViewModel _documentViewModel;
         private DocumentViewModel _displayViewModel;
         private DocumentContext _documentContext;
+        private KeyController _sortKey;
 
         public DocumentViewModel DocumentViewModel
         {
@@ -47,6 +48,12 @@ namespace Dash
         {
             get => _documentContext;
             set => SetProperty(ref _documentContext, value);
+        }
+
+        public KeyController SortKey
+        {
+            get => _sortKey;
+            set => SetProperty(ref _sortKey, value);
         }
 
         public double TitleY;
@@ -69,10 +76,11 @@ namespace Dash
         {
         }
 
-        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel)
+        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel, KeyController sortKey)
         {
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
+            SortKey = sortKey;
         }
 
         #endregion
@@ -82,7 +90,6 @@ namespace Dash
     public sealed partial class CollectionTimelineView : ICollectionView
     {
         public static double LastDisplayedPosition;
-
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
@@ -378,7 +385,7 @@ namespace Dash
                 foreach (var dvm in viewModel.DocumentViewModels)
                 {
                     // add all document viewmodels as timeline element view models
-                    _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm));
+                    _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm, SortKey));
                     // add an event listener for the document to listen to when sortkey changes
                     dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
@@ -414,7 +421,7 @@ namespace Dash
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    RemoveViewModels(e.NewItems.Cast<DocumentViewModel>());
+                    RemoveViewModels(e.OldItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     break;
@@ -433,7 +440,8 @@ namespace Dash
         {
             foreach (var vm in removedViewModels)
             {
-                _contextList.Remove(new TimelineElementViewModel(new DocumentContext(), vm));
+                // use document viewmodels to find the right timeline element viewmodel to remove
+                _contextList.Remove(_contextList.First(i => i.DocumentViewModel.Equals(vm)));
                 vm.DataDocument.RemoveFieldUpdatedListener(SortKey, SortKeyModified);
             }
 
@@ -449,7 +457,7 @@ namespace Dash
         {
             foreach (var vm in newViewModels)
             {
-                _contextList.Add(new TimelineElementViewModel(new DocumentContext(), vm));
+                _contextList.Add(new TimelineElementViewModel(new DocumentContext(), vm, SortKey));
                 vm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
             }
 

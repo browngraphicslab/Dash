@@ -40,8 +40,17 @@ namespace Dash
         public TimelineElement()
         {
             InitializeComponent();
+            Unloaded += TimelineElement_Unloaded;
             DataContextChanged += OnDataContextChanged;
             Loaded += TimelineElement_Loaded;
+        }
+        
+        // remove field listener when unloaded
+        private void TimelineElement_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel == null) return;
+            ViewModel.DocumentViewModel.DocumentController.GetDataDocument().RemoveFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
+            Unloaded -= TimelineElement_Unloaded;
         }
 
         public TimelineElementViewModel ViewModel { get; private set; }
@@ -54,14 +63,22 @@ namespace Dash
             ParentTimeline = this.GetFirstAncestorOfType<CollectionTimelineView>();
             ParentTimeline.MetadataUpdated += UpdateTimelinePosition;
 
-            // get the modified date value and display it
+            // get the sort key value and display it
             var date = ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .GetField(KeyStore.ModifiedTimestampKey).GetValue(new Context()).ToDateTime();
+                .GetField(ViewModel.SortKey).GetValue(new Context()).ToDateTime();
             xTimeBlock.Text = date.ToShortDateString();
             xDateBlock.Text = date.ToShortTimeString();
 
             UpdateTimelinePosition();
             LoadContext();
+            
+            ViewModel.DocumentViewModel.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
+        }
+        
+        // this checks for a data change in the viewmodel document controller (ie when text is changed)
+        private void OnViewModelDataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            OnDataContextChanged(null, null);
         }
 
         private void LoadContext()
@@ -81,26 +98,30 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        ///     updates the text that is displayed by the timeline. called when either the timeline element's data context has changed or when the timeline element viewmodel's data context has changed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as TimelineElementViewModel;
-            Debug.Assert(vm != null);
-            ViewModel = vm;
+            if (DataContext == null) return;
+            ViewModel = DataContext as TimelineElementViewModel;
 
             DocumentController thumbnailImageViewDoc = null;
-            var richText = vm.DocumentViewModel.DataDocument
+            var richText = ViewModel.DocumentViewModel.DataDocument
                 .GetDereferencedField<RichTextController>(KeyStore.DataKey, null)
                 ?.Data; //NoteDocuments.RichTextNote.RTFieldKey
             var docText =
-                vm.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)
+                ViewModel.DocumentViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)
                     ?.Data ?? richText?.ToString() ?? null;
 
             if (docText != null)
                 thumbnailImageViewDoc = new PostitNote(docText).Document;
             else
                 thumbnailImageViewDoc =
-                    (vm.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as
-                         DocumentController ?? vm.DocumentViewModel.DocumentController).GetViewCopy();
+                    (ViewModel.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as
+                         DocumentController ?? ViewModel.DocumentViewModel.DocumentController).GetViewCopy();
             thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
             ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc)
             {
