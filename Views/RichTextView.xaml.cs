@@ -52,6 +52,8 @@ namespace Dash
             {
                 if (e.IsRightPressed() || this.IsCtrlPressed())// Prevents the selecting of text when right mouse button is pressed so that the user can drag the view around
                     new ManipulationControlHelper(this, e.Pointer, (e.KeyModifiers & VirtualKeyModifiers.Shift) != 0);
+                else this.GetFirstAncestorOfType<DocumentView>().ManipulationMode = ManipulationModes.None;
+                DocumentView.FocusedDocument = this.GetFirstAncestorOfType<DocumentView>();
             }), true);
             AddHandler(TappedEvent, new TappedEventHandler(xRichEditBox_Tapped), true);
 
@@ -60,6 +62,8 @@ namespace Dash
                 setSelected("");
                 xSearchBoxPanel.Visibility = Visibility.Collapsed;
             };
+
+            xSearchBox.KeyUp += (s, e) => e.Handled = true;
 
             xSearchBox.QuerySubmitted += (s,e) => NextResult(); // Selects the next highlighted search result on enter in the xRichEditBox
 
@@ -79,9 +83,14 @@ namespace Dash
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
 
-            xRichEditBox.KeyUp += (s, e) => {
+            xRichEditBox.KeyUp += (s, e) => 
+            {
                 if (e.Key == VirtualKey.Back && (string.IsNullOrEmpty(getReadableText())))
-                    getDocView().DeleteDocument(true);
+                {
+                    var docView = getDocView();
+                    if (docView.ViewModel.DocumentController.GetField(KeyStore.ActiveLayoutKey) == null)
+                        docView.DeleteDocument(true);
+                }
                 e.Handled = true;
             };
 
@@ -101,6 +110,8 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
+            if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
+                return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null && Text != null)
             {
                 convertTextFromXamlRTF();
@@ -125,7 +136,7 @@ namespace Dash
                         var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                         dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
-                        containerDoc.AddDocument(dbox, null);
+                        containerDoc.AddDocument(dbox);
                         //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
                     }
                 }
@@ -146,9 +157,11 @@ namespace Dash
             return getDataDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data ??
                    getLayoutDoc()?.GetDereferencedField<TextController>(CollectionDBView.SelectedKey, null)?.Data;
         }
+        DocumentController _lastDoc = null;
         void               setSelected(string query)
         {
-            getDataDoc().SetField(CollectionDBView.SelectedKey, new TextController(query), true);
+            _lastDoc = getDataDoc() ?? _lastDoc;
+            _lastDoc?.SetField<TextController>(CollectionDBView.SelectedKey,query, true);
         }
         string             getReadableText()
         {
@@ -184,7 +197,18 @@ namespace Dash
                     xRichEditBox.Measure(new Size(ActualWidth, 1000));
                     if (relative != null)
                     {
-                        var pad = relative.Children.OfType<FrameworkElement>().Where((ele) => ele != this).Aggregate(0.0, (val, ele) => val + ele.ActualHeight);
+                        double pad = 0;
+                        foreach (var child in relative.Children.OfType<FrameworkElement>())
+                            if (child != this)
+                            {
+                                if (child is RichTextView rview)
+                                {
+                                    rview.xRichEditBox.Measure(new Size(rview.ActualWidth, 1000));
+                                    pad += rview.DesiredSize.Height;
+                                }
+                                else
+                                    pad += child.ActualHeight;
+                            }
                         relative.Height = xRichEditBox.DesiredSize.Height + pad;
                     }
                 }
@@ -210,7 +234,8 @@ namespace Dash
                     var selectionFound = xRichEditBox.Document.Selection.FindText(selected, 100000, FindOptions.None);
 
                     var s = xRichEditBox.Document.Selection.StartPosition;
-                    _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
+                    if (!_originalCharFormat.ContainsKey(s))
+                        _originalCharFormat.Add(s, xRichEditBox.Document.Selection.CharacterFormat.GetClone());
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
@@ -218,6 +243,7 @@ namespace Dash
         }
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = false;
             var target = getHyperlinkTargetForSelection();
             if (target != null)
             {
@@ -227,14 +253,14 @@ namespace Dash
                 {
                     if (this.IsCtrlPressed())
                         nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController);
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
                 }
                 else
                 {
                     var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
                     }
                     else if (target.StartsWith("http"))
                     {
@@ -242,10 +268,47 @@ namespace Dash
                             MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc);
+                            nearest = FindNearestDisplayedBrowser(pt, target);
+                            if (nearest != null)
+                            {
+                                if (this.IsCtrlPressed())
+                                    nearest.DeleteDocument();
+                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                            }
+                            else
+                            {
+                                theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
+                                Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                            }
                         }
                     }
                 }
+                e.Handled = true;
+            }
+            DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
+
+                return nearest;
             }
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {
@@ -254,7 +317,7 @@ namespace Dash
                 foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
                 {
                     var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                    if (dvm.ViewModel.DataDocument.GetId().ToString() == targetData?.Id)
+                    if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
                     {
                         var mprect = dvm.GetBoundingRect(MainPage.Instance);
                         var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -278,7 +341,12 @@ namespace Dash
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
-                linkDocumentToSelection(((DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)]).GetDropDocument(new Point(), true), true);
+                var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                if (dragModel.CreateLink)
+                {
+                    dragModel.DraggedDocument.Link(getDataDoc());
+                } else
+                    linkDocumentToSelection(dragModel.DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -294,21 +362,24 @@ namespace Dash
         /// <param name="e"></param>
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (!this.IsCtrlPressed() && !this.IsAltPressed() && !e.Key.Equals(VirtualKey.Shift))
+            if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
                 getDataDoc().CaptureNeighboringContext();
             }
-            else if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
+
+            if (this.IsShiftPressed() && !e.Key.Equals(VirtualKey.Shift) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleShiftEnter();
+                e.Handled = true;
             }
             else if (this.IsCtrlPressed() && !e.Key.Equals(VirtualKey.Control) && e.Key.Equals(VirtualKey.Enter))
             {
                 xRichEditBox.Document.Selection.MoveStart(TextRangeUnit.Character, -1);
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleCtrlEnter();
+                e.Handled = true;
             }
 			
 			/**
@@ -327,6 +398,7 @@ namespace Dash
                 }
                 FlyoutBase.ShowAttachedFlyout(sender as FrameworkElement);
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
+                e.Handled = true;
             }
 	*/
 		
@@ -341,13 +413,16 @@ namespace Dash
                 {
                     case VirtualKey.N:
                         xRichEditBox.Document.Redo();
+                        e.Handled = true;
                         break;
                     case VirtualKey.H:
                         this.Highlight(Colors.Yellow, true); // using RichTextFormattingHelper extenions
                         break;
                     case VirtualKey.F:
                         xSearchBoxPanel.Visibility = Visibility.Visible;
-                        xSearchBox.Focus(FocusState.Programmatic);
+                        xSearchBoxPanel.UpdateLayout();
+                        xSearchBox.GetFirstDescendantOfType<TextBox>()?.Focus(FocusState.Programmatic);
+                        e.Handled = true;
                         break;
                     case VirtualKey.L:
                         if (this.IsShiftPressed())
@@ -360,6 +435,7 @@ namespace Dash
                             {
                                 xRichEditBox.Document.Selection.ParagraphFormat.ListType = MarkerType.None;
                             }
+                            e.Handled = true;
                         }
                         break;
                 }
@@ -377,6 +453,8 @@ namespace Dash
 
             void UnLoaded(object s, RoutedEventArgs e)
             {
+                ClearSearchHighlights(true);
+                setSelected("");
                 UnregisterPropertyChangedCallback(TextProperty, id);
                 DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
                 Unloaded -= UnLoaded;
@@ -476,6 +554,8 @@ namespace Dash
 
         private void MatchQuery(string query)
         {
+            if (getDocView() == null)
+                return;
             this.ClearSearchHighlights();
             _nextMatch = 0;
             _prevQueryLength = query == null ? 0 : query.Length;
@@ -527,7 +607,7 @@ namespace Dash
         /// Clears the highlights that result from searching within the xRichEditBox (to make sure that
         /// original highlights wouldn't get erased)
         /// </summary>
-        private void ClearSearchHighlights()
+        private void ClearSearchHighlights(bool silent=false)
         {
             xRichEditBox.SelectionHighlightColorWhenNotFocused = new SolidColorBrush(Colors.Transparent);
             var keys = _originalCharFormat.Keys;
@@ -538,7 +618,8 @@ namespace Dash
                 xRichEditBox.Document.Selection.CharacterFormat.SetClone(_originalCharFormat[key]);
                 xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Transparent;
             }
-            UpdateDocumentFromXaml();
+            if (!silent)
+                UpdateDocumentFromXaml();
             _originalCharFormat.Clear();
         }
 
@@ -567,6 +648,7 @@ namespace Dash
                 }
             }
         }
+
         #endregion
 
         #region commented out code
@@ -677,8 +759,6 @@ namespace Dash
         //    }
         //}
         #endregion
-
-       
     }
 }
 

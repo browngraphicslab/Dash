@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.System;
@@ -15,8 +16,15 @@ using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
+using Dash.Views.Document_Menu;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Reflection;
+using Microsoft.Toolkit.Uwp.UI;
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
+using Dash.Views;
 using Dash.Views.Document_Menu;
 using Dash.Controllers;
 
@@ -41,6 +49,9 @@ namespace Dash
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
 
+        private bool[] _firstDock = {true, true, true, true};
+        private DockedView[] _lastDockedViews = {null, null, null, null};
+
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
         {
@@ -49,8 +60,11 @@ namespace Dash
         }
         public void DeselectDocument(DocumentView doc)
         {
-            SelectedDocuments.Remove(doc);
-            Toolbar.Update(SelectedDocuments);
+            if (SelectedDocuments?.Count() > 0)
+            {
+                SelectedDocuments.Remove(doc);
+                Toolbar.Update(SelectedDocuments);
+            }
         }
         public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
         public void SelectDocuments(ICollection<DocumentView> docs)
@@ -88,11 +102,12 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
+                xMainDocView.ViewModel.DisableDecorations = true;
 
-                xMainTreeView.DataContext = new CollectionViewModel(new DocumentFieldReference(MainDocument.Id, KeyStore.DataKey));
+                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             };
 
-            xSplitter.Tapped += (s,e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
+            xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
             xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
@@ -153,8 +168,9 @@ namespace Dash
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
 
-            OperatorScriptParser.TEST();
-            MultiLineOperatorScriptParser.TEST();
+            //OperatorScriptParser.TEST();
+            //MultiLineOperatorScriptParser.TEST();
+            TypescriptToOperatorParser.TEST();
 
             BrowserView.ForceInit();
 
@@ -180,12 +196,11 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceViewCopy = workspace;
+            var workspaceViewCopy = workspace.GetViewCopy();
+            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
             if (workspaceViewCopy.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true") //  !isWorkspace)
             {
-                workspaceViewCopy = workspace.GetViewCopy();
-                workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
                 workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
             }
             MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
@@ -219,7 +234,7 @@ namespace Dash
         {
             RoutedEventHandler handler = null;
             handler =
-                delegate(object sender, RoutedEventArgs args)
+                delegate (object sender, RoutedEventArgs args)
                 {
                     MainDocView.xContentPresenter.Loaded -= handler;
 
@@ -233,10 +248,10 @@ namespace Dash
                             if (vm.DocumentController.Equals(document))
                             {
                                 RoutedEventHandler finalHandler = null;
-                                finalHandler = delegate(object finalSender, RoutedEventArgs finalArgs)
+                                finalHandler = delegate (object finalSender, RoutedEventArgs finalArgs)
                                 {
                                     Debug.WriteLine("loaded");
-                                    NavigateToDocumentInWorkspace(document);
+                                    NavigateToDocumentInWorkspace(document, false);
                                     vm.Content.Loaded -= finalHandler;
                                 };
 
@@ -252,10 +267,10 @@ namespace Dash
                             if (coll == null)
                             {
                                 RoutedEventHandler contentHandler = null;
-                                contentHandler = delegate(object contentSender, RoutedEventArgs contentArgs)
+                                contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     dvm.Content.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document))
+                                    if (!NavigateToDocumentInWorkspace(document, false))
                                     {
                                         handler(null, null);
                                     }
@@ -268,7 +283,7 @@ namespace Dash
                                 contentHandler = delegate (object contentSender, RoutedEventArgs contentArgs)
                                 {
                                     coll.Loaded -= contentHandler;
-                                    if (!NavigateToDocumentInWorkspace(document))
+                                    if (!NavigateToDocumentInWorkspace(document, false))
                                     {
                                         handler(null, null);
                                     }
@@ -291,23 +306,23 @@ namespace Dash
         /// </summary>
         /// <param name="document"></param>
         /// <returns></returns>
-        public bool NavigateToDocumentInWorkspace(DocumentController document)
+        public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (coll != null)
             {
-                return NavigateToDocument(coll, null, coll, document);
+                return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
             }
             return false;
         }
 
-        public void HighlightTreeView(DocumentController document, bool ?flag)
+        public void HighlightTreeView(DocumentController document, bool? flag)
         {
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool ?flag)
+        public void HighlightDoc(DocumentController document, bool? flag)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
@@ -317,7 +332,7 @@ namespace Dash
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool ?flag)
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
@@ -339,56 +354,24 @@ namespace Dash
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-            if (coll != null && document !=  null)
+            if (coll != null && document != null)
             {
-                return NavigateToDocumentAnimated(coll, null, coll, document);
+                return NavigateToDocument(coll, null, coll, document, true, true);
             }
             return false;
         }
 
-        public bool NavigateToDocumentAnimated(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
-        {
-            if (collection?.ViewModel?.DocumentViewModels == null)
-            {
-                return false;
-            }
-
-            foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
-                {
-                    var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
-                        new Point(
-                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
-                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-
-                    
-
-                    var pt = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(0, 0));
-                    var oldTranslateX = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetX;
-                    var oldTranslateY = (canvas.RenderTransform as MatrixTransform).Matrix.OffsetY;
-
-                    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    return true;
-                }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
-                {
-                    if (NavigateToDocumentAnimated(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
-                        return true;
-                }
-            return false;
-
-        }
-        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document)
+        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
                 return false;
             }
             foreach (var dm in collection.ViewModel.DocumentViewModels)
-                if (dm.DocumentController.Equals(document))
+            {
+                var dmd = dm.DocumentController.GetDataDocument();
+                var dd = document.GetDataDocument();
+                if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
@@ -397,22 +380,47 @@ namespace Dash
                         new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-                    root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    if (animated)
+                        root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
                 {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document))
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document, animated, compareDataDocuments))
                         return true;
                 }
+            }
             return false;
         }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
+            }
+
+            if (DocumentView.FocusedDocument != null && !e.Handled) {
+                if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift))
+                {
+                    if (DocumentView.FocusedDocument.ViewModel != null && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                    {
+                        // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                        if (!DocumentView.FocusedDocument.ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                            !DocumentView.FocusedDocument.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                            DocumentView.FocusedDocument.HandleShiftEnter();
+                    }
+                }
+                if (this.IsF1Pressed() && this.IsPointerOver())
+                {
+                    DocumentView.FocusedDocument.ShowLocalContext(true);
+                }
+                if (this.IsF2Pressed() && this.IsPointerOver())
+                {
+                    DocumentView.FocusedDocument.ShowSelectedContext();
+                }
             }
         }
 
@@ -431,8 +439,16 @@ namespace Dash
                 TabMenu.Instance.HandleKeyUp(sender, e);
             }
 
+            if (e.VirtualKey == VirtualKey.Escape)
+            {
+                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                e.Handled = true;
+            }
+
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
+               if (FocusManager.GetFocusedElement() is TextBox)
+                    return;
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
                 foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
                     if (c.SelectedDocs.Count() > 0)
@@ -442,12 +458,17 @@ namespace Dash
                         break;
                     }
             }
+            if (DocumentView.FocusedDocument != null)
+            {
+                if (!this.IsF1Pressed())
+                    DocumentView.FocusedDocument.ShowLocalContext(false);
+            }
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             var pos = this.RootPointerPos();
-            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos,this).OfType<CollectionView>().ToList();
+            var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
             if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
             {
                 if (e != null)
@@ -458,7 +479,7 @@ namespace Dash
                         {
                             if (presenter.Content is DocumentViewModel dvm)
                             {
-                                if (dvm.DocumentController.DocumentType.Equals(BackgroundBox.DocumentType))
+                                if (dvm.IsAdornmentGroup)
                                 {
                                     var dv = d.GetFirstDescendantOfType<DocumentView>();
                                     var hit = dv.IsHitTestVisible;
@@ -501,7 +522,7 @@ namespace Dash
                 Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
         }
-        
+
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
@@ -523,31 +544,27 @@ namespace Dash
                 xMainSearchBox.Focus(FocusState.Programmatic);
             }
         }
-        private void TextBlock_GettingFocus(UIElement sender, GettingFocusEventArgs args)
-        {
-            args.Cancel = true;
-        }
 
         DispatcherTimer mapTimer = new DispatcherTimer();
         void setupMapView(DocumentController mainDocumentCollection)
         {
-            //if (xMapDocumentView == null)
-            //{
-            //    var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-            //    xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
-            //    xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-            //    xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-            //    xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-            //    //xMapDocumentView.IsHitTestVisible = false;
-            //    Grid.SetColumn(xMapDocumentView, 2);
-            //    Grid.SetRow(xMapDocumentView, 0);
-            //    xLeftStack.Children.Add(xMapDocumentView);
-            //    mapTimer.Interval = new TimeSpan(0, 0, 1);
-            //    mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
-            //}
-            //xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            //xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
-            //mapTimer.Start();
+            if (xMapDocumentView == null)
+            {
+                var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
+                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
+                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+                //xMapDocumentView.IsHitTestVisible = false;
+                Grid.SetColumn(xMapDocumentView, 2);
+                Grid.SetRow(xMapDocumentView, 0);
+                xLeftStack.Children.Add(xMapDocumentView);
+                mapTimer.Interval = new TimeSpan(0, 0, 1);
+                mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
+            }
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
+            mapTimer.Start();
         }
 
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -555,11 +572,172 @@ namespace Dash
             if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
-        
-        //@Main toolbar
-        private void AddCustomButtons()
+
+        public void Dock(DocumentView toDock, DockDirection dir)
         {
+            DocumentController context = toDock.ViewModel.DocumentController;
+            DocumentView copiedView = new DocumentView()
+            {
+                DataContext = new DocumentViewModel(context.GetViewCopy()),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
+
+            copiedView.ViewModel.Width = Double.NaN;
+            copiedView.ViewModel.Height = Double.NaN;
+            copiedView.ViewModel.DisableDecorations = true;
+
+            DockedView dockedView = new DockedView(dir);
+            dockedView.ChangeView(copiedView);
+            dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            dockedView.VerticalAlignment = VerticalAlignment.Stretch;
+
+            if (_firstDock[(int) dir])
+            {
+                switch (dir)
+                {
+                    case DockDirection.Left:
+                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 2, 1, 0, 5);
+                        break;
+                    case DockDirection.Right:
+                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockColumn.Width = new GridLength(300);
+                        SetGridPosition(dockedView, 6, 1, 0, 5);
+                        break;
+                    case DockDirection.Top:
+                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 0, 1);
+                        break;
+                    case DockDirection.Bottom:
+                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockRow.Height = new GridLength(200);
+                        SetGridPosition(dockedView, 4, 1, 4, 1);
+                        break;
+                }
+                
+                xOuterGrid.Children.Add(dockedView);
+                _firstDock[(int) dir] = false;
+                _lastDockedViews[(int) dir] = dockedView;
+            }
+            else
+            {
+                DockedView tail = _lastDockedViews[(int) dir];
+                tail.ChangeNestedView(dockedView);
+                dockedView.PreviousView = tail;
+                _lastDockedViews[(int) dir] = dockedView;
+            }
+            
         }
+
+        private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
+        {
+            Grid.SetColumn(e, col);
+            Grid.SetColumnSpan(e, colSpan);
+            Grid.SetRow(e, row);
+            Grid.SetRowSpan(e, rowSpan);
+        }
+
+        public void HighlightDock(DockDirection dir)
+        {
+            switch (dir)
+            {
+                case DockDirection.Left:
+                    xDockLeft.Opacity = 0.4;
+                    break;
+                case DockDirection.Right:
+                    xDockRight.Opacity = 0.4;
+                    break;
+                case DockDirection.Top:
+                    xDockTop.Opacity = 0.4;
+                    break;
+                case DockDirection.Bottom:
+                    xDockBottom.Opacity = 0.4;
+                    break;
+            }
+        }
+
+        public void UnhighlightDock()
+        {
+            xDockRight.Opacity = 0;
+            xDockLeft.Opacity = 0;
+            xDockTop.Opacity = 0;
+            xDockBottom.Opacity = 0;
+        }
+
+        public void Undock(DockedView undock)
+        {
+            // means it's the last NestedView
+            if (undock.NestedView == null)
+            {
+                // means it's also the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            xLeftDockSplitterColumn.Width = new GridLength(0);
+                            xLeftDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Right:
+                            xRightDockSplitterColumn.Width = new GridLength(0);
+                            xRightDockColumn.Width = new GridLength(0);
+                            break;
+                        case DockDirection.Top:
+                            xTopDockSplitterRow.Height = new GridLength(0);
+                            xTopDockRow.Height = new GridLength(0);
+                            break;
+                        case DockDirection.Bottom:
+                            xBottomDockSplitterRow.Height = new GridLength(0);
+                            xBottomDockRow.Height = new GridLength(0);
+                            break;
+                    }
+                    xOuterGrid.Children.Remove(undock);
+                    _firstDock[(int) undock.Direction] = true;
+                    _lastDockedViews[(int) undock.Direction] = null;
+                }
+                else
+                {
+                    undock.PreviousView.ClearNestedView();
+                    _lastDockedViews[(int) undock.Direction] = undock.PreviousView;
+                }
+            }
+            else
+            {
+                // means it's the first NestedView
+                if (undock.PreviousView == null)
+                {
+                    var newFirst = undock.ClearNestedView();
+                    newFirst.PreviousView = null;
+                    xOuterGrid.Children.Remove(undock);
+                    switch (undock.Direction)
+                    {
+                        case DockDirection.Left:
+                            SetGridPosition(newFirst, 2, 1, 0, 5);
+                            break;
+                        case DockDirection.Right:
+                            SetGridPosition(newFirst, 6, 1, 0, 5);
+                            break;
+                        case DockDirection.Top:
+                            SetGridPosition(newFirst, 4, 1, 0, 1);
+                            break;
+                        case DockDirection.Bottom:
+                            SetGridPosition(newFirst, 4, 1, 4, 1);
+                            break;
+                    }
+                    xOuterGrid.Children.Add(newFirst);
+                }
+                else
+                {
+                    var newNext = undock.ClearNestedView();
+                    newNext.PreviousView = undock.PreviousView;
+                    undock.PreviousView.ChangeNestedView(newNext);
+                }
+            }
+        }
+        
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var isVisible = xSettingsView.Visibility == Visibility.Visible;
@@ -569,7 +747,7 @@ namespace Dash
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray); 
+            xSettingsButton.Fill = new SolidColorBrush(Colors.Gray);
         }
 
         private void xSettingsButton_PointerExited(object sender, PointerRoutedEventArgs e)

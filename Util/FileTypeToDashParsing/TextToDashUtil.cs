@@ -2,13 +2,14 @@
 using System.Threading.Tasks;
 using Windows.Storage;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
     public class TextToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             string text;
 

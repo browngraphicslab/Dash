@@ -3,13 +3,14 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using DashShared;
 using Microsoft.Toolkit.Uwp.Helpers;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Dash
 {
     public class PptToDashUtil : IFileParser
     {
 
-        public async Task<DocumentController> ParseFileAsync(FileData fileData)
+        public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             // store the file locally
             var localFolder = ApplicationData.Current.LocalFolder;

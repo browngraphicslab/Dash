@@ -52,16 +52,16 @@ namespace Dash
 
             var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
 
-            var stringScriptToExecute = $"{exec}(Script:parseSearchString({{{searchQuery}}}))";
+            var stringScriptToExecute = $"{exec}(parseSearchString(\"{searchQuery}\"))";
 
-            var interpreted = OperatorScriptParser.Interpret(stringScriptToExecute);
+            var interpreted = TypescriptToOperatorParser.Interpret(stringScriptToExecute);
             var resultDict = interpreted as DocumentController;
 
             if (resultDict != null)
             {
                 var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
 
-                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).First();
+                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).FirstOrDefault();
             }
             else
             {
