@@ -19,7 +19,7 @@ using Point = Windows.Foundation.Point;
 
 namespace Dash
 {
-    public sealed partial class CollectionTreeView : UserControl
+    public sealed partial class CollectionTreeView : ICollectionView
     {
 
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
