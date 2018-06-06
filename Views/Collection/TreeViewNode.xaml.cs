@@ -189,6 +189,7 @@ namespace Dash
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
