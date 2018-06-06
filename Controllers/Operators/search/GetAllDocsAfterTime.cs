@@ -47,6 +47,9 @@ namespace Dash
             var toReturn = new ListController<DocumentController>();
 
             var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
+
+            //remove any extra quotes
+            time = time.Trim('"');
             
             try
             {
@@ -58,22 +61,21 @@ namespace Dash
 
                     Debug.Assert(allResults != null);
 
-                    DocumentController data = allResults.Data[0].DereferenceToRoot<DocumentController>(null);
+                    var data = allResults.Data;
+                    for(int i = 0; i < data.Count; i++)
+                    {
+                        //get time paratmeter in doc and make it into DateTime
+                        var docTimeS = data[i].DereferenceToRoot<DocumentController>(null)
+                            .GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
+                        DateTime docTime = DateTime.Parse(docTimeS);
 
-                    var docTimeS = data.GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
-                    DateTime docTime = DateTime.Parse(docTimeS);
+                        //return all docs after givenTime
+                        if (docTime > givenTime)
+                        {
+                            toReturn.Add(data[i]);
+                        }
 
-
-
-                    //field _searchResulthelptask
-
-                    /*
-                    var stringContainResults = allResults.TypedData
-                        .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data)
-                            .DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound)).ToArray(); */
-
-                    //TODO: get outputs
-                    toReturn = allResults;
+                    }
 
                 }
             }
