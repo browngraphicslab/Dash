@@ -21,8 +21,6 @@ namespace Dash
 {
     public sealed partial class CollectionTreeView : UserControl
     {
-        public static CollectionTreeView Instance = new CollectionTreeView();
-
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public CollectionTreeView()
