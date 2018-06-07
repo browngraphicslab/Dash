@@ -37,6 +37,7 @@ namespace Dash
                 sender.Text = _currentSearch;
                 return;
             }
+
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
@@ -73,9 +74,14 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
+                Debug.WriteLine("Text: " + text);
+                Debug.WriteLine("currsearch: " + _currentSearch);
+                Debug.WriteLine("DSL: " + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
+                text = text.Replace(@"\", @"\\");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
+          
             catch (DSLException e)
             {
                 Debug.WriteLine("Search Failed");
@@ -85,12 +91,12 @@ namespace Dash
             {
                 return;
             }
+            
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
             var tree = DocumentTree.MainPageTree;
             var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
-
             foreach (var doc in docs)
             {
                 var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);

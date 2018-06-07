@@ -80,13 +80,31 @@ namespace Dash
 
             if (Data != null)
             {
+                System.Diagnostics.Debug.WriteLine(searchString);
+                var reg = new System.Text.RegularExpressions.Regex(searchString);
+                //var reg1 = new System.Text.RegularExpressions.Regex("\\d");
+                //var Data1 = "a";
+
+                System.Diagnostics.Debug.WriteLine("reg: " + reg);
+                System.Diagnostics.Debug.WriteLine("Data: " + Data);
+                System.Diagnostics.Debug.WriteLine("ismatch?: " + reg.IsMatch(Data));
+
+
+               if (reg.IsMatch(Data))
+                {
+                   return new StringSearchModel(Data, true);
+                }
+
+                /*
                 var index = _lowerData.IndexOf(searchString);
+                System.Diagnostics.Debug.WriteLine("index: " + index);
                 if (index >= 0)
                 {
                     index = Math.Max(0, index - textDecrementForContext);
                     var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
                     return new StringSearchModel(substring, true);
                 }
+                */
             }
             return StringSearchModel.False;
         }

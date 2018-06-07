@@ -100,13 +100,17 @@ namespace Dash
         {
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
+            Debug.WriteLine("inputString: " + (inputs[QueryKey] as TextController)?.Data);
             var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 1)
             {
                 outputs[ScriptKey] = new TextController("");
                 return;
             }
-
+            for (int i = 0; i < parts.Length; i++)
+            {
+                parts[i] = parts[i].Replace(@"\", @"\\");
+            }
             var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
             while (searches.Count() > 1)
             {
