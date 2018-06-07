@@ -47,9 +47,6 @@ namespace Dash
             var toReturn = new ListController<DocumentController>();
 
             var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
-
-            //remove any extra quotes
-            time = time.Trim('"');
             
             try
             {
