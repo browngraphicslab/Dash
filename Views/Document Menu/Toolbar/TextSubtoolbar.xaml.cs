@@ -52,6 +52,18 @@ namespace Dash
 	        _currBox = null;
 			//add an additional sub-toolbar for further operations
 	        this.AddButton("Font", Symbol.Add, 0);
+
+            xDashTextSubtoolbar.Loaded += delegate
+            {
+                var sp = xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>();
+                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath(nameof(Orientation)),
+                    Mode = BindingMode.OneWay
+                });
+                Visibility = Visibility.Collapsed;
+            };
         }
 
 		/**

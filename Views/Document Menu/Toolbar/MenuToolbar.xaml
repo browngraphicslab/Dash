@@ -33,9 +33,9 @@
                 <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy"/>
                 <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete"/>
             </ctrl:CommandBar>
-            <Rectangle x:Name="xPadding" Opacity="0" Width="10" Height="200"/>
-            <StackPanel Margin="0,12,0,0">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" Orientation="{x:Bind Orientation, Mode=OneWay}" />
+            <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
+            <StackPanel x:Name="xSubtoolbarStackPanel" Margin="0,0,0,0">
+                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}" />
             </StackPanel>

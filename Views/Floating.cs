@@ -220,7 +220,7 @@
 
 			if (_expanding && (Math.Abs(Canvas.GetTop(_border) - position.Y) > 1 || Math.Abs(Canvas.GetLeft(_border) - position.X) > 1))
 			{
-				this.MoveAnimation(-(Canvas.GetLeft(_border) - position.X), -(Canvas.GetTop(_border) - position.Y), position.Y);
+				this.MoveAnimation(-(Canvas.GetLeft(_border) - position.X), -(Canvas.GetTop(_border) - position.Y), position.Y, position.X);
 				// Set new position
 				//Canvas.SetLeft(_border, position.X);
 				//Canvas.SetTop(_border, position.Y);
@@ -291,24 +291,32 @@
 				_expanding = true;
 				FrameworkElement el = GetClosestParentWithSize(this);
 
-				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
+				//var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
 
-				double elSize = _border.ActualHeight;
+				double elHeight = _border.ActualHeight;
 				double topY = Canvas.GetTop(_border);
 
-				double newLowY =  topY + elSize + height;
+                double elWidth = _border.ActualWidth;
+                double leftX = Canvas.GetLeft(_border);
+
+				double newLowY = topY + elHeight + height;
+                double newMaxX = leftX + elWidth + width;
 
 				//if expansion would cause the object to extend past the bottom of the screen, adjust y position by the difference
 				if (newLowY >= Window.Current.Bounds.Height)
 				{
 					this.ManipulateControlPosition(0, Window.Current.Bounds.Height - newLowY);
 				}
+                if (newMaxX >= Window.Current.Bounds.Width)
+                {
+                    this.ManipulateControlPosition(Window.Current.Bounds.Width - newMaxX, 0);
+                }
 				_expanding = false;
 			}
 	   
 	    }
 
-		public void MoveAnimation(double xDist, double yDist, double yPos)
+		public void MoveAnimation(double xDist, double yDist, double yPos, double xPos)
 		{
 			System.Diagnostics.Debug.WriteLine("CANVAS GET TOP Before" + Canvas.GetLeft(_border));
 			// Create the transform
@@ -356,9 +364,8 @@
 				//_expanding = false;
 				moveTransform.X = moveTransform.X - xDist;
 				moveTransform.Y = moveTransform.Y - yDist + 15;
-				Canvas.SetTop(_border, yPos -15);
-				
-				/*
+				Canvas.SetTop(_border, yPos - 15);
+                /*
 				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
 
 				double elSize = _border.ActualHeight;
@@ -372,7 +379,7 @@
 					this.SetControlPosition(0, Window.Current.Bounds.Height - newLowY);
 				}
 				*/
-			};
+            };
 			
 		}
 

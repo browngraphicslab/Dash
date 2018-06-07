@@ -81,8 +81,8 @@ namespace Dash
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             checkedButton = xTouch;
-            xPadding.Width = ToolbarConstants.PaddingLong;
-            xPadding.Height = ToolbarConstants.PaddingShort;
+            //xPadding.Width = ToolbarConstants.PaddingShort;
+            //xPadding.Height = ToolbarConstants.PaddingLong;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
 
@@ -226,6 +226,7 @@ namespace Dash
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
+                        //xPadding.Visibility = Visibility.Visible;
                         AdjustComboBoxes();
                         if (xStackPanel.Orientation == Orientation.Vertical) xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
@@ -233,12 +234,45 @@ namespace Dash
                         {
                             toOpen.CommandBarOpen(true);
                             //Displays padding in stack panel only if the menu isn't collapsed
-                            if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
+                            //if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
+                            if (subtoolbarElement == xImageToolbar)
+                            {
+                                if (Orientation == Orientation.Vertical)
+                                {
+                                    var margin = xSubtoolbarStackPanel.Margin;
+                                    margin.Top = 72;
+                                    margin.Left = 10;
+                                    xSubtoolbarStackPanel.Margin = margin;
+                                } else
+                                {
+                                    var margin = xSubtoolbarStackPanel.Margin;
+                                    margin.Top = 10;
+                                    margin.Left = 0;
+                                    xSubtoolbarStackPanel.Margin = margin;
+                                }
+                            }
+                            else if (subtoolbarElement == xCollectionToolbar)
+                            {
+                                if (Orientation == Orientation.Vertical)
+                                {
+                                    var margin = xSubtoolbarStackPanel.Margin;
+                                    margin.Top = 12;
+                                    margin.Left = 10;
+                                    xSubtoolbarStackPanel.Margin = margin;
+                                }
+                                else
+                                {
+                                    var margin = xSubtoolbarStackPanel.Margin;
+                                    margin.Top = 10;
+                                    margin.Left = 0;
+                                    xSubtoolbarStackPanel.Margin = margin;
+                                }
+                            }
                         }
                         else
                         {
                             //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
-                            xPadding.Visibility = Visibility.Collapsed;
+                            //xPadding.Visibility = Visibility.Collapsed;
                         }
                     }
                     else
@@ -255,6 +289,7 @@ namespace Dash
                 {
                     xToolbar.IsOpen = true;
                     subtoolbarElement = null;
+                    //xPadding.Visibility = Visibility.Collapsed;
                 }
 
                 //Displays the subtoolbar element only if it corresponds to a valid subtoolbar and if the menu isn't collapsed
@@ -271,7 +306,7 @@ namespace Dash
 			//set proper subtoolbar to visible
 	        if (subtoolbarElement != null)
 	        {
-				xFloating.AdjustPositionForExpansion(ToolbarConstants.ToolbarHeight, 0);
+				xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, xToolbar.ActualWidth);
 		        subtoolbarElement.Visibility = Visibility.Visible;
 				//xFloating.Floating_SizeChanged(null, null);
 	        }
@@ -442,7 +477,7 @@ namespace Dash
                 s.Visibility = status;
             }
 
-            xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
+            //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
             if (subtoolbarElement != null)
             {
                 subtoolbarElement.Visibility = status;
@@ -469,8 +504,42 @@ namespace Dash
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
             AdjustComboBoxes();
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
-            xPadding.Width = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingLong : ToolbarConstants.PaddingShort;
-            xPadding.Height = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingShort : ToolbarConstants.PaddingLong;
+            if (subtoolbarElement == xImageToolbar)
+            {
+                if (Orientation == Orientation.Vertical)
+                {
+                    var margin = xSubtoolbarStackPanel.Margin;
+                    margin.Top = 72;
+                    margin.Left = 10;
+                    xSubtoolbarStackPanel.Margin = margin;
+                } else
+                {
+                    var margin = xSubtoolbarStackPanel.Margin;
+                    margin.Top = 10;
+                    margin.Left = 0;
+                    xSubtoolbarStackPanel.Margin = margin;
+                }
+            }
+            else if (subtoolbarElement == xCollectionToolbar)
+            {
+                if (Orientation == Orientation.Vertical)
+                {
+                    var margin = xSubtoolbarStackPanel.Margin;
+                    margin.Top = 12;
+                    margin.Left = 10;
+                    xSubtoolbarStackPanel.Margin = margin;
+                }
+                else
+                {
+                    var margin = xSubtoolbarStackPanel.Margin;
+                    margin.Top = 10;
+                    margin.Left = 0;
+                    xSubtoolbarStackPanel.Margin = margin;
+                }
+            }
+            //xPadding.Width = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingLong : ToolbarConstants.PaddingShort;
+            //xPadding.Height = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingShort : ToolbarConstants.PaddingLong;
+            //xPadding.Visibility = (subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void AdjustComboBoxes()
@@ -521,6 +590,7 @@ namespace Dash
             else
             {
                 //Expands toolbar and reopens it as long as nothing is selected
+                xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, xToolbar.ActualWidth);
                 state = State.Expanded;
                 xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
                 xCollapse.Label = "Collapse";
