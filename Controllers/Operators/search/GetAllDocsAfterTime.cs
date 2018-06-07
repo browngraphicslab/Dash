@@ -47,24 +47,31 @@ namespace Dash
             var toReturn = new ListController<DocumentController>();
 
             var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
-            
-            try
+
+            if (!DateTime.TryParse(time, out DateTime givenTime))
             {
-                DateTime givenTime = DateTime.Parse(time);
+                Debug.WriteLine("Invalid time input");
+            }
+            else
+            {
 
                 if (!string.IsNullOrEmpty(time))
                 {
-                    var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
+                    var allResults =
+                        DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as
+                            ListController<DocumentController>;
 
                     Debug.Assert(allResults != null);
 
-                    var data = allResults.Data;
-                    for(int i = 0; i < data.Count; i++)
+                    var data = allResults.TypedData;
+                    for (int i = 0; i < data.Count; i++)
                     {
                         //get time paratmeter in doc and make it into DateTime
-                        var docTimeS = data[i].DereferenceToRoot<DocumentController>(null)
-                            .GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
-                        DateTime docTime = DateTime.Parse(docTimeS);
+                        var docTimeS = data[i].GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
+                        if(!DateTime.TryParse(docTimeS, out DateTime docTime))
+                        {
+                            continue;
+                        }
 
                         //return all docs after givenTime
                         if (docTime > givenTime)
@@ -76,12 +83,7 @@ namespace Dash
 
                 }
             }
-            catch (Exception e)
-            {
-                //invalid time input
-               Debug.WriteLine("Invalid time input");
-            }
-            
+
             outputs[ResultsKey] = toReturn;
         }
 
