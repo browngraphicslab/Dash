@@ -13,6 +13,8 @@ using Windows.Storage;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.Xaml.Data;
+using DashShared;
+
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Dash
@@ -22,7 +24,6 @@ namespace Dash
     {
 
         public Image Image => xImage;
-       
         private PointerPoint p1;
         private PointerPoint p2;
         private bool isLeft;
@@ -40,15 +41,16 @@ namespace Dash
             rectgeo = new RectangleGeometry();
             _docCtrl = docCtrl;
             _context = context;
-            _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 
+            // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
+            _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
 
 
         private void Grid_PointerPressed(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-
+            // TODO: Change to OnCropClick
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 p1 = e.GetCurrentPoint(xImage);
@@ -61,6 +63,7 @@ namespace Dash
 
         private void Grid_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
+            // TODO: Change to WhileCropClicked
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 p2 = e.GetCurrentPoint(xImage);
@@ -79,7 +82,7 @@ namespace Dash
 
         private async void Grid_PointerReleased(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-
+            // TODO: Change to "WhileCropClicked && EnterKeyClicked"
             if (isLeft && hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 
@@ -114,32 +117,53 @@ namespace Dash
 
         }
 
-        private async void OnCrop(Rect rectgeo)
+        /// <summary>
+        ///     crops the image with respect to the values of the rectangle passed in
+        /// </summary>
+        /// <param name="rectangleGeometry"></param>
+        private async void OnCrop(Rect rectangleGeometry)
         {
-            
-            var startx = (uint)rectgeo.X;
-            var starty = (uint)rectgeo.Y;
+            var scale = .5;
+            // retrieves data from rectangle
+            var startPointX = (uint) (rectangleGeometry.X * scale);
+            var startPointY = (uint) (rectangleGeometry.Y * scale);
+            var height = (uint) (rectangleGeometry.Height * scale);
+            var width = (uint) (rectangleGeometry.Width * scale);
 
-            var height = (uint)rectgeo.Height;
-            var width = (uint)rectgeo.Width;
-
-            StorageFile file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
-
+            // finds local uri path of image controller's image source
+            StorageFile file;
+            try
+            {
+                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+            }
+            catch (Exception)
+            {
+                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+            }
+            Debug.Assert(file != null);
             WriteableBitmap cropBmp;
+
+            // opens the uri path and reads it
             using (IRandomAccessStream stream = await file.OpenReadAsync())
             {
                 BitmapDecoder decoder = await BitmapDecoder.CreateAsync(stream);
 
+                // The scaledSize of original image. 
+                uint scaledWidth = (uint)Math.Floor(decoder.PixelWidth * scale);
+                uint scaledHeight = (uint)Math.Floor(decoder.PixelHeight * scale);
+
                 BitmapTransform transform = new BitmapTransform();
                 BitmapBounds bounds = new BitmapBounds()
                 {
-                    X = startx,
-                    Y = starty,
+                    X = startPointX,
+                    Y = startPointY,
                     Width = width,
                     Height = height
-
                 };
                 transform.Bounds = bounds;
+
+                transform.ScaledWidth = scaledWidth;
+                transform.ScaledHeight = scaledHeight;
 
                 PixelDataProvider pix = await decoder.GetPixelDataAsync(
                     BitmapPixelFormat.Bgra8,
@@ -151,23 +175,45 @@ namespace Dash
 
                 byte[] pixels = pix.DetachPixelData();
 
-                cropBmp = new WriteableBitmap((int)width, (int)height);
+                cropBmp = new WriteableBitmap((int) width, (int) height);
                 Stream pixStream = cropBmp.PixelBuffer.AsStream();
                 pixStream.Write(pixels, 0, (int)(width * height * 4));
-                
-
             }
-
-            if (cropBmp != null)
-            {
-                //TODO: setup image binding with new controller
-                Image.Source = cropBmp;
-                //var keyCtrl = KeyStore.DataKey;
-                //var docType =
-                //new DocumentController();
-                //SetupImageBinding(Image, _docCtrl, _context);
-            }
+            
+            WriteableBitmapToStorageFile(cropBmp);
         }
+
+        private async void WriteableBitmapToStorageFile(WriteableBitmap WB)
+        {
+            string FileName = UtilShared.GenerateNewId() + ".jpg";
+            Guid BitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
+
+            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(FileName, CreationCollisionOption.ReplaceExisting);
+            using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                BitmapEncoder encoder = await BitmapEncoder.CreateAsync(BitmapEncoderGuid, stream);
+                Stream pixelStream = WB.PixelBuffer.AsStream();
+                byte[] pixels = new byte[pixelStream.Length];
+                await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+
+                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore,
+                    (uint)WB.PixelWidth,
+                    (uint)WB.PixelHeight,
+                    96.0,
+                    96.0,
+                    pixels);
+                await encoder.FlushAsync();
+            }
+
+            string path = "ms-appdata:///local/" + file.Name;
+            Uri uri = new Uri(path);
+            _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
+            SetupImageBinding(Image, _docCtrl, _context);
+            Image.Source = new BitmapImage(uri);
+            _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+        }
+
+
         private static void SetupImageBinding(Image image, DocumentController controller,
            Context context)
         {
@@ -179,7 +225,7 @@ namespace Dash
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
                     delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
                     {
-                        var doc = (DocumentController)sender;
+                        var doc = (DocumentController) sender;
                         var dargs =
                             (DocumentController.DocumentFieldUpdatedEventArgs)args;
                         if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
