@@ -40,7 +40,6 @@ namespace Dash
         }
 
 	    private RichEditBox _currBox;
-	    private Color _highlightColor;
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
 

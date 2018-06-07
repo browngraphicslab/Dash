@@ -17,18 +17,7 @@
   
 
     <StackPanel x:Name="xStack">
-        <!--   <ColorPicker x:Name="highColorPicker"
-                 ColorSpectrumShape="Ring"
-                 IsColorPreviewVisible="True"
-                 IsColorChannelTextInputVisible="False"
-                 IsHexInputVisible="False"/>
-
-    <Rectangle Height="50" Width="50">
-        <Rectangle.Fill>
-            <SolidColorBrush Color="{x:Bind highColorPicker.Color, Mode=OneWay}"/>
-        </Rectangle.Fill>
-    </Rectangle>
--->
+       
         <controls:TextToolbar
             
             x:Name="xDashTextSubtoolbar"
@@ -41,25 +30,7 @@
                 <buttons:DefaultButton Type="Link" IsVisible="False" />
             </controls:TextToolbar.ButtonModifications>
             
-            <!-- Add highlight button 
-            <controls:TextToolbar.CustomButtons>
-                <buttons:ToolbarButton
-                    Name="Highlight"
-                    Icon="Highlight"
-                    Position="1"  />
-            </controls:TextToolbar.CustomButtons>
-            -->
-            
         </controls:TextToolbar>
-        
-       <!-- <ColorPicker x:Name="xColorPicker"
-                     ColorSpectrumShape=""
-                     IsColorPreviewVisible="False"
-                     IsColorChannelTextInputVisible="False"
-                     IsHexInputVisible="False"
-                     Visibility="Visible"
-                     Width="500"/>
--->
-        
+    
     </StackPanel>
 </UserControl>

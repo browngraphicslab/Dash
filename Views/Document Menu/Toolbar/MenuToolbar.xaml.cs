@@ -18,6 +18,7 @@ using Dash.Views.Document_Menu.Toolbar;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
+using System.Threading.Tasks;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -306,7 +307,17 @@ namespace Dash
 			//set proper subtoolbar to visible
 	        if (subtoolbarElement != null)
 	        {
-				xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, 0);
+				//if vertical, adjust position for additional height
+				if (Orientation == Orientation.Vertical)
+				{
+					xFloating.AdjustPositionForExpansion(0, xToolbar.ActualWidth);
+				}
+				//otherwise, adjust position for additional width
+				else
+				{
+					xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, 0);
+				}
+				
 		        subtoolbarElement.Visibility = Visibility.Visible;
 				//xFloating.Floating_SizeChanged(null, null);
 	        }
@@ -464,25 +475,39 @@ namespace Dash
                 //add error message for null file?
             }
         }
-
-        private void ToggleVisibility(Visibility status)
+		
+        private async void ToggleVisibilityAsync(Visibility status)
         {
-            foreach (var b in allButtons)
-            {
-                b.Visibility = status;
-            }
+			//xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
+			if (subtoolbarElement != null)
+			{
+				subtoolbarElement.Visibility = status;
+				//if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
+			}
 
-            foreach (var s in allSeparators)
-            {
-                s.Visibility = status;
-            }
-
-            //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
-            if (subtoolbarElement != null)
-            {
-                subtoolbarElement.Visibility = status;
-                //if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
-            }
+			if (state == State.Expanded)
+			{
+				foreach (var b in allButtons)
+				{
+					b.Visibility = status;
+					if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+				}
+				foreach (var s in allSeparators)
+				{
+					s.Visibility = status;
+				}
+			} else
+			{
+				foreach (var s in allSeparators)
+				{
+					s.Visibility = status;
+				}
+				foreach (var b in allButtons)
+				{
+					b.Visibility = status;
+					if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+				}
+			}
         }
 
         private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
@@ -583,7 +608,7 @@ namespace Dash
                     xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
                     xCollapse.Label = "";
                     xCollapse.Background = new SolidColorBrush(Colors.Blue);
-                    ToggleVisibility(Visibility.Collapsed);
+                    ToggleVisibilityAsync(Visibility.Collapsed);
                     subtoolbarElement = null;
                 }
             }
@@ -605,7 +630,7 @@ namespace Dash
                 xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
                 xCollapse.Label = "Collapse";
                 xCollapse.Background = new SolidColorBrush(Colors.Red);
-                ToggleVisibility(Visibility.Visible);
+                ToggleVisibilityAsync(Visibility.Visible);
 				xToolbar.IsOpen = subtoolbarElement == null;
 				
 			}

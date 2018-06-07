@@ -22,5 +22,7 @@ namespace Dash
         //PADDING DIMENSIONS
         public const double PaddingShort = 10;
         public const double PaddingLong = 200;
-    }
+
+		public const int ExpansionDelay = 18;
+	}
 }
