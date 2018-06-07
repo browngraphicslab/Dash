@@ -100,7 +100,6 @@ namespace Dash
         {
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            Debug.WriteLine("inputString: " + (inputs[QueryKey] as TextController)?.Data);
             var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 1)
             {

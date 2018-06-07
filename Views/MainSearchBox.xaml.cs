@@ -74,8 +74,6 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
-                Debug.WriteLine("Text: " + text);
-                Debug.WriteLine("currsearch: " + _currentSearch);
                 Debug.WriteLine("DSL: " + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 text = text.Replace(@"\", @"\\");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
@@ -105,7 +103,6 @@ namespace Dash
             }
             
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
@@ -164,7 +161,6 @@ namespace Dash
             //var vms = listController.Data;
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
@@ -177,7 +173,6 @@ namespace Dash
             var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController : thisController);
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 return searchResultViewModel.ViewDocument;
