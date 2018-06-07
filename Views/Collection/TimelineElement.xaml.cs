@@ -40,8 +40,8 @@ namespace Dash
         public TimelineElement()
         {
             InitializeComponent();
-            Unloaded += TimelineElement_Unloaded;
             DataContextChanged += OnDataContextChanged;
+            Unloaded += TimelineElement_Unloaded;
             Loaded += TimelineElement_Loaded;
         }
 
@@ -52,10 +52,7 @@ namespace Dash
         // remove field listener when unloaded
         private void TimelineElement_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (ViewModel == null) return;
-            ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .RemoveFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
-            Unloaded -= TimelineElement_Unloaded;
+            ParentTimeline.MetadataUpdated -= UpdateTimelinePosition;
         }
 
         #region loading
@@ -74,15 +71,6 @@ namespace Dash
             // initializes timeline element, position, and display
             UpdateTimelinePosition();
             LoadContext();
-
-            ViewModel.DocumentViewModel.DocumentController.GetDataDocument()
-                .AddFieldUpdatedListener(KeyStore.DataKey, OnViewModelDataChanged);
-        }
-
-        // this checks for a data change in the viewmodel document controller (ie when text is changed)
-        private void OnViewModelDataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            //OnDataContextChanged(null, null);
         }
 
         // loads the display used for the timeline element
