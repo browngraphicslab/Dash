@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,6 +14,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
+using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -21,7 +23,6 @@ namespace Dash
 {
     public sealed partial class CollectionTreeView : ICollectionView
     {
-
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
         public CollectionTreeView()
@@ -77,6 +78,15 @@ namespace Dash
             //Now call function in ExportToTxt that converts all collections to files
            newExport.DashToTxt(collectionDataDocs);
         }
+        
+        private void TogglePresentationMode(object sender, TappedRoutedEventArgs e)
+        {
+            MainPage.Instance.TogglePresentationMode();
+        }
 
+        public void TogglePresentationMode(bool on)
+        {
+            presentationModeButton.Background = on ? new SolidColorBrush(Color.FromArgb(255, 141, 195, 239)) : new SolidColorBrush(Color.FromArgb(255, 61, 122, 172));
+        }
     }
 }

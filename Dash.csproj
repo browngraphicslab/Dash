@@ -175,6 +175,8 @@
     <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
+    <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
@@ -544,6 +546,13 @@
     <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PresentationView.xaml.cs">
+      <DependentUpon>PresentationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PresentationViewModel.cs" />
+    <Compile Include="Views\PresentationViewTextBox.xaml.cs">
+      <DependentUpon>PresentationViewTextBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
@@ -1028,6 +1037,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PresentationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PresentationViewTextBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

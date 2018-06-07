@@ -753,6 +753,11 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            DocumentView_PointerEntered();
+        }
+
+        public void DocumentView_PointerEntered()
+        {
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
@@ -1031,6 +1036,11 @@ namespace Dash
         {
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
+        }
+
+        private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.PinToPresentation(ViewModel);
         }
     }
 }
