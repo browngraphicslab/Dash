@@ -224,17 +224,17 @@ namespace Dash
 
             // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
             // PositionElement only works when elements are passed in in an increasing order
-            foreach (var element in _contextList.OrderBy(vm =>
+            var sortedElements = _contextList.OrderBy(vm =>
                 vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context())
-                    .ToDateTime().Ticks).ToList()) PositionElement(element);
+                    .ToDateTime().Ticks).ToList();
+            foreach (var element in sortedElements)
+            {
+                PositionElement(element);
+            }
 
             // rescale and reposition elements, and set display type (above or below)
-            var offset = _contextList.First(vm =>
-                             vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                                 .GetValue(new Context()).ToDateTime().Ticks == Metadata.MinTime).PositionX - 100;
-            var scaleFactor = width / _contextList.First(vm =>
-                                  vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
-                                      .GetValue(new Context()).ToDateTime().Ticks == Metadata.MaxTime).PositionX;
+            var offset = sortedElements[0].PositionX - 100;
+            var scaleFactor = width / sortedElements[sortedElements.Count - 1].PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
@@ -246,7 +246,7 @@ namespace Dash
         private void SetDisplayType(TimelineElementViewModel element)
         {
             // display or hide element based on layout
-            if (DisplayElement(element.PositionX))
+            if (ShouldDisplayElement(element.PositionX))
             {
                 element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
                 DisplayedXPositions.Add(element.PositionX);
@@ -269,8 +269,13 @@ namespace Dash
 
             // adjust gaps if necessary
             if (gapDistance < _minGap)
+            {
                 x = CurrentXPosition + _minGap;
-            else if (gapDistance > _maxGap) x = CurrentXPosition + _maxGap;
+            }
+            else if (gapDistance > _maxGap)
+            {
+                x = CurrentXPosition + _maxGap;
+            }
             CurrentXPosition = x;
             element.PositionX = x;
 
@@ -293,7 +298,7 @@ namespace Dash
             if (totalTime == 0) totalTime = 10;
 
             var normOffset =
-                (double) (tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
                               .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
@@ -304,12 +309,17 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        private bool DisplayElement(double x)
+        private bool ShouldDisplayElement(double x)
         {
             // return false to hide current timeline element if it is too close to another displayed element
             foreach (var pos in DisplayedXPositions)
+            {
                 if (Math.Abs(x - pos) < 200)
+                {
                     return false;
+                }
+            }
+
             return true;
         }
 
@@ -330,7 +340,7 @@ namespace Dash
         /// <summary>
         ///     updates the start and end points of the timeline relative to other points
         /// </summary>
-        private void UpdateMetadataMinAndMax()
+        private void UpdateTimeline()
         {
             // if context list is empty we can't update anything
             if (!_contextList.Any()) return;
@@ -350,6 +360,7 @@ namespace Dash
             {
                 Debug.WriteLine(e);
             }
+            SetTimelineFormatting();
         }
 
         #endregion
@@ -389,8 +400,7 @@ namespace Dash
                     dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
 
-                UpdateMetadataMinAndMax();
-                SetTimelineFormatting();
+                UpdateTimeline();
             }
         }
 
@@ -444,8 +454,7 @@ namespace Dash
                 vm.DataDocument.RemoveFieldUpdatedListener(SortKey, SortKeyModified);
             }
 
-            UpdateMetadataMinAndMax();
-            SortKeyModified(null, null, null);
+            UpdateTimeline();
         }
 
         /// <summary>
@@ -460,15 +469,13 @@ namespace Dash
                 vm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
             }
 
-            UpdateMetadataMinAndMax();
-            SortKeyModified(null, null, null);
+            UpdateTimeline();
         }
 
         // Sort the modified key
         private void SortKeyModified(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            UpdateMetadataMinAndMax();
-            SetTimelineFormatting();
+            UpdateTimeline();
         }
 
         #endregion
