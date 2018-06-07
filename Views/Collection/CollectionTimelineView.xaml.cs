@@ -90,7 +90,6 @@ namespace Dash
 
     public sealed partial class CollectionTimelineView : ICollectionView
     {
-        public static double LastDisplayedPosition;
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
@@ -249,7 +248,6 @@ namespace Dash
             // display or hide element based on layout
             if (DisplayElement(element.PositionX))
             {
-                LastDisplayedPosition = element.PositionX;
                 element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
                 DisplayedXPositions.Add(element.PositionX);
             }
