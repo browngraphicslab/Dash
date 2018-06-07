@@ -22,8 +22,8 @@
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <TextBlock TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" Text="TreeView"/>
-            <TextBox TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Text="TreeView" Padding="0,7"/>
+            <TextBlock x:Name="Textblock" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Padding="0,7" Text="TreeView" DoubleTapped="Textblock_OnDoubleTapped"/>
+            <TextBox x:Name="Textbox" TextAlignment="Center" FontSize="{StaticResource DefaultTitleFontSize}" Text="TreeView" Visibility="Collapsed" Padding="0,7" LostFocus="Textbox_OnLostFocus"/>
         </Grid>
         <TextBox x:Name="XFilterBox" FontSize="12" Grid.Row="1" Margin="10" BorderThickness="1.5" PlaceholderText="filter notes"/>
         <local:TreeViewCollectionNode Margin="15 0 0 0" x:Name="xTreeRoot" HorizontalAlignment="Left" Grid.Row="2" FilterString="{Binding ElementName=XFilterBox, Path=Text, UpdateSourceTrigger=PropertyChanged}"/>

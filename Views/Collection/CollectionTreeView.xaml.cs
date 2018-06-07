@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -87,6 +88,19 @@ namespace Dash
         public void TogglePresentationMode(bool on)
         {
             presentationModeButton.Background = on ? new SolidColorBrush(Color.FromArgb(255, 141, 195, 239)) : new SolidColorBrush(Color.FromArgb(255, 61, 122, 172));
+        }
+
+        private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            Textblock.Visibility = Visibility.Collapsed;
+            Textbox.Visibility = Visibility.Visible;
+        }
+
+        private void Textbox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            Textblock.Text = Textbox.Text;
+            Textblock.Visibility = Visibility.Visible;
+            Textbox.Visibility = Visibility.Collapsed;
         }
     }
 }
