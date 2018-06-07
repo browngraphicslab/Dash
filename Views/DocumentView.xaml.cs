@@ -32,7 +32,7 @@ namespace Dash
         public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
 
         public MenuFlyout MenuFlyout { get; set; }
-
+        public Action OnCropClick;
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 

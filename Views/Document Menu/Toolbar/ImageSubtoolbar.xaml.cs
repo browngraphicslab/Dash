@@ -28,6 +28,7 @@ namespace Dash
 	{
 	    private DocumentView currentDocView;
 	    private DocumentController currentDocControl;
+	    private Action OnCropClick;
         public ImageSubtoolbar()
 		{
 			this.InitializeComponent();
@@ -53,6 +54,7 @@ namespace Dash
 		{
             //TODO: Implement cropping on the selected image
 		    xImageCommandbar.IsOpen = true;
+            currentDocView.OnCropClick?.Invoke();
         }
 
 		private void Replace_Click(object sender, RoutedEventArgs e)

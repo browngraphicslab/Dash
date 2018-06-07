@@ -13,7 +13,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using Windows.UI;
+using Windows.UI.Xaml;
 using Flurl.Util;
+using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -31,6 +34,7 @@ namespace Dash
         private PointerPoint _p2;
         private double _originalWidth;
         public RectangleGeometry RectGeo;
+        public Image Image => xImage;
 
         public EditableImage(DocumentController docCtrl, Context context)
         {
@@ -48,24 +52,42 @@ namespace Dash
         {
             _originalWidth = Image.Width; 
             var test = Image.RenderSize.Width;
-            //var docView = this.GetFirstAncestorOfType<DocumentView>();
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView.OnCropClick += OnCropClick;
 
             //var transform = docView.RenderTransform;
             //transform.ToKeyValuePairs();
         }
 
-        public Image Image => xImage;
+        private void OnCropClick()
+        {
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            var mTransform = docView.RenderTransform as MatrixTransform;
+            var xRect = new Rectangle
+            {
+                StrokeThickness = 4,
+                Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
+                Fill = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            xRect.Width = Image.ActualWidth;
+            xRect.Height = Image.ActualHeight;
+            xGrid.Children.Add(xRect);
+
+            //transform.X = mTransform.Matrix.OffsetX;
+            //transform.Y = mTransform.Matrix.OffsetX;
+        }
 
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            // TODO: Change to OnCropClick
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                _p1 = e.GetCurrentPoint(xImage);
-                _isLeft = true;
-                transform.X = _p1.Position.X;
-                transform.Y = _p1.Position.Y;
-            }
+            //if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            //{
+            //    _p1 = e.GetCurrentPoint(xImage);
+            //    _isLeft = true;
+            //    transform.X = _p1.Position.X;
+            //    transform.Y = _p1.Position.Y;
+            //}
         }
 
         private void Grid_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -73,13 +95,13 @@ namespace Dash
             // TODO: Change to WhileCropClicked
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                _p2 = e.GetCurrentPoint(xImage);
-                _hasDragged = true;
-                xRect.Visibility = Visibility.Visible;
+                //_p2 = e.GetCurrentPoint(xImage);
+                //_hasDragged = true;
+                //xRect.Visibility = Visibility.Visible;
 
 
-                xRect.Width = (int) Math.Abs(_p2.Position.X - _p1.Position.X);
-                xRect.Height = (int) Math.Abs(_p2.Position.Y - _p1.Position.Y);
+                //xRect.Width = (int) Math.Abs(_p2.Position.X - _p1.Position.X);
+                //xRect.Height = (int) Math.Abs(_p2.Position.Y - _p1.Position.Y);
             }
         }
 
@@ -89,25 +111,25 @@ namespace Dash
             // TODO: Change to "WhileCropClicked && EnterKeyClicked"
             if (_isLeft && _hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                _p2 = e.GetCurrentPoint(xImage);
+                //_p2 = e.GetCurrentPoint(xImage);
 
-                xRect.Visibility = Visibility.Collapsed;
-
-
-                await Task.Delay(100);
-
-                RectGeo.Rect = new Rect(_p1.Position.X, _p1.Position.Y, xRect.Width, xRect.Height);
+                //xRect.Visibility = Visibility.Collapsed;
 
 
-                //xImage.Clip = rectgeo;
+                //await Task.Delay(100);
 
-                //docView.ViewModel.Width = xRect.Width;
-                //docView.ViewModel.Height = xRect.Height;
+                //RectGeo.Rect = new Rect(_p1.Position.X, _p1.Position.Y, xRect.Width, xRect.Height);
 
-                OnCrop(RectGeo.Rect);
 
-                _isLeft = false;
-                _hasDragged = false;
+                ////xImage.Clip = rectgeo;
+
+                ////docView.ViewModel.Width = xRect.Width;
+                ////docView.ViewModel.Height = xRect.Height;
+
+                //OnCrop(RectGeo.Rect);
+
+                //_isLeft = false;
+                //_hasDragged = false;
             }
         }
 
@@ -207,9 +229,10 @@ namespace Dash
             //Image.RenderTransform
             _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+
+            // TODO: Test that replace button works with cropping when merged with master
         }
-
-
+        
         private static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {

@@ -8,20 +8,14 @@
     mc:Ignorable="d"
     Background="Beige">
     
-    <Grid x:Name="yeet" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" PointerPressed="Grid_PointerPressed">
+    <Grid x:Name="xGrid" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" PointerPressed="Grid_PointerPressed">
         <Image x:Name="xImage"  VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill" Width="500" CacheMode="BitmapCache">
             <!--<Image.Clip x:Name="clip">
                 <RectangleGeometry x:Name="rectgeo"></RectangleGeometry>
             </Image.Clip>-->
         </Image>
-        <Rectangle x:Name="xRect" StrokeThickness="4" Stroke="Black" Fill="White" Opacity="0.2" Visibility="Collapsed" Width="5" Height="5" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Rectangle.RenderTransform>
-                <TranslateTransform x:Name="transform">
-                    
-                </TranslateTransform>
-                
-            </Rectangle.RenderTransform>
-        </Rectangle>
+        <!--<Rectangle x:Name="xRect" StrokeThickness="4" Stroke="Black" Fill="White" Opacity="0.2" Visibility="Collapsed" Width="5" Height="5" HorizontalAlignment="Left" VerticalAlignment="Top">
+        </Rectangle>-->
     </Grid>
 
  
