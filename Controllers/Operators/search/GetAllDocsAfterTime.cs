@@ -67,7 +67,8 @@ namespace Dash
                     for (int i = 0; i < data.Count; i++)
                     {
                         //get time paratmeter in doc and make it into DateTime
-                        var docTimeS = data[i].GetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).ToString();
+                        var docTimeS = data[i]
+                            .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey) .Data;
                         if(!DateTime.TryParse(docTimeS, out DateTime docTime))
                         {
                             continue;
