@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
+using Flurl.Util;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -24,36 +25,46 @@ namespace Dash
         private readonly Context _context;
         private readonly DocumentController _docCtrl;
         private ImageController _imgctrl;
-        private bool hasDragged;
-        private bool isLeft;
-        private PointerPoint p1;
-        private PointerPoint p2;
-        public RectangleGeometry rectgeo;
-
+        private bool _hasDragged;
+        private bool _isLeft;
+        private PointerPoint _p1;
+        private PointerPoint _p2;
+        private double _originalWidth;
+        public RectangleGeometry RectGeo;
 
         public EditableImage(DocumentController docCtrl, Context context)
         {
             InitializeComponent();
-            rectgeo = new RectangleGeometry();
+            RectGeo = new RectangleGeometry();
             _docCtrl = docCtrl;
             _context = context;
+            Image.Loaded += Image_Loaded;
 
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
-        public Image Image => xImage;
+        private void Image_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            _originalWidth = Image.Width; 
+            var test = Image.RenderSize.Width;
+            //var docView = this.GetFirstAncestorOfType<DocumentView>();
 
+            //var transform = docView.RenderTransform;
+            //transform.ToKeyValuePairs();
+        }
+
+        public Image Image => xImage;
 
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             // TODO: Change to OnCropClick
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p1 = e.GetCurrentPoint(xImage);
-                isLeft = true;
-                transform.X = p1.Position.X;
-                transform.Y = p1.Position.Y;
+                _p1 = e.GetCurrentPoint(xImage);
+                _isLeft = true;
+                transform.X = _p1.Position.X;
+                transform.Y = _p1.Position.Y;
             }
         }
 
@@ -62,13 +73,13 @@ namespace Dash
             // TODO: Change to WhileCropClicked
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p2 = e.GetCurrentPoint(xImage);
-                hasDragged = true;
+                _p2 = e.GetCurrentPoint(xImage);
+                _hasDragged = true;
                 xRect.Visibility = Visibility.Visible;
 
 
-                xRect.Width = (int) Math.Abs(p2.Position.X - p1.Position.X);
-                xRect.Height = (int) Math.Abs(p2.Position.Y - p1.Position.Y);
+                xRect.Width = (int) Math.Abs(_p2.Position.X - _p1.Position.X);
+                xRect.Height = (int) Math.Abs(_p2.Position.Y - _p1.Position.Y);
             }
         }
 
@@ -76,34 +87,27 @@ namespace Dash
         private async void Grid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             // TODO: Change to "WhileCropClicked && EnterKeyClicked"
-            if (isLeft && hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (_isLeft && _hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                p2 = e.GetCurrentPoint(xImage);
+                _p2 = e.GetCurrentPoint(xImage);
 
                 xRect.Visibility = Visibility.Collapsed;
 
 
                 await Task.Delay(100);
 
-                rectgeo.Rect = new Rect(p1.Position.X, p1.Position.Y, xRect.Width, xRect.Height);
+                RectGeo.Rect = new Rect(_p1.Position.X, _p1.Position.Y, xRect.Width, xRect.Height);
 
 
                 //xImage.Clip = rectgeo;
 
-                //var docView = this.GetFirstAncestorOfType<DocumentView>();
-
-                //Point point = new Point(rectgeo.Rect.X, rectgeo.Rect.Y);
-
-
-                //docView.RenderTransform = transform;
-
                 //docView.ViewModel.Width = xRect.Width;
                 //docView.ViewModel.Height = xRect.Height;
 
-                OnCrop(rectgeo.Rect);
+                OnCrop(RectGeo.Rect);
 
-                isLeft = false;
-                hasDragged = false;
+                _isLeft = false;
+                _hasDragged = false;
             }
         }
 
@@ -113,12 +117,12 @@ namespace Dash
         /// <param name="rectangleGeometry"></param>
         private async void OnCrop(Rect rectangleGeometry)
         {
-            var scale = (double) 1;
+            var scale = (double) (_originalWidth / Image.ActualWidth);
             // retrieves data from rectangle
-            var startPointX = (uint) (rectangleGeometry.X * scale);
-            var startPointY = (uint) (rectangleGeometry.Y * scale);
-            var height = (uint) (rectangleGeometry.Height * scale);
-            var width = (uint) (rectangleGeometry.Width * scale);
+            var startPointX = (uint) (rectangleGeometry.X);
+            var startPointY = (uint) (rectangleGeometry.Y);
+            var height = (uint) (rectangleGeometry.Height);
+            var width = (uint) (rectangleGeometry.Width);
 
             // finds local uri path of image controller's image source
             StorageFile file;
@@ -140,8 +144,8 @@ namespace Dash
                 var decoder = await BitmapDecoder.CreateAsync(stream);
 
                 // The scaledSize of original image. 
-                var scaledWidth = (uint) Math.Floor(decoder.PixelWidth * scale);
-                var scaledHeight = (uint) Math.Floor(decoder.PixelHeight * scale);
+                var scaledWidth = (uint) Math.Floor(decoder.PixelWidth / scale);
+                var scaledHeight = (uint) Math.Floor(decoder.PixelHeight / scale);
 
                 var bitmapTransform = new BitmapTransform();
                 var bounds = new BitmapBounds
@@ -152,7 +156,6 @@ namespace Dash
                     Height = height
                 };
                 bitmapTransform.Bounds = bounds;
-
                 bitmapTransform.ScaledWidth = scaledWidth;
                 bitmapTransform.ScaledHeight = scaledHeight;
 
@@ -165,71 +168,44 @@ namespace Dash
                 );
 
                 var pixels = pix.DetachPixelData();
-
                 cropBmp = new WriteableBitmap((int) width, (int) height);
                 var pixStream = cropBmp.PixelBuffer.AsStream();
                 pixStream.Write(pixels, 0, (int) (width * height * 4));
 
-                var fileName = UtilShared.GenerateNewId() + ".jpg";
-                var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-                var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
-                    CreationCollisionOption.ReplaceExisting);
-
-                using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
-
-                    encoder.SetPixelData(
-                        BitmapPixelFormat.Bgra8,
-                        BitmapAlphaMode.Straight,
-                        width,
-                        height,
-                        decoder.DpiX,
-                        decoder.DpiY,
-                        pixels);
-                    await encoder.FlushAsync();
-                }
-
-                var path = "ms-appdata:///local/" + newFile.Name;
-                var uri = new Uri(path);
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
-                SetupImageBinding(Image, _docCtrl, _context);
-                Image.Source = cropBmp;
-                Image.Width = width;
-                _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+                SaveCroppedImageAsync(cropBmp, decoder, width, height, pixels);
             }
         }
 
-        private async void WriteableBitmapToStorageFile(WriteableBitmap WB)
+        private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, uint width, uint height, byte[] pixels)
         {
             var fileName = UtilShared.GenerateNewId() + ".jpg";
             var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-
-            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
+            var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
                 CreationCollisionOption.ReplaceExisting);
-            using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+
+            using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
             {
-                var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, stream);
-                var pixelStream = WB.PixelBuffer.AsStream();
-                var pixels = new byte[pixelStream.Length];
-                await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+                var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
 
                 encoder.SetPixelData(
                     BitmapPixelFormat.Bgra8,
                     BitmapAlphaMode.Straight,
-                    (uint) WB.PixelWidth,
-                    (uint) WB.PixelHeight,
-                    96.0,
-                    96.0,
+                    width,
+                    height,
+                    decoder.DpiX,
+                    decoder.DpiY,
                     pixels);
                 await encoder.FlushAsync();
             }
 
-            var path = "ms-appdata:///local/" + file.Name;
+            var path = "ms-appdata:///local/" + newFile.Name;
             var uri = new Uri(path);
             _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
             SetupImageBinding(Image, _docCtrl, _context);
-            Image.Source = new BitmapImage(uri);
+            Image.Source = cropBmp;
+            Image.Width = width;
+            //Image.RenderTransform
+            _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
         }
 
