@@ -320,31 +320,45 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag)
+        public void HighlightDoc(DocumentController document, bool? flag, int search=0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (collection != null && document != null)
             {
-                highlightDoc(collection, document, flag);
+                highlightDoc(collection, document, flag, search);
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag)
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, int search)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
-                    if (flag == null)
-                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                    else if (flag == true)
-                        dm.DecorationState = (dm.Undecorated == false);
-                    else if (flag == false)
-                        dm.DecorationState = false;
+                    //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
+                    if (search == 0)
+                    {
+                        if (flag == null)
+                            dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
+                        else if (flag == true)
+                            dm.DecorationState = (dm.Undecorated == false);
+                        else if (flag == false)
+                            dm.DecorationState = false;
+                    }
+                    else if(search == 1)
+                    {
+                        //highlight doc
+                        dm.SearchHighlightState = new Thickness(8);
+                    }
+                    else
+                    {
+                        //unhighlight doc
+                        dm.SearchHighlightState = new Thickness(0);
+                    }
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
                 {
-                    highlightDoc(freeformView, document, flag);
+                    highlightDoc(freeformView, document, flag, search);
                 }
         }
 
