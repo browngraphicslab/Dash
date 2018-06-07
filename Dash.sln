@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dash", "Dash.csproj", "{735
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashShared", "DashShared\DashShared.csproj", "{4A1E5C52-06B9-436C-8FE0-8238809C1F57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Office.Interop", "..\UWP Office Interop\Office.Interop\Office.Interop.csproj", "{A8CBE04A-A64E-431C-863D-7AB72EA8F567}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Office.Interop", "Office.Interop\Office.Interop.csproj", "{A8CBE04A-A64E-431C-863D-7AB72EA8F567}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

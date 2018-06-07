@@ -27,6 +27,10 @@ using Size = Windows.Foundation.Size;
 using Windows.ApplicationModel.AppService;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.UI.Popups;
+using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
+using Windows.ApplicationModel;
 
 namespace Dash
 {
@@ -39,8 +43,11 @@ namespace Dash
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
 
+        //this table saves requests to appData for htmlImport
+        private static ValueSet table = null;
 
-    void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+
+        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
@@ -597,6 +604,23 @@ namespace Dash
             AddDocument(droppedDoc);
         }
 
+        public static async void AppServiceConnected(object sender, EventArgs e)
+        {
+            // send the ValueSet to the fulltrust process
+            AppServiceResponse response = await App.Connection.SendMessageAsync(table);
+
+            // check the result
+            object result;
+            response.Message.TryGetValue("RESPONSE", out result);
+            if (result.ToString() != "SUCCESS")
+            {
+                MessageDialog dialog = new MessageDialog(result.ToString());
+                await dialog.ShowAsync();
+            }
+            // no longer need the AppService connection
+            App.AppServiceDeferral.Complete();
+        }
+
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -657,6 +681,23 @@ namespace Dash
                 html = html.Substring(html.IndexOf("<html>", StringComparison.Ordinal));
                 html = new Regex("< *br (?<tags>.*?)>").Replace(html, "<br ${tags} />");
                 html = new Regex("< *img (?<tags>.*?)>").Replace(html, "<img ${tags} />");
+
+                // create a ValueSet from the datacontext, used to create word doc to copy html to
+                table = new ValueSet();
+                table.Add("REQUEST", "CreateDocument");
+
+                // launch the fulltrust process and for it to connect to the app service            
+                if (ApiInformation.IsApiContractPresent("Windows.ApplicationModel.FullTrustAppContract", 1, 0))
+                {
+                    await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
+                }
+                else
+                {
+                    MessageDialog dialog = new MessageDialog("This feature is only available on Windows 10 Desktop SKU");
+                    await dialog.ShowAsync();
+                }
+
+
 
                 WordDocument d = new WordDocument();
                 d.EnsureMinimal();
