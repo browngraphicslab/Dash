@@ -306,7 +306,7 @@ namespace Dash
 			//set proper subtoolbar to visible
 	        if (subtoolbarElement != null)
 	        {
-				xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, xToolbar.ActualWidth);
+				xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, 0);
 		        subtoolbarElement.Visibility = Visibility.Visible;
 				//xFloating.Floating_SizeChanged(null, null);
 	        }
@@ -589,15 +589,26 @@ namespace Dash
             }
             else
             {
-                //Expands toolbar and reopens it as long as nothing is selected
-                xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, xToolbar.ActualWidth);
-                state = State.Expanded;
+				//if vertical, adjust position for additional height
+				if (Orientation == Orientation.Vertical)
+				{
+					xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, 0);
+				}
+				//otherwise, adjust position for additional width
+				else
+				{
+					xFloating.AdjustPositionForExpansion(0, 700 - xToolbar.ActualWidth);
+				}
+				
+				//Expands toolbar and reopens it as long as nothing is selected
+				state = State.Expanded;
                 xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
                 xCollapse.Label = "Collapse";
                 xCollapse.Background = new SolidColorBrush(Colors.Red);
                 ToggleVisibility(Visibility.Visible);
-                xToolbar.IsOpen = subtoolbarElement == null;
-            }
+				xToolbar.IsOpen = subtoolbarElement == null;
+				
+			}
         }
 
         public void SwitchTheme(bool nightModeOn)

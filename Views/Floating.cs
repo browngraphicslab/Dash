@@ -218,12 +218,10 @@
                 position = AdjustedPosition(rect, parentRect);
             }
 
+			//if the object is moving to account for additional width/height (of size greater than 1), then animate it
 			if (_expanding && (Math.Abs(Canvas.GetTop(_border) - position.Y) > 1 || Math.Abs(Canvas.GetLeft(_border) - position.X) > 1))
 			{
-				this.MoveAnimation(-(Canvas.GetLeft(_border) - position.X), -(Canvas.GetTop(_border) - position.Y), position.Y, position.X);
-				// Set new position
-				//Canvas.SetLeft(_border, position.X);
-				//Canvas.SetTop(_border, position.Y);
+				this.MoveAnimation(position.X - Canvas.GetLeft(_border), -(Canvas.GetTop(_border) - position.Y), position.Y, position.X);
 			}
 			else
 			{
@@ -232,7 +230,6 @@
 				Canvas.SetTop(_border, position.Y);
 			}
 			
-
 		}
 
         /// <summary>
@@ -316,9 +313,11 @@
 	   
 	    }
 
+		/// <summary>
+		/// Animates the movement of a floating object by the difference in x,y dist
+		/// </summary>
 		public void MoveAnimation(double xDist, double yDist, double yPos, double xPos)
 		{
-			System.Diagnostics.Debug.WriteLine("CANVAS GET TOP Before" + Canvas.GetLeft(_border));
 			// Create the transform
 			TranslateTransform moveTransform = new TranslateTransform();
 			moveTransform.X = 0;
@@ -346,76 +345,21 @@
 			myDoubleAnimationX.To = xDist;
 			myDoubleAnimationY.To = yDist - 15;
 
-			// Make the Storyboard a resource.
-			//LayoutRoot.Resources.Add("justintimeStoryboard", justintimeStoryboard);
 			// Begin the animation.
 			justintimeStoryboard.Begin();
-
-			//SOMEHOW SET CANVAS BACK TO ORIGINAL POSITIONING
 			
-			
+			//when completed, re-adjust canvas and positioning to avoid an unwanted offset
 			justintimeStoryboard.Completed += (s, e) =>
 			{
-				//FrameworkElement el = GetClosestParentWithSize(this);
-
-				//var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
-				//this.SetControlPosition(Canvas.GetLeft(_border), Window.Current.Bounds.Height - topLeft.Y);
-				
-				//_expanding = false;
 				moveTransform.X = moveTransform.X - xDist;
+				Canvas.SetLeft(_border, xPos);
 				moveTransform.Y = moveTransform.Y - yDist + 15;
 				Canvas.SetTop(_border, yPos - 15);
-                /*
-				var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
-
-				double elSize = _border.ActualHeight;
-				double topY = Canvas.GetTop(_border);
-
-				double newLowY = topY + elSize + 50;
-
-				//if expansion would cause the object to extend past the bottom of the screen, adjust y position by the difference
-				if (newLowY >= Window.Current.Bounds.Height)
-				{
-					this.SetControlPosition(0, Window.Current.Bounds.Height - newLowY);
-				}
-				*/
+              
             };
 			
 		}
 
-		public void MoveAnimation2(double xDist, double yDist)
-		{
-			// Create the transform
-			//TranslateTransform moveTransform = new TranslateTransform();
-			//moveTransform.X = 0;
-			//moveTransform.Y = 0;
-			//_border.RenderTransform = moveTransform;
-
-			// Create a duration of .5 seconds.
-			Duration duration = new Duration(TimeSpan.FromSeconds(.5));
-			// Create two DoubleAnimations and set their properties.
-			//DoubleAnimation myDoubleAnimationX = new DoubleAnimation();
-			DoubleAnimation myDoubleAnimationY = new DoubleAnimation();
-			//myDoubleAnimationX.Duration = duration;
-			myDoubleAnimationY.Duration = duration;
-			Storyboard fadeAnimation = new Storyboard();
-			fadeAnimation.Duration = duration;
-			//fadeAnimation.Children.Add(myDoubleAnimationX);
-			fadeAnimation.Children.Add(myDoubleAnimationY);
-			//Storyboard.SetTarget(myDoubleAnimationX, _border);
-			Storyboard.SetTarget(myDoubleAnimationY, this);
-			//_border.SetValue(Canvas.LeftProperty, 4);
-			// Set the X and Y properties of the Transform to be the target properties
-			// of the two respective DoubleAnimations.
-			//Storyboard.SetTargetProperty((Canvas.Left), "X");
-			Storyboard.SetTargetProperty(myDoubleAnimationY, "Top");
-			//myDoubleAnimationX.To = xDist;
-			myDoubleAnimationY.To = yDist;
-
-			// Make the Storyboard a resource.
-			//LayoutRoot.Resources.Add("justintimeStoryboard", justintimeStoryboard);
-			// Begin the animation.
-			fadeAnimation.Begin();
-		}
+		
 	}
 }
