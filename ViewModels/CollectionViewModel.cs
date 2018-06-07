@@ -32,10 +32,10 @@ namespace Dash
 
         public enum StandardViewLevel
         {
-            Detail, Region, Overview
+            None, Detail, Region, Overview
         }
 
-        private StandardViewLevel _viewLevel;
+        private StandardViewLevel _viewLevel = StandardViewLevel.None;
 
         public StandardViewLevel ViewLevel
         {
@@ -51,6 +51,7 @@ namespace Dash
         {
             foreach (var dvm in DocumentViewModels)
             {
+                var name = dvm.ToString();
                 dvm.ViewLevel = ViewLevel;
             }
         }

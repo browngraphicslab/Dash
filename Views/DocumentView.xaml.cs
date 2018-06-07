@@ -84,7 +84,8 @@ namespace Dash
         }
 
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
-            "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView), new PropertyMetadata(null));
+            "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView), new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
+
 
         public CollectionViewModel.StandardViewLevel StandardViewLevel
         {
@@ -92,9 +93,9 @@ namespace Dash
             set
             {
                 SetValue(StandardViewLevelProperty, value);
-                UpdateView();
             }
         }
+
 
         // == CONSTRUCTORs ==
 
@@ -304,6 +305,12 @@ namespace Dash
         }
 
         #region StandardCollectionView
+        private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            var view = obj as DocumentView;
+            view.UpdateView();
+        }
+
         void UpdateIcon()
         {
             xFreeFormDocViewCol.Width = new GridLength(0);

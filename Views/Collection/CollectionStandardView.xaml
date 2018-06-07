@@ -53,7 +53,7 @@
                         BindRenderTransform="True"
                         Loaded="DocumentViewOnLoaded"
                         IsViewStandard="True"
-                        StandardViewLevel="{Binding ViewLevel}"/>
+                        StandardViewLevel="{Binding Path=ViewLevel, Mode=OneWay}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
