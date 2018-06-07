@@ -301,6 +301,9 @@
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
+    <Compile Include="Util\StateCropControl.xaml.cs">
+      <DependentUpon>StateCropControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\TaskQueue.cs" />
     <Compile Include="Converters\StringToBrushConverter.cs" />
     <Compile Include="TagCloud\ComponentFactory.cs" />
@@ -817,6 +820,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Collection\CollectionTimelineView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -848,7 +855,7 @@
     <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>    
+    </Page>
     <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

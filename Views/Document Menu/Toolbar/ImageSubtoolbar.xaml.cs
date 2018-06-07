@@ -52,7 +52,6 @@ namespace Dash
 
 		private void Crop_Click(object sender, RoutedEventArgs e)
 		{
-            //TODO: Implement cropping on the selected image
 		    xImageCommandbar.IsOpen = true;
             currentDocView.OnCropClick?.Invoke();
         }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -15,26 +18,39 @@ using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Windows.UI;
 using Windows.UI.Xaml;
+using Dash.Annotations;
 using Flurl.Util;
 using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.System;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Dash
 {
-    public partial class EditableImage
+    public partial class EditableImage : INotifyPropertyChanged
     {
         private readonly Context _context;
         private readonly DocumentController _docCtrl;
         private ImageController _imgctrl;
-        private bool _hasDragged;
-        private bool _isLeft;
+        private ImageSource _imgSource;
+        private bool _isCropping;
         private PointerPoint _p1;
         private PointerPoint _p2;
         private double _originalWidth;
+        private StateCropControl _cropControl;
         public RectangleGeometry RectGeo;
         public Image Image => xImage;
+
+        public ImageSource ImageSource
+        {
+            get => _imgSource;
+            set
+            {
+                _imgSource = value;
+                OnPropertyChanged();
+            }
+        }
 
         public EditableImage(DocumentController docCtrl, Context context)
         {
@@ -48,39 +64,40 @@ namespace Dash
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
-        private void Image_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void Image_Loaded(object sender, RoutedEventArgs e)
         {
-            _originalWidth = Image.Width; 
-            var test = Image.RenderSize.Width;
+            _originalWidth = Image.Width;
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.OnCropClick += OnCropClick;
-
-            //var transform = docView.RenderTransform;
-            //transform.ToKeyValuePairs();
+            Focus(FocusState.Keyboard);
+            _cropControl = new StateCropControl(_docCtrl, this);
         }
 
         private void OnCropClick()
         {
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            var mTransform = docView.RenderTransform as MatrixTransform;
-            var xRect = new Rectangle
-            {
-                StrokeThickness = 4,
-                Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
-                Fill = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            xRect.Width = Image.ActualWidth;
-            xRect.Height = Image.ActualHeight;
-            xGrid.Children.Add(xRect);
-
-            //transform.X = mTransform.Matrix.OffsetX;
-            //transform.Y = mTransform.Matrix.OffsetX;
+            if (xGrid.Children.Contains(_cropControl)) return;
+            Focus(FocusState.Programmatic);
+            xGrid.Children.Add(_cropControl);
+            _isCropping = true;
+            //var xRect = new Rectangle
+            //{
+            //    StrokeThickness = 4,
+            //    Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
+            //    Fill = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)),
+            //    HorizontalAlignment = HorizontalAlignment.Left,
+            //    VerticalAlignment = VerticalAlignment.Top
+            //};
+            //xRect.Width = Image.ActualWidth;
+            //xRect.Height = Image.ActualHeight;
+            //xGrid.Children.Add(xRect);
         }
 
         private void Grid_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (_isCropping)
+            {
+                e.Handled = true;
+            }
             //if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             //{
             //    _p1 = e.GetCurrentPoint(xImage);
@@ -92,45 +109,50 @@ namespace Dash
 
         private void Grid_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            // TODO: Change to WhileCropClicked
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (_isCropping)
             {
-                //_p2 = e.GetCurrentPoint(xImage);
-                //_hasDragged = true;
-                //xRect.Visibility = Visibility.Visible;
-
-
-                //xRect.Width = (int) Math.Abs(_p2.Position.X - _p1.Position.X);
-                //xRect.Height = (int) Math.Abs(_p2.Position.Y - _p1.Position.Y);
             }
+            //if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            //{
+            //    _p2 = e.GetCurrentPoint(xImage);
+            //    _hasDragged = true;
+            //    xRect.Visibility = Visibility.Visible;
+
+
+            //    xRect.Width = (int)Math.Abs(_p2.Position.X - _p1.Position.X);
+            //    xRect.Height = (int)Math.Abs(_p2.Position.Y - _p1.Position.Y);
+            //}
         }
 
 
-        private async void Grid_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void Grid_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            // TODO: Change to "WhileCropClicked && EnterKeyClicked"
-            if (_isLeft && _hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (_isCropping)
             {
-                //_p2 = e.GetCurrentPoint(xImage);
-
-                //xRect.Visibility = Visibility.Collapsed;
-
-
-                //await Task.Delay(100);
-
-                //RectGeo.Rect = new Rect(_p1.Position.X, _p1.Position.Y, xRect.Width, xRect.Height);
-
-
-                ////xImage.Clip = rectgeo;
-
-                ////docView.ViewModel.Width = xRect.Width;
-                ////docView.ViewModel.Height = xRect.Height;
-
-                //OnCrop(RectGeo.Rect);
-
-                //_isLeft = false;
-                //_hasDragged = false;
+                e.Handled = true;
             }
+            //if (_isLeft && _hasDragged && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            //{
+            //    _p2 = e.GetCurrentPoint(xImage);
+
+            //    xRect.Visibility = Visibility.Collapsed;
+
+
+            //    await Task.Delay(100);
+
+            //    RectGeo.Rect = new Rect(_p1.Position.X, _p1.Position.Y, xRect.Width, xRect.Height);
+
+
+            //    xImage.Clip = rectgeo;
+
+            //    docView.ViewModel.Width = xRect.Width;
+            //    docView.ViewModel.Height = xRect.Height;
+
+            //    OnCrop(RectGeo.Rect);
+
+            //    _isLeft = false;
+            //    _hasDragged = false;
+            //}
         }
 
         /// <summary>
@@ -270,6 +292,31 @@ namespace Dash
                 Converter = UriToBitmapImageConverter.Instance
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter && _isCropping)
+            {
+                _isCropping = false;
+                xGrid.Children.Remove(_cropControl);
+            }
+            e.Handled = true;
+        }
+
+        private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            if (!_isCropping) return;
+            _isCropping = false;
+            xGrid.Children.Remove(_cropControl);
         }
     }
 }
