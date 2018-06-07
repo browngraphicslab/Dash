@@ -24,19 +24,23 @@ using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
 using Color = Windows.UI.Color;
 using Size = Windows.Foundation.Size;
+using Windows.ApplicationModel.AppService;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
         static UserControl _previousDragEntered;
-        bool           _canDragItems = true;
-        double         _cellSize;
-        bool           _isLoaded = false;
+        bool _canDragItems = true;
+        double _cellSize;
+        bool _isLoaded = false;
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-        
-        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+
+
+    void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
