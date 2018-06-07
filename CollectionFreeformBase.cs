@@ -40,10 +40,11 @@ namespace Dash
         List<DocumentView> _selectedDocs = new List<DocumentView>();
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
-        public ViewManipulationControls ViewManipulationControls { get; set; }
+        public abstract ViewManipulationControls ViewManipulationControls { get; set; }
         public bool TagMode { get; set; }
         public KeyController TagKey { get; set; }
         public abstract CollectionViewModel ViewModel { get; }
+        public abstract CollectionView.CollectionViewType Type { get; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
 
         // TODO: get canvas in derived class
@@ -124,7 +125,7 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             // TODO: should it work for standard view?
-            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            var snap = new CollectionNote(new Point(), Type, double.NaN, double.NaN, controllers).Document;
             snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
             return snap;
         }
@@ -239,7 +240,7 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>   
-        protected void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
+        protected virtual void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             // calculate the translate delta
             var translateDelta = new TranslateTransform
@@ -579,7 +580,7 @@ namespace Dash
                     var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
 
                     ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
+                        new CollectionNote(where, Type, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                 }
                 if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
@@ -589,7 +590,7 @@ namespace Dash
                     if (e.Key == VirtualKey.C)
                     {
                         ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
+                            new CollectionNote(where, Type, _marquee.Width, _marquee.Height, docsinMarquee).Document);
                     }
 
                     if (e.Key == VirtualKey.T)

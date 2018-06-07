@@ -236,7 +236,15 @@ namespace Dash
                 FreeformInkControl.FreeformView.ViewModel.RemoveDocument(doc);
             }
             //Construct the new collection
-            var cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            CollectionNote cnote;
+            if (FreeformInkControl.FreeformView is CollectionFreeformView)
+            {
+                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Freeform);
+            }
+            else
+            {
+                cnote = new CollectionNote(position, CollectionView.CollectionViewType.Standard);
+            }
             cnote.SetDocuments(recognizedDocuments);
             var documentController = cnote.Document;
             documentController.SetLayoutDimensions(region.BoundingRect.Width,

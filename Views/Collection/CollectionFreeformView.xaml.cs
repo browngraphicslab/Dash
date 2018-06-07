@@ -965,9 +965,16 @@ namespace Dash
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public override ViewManipulationControls ViewManipulationControls { get; set; }
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;
-
+        public override CollectionView.CollectionViewType Type
+        {
+            get
+            {
+                return CollectionView.CollectionViewType.Freeform;
+            }
+        }
         public override ItemsControl GetItemsControl()
         {
             return xItemsControl;

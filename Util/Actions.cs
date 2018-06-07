@@ -12,7 +12,7 @@ namespace Dash
         }
         public static void AddDocument(ICollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
 
 
@@ -29,7 +29,7 @@ namespace Dash
         }
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformBase,
                 e.GetPosition(MainPage.Instance));
 
             var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Freeform);

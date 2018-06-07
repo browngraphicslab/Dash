@@ -60,10 +60,10 @@ namespace Dash
         {
             var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
             var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             if (parentFreeform != null && rightBtn)
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
                 if (!grabbed && (shifted || parentParentFreeform == null))
                 {
@@ -116,7 +116,7 @@ namespace Dash
                 var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
                 newCollection.Click += (sender, e) =>
                 {
-                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
+                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
                     ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
                 };
                 contextMenu.Items.Add(newCollection);
@@ -131,7 +131,7 @@ namespace Dash
 
                     tagMode.Text = "Exit Tag Mode";
                     
-                    (CurrentView as CollectionFreeformView)?.ShowTagKeyBox();
+                    (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
                 }
 
                 void ExitTagMode(object sender, RoutedEventArgs e)
@@ -140,7 +140,7 @@ namespace Dash
                     tagMode.Click += EnterTagMode;
 
                     tagMode.Text = "Tag Notes";
-                    var view = CurrentView as CollectionFreeformView;
+                    var view = CurrentView as CollectionFreeformBase;
                     if (view != null)
                     {
                         view.HideTagKeyBox();
@@ -247,7 +247,7 @@ namespace Dash
                     break;
                 case CollectionViewType.Standard:
                     if (CurrentView is CollectionStandardView) return;
-                    CurrentView = new CollectionStandardView();
+                    CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

@@ -147,15 +147,15 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-            var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
-            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+            var collectionFreeformBase = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
+            if (collectionFreeformBase == null || ParentDocument.Equals(collectionFreeformBase))
                 return ParentDocument.ViewModel.Bounds;
 
             var parentDocumentBoundsBefore = ParentDocument.ViewModel.Bounds;
             var parentDocumentBoundsAfter = new Rect(parentDocumentBoundsBefore.X + translate.X, parentDocumentBoundsBefore.Y + translate.Y,
                                                                                         Math.Max(ParentDocument.MinWidth, parentDocumentBoundsBefore.Width + sizeChange.X), 
                                                                                         Math.Max(ParentDocument.MinHeight, parentDocumentBoundsBefore.Height + sizeChange.Y));
-            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels; //.Where(vm => vm != ParentDocument.ViewModel);
+            var listOfSiblings = collectionFreeformBase.ViewModel.DocumentViewModels; //.Where(vm => vm != ParentDocument.ViewModel);
             var parentAxesBefore = AlignmentAxes(ParentDocument.ViewModel.Bounds);
             var parentAxesAfter = AlignmentAxes(parentDocumentBoundsAfter);
             double thresh = 2; //TODO: Refactor this to be extensible (probably dependent on zoom level)
@@ -234,9 +234,9 @@ namespace Dash
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             //Don't do any alignment if simply panning the collection
-            var collectionFreeformView =
-                ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+            var collectionFreeformBase =
+                ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
+            if (collectionFreeformBase == null || ParentDocument.Equals(collectionFreeformBase))
                 return originalTranslate;
 
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
@@ -245,8 +245,8 @@ namespace Dash
             var parentDocumentBounds = new Rect(boundsBeforeTranslation.X + originalTranslate.X,
                 boundsBeforeTranslation.Y + originalTranslate.Y, boundsBeforeTranslation.Width,
                 boundsBeforeTranslation.Height);
-            var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm =>
-                vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel)
+            var listOfSiblings = collectionFreeformBase.ViewModel.DocumentViewModels.Where(vm =>
+                vm != ParentDocument.ViewModel && !collectionFreeformBase.SelectedDocs.Select((dv) => dv.ViewModel)
                     .ToList().Contains(vm));
             var parentDocumentAxesAfter = AlignmentAxes(parentDocumentBounds);
 
@@ -376,11 +376,11 @@ namespace Dash
                 line = MainPage.Instance.HorizontalAlignmentLine;
 
             }
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
             line.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.xItemsControl.ItemsPanelRoot);
-            var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.GetItemsControl().ItemsPanelRoot);
+            var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.GetItemsControl().ItemsPanelRoot);
             line.X1 = screenPoint1.X;
             line.Y1 = screenPoint1.Y;
             line.X2 = screenPoint2.X;
@@ -420,10 +420,10 @@ namespace Dash
                     break;
             }
 
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
-            var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.xItemsControl.ItemsPanelRoot);
-            var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.GetItemsControl().ItemsPanelRoot);
+            var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.GetItemsControl().ItemsPanelRoot);
 
             return (screenPoint1, screenPoint2);
 
@@ -497,7 +497,7 @@ namespace Dash
         private List<Tuple<DocumentViewModel, Side, double>> HitTestFromSides(Rect currentBoundingBox)
         {
             var documentViewsAboveThreshold = new List<Tuple<DocumentViewModel, Side, double>>();
-            var containingCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var containingCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
             Debug.Assert(containingCollection != null);
 
             var listOfSiblings = containingCollection.ViewModel.DocumentViewModels.Where(vm => vm != ParentDocument.ViewModel);
@@ -553,7 +553,7 @@ namespace Dash
 
             var docRoot = ParentDocument;
 
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
             var documentView = closestDocumentView.Item1;
             var side = closestDocumentView.Item2;
@@ -562,7 +562,7 @@ namespace Dash
             var boundingBoxCollectionSpace = CalculateAligningRectangleForSide(~side, closestBoundsInCollectionSpace, currentBoundingBox.Width, currentBoundingBox.Height);
 
             //Transform the rect from xCollectionCanvas (which is equivalent to xItemsControl.ItemsPanelRoot) space to screen space
-            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.xItemsControl.ItemsPanelRoot);
+            var boundingBoxScreenSpace = Util.RectTransformFromVisual(boundingBoxCollectionSpace, currentCollection?.GetItemsControl().ItemsPanelRoot);
 
         }
 
@@ -768,7 +768,7 @@ namespace Dash
                     {
                         if (_documentsToRemoveAfterManipulation.Any())
                         {
-                            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+                            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
                             currentCollection?.ViewModel.RemoveDocuments(_documentsToRemoveAfterManipulation);
                             _documentsToRemoveAfterManipulation.Clear();
                         }

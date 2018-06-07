@@ -220,7 +220,7 @@ namespace Dash
                     if (docController != null)
                     {
                         var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController);
                     }
@@ -256,7 +256,7 @@ namespace Dash
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }

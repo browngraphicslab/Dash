@@ -224,7 +224,7 @@ namespace Dash
 
 
                     var dvm = MainDocView.DataContext as DocumentViewModel;
-                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
                     if (coll?.ViewModel?.DocumentViewModels != null)
                     {
                         foreach (var vm in coll.ViewModel.DocumentViewModels)
@@ -293,7 +293,7 @@ namespace Dash
         public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
                 return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
@@ -309,14 +309,14 @@ namespace Dash
         public void HighlightDoc(DocumentController document, bool? flag)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (collection != null && document != null)
             {
                 highlightDoc(collection, document, flag);
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag)
+        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
@@ -328,7 +328,7 @@ namespace Dash
                     else if (flag == false)
                         dm.DecorationState = false;
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
                 {
                     highlightDoc(freeformView, document, flag);
                 }
@@ -337,7 +337,7 @@ namespace Dash
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null && document != null)
             {
                 return NavigateToDocument(coll, null, coll, document, true, true);
@@ -345,7 +345,7 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document, bool animated, bool compareDataDocuments=false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -358,7 +358,7 @@ namespace Dash
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
+                    var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
@@ -369,9 +369,9 @@ namespace Dash
                     else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
                 {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document, animated, compareDataDocuments))
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformBase, document, animated, compareDataDocuments))
                         return true;
                 }
             }
@@ -434,7 +434,7 @@ namespace Dash
                if (FocusManager.GetFocusedElement() is TextBox)
                     return;
                 var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
-                foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
+                foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformBase>())
                     if (c.SelectedDocs.Count() > 0)
                     {
                         foreach (var d in c.SelectedDocs)
@@ -453,11 +453,11 @@ namespace Dash
         {
             var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
-            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
+            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformBase freeformView)
             {
                 if (e != null)
                 {
-                    foreach (var d in freeformView.xItemsControl.ItemsPanelRoot.Children)
+                    foreach (var d in freeformView?.GetItemsControl().ItemsPanelRoot.Children)
                     {
                         if (d is ContentPresenter presenter)
                         {
@@ -493,7 +493,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -556,7 +556,7 @@ namespace Dash
 
         private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>() is CollectionFreeformBase freeFormView)
                 xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
         

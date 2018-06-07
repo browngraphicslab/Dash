@@ -30,6 +30,31 @@ namespace Dash
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
 
+        public enum StandardViewLevel
+        {
+            Detail, Region, Overview
+        }
+
+        private StandardViewLevel _viewLevel;
+
+        public StandardViewLevel ViewLevel
+        {
+            get => _viewLevel;
+            set
+            {
+                SetProperty(ref _viewLevel, value);
+                UpdateViewLevel();
+            }
+        }
+
+        private void UpdateViewLevel()
+        {
+            foreach (var dvm in DocumentViewModels)
+            {
+                dvm.ViewLevel = ViewLevel;
+            }
+        }
+
         public void Loaded(bool isLoaded)
         {
             void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
@@ -124,7 +149,7 @@ namespace Dash
         /// </summary>
         public void FitContents()
         {
-            if (FitToParent &&  ViewType == CollectionView.CollectionViewType.Freeform)
+            if (FitToParent &&  (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
                 var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
                 var r = Rect.Empty;
@@ -594,8 +619,8 @@ namespace Dash
 
             var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
             var where = new Point();
-            if (senderView is CollectionFreeformView)
-                where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            if (senderView is CollectionFreeformBase)
+                where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase, e.GetPosition(MainPage.Instance));
             else if (DocumentViewModels.Count > 0)
             {
                 var lastPos = DocumentViewModels.Last().Position;
@@ -976,7 +1001,7 @@ namespace Dash
 
         public void ChangeIndicationColor(UserControl element, Color fill)
         {
-            (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionFreeformBase)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
 

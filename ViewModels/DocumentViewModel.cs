@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        private CollectionViewModel.StandardViewLevel _standardViewLevel;
         FrameworkElement _content = null;
         
         // == CONSTRUCTOR ==
@@ -162,6 +163,11 @@ namespace Dash
             set => SetProperty(ref _decorationState, value);
         }
 
+        public CollectionViewModel.StandardViewLevel ViewLevel
+        {
+            get => _standardViewLevel;
+            set => SetProperty(ref _standardViewLevel, value);
+        }
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update

@@ -44,8 +44,14 @@ namespace Dash
         }
 
         public override DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public override ViewManipulationControls ViewManipulationControls { get; set; }
 
         public override CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+        public override CollectionView.CollectionViewType Type { get
+            {
+                return CollectionView.CollectionViewType.Standard;
+            }
+        }
 
         public override ItemsControl GetItemsControl()
         {
@@ -80,6 +86,23 @@ namespace Dash
         public override Canvas GetInkHostCanvas()
         {
             return InkHostCanvas;
+        }
+
+        protected override void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
+        {
+            base.ManipulationControls_OnManipulatorTranslated(transformation, abs);
+            var scale = ViewManipulationControls.ElementScale;
+            if (scale < 0.2)
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
+            } else if (scale < 0.8)
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
+            }
+            else
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
+            }
         }
     }
 }

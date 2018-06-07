@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
@@ -73,6 +74,28 @@ namespace Dash
             set { SetValue(BindRenderTransformProperty, value); }
         }
 
+        public static readonly DependencyProperty IsViewStandardProperty = DependencyProperty.Register(
+            "IsViewStandard", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
+
+        public bool IsViewStandard
+        {
+            get { return (bool) GetValue(IsViewStandardProperty); }
+            set { SetValue(IsViewStandardProperty, value);}
+        }
+
+        public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
+            "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView), new PropertyMetadata(null));
+
+        public CollectionViewModel.StandardViewLevel StandardViewLevel
+        {
+            get { return (CollectionViewModel.StandardViewLevel) GetValue(StandardViewLevelProperty); }
+            set
+            {
+                SetValue(StandardViewLevelProperty, value);
+                UpdateView();
+            }
+        }
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -115,14 +138,18 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 SetZLayer();
+                if (IsViewStandard)
+                {
+                    UpdateIcon();
+                }
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
             PointerPressed += (sender, e) =>
             {
                 var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
-                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
-                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
+                var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 e.Handled = ManipulationMode != ManipulationModes.None;
@@ -145,7 +172,8 @@ namespace Dash
             }
             void ResizeHandles_restorePointerTracking()
             {
-                ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
+                if (!IsViewStandard)
+                    ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
                 
@@ -184,7 +212,7 @@ namespace Dash
             xOperatorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xOperatorEllipseBorder.DragStarting += (sender, args) =>
             {
-                //var selected = (ParentCollection.CurrentView as CollectionFreeformView)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
+                //var selected = (ParentCollection.CurrentView as CollectionFreeformBase)?.SelectedDocs.Select((dv) => dv.ViewModel.DocumentController);
                 //if (selected?.Count() > 0)
                 //{
                 //    args.Data.Properties[nameof(List<DragDocumentModel>)] =
@@ -234,7 +262,7 @@ namespace Dash
             ManipulationControls.OnManipulatorStarted += () => {
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
                 var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
-                if (!this.IsShiftPressed() && ParentCollection?.CurrentView is CollectionFreeformView cview)
+                if (!this.IsShiftPressed() && ParentCollection?.CurrentView is CollectionFreeformBase cview)
                 {
                     adornmentGroups.ForEach((dv) =>
                     {
@@ -252,13 +280,14 @@ namespace Dash
             {
                 SelectedDocuments().ForEach((d) =>
                 {
+                    if (!IsViewStandard)
                     d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
                     d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                     d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
                 });
                 if (ViewModel.IsAdornmentGroup)
                 {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    if (ParentCollection.CurrentView is CollectionFreeformBase cview)
                     {
                         cview.DeselectAll();
                     }
@@ -273,6 +302,65 @@ namespace Dash
                     MenuFlyout.Hide();
             };
         }
+
+        #region StandardCollectionView
+        void UpdateIcon()
+        {
+            xFreeFormDocViewCol.Width = new GridLength(0);
+            xStandardDocViewCol.Width = new GridLength();
+            var type = ViewModel.DocumentController.DocumentType;
+            // TODO: make icons for different types
+            if (type.Equals(CollectionBox.DocumentType))
+            {
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+            }
+            else if (type.Equals(PdfBox.DocumentType))
+            {
+
+            }
+            else if (type.Equals(RichTextBox.DocumentType))
+            {
+
+            }
+            else if (type.Equals(VideoBox.DocumentType))
+            {
+
+            }
+            else if (type.Equals(ImageBox.DocumentType))
+            {
+
+            }
+            else if (type.Equals(HtmlNote.DocumentType))
+            {
+
+            }
+            else if (type.Equals(ApiOperatorBox.DocumentType))
+            {
+
+            }
+            else if (type.Equals(EditableScriptBox.DocumentType))
+            {
+
+            }
+        }
+
+        private void UpdateView()
+        {
+            switch (StandardViewLevel)
+            {
+                case CollectionViewModel.StandardViewLevel.Detail:
+                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+                    break;
+                case CollectionViewModel.StandardViewLevel.Overview:
+                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+                    break;
+                case CollectionViewModel.StandardViewLevel.Region:
+                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+                    break;
+            }
+        }
+        #endregion
+
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
@@ -601,7 +689,7 @@ namespace Dash
 
                 if (addTextBox)
                 {
-                    (ParentCollection.CurrentView as CollectionFreeformView)?.RenderPreviewTextbox(ViewModel.Position);
+                    (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
                 MainPage.Instance.DeselectDocument(this);
             }
@@ -669,7 +757,7 @@ namespace Dash
         /// </summary>
         List<DocumentView> SelectedDocuments()
         {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformView)?.SelectedDocs;
+            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformBase)?.SelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Contains(this))
                 return marqueeDocs.ToList();
             return new List<DocumentView>(new DocumentView[] { this } );
@@ -687,7 +775,7 @@ namespace Dash
                 //{
                 //    System.Diagnostics.Debug.WriteLine(doc.ToString());
                 //}
-                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
+                if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
                 {
                     if (!this.IsShiftPressed())
                         cfview.DeselectAll();
@@ -702,13 +790,19 @@ namespace Dash
 
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (e == null|| ( !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && ! e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
-                ViewModel.DecorationState = false;
+            if (!IsViewStandard)
+            {
+                if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+                    ViewModel.DecorationState = false;
+            }
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            if (!IsViewStandard)
+            {
+                ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            }
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
         }
@@ -732,8 +826,8 @@ namespace Dash
                         foreach (var selDoc in selectedDocs)
                         {
                             var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                            var where = nestedCollection.CurrentView is CollectionFreeformView ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                            var where = nestedCollection.CurrentView is CollectionFreeformBase ?
+                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformBase), pos) :
                                 new Point();
                             nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
                             collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
@@ -748,7 +842,7 @@ namespace Dash
         }
         public void HandleShiftEnter()
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
@@ -775,7 +869,7 @@ namespace Dash
         }
         public void HandleCtrlEnter()
         {
-            var collection = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             var docCanvas = this.GetFirstAncestorOfType<Canvas>();
             if (collection == null) return;
             var where = this.TransformToVisual(docCanvas).TransformPoint(new Point(0, ActualHeight + 1));
