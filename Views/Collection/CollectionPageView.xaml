@@ -19,7 +19,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls">
 
-                <Style TargetType="localMicrosoft:GridSplitter">
+                <!--<Style TargetType="localMicrosoft:GridSplitter">
                     <Setter Property="IsTabStop" Value="True"></Setter>
                     <Setter Property="UseSystemFocusVisuals" Value="True"></Setter>
                     <Setter Property="IsFocusEngagementEnabled" Value="True"></Setter>
@@ -32,13 +32,13 @@
                             </ControlTemplate>
                         </Setter.Value>
                     </Setter>
-                </Style>
+                </Style>-->
 
             </ResourceDictionary>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
-            <ColumnDefinition Width="11"/>
+            <ColumnDefinition Width="7"/>
             <ColumnDefinition MinWidth="50" Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="2" x:Name="xDocContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -55,22 +55,14 @@
         </Grid>
         <localMicrosoft:GridSplitter GettingFocus="TextBlock_GettingFocus"
             x:Name="xSplitter"
-            Grid.Column="1" Width="11" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch" ManipulationStarted="xSplitter_ManipulationStarted" ManipulationCompleted="xSplitter_ManipulationCompleted" ManipulationDelta="xSplitter_ManipulationDelta" 
+            Grid.Column="1" Width="7" ResizeBehavior="BasedOnAlignment" VerticalAlignment="Stretch" ManipulationStarted="xSplitter_ManipulationStarted" ManipulationCompleted="xSplitter_ManipulationCompleted" ManipulationDelta="xSplitter_ManipulationDelta" 
                 ResizeDirection="Auto"
                 Background="LightGray"
                 Foreground="White" 
                 FontSize="13">
             <localMicrosoft:GridSplitter.Element>
                 <Grid GettingFocus="TextBlock_GettingFocus" AllowFocusOnInteraction="False">
-                    <TextBlock HorizontalAlignment="Center" 
-                                   IsHitTestVisible="False" 
-                                AllowFocusOnInteraction="False"
-                                   VerticalAlignment="Center"  
-                                    GettingFocus="TextBlock_GettingFocus"
-                                    Text="&#xE784;"
-                                   Foreground="Black" 
-                                   FontFamily="Segoe MDL2 Assets">
-                    </TextBlock>
+                    
                 </Grid>
             </localMicrosoft:GridSplitter.Element>
         </localMicrosoft:GridSplitter>

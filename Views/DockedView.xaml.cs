@@ -64,19 +64,19 @@ namespace Dash.Views
                 switch (view.Direction)
                 {
                     case DockDirection.Left:
-                        xLeftSplitterColumn.Width = new GridLength(15);
+                        xLeftSplitterColumn.Width = new GridLength(MainPage.GridSplitterThickness);
                         xLeftNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
                         break;
                     case DockDirection.Right:
-                        xRightSplitterColumn.Width = new GridLength(15);
+                        xRightSplitterColumn.Width = new GridLength(MainPage.GridSplitterThickness);
                         xRightNestedViewColumn.Width = new GridLength(xMainDockedView.ActualWidth / 2);
                         break;
                     case DockDirection.Top:
-                        xTopSplitterRow.Height = new GridLength(15);
+                        xTopSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
                         xTopNestedViewRow.Height = new GridLength(xMainDockedView.ActualHeight / 2);
                         break;
                     case DockDirection.Bottom:
-                        xBottomSplitterRow.Height = new GridLength(15);
+                        xBottomSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
                         xBottomNestedViewRow.Height = new GridLength(xMainDockedView.ActualHeight / 2);
                         break;
                 }
