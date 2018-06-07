@@ -28,7 +28,6 @@ namespace Dash
         #region variables
 
         private DocumentViewModel _documentViewModel;
-        private DocumentViewModel _displayViewModel;
         private DocumentContext _documentContext;
         private KeyController _sortKey;
 
@@ -36,12 +35,6 @@ namespace Dash
         {
             get => _documentViewModel;
             set => SetProperty(ref _documentViewModel, value);
-        }
-
-        public DocumentViewModel DisplayViewModel
-        {
-            get => _displayViewModel;
-            set => SetProperty(ref _displayViewModel, value);
         }
 
         public DocumentContext DocumentContext
@@ -129,7 +122,9 @@ namespace Dash
 
         // timeline element layout
         public List<double> DisplayedXPositions { get; private set; }
-        public CollectionViewModel ViewModel { get; set; }
+
+        private CollectionViewModel _oldViewModel;
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; set => DataContext = value; }
         public event Action MetadataUpdated;
 
 
@@ -376,15 +371,14 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            DataContextChanged -= OnDataContextChanged;
+            if (_oldViewModel == ViewModel) return;
+            _oldViewModel = ViewModel;
 
             RemoveViewModelEvents(ViewModel);
             ViewModel = DataContext as CollectionViewModel;
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
-
-            DataContextChanged += OnDataContextChanged;
         }
 
         private void Initialize(CollectionViewModel viewModel)

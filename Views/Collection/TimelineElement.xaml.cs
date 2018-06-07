@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
@@ -44,7 +45,8 @@ namespace Dash
             Loaded += TimelineElement_Loaded;
         }
 
-        public TimelineElementViewModel ViewModel { get; private set; }
+        private TimelineElementViewModel _oldViewModel;
+        public TimelineElementViewModel ViewModel { get => DataContext as TimelineElementViewModel; private set => DataContext = value; }
         public CollectionTimelineView ParentTimeline { get; private set; }
 
         // remove field listener when unloaded
@@ -80,7 +82,7 @@ namespace Dash
         // this checks for a data change in the viewmodel document controller (ie when text is changed)
         private void OnViewModelDataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            OnDataContextChanged(null, null);
+            //OnDataContextChanged(null, null);
         }
 
         // loads the display used for the timeline element
@@ -109,31 +111,21 @@ namespace Dash
         /// <param name="args"></param>
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (DataContext == null) return;
-            ViewModel = DataContext as TimelineElementViewModel;
-
-            DocumentController thumbnailImageViewDoc = null;
-            var richText = ViewModel.DocumentViewModel.DataDocument
-                .GetDereferencedField<RichTextController>(KeyStore.DataKey, null)
-                ?.Data; //NoteDocuments.RichTextNote.RTFieldKey
-            var docText =
-                ViewModel.DocumentViewModel.DataDocument
-                    .GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)
-                    ?.Data ?? richText?.ToString() ?? null;
-
-            if (docText != null)
-                thumbnailImageViewDoc = new PostitNote(docText).Document;
-            else
-                thumbnailImageViewDoc =
-                    (ViewModel.DocumentViewModel.DocumentController.GetDereferencedField(KeyStore.ThumbnailFieldKey,
-                             null) as
-                         DocumentController ?? ViewModel.DocumentViewModel.DocumentController).GetViewCopy();
-            thumbnailImageViewDoc.SetLayoutDimensions(300, 500);
-            ViewModel.DisplayViewModel = new DocumentViewModel(thumbnailImageViewDoc)
+            if (ViewModel == _oldViewModel)
             {
-                Width = 220,
-                BackgroundBrush = new SolidColorBrush(Colors.Transparent)
-            };
+                return;
+            }
+
+            _oldViewModel = ViewModel;
+            if (ViewModel != null)
+            {
+                xTitleTextBlock.AddFieldBinding(TextBlock.TextProperty, new FieldBinding<TextController>
+                {
+                    Document = ViewModel.DocumentViewModel.DocumentController,
+                    Key = KeyStore.TitleKey,
+                    Mode = BindingMode.OneWay
+                });
+            }
         }
 
         #endregion
@@ -164,10 +156,7 @@ namespace Dash
         private void TimelineElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // toggle view and update
-            if (ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above)
-                ViewModel.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
-            else
-                ViewModel.CurrDisplay = TimelineElementViewModel.DisplayType.Above;
+            ViewModel.CurrDisplay = ViewModel.CurrDisplay == TimelineElementViewModel.DisplayType.Above ? TimelineElementViewModel.DisplayType.Below : TimelineElementViewModel.DisplayType.Above;
 
             UpdateView();
         }
