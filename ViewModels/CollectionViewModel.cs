@@ -26,7 +26,10 @@ namespace Dash
         static UserControl _previousDragEntered;
         bool           _canDragItems = true;
         double         _cellSize;
-        bool           _isLoaded = false;
+        int           _isLoaded = 0;
+
+        private bool IsLoaded => _isLoaded > 0;
+
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
 
@@ -67,7 +70,15 @@ namespace Dash
                 if (!MainPage.Instance.IsShiftPressed())
                     FitContents();   // pan/zoom collection so all of its contents are visible
             }
-            _isLoaded = isLoaded;
+
+            if (isLoaded)
+            {
+                _isLoaded++;
+            }
+            else
+            {
+                _isLoaded--;
+            }
             if (isLoaded)
             {
                 ContainerDocument.RemoveFieldUpdatedListener(CollectionKey,        collectionFieldChanged); // remove in case it was already added through SetCollectionRef
@@ -101,7 +112,7 @@ namespace Dash
                 {
                     trans = new Point(trans.X, 0);
                 }
-                return new TransformGroupData(trans, _isLoaded ? scale : new Point(1, 1));
+                return new TransformGroupData(trans, IsLoaded ? scale : new Point(1, 1));
             }
             set
             {
