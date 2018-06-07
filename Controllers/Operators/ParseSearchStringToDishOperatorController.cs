@@ -108,20 +108,20 @@ namespace Dash
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
 
             //this splits string into parts, seperated by spaces or quotes
-            List<string> partsL = new List<string>();
+            List<string> parts = new List<string>();
             int lastCut = 0;
             bool inQuote = false;
             for (int i = 0; i < inputString.Length; i++)
             {
-               var currChar = inputString.Substring(i, 1)[0];
+               var currChar = inputString[i];
                if (currChar == '"')
                 {
                     if (inQuote)
                     {
                         //add string from last quote to this quote
-                        var quotedString = inputString.Substring(lastCut, i - lastCut + 1);
+                        var quotedString = inputString.Substring(lastCut + 1, i - lastCut - 1);
                         quotedString = quotedString.Replace("\"", "\\\"");
-                        partsL.Add(quotedString);
+                        parts.Add(quotedString);
                         lastCut = i + 1;
                         inQuote = false;
                     }
@@ -131,28 +131,23 @@ namespace Dash
                     }
                 } else if (currChar == ' ' && !inQuote)
                 {
+                    if (i == lastCut)
+                    {
+                        lastCut++;
+                        continue;
+                    }
                     var newstring = inputString.Substring(lastCut, i - lastCut);
                     lastCut = i + 1;
-                    if (newstring != "")
-                    {
-                        partsL.Add(newstring);
-                    }
-                }
-                if (i == inputString.Length - 1)
-                {
-                    //add last string
-                    var newstring = inputString.Substring(lastCut, i - lastCut + 1);
-                    newstring = newstring.Replace("\"", "\\\"");
-                    if (newstring != "")
-                    {
-                        partsL.Add(newstring);
-                    }
+                    parts.Add(newstring);
                 }
             }
 
-            string[] parts = partsL.ToArray(); 
+            if (lastCut != inputString.Length && !inQuote)
+            {
+                parts.Add(inputString.Substring(lastCut, inputString.Length - lastCut));
+            }
 
-            if (parts.Length < 1)
+            if (parts.Count < 1)
             {
                 outputs[ScriptKey] = new TextController("");
                 return;
