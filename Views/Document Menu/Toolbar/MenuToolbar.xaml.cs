@@ -434,7 +434,7 @@ namespace Dash
 
         public bool IsAtTop()
         {
-            return xFloating.GetCurrentTop() == 0;
+            return (int) xFloating.GetCurrentTop() == 0;
         }
 
         /**
@@ -595,7 +595,14 @@ namespace Dash
             if (state == State.Expanded && IsAtTop())
             {
                 xToolbar.IsOpen = subtoolbarElement == null;
-                if (subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(true);
+                if (subtoolbarElement is ICommandBarBased toClose)
+                {
+                    toClose.CommandBarOpen(true);
+                }
+                else if (subtoolbarElement == xTextToolbar)
+                {
+                    
+                }
             }
         }
 
