@@ -319,35 +319,38 @@ namespace Dash
             // TODO: make icons for different types
             if (type.Equals(CollectionBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/col-icon.png"));
             }
             else if (type.Equals(PdfBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/pdf-icon.png"));
             }
             else if (type.Equals(RichTextBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/rtf-icon.png"));
             }
             else if (type.Equals(VideoBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/vid-icon.png"));
             }
             else if (type.Equals(ImageBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/img-icon.png"));
             }
             else if (type.Equals(HtmlNote.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/html-icon.png"));
             }
             else if (type.Equals(ApiOperatorBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/api-icon.png"));
             }
-            else if (type.Equals(EditableScriptBox.DocumentType))
+            else if (type.Equals(DataBox.DocumentType))
             {
-
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
+            } else if (type.Equals(OperatorBox.DocumentType))
+            {
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
             }
         }
 
@@ -356,13 +359,13 @@ namespace Dash
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
-                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-                    break;
-                case CollectionViewModel.StandardViewLevel.Overview:
-                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
-                    xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+                    break;
+                case CollectionViewModel.StandardViewLevel.Overview:
+                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
                     break;
             }
         }

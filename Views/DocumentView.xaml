@@ -121,7 +121,7 @@
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
+            <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/Icons/doc-icon.png" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
 
                 <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 

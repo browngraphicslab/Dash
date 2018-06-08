@@ -24,7 +24,18 @@ namespace Dash
         private CollectionFreeformBase _freeformView;
         public double MinScale { get; set; } = .2;
         public double MaxScale { get; set; } = 5.0;
-        public double ElementScale { get; set; } = 1.0;
+
+        private double _elementScale = 1.0;
+        public double ElementScale
+        {
+            get => _elementScale;
+            set
+            {
+                _elementScale = value;
+                _freeformView.ViewModel.PrevScale = value;
+            }
+        }
+
         public PointerDeviceType BlockedInputType { get; set; }
         public bool FilterInput { get; set; }
 

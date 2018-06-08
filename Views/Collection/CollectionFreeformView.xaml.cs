@@ -48,6 +48,15 @@ namespace Dash
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
+
+        protected override void OnLoad(object sender, RoutedEventArgs e)
+        {
+            base.OnLoad(sender, e);
+            if (ViewModel.PrevScale != 0)
+                ViewManipulationControls.ElementScale = ViewModel.PrevScale;
+            ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+        }
         //MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
         //Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         //CollectionViewModel _lastViewModel = null;

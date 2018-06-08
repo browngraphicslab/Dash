@@ -64,7 +64,7 @@ namespace Dash
         // TODO: get inkcanvas of derived class
         public abstract Canvas GetInkHostCanvas();
 
-        protected void OnLoad(object sender, RoutedEventArgs e)
+        protected virtual void OnLoad(object sender, RoutedEventArgs e)
         {
             MakePreviewTextbox();
 

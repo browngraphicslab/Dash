@@ -33,12 +33,18 @@ namespace Dash
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
 
+        #region StandardView
         public enum StandardViewLevel
         {
-            None, Detail, Region, Overview
+            None = 0,
+            Overview = 1,
+            Region = 2,
+            Detail = 3
         }
 
         private StandardViewLevel _viewLevel = StandardViewLevel.None;
+
+        private double _prevScale;
 
         public StandardViewLevel ViewLevel
         {
@@ -50,6 +56,12 @@ namespace Dash
             }
         }
 
+        public double PrevScale
+        {
+            get => _prevScale;
+            set => SetProperty(ref _prevScale, value);
+        }
+
         private void UpdateViewLevel()
         {
             foreach (var dvm in DocumentViewModels)
@@ -58,6 +70,7 @@ namespace Dash
                 dvm.ViewLevel = ViewLevel;
             }
         }
+        #endregion
 
         public void Loaded(bool isLoaded)
         {

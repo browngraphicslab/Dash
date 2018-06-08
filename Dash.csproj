@@ -97,6 +97,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
     <Content Include="Assets\AppList\AppList.scale-150.png" />
@@ -130,12 +131,16 @@
     <Content Include="Assets\AppList\AppList.targetsize-80_altform-unplated.png" />
     <Content Include="Assets\AppList\AppList.targetsize-96.png" />
     <Content Include="Assets\AppList\AppList.targetsize-96_altform-unplated.png" />
+    <Content Include="Assets\Icons\aud-icon.png" />
     <Content Include="Assets\Badge\Badge.scale-100.png" />
     <Content Include="Assets\Badge\Badge.scale-125.png" />
     <Content Include="Assets\Badge\Badge.scale-150.png" />
     <Content Include="Assets\Badge\Badge.scale-200.png" />
     <Content Include="Assets\Badge\Badge.scale-400.png" />
+    <Content Include="Assets\Icons\col-icon.png" />
     <Content Include="Assets\dashicon.png" />
+    <Content Include="Assets\Icons\data-icon.png" />
+    <Content Include="Assets\Icons\doc-icon.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
@@ -727,13 +732,12 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\api-icon.png" />
     <Content Include="Assets\Centerlg.png" />
-    <Content Include="Assets\col-icon.png" />
     <Content Include="Assets\DefaultImage.png" />
-    <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.jpg" />
-    <Content Include="Assets\if_11_1724127.png" />
+    <Content Include="Assets\Icons\html-icon.png" />
+    <Content Include="Assets\Icons\img-icon.png" />
+    <Content Include="Assets\Icons\rtf-icon.png" />
     <Content Include="Assets\jan_2018_dash_logo.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-100.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-125.png" />
@@ -747,6 +751,8 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\Icons\opr-icon.png" />
+    <Content Include="Assets\Icons\pdf-icon.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\Small\Small71x71Logo.scale-100.png" />
@@ -766,6 +772,7 @@
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\DefaultVideo.mp4" />
+    <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-150.png" />
