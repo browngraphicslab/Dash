@@ -174,7 +174,7 @@ function tabManager(sendRequestFunction) {
     this.addNewTab = function (url)
     {   
         var tabHandler = function (tab) {
-            //console.log("in tab handler");
+            console.log("in tab handler");
             //console.log(tab);
             thisSetScrollPosition(tab.id, 0);
         }
