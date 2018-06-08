@@ -453,7 +453,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Escape)
             {
-                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
 
@@ -470,6 +470,16 @@ namespace Dash
                         break;
                     }
             }
+
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+
+            if (!coll.IsMarqueeActive())
+            {
+                if (e.VirtualKey == VirtualKey.A)
+                    coll.MakeNewCollectionFromSelection();
+            }
+            
             if (DocumentView.FocusedDocument != null)
             {
                 if (!this.IsF1Pressed())

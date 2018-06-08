@@ -550,7 +550,7 @@ namespace Dash
                 if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
                 {
                     var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    var docsinMarquee = viewsinMarquee.Select((dvm) => dvm.ViewModel.DocumentController).ToList();
+                    var docsinMarquee = viewsinMarquee.Select(dvm => dvm.ViewModel.DocumentController).ToList();
 
                     if (e.Key == VirtualKey.C)
                     {
@@ -577,13 +577,18 @@ namespace Dash
             }
         }
 
+        public bool IsMarqueeActive()
+        {
+            return _isMarqueeActive;
+        }
+        
         public List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 var docs = xItemsControl.ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where((d) => d != null && d.IsHitTestVisible))
+                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where(d => d != null && d.IsHitTestVisible))
                 {
                     var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
@@ -594,7 +599,38 @@ namespace Dash
                 }
             }
             return selectedDocs;
+        }
 
+        public void MakeNewCollectionFromSelection()
+        {
+            Point topLeftMostPoint = new Point(Double.PositiveInfinity, Double.PositiveInfinity);
+            Point bottomRightMostPoint = new Point(Double.NegativeInfinity, Double.NegativeInfinity);
+
+            var selected = SelectedDocs;
+            bool isEmpty = true;
+
+            foreach (DocumentView doc in SelectedDocs)
+            {
+                isEmpty = false;
+                topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
+                topLeftMostPoint.Y = doc.ViewModel.Position.Y < topLeftMostPoint.Y ? doc.ViewModel.Position.Y : topLeftMostPoint.Y;
+                bottomRightMostPoint.X = doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X > bottomRightMostPoint.X
+                    ? doc.ViewModel.Position.X + doc.ViewModel.ActualSize.X
+                    : bottomRightMostPoint.X;
+                bottomRightMostPoint.Y = doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y > bottomRightMostPoint.Y
+                    ? doc.ViewModel.Position.Y + doc.ViewModel.ActualSize.Y
+                    : bottomRightMostPoint.Y;
+            }
+
+            if (isEmpty) return;
+            
+            var pseudoMarquee = new Rect(topLeftMostPoint, bottomRightMostPoint);
+
+            ViewModel.AddDocument(
+                new CollectionNote(topLeftMostPoint, CollectionView.CollectionViewType.Freeform, pseudoMarquee.Width,
+                        pseudoMarquee.Height,
+                        selected.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList())
+                    .Document);
         }
 
         #endregion
