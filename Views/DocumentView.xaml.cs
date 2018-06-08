@@ -1,7 +1,9 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -523,32 +525,13 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
-
-            /// <summary>
-            /// Resizes the document while keeping its original width/height ratio.
-            /// </summary>
-            /// <param name="e"></param>
-            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
-            {
-
-                /*
-                var curScale = ViewModel.Scale;
-                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
-                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-                ViewModel.Scale = new Point(scale, scale);
-                */
-            }
-
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
             var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
 
             // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
+            Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
             oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
             Size newSize = new Size();
 
@@ -558,7 +541,7 @@ namespace Dash
             int moveXScale = shiftLeft ? 1 : 0;
             int moveYScale = shiftTop ? 1 : 0;
 
-            if (this.IsCtrlPressed())
+            if (this.IsCtrlPressed() || this.IsShiftPressed())
             {
                 // proportional resizing
                 var diffX = cursorXDirection * p.X;
@@ -566,31 +549,21 @@ namespace Dash
             }
             else
             {
-                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
+                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
+                // So flip the negative sign by multiplying by -1.
                 newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
-
-                // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
-                newSize.Height = double.IsNaN(newSize.Height)
-                    ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
-                    : newSize.Height;
             }
 
-            /// <summary>
-            /// Resizes the CollectionView according to the increments in width and height. 
-            /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
-            /// the Grid must change size to accomodate the height of the ListView.
-            /// </summary>
-            /// <param name="dx"></param>
-            /// <param name="dy"></param>
             Size Resize(double dx = 0, double dy = 0)
             {
                 if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X: ViewModel.Width) : ViewModel.ActualSize.X;
+                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
                     var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
+
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
@@ -598,8 +571,8 @@ namespace Dash
 
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
-                (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
-                (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
+                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
 
             e.Handled = true;
         }
