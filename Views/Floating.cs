@@ -103,6 +103,11 @@
             Loaded += Floating_Loaded;
         }
 
+        public double GetCurrentTop()
+        {
+            return Canvas.GetTop(_border);
+        }
+
         /// <summary>
         /// Loaded handler which registers for the SizeChanged event.
         /// </summary>

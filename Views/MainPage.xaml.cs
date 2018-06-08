@@ -108,7 +108,7 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            Toolbar = new MenuToolbar(xCanvas);
+            Toolbar = new MenuToolbar(xOuterGrid);
 			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
 		}

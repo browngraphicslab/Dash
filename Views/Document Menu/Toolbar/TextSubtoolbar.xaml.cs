@@ -42,15 +42,40 @@ namespace Dash
 	    private RichEditBox _currBox;
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
+        private Dictionary<string, Button> _buttons;
 
         public TextSubtoolbar()
         {
             this.InitializeComponent();
+            _buttons = new Dictionary<string, Button>();
 			//instantiate formatter to create custom buttons
 			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
 	        _currBox = null;
 			//add an additional sub-toolbar for further operations
-	        this.AddButton("Font", Symbol.Add, 0);
+            this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
+            {
+                /**
+                 * When the Font Button is clicked, the font menu visibility is toggled, giving user access to additional editing operations like font style, etc.
+                 */
+                if (_currBox != null && _menuView == null)
+                {
+                    //create a formatting menu and bind it to the currently selected richEditBox's view
+                    _menuView = new FormattingMenuView(this)
+                    {
+                        richTextView = _docs.GetFirstDescendantOfType<RichTextView>(),
+                        xRichEditBox = _currBox
+                    };
+                    //add the menu to the stack panel
+                    xStack.Children.Add(_menuView);
+                    //collapse other text menu
+                    xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+                    _buttons.TryGetValue("Font", out var fontButton);
+                    if (fontButton != null)
+                    {
+                        fontButton.Width = 67;
+                    }
+                }
+            }, 67);
 
             xDashTextSubtoolbar.Loaded += delegate
             {
@@ -76,37 +101,25 @@ namespace Dash
 		/**
 		 * Helper method for adding custom buttons.
 		 */
-        public void AddButton(String name, Symbol icon, int position)
+        public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 70, bool includeSeparator = false)
         {
            //instantiate ToolbarButton & set properties
-	        ToolbarButton button = new ToolbarButton
+	        var button = new ToolbarButton
 	        {
 		        Name = name,
 		        Icon = new SymbolIcon(icon),
 		        Position = position,
 				Background = new SolidColorBrush(Colors.LightSlateGray),
-				Width = 70,
+				Width = width,
 	        }; //add to toolbar
 	        xDashTextSubtoolbar.CustomButtons.Add(button);
-	        
-			//add appropriate handlers
-	        switch (button.Name)
-	        {
-				case "Font":
-					button.Tapped += (sender, args) =>
-					{
-						this.FontOnTapped();
-					};
-					break;
-				
-					//add more buttons here!
-
-				default:
-					break;
-
-	        }
+            //assign event handler to button on tapped
+            button.Tapped += onTapped;        
 			//add small separation between other buttons
-            xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator { Position = position + 1 });
+            if (includeSeparator) xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator { Position = position + 1 });
+            //add button to dictionary for accessibility
+            _buttons.Add(name, button);
+            return button;
         }
 
 		/**
@@ -124,27 +137,6 @@ namespace Dash
 	    {
 		    _docs = docs;
 	    }
-
-		/**
-		 * When the Font Button is clicked, the font menu visibility is toggled, giving user access to additional editing operations like font style, etc.
-		 */
-	    private void FontOnTapped()
-		{ 
-		    if (_currBox != null)
-		    {
-			    if (_menuView == null)
-			    {
-					//create a formatting menu and bind it to the currently selected richEditBox's view
-				    _menuView = new FormattingMenuView(this);
-				    _menuView.richTextView = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichTextView>(_docs);
-				    _menuView.xRichEditBox = _currBox;
-					//add the menu to the stack panel
-				    xStack.Children.Add(_menuView);
-					//collapse other text menu
-				    xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
-			    }
-		    }
-		}
 
 		/**
 		 * Used to toggle between text sub-menus

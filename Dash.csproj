@@ -97,6 +97,9 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="..\..\..\Pictures\GroupColorIcon.png">
+      <Link>Assets\GroupColorIcon.png</Link>
+    </Content>
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
     <Content Include="Assets\AppList\AppList.scale-150.png" />
@@ -376,6 +379,9 @@
     </Compile>
     <Compile Include="Views\DockedView.xaml.cs">
       <DependentUpon>DockedView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
+      <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -752,11 +758,13 @@
     <Content Include="Assets\Large\Large310x310Logo.scale-400.png" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />
+    <Content Include="Assets\locked.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-100.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-125.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\pinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\Small\Small71x71Logo.scale-100.png" />
@@ -776,6 +784,8 @@
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\DefaultVideo.mp4" />
+    <Content Include="Assets\unlocked.png" />
+    <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-150.png" />
@@ -850,6 +860,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DockedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

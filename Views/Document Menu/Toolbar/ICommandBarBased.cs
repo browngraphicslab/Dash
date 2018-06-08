@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
 
-namespace Dash.Views.Document_Menu.Toolbar
+namespace Dash
 {
     public interface ICommandBarBased
     {

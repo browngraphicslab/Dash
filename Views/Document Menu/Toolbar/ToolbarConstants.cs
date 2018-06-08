@@ -11,10 +11,12 @@ namespace Dash
         //COMBO BOX DIMENSIONS
         public const int ComboBoxWidth = 200;
         public const int ComboBoxHeight = 35;
-        public const int ComboBoxMargin = 13;
 
-		//BUTTON DIMENSIONS
-	    public const double ButtonWidth = 70;
+        public const int ComboBoxMarginOpen = 13;
+        public const int ComboBoxMarginClosed = 7;
+
+        //BUTTON DIMENSIONS
+        public const double ButtonWidth = 70;
 
 		//TOOLBAR DIMENSIONS
 		public const double ToolbarHeight = 50;
@@ -23,6 +25,6 @@ namespace Dash
         public const double PaddingShort = 10;
         public const double PaddingLong = 200;
 
-		public const int ExpansionDelay = 18;
+		public const int ExpansionDelay = 12;
 	}
 }

@@ -58,7 +58,7 @@ namespace Dash {
         {
             xViewModesDropdown.Width = ToolbarConstants.ComboBoxWidth;
             xViewModesDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
+            xViewModesDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         private void BreakGroup_OnClick(object sender, RoutedEventArgs e)
@@ -106,6 +106,8 @@ namespace Dash {
         {
             xCollectionCommandbar.IsOpen = status;
             xCollectionCommandbar.IsEnabled = true;
+            xCollectionCommandbar.Visibility = Visibility.Visible;
+            xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
     }
 }

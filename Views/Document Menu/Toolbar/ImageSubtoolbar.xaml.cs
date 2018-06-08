@@ -41,7 +41,8 @@ namespace Dash
         }
 
 	    private DocumentView currentDocView;
-	    private DocumentController currentDocControl;
+	    private DocumentController currentDocController;
+
         public ImageSubtoolbar()
         {
 			this.InitializeComponent();
@@ -64,7 +65,7 @@ namespace Dash
         {
             xScaleOptionsDropdown.Width = ToolbarConstants.ComboBoxWidth;
             xScaleOptionsDropdown.Height = ToolbarConstants.ComboBoxHeight;
-            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMargin);
+            xScaleOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
         /**
@@ -92,6 +93,7 @@ namespace Dash
 	        xImageCommandbar.IsOpen = status;
 	        xImageCommandbar.IsEnabled = true;
 	        xImageCommandbar.Visibility = Visibility.Visible;
+            xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
 	    }
         
 	    private async void ReplaceImage()
@@ -108,13 +110,13 @@ namespace Dash
 	        imagePicker.FileTypeFilter.Add(".svg");
 
 	        var replacement = await imagePicker.PickSingleFileAsync();
-	        if (replacement != null) { currentDocControl.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true); }
+	        if (replacement != null) { currentDocController.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true); }
 	    }
 
         internal void SetImageBinding(DocumentView selection)
         {
             currentDocView = selection;
-            currentDocControl = currentDocView.ViewModel.DocumentController;
+            currentDocController = currentDocView.ViewModel.DocumentController;
         }
     }
 }

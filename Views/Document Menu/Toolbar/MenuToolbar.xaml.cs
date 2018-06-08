@@ -19,6 +19,7 @@ using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -56,6 +57,11 @@ namespace Dash
             Collapsed
         }
 
+        public enum Pinned
+        {
+            Pinned,
+            Unpinned
+        }
 
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
@@ -63,27 +69,35 @@ namespace Dash
         private ButtonBase[] allButtons;
         private RotateTransform[] buttonRotations;
         private AppBarSeparator[] allSeparators;
-        private Canvas _parentCanvas;
+        private UIElement _parent;
         private MouseMode mode;
         private State state;
+        private Pinned pinned;
+        private BitmapImage unpinnedIcon;
+        private BitmapImage pinnedIcon;
 
         // == CONSTRUCTORS ==
         /// <summary>
         /// Creates a new Toolbar with the given canvas as reference.
         /// </summary>
         /// <param name="canvas"></param>
-        public MenuToolbar(Canvas canvas)
+        public MenuToolbar(UIElement parent)
         {
             this.InitializeComponent();
 
 
             MenuToolbar.Instance = this;
-            _parentCanvas = canvas;
+            _parent = parent;
             mode = MouseMode.TakeNote;
             state = State.Expanded;
+            pinned = Pinned.Unpinned;
             checkedButton = xTouch;
-            //xPadding.Width = ToolbarConstants.PaddingShort;
-            //xPadding.Height = ToolbarConstants.PaddingLong;
+
+            pinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/pinned.png"));
+            unpinnedIcon = new BitmapImage(new Uri("ms-appx:///Assets/unpinned.png"));
+
+            //xPadding.Width = ToolbarConstants.PaddingLong;
+            //xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
 
@@ -102,6 +116,7 @@ namespace Dash
             docSpecificButtons = buttons;
 
             //List of all buttons on main menu toolbar - used for collapsing and rotation
+            //ADD NEW BUTTONS HERE!!!
             ButtonBase[] tempButtons =
             {
                 xCopy,
@@ -111,19 +126,43 @@ namespace Dash
                 xAddVideo,
                 xGroup,
                 xInk,
-                xTouch
-            }; //ADD NEW BUTTONS HERE!!!
+                xTouch,
+                xPin
+            }; 
             allButtons = tempButtons;
 
             //List of all button separators
+            //ADD NEW SEPARATORS HERE!!!
             AppBarSeparator[] tempSeparators =
             {
                 xSepOne,
-                xSepTwo
-            }; //ADD NEW SEPARATORS HERE!!!
+                xSepTwo,
+                xSepThree
+            }; 
             allSeparators = tempSeparators;
 
             this.SetUpBaseMenu();
+            this.AddSecondaryButtonEventHandlers();
+        }
+
+        private void AddSecondaryButtonEventHandlers()
+        {
+            foreach (var b in allButtons)
+            {
+                b.PointerPressed += (sender, args) =>
+                {
+                    if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
+                    if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+                };
+            }
+            foreach (var s in allSeparators)
+            {
+                s.PointerPressed += (sender, args) =>
+                {
+                    if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
+                    if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+                };
+            }
         }
 
         private void SetUpOrientationBindings()
@@ -145,6 +184,7 @@ namespace Dash
             var sp = xToolbar.GetFirstDescendantOfType<StackPanel>();
             sp.SetBinding(StackPanel.OrientationProperty, binding);
             xStackPanel.SetBinding(StackPanel.OrientationProperty, inverseBinding);
+            RotateToolbar();
         }
 
         // == METHODS ==
@@ -196,83 +236,57 @@ namespace Dash
 	                var selection = docs.First();
                 
                     // Image controls
-                    var image = VisualTreeHelperExtensions.GetFirstDescendantOfType<Image>(selection);
-                    if (image != null)
-                    {
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
+                    { 
                         subtoolbarElement = xImageToolbar;
                         xImageToolbar.SetImageBinding(selection);
                     }
 
                     // Collection controls  
-                    var col = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-                    if (col != null)
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
                     {
-                        CollectionView thisCollection =
-                            VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                        CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
                         subtoolbarElement = xCollectionToolbar;
                     }
 
                     // Text controls
-                    var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
-					System.Diagnostics.Debug.WriteLine("TEXT IS SELECTED");
-                    if (text != null)
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
                     {
                         xTextToolbar.SetMenuToolBarBinding(
                             VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-                        xTextToolbar.SetCurrTextBox(text);
+                        xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
 	                    xTextToolbar.SetDocs(selection);
 						subtoolbarElement = xTextToolbar;
+                    }
+
+                    // Group controls  
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
+                    {
+                        xGroupToolbar.SetGroupBinding(selection);
+                        subtoolbarElement = xGroupToolbar;
                     }
 
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)
                     {
-                        //xPadding.Visibility = Visibility.Visible;
                         AdjustComboBoxes();
-                        if (xStackPanel.Orientation == Orientation.Vertical) xToolbar.IsOpen = false;
+                        xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
                         if (subtoolbarElement is ICommandBarBased toOpen)
                         {
                             toOpen.CommandBarOpen(true);
                             //Displays padding in stack panel only if the menu isn't collapsed
                             //if (state == State.Expanded) xPadding.Visibility = Visibility.Visible;
-                            if (subtoolbarElement == xImageToolbar)
-                            {
-                                if (Orientation == Orientation.Vertical)
-                                {
-                                    var margin = xSubtoolbarStackPanel.Margin;
-                                    margin.Top = 72;
-                                    margin.Left = 10;
-                                    xSubtoolbarStackPanel.Margin = margin;
-                                } else
-                                {
-                                    var margin = xSubtoolbarStackPanel.Margin;
-                                    margin.Top = 10;
-                                    margin.Left = 0;
-                                    xSubtoolbarStackPanel.Margin = margin;
-                                }
-                            }
-                            else if (subtoolbarElement == xCollectionToolbar)
-                            {
-                                if (Orientation == Orientation.Vertical)
-                                {
-                                    var margin = xSubtoolbarStackPanel.Margin;
-                                    margin.Top = 12;
-                                    margin.Left = 10;
-                                    xSubtoolbarStackPanel.Margin = margin;
-                                }
-                                else
-                                {
-                                    var margin = xSubtoolbarStackPanel.Margin;
-                                    margin.Top = 10;
-                                    margin.Left = 0;
-                                    xSubtoolbarStackPanel.Margin = margin;
-                                }
-                            }
+                            var margin = xSubtoolbarStackPanel.Margin;
+                            margin.Top = 20;
+                            xSubtoolbarStackPanel.Margin = margin;
                         }
                         else
                         {
                             //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                            var margin = xSubtoolbarStackPanel.Margin;
+                            margin.Top = 7;
+                            xSubtoolbarStackPanel.Margin = margin;
                             //xPadding.Visibility = Visibility.Collapsed;
                         }
                     }
@@ -325,7 +339,7 @@ namespace Dash
 
         private void SetUpBaseMenu()
         {
-            _parentCanvas.Children.Add(this);
+            if (_parent is Grid grid) grid.Children.Add(this);
         }
 
         // copy btn
@@ -353,6 +367,7 @@ namespace Dash
 
         private void AppBarToggleButton_Checked(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
             if (checkedButton != sender as AppBarToggleButton)
             {
                 AppBarToggleButton temp = checkedButton;
@@ -366,6 +381,7 @@ namespace Dash
 
         private void AppBarToggleButton_UnChecked(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
             AppBarToggleButton toggle = sender as AppBarToggleButton;
             if (toggle == checkedButton)
             {
@@ -380,6 +396,7 @@ namespace Dash
        */
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            xToolbar.IsOpen = IsAtTop();
             var imagePicker = new FileOpenPicker
             {
                 ViewMode = PickerViewMode.Thumbnail,
@@ -413,6 +430,11 @@ namespace Dash
             {
                 //Flash an 'X' over the image selection button
             }
+        }
+
+        public bool IsAtTop()
+        {
+            return xFloating.GetCurrentTop() == 0;
         }
 
         /**
@@ -478,8 +500,8 @@ namespace Dash
 		
         private async void ToggleVisibilityAsync(Visibility status)
         {
-			//xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
-			if (subtoolbarElement != null)
+            //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
+            if (subtoolbarElement != null)
 			{
 				subtoolbarElement.Visibility = status;
 				//if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
@@ -529,39 +551,39 @@ namespace Dash
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
             AdjustComboBoxes();
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
-            if (subtoolbarElement == xImageToolbar)
-            {
-                if (Orientation == Orientation.Vertical)
-                {
-                    var margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 72;
-                    margin.Left = 10;
-                    xSubtoolbarStackPanel.Margin = margin;
-                } else
-                {
-                    var margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 10;
-                    margin.Left = 0;
-                    xSubtoolbarStackPanel.Margin = margin;
-                }
-            }
-            else if (subtoolbarElement == xCollectionToolbar)
-            {
-                if (Orientation == Orientation.Vertical)
-                {
-                    var margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 12;
-                    margin.Left = 10;
-                    xSubtoolbarStackPanel.Margin = margin;
-                }
-                else
-                {
-                    var margin = xSubtoolbarStackPanel.Margin;
-                    margin.Top = 10;
-                    margin.Left = 0;
-                    xSubtoolbarStackPanel.Margin = margin;
-                }
-            }
+            //if (subtoolbarElement == xImageToolbar)
+            //{
+            //    if (Orientation == Orientation.Vertical)
+            //    {
+            //        var margin = xSubtoolbarStackPanel.Margin;
+            //        margin.Top = 72;
+            //        margin.Left = 10;
+            //        xSubtoolbarStackPanel.Margin = margin;
+            //    } else
+            //    {
+            //        var margin = xSubtoolbarStackPanel.Margin;
+            //        margin.Top = 10;
+            //        margin.Left = 0;
+            //        xSubtoolbarStackPanel.Margin = margin;
+            //    }
+            //}
+            //else if (subtoolbarElement == xCollectionToolbar)
+            //{
+            //    if (Orientation == Orientation.Vertical)
+            //    {
+            //        var margin = xSubtoolbarStackPanel.Margin;
+            //        margin.Top = 12;
+            //        margin.Left = 10;
+            //        xSubtoolbarStackPanel.Margin = margin;
+            //    }
+            //    else
+            //    {
+            //        var margin = xSubtoolbarStackPanel.Margin;
+            //        margin.Top = 10;
+            //        margin.Left = 0;
+            //        xSubtoolbarStackPanel.Margin = margin;
+            //    }
+            //}
             //xPadding.Width = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingLong : ToolbarConstants.PaddingShort;
             //xPadding.Height = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingShort : ToolbarConstants.PaddingLong;
             //xPadding.Visibility = (subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed;
@@ -577,82 +599,69 @@ namespace Dash
 
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (state == State.Expanded && state == State.Collapsed)
+            Debug.WriteLine(xFloating.GetCurrentTop());
+            if (state == State.Expanded && IsAtTop())
             {
                 xToolbar.IsOpen = true;
-                if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(false);
+                if (subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(false);
             }
         }
 
         private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (state == State.Expanded && state == State.Collapsed)
+            Debug.WriteLine(xFloating.GetCurrentTop());
+            if (state == State.Expanded && IsAtTop())
             {
                 xToolbar.IsOpen = subtoolbarElement == null;
-                if (subtoolbarElement != null && subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+                if (subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(true);
             }
         }
 
         private void XCollapse_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (state == State.Expanded)
-            {
-                if (xToolbar.IsShiftPressed())
-                {
-                    xToolbar.IsOpen = true;
-                    RotateToolbar();
-                }
-                else
-                {
-                    state = State.Collapsed;
-                    xCollapse.Icon = new SymbolIcon(Symbol.FullScreen);
-                    xCollapse.Label = "";
-                    xCollapse.Background = new SolidColorBrush(Colors.Blue);
-                    ToggleVisibilityAsync(Visibility.Collapsed);
-                    subtoolbarElement = null;
-                }
-            }
-            else
-            {
-				//if vertical, adjust position for additional height
-				if (Orientation == Orientation.Vertical)
-				{
-					xFloating.AdjustPositionForExpansion(xToolbar.ActualHeight, 0);
-				}
-				//otherwise, adjust position for additional width
-				else
-				{
-					xFloating.AdjustPositionForExpansion(0, 700 - xToolbar.ActualWidth);
-				}
-				
-				//Expands toolbar and reopens it as long as nothing is selected
-				state = State.Expanded;
-                xCollapse.Icon = new SymbolIcon(Symbol.BackToWindow);
-                xCollapse.Label = "Collapse";
-                xCollapse.Background = new SolidColorBrush(Colors.Red);
-                ToggleVisibilityAsync(Visibility.Visible);
-				xToolbar.IsOpen = subtoolbarElement == null;
-				
-			}
+            state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
+            xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
+            xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
+
+            var visibility = (state == State.Expanded) ? Visibility.Visible : Visibility.Collapsed;
+            ToggleVisibilityAsync(visibility);
+
+            subtoolbarElement = null;
+            xToolbar.IsOpen = (state == State.Expanded);
+
+            if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
+            xFloating.AdjustPositionForExpansion(0, 800 - xToolbar.ActualWidth);
         }
 
         public void SwitchTheme(bool nightModeOn)
 	    {
-			
-			//toggle night mode styles
-		    if (nightModeOn)
-		    {
-			    xToolbar.Foreground = new SolidColorBrush(Colors.White);
-		    }
-		    else
-		    {
-			    xToolbar.Foreground = new SolidColorBrush(Colors.Black);
-		    }
+
+            //toggle night mode styles
+	        xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
 
 		    //ensure toolbar is visible
 		    xToolbar.IsEnabled = true;
 		    xToolbar.Visibility = Visibility.Visible;
 
 		}
-	}
+
+        private void MenuToolbar_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if ( subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+        }
+
+        private void MenuToolbar_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("GAHGHAGHAHGHAHDEHGHDSHSDKH!!!");
+        }
+
+        private void XPin_OnClick(object sender, RoutedEventArgs e)
+        {
+            pinned = (pinned == Pinned.Unpinned) ? Pinned.Pinned : Pinned.Unpinned;
+            xFloating.ShouldManipulateChild = (pinned != Pinned.Unpinned);
+            xPin.Label = (pinned == Pinned.Unpinned) ? "Unpin" : "Pin";
+            xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+        }
+    }
 }
