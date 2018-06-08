@@ -39,6 +39,24 @@ namespace Dash
             set { SetValue(OrientationProperty, value); }
         }
 
+        public static readonly DependencyProperty ExpandColorProperty = DependencyProperty.Register(
+            "ExpandColor", typeof(SolidColorBrush), typeof(MenuToolbar), new PropertyMetadata(default(SolidColorBrush)));
+
+        public SolidColorBrush ExpandColor
+        {
+            get { return (SolidColorBrush) GetValue(ExpandColorProperty); }
+            set { SetValue(ExpandColorProperty, value); }
+        }
+
+        public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
+            "CollapseColor", typeof(SolidColorBrush), typeof(MenuToolbar), new PropertyMetadata(default(SolidColorBrush)));
+
+        public SolidColorBrush CollapseColor
+        {
+            get { return (SolidColorBrush) GetValue(CollapseColorProperty); }
+            set { SetValue(CollapseColorProperty, value); }
+        }
+
         // == STATIC ==
         public static MenuToolbar Instance;
 
@@ -69,7 +87,6 @@ namespace Dash
         private ButtonBase[] allButtons;
         private RotateTransform[] buttonRotations;
         private AppBarSeparator[] allSeparators;
-        private UIElement _parent;
         private MouseMode mode;
         private State state;
         private Pinned pinned;
@@ -81,13 +98,12 @@ namespace Dash
         /// Creates a new Toolbar with the given canvas as reference.
         /// </summary>
         /// <param name="canvas"></param>
-        public MenuToolbar(UIElement parent)
+        public MenuToolbar()
         {
             this.InitializeComponent();
 
 
             MenuToolbar.Instance = this;
-            _parent = parent;
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             pinned = Pinned.Unpinned;
@@ -141,7 +157,6 @@ namespace Dash
             }; 
             allSeparators = tempSeparators;
 
-            this.SetUpBaseMenu();
             this.AddSecondaryButtonEventHandlers();
         }
 
@@ -343,11 +358,6 @@ namespace Dash
 		        subtoolbarElement.Visibility = Visibility.Visible;
 				//xFloating.Floating_SizeChanged(null, null);
 	        }
-        }
-
-        private void SetUpBaseMenu()
-        {
-            if (_parent is Grid grid) grid.Children.Add(this);
         }
 
         // copy btn
@@ -631,6 +641,15 @@ namespace Dash
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
             xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
             xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
+
+            var backgroundBinding = new Binding
+            {
+                Source = this,
+                Mode = BindingMode.OneWay,
+                Path = new PropertyPath(state == State.Expanded ? nameof(ExpandColor) : nameof(CollapseColor))
+            };
+
+            xCollapse.SetBinding(BackgroundProperty, backgroundBinding);
 
             var visibility = (state == State.Expanded) ? Visibility.Visible : Visibility.Collapsed;
             ToggleVisibilityAsync(visibility);

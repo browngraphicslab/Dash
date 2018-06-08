@@ -47,7 +47,6 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
-        private MenuToolbar Toolbar;
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
 
@@ -108,7 +107,6 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            Toolbar = new MenuToolbar(xOuterGrid);
 			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
 		}

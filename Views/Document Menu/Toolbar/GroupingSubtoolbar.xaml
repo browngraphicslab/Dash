@@ -13,18 +13,25 @@
     <Grid>
         <CommandBar Background="LightGray" x:Name="xGroupCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
-                <ComboBox x:Name="xShapeOptionsDropdown" SelectedIndex="0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged">
-                    <ComboBoxItem Content="Rectangle"/>
-                    <ComboBoxItem Content="Ellipse"/>
-                    <ComboBoxItem Content="Rounded"/>
-                    <ComboBoxItem Content="Polygon"/>
-                </ComboBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="322"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="xShapeOptionsDropdown" SelectedIndex="0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
+                        <ComboBoxItem Content="Rectangle"/>
+                        <ComboBoxItem Content="Ellipse"/>
+                        <ComboBoxItem Content="Rounded"/>
+                        <ComboBoxItem Content="Polygon"/>
+                    </ComboBox>
+                    <Slider x:Name="xOpacitySlider" Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1" SnapsTo="StepValues" TickPlacement="None"  Grid.Column="1" IntermediateValue="128" Margin="22, 11, 0, 0" RightTapped="XOpacitySlider_OnRightTapped"  ValueChanged="XOpacitySlider_OnValueChanged"/>
+                </Grid>
             </CommandBar.Content>
             <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
             <AppBarButton x:Name="xFontColor" Label="Color">
                 <Button.Flyout>
                     <Flyout>
-                        <media:SfColorPicker x:Name="xGroupForegroundColorPicker" PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
+                        <media:SfColorPicker  x:Name="xGroupForegroundColorPicker"  PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
                     </Flyout>
                 </Button.Flyout>
                 <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>

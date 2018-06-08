@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Navigation;
 using Syncfusion.UI.Xaml.Controls.Media;
 using System.Diagnostics;
 using System.Text;
+using Windows.UI;
+using Zu.TypeScript.TsTypes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,6 +35,8 @@ namespace Dash
 
         private DocumentView currentDocView;
         private DocumentController currentDocController;
+        private static Dictionary<double, char[]> opacities;
+        private Color currentColor; 
 
         public GroupingSubtoolbar()
         {
@@ -112,22 +116,41 @@ namespace Dash
             xGroupCommandbar.IsEnabled = true;
         }
 
-        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        private string SetOpacity(string unprocessedColor, double desiredOpacity)
         {
-            if (sender is SfColorPicker colorPicker) currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(colorPicker.SelectedColor.ToString(), 0.5), true);
-        }
-
-        private static string SetOpacity(string unprocessedColor, double desiredOpacity)
-        {
-            var chars = toEdit.ToCharArray();
-            chars[1] = '8';
-            chars[2] = '0';
-            return new string(chars);
+            var alpha = (byte) (desiredOpacity / xOpacitySlider.Maximum * 255);
+            var rgb = unprocessedColor.Substring(3);
+            return "#" + alpha.ToString("X2") + rgb;
         }
 
         public void TryMakeGroupEditable(bool makeAdornmentGroup)
         {
             currentDocController?.SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", !makeAdornmentGroup);
+        }
+
+        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is SfColorPicker colorPicker)
+            {
+                currentColor = colorPicker.SelectedColor;
+                UpdateColor();
+            }
+        }
+
+        private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            UpdateColor();
+        }
+
+        private void UpdateColor()
+        {
+            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(currentColor.ToString(), xOpacitySlider.Value), true);
+        }
+
+        private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            xOpacitySlider.Value = 128;
+            UpdateColor();
         }
     }
 }

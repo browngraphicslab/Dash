@@ -50,8 +50,8 @@
             <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockTop" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
             <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockBottom" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
         </Grid>
-    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="4" Grid.Row="2">
-        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="4" Grid.Row="2">
+            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
                 <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
             </Grid>
             <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
@@ -100,12 +100,14 @@
                 Grid.Row="1" Height="15"/>
 
         </Grid>
-        
+
         <!--Dock gridsplitters-->
         <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="5"/>
         <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
         <localMicrosoft:GridSplitter Grid.Row="1" Grid.Column="4"/>
         <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
+
+        <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"></local:MenuToolbar>
     </Grid>
 </Page>
 
