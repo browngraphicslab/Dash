@@ -20,8 +20,8 @@
             <ctrl:CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerReleased="MenuToolbar_PointerReleased" PointerPressed="MenuToolbar_PointerPressed"  PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
 
                 <AppBarButton x:Name="xCollapse" Background="{ThemeResource AccentGreen}"  Icon="BackToWindow"  Label="Collapse" Tapped="XCollapse_OnTapped"/>
-                <AppBarButton x:Name="xPin" IsEnabled ="True" Label="Pin" Click="XPin_OnClick">
-                    <Image x:Name="xLockIcon" Width="38" Source="ms-appx:///Assets/pinned.png" HorizontalAlignment="Stretch" Margin="0,-4,0,-4" VerticalAlignment="Stretch"/>
+                <AppBarButton x:Name="xPin" IsEnabled ="True" Label="Floating" Click="XPin_OnClick">
+                    <Image x:Name="xLockIcon" Width="38" Source="ms-appx:///Assets/unpinned.png" HorizontalAlignment="Stretch" Margin="0,-4,0,-4" VerticalAlignment="Stretch"/>
                 </AppBarButton>
 
                 <AppBarSeparator x:Name="xSepThree"/>

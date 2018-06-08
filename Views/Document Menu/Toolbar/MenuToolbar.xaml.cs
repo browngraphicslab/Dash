@@ -147,21 +147,24 @@ namespace Dash
 
         private void AddSecondaryButtonEventHandlers()
         {
-            foreach (var b in allButtons)
+            foreach (var b in allButtons) { b.PointerPressed += TopBarHoverBehavior; }
+            xCollapse.PointerPressed += TopBarHoverBehavior;
+            foreach (var s in allSeparators) { s.PointerPressed += TopBarHoverBehavior; }
+            xToolbar.PointerPressed += TopBarHoverBehavior;
+        }
+
+        private void TopBarHoverBehavior(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
+            if (subtoolbarElement is ICommandBarBased toOpen && state == State.Expanded)
             {
-                b.PointerPressed += (sender, args) =>
-                {
-                    if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
-                    if (subtoolbarElement is ICommandBarBased toOpen && state == State.Expanded) toOpen.CommandBarOpen(true);
-                };
+                toOpen.CommandBarOpen(true);
             }
-            foreach (var s in allSeparators)
+            else if (subtoolbarElement is TextSubtoolbar txt)
             {
-                s.PointerPressed += (sender, args) =>
-                {
-                    if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
-                    if (subtoolbarElement is ICommandBarBased toOpen && state == State.Expanded) toOpen.CommandBarOpen(true);
-                };
+                var margin = txt.Margin;
+                margin.Top = 0;
+                txt.Margin = margin;
             }
         }
 
@@ -206,7 +209,7 @@ namespace Dash
         /// Disables or enables toolbar level document specific icons.
         /// </summary>
         /// <param name="hasDocuments"></param>
-        private void toggleSelectOptions(Boolean hasDocuments)
+        private void ToggleSelectOptions(Boolean hasDocuments)
         {
             var o = .5;
             if (hasDocuments) o = 1;
@@ -228,7 +231,7 @@ namespace Dash
             {
                 if (subtoolbarElement != null) subtoolbarElement.Visibility = Visibility.Collapsed;
 
-                toggleSelectOptions(docs.Count() > 0);
+                ToggleSelectOptions(docs.Count() > 0);
 
                 // just single select
                 if (docs.Count() == 1)
@@ -240,6 +243,7 @@ namespace Dash
                     { 
                         subtoolbarElement = xImageToolbar;
                         xImageToolbar.SetImageBinding(selection);
+                        xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Collection controls  
@@ -247,6 +251,7 @@ namespace Dash
                     {
                         CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
                         subtoolbarElement = xCollectionToolbar;
+                        xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Text controls
@@ -257,12 +262,14 @@ namespace Dash
                         xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
 	                    xTextToolbar.SetDocs(selection);
 						subtoolbarElement = xTextToolbar;
+                        xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Group controls  
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
                     {
                         xGroupToolbar.SetGroupBinding(selection);
+                        xGroupToolbar.TryMakeGroupEditable(true);
                         subtoolbarElement = xGroupToolbar;
                     }
 
@@ -304,6 +311,7 @@ namespace Dash
                 {
                     xToolbar.IsOpen = true;
                     subtoolbarElement = null;
+                    xGroupToolbar.TryMakeGroupEditable(false);
                     //xPadding.Visibility = Visibility.Collapsed;
                 }
 
@@ -592,7 +600,7 @@ namespace Dash
                 else if (subtoolbarElement is TextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
-                    margin.Top = 12;
+                    margin.Top = 13;
                     txt.Margin = margin;
                 }
             }
@@ -659,8 +667,8 @@ namespace Dash
         private void XPin_OnClick(object sender, RoutedEventArgs e)
         {
             pinned = (pinned == Pinned.Unpinned) ? Pinned.Pinned : Pinned.Unpinned;
-            xFloating.ShouldManipulateChild = (pinned != Pinned.Unpinned);
-            xPin.Label = (pinned == Pinned.Unpinned) ? "Unpin" : "Pin";
+            xFloating.ShouldManipulateChild = (pinned == Pinned.Unpinned);
+            xPin.Label = (pinned == Pinned.Unpinned) ? "Floating" : "Anchored";
             xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
             xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
         }

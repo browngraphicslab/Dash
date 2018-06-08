@@ -762,7 +762,7 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
-    <Content Include="Assets\pinned.png" />
+    <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\Small\Small71x71Logo.scale-100.png" />
@@ -783,7 +783,7 @@
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\DefaultVideo.mp4" />
     <Content Include="Assets\unlocked.png" />
-    <Content Include="Assets\unpinned.png" />
+    <Content Include="Assets\pinned.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-150.png" />

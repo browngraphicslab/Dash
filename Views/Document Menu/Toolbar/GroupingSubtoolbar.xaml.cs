@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Syncfusion.UI.Xaml.Controls.Media;
 using System.Diagnostics;
+using System.Text;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -58,20 +59,6 @@ namespace Dash
             xShapeOptionsDropdown.Margin = new Thickness(ToolbarConstants.ComboBoxMarginOpen);
         }
 
-        private void GroupForegroundColorPicker_SelectedColorChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (sender is SfColorPicker colorPicker)
-            {
-                
-                currentDocView.ViewModel.BackgroundBrush = new SolidColorBrush(colorPicker.SelectedColor);
-                //if (currentDocController != null)
-                //{
-                //    var color = colorPicker.SelectedColor;
-                //    currentDocController.SetField<TextController>(KeyStore.BackgroundColorKey, color, true);
-                //}
-            }
-        }
-
         public ComboBox GetComboBox()
         {
             return xShapeOptionsDropdown;
@@ -93,26 +80,23 @@ namespace Dash
 
         private void ShapeOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (currentDocController != null)
+            switch (xShapeOptionsDropdown.SelectedIndex)
             {
-                switch (xShapeOptionsDropdown.SelectedIndex)
-                {
-                    case 0:
-                        currentDocController.SetField<TextController>(KeyStore.AdornmentShapeKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
-                        break;
-                    case 1:
-                        currentDocController.SetField<TextController>(KeyStore.AdornmentShapeKey, BackgroundShape.AdornmentShape.Elliptical.ToString(), true);
-                        break;
-                    case 2:
-                        currentDocController.SetField<TextController>(KeyStore.AdornmentShapeKey, BackgroundShape.AdornmentShape.Rounded.ToString(), true);
-                        break;
-                    case 3:
-                        //Arbitrary polygon: collect user input points with a nice UI.
-                        break;
-                    default:
-                        currentDocController.SetField<TextController>(KeyStore.AdornmentShapeKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
-                        break;
-                }
+                case 0:
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
+                    break;
+                case 1:
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Elliptical.ToString(), true);
+                    break;
+                case 2:
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rounded.ToString(), true);
+                    break;
+                case 3:
+                    //Arbitrary polygon: collect user input points with a nice UI.
+                    break;
+                default:
+                    currentDocController?.SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
+                    break;
             }
         }
 
@@ -126,6 +110,24 @@ namespace Dash
         {
             xGroupCommandbar.IsOpen = true;
             xGroupCommandbar.IsEnabled = true;
+        }
+
+        private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is SfColorPicker colorPicker) currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(colorPicker.SelectedColor.ToString(), 0.5), true);
+        }
+
+        private static string SetOpacity(string unprocessedColor, double desiredOpacity)
+        {
+            var chars = toEdit.ToCharArray();
+            chars[1] = '8';
+            chars[2] = '0';
+            return new string(chars);
+        }
+
+        public void TryMakeGroupEditable(bool makeAdornmentGroup)
+        {
+            currentDocController?.SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", !makeAdornmentGroup);
         }
     }
 }

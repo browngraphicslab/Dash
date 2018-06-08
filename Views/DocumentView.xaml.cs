@@ -1,6 +1,7 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -723,7 +724,7 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!ViewModel.IsAdornmentGroup)
+            if (!ViewModel.IsAdornmentGroup && !ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
             {
                 FocusedDocument = this;
                 ToFront();
@@ -734,8 +735,20 @@ namespace Dash
                 //}
                 if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
                 {
-                    if (!this.IsShiftPressed())
-                        cfview.DeselectAll();
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
+                    cfview.SelectDocs(d);
+                    if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                    {
+                        cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    }
+                }
+            }
+            else if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType) && this.IsCtrlPressed())
+            {
+                var d = new List<DocumentView>(new DocumentView[] { this });
+                if (ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
+                {
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
                     cfview.SelectDocs(d);
                     if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                     {
