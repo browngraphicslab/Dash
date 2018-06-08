@@ -1,4 +1,6 @@
-﻿//check if user is on gogole drive tab when tab is created and when updated
+﻿//i think i need to move defining stuff to bg.js (see lines 75, 76)
+
+//check if user is on gogole drive tab when tab is created and when updated
 chrome.tabs.onCreated.addListener(function callback)
 callback = function (Tab tab) {
     var fileId = '1ZdR3L3qP4Bkq8noWLJHSr_iBau0DNT4Kli4SxNc2YEo';

@@ -788,6 +788,7 @@
     <Content Include="ChromeExt\bg.js" />
     <Content Include="ChromeExt\bgTest.html" />
     <Content Include="ChromeExt\close-icon.svg" />
+    <Content Include="ChromeExt\googleDownload.js" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
     <Content Include="ChromeExt\jquery.js" />
@@ -1229,11 +1230,7 @@
       <Version>1.23.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <SDKReference Include="WindowsDesktop, Version=10.0.17134.0">
-      <Name>Windows Desktop Extensions for the UWP</Name>
-    </SDKReference>
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
