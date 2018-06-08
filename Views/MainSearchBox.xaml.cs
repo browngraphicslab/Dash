@@ -74,7 +74,6 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
-                Debug.WriteLine("DSL: " + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 text = text.Replace(@"\", @"\\");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
@@ -725,6 +724,7 @@ namespace Dash
             /// <returns></returns>
             private static IEnumerable<SearchResultViewModel> LocalSearch(string searchString)
             {
+                Debug.WriteLine("SearchString: " + searchString);
                 var documentTree = DocumentTree.MainPageTree;
                 var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
                 var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();
@@ -734,7 +734,7 @@ namespace Dash
                     string lastTopText = "";
                     StringSearchModel lastKeySearch = null;
                     StringSearchModel lastFieldSearch = null;
-
+                    
                     foreach (var kvp in documentController.EnumDisplayableFields())
                     {
                         var keySearch = kvp.Key.SearchForString(searchString);
@@ -797,6 +797,7 @@ namespace Dash
                         countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
                     }
                 }
+                
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
                 //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
             }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
+
 namespace Dash
 {
     [OperatorType("parseSearchString")]
@@ -57,7 +58,7 @@ namespace Dash
         private string JoinTwoSearchesWithUnion(string search1, string search2)
         {
             //TODO not have the function name and paremter name strings be hardcoded here
-            return "unionByValue(A:" +search1+",B:"+search2+")";
+            return OperatorScript.GetDishOperatorName<UnionSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
@@ -98,9 +99,20 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            //very simple for now, can only join with intersections
+            //very simple for now, can only join with intersections and unions
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var charSeq = new List<char>();
+            for (int i = 0; i < inputString.Length; i++)
+            {
+                char divider = inputString[i];
+                if (divider == ',' || divider == ' ')
+                {
+                    charSeq.Add(divider);
+                }
+            }
+            char[] splitChars = { ' ', ',' };
+            var parts = inputString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 1)
             {
                 outputs[ScriptKey] = new TextController("");
@@ -115,7 +127,18 @@ namespace Dash
             {
                 var search1 = searches.Pop();
                 var search2 = searches.Pop();
-                searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
+                switch (charSeq.ElementAt(0))
+                {
+                    case ' ':
+                        searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
+                        break;
+                    case ',': 
+                        searches.Push(JoinTwoSearchesWithUnion(search1, search2));
+                        break;
+                    default:
+                        break;
+                }
+                charSeq.RemoveAt(0);
             }
             outputs[ScriptKey] = new TextController(searches.First());
         }
