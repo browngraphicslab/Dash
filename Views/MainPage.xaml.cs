@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.AppService;
 using Windows.UI;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
@@ -27,6 +29,8 @@ using System.Timers;
 using Dash.Views;
 using Dash.Views.Document_Menu;
 using Dash.Controllers;
+using Windows.UI.Popups;
+using Windows.Foundation.Collections;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -115,7 +119,10 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
             Toolbar = new MenuToolbar(xCanvas);
-		}
+
+        }
+
+
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -787,5 +794,7 @@ namespace Dash
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
         }
+
+      
     }
 }
