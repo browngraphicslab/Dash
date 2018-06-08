@@ -79,11 +79,6 @@ namespace Dash
             BindImageSource(image, controller, context, KeyStore.DataKey);
         }
 
-       public void cropImage(RectangleGeometry rectgeo)
-        {
-            //rectgeo.Rect.
-        }
-
         protected static void BindImageSource(Image image, DocumentController docController, Context context,
             KeyController key)
         {

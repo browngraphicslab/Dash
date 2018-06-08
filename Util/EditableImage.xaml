@@ -9,17 +9,12 @@
     LostFocus="EditableImage_OnLostFocus"
     KeyDown="XGrid_OnKeyDown"
     Background="Beige" IsTabStop="True">
-    
-    <Grid x:Name="xGrid" PointerMoved="Grid_PointerMoved" PointerReleased="Grid_PointerReleased" PointerPressed="Grid_PointerPressed" >
-        <Image x:Name="xImage"  VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill" Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache">
-            <!--<Image.Clip x:Name="clip">
-                <RectangleGeometry x:Name="rectgeo"></RectangleGeometry>
-            </Image.Clip>-->
-        </Image>
-        <!--<Rectangle x:Name="xRect" StrokeThickness="4" Stroke="Black" Fill="White" Opacity="0.2" Visibility="Collapsed" Width="5" Height="5" HorizontalAlignment="Left" VerticalAlignment="Top">
-        </Rectangle>-->
+
+    <Grid x:Name="xGrid" PointerMoved="StopImageFromMoving" PointerReleased="StopImageFromMoving"
+          PointerPressed="StopImageFromMoving">
+        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill"
+               Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache" />
     </Grid>
 
- 
 
 </UserControl>
