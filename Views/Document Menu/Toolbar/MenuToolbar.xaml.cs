@@ -26,7 +26,7 @@ using Windows.UI.Xaml.Media.Imaging;
 namespace Dash
 {
     /// <summary>
-    /// The top level toolbar in Dash.
+    /// The top level toolbar in Dash, which will always be present on screen. Subtoolbars are added below the main toolbar according to the type of data that was selected. 
     /// </summary>
     public sealed partial class MenuToolbar : UserControl
     {
@@ -469,7 +469,10 @@ namespace Dash
             }
         }
 
-        private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// When the "Add Audio" btn is clicked, this launches a file picker & adds selected audio files to the workspace
+		/// </summary>
+		private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
             //instantiates a file picker, set to open in user's audio library
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -497,8 +500,11 @@ namespace Dash
                 //add error message for null file?
             }
         }
-		
-        private async void ToggleVisibilityAsync(Visibility status)
+
+		/// <summary>
+		/// Toggles orientation of toolbar, currently inactive
+		/// </summary>
+		private async void ToggleVisibilityAsync(Visibility status)
         {
             //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
             if (subtoolbarElement != null)
@@ -532,7 +538,10 @@ namespace Dash
 			}
         }
 
-        private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
+		/// <summary>
+		/// Inverts toolbar orientation, currently inactive
+		/// </summary>
+		private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
         {
             public override Orientation ConvertDataToXaml(Orientation data, object parameter = null)
             {
@@ -545,7 +554,10 @@ namespace Dash
             }
         }
 
-        private void RotateToolbar()
+		/// <summary>
+		/// Rotates the toolbar between horizontal and vertical orientations, currently inactive
+		/// </summary>
+		private void RotateToolbar()
         {
             Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
@@ -617,6 +629,7 @@ namespace Dash
             }
         }
 
+		
         private void XCollapse_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
