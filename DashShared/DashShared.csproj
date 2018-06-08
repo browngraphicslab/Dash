@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Office.Interop\**" />
+    <EmbeddedResource Remove="Office.Interop\**" />
+    <None Remove="Office.Interop\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 
