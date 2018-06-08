@@ -152,7 +152,7 @@ namespace Dash
                 b.PointerPressed += (sender, args) =>
                 {
                     if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
-                    if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+                    if (subtoolbarElement is ICommandBarBased toOpen && state == State.Expanded) toOpen.CommandBarOpen(true);
                 };
             }
             foreach (var s in allSeparators)
@@ -160,7 +160,7 @@ namespace Dash
                 s.PointerPressed += (sender, args) =>
                 {
                     if (IsAtTop()) xToolbar.IsOpen = (subtoolbarElement == null);
-                    if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
+                    if (subtoolbarElement is ICommandBarBased toOpen && state == State.Expanded) toOpen.CommandBarOpen(true);
                 };
             }
         }
@@ -396,7 +396,7 @@ namespace Dash
        */
         private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xToolbar.IsOpen = IsAtTop();
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
             var imagePicker = new FileOpenPicker
             {
                 ViewMode = PickerViewMode.Thumbnail,
@@ -442,10 +442,13 @@ namespace Dash
 		*/
         private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
             //instantiates a file picker, set to open in user's video library
-            var picker = new Windows.Storage.Pickers.FileOpenPicker();
-            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.VideosLibrary
+            };
 
             picker.FileTypeFilter.Add(".avi");
             picker.FileTypeFilter.Add(".mp4");
@@ -456,7 +459,7 @@ namespace Dash
 
             if (files != null)
             {
-                foreach (Windows.Storage.StorageFile file in files)
+                foreach (var file in files)
                 {
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
@@ -475,9 +478,11 @@ namespace Dash
 		private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
             //instantiates a file picker, set to open in user's audio library
-            var picker = new Windows.Storage.Pickers.FileOpenPicker();
-            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.MusicLibrary;
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.MusicLibrary
+            };
 
             picker.FileTypeFilter.Add(".mp3");
       
@@ -487,7 +492,7 @@ namespace Dash
 
             if (files != null)
             {
-                foreach (Windows.Storage.StorageFile file in files)
+                foreach (var file in files)
                 {
                     //create a doc controller for the audio, set position, and add to canvas
                     var docController = await new AudioToDashUtil().ParseFileAsync(file);
@@ -501,24 +506,33 @@ namespace Dash
             }
         }
 
-		/// <summary>
-		/// Toggles orientation of toolbar, currently inactive
-		/// </summary>
-		private async void ToggleVisibilityAsync(Visibility status)
+        private void RotateToolbar()
+        {
+            Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
+            //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
+            AdjustComboBoxes();
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
+        }
+
+
+
+        /// <summary>
+        /// Toggles orientation of toolbar, currently inactive
+        /// </summary>
+        private async void ToggleVisibilityAsync(Visibility status)
         {
             //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
-            if (subtoolbarElement != null)
-			{
-				subtoolbarElement.Visibility = status;
-				//if (subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(status != Visibility.Collapsed);
-			}
+            if (subtoolbarElement != null) subtoolbarElement.Visibility = status;
 
 			if (state == State.Expanded)
 			{
 				foreach (var b in allButtons)
 				{
-					b.Visibility = status;
-					if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+				    if (b != xPin)
+				    {
+				        b.Visibility = status;
+				        if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+                    }
 				}
 				foreach (var s in allSeparators)
 				{
@@ -532,8 +546,11 @@ namespace Dash
 				}
 				foreach (var b in allButtons)
 				{
-					b.Visibility = status;
-					if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+				    if (b != xPin)
+				    {
+				        b.Visibility = status;
+				        if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
+				    }
 				}
 			}
         }
@@ -552,53 +569,6 @@ namespace Dash
             {
                 return xaml == Orientation.Horizontal ? Orientation.Vertical : Orientation.Horizontal;
             }
-        }
-
-		/// <summary>
-		/// Rotates the toolbar between horizontal and vertical orientations, currently inactive
-		/// </summary>
-		private void RotateToolbar()
-        {
-            Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
-            //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
-            AdjustComboBoxes();
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
-            //if (subtoolbarElement == xImageToolbar)
-            //{
-            //    if (Orientation == Orientation.Vertical)
-            //    {
-            //        var margin = xSubtoolbarStackPanel.Margin;
-            //        margin.Top = 72;
-            //        margin.Left = 10;
-            //        xSubtoolbarStackPanel.Margin = margin;
-            //    } else
-            //    {
-            //        var margin = xSubtoolbarStackPanel.Margin;
-            //        margin.Top = 10;
-            //        margin.Left = 0;
-            //        xSubtoolbarStackPanel.Margin = margin;
-            //    }
-            //}
-            //else if (subtoolbarElement == xCollectionToolbar)
-            //{
-            //    if (Orientation == Orientation.Vertical)
-            //    {
-            //        var margin = xSubtoolbarStackPanel.Margin;
-            //        margin.Top = 12;
-            //        margin.Left = 10;
-            //        xSubtoolbarStackPanel.Margin = margin;
-            //    }
-            //    else
-            //    {
-            //        var margin = xSubtoolbarStackPanel.Margin;
-            //        margin.Top = 10;
-            //        margin.Left = 0;
-            //        xSubtoolbarStackPanel.Margin = margin;
-            //    }
-            //}
-            //xPadding.Width = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingLong : ToolbarConstants.PaddingShort;
-            //xPadding.Height = (Orientation == Orientation.Horizontal) ? ToolbarConstants.PaddingShort : ToolbarConstants.PaddingLong;
-            //xPadding.Visibility = (subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void AdjustComboBoxes()
@@ -639,10 +609,10 @@ namespace Dash
             var visibility = (state == State.Expanded) ? Visibility.Visible : Visibility.Collapsed;
             ToggleVisibilityAsync(visibility);
 
+            if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
             xToolbar.IsOpen = (state == State.Expanded);
 
-            if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
             xFloating.AdjustPositionForExpansion(0, 800 - xToolbar.ActualWidth);
         }
 
@@ -674,7 +644,7 @@ namespace Dash
             xFloating.ShouldManipulateChild = (pinned != Pinned.Unpinned);
             xPin.Label = (pinned == Pinned.Unpinned) ? "Unpin" : "Pin";
             xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
-            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+            xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
         }
     }
 }
