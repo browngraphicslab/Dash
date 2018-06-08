@@ -29,7 +29,11 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
-        public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
+        public DocumentViewModel ViewModel
+        {
+            get => DataContext as DocumentViewModel;
+            set => DataContext = value;
+        }
 
         public MenuFlyout MenuFlyout { get; set; }
 

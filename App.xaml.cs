@@ -21,7 +21,7 @@ namespace Dash
         /// </summary>
         public static App Instance;
 
-        //this is for html import
+        //.NET interop stuff
         public static BackgroundTaskDeferral AppServiceDeferral = null;
         public static AppServiceConnection Connection = null;
         public static event EventHandler AppServiceConnected;
