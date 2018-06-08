@@ -585,7 +585,16 @@ namespace Dash
             if (state == State.Expanded && IsAtTop())
             {
                 xToolbar.IsOpen = true;
-                if (subtoolbarElement is ICommandBarBased toClose) toClose.CommandBarOpen(false);
+                if (subtoolbarElement is ICommandBarBased toClose)
+                {
+                    toClose.CommandBarOpen(false);
+                }
+                else if (subtoolbarElement is TextSubtoolbar txt)
+                {
+                    var margin = txt.Margin;
+                    margin.Top = 17;
+                    txt.Margin = margin;
+                }
             }
         }
 
@@ -599,9 +608,11 @@ namespace Dash
                 {
                     toClose.CommandBarOpen(true);
                 }
-                else if (subtoolbarElement == xTextToolbar)
+                else if (subtoolbarElement is TextSubtoolbar txt)
                 {
-                    
+                    var margin = txt.Margin;
+                    margin.Top = 7;
+                    txt.Margin = margin;
                 }
             }
         }
