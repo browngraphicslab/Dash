@@ -116,8 +116,6 @@ namespace Dash
 
             Toolbar = new MenuToolbar(xCanvas);
 
-            //to import from html
-            App.AppServiceConnected += CollectionViewModel.AppServiceConnected;
         }
 
 

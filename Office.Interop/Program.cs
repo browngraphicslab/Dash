@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
-using Windows.ApplicationModel.AppService;
 using Excel = Microsoft.Office.Interop.Excel;
 using Word = Microsoft.Office.Interop.Word;
 
@@ -38,7 +37,7 @@ namespace ExcelInterop
         static async void InitializeAppServiceConnection()
         {
             connection = new AppServiceConnection();
-            connection.AppServiceName = "WordInteropService";
+            connection.AppServiceName = "OfficeInteropService";
             connection.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
             connection.RequestReceived += Connection_RequestReceived;
             connection.ServiceClosed += Connection_ServiceClosed;
@@ -65,28 +64,16 @@ namespace ExcelInterop
                 case "CreateDocument":
                     try
                     {
-                        // call Office Interop APIs to create the word spreadsheet
                         Word.Application word = new Word.Application();
-                        word.Visible = true;
-                        Word.Document sh = word.Documents.Add();
+                        //word.Visible = true;
+                        object missing = System.Reflection.Missing.Value;
+                        var doc = word.Documents.Add(ref missing, ref missing, ref missing, ref missing);
+                        doc.Content.Paste();
+                        var start = doc.Content.Start;
+                        var end = doc.Content.End;
 
-                        /*
-                        Word.Worksheet sh = wb.Sheets.Add();
-                        sh.Name = "DataGrid";
-                        sh.Cells[1, "A"].Value2 = "Id";
-                        sh.Cells[1, "B"].Value2 = "Description";
-                        sh.Cells[1, "C"].Value2 = "Quantity";
-                        sh.Cells[1, "D"].Value2 = "UnitPrice"; */
-
-                        for (int i = 0; i < args.Request.Message.Values.Count / 4; i++)
-                        {
-                            /*
-                            sh.Cells[i + 2, "A"].Value2 = args.Request.Message["Id" + i.ToString()] as string;
-                            sh.Cells[i + 2, "B"].Value2 = args.Request.Message["Description" + i.ToString()] as string;
-                            sh.Cells[i + 2, "C"].Value2 = args.Request.Message["Quantity" + i.ToString()].ToString();
-                            sh.Cells[i + 2, "D"].Value2 = args.Request.Message["UnitPrice" + i.ToString()].ToString();
-                            */
-                        }
+                        doc.Content.SetRange(start, end);
+                        doc.Content.Copy();
                         result = "SUCCESS";
                     }
                     catch (Exception exc)
