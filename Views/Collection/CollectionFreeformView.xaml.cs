@@ -4,6 +4,7 @@ using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -537,41 +538,7 @@ namespace Dash
         {
             if (_marquee != null && (e.Key == VirtualKey.C || e.Key == VirtualKey.T || e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.G || e.Key == VirtualKey.A))
             {
-                var where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
-                if (e.Key == VirtualKey.A)
-                {
-                    var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    var docsinMarquee = viewsinMarquee.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                    
-                    ViewModel.AddDocument(
-                        new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
-                }
-                if (e.Key == VirtualKey.Back || e.Key == VirtualKey.Delete || e.Key == VirtualKey.C || e.Key == VirtualKey.T)
-                {
-                    var viewsinMarquee = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                    var docsinMarquee = viewsinMarquee.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-
-                    if (e.Key == VirtualKey.C)
-                    {
-                        ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Freeform, _marquee.Width, _marquee.Height, docsinMarquee).Document);
-                    }
-
-                    if (e.Key == VirtualKey.T)
-                    {
-                        ViewModel.AddDocument(
-                            new CollectionNote(where, CollectionView.CollectionViewType.Schema, _marquee.Width, _marquee.Height, docsinMarquee).Document);
-                    }
-
-                    foreach (var v in viewsinMarquee)
-                        v.DeleteDocument();
-                }
-                if (e.Key == VirtualKey.G)
-                {
-                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, _marquee.Width, _marquee.Height));
-                }
-                DeselectAll();
+                TriggerActionFromSelection(e.Key, true);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 e.Handled = true;
             }
@@ -601,12 +568,11 @@ namespace Dash
             return selectedDocs;
         }
 
-        public void MakeNewCollectionFromSelection()
+        public Rect GetBoundingRectFromSelection()
         {
             Point topLeftMostPoint = new Point(Double.PositiveInfinity, Double.PositiveInfinity);
             Point bottomRightMostPoint = new Point(Double.NegativeInfinity, Double.NegativeInfinity);
-
-            var selected = SelectedDocs;
+            
             bool isEmpty = true;
 
             foreach (DocumentView doc in SelectedDocs)
@@ -622,15 +588,76 @@ namespace Dash
                     : bottomRightMostPoint.Y;
             }
 
-            if (isEmpty) return;
-            
-            var pseudoMarquee = new Rect(topLeftMostPoint, bottomRightMostPoint);
+            if (isEmpty) return Rect.Empty;
 
-            ViewModel.AddDocument(
-                new CollectionNote(topLeftMostPoint, CollectionView.CollectionViewType.Freeform, pseudoMarquee.Width,
-                        pseudoMarquee.Height,
-                        selected.Select((dv) => dv.ViewModel.DocumentController.GetViewCopy()).ToList())
-                    .Document);
+            return new Rect(topLeftMostPoint, bottomRightMostPoint);
+        }
+
+        /// <summary>
+        /// Triggers one of the actions that you can do with selected documents, whether it's by dragging through a marquee or from currently selected ones.
+        /// </summary>
+        /// <param name="modifier"></param>
+        /// <param name="fromMarquee">True if we select from the marquee, false if from currently selecte documents</param>
+        public void TriggerActionFromSelection(VirtualKey modifier, bool fromMarquee)
+        {
+            Point where;
+            Rectangle marquee;
+            CollectionView.CollectionViewType type = CollectionView.CollectionViewType.Freeform;
+            IEnumerable<DocumentView> viewsToSelectFrom;
+
+            if (fromMarquee)
+            {
+                where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                    SelectionCanvas, xItemsControl.ItemsPanelRoot);
+                marquee = _marquee;
+               viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+            }
+            else
+            {
+                var bounds = GetBoundingRectFromSelection();
+
+                // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
+                if (bounds == Rect.Empty) return;
+
+                where = new Point(bounds.X, bounds.Y);
+                marquee = new Rectangle
+                {
+                    Height = bounds.Height,
+                    Width = bounds.Width
+                };
+                viewsToSelectFrom = SelectedDocs;
+            }
+
+            var toSelectFrom = viewsToSelectFrom.ToList();
+
+            switch (modifier)
+            {
+                //create a viewcopy of everything selected
+                case VirtualKey.A:
+                    var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                    ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs).Document);
+                    break;
+                case VirtualKey.T:
+                    type = CollectionView.CollectionViewType.Schema;
+                    goto case VirtualKey.C;
+                case VirtualKey.C:
+                    var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                    ViewModel.AddDocument(
+                        new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
+                    goto case VirtualKey.Delete;
+                case VirtualKey.Back:
+                case VirtualKey.Delete:
+                    foreach (var v in toSelectFrom)
+                    {
+                        v.DeleteDocument();
+                    }
+                    break;
+                case VirtualKey.G:
+                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, marquee.Width, marquee.Height));
+                    break;
+            }
+
+            DeselectAll();
         }
 
         #endregion

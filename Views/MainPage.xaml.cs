@@ -473,11 +473,11 @@ namespace Dash
 
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
-
+            
+            // this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
             if (!coll.IsMarqueeActive())
             {
-                if (e.VirtualKey == VirtualKey.A)
-                    coll.MakeNewCollectionFromSelection();
+                coll.TriggerActionFromSelection(e.VirtualKey, false);
             }
             
             if (DocumentView.FocusedDocument != null)
