@@ -34,10 +34,9 @@ namespace Dash
             }
         }
 
-        private static async void AppOnAppServiceConnected(object sender, EventArgs eventArgs)
+        private static void AppOnAppServiceConnected(object sender, EventArgs eventArgs)
         {
             Connected = true;
-            // send the ValueSet to the fulltrust process
         }
 
         public static async Task<ValueSet> CallRPCAsync(ValueSet data)
