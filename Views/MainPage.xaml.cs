@@ -53,6 +53,8 @@ namespace Dash
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
 
+        public static int GridSplitterThickness { get; } = 7;
+
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
         {
@@ -103,6 +105,8 @@ namespace Dash
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
                 treeContext.Loaded(true);
                 xMainTreeView.DataContext = treeContext;
+                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
+                xMainTreeView.ToggleDarkMode(true);
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -618,22 +622,22 @@ namespace Dash
                 switch (dir)
                 {
                     case DockDirection.Left:
-                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xLeftDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 2, 1, 0, 5);
                         break;
                     case DockDirection.Right:
-                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xRightDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 6, 1, 0, 5);
                         break;
                     case DockDirection.Top:
-                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xTopDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 0, 1);
                         break;
                     case DockDirection.Bottom:
-                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xBottomDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 4, 1);
                         break;

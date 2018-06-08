@@ -18,9 +18,9 @@
                  >
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-                    <Setter Property="MinHeight" Value="0"></Setter>
-                    <Setter Property="MinWidth" Value="0"></Setter>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="MinHeight" Value="0"/>
+                    <Setter Property="MinWidth" Value="0"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
@@ -34,7 +34,7 @@
             </ListView.ItemContainerStyle>
           <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:DocumentViewModel">
-                    <local:TreeViewNode Margin="0 0 0 0" FilterString="{Binding ElementName=XControl, Path=FilterString}" AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}"></local:TreeViewNode>
+                    <local:TreeViewNode FilterString="{Binding ElementName=XControl, Path=FilterString}" AllowDrop="True" DragOver="TreeViewNode_DragOver"  Drop="TreeViewNode_Drop" ContainingDocument="{Binding ElementName=XControl, Path=ContainingDocument}" Foreground="{Binding ElementName=XControl, Path=Foreground}"/>
               </DataTemplate>
           </ListView.ItemTemplate> 
        </ListView> 

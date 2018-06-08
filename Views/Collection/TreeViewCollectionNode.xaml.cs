@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -7,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
