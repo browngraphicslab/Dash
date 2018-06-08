@@ -20,11 +20,15 @@ namespace Dash
 
 		//TOOLBAR DIMENSIONS
 		public const double ToolbarHeight = 50;
+		public const double ToolbarExpandedWidth = 800;
 
-        //PADDING DIMENSIONS
-        public const double PaddingShort = 10;
+		//PADDING DIMENSIONS
+		public const double PaddingShort = 10;
         public const double PaddingLong = 200;
-
+		
 		public const int ExpansionDelay = 12;
 	}
+	
+
+		
 }

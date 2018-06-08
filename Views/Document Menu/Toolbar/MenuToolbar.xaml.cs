@@ -84,10 +84,10 @@ namespace Dash
         public MenuToolbar(UIElement parent)
         {
             this.InitializeComponent();
-
-
+			
             MenuToolbar.Instance = this;
             _parent = parent;
+			//set enum defaults
             mode = MouseMode.TakeNote;
             state = State.Expanded;
             pinned = Pinned.Unpinned;
@@ -145,7 +145,10 @@ namespace Dash
             this.AddSecondaryButtonEventHandlers();
         }
 
-        private void AddSecondaryButtonEventHandlers()
+		/// <summary>
+		/// Adds PointerPressed event handlers to each button & separator so that the subtoolbar opens on click.
+		/// </summary>
+		private void AddSecondaryButtonEventHandlers()
         {
             foreach (var b in allButtons)
             {
@@ -165,7 +168,10 @@ namespace Dash
             }
         }
 
-        private void SetUpOrientationBindings()
+		/// <summary>
+		/// Binds orientation of subtoolbars with that of the main toolbar. Not currently active.
+		/// </summary>
+		private void SetUpOrientationBindings()
         {
             var binding = new Binding
             {
@@ -180,7 +186,6 @@ namespace Dash
                 Path = new PropertyPath(nameof(Orientation)),
                 Converter = new OrientationInverter()
         };
-
             var sp = xToolbar.GetFirstDescendantOfType<StackPanel>();
             sp.SetBinding(StackPanel.OrientationProperty, binding);
             xStackPanel.SetBinding(StackPanel.OrientationProperty, inverseBinding);
@@ -197,7 +202,10 @@ namespace Dash
             return mode;
         }
 
-        public State GetState()
+		/// <summary>
+		/// Gets the current State of the toolbar.
+		/// </summary>
+		public State GetState()
         {
             return state;
         }
@@ -234,6 +242,8 @@ namespace Dash
                 if (docs.Count() == 1)
                 {
 	                var selection = docs.First();
+
+					//Find the type of the selected node and update the subtoolbar binding appropriately.
                 
                     // Image controls
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
@@ -254,7 +264,8 @@ namespace Dash
                     {
                         xTextToolbar.SetMenuToolBarBinding(
                             VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-                        xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+						//give toolbar access to the most recently selected text box for editing purposes
+						xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
 	                    xTextToolbar.SetDocs(selection);
 						subtoolbarElement = xTextToolbar;
                     }
@@ -337,7 +348,10 @@ namespace Dash
 	        }
         }
 
-        private void SetUpBaseMenu()
+		/// <summary>
+		/// Adds Toolbar to parent grid.
+		/// </summary>
+		private void SetUpBaseMenu()
         {
             if (_parent is Grid grid) grid.Children.Add(this);
         }
@@ -391,13 +405,14 @@ namespace Dash
             }
         }
 
-        /**
-        * When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
-       */
-        private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
+		/// <summary>
+		/// When the "Add Image" btn is clicked, this launches an image file picker & adds selected video(s) to the workspace.
+		/// </summary>
+		private async void AddImage_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
-            var imagePicker = new FileOpenPicker
+			//opens file picker and limits search by listed image extensions
+			var imagePicker = new FileOpenPicker
             {
                 ViewMode = PickerViewMode.Thumbnail,
                 SuggestedStartLocation = PickerLocationId.PicturesLibrary
@@ -408,6 +423,7 @@ namespace Dash
             imagePicker.FileTypeFilter.Add(".png");
             imagePicker.FileTypeFilter.Add(".svg");
 
+			//adds each image selected to Dash
             var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
             if (imagesToAdd != null)
             {
@@ -417,9 +433,11 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
+						//creates a doc controller for the image(s)
                         var mainPageCollectionView =
                             MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(
+						//TODO: change the point used to position the image to the center of the screen, despite any ScrollViewer offset.
+						var where = Util.GetCollectionFreeFormPoint(
                             mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController);
@@ -432,15 +450,18 @@ namespace Dash
             }
         }
 
-        public bool IsAtTop()
+		/// <summary>
+		/// Used to check if the toolbar is currently located at the top of screen, for UI purposes.
+		/// </summary>
+		public bool IsAtTop()
         {
             return (int) xFloating.GetCurrentTop() == 0;
         }
 
-        /**
-		 * When the "Add Video" btn is clicked, this launches a file picker & adds selected video(s) to the workspace.
-		*/
-        private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// When the "Add Video" btn is clicked, this launches a file picker & adds selected video(s) to the workspace.
+		/// </summary>
+		private async void Add_Video_On_Click(object sender, RoutedEventArgs e)
         {
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
             //instantiates a file picker, set to open in user's video library
@@ -506,24 +527,26 @@ namespace Dash
             }
         }
 
-        private void RotateToolbar()
+		/// <summary>
+		/// Rotates the internal stack panel of the command bar. Currently inactive.
+		/// </summary>
+		private void RotateToolbar()
         {
             Orientation = (Orientation == Orientation.Vertical) ? Orientation.Horizontal : Orientation.Vertical;
             //Appropriately adds and removes the drop down menus (ComboBoxes) based on the updated orientation
             AdjustComboBoxes();
             xToolbar.IsOpen = (subtoolbarElement == null) ? true : (Orientation == Orientation.Vertical);
         }
-
-
-
+		
         /// <summary>
-        /// Toggles orientation of toolbar, currently inactive
+        /// Toggles state of toolbar between collapsed and visible.  
         /// </summary>
         private async void ToggleVisibilityAsync(Visibility status)
         {
             //xPadding.Visibility = (status == Visibility.Visible) ? ((subtoolbarElement is ICommandBarBased) ? Visibility.Visible : Visibility.Collapsed) : status;
             if (subtoolbarElement != null) subtoolbarElement.Visibility = status;
 
+			//if toolbar is currently expanded, loop through each button to alter their visibility
 			if (state == State.Expanded)
 			{
 				foreach (var b in allButtons)
@@ -531,15 +554,17 @@ namespace Dash
 				    if (b != xPin)
 				    {
 				        b.Visibility = status;
+						//adds a slight delay to the addition of buttons to simulate an animation
 				        if (Orientation == Orientation.Horizontal) await Task.Delay(ToolbarConstants.ExpansionDelay);
                     }
-				}
+				} //do same for separators
 				foreach (var s in allSeparators)
 				{
 					s.Visibility = status;
 				}
 			} else
 			{
+				//otherwise, it is about to expand. In this case, update visisbility of separators before buttons
 				foreach (var s in allSeparators)
 				{
 					s.Visibility = status;
@@ -556,7 +581,7 @@ namespace Dash
         }
 
 		/// <summary>
-		/// Inverts toolbar orientation, currently inactive
+		/// Inverts toolbar orientation, currently inactive.
 		/// </summary>
 		private class OrientationInverter : SafeDataToXamlConverter<Orientation, Orientation>
         {
@@ -571,7 +596,10 @@ namespace Dash
             }
         }
 
-        private void AdjustComboBoxes()
+		/// <summary>
+		/// Toggles orientation of any combo boxes on any subtoolbar.
+		/// </summary>
+		private void AdjustComboBoxes()
         {
             if (subtoolbarElement is ICommandBarBased cmd)
             {
@@ -579,16 +607,20 @@ namespace Dash
             }
         }
 
-        private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+		/// <summary>
+		/// If toolbar is expanded & at top of screen, it will open when user's pointer hovers over it.
+		/// </summary>
+		private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(xFloating.GetCurrentTop());
             if (state == State.Expanded && IsAtTop())
             {
                 xToolbar.IsOpen = true;
+				//if subtoolbar is a command bar, open it normally
                 if (subtoolbarElement is ICommandBarBased toClose)
                 {
                     toClose.CommandBarOpen(false);
                 }
+				//else, if it is a text toolbar (which doesn't expand), update margins accordingly
                 else if (subtoolbarElement is TextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
@@ -598,12 +630,16 @@ namespace Dash
             }
         }
 
-        private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
+		/// <summary>
+		/// If toolbar is expanded & at top of screen, it will close when user's pointer leaves its area.
+		/// </summary>
+		private void XToolbar_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(xFloating.GetCurrentTop());
             if (state == State.Expanded && IsAtTop())
             {
+				//main toolbar should only be open when there is no currently active subtoolbar present
                 xToolbar.IsOpen = subtoolbarElement == null;
+				//close any command bar - based toolbar, and update margins for texttoolbar accordingly
                 if (subtoolbarElement is ICommandBarBased toClose)
                 {
                     toClose.CommandBarOpen(true);
@@ -617,49 +653,60 @@ namespace Dash
             }
         }
 
-		
-        private void XCollapse_OnTapped(object sender, TappedRoutedEventArgs e)
+		/// <summary>
+		/// When the Collapse button is pressed, the visibility of the buttons are toggled accordingly. This enables the user control over the size of the toolbar.
+		/// </summary>
+		private void XCollapse_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+			//toggle state enum and update label & icon
             state = (state == State.Expanded) ? State.Collapsed : State.Expanded;
             xCollapse.Label = (state == State.Expanded) ? "Collapse" : "";
             xCollapse.Icon = (state == State.Expanded) ? new SymbolIcon(Symbol.BackToWindow) : new SymbolIcon(Symbol.FullScreen);
 
+			//toggle visibility
             var visibility = (state == State.Expanded) ? Visibility.Visible : Visibility.Collapsed;
             ToggleVisibilityAsync(visibility);
 
+			//set subtoolbar element to null if collapsing toolbar
             if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
             xToolbar.IsOpen = (state == State.Expanded);
 
-            xFloating.AdjustPositionForExpansion(0, 800 - xToolbar.ActualWidth);
+			//adjust toolbar's position to account for the change in size
+            xFloating.AdjustPositionForExpansion(0, ToolbarConstants.ToolbarExpandedWidth - xToolbar.ActualWidth);
         }
 
-        public void SwitchTheme(bool nightModeOn)
+		/// <summary>
+		/// Updates UI of toolbar when Night Mode is active in order to remain readable.
+		/// </summary>
+		public void SwitchTheme(bool nightModeOn)
 	    {
-
             //toggle night mode styles
 	        xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
+			xToolbar.RequestedTheme = ElementTheme.Light;
 
-		    //ensure toolbar is visible
-		    xToolbar.IsEnabled = true;
+			//ensure toolbar is visible
+			xToolbar.IsEnabled = true;
 		    xToolbar.Visibility = Visibility.Visible;
-
 		}
 
-        private void MenuToolbar_PointerReleased(object sender, PointerRoutedEventArgs e)
+		/// <summary>
+		/// On pointer released, ensures subtoolbar is open.
+		/// </summary>
+		private void MenuToolbar_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if ( subtoolbarElement is ICommandBarBased toOpen) toOpen.CommandBarOpen(true);
         }
 
-        private void MenuToolbar_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("GAHGHAGHAHGHAHDEHGHDSHSDKH!!!");
-        }
-
-        private void XPin_OnClick(object sender, RoutedEventArgs e)
+		/// <summary>
+		/// Toggles toolbar locked-state when pin button is clicked.
+		/// </summary>
+		private void XPin_OnClick(object sender, RoutedEventArgs e)
         {
             pinned = (pinned == Pinned.Unpinned) ? Pinned.Pinned : Pinned.Unpinned;
+			//disables movement by updating Floating's boolean
             xFloating.ShouldManipulateChild = (pinned != Pinned.Unpinned);
+			//update label & icon accordingly
             xPin.Label = (pinned == Pinned.Unpinned) ? "Unpin" : "Pin";
             xLockIcon.Source = (pinned == Pinned.Unpinned) ? unpinnedIcon : pinnedIcon;
             xToolbar.IsOpen = (state == State.Collapsed) ? false : (subtoolbarElement == null ? true : IsAtTop());
