@@ -97,9 +97,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <Content Include="..\..\..\Pictures\GroupColorIcon.png">
-      <Link>Assets\GroupColorIcon.png</Link>
-    </Content>
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
     <Content Include="Assets\AppList\AppList.scale-150.png" />
@@ -749,6 +746,7 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\GroupColorIcon.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\jan_2018_dash_logo.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-100.png" />

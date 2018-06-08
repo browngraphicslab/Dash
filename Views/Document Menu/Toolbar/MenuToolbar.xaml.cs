@@ -592,7 +592,7 @@ namespace Dash
                 else if (subtoolbarElement is TextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
-                    margin.Top = 17;
+                    margin.Top = 12;
                     txt.Margin = margin;
                 }
             }
@@ -611,7 +611,7 @@ namespace Dash
                 else if (subtoolbarElement is TextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
-                    margin.Top = 7;
+                    margin.Top = 0;
                     txt.Margin = margin;
                 }
             }
