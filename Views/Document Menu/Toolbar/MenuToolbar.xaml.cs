@@ -256,6 +256,7 @@ namespace Dash
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
                     {
                         CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+						xCollectionToolbar.SetCollectionBinding(thisCollection);
                         subtoolbarElement = xCollectionToolbar;
                     }
 

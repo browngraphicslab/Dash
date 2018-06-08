@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Views.Document_Menu.Toolbar;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -37,6 +38,8 @@ namespace Dash {
         {
             return xViewModesDropdown;
         }
+
+		private CollectionView _collection;
 
         public CollectionSubtoolbar()
         {
@@ -75,7 +78,25 @@ namespace Dash {
             Debug.WriteLine("COLLECTION DISMANTLED/BROKEN!");
             xCollectionCommandbar.IsOpen = true;
             xCollectionCommandbar.IsEnabled = true;
-        }
+
+			//get list of doc views in the collection
+			var mainPageCollectionView =
+						   MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+			ObservableCollection<DocumentViewModel> vms = _collection.ViewModel.DocumentViewModels;
+			
+			//add them each to the main canvas
+			foreach ( DocumentViewModel vm in vms)
+			{
+				mainPageCollectionView.ViewModel.AddDocument(vm.DocumentController);
+			}
+
+			//delete the sellected collection
+			var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
+			foreach (DocumentView d in tempDocs)
+			{
+				d.DeleteDocument();
+			}
+		}
 
 		/// <summary>
 		/// Binds the drop down selection of view otions with the view of the collection.
@@ -90,29 +111,39 @@ namespace Dash {
 		/// </summary>
 		private void UpdateView()
         {
-            switch (xViewModesDropdown.SelectedIndex)
+			if (_collection != null)
+			{
+				switch (xViewModesDropdown.SelectedIndex)
             {
-                case 0:
-                    Debug.WriteLine("Freeform View selected");
-                    break;
+				case 0:
+				_collection.SetView(CollectionView.CollectionViewType.Freeform);
+				break;
+
                 case 1:
-                    Debug.WriteLine("Grid View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.Grid);
+				break;
+
                 case 2:
-                    Debug.WriteLine("Page View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.Page);
+				break;
+
                 case 3:
-                    Debug.WriteLine("Database View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.DB);
+				break;
+
                 case 4:
-                    Debug.WriteLine("Schema View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.Freeform);
+				break;
+
                 case 5:
-                    Debug.WriteLine("Tree View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.TreeView);
+				break;
+
                 case 6:
-                    Debug.WriteLine("Timeline View selected");
-                    break;
+				_collection.SetView(CollectionView.CollectionViewType.Timeline);
+				break;
+			}
+                
             }
         }
 
@@ -126,5 +157,10 @@ namespace Dash {
             xCollectionCommandbar.Visibility = Visibility.Visible;
             xViewModesDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
-    }
+
+		public void SetCollectionBinding(CollectionView thisCollection)
+		{
+			_collection = thisCollection;
+		}
+	}
 }
