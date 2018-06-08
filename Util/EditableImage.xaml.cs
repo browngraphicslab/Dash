@@ -216,12 +216,14 @@ namespace Dash
                 var pixStream = cropBmp.PixelBuffer.AsStream();
                 pixStream.Write(pixels, 0, (int) (width * height * 4));
 
-                SaveCroppedImageAsync(cropBmp, decoder, width, height, pixels);
+                SaveCroppedImageAsync(cropBmp, decoder, rectangleGeometry, pixels);
             }
         }
 
-        private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, uint width, uint height, byte[] pixels)
+        private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo, byte[] pixels)
         {
+            var width = (uint) rectgeo.Width;
+            var height = (uint) rectgeo.Height;
             var fileName = UtilShared.GenerateNewId() + ".jpg";
             var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
             var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
@@ -248,7 +250,12 @@ namespace Dash
             SetupImageBinding(Image, _docCtrl, _context);
             Image.Source = cropBmp;
             Image.Width = width;
-            //Image.RenderTransform
+            var docView = this.GetFirstAncestorOfType<DocumentView>();
+            docView.RenderTransform = new TranslateTransform
+            {
+                X = (docView.RenderTransform as MatrixTransform).Matrix.OffsetX + rectgeo.X,
+                Y = (docView.RenderTransform as MatrixTransform).Matrix.OffsetY + rectgeo.Y
+            };
             _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
 
@@ -304,13 +311,27 @@ namespace Dash
 
         private void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Enter && _isCropping)
+            if (_isCropping)
             {
-                _isCropping = false;
-                xGrid.Children.Remove(_cropControl);
+                switch (e.Key)
+                {
+                    case VirtualKey.Enter:
+                        _isCropping = false;
+                        xGrid.Children.Remove(_cropControl);
+                        OnCrop(_cropControl.GetBounds());
+                        break;
+                    case VirtualKey.Left:
+                    case VirtualKey.Right:
+                    case VirtualKey.Up:
+                    case VirtualKey.Down:
+                        _cropControl.OnKeyDown(e.Key);
+                        break;
+                }
             }
             e.Handled = true;
         }
+
+        
 
         private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
         {
