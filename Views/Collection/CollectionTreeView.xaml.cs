@@ -9,6 +9,7 @@ using System.Reflection;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -16,12 +17,13 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class CollectionTreeView : UserControl
+    public sealed partial class CollectionTreeView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
@@ -61,7 +63,6 @@ namespace Dash
 
         }
 
-
         public void Highlight(DocumentController document, bool? flag)
         {
             xTreeRoot.Highlight(document, flag);
@@ -86,7 +87,40 @@ namespace Dash
 
         public void TogglePresentationMode(bool on)
         {
-            presentationModeButton.Background = on ? new SolidColorBrush(Color.FromArgb(255, 141, 195, 239)) : new SolidColorBrush(Color.FromArgb(255, 61, 122, 172));
+            presentationModeButton.Background = on ? (SolidColorBrush) Application.Current.Resources["AccentGreenLight"] : (SolidColorBrush) Application.Current.Resources["AccentGreen"];
+        }
+
+        // This does not change the title of the underlying collection.
+        public void ChangeTreeViewTitle(string title)
+        {
+            Textblock.Text = title;
+            Textbox.Text = title;
+        }
+
+        private void Textblock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            TriggerTextVisibility(true);
+        }
+
+        private void Textbox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            ChangeTreeViewTitle(Textbox.Text);
+            TriggerTextVisibility(false);
+        }
+
+        private void TriggerTextVisibility(bool turnEditingOn)
+        {
+            Textblock.Visibility = turnEditingOn ? Visibility.Collapsed : Visibility.Visible;
+            Textbox.Visibility = turnEditingOn ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public void ToggleDarkMode(bool dark)
+        {
+            xTreeGrid.Background = dark ? 
+                (SolidColorBrush) Application.Current.Resources["WindowsBlue"] : (SolidColorBrush) Application.Current.Resources["DocumentBackgroundColor"];
+            Textblock.Foreground = Textbox.Foreground = XFilterBox.Foreground = xTreeRoot.Foreground = dark
+                    ? (SolidColorBrush) Application.Current.Resources["InverseTextColor"]
+                    : (SolidColorBrush) Application.Current.Resources["MainText"];
         }
     }
 }
