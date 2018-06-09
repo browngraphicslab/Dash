@@ -36,7 +36,8 @@ namespace Dash
         private DocumentView currentDocView;
         private DocumentController currentDocController;
         private static Dictionary<double, char[]> opacities;
-        private Color currentColor; 
+        private string currentColor;
+        private string currentSliderValue;
 
         public GroupingSubtoolbar()
         {
@@ -104,6 +105,25 @@ namespace Dash
             }
         }
 
+        public void AcknowledgeAttributes()
+        {
+            //Updates combobox
+            var shape = currentDocController?.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data;
+            if (shape == "Rectangular")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 0;
+            } else if (shape == "Elliptical")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 1;
+            } else if (shape == "Rounded")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 2;
+            }
+            //Updates opacity slider
+            currentSliderValue = currentDocController?.GetDereferencedField<TextController>(KeyStore.BackgroundOpacitySliderValueKey, null)?.Data;
+            if (double.TryParse(currentSliderValue, out var storedSliderValue)) xOpacitySlider.Value = storedSliderValue;
+        }
+
         private void XGroup_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             xGroupCommandbar.IsOpen = true;
@@ -116,9 +136,9 @@ namespace Dash
             xGroupCommandbar.IsEnabled = true;
         }
 
-        private string SetOpacity(string unprocessedColor, double desiredOpacity)
+        private string SetOpacity(string unprocessedColor, double currSliderValue)
         {
-            var alpha = (byte) (desiredOpacity / xOpacitySlider.Maximum * 255);
+            var alpha = (byte) (currSliderValue / xOpacitySlider.Maximum * 255);
             var rgb = unprocessedColor.Substring(3);
             return "#" + alpha.ToString("X2") + rgb;
         }
@@ -130,27 +150,26 @@ namespace Dash
 
         private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is SfColorPicker colorPicker)
-            {
-                currentColor = colorPicker.SelectedColor;
-                UpdateColor();
-            }
+            UpdateColorAndOpacity();
         }
 
         private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            UpdateColor();
+            UpdateColorAndOpacity();
         }
 
-        private void UpdateColor()
+        private void UpdateColorAndOpacity()
         {
-            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(currentColor.ToString(), xOpacitySlider.Value), true);
+            var safeColor = currentColor ?? xGroupForegroundColorPicker.SelectedColor.ToString();
+            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(xGroupForegroundColorPicker.SelectedColor.ToString(), xOpacitySlider.Value), true);
+            currentSliderValue = xOpacitySlider.Value.ToString();
+            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundOpacitySliderValueKey, currentSliderValue, true);
         }
 
         private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             xOpacitySlider.Value = 128;
-            UpdateColor();
+            UpdateColorAndOpacity();
         }
     }
 }

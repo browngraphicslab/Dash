@@ -163,6 +163,7 @@ namespace Dash
                 }
             }
         }
+
         void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
         {
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
@@ -184,6 +185,11 @@ namespace Dash
                 }
             }
         }
+
+		public void ClearAll()
+		{
+			DocumentViewModels.Clear();
+		}
 
         #region DocumentModel and DocumentViewModel Data Changes
 
