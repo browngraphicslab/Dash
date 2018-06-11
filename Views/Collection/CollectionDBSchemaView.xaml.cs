@@ -352,6 +352,7 @@ namespace Dash
                     if (!f.Name.StartsWith("_") && !SchemaHeadersContains(f))
                     {
                         SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel() { SchemaView = this, SchemaDocument = ParentDocument, Width = 150, FieldKey = f });
+                        //_schemaFieldsNotInDocs.Remove(f);
                     }
                     else
                     {
@@ -515,7 +516,7 @@ namespace Dash
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new field to the schema view
-            _schemaFieldsNotInDocs.Add(new KeyController());
+            _schemaFieldsNotInDocs.Add(new KeyController(UtilShared.GenerateNewId(), "New Field"));
             UpdateFields(new Context(ParentDocument));
         }
     }

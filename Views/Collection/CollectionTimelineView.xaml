@@ -20,7 +20,7 @@
             <Grid Margin="0,-250,0,0">
                 <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80" Width="1800" Height="80">
                     <!--timeline shape-->
-                    <Grid Name="xRectangleGrid" Canvas.Top="100" Canvas.Left="-50">
+                    <Grid Name="xRectangleGrid" Canvas.Top="150" Canvas.Left="-50">
                         <Rectangle x:Name="xHorizontalLine" Height="2" Fill="Gray" Width="1300"></Rectangle>
                         <Rectangle x:Name="xVerticalLineLeft" Height="30" Width="3" Fill="Gray" VerticalAlignment="Center" HorizontalAlignment="Left"></Rectangle>
                         <Rectangle x:Name="xVerticalLineRight" Height="30" Width="3" Fill="Gray" HorizontalAlignment="Right"></Rectangle>
@@ -29,7 +29,7 @@
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{x:Bind _contextList}"   
-                      IsHitTestVisible="{Binding IsSelected}" Canvas.Top="-670" Canvas.Left="-50">
+                      IsHitTestVisible="{Binding IsSelected}" Canvas.Top="-620" Canvas.Left="-50">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas x:Name="xCollectionCanvas"

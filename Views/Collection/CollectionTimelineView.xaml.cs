@@ -87,7 +87,6 @@ namespace Dash
         private readonly double _maxGap = 300; // the maximum width between timeline elements
         private readonly double _minGap = 30; // the minimum width between timeline elements
         private double CurrentTopY; // how tall the element is vertically
-
         private double CurrentXPosition;
         public double Scale = 0.9; // the current scale
 
