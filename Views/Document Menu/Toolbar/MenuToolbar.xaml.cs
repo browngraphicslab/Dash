@@ -19,6 +19,8 @@ using Microsoft.Toolkit.Uwp.UI.Animations;
 using System.Runtime.InteropServices;
 using Windows.UI.Xaml.Data;
 using System.Threading.Tasks;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -83,6 +85,7 @@ namespace Dash
 
         // == FIELDS == 
         private UIElement subtoolbarElement = null; // currently active submenu, if null, nothing is selected
+        private UIElement baseLevelContentToolbar;
         private AppBarButton[] docSpecificButtons;
         private ButtonBase[] allButtons;
         private RotateTransform[] buttonRotations;
@@ -92,6 +95,7 @@ namespace Dash
         private Pinned pinned;
         private BitmapImage unpinnedIcon;
         private BitmapImage pinnedIcon;
+        private bool containsInternalContent;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -100,7 +104,7 @@ namespace Dash
         /// <param name="canvas"></param>
         public MenuToolbar()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 			
             MenuToolbar.Instance = this;
 			//set enum defaults
@@ -265,40 +269,63 @@ namespace Dash
                 
                     // Image controls
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(ImageBox.DocumentType))
-                    { 
+                    {
+                        containsInternalContent = true;
+                        baseLevelContentToolbar = xImageToolbar;
                         subtoolbarElement = xImageToolbar;
                         xImageToolbar.SetImageBinding(selection);
-                        xGroupToolbar.TryMakeGroupEditable(false);
-                    }
-
-                    // Collection controls  
-                    if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
-                    {
-                        CollectionView thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
-						xCollectionToolbar.SetCollectionBinding(thisCollection);
-                        subtoolbarElement = xCollectionToolbar;
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Text controls
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
                     {
-                        xTextToolbar.SetMenuToolBarBinding(
-                            VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
-						//give toolbar access to the most recently selected text box for editing purposes
-						xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-	                    xTextToolbar.SetDocs(selection);
-						subtoolbarElement = xTextToolbar;
+                        containsInternalContent = true;
+                        baseLevelContentToolbar = xTextToolbar;
+                        xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                        //give toolbar access to the most recently selected text box for editing purposes
+                        xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+                        xTextToolbar.SetDocs(selection);
+                        subtoolbarElement = xTextToolbar;
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Group controls  
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
                     {
+                        containsInternalContent = true;
+                        baseLevelContentToolbar = xGroupToolbar;
                         xGroupToolbar.SetGroupBinding(selection);
                         xGroupToolbar.TryMakeGroupEditable(true);
                         xGroupToolbar.AcknowledgeAttributes();
                         subtoolbarElement = xGroupToolbar;
+                    }
+
+                    // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
+
+                    // Collection controls  
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
+                    {
+                        if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                        {
+                            if (!containsInternalContent)
+                            {
+                                var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                subtoolbarElement = xCollectionToolbar;
+                            }
+                            else
+                            {
+                                subtoolbarElement = baseLevelContentToolbar;
+                            }
+                        }
+                        else
+                        {
+                            var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                            xCollectionToolbar.SetCollectionBinding(thisCollection);
+                            subtoolbarElement = xCollectionToolbar;
+                        }
+                        xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     //If the user has clicked on valid content (text, image, video, etc)...

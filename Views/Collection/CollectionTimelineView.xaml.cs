@@ -277,7 +277,7 @@ namespace Dash
         private double CalculateXPosition(TimelineElementViewModel context)
         {
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
-            Debug.Assert(totalTime != 0);
+            //Debug.Assert(totalTime != 0);
             var normOffset = (double)(context.DocumentContext.CreationTimeTicks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;

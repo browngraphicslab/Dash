@@ -12,7 +12,6 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using Syncfusion.UI.Xaml.Controls.Media;
 using System.Diagnostics;
 using System.Text;
 using Windows.UI;
