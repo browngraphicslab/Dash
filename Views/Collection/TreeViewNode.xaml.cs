@@ -91,15 +91,6 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
-                    XIconBox.Visibility = Visibility.Visible;
-                    if (dvm.LayoutDocument.LayoutName.ToLower().Contains("group"))//tfs: Hack
-                    {
-                        XIconBox.Symbol = Symbol.Copy;
-                    }
-                    else //Collection 
-                    {
-                        XIconBox.Symbol = Symbol.Library;
-                    }
                     var collectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.DataKey);
                     CollectionTreeView.DataContext =
                         collectionViewModel;
@@ -114,7 +105,6 @@ namespace Dash
                     _isCollection = false;
                     XArrowBlock.Text = "";
                     XArrowBlock.Visibility = Visibility.Collapsed;
-                    XIconBox.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }

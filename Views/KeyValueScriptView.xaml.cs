@@ -152,7 +152,10 @@ namespace Dash
 
             void fieldChanged(FieldControllerBase ss, FieldUpdatedEventArgs ee, Context c)
             {
-                xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
+                if (ee.Action == DocumentController.FieldUpdatedAction.Replace)
+                {
+                    xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
+                }
             }
             if (_oldBinding != null)
             {
