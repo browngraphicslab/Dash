@@ -466,7 +466,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Escape)
             {
-                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
 
@@ -483,6 +483,16 @@ namespace Dash
                         break;
                     }
             }
+
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            
+            // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
+            if (!coll.IsMarqueeActive())
+            {
+                coll.TriggerActionFromSelection(e.VirtualKey, false);
+            }
+            
             if (DocumentView.FocusedDocument != null)
             {
                 if (!this.IsF1Pressed())
