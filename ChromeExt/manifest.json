@@ -5,6 +5,8 @@
   "description": "Keep track of your webpages and google suite with Dash!",
   "version": "1.0",
 
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxrs4VL7G0jg0XxGTIkRR6udS8q4pRuZEonZP0HIocNe4yLCR0P2Tpcv+Phn4dTG3CzSTVPtI2cw+ySGscIEjgVEzji7VUJ6WlYhjEOgv9t1sOeymMyy5ca4skOMesU6rBz2bZgUV8Id78LQM5Gj4p7wXMrU0QS02rAIF2MFqEB8CKVGUsXvUg5WMf5rLvubo37GEfG83Iv6xwyeoW/thk2r+eEfi/lVnhcEMrAV0dho4CvUXoUxAWATazu0ARQDef05iuMITY5NFuHdLLiNGvSlExrtb2UqyLGKwymxHnQWM/0LEItLuCnSEbtto3azQ04uTOJG/8xJJrHIef3Gb8wIDAQAB",
+
   "browser_action": {
     "default_icon": "dash_logo.png",
     "default_popup": "popup.html"
@@ -35,6 +37,14 @@
     "http://*/",
     "https://*/",
     "*://*/",
-    "<all_urls>"
-  ]
+    "<all_urls>",
+    "identity"
+  ],
+
+  "oauth2": {
+    "client_id": "354208877115-rllo0dmka86r2oeuvd3ikm6bqhs49o6q.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/drive"
+    ]
+  }
 }
