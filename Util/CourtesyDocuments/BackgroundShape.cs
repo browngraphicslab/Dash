@@ -4,6 +4,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
@@ -37,8 +38,7 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
-        protected static void BindShape(ContentPresenter Outelement, DocumentController docController,
-            Context context)
+        protected static void BindShape(ContentPresenter outelement, DocumentController docController, Context context)
         {
             var backgroundBinding = new FieldBinding<TextController>()
             {
@@ -49,8 +49,8 @@ namespace Dash
                 Context = context,
                 Tag = "BackgroundShape Fill"
             };
-            (Outelement.Content as Shape).AddFieldBinding(Shape.FillProperty, backgroundBinding);
-            (Outelement.Content as Shape).Fill = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Red);
+            (outelement.Content as Shape).AddFieldBinding(Shape.FillProperty, backgroundBinding);
+            (outelement.Content as Shape).Fill = new SolidColorBrush(Colors.Red);
 
             var binding = new FieldBinding<TextController>()
             {
@@ -62,8 +62,6 @@ namespace Dash
                 ConverterParameter = backgroundBinding,
                 Tag = "BackgroundShape Content"
             };
-            
-            Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
