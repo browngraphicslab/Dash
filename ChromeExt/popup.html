@@ -6,12 +6,20 @@
  -->
 <html>
   <head>
-    <title>Getting Started Extension's Popup</title>
+    <title>Dash</title>
     <style>
       body {
         font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
         font-size: 100%;
       }
+      button {
+          background: black;
+          color: white;
+      }
+        h1 {
+            margin-top: -3px;
+            margin-bottom: -3px;
+        }
       #status {
         /* avoid an excessively wide status text */
         white-space: pre;
@@ -20,18 +28,14 @@
         max-width: 400px;
       }
     </style>
-
-    <!--
-      - JavaScript and HTML must be in separate files: see our Content Security
-      - Policy documentation[1] for details and explanation.
-      -
-      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
-     -->
     <script src="popup.js"></script>
   </head>
   <body>
-    <div id="status"></div>
-    <img id="image-result" hidden>
+      <div id="status"></div>
+      <img id="image-result" hidden>
+      <h1>Dash</h1>
+      <button id="openDash">Open Dash </button>
+      <button id="addDoc" style="visibility: collapse">Add Document to Dash </button>
   </body>
 </html>
 

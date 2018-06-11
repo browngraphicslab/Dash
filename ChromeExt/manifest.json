@@ -6,7 +6,8 @@
   "version": "1.0",
 
   "browser_action": {
-    "default_icon": "jan_2018_dash_logo.png"
+    "default_icon": "dash_logo.png",
+      "default_popup": "popup.html"
   },
 "web_accessible_resources": [
     "*.png",

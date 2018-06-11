@@ -681,6 +681,7 @@ namespace Dash
                     return;
                 }
 
+
                 //copy html to clipboard
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetHtmlFormat(html);
