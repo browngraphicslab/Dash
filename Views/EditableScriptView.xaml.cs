@@ -47,8 +47,6 @@ namespace Dash
         public EditableScriptView()
         {
             this.InitializeComponent();
-
-            
         }
 
         public void MakeEditable()

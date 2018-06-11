@@ -375,7 +375,20 @@ namespace Dash
 
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            ResetHeaders();
+            var newHvm = new HeaderViewModel
+            {
+                SchemaView = this,
+                SchemaDocument = ParentDocument,
+                Width = 150,
+                FieldKey = new KeyController(Guid.NewGuid().ToString(), "New Field")
+            };
+            SchemaHeaders.Add(newHvm);
+
+            //var cvm = new CollectionDBSchemaColumnViewModel(newHvm.FieldKey, CollectionDocuments, newHvm);
+            //ColumnViewModels.Add(cvm);
+            //cvm.PropertyChanged += Cvm_PropertyChanged;
+
+            e.Handled = true;
         }
     }
 }
