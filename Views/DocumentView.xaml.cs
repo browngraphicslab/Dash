@@ -718,6 +718,7 @@ namespace Dash
                     {
                         cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     }
+                    e.Handled = true;
                 }
             }
         }

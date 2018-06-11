@@ -131,27 +131,19 @@ namespace Dash
         /// <param name="context"></param>
         public void SetCollectionRef(DocumentController containerDocument, KeyController fieldKey)
         {
+            var wasLoaded = _isLoaded;
             Loaded(false);
-            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
-            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
-            //_lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-            //_lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
             DocumentViewModels.Clear();
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
             addViewModels(CollectionController?.TypedData);
-            if (_isLoaded)
+            if (_isLoaded && wasLoaded)
             {
                 Loaded(true);
-                //ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
-                //ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey,     PanZoomFieldChanged);
-                //ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey,  ActualSizeFieldChanged);
             }
             _lastDoc = ContainerDocument;
         }
-
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  
         /// This only applies of the CollectionViewType is Freeform, and the CollectionFitToParent field is true
