@@ -38,6 +38,8 @@ namespace Dash
         
         private EditableImage _imageBase;
 
+        private DocumentView _docView;
+
         public Brush Fill { get; } = new SolidColorBrush(Color.FromArgb(55, 255, 255, 255));
 
         public EditableImage ImageBase
@@ -84,6 +86,7 @@ namespace Dash
             Canvas.SetTop(xBottom, ImageMaxY);
 
             UpdateRect();
+            _docView = ImageBase.GetFirstAncestorOfType<DocumentView>();
         }
 
         // updates the cropping boundaries 
@@ -111,7 +114,7 @@ namespace Dash
 
             // calculates the new left boundary
             var left = Canvas.GetLeft(xLeft);
-            left += e.Delta.Translation.X;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             // checks for validity in new left boundaries
             if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 50) return;
             Canvas.SetLeft(xLeft, left);
@@ -123,7 +126,7 @@ namespace Dash
             e.Handled = true;
 
             var top = Canvas.GetTop(xBottom);
-            top += e.Delta.Translation.Y;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight ||
                 Math.Abs(top - Canvas.GetTop(xTop)) <= 50) return;
             Canvas.SetTop(xBottom, top);
@@ -135,7 +138,7 @@ namespace Dash
             e.Handled = true;
 
             var left = Canvas.GetLeft(xRight);
-            left += e.Delta.Translation.X;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             if (left + xRight.Width > ImageBase.Image.ActualWidth ||
                 Math.Abs(left - Canvas.GetLeft(xLeft)) <= 50) return;
             Canvas.SetLeft(xRight, left);
@@ -147,7 +150,7 @@ namespace Dash
             e.Handled = true;
 
             var top = Canvas.GetTop(xTop);
-            top += e.Delta.Translation.Y;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 50) return;
             Canvas.SetTop(xTop, top);
             UpdateRect();
@@ -243,6 +246,7 @@ namespace Dash
                 Canvas.SetTop(xBottom, ImageBase.Image.ActualHeight - xBottom.Height);
 
             UpdateRect();
+            e.Handled = true;
         }
 
         // used to click and drag the cropping box around the image

@@ -32,8 +32,11 @@ namespace Dash
         private double _originalWidth;
         private DocumentView _docview;
         private Image _originalImage;
+        private ImageSource _ogImage;
 
-        public RectangleGeometry RectGeo;
+        public Rect RectGeo;
+        private double _ogWidth;
+        private Uri _ogUri;
 
         public Image Image => xImage;
 
@@ -52,39 +55,64 @@ namespace Dash
         public EditableImage(DocumentController docCtrl, Context context)
         {
             InitializeComponent();
-            RectGeo = new RectangleGeometry();
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.SizeChanged += Image_SizeChanged;
-
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
         private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            _docview = this.GetFirstAncestorOfType<DocumentView>();
-            _docview.OnCropClick += OnCropClick;
-            _docview.OnRevert += OnRevert;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
         }
 
+        private void OnReplaceImage()
+        {
+            SetupImageBinding(Image, _docCtrl, _context);
+            //var newImg = new Image();
+            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
+            Image.Width = double.NaN;
+            
+            _originalWidth = Image.ActualWidth;
+            /*
+             *  onReplaceClicked
+             *      _ogImage = new image.source
+             *      _ogWidth = new image.width
+             *      _ogUri = new image uri
+             */
+        }
+
         private void OnRevert()
         {
-            Image.Source = _originalImage.Source;
-            Image.Height = _originalImage.Height;
-            Image.Width = _originalImage.Width;
+            if (_ogImage != null)
+            {
+                Image.Source = _ogImage;
+                Image.Width = _ogWidth;
+                _originalWidth = _ogWidth;
+
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
+                SetupImageBinding(Image, _docCtrl, _context);
+
+                //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+                //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
+
+                //_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+                //_cropControl = new StateCropControl(_docCtrl, this);
+            }
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // initialize values that rely on the image
             _originalImage = Image;
-            _originalWidth = Image.Width;
+            _originalWidth = Image.ActualWidth;
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             _docview.OnCropClick += OnCropClick;
+            _docview.OnRevert += OnRevert;
+            _docview.OnReplaceImage += OnReplaceImage;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
         }
@@ -114,6 +142,12 @@ namespace Dash
         /// </param>
         private async void OnCrop(Rect rectangleGeometry)
         {
+            if (_ogImage == null)
+            {
+                _ogImage = Image.Source;
+                _ogWidth = Image.ActualWidth;
+                _ogUri = _imgctrl.Data;
+            }
 
             var scale = _originalWidth / Image.ActualWidth;
 

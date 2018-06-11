@@ -77,8 +77,11 @@ namespace Dash
 
             var replacement = await imagePicker.PickSingleFileAsync();
             if (replacement != null)
+            {
                 _currentDocControl.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
+                _currentDocView.OnReplaceImage?.Invoke();
+            }
         }
 
         internal void SetImageBinding(DocumentView selection)
