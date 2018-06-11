@@ -48,6 +48,7 @@ namespace Dash
             //outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
 
             var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data?.ToLower() : null;
+            //search all docs for searchText and get results (list of doc controller)
             var searchResultDocs = (MainSearchBox.SearchHelper.SearchAllDocumentsForSingleTerm(searchText) ?? new DocumentController[] { }).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }

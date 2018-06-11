@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.AppService;
 using Windows.UI;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
@@ -27,6 +29,8 @@ using System.Timers;
 using Dash.Views;
 using Dash.Views.Document_Menu;
 using Dash.Controllers;
+using Windows.UI.Popups;
+using Windows.Foundation.Collections;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -48,9 +52,12 @@ namespace Dash
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
         private MenuToolbar Toolbar;
+        private bool IsPresentationModeToggled = false;
 
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
+
+        public static int GridSplitterThickness { get; } = 7;
 
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
@@ -97,9 +104,6 @@ namespace Dash
                 GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
                 GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
                 GlobalInkSettings.Opacity = 1;
-                xMainDocView.ViewModel.DisableDecorations = true;
-
-                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
             };
 
             xSplitter.Tapped += (s, e) => xTreeMenuColumn.Width = Math.Abs(xTreeMenuColumn.Width.Value) < .0001 ? new GridLength(300) : new GridLength(0);
@@ -108,7 +112,10 @@ namespace Dash
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
             Toolbar = new MenuToolbar(xCanvas);
-		}
+
+        }
+
+
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -155,10 +162,19 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace);
+                MainDocView.ViewModel.DisableDecorations = true;
+
+                var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                treeContext.Loaded(true);
+                xMainTreeView.DataContext = treeContext;
+                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
+                xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
             }
+
+            await DotNetRPC.Init();
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
@@ -317,31 +333,45 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag)
+        public void HighlightDoc(DocumentController document, bool? flag, int search=0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (collection != null && document != null)
             {
-                highlightDoc(collection, document, flag);
+                highlightDoc(collection, document, flag, search);
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag)
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, int search)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
-                    if (flag == null)
-                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                    else if (flag == true)
-                        dm.DecorationState = (dm.Undecorated == false);
-                    else if (flag == false)
-                        dm.DecorationState = false;
+                    //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
+                    if (search == 0)
+                    {
+                        if (flag == null)
+                            dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
+                        else if (flag == true)
+                            dm.DecorationState = (dm.Undecorated == false);
+                        else if (flag == false)
+                            dm.DecorationState = false;
+                    }
+                    else if(search == 1)
+                    {
+                        //highlight doc
+                        dm.SearchHighlightState = new Thickness(8);
+                    }
+                    else
+                    {
+                        //unhighlight doc
+                        dm.SearchHighlightState = new Thickness(0);
+                    }
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
                 {
-                    highlightDoc(freeformView, document, flag);
+                    highlightDoc(freeformView, document, flag, search);
                 }
         }
 
@@ -436,7 +466,7 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Escape)
             {
-                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
 
@@ -453,6 +483,16 @@ namespace Dash
                         break;
                     }
             }
+
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            
+            // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
+            if (!coll.IsMarqueeActive())
+            {
+                coll.TriggerActionFromSelection(e.VirtualKey, false);
+            }
+            
             if (DocumentView.FocusedDocument != null)
             {
                 if (!this.IsF1Pressed())
@@ -591,22 +631,22 @@ namespace Dash
                 switch (dir)
                 {
                     case DockDirection.Left:
-                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xLeftDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 2, 1, 0, 5);
                         break;
                     case DockDirection.Right:
-                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xRightDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 6, 1, 0, 5);
                         break;
                     case DockDirection.Top:
-                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xTopDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 0, 1);
                         break;
                     case DockDirection.Bottom:
-                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xBottomDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 4, 1);
                         break;
@@ -734,9 +774,13 @@ namespace Dash
         
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var isVisible = xSettingsView.Visibility == Visibility.Visible;
-            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            Toolbar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+        }
+
+        public void ToggleSettingsVisibility(bool changeToVisible)
+        {
+            xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
+            Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -748,5 +792,21 @@ namespace Dash
         {
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
+
+        public void TogglePresentationMode()
+        {
+            IsPresentationModeToggled = !IsPresentationModeToggled;
+            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
+            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
+        }
+
+        public void PinToPresentation(DocumentViewModel viewModel)
+        {
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            if (!IsPresentationModeToggled)
+                TogglePresentationMode();
+        }
+
+      
     }
 }
