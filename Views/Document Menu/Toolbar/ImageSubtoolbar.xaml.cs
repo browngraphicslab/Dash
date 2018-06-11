@@ -35,12 +35,12 @@ namespace Dash
 	        set { SetValue(OrientationProperty, value); }
 	    }
 
-        public ComboBox GetComboBox()
-        {
-            return xScaleOptionsDropdown;
-        }
+	    /*
+         * Determines whether or not to hide or display the combo box: in context, this applies only to toggling rotation which is not currently supported
+         */
+	    public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
-	    private DocumentView currentDocView;
+        private DocumentView currentDocView;
 	    private DocumentController currentDocController;
 
         public ImageSubtoolbar()

@@ -592,10 +592,7 @@ namespace Dash
 
         private void AdjustComboBoxes()
         {
-            if (subtoolbarElement is ICommandBarBased cmd)
-            {
-                cmd.GetComboBox().Visibility = (Orientation == Orientation.Horizontal) ? Visibility.Visible : Visibility.Collapsed;
-            }
+            if (subtoolbarElement is ICommandBarBased cmd) cmd.SetComboBoxVisibility(Orientation == Orientation.Horizontal ? Visibility.Visible : Visibility.Collapsed);
         }
 
         private void XToolbar_OnPointerEntered(object sender, PointerRoutedEventArgs e)
