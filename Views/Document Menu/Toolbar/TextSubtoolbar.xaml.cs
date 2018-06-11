@@ -28,7 +28,6 @@ namespace Dash
     /// <summary>
     /// The subtoolbar that allows users to edit and style their text. Visible only when a richeditbox is selected.
     /// </summary>
-
     public sealed partial class TextSubtoolbar : UserControl
     {
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register("Orientation", typeof(Orientation), typeof(TextSubtoolbar), new PropertyMetadata(default(Orientation)));
@@ -48,9 +47,11 @@ namespace Dash
         {
             this.InitializeComponent();
             _buttons = new Dictionary<string, Button>();
+
 			//instantiate formatter to create custom buttons
 			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
 	        _currBox = null;
+
 			//add an additional sub-toolbar for further operations
             this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
             {
@@ -72,11 +73,14 @@ namespace Dash
                     _buttons.TryGetValue("Font", out var fontButton);
                     if (fontButton != null)
                     {
+                        //Width meant to be 67 to match actual rendered width of main toolbar collapse button
                         fontButton.Width = 67;
                     }
                 }
+            //Width meant to be 67 to match actual rendered width of main toolbar collapse button
             }, 67);
 
+			//binds orientation of toolbar to the orientation of the main toolbar
             xDashTextSubtoolbar.Loaded += delegate
             {
                 var sp = xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>();
