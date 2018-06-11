@@ -55,9 +55,18 @@ namespace Dash
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
+            Image.SizeChanged += Image_SizeChanged;
 
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+        }
+
+        private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _docview = this.GetFirstAncestorOfType<DocumentView>();
+            _docview.OnCropClick += OnCropClick;
+            Focus(FocusState.Keyboard);
+            _cropControl = new StateCropControl(_docCtrl, this);
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
