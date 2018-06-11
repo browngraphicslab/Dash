@@ -124,7 +124,6 @@ namespace Dash
             {
                // SetExpression(XTextBox.Text);
             }
-            CollapseBox();
         }
 
         private void XTextBox_OnLoaded(object sender, RoutedEventArgs e)
@@ -133,25 +132,6 @@ namespace Dash
             XTextBox.Focus(FocusState.Programmatic);
             XTextBox.Text = GetExpression() ?? XTextBlock.Text;
             XTextBox.SelectAll();
-
-            ExpandBox();
-        }
-
-        public void ExpandBox()
-        {
-            xBackground.Height = 120;
-            xBackground.VerticalAlignment = VerticalAlignment.Top;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Expand_Value(this);
-        }
-
-        public void CollapseBox()
-        {
-            XTextBlock.Visibility = Visibility.Visible;
-            xBackground.Height = 60;
-            xBackground.VerticalAlignment = VerticalAlignment.Center;
-            var kvp = this.GetFirstAncestorOfType<KeyValuePane>();
-            kvp?.Collapse_Value(this);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

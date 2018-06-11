@@ -242,30 +242,28 @@ namespace Dash
                     }
                 };
 
-            bool loaded = false;
+            int refCount = 0;
             if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
-                loaded = true;
+                refCount++;
             }
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                if (loaded)
+                if (--refCount == 0)
                 {
                     binding.Remove(handler);
-                    loaded = false;
                 }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                if (!loaded)
+                if (refCount++ == 0)
                 {
                     binding.ConvertToXaml(element, property, binding.Context);
                     binding.Add(handler);
-                    loaded = true;
                 }
             }
 
@@ -275,13 +273,10 @@ namespace Dash
 
             void RemoveBinding()
             {
-                if (loaded)
-                {
-                    element.Loaded -= OnElementOnLoaded;
-                    element.Unloaded -= OnElementOnUnloaded;
-                    binding.Remove(handler);
-                    loaded = false;
-                }
+                element.Loaded -= OnElementOnLoaded;
+                element.Unloaded -= OnElementOnUnloaded;
+                binding.Remove(handler);
+                refCount = 0;
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);
@@ -319,33 +314,35 @@ namespace Dash
                 };
             
             long token = -1;
-
+            int refCount = 0;
             if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
                 token = element.RegisterPropertyChangedCallback(property, callback);
-               // element.Unloaded += OnElementOnUnloaded;
-            }
-            else
-            {
-               // element.Loaded += OnElementOnLoaded;
+                refCount++;
             }
 
             element.Loaded += OnElementOnLoaded;
             element.Unloaded += OnElementOnUnloaded;
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
-                binding.Remove(handler);
-                element.UnregisterPropertyChangedCallback(property, token);
-                token = -1;
+                if (--refCount == 0)
+                {
+                    binding.Remove(handler);
+                    element.UnregisterPropertyChangedCallback(property, token);
+                    token = -1;
+                }
             }
 
             void OnElementOnLoaded(object sender, RoutedEventArgs args)
             {
-                binding.ConvertToXaml(element, property, binding.Context);
-                binding.Add(handler);
-                token = element.RegisterPropertyChangedCallback(property, callback);
+                if (refCount++ == 0)
+                {
+                    binding.ConvertToXaml(element, property, binding.Context);
+                    binding.Add(handler);
+                    token = element.RegisterPropertyChangedCallback(property, callback);
+                }
             }
 
             void RemoveBinding()
@@ -357,6 +354,7 @@ namespace Dash
                 {
                     element.UnregisterPropertyChangedCallback(property, token);
                 }
+                refCount = 0;
             }
 
             AddRemoveBindingAction(element, property, RemoveBinding);

@@ -244,6 +244,8 @@ namespace Dash
                     CurrentView = new CollectionDBSchemaView();
                     break;
                 case CollectionViewType.TreeView:
+                    if (CurrentView is CollectionTreeView) return;
+                    CurrentView = new CollectionTreeView();
                     break;
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
