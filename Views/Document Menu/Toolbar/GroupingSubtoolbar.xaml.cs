@@ -29,14 +29,15 @@ namespace Dash
 
         public Orientation Orientation
         {
-            get { return (Orientation)GetValue(OrientationProperty); }
+            get { return (Orientation) GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
         }
 
         private DocumentView currentDocView;
         private DocumentController currentDocController;
         private static Dictionary<double, char[]> opacities;
-        private Color currentColor; 
+        private Color currentColor;
+        private string currentColorString;
 
         public GroupingSubtoolbar()
         {
@@ -54,6 +55,8 @@ namespace Dash
                 });
                 Visibility = Visibility.Collapsed;
             };
+
+            xOpacitySlider.Value = 128;
         }
 
         private void FormatDropdownMenu()
@@ -73,7 +76,9 @@ namespace Dash
             xGroupCommandbar.IsOpen = status;
             xGroupCommandbar.IsEnabled = true;
             xGroupCommandbar.Visibility = Visibility.Visible;
-            xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+            xShapeOptionsDropdown.Margin = status
+                ? new Thickness(ToolbarConstants.ComboBoxMarginOpen)
+                : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
         internal void SetGroupBinding(DocumentView selection)
@@ -87,19 +92,23 @@ namespace Dash
             switch (xShapeOptionsDropdown.SelectedIndex)
             {
                 case 0:
-                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey,
+                        BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
                     break;
                 case 1:
-                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Elliptical.ToString(), true);
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey,
+                        BackgroundShape.AdornmentShape.Elliptical.ToString(), true);
                     break;
                 case 2:
-                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rounded.ToString(), true);
+                    currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey,
+                        BackgroundShape.AdornmentShape.Rounded.ToString(), true);
                     break;
                 case 3:
                     //Arbitrary polygon: collect user input points with a nice UI.
                     break;
                 default:
-                    currentDocController?.SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
+                    currentDocController?.SetField<TextController>(KeyStore.DataKey,
+                        BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
                     break;
             }
         }
@@ -116,9 +125,9 @@ namespace Dash
             xGroupCommandbar.IsEnabled = true;
         }
 
-        private string SetOpacity(string unprocessedColor, double desiredOpacity)
+        private string SetOpacity(string unprocessedColor)
         {
-            var alpha = (byte) (desiredOpacity / xOpacitySlider.Maximum * 255);
+            var alpha = (byte) (xOpacitySlider.Value / xOpacitySlider.Maximum * 255);
             var rgb = unprocessedColor.Substring(3);
             return "#" + alpha.ToString("X2") + rgb;
         }
@@ -144,13 +153,40 @@ namespace Dash
 
         private void UpdateColor()
         {
-            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, SetOpacity(currentColor.ToString(), xOpacitySlider.Value), true);
+            currentColorString = SetOpacity(currentColor.ToString());
+            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, currentColorString, true);
+            currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value.ToString(), true);
         }
 
         private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             xOpacitySlider.Value = 128;
             UpdateColor();
+        }
+
+        public void AcknowledgeAttributes()
+        {
+            //Updates combobox
+            var shape = currentDocController?.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data;
+            if (shape == "Rectangular")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 0;
+            }
+            else if (shape == "Elliptical")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 1;
+            }
+            else if (shape == "Rounded")
+            {
+                xShapeOptionsDropdown.SelectedIndex = 2;
+            }
+
+            currentColorString = currentDocController?.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
+            var storedSliderValue = currentDocController?.GetDereferencedField<TextController>(KeyStore.OpacitySliderValueKey, null)?.Data;
+            if (double.TryParse(storedSliderValue, out var doubleSliderValue))
+            {
+                xOpacitySlider.Value = doubleSliderValue;
+            }
         }
     }
 }

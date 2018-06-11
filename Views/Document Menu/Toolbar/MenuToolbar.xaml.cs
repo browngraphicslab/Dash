@@ -285,6 +285,7 @@ namespace Dash
                     {
                         xGroupToolbar.SetGroupBinding(selection);
                         xGroupToolbar.TryMakeGroupEditable(true);
+                        xGroupToolbar.AcknowledgeAttributes();
                         subtoolbarElement = xGroupToolbar;
                     }
 
