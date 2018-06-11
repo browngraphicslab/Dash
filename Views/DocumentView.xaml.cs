@@ -87,7 +87,9 @@ namespace Dash
             InitializeComponent();
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
-            
+
+	        xAnnotationView.Height = LayoutRoot.Height;
+
             // set bounds
             MinWidth = 35;
             MinHeight = 35;
@@ -879,7 +881,7 @@ namespace Dash
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(xMasterStack); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {

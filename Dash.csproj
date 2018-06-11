@@ -355,6 +355,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\AnnotationView.xaml.cs">
+      <DependentUpon>AnnotationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -832,6 +835,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Util\StateCropControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AnnotationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
