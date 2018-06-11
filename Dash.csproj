@@ -791,6 +791,7 @@
     <Content Include="ChromeExt\googleDownload.js" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jan_2018_dash_logo.png" />
     <Content Include="ChromeExt\jquery.js" />
     <Content Include="ChromeExt\keylistener.js" />
     <Content Include="ChromeExt\logo.png" />
