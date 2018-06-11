@@ -209,6 +209,7 @@ namespace Dash
         // required for all manipulation deltas to start
         private void OnAllManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+
             e.Handled = true;
         }
 

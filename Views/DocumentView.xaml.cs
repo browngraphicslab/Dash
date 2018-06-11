@@ -33,6 +33,7 @@ namespace Dash
 
         public MenuFlyout MenuFlyout { get; set; }
         public Action OnCropClick;
+        public Action OnRevert;
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 

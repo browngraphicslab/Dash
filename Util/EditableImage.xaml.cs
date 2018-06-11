@@ -31,6 +31,7 @@ namespace Dash
         private bool _isCropping;
         private double _originalWidth;
         private DocumentView _docview;
+        private Image _originalImage;
 
         public RectangleGeometry RectGeo;
 
@@ -65,13 +66,22 @@ namespace Dash
         {
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             _docview.OnCropClick += OnCropClick;
+            _docview.OnRevert += OnRevert;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
+        }
+
+        private void OnRevert()
+        {
+            Image.Source = _originalImage.Source;
+            Image.Height = _originalImage.Height;
+            Image.Width = _originalImage.Width;
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // initialize values that rely on the image
+            _originalImage = Image;
             _originalWidth = Image.Width;
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             _docview.OnCropClick += OnCropClick;
@@ -227,6 +237,10 @@ namespace Dash
             // store new image information so that multiple crops can be made
             _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+            var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+            Point point = new Point(oldpoint.X + rectgeo.X, oldpoint.Y + rectgeo.Y);
+          
+            _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
 
             // TODO: Test that replace button works with cropping when merged with master
         }
@@ -290,6 +304,9 @@ namespace Dash
                         xGrid.Children.Remove(_cropControl);
                         OnCrop(_cropControl.GetBounds());
                         _docview.showControls();
+                     
+                       
+                       
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:

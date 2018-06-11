@@ -56,6 +56,12 @@ namespace Dash
             xImageCommandbar.IsOpen = true;
         }
 
+        private void Revert_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnRevert?.Invoke();
+        }
+
         private async void ReplaceImage()
         {
             var imagePicker = new FileOpenPicker
