@@ -70,6 +70,12 @@ namespace Dash
             return new Rect(Canvas.GetLeft(xLeft), Canvas.GetTop(xTop), xBounds.Width, xBounds.Height);
         }
 
+        // will show/hide the green dot. The default is to hide.
+        public void EnableLinkingFromRange(bool enable)
+        {
+            xAnnotateEllipseBorder.Visibility = enable ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         // initializes the cropping guides and cropping box
         private void StateCropControl_Loaded(object sender, RoutedEventArgs e)
         {
@@ -92,7 +98,7 @@ namespace Dash
             // xBounds represents the geometry that we are actually going to crop. logically most important
             xBounds.Width = Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft);
             xBounds.Height = Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop);
-            xBounds.RenderTransform = new TranslateTransform
+            xStackPanel.RenderTransform = new TranslateTransform
             {
                 X = Canvas.GetLeft(xLeft),
                 Y = Canvas.GetTop(xTop)
@@ -262,7 +268,7 @@ namespace Dash
             Canvas.SetLeft(xBase, left);
             Canvas.SetTop(xBase, top);
 
-            xBounds.RenderTransform = new TranslateTransform
+            xStackPanel.RenderTransform = new TranslateTransform
             {
                 X = left,
                 Y = top
@@ -282,6 +288,18 @@ namespace Dash
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void AnnotateEllipseUnhighlight_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            AnnotateEllipseHighlight.Visibility = Visibility.Visible;
+            AnnotateEllipseUnhighlight.Visibility = Visibility.Collapsed;
+        }
+
+        private void AnnotateEllipseHighlight_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
+            AnnotateEllipseUnhighlight.Visibility = Visibility.Visible;
         }
     }
 }

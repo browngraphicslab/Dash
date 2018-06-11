@@ -322,5 +322,36 @@ namespace Dash
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
         }
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var pos = e.GetCurrentPoint(xImage).Position;
+            
+            Point newAnchor = new Point()
+            {
+                X = pos.X < xRegionPreview.Margin.Left ? pos.X : xRegionPreview.Margin.Left,
+                Y = pos.Y < xRegionPreview.Margin.Top ? pos.Y : xRegionPreview.Margin.Top
+            };
+            xRegionPreview.Margin = new Thickness(newAnchor.X, newAnchor.Y, 0, 0);
+
+            xRegionPreview.Width = pos.X - xRegionPreview.Margin.Left;
+            xRegionPreview.Height = pos.Y - xRegionPreview.Margin.Top;
+        }
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            StopImageFromMoving(sender, e);
+            xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var pos = e.GetCurrentPoint(xImage).Position;
+            xRegionPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+            xRegionPreview.Width = 0;
+            xRegionPreview.Height = 0;
+            xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            StopImageFromMoving(sender, e); 
+        }
     }
 }
