@@ -535,7 +535,7 @@ namespace Dash
             var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
 
             // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.Width, ViewModel.Height);
+            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
             oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
             Size newSize = new Size();
 
@@ -556,6 +556,11 @@ namespace Dash
                 // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
                 // So flip the negative sign by multiplying by -1.
                 newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
+
+                // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
+                newSize.Height = double.IsNaN(newSize.Height)
+                   ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
+                   : newSize.Height;
             }
 
             Size Resize(double dx = 0, double dy = 0)
@@ -573,11 +578,13 @@ namespace Dash
                 return new Size();
             }
 
+            this.Measure(new Size(newSize.Width, 5000));
+            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
-
+            
             e.Handled = true;
         }
 
@@ -718,7 +725,8 @@ namespace Dash
                     {
                         cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     }
-                    e.Handled = true;
+                    if (e != null)
+                        e.Handled = true;
                 }
             }
         }
