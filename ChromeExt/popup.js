@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         chrome.tabs.getSelected(null, function (tab) {
             //tab.url can now be used to get url
-            var url = tab.url;
+            let url = tab.url;
             if (url.includes("docs.google.com")) {
                 //google doc is open
                 
@@ -16,16 +16,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
    // }, false);
 
-    var addDocButton = document.getElementById('addDoc');
+    const addDocButton = document.getElementById('addDoc');
     addDocButton.addEventListener('click', function () {
         chrome.tabs.getSelected(null, function (tab) {
-        document.body.style.backgroundColor = "red";
-            var urlSections = tab.url.split("/");
-            var fileId = urlSections[urlSections.length - 2];
 
-            const fs = cep_node.require('fs');
+            let urlSections = tab.url.split("/");
+            let fileId = urlSections[urlSections.length - 2];
 
-        var dest = fs.createWriteStream('Desktop/resume.pdf');
+            //I created bundle.js using browserfy to get require to work
+            const fs = require('fs');
+            document.body.style.backgroundColor = "blue";
+            
+            // var accessToken = gapi.auth.getToken().access_token;
+            console.log(gapi.auth);
+            //I made this acess token up, won't work 
+            let accessToken = "a762t"
+            var xhr = new XMLHttpRequest();
+           
+            xhr.open("GET", "https://www.googleapis.com/drive/v3/files/" + fileId, true);
+            xhr.setRequestHeader("Authorization", "OAuth " + accessToken);
+            xhr.onload = function () {
+                console.log(xhr);
+            }
+            xhr.send('alt=media');
+
+           /*
+            let dest = fs.createWriteStream('Desktop/resume.pdf');
         drive.files.export({
             fileId: fileId,
             mimeType: 'application/pdf'
@@ -36,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .on('error', function (err) {
                 console.log('Error during download', err);
             })
-                .pipe(dest);
+                .pipe(dest); */
         });
     }, false);
 

@@ -7,21 +7,25 @@
 
   "browser_action": {
     "default_icon": "dash_logo.png",
-      "default_popup": "popup.html"
+    "default_popup": "popup.html"
   },
-"web_accessible_resources": [
+  "web_accessible_resources": [
     "*.png",
     "*.html",
     "*.css",
     "*.svg"
-],
-"content_scripts" : [{
-        "matches" : [ "<all_urls>"],
-        "js" : ["keylistener.js"]
-    }],
+  ],
+  "content_scripts": [
+    {
+      "matches": [ "<all_urls>" ],
+      "js": [ "keylistener.js", "popup.js" ]
+    }
+  ],
+
+  "content_security_policy": "script-src 'self' https://apis.google.com/js/api.js; object-src 'self'",
 
   "background": {
-    "scripts": ["jquery.js", "tabManager.js", "requestHandler.js","bg.js"]
+    "scripts": [ "jquery.js", "tabManager.js", "requestHandler.js", "bg.js" ]
   },
   "permissions": [
     "tabs",

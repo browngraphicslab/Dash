@@ -5,31 +5,36 @@
  value "popup.html".
  -->
 <html>
-  <head>
+<head>
     <title>Dash</title>
     <style>
-      body {
-        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
-        font-size: 100%;
-      }
-      button {
-          background: black;
-          color: white;
-      }
+        body {
+            font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+            font-size: 100%;
+        }
+
+        button {
+            background: black;
+            color: white;
+        }
+
         h1 {
             margin-top: -3px;
             margin-bottom: -3px;
         }
-      #status {
-        /* avoid an excessively wide status text */
-        white-space: pre;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        max-width: 400px;
-      }
+
+        #status {
+            /* avoid an excessively wide status text */
+            white-space: pre;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 400px;
+        }
     </style>
+    <script src="bundle.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
     <script src="popup.js"></script>
-  </head>
+</head>
   <body>
       <div id="status"></div>
       <img id="image-result" hidden>
