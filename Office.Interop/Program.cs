@@ -25,6 +25,8 @@ namespace ExcelInterop
     {
         static AppServiceConnection connection = null;
         static AutoResetEvent appServiceExit;
+        private static readonly Word.Application Word = new Word.Application();
+        private static Word.Document _doc = Word.Documents.Add();
 
         static void Main(string[] args)
         {
@@ -55,29 +57,33 @@ namespace ExcelInterop
             appServiceExit.Set();
         }
 
-        private async static void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        private static async void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
         {
             string value = args.Request.Message["REQUEST"] as string;
+            var response = new ValueSet();
+            string debug = "";
             string result = "";
             switch (value)
             {
-                case "CreateDocument":
+                case "HTML to RTF":
                     try
                     {
-                        Word.Application word = new Word.Application();
-                        //word.Visible = true;
-                        object missing = System.Reflection.Missing.Value;
-                        var doc = word.Documents.Add(ref missing, ref missing, ref missing, ref missing);
-                        doc.Content.Paste();
-                        var start = doc.Content.Start;
-                        var end = doc.Content.End;
+                        _doc.Content.Select();//Select all and delete in case we are reusing a document
+                        debug += $"select \n";
+                        _doc.Content.Delete();
+                        debug += $"delete \n";
 
-                        doc.Content.SetRange(start, end);
-                        doc.Content.Copy();
+                        _doc.Content.Paste();//paste html
+                        debug += $"paste \n";
+                        _doc.Content.Select();//select all
+                        debug += $"select 2\n";
+                        _doc.Content.Copy();//copy rtf
+                        debug += $"copy\n";
                         result = "SUCCESS";
                     }
                     catch (Exception exc)
                     {
+                        debug += exc.Message;
                         result = exc.Message;
                     }
                     break;
@@ -86,8 +92,8 @@ namespace ExcelInterop
                     break;
             }
 
-            ValueSet response = new ValueSet();
             response.Add("RESPONSE", result);
+            response.Add("DEBUG", debug);
             await args.Request.SendResponseAsync(response);
         }
     }

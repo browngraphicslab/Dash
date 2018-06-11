@@ -610,30 +610,6 @@ namespace Dash
             AddDocument(droppedDoc);
         }
 
-        public async void AppServiceConnected(object sender, EventArgs e)
-        {
-            // send the ValueSet to the fulltrust process
-            AppServiceResponse response = await App.Connection.SendMessageAsync(table);
-
-            // check the result
-            object result;
-            response.Message.TryGetValue("RESPONSE", out result);
-            if (result.ToString() != "SUCCESS")
-            {
-                MessageDialog dialog = new MessageDialog(result.ToString());
-                await dialog.ShowAsync();
-            }
-            // no longer need the AppService connection
-            App.AppServiceDeferral.Complete();
-
-            DataPackageView dataPackageView = Clipboard.GetContent();
-            var text = await dataPackageView.GetRtfAsync();
-            var t = new RichTextNote(text, _pasteWhereHack, new Size(300, 300));
-            AddDocument(t.Document);
-
-            App.AppServiceConnected -= AppServiceConnected;
-        }
-
         /// <summary>
         /// Fired by a collection when an item is dropped on it
         /// </summary>
@@ -678,7 +654,7 @@ namespace Dash
             {
                 _pasteWhereHack = where;
                 var html = await e.DataView.GetHtmlFormatAsync();
-                
+
                 //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
                 html = String.Concat(html,
                     @"<style>
@@ -693,34 +669,35 @@ namespace Dash
                     </style>"
                 );
 
+                var splits = new Regex("<").Split(html);
+                var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
+                var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
+                if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+                {
+                    var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
+                    var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                    var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
+                    AddDocument(imgNote.Document);
+                    return;
+                }
+
                 //copy html to clipboard
                 dataPackage.RequestedOperation = DataPackageOperation.Copy;
                 dataPackage.SetHtmlFormat(html);
                 Clipboard.SetContent(dataPackage);
 
-
-                
-
-
                 //to import from html
-                App.AppServiceConnected += AppServiceConnected;
-
                 // create a ValueSet from the datacontext, used to create word doc to copy html to
-                table = new ValueSet();
-                table.Add("REQUEST", "CreateDocument");
+                var table = new ValueSet {{"REQUEST", "HTML to RTF"}};
 
-                // launch the fulltrust process and for it to connect to the app service            
-                if (ApiInformation.IsApiContractPresent("Windows.ApplicationModel.FullTrustAppContract", 1, 0))
-                {
-                    await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
-                }
-                else
-                {
-                    MessageDialog dialog = new MessageDialog("This feature is only available on Windows 10 Desktop SKU");
-                    await dialog.ShowAsync();
-                }
+                await DotNetRPC.CallRPCAsync(table);
+
+                DataPackageView dataPackageView = Clipboard.GetContent();
+                var richtext = await dataPackageView.GetRtfAsync();
+                var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
 
 
+                //Syncfusion version
                 /*
                 WordDocument d = new WordDocument();
                 d.EnsureMinimal();
@@ -740,70 +717,59 @@ namespace Dash
                 //}
                 AddDocument(t.Document);
                 */
-                //var splits = new Regex("<").Split(html);
-                //var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-                //var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
-                //if (string.IsNullOrEmpty(text) && imgs.Count == 1)
-                //{
-                //    var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
-                //    var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                //    var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
-                //    AddDocument(imgNote.Document);
-                //    return;
-                //}
-                //var strings = text.Split(new char[] { '\r' });
-                //var htmlNote = new HtmlNote(html, BrowserView.Current?.Title ?? "", where: where).Document;
-                //foreach (var str in html.Split(new char[] { '\r' }))
-                //{
-                //    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
-                //    if (matches.Count != 0)
-                //    {
-                //        htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
-                //        break;
-                //    }
-                //}
 
-                //if (imgs.Count() == 0)
-                //{
-                //    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
-                //    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
-                //    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
-                //    if (title == "")
-                //        foreach (var match in matches)
-                //        {
-                //            var pair = new Regex(":").Split(match.ToString());
-                //            htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
-                //        }
-                //    else
-                //        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
-                //}
-                //else
-                //{
-                //    var related = new List<DocumentController>();
-                //    foreach (var img in imgs)
-                //    {
-                //        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
-                //        var src = srcMatch.Substring(6, srcMatch.Length - 6);
-                //        var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
-                //        related.Add(i.Document);
-                //    }
-                //    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
-                //    //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
-                //    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
-                //    foreach (var str in strings)
-                //    {
-                //        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
-                //        if (matches.Count != 0)
-                //        {
-                //            foreach (var match in matches)
-                //            {
-                //                var pair = new Regex(":").Split(match.ToString());
-                //                htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
-                //            }
-                //        }
-                //    }
-                //}
-                //AddDocument(htmlNote);
+                var strings = text.Split(new char[] { '\r' });
+                foreach (var str in html.Split(new char[] { '\r' }))
+                {
+                    var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                    if (matches.Count != 0)
+                    {
+                        htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                        break;
+                    }
+                }
+
+                if (imgs.Count() == 0)
+                {
+                    var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
+                    var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
+                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    if (title == "")
+                        foreach (var match in matches)
+                        {
+                            var pair = new Regex(":").Split(match.ToString());
+                            htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                        }
+                    else
+                        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
+                }
+                else
+                {
+                    var related = new List<DocumentController>();
+                    foreach (var img in imgs)
+                    {
+                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                        var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                        related.Add(i.Document);
+                    }
+                    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
+                    //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
+                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    foreach (var str in strings)
+                    {
+                        var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                        if (matches.Count != 0)
+                        {
+                            foreach (var match in matches)
+                            {
+                                var pair = new Regex(":").Split(match.ToString());
+                                htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                            }
+                        }
+                    }
+                }
+                AddDocument(htmlNote);
             }
             else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
             {
