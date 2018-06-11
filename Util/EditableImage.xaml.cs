@@ -224,23 +224,17 @@ namespace Dash
             // update the image source, width, and positions
             Image.Source = cropBmp;
             Image.Width = width;
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            var x = (docView.RenderTransform as MatrixTransform)?.Matrix.OffsetX + rectgeo.X;
-            var y = (docView.RenderTransform as MatrixTransform)?.Matrix.OffsetY + rectgeo.Y;
-            if (x != null)
-                docView.RenderTransform = new TranslateTransform
-                {
-                    X = (double) x,
-                    Y = (double) y
-                };
 
             // store new image information so that multiple crops can be made
             _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+
             var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-            Point point = new Point(oldpoint.X + rectgeo.X, oldpoint.Y + rectgeo.Y);
-          
+            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X, oldpoint.Y + _cropControl.GetBounds().Y);
+
             _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+            _cropControl = new StateCropControl(_docCtrl, this);
+
 
             // TODO: Test that replace button works with cropping when merged with master
         }
@@ -304,9 +298,10 @@ namespace Dash
                         xGrid.Children.Remove(_cropControl);
                         OnCrop(_cropControl.GetBounds());
                         _docview.showControls();
-                     
-                       
-                       
+                      
+
+
+
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:

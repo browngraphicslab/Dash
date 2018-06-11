@@ -21,6 +21,7 @@ namespace Dash
 
         public StateCropControl()
         {
+
         }
 
         public StateCropControl(DocumentController docCtrl, EditableImage editableImage)
