@@ -15,7 +15,6 @@ namespace Dash
     {
         private DocumentController _currentDocControl;
         private DocumentView _currentDocView;
-        private Action OnCropClick; // it is used idk why it says it isnt lol
 
         public ImageSubtoolbar()
         {
