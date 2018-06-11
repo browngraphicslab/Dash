@@ -30,6 +30,7 @@ namespace Dash
         private ImageSource _imgSource;
         private bool _isCropping;
         private double _originalWidth;
+        private DocumentView _docview;
 
         public RectangleGeometry RectGeo;
 
@@ -63,8 +64,8 @@ namespace Dash
         {
             // initialize values that rely on the image
             _originalWidth = Image.Width;
-            var docView = this.GetFirstAncestorOfType<DocumentView>();
-            docView.OnCropClick += OnCropClick;
+            _docview = this.GetFirstAncestorOfType<DocumentView>();
+            _docview.OnCropClick += OnCropClick;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
         }
@@ -76,6 +77,7 @@ namespace Dash
             if (xGrid.Children.Contains(_cropControl)) return;
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
+            _docview.hideControls();
             _isCropping = true;
         }
 
@@ -93,6 +95,7 @@ namespace Dash
         /// </param>
         private async void OnCrop(Rect rectangleGeometry)
         {
+
             var scale = _originalWidth / Image.ActualWidth;
 
             // retrieves data from rectangle
@@ -277,6 +280,7 @@ namespace Dash
                         _isCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         OnCrop(_cropControl.GetBounds());
+                        _docview.showControls();
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:
@@ -294,6 +298,7 @@ namespace Dash
         {
             if (!_isCropping) return;
             _isCropping = false;
+            _docview.showControls();
             xGrid.Children.Remove(_cropControl);
         }
     }
