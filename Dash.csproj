@@ -351,6 +351,9 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\Collection\CollectionGraphView.xaml.cs">
+      <DependentUpon>CollectionGraphView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
     </Compile>
@@ -818,6 +821,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionGraphView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

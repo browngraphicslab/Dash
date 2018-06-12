@@ -16,7 +16,7 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
@@ -250,6 +250,10 @@ namespace Dash
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
+                    break;
+                case CollectionViewType.Graph:
+                    if (CurrentView is CollectionGraphView) return;
+                    CurrentView = new CollectionGraphView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
