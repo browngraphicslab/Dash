@@ -13,14 +13,14 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="Column1" Width="*"/>
-            <ColumnDefinition x:Name="Column2" Width="*"/>
-            <ColumnDefinition x:Name="Column3" Width="*"/>
+            <ColumnDefinition x:Name="Column1" x:FieldModifier="Public" Width="*"/>
+            <ColumnDefinition x:Name="Column2" x:FieldModifier="Public" Width="*"/>
+            <ColumnDefinition x:Name="Column3" x:FieldModifier="Public" Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="Row1" Height="*"/>
-            <RowDefinition x:Name="Row2" Height="*"/>
-            <RowDefinition x:Name="Row3" Height="*"/>
+            <RowDefinition x:Name="Row1" x:FieldModifier="Public" Height="*"/>
+            <RowDefinition x:Name="Row2" x:FieldModifier="Public" Height="*"/>
+            <RowDefinition x:Name="Row3" x:FieldModifier="Public" Height="*"/>
         </Grid.RowDefinitions>
         <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Fill="Gold" Opacity="0.4"/>
     </Grid>
