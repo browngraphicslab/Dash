@@ -67,7 +67,9 @@ namespace Dash
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
         {
+            //this returns a string that more closely follows function syntax
             //TODO check if func exists
+
             if (!DSL.FuncNameExists(funcName))
             {
                 return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
@@ -84,11 +86,15 @@ namespace Dash
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
             searchPart = searchPart?.ToLower() ?? " ";
-            if (searchPart.Contains(":"))
+            //if the part is a quote, it ignores the colon
+            if (searchPart.Contains(":") && searchPart[0] != '"')
             {
-                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
-                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
-                return WrapInParameterizedFunction(parts[0], parts[1]);
+                //   Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+
+                //splits after first colon
+                var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
+                //created a key field query function with both parts as parameters if parts[0] isn't a function name
+               return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -100,8 +106,48 @@ namespace Dash
         {
             //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 1)
+
+            //this splits string into parts, seperated by spaces or quotes
+            List<string> parts = new List<string>();
+            int lastCut = 0;
+            bool inQuote = false;
+            for (int i = 0; i < inputString.Length; i++)
+            {
+               var currChar = inputString[i];
+               if (currChar == '"')
+                {
+                    if (inQuote)
+                    {
+                        //add string from last quote to this quote
+                        var quotedString = inputString.Substring(lastCut + 1, i - lastCut - 1);
+                        quotedString = quotedString.Replace("\"", "\\\"");
+                        parts.Add(quotedString);
+                        lastCut = i + 1;
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                    }
+                } else if (currChar == ' ' && !inQuote)
+                {
+                    if (i == lastCut)
+                    {
+                        lastCut++;
+                        continue;
+                    }
+                    var newstring = inputString.Substring(lastCut, i - lastCut);
+                    lastCut = i + 1;
+                    parts.Add(newstring);
+                }
+            }
+
+            if (lastCut != inputString.Length && !inQuote)
+            {
+                parts.Add(inputString.Substring(lastCut, inputString.Length - lastCut));
+            }
+
+            if (parts.Count < 1)
             {
                 outputs[ScriptKey] = new TextController("");
                 return;
@@ -114,6 +160,7 @@ namespace Dash
                 var search2 = searches.Pop();
                 searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
             }
+            //now we have one long script string to run
             outputs[ScriptKey] = new TextController(searches.First());
         }
     }

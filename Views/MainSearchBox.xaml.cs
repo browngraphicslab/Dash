@@ -10,6 +10,7 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using System.IO;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,6 +23,7 @@ namespace Dash
         private string _currentSearch = "";
         
         public const string SearchCollectionDragKey = "Search Collection";
+        
 
         public MainSearchBox()
         {
@@ -48,7 +50,7 @@ namespace Dash
                 ExecuteDishSearch(sender);
 
             }
-            _currentSearch = sender.Text.ToLower(); ;
+            _currentSearch = sender.Text.ToLower();
         }
 
 
@@ -59,6 +61,8 @@ namespace Dash
                 return;
             }
 
+            //first unhightlight old results
+            unHighlightAllDocs();
 
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
@@ -73,6 +77,8 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
+                //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
+                text = text.Replace("\"", "\\\"");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
@@ -91,6 +97,9 @@ namespace Dash
             var tree = DocumentTree.MainPageTree;
             var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
 
+            //highlight doc results
+            HighlightSearchResults(docs.ToList<DocumentController>());
+
             foreach (var doc in docs)
             {
                 var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
@@ -104,7 +113,53 @@ namespace Dash
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
+            
         }
+
+        public static void HighlightSearchResults(List<DocumentController> docs)
+        {
+            //highlight new search results
+            foreach (var doc in docs)
+            {
+                var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
+
+                //make border thickness of DocHighlight for each doc 8
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+            }
+        }
+
+        public static void unHighlightAllDocs()
+        {
+
+            //TODO:call this when search is unfocused
+
+            //list of all collections
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+
+            foreach (var coll in allCollections)
+            {
+                unHighlightDocs(coll);
+            }
+        }
+
+        public static void unHighlightDocs(DocumentController coll)
+        {
+            var colDocs = coll.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            //unhighlight each doc in collection
+            foreach (var doc in colDocs)
+            {
+                MainPage.Instance.HighlightDoc(doc, false, 2);
+                if (doc.DocumentType.ToString() == "Collection Box")
+                {
+                    unHighlightDocs(doc);
+                }
+            }
+        }
+
+
 
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
             DocumentController searchResultsDictionary, string originalSearch)
