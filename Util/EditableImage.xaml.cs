@@ -32,6 +32,8 @@ namespace Dash
         private double _originalWidth;
         private DocumentView _docview;
         private Image _originalImage;
+        private Point _anchorPoint;
+        private bool _isDragging;
 
         public RectangleGeometry RectGeo;
 
@@ -321,37 +323,47 @@ namespace Dash
             _isCropping = false;
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
+            xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(xImage).Position;
-            
-            Point newAnchor = new Point()
+            if (_isDragging)
             {
-                X = pos.X < xRegionPreview.Margin.Left ? pos.X : xRegionPreview.Margin.Left,
-                Y = pos.Y < xRegionPreview.Margin.Top ? pos.Y : xRegionPreview.Margin.Top
-            };
-            xRegionPreview.Margin = new Thickness(newAnchor.X, newAnchor.Y, 0, 0);
+                var pos = e.GetCurrentPoint(xImage).Position;
 
-            xRegionPreview.Width = pos.X - xRegionPreview.Margin.Left;
-            xRegionPreview.Height = pos.Y - xRegionPreview.Margin.Top;
+                var x = Math.Min(pos.X, _anchorPoint.X);
+                var y = Math.Min(pos.Y, _anchorPoint.Y);
+                xRegionPreview.Margin = new Thickness(x, y, 0, 0);
+
+                xRegionPreview.Width = Math.Abs(pos.X - _anchorPoint.X);
+                xRegionPreview.Height = Math.Abs(pos.Y - _anchorPoint.Y);
+            }
         }
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             StopImageFromMoving(sender, e);
-            xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            if (xRegionPreview.Width < 50 && xRegionPreview.Height < 50)
+            {
+                xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            }
+            _isDragging = false;
         }
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(xImage).Position;
-            xRegionPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
-            xRegionPreview.Width = 0;
-            xRegionPreview.Height = 0;
-            xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            StopImageFromMoving(sender, e); 
+            if (!_isCropping)
+            {
+                var pos = e.GetCurrentPoint(xImage).Position;
+                _anchorPoint = pos;
+                _isDragging = true;
+                xRegionPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                xRegionPreview.Width = 0;
+                xRegionPreview.Height = 0;
+                xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                StopImageFromMoving(sender, e);
+            }
         }
     }
 }

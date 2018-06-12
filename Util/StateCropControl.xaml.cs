@@ -35,7 +35,7 @@ namespace Dash
         #endregion
 
         #region variables
-        
+
         private EditableImage _imageBase;
 
         public Brush Fill { get; } = new SolidColorBrush(Color.FromArgb(55, 255, 255, 255));
@@ -109,7 +109,7 @@ namespace Dash
         }
 
         #region Manipulation Delta for Cropping Guides
-        
+
         private void XLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             // e.handled is required for manipulation delta to work
