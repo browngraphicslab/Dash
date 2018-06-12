@@ -291,6 +291,9 @@
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
+    <Compile Include="Util\ImageRegionBox.xaml.cs">
+      <DependentUpon>ImageRegionBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
@@ -830,6 +833,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\ImageRegionBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

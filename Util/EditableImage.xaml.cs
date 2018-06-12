@@ -431,43 +431,49 @@ namespace Dash
 	    }
 
 	    
-			public DocumentController GetRegionDocument()
+		public DocumentController GetRegionDocument()
 	    {
-		    if (!this.IsSomethingSelected()) return _docCtrl;
+		if (!this.IsSomethingSelected()) return _docCtrl;
 
-		    var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height)).Document;
+		var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height)).Document;
 
-		    var regions = _docCtrl.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-		    if (regions == null)
-		    {
-			    var dregions = new List<DocumentController>();
-			    dregions.Add(imNote);
-			    _docCtrl.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
-		    }
-		    else
-		    {
-			    regions.Add(imNote);
-		    }
-		    return imNote;
+		var regions = _docCtrl.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		if (regions == null)
+		{
+			var dregions = new List<DocumentController>();
+			dregions.Add(imNote);
+			_docCtrl.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+		}
+		else
+		{
+			regions.Add(imNote);
+		}
 
-		    /*
-		    var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
-		    var s1 = xRichEditBox.Document.Selection.StartPosition;
-		    var s2 = xRichEditBox.Document.Selection.EndPosition;
-		    createRTFHyperlink(dc, ref s1, ref s2, false, false);
-		    var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-		    if (regions == null)
-		    {
-			    var dregions = new List<DocumentController>();
-			    dregions.Add(dc);
-			    DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
-		    }
-		    else
-		    {
-			    regions.Add(dc);
-		    }
-		    return dc;
-		    */
+	    var newBox = new ImageRegionBox {LinkTo = imNote};
+	    newBox.SetPosition(new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height), new Size(xImage.ActualWidth, xImage.ActualHeight));
+	    xRegionsGrid.Children.Add(newBox);
+	    xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+		return imNote;
+
+		/*
+		var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+		var s1 = xRichEditBox.Document.Selection.StartPosition;
+		var s2 = xRichEditBox.Document.Selection.EndPosition;
+		createRTFHyperlink(dc, ref s1, ref s2, false, false);
+		var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		if (regions == null)
+		{
+			var dregions = new List<DocumentController>();
+			dregions.Add(dc);
+			DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+		}
+		else
+		{
+			regions.Add(dc);
+		}
+		return dc;
+		*/
 	    }
 
 		/*
@@ -498,5 +504,9 @@ namespace Dash
 		    }
 	    }
 		*/
-	}
+        private void xRegionsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Actual Width: " + xImage.ActualWidth + " Width: " + xImage.Width);
+        }
+    }
 }
