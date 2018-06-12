@@ -11,6 +11,5 @@
 
     <Grid x:Name="xGrid">
                 <WebView x:Name="xWebView" />
-                <!--<Rectangle x:Name="xRect" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>-->
     </Grid>
 </UserControl>

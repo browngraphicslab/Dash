@@ -55,6 +55,7 @@ namespace Dash
             base.OnLoad(sender,e);
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
+            ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
             UpdateViewLevel();
         }
 

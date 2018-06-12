@@ -85,13 +85,6 @@ namespace Dash
             xTitleBlock.AddFieldBinding(TextBlock.TextProperty, currPageBinding);
         }
 
-        public async Task<RenderTargetBitmap> GetPreview()
-        {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(xOuterGrid);
-            return bitmap;
-        }
-
         /// <summary>
         /// Called whenever the datacontext changes
         /// </summary>

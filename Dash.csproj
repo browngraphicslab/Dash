@@ -142,6 +142,7 @@
     <Content Include="Assets\Icons\data-icon.png" />
     <Content Include="Assets\Icons\doc-icon.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="Assets\Icons\Unavailable.png" />
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />

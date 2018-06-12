@@ -89,7 +89,7 @@ namespace Dash
             }
         }
 
-        private ImageSource DocPreview;
+        private ImageSource DocPreview = null;
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -303,24 +303,6 @@ namespace Dash
             //    var img = pdfBox.GetPage(0);
             //    DocPreview = img.Source;
             //}
-            //else if (ViewModel.DocumentController.DocumentType.Equals(WebBox.DocumentType))
-            //{
-            //    GetWebViewBrush();
-            //} else
-            //{
-            //    var img = xContentPresenter.GetFirstDescendantOfType<Image>();
-            //    if (img != null)
-            //    {
-            //        DocPreview = img.Source;
-            //    }
-            //    else
-            //    {
-            //        // Render to an image at the current system scale and retrieve pixel contents
-            //        RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap();
-            //        await renderTargetBitmap.RenderAsync(xContentPresenter);
-            //        DocPreview = renderTargetBitmap;
-            //    }
-            //}
             xIconBorder.BorderThickness = new Thickness(1);
             xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
             {
@@ -329,46 +311,19 @@ namespace Dash
             var type = ViewModel.DocumentController.DocumentType;
             WebViewBrush webBrush = null;
             WebBoxView web = null;
-            //if (type.Equals(RichTextBox.DocumentType))
-            //{
-            //    var box = xContentPresenter.GetFirstDescendantOfType<RichTextView>();
-            //    if (box != null)
-            //        DocPreview = await box.GetPreview();
-            //}
-            //else if (type.Equals(ImageBox.DocumentType))
-            //{
-            //    var img = xContentPresenter.GetFirstDescendantOfType<Image>();
-            //    if (img != null)
-            //        DocPreview = img.Source;
-            //} else if (type.Equals(WebBox.DocumentType))
-            //{
-            //    web = xContentPresenter.GetFirstDescendantOfType<WebBoxView>();
-            //    if (web != null)
-            //        webBrush = await web.GetPreview();
-            //} else if (type.Equals(KeyValueDocumentBox.DocumentType))
-            //{
-            //    var keyVal = xContentPresenter.GetFirstDescendantOfType<KeyValuePane>();
-            //    if (keyVal != null)
-            //        DocPreview = await keyVal.GetPreview();
-
-            //}
-            DocPreview = await this.GetPreview();
+            xSmallIconImage.Visibility = Visibility.Visible;
+            xSmallIconImage.Source = GetTypeIcon();
+            if (DocPreview != null && _prevLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+                DocPreview = await this.GetPreview();
             if (DocPreview != null)
             {
                 xIconImage.Height = 240;
                 xIconImage.Width = 240;
                 xIconImage.Source = DocPreview;
             }
-            else if (webBrush != null)
-            {
-                //xRect.Width = 240;
-                //xRect.Height = 240;
-                xIconImage.Visibility = Visibility.Collapsed;
-                xRect.Fill = webBrush;
-            }
             else
             {
-                
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
             }
             OpenIcon();
 
@@ -380,60 +335,23 @@ namespace Dash
             await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement);
             return bitmap;
         }
+
         private void CloseDocPreview()
         {
-            xRect.Fill = new SolidColorBrush();
-            xRect.Width = 64;
-            xRect.Height = 64;
             xIconImage.Visibility = Visibility.Visible;
+            xSmallIconImage.Visibility = Visibility.Collapsed;
             xIconBorder.BorderThickness = new Thickness(0);
             xIconBorder.Background = new SolidColorBrush(Colors.Transparent);
         }
-        //private async void GetWebViewBrush()
-        //{
-        //    int width;
-        //    int height;
-        //    var webView = xContentPresenter.GetFirstDescendantOfType<WebView>();
-        //    if (webView != null)
-        //    {
-        //        var widthString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollWidth.toString()" });
-        //        var heightString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
-
-        //        if (!int.TryParse(widthString, out width))
-        //        {
-        //            throw new Exception("Unable to get page width");
-        //        }
-        //        if (!int.TryParse(heightString, out height))
-        //        {
-        //            throw new Exception("Unable to get page height");
-        //        }
-        //        // resize the webview to the content
-        //        webView.Width = width;
-        //        webView.Height = height;
-
-        //        WebViewBrush b = new WebViewBrush();
-        //        b.SetSource(webView);
-        //        b.Redraw();
-        //        var rect = new Rectangle()
-        //        {
-        //            Width = width,
-        //            Height = height,
-        //            Fill = b
-        //        };
-        //        rect.Loaded += async (s,e) =>
-        //        {
-        //            RenderTargetBitmap render = new RenderTargetBitmap();
-        //            await render.RenderAsync(rect);
-        //            DocPreview = render;
-        //        };
-        //    }
-
-        //}
 
         private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             var view = obj as DocumentView;
-            view.UpdateView();
+            if (view != null)
+            {
+                view._prevLevel = (CollectionViewModel.StandardViewLevel)e.OldValue;
+                view.UpdateView();
+            }
         }
 
         private void OpenIcon()
@@ -448,53 +366,59 @@ namespace Dash
             xStandardDocViewCol.Width = new GridLength(0);
         }
 
-        void UpdateIcon()
+        BitmapImage GetTypeIcon()
         {
-            OpenIcon();
             var type = ViewModel.DocumentController.DocumentType;
             // TODO: make icons for different types
             if (type.Equals(CollectionBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/col-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/col-icon.png"));
             }
             else if (type.Equals(PdfBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/pdf-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/pdf-icon.png"));
             }
             else if (type.Equals(RichTextBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/rtf-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/rtf-icon.png"));
             }
             else if (type.Equals(VideoBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/vid-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/vid-icon.png"));
             }
             else if (type.Equals(ImageBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/img-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/img-icon.png"));
             }
             else if (type.Equals(WebBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/html-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/html-icon.png"));
             }
             else if (type.Equals(ApiOperatorBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/api-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/api-icon.png"));
             }
             else if (type.Equals(DataBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/data-icon.png"));
             } else if (type.Equals(OperatorBox.DocumentType))
             {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/opr-icon.png"));
+            }
+            else
+            {
+                return new BitmapImage(new Uri("ms-appx:///Assets/Icons/doc-icon.png"));
             }
         }
 
-        private void UpdateView()
+        private CollectionViewModel.StandardViewLevel _prevLevel;
+        private async void UpdateView()
         {
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
+                    if (DocPreview == null)
+                        DocPreview = await GetPreview();
                     CloseDocPreview();
                     OpenFreeform();
                     break;
@@ -503,7 +427,8 @@ namespace Dash
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
                     CloseDocPreview();
-                    UpdateIcon();
+                    OpenIcon();
+                    xIconImage.Source = GetTypeIcon();
                     break;
             }
         }

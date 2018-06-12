@@ -110,13 +110,6 @@ namespace Dash
 
         }
 
-        public async Task<RenderTargetBitmap> GetPreview()
-        {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(LayoutGrid);
-            return bitmap;
-        }
-
         public void UpdateDocumentFromXaml()
         {
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
