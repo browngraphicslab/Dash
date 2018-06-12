@@ -72,7 +72,9 @@ namespace Dash
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
         {
+            //this returns a string that more closely follows function syntax
             //TODO check if func exists
+
             if (!DSL.FuncNameExists(funcName))
             {
                 return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
@@ -89,11 +91,15 @@ namespace Dash
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
             searchPart = searchPart?.ToLower() ?? " ";
-            if (searchPart.Contains(":"))
+            //if the part is a quote, it ignores the colon
+            if (searchPart.Contains(":") && searchPart[0] != '"')
             {
-                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
-                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
-                return WrapInParameterizedFunction(parts[0], parts[1]);
+                //   Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+
+                //splits after first colon
+                var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
+                //created a key field query function with both parts as parameters if parts[0] isn't a function name
+               return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -101,76 +107,74 @@ namespace Dash
             }
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        private int FindNextDivider(String inputString)
         {
-            //very simple for now, can only join with intersections and unions
-            var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-
-            var charSeq = new List<char>();
-            for (int i = 0; i < inputString.Length; i++)
+            bool inQuote = false;
+            int len = inputString.Length;
+            for (int i = 0; i < len; i++)
             {
-                char divider = inputString[i];
-                if (divider == ',' || divider == ' ')
+                char curChar = inputString[i];
+                if (curChar == '"')
                 {
-                    charSeq.Add(divider);
+                    if (inQuote)
+                    {
+                        inQuote = false;
+                    } else
+                    {
+                        inQuote = true;
+                    }
+
+                }
+                else if (!inQuote && (curChar == ' ' || curChar == ','))
+                {
+                    return i;
                 }
             }
-            char[] splitChars = { ' ', ',' };
-            var parts = inputString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 1)
-            {
-                outputs[ScriptKey] = new TextController("");
-                return;
-            }
+            return len;
+        }
 
-            var negateSeq = new List<bool>();
-            for (int i = 0; i < parts.Length; i++)
+        private String Parse(String inputString)
+        {
+            int dividerIndex = FindNextDivider(inputString);
+            String searchTerm = inputString.Substring(0, dividerIndex);
+            var modifiedSearchTerm = searchTerm.Replace("\"", "");
+            bool isNegated = searchTerm.StartsWith("!") ? true : false;
+            String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
+            String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+
+            if (isNegated)
+                searchDict = NegateSearch(searchDict);
+
+
+            if (dividerIndex == inputString.Length)
             {
-                var searchToken = parts[i];
-                parts[i] = searchToken.Replace(@"\", @"\\");
-                if (searchToken.StartsWith("!"))
+                return searchDict;
+            } else
+            {
+                char divider = inputString[dividerIndex];
+                String rest = inputString.Substring(dividerIndex + 1);
+
+                if (divider == ' ')
                 {
-                    parts[i] = searchToken.Substring(1);
-                    negateSeq.Add(true);
+                    return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
+                } else if (divider == ',')
+                {
+                    return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
                 } else
                 {
-                    negateSeq.Add(false);
+                    throw new Exception("Unknown Divider");
                 }
-            }
 
-
-            var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
-            if (negateSeq.FirstOrDefault())
-            {
-                var search = searches.Pop();
-                searches.Push(NegateSearch(search));
-                negateSeq.RemoveAt(0);
             }
-            while (searches.Count() > 1)
-            {
-                var search1 = searches.Pop();
-                var search2 = searches.Pop();
+        }
 
-                if (negateSeq.FirstOrDefault())
-                {
-                    searches.Push(NegateSearch(search2));
-                    negateSeq.RemoveAt(0);
-                }
-                
-                switch (charSeq.ElementAt(0))
-                {
-                    case ' ':
-                        searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
-                        break;
-                    case ',': 
-                        searches.Push(JoinTwoSearchesWithUnion(search1, search2));
-                        break;
-                    default:
-                        break;
-                }
-                charSeq.RemoveAt(0);
-            }
-            outputs[ScriptKey] = new TextController(searches.First());
+        /// <summary>
+        /// Right now, we can join with intersections and unions, and negate searches
+        /// </summary>
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        {
+            var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
+            outputs[ScriptKey] = new TextController(Parse(inputString));
         }
     }
 }

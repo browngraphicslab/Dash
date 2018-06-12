@@ -34,15 +34,17 @@
             <Thickness x:Key="TextPadding">10,7,10,7</Thickness>
 
             <!-- COLORS -->
-            <Color x:Key="WindowsBlueColor">#FF068484</Color>
-            <Color x:Key="AccentGreenColor">#FF3D7AAC</Color>
-            <Color x:Key="AccentBlueColor">#FF338899</Color>
+            <Color x:Key="WindowsBlueColor">#3c3836</Color>
+            <Color x:Key="AccentGreenColor">#537769</Color>
+            <Color x:Key="AccentGreenColorLight">#6a9383</Color>
+            <Color x:Key="AccentGreenColorDark">#46685b</Color>
+            <Color x:Key="AccentBlueColor">#d5c4a1</Color>
             <Color x:Key="DocumentBackgroundColor">#FFFFFFFF</Color>
             <Color x:Key="DocumentHighlightBackgroundColor">#FFCCCCCC</Color>
             <Color x:Key="MainTextColor">#FF333333</Color>
             <Color x:Key="TitleTextColor">#FF454545</Color>
             <Color x:Key="ActivationColor">#f4aa42</Color>
-            <Color x:Key="LinkActivationColor">Green</Color>
+            <Color x:Key="LinkActivationColor">#6a9383</Color>
             <Color x:Key="InverseColor">#ededed</Color>
 
 
@@ -52,6 +54,8 @@
             <SolidColorBrush x:Key="TranslucentWindowsBlue" Color="#CC17477E"/>
             <SolidColorBrush x:Key="DarkWindowsBlue" Color="#cc103a6a"/>
             <SolidColorBrush x:Key="AccentGreen" Color="{StaticResource AccentGreenColor}"/>
+            <SolidColorBrush x:Key="AccentGreenLight" Color="{StaticResource AccentGreenColorLight}"/>
+            <SolidColorBrush x:Key="AccentGreenDark" Color="{StaticResource AccentGreenColorDark}"/>
             <SolidColorBrush x:Key="SelectedGrey" Color="{StaticResource DocumentHighlightBackgroundColor}" />
             <SolidColorBrush x:Key="OutputHandleColor" Color="{StaticResource AccentGreenColor}"/>
             <SolidColorBrush x:Key="FieldHandleColor" Color="{StaticResource ActivationColor}"/>
@@ -99,8 +103,8 @@
             <x:String x:Key="CollectionIcon">&#xf247;</x:String>
             <x:String x:Key="DocumentIcon">&#xf0f6;</x:String>
             <x:String x:Key="DocumentPlainIcon">&#xf016;</x:String>
-            <x:String x:Key="ExpandArrowIcon">&#xf0d7;</x:String>
-            <x:String x:Key="ContractArrowIcon">&#xf0d8;</x:String>
+            <x:String x:Key="ExpandArrowIcon">&#xf0da;</x:String>
+            <x:String x:Key="ContractArrowIcon">&#xf0d7;</x:String>
             <x:String x:Key="OperatorIcon">&#xf126;</x:String>
             <x:String x:Key="HierarchyIcon">&#xf0e8;</x:String>
             <x:String x:Key="SearchIcon">&#xf002;</x:String>
@@ -149,7 +153,7 @@
 
                 <Setter Property="Background" Value="LightGray" />
 
-                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Foreground" Value="Transparent" />
 
                 <Setter Property="ResizeBehavior" Value="BasedOnAlignment" />
 
@@ -159,7 +163,7 @@
 
                 <Setter Property="FontSize" Value="13" />
 
-                <Setter Property="Template">
+                <!--<Setter Property="Template">
 
                     <Setter.Value>
 
@@ -183,7 +187,7 @@
             
             </Setter.Value>
             
-            </Setter>
+            </Setter>-->
             
             </Style>
 
@@ -1023,13 +1027,13 @@
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Default">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
-                    <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="White"></SolidColorBrush>
-                    <SolidColorBrush x:Key="GridSplitterBrush" Color="LightGray"></SolidColorBrush>
-                    <SolidColorBrush x:Key="TreeviewBrush" Color="#556666"></SolidColorBrush>
-                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"></SolidColorBrush>
-                    <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"></SolidColorBrush>
-                    <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"></SolidColorBrush>
-                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="{StaticResource AccentGreenColor}"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="White"/>
+                    <SolidColorBrush x:Key="GridSplitterBrush" Color="LightGray"/>
+                    <SolidColorBrush x:Key="TreeviewBrush" Color="#556666"/>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#07FFFFFF"/>
+                    <SolidColorBrush x:Key="DBCollectionBrush" Color="#dddddd"/>
+                    <SolidColorBrush x:Key="DBTextBrush" Color="DarkSlateGray"/>
+                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="{StaticResource AccentGreenColor}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Light">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource MainTextColor}" />
@@ -1043,10 +1047,10 @@
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource InverseColor}" />
-                    <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="#1e1e1e"></SolidColorBrush>
-                    <SolidColorBrush x:Key="GridSplitterBrush" Color="#565656"></SolidColorBrush>
-                    <SolidColorBrush x:Key="TreeviewBrush" Color="#353f3f"></SolidColorBrush>
-                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#565656"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="#1e1e1e"/>
+                    <SolidColorBrush x:Key="GridSplitterBrush" Color="LightGray"/>
+                    <SolidColorBrush x:Key="TreeviewBrush" Color="#353f3f"/>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="#565656"/>
                     <SolidColorBrush x:Key="DBCollectionBrush" Color="#8e8e8e"></SolidColorBrush>
                     <SolidColorBrush x:Key="DBTextBrush" Color="#e1eded"></SolidColorBrush>
                     <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="#2a4a63"></SolidColorBrush>
