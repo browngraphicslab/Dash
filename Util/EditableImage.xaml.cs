@@ -450,6 +450,7 @@ namespace Dash
             var newBox = new ImageRegionBox { LinkTo = imNote };
             newBox.SetPosition(new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height), new Size(xImage.ActualWidth, xImage.ActualHeight));
             xRegionsGrid.Children.Add(newBox);
+            newBox.PointerPressed += xRegion_OnPointerPressed;
             xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             return imNote;
@@ -502,123 +503,98 @@ namespace Dash
 		    }
 	    }
 		*/
-        private void xRegionsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+
+
+
+        private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = false;
-            foreach (var box in xRegionsGrid.Children)
+
+            if (sender is ImageRegionBox box)
             {
-                box.Background = new SolidColorBrush(Colors.Transparent);
+                var theDoc = box.LinkTo;
+                var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+                var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+                if (linkFromDoc != null)
+                {
+                    var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
+                    theDoc = targetDoc;
+                }
+                else if (linkToDoc != null)
+                {
+
+                    var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
+                    theDoc = targetDoc;
+                }
+
+                var nearest = FindNearestDisplayedTarget(e.GetCurrentPoint(MainPage.Instance).Position, theDoc?.GetDataDocument(), this.IsCtrlPressed());
+                if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
+                {
+                    if (this.IsCtrlPressed())
+                        nearest.DeleteDocument();
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                }
+                else
+                {
+                    var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
+                    if (theDoc != null)
+                    {
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                    }
+                }
+                e.Handled = true;
             }
-            (sender as UIElement).GetFirstDescendantOfType<ImageRegionBox>().Background = new SolidColorBrush(Colors.Yellow);
 
-            //e.Handled = false;
-            //var target = getHyperlinkTargetForSelection();
-            //if (target != null)
-            //{
-            //    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
-            //    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
-            //    {
-            //        var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
-            //        var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
-            //        if (linkFromDoc != null)
-            //        {
-            //            var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
-            //            theDoc = targetDoc;
-            //        }
-            //        else if (linkToDoc != null)
-            //        {
+            DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
 
-            //            var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
-            //            theDoc = targetDoc;
-            //        }
-            //    }
-            //    var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
-            //    if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
-            //    {
-            //        if (this.IsCtrlPressed())
-            //            nearest.DeleteDocument();
-            //        else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
-            //    }
-            //    else
-            //    {
-            //        var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
-            //        if (theDoc != null)
-            //        {
-            //            Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-            //        }
-            //        else if (target.StartsWith("http"))
-            //        {
-            //            if (MainPage.Instance.WebContext != null)
-            //                MainPage.Instance.WebContext.SetUrl(target);
-            //            else
-            //            {
-            //                nearest = FindNearestDisplayedBrowser(pt, target);
-            //                if (nearest != null)
-            //                {
-            //                    if (this.IsCtrlPressed())
-            //                        nearest.DeleteDocument();
-            //                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
-            //                }
-            //                else
-            //                {
-            //                    theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
-            //                    Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-            //                }
-            //            }
-            //        }
-            //    }
-            //    e.Handled = true;
-            //}
-            //DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
-            //{
-            //    double dist = double.MaxValue;
-            //    DocumentView nearest = null;
-            //    foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            //    {
-            //        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-            //        if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
-            //        {
-            //            var mprect = dvm.GetBoundingRect(MainPage.Instance);
-            //            var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-            //            if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-            //            {
-            //                var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-            //                if (d < dist)
-            //                {
-            //                    d = dist;
-            //                    nearest = dvm;
-            //                }
-            //            }
-            //        }
-            //    }
+                return nearest;
+            }
+            DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
 
-            //    return nearest;
-            //}
-            //DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
-            //{
-            //    double dist = double.MaxValue;
-            //    DocumentView nearest = null;
-            //    foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            //    {
-            //        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-            //        if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
-            //        {
-            //            var mprect = dvm.GetBoundingRect(MainPage.Instance);
-            //            var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-            //            if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-            //            {
-            //                var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-            //                if (d < dist)
-            //                {
-            //                    d = dist;
-            //                    nearest = dvm;
-            //                }
-            //            }
-            //        }
-            //    }
-
-            //    return nearest;
-            //}
+                return nearest;
+            }
         }
     }
 }

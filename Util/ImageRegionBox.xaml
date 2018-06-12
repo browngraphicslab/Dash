@@ -22,6 +22,6 @@
             <RowDefinition x:Name="Row2" Height="*"/>
             <RowDefinition x:Name="Row3" Height="*"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="xRegionBox" Grid.Row="1" Grid.Column="1" Fill="Gold" Opacity="0.4"/>
+        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Fill="Gold" Opacity="0.4"/>
     </Grid>
 </UserControl>
