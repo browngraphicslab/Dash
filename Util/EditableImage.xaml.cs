@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -8,6 +9,8 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -16,6 +19,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -405,7 +409,7 @@ namespace Dash
             }
             _isDragging = false;
         }
-
+		 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (!_isCropping)
@@ -420,5 +424,79 @@ namespace Dash
                 StopImageFromMoving(sender, e);
             }
         }
-    }
+
+	    public bool IsSomethingSelected()
+	    {
+		    return xRegionPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
+	    }
+
+	    
+			public DocumentController GetRegionDocument()
+	    {
+		    if (!this.IsSomethingSelected()) return _docCtrl;
+
+		    var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height)).Document;
+
+		    var regions = _docCtrl.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		    if (regions == null)
+		    {
+			    var dregions = new List<DocumentController>();
+			    dregions.Add(imNote);
+			    _docCtrl.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+		    }
+		    else
+		    {
+			    regions.Add(imNote);
+		    }
+		    return imNote;
+
+		    /*
+		    var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+		    var s1 = xRichEditBox.Document.Selection.StartPosition;
+		    var s2 = xRichEditBox.Document.Selection.EndPosition;
+		    createRTFHyperlink(dc, ref s1, ref s2, false, false);
+		    var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		    if (regions == null)
+		    {
+			    var dregions = new List<DocumentController>();
+			    dregions.Add(dc);
+			    DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+		    }
+		    else
+		    {
+			    regions.Add(dc);
+		    }
+		    return dc;
+		    */
+	    }
+
+		/*
+	    void createRTFHyperlink(DocumentController theDoc, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
+	    {
+		    Point startPt;
+		    this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+		    string link = "\"" + theDoc.GetId() + "\"";
+		    if (!forceLocal && theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
+		    {
+			    link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
+		    }
+
+		    if (xRichEditBox.Document.Selection.Link != link)
+		    {
+			    if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+			    {
+				    xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
+			    }
+
+			    // set the hyperlink for the matched text
+			    this.xRichEditBox.Document.Selection.Link = link;
+			    // advance the end selection past the RTF embedded HYPERLINK keyword
+			    s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+			    s1 = s2;
+			    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+			    this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+		    }
+	    }
+		*/
+	}
 }
