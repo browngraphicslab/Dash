@@ -174,7 +174,6 @@ namespace Dash
 
                     // Text controls
                     var text = VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection);
-					System.Diagnostics.Debug.WriteLine("TEXT IS SELECTED");
                     if (text != null)
                     {
                         xTextToolbar.SetMenuToolBarBinding(
@@ -184,8 +183,16 @@ namespace Dash
 						subtoolbarElement = xTextToolbar;
                     }
 
-                    //If the user has clicked on valid content (text, image, video, etc)...
-                    if (subtoolbarElement != null)
+					//Annnotation controls
+	                var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+	                if (annot != null)
+	                {
+		                System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+						
+	                }
+
+					//If the user has clicked on valid content (text, image, video, etc)...
+					if (subtoolbarElement != null)
                     {
                         xToolbar.IsOpen = false;
                         //If the relevant subtoolbar uses an underlying CommandBar (i.e. and can be closed/opened)
