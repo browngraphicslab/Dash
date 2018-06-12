@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -16,6 +17,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Syncfusion.Windows.PdfViewer;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -74,15 +76,6 @@ namespace Dash
             set { SetValue(BindRenderTransformProperty, value); }
         }
 
-        public static readonly DependencyProperty IsViewStandardProperty = DependencyProperty.Register(
-            "IsViewStandard", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
-
-        public bool IsViewStandard
-        {
-            get { return (bool) GetValue(IsViewStandardProperty); }
-            set { SetValue(IsViewStandardProperty, value);}
-        }
-
         public static readonly DependencyProperty StandardViewLevelProperty = DependencyProperty.Register(
             "StandardViewLevel", typeof(CollectionViewModel.StandardViewLevel), typeof(DocumentView), new PropertyMetadata(CollectionViewModel.StandardViewLevel.None, StandardViewLevelChanged));
 
@@ -96,7 +89,7 @@ namespace Dash
             }
         }
 
-
+        private ImageSource DocPreview;
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -139,10 +132,6 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 SetZLayer();
-                if (IsViewStandard)
-                {
-                    UpdateIcon();
-                }
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
@@ -173,7 +162,7 @@ namespace Dash
             }
             void ResizeHandles_restorePointerTracking()
             {
-                if (!IsViewStandard)
+                if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
                     ViewModel.DecorationState = ResizeHandleBottomRight.IsPointerOver();
                 PointerExited -= DocumentView_PointerExited;
                 PointerExited += DocumentView_PointerExited;
@@ -281,7 +270,7 @@ namespace Dash
             {
                 SelectedDocuments().ForEach((d) =>
                 {
-                    if (!IsViewStandard)
+                    if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
                     d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
                     d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
                     d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
@@ -305,16 +294,163 @@ namespace Dash
         }
 
         #region StandardCollectionView
+
+        private async void GetDocPreview()
+        {
+            //if (ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
+            //{
+            //    var pdfBox = xContentPresenter.GetFirstDescendantOfType<SfPdfViewerControl>();
+            //    var img = pdfBox.GetPage(0);
+            //    DocPreview = img.Source;
+            //}
+            //else if (ViewModel.DocumentController.DocumentType.Equals(WebBox.DocumentType))
+            //{
+            //    GetWebViewBrush();
+            //} else
+            //{
+            //    var img = xContentPresenter.GetFirstDescendantOfType<Image>();
+            //    if (img != null)
+            //    {
+            //        DocPreview = img.Source;
+            //    }
+            //    else
+            //    {
+            //        // Render to an image at the current system scale and retrieve pixel contents
+            //        RenderTargetBitmap renderTargetBitmap = new RenderTargetBitmap();
+            //        await renderTargetBitmap.RenderAsync(xContentPresenter);
+            //        DocPreview = renderTargetBitmap;
+            //    }
+            //}
+            xIconBorder.BorderThickness = new Thickness(1);
+            xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
+            {
+                Opacity = 0.5
+            };
+            var type = ViewModel.DocumentController.DocumentType;
+            WebViewBrush webBrush = null;
+            WebBoxView web = null;
+            //if (type.Equals(RichTextBox.DocumentType))
+            //{
+            //    var box = xContentPresenter.GetFirstDescendantOfType<RichTextView>();
+            //    if (box != null)
+            //        DocPreview = await box.GetPreview();
+            //}
+            //else if (type.Equals(ImageBox.DocumentType))
+            //{
+            //    var img = xContentPresenter.GetFirstDescendantOfType<Image>();
+            //    if (img != null)
+            //        DocPreview = img.Source;
+            //} else if (type.Equals(WebBox.DocumentType))
+            //{
+            //    web = xContentPresenter.GetFirstDescendantOfType<WebBoxView>();
+            //    if (web != null)
+            //        webBrush = await web.GetPreview();
+            //} else if (type.Equals(KeyValueDocumentBox.DocumentType))
+            //{
+            //    var keyVal = xContentPresenter.GetFirstDescendantOfType<KeyValuePane>();
+            //    if (keyVal != null)
+            //        DocPreview = await keyVal.GetPreview();
+
+            //}
+            DocPreview = await this.GetPreview();
+            if (DocPreview != null)
+            {
+                xIconImage.Height = 240;
+                xIconImage.Width = 240;
+                xIconImage.Source = DocPreview;
+            }
+            else if (webBrush != null)
+            {
+                //xRect.Width = 240;
+                //xRect.Height = 240;
+                xIconImage.Visibility = Visibility.Collapsed;
+                xRect.Fill = webBrush;
+            }
+            else
+            {
+                
+            }
+            OpenIcon();
+
+        }
+
+        public async Task<RenderTargetBitmap> GetPreview()
+        {
+            RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement);
+            return bitmap;
+        }
+        private void CloseDocPreview()
+        {
+            xRect.Fill = new SolidColorBrush();
+            xRect.Width = 64;
+            xRect.Height = 64;
+            xIconImage.Visibility = Visibility.Visible;
+            xIconBorder.BorderThickness = new Thickness(0);
+            xIconBorder.Background = new SolidColorBrush(Colors.Transparent);
+        }
+        //private async void GetWebViewBrush()
+        //{
+        //    int width;
+        //    int height;
+        //    var webView = xContentPresenter.GetFirstDescendantOfType<WebView>();
+        //    if (webView != null)
+        //    {
+        //        var widthString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollWidth.toString()" });
+        //        var heightString = await webView.InvokeScriptAsync("eval", new[] { "document.body.scrollHeight.toString()" });
+
+        //        if (!int.TryParse(widthString, out width))
+        //        {
+        //            throw new Exception("Unable to get page width");
+        //        }
+        //        if (!int.TryParse(heightString, out height))
+        //        {
+        //            throw new Exception("Unable to get page height");
+        //        }
+        //        // resize the webview to the content
+        //        webView.Width = width;
+        //        webView.Height = height;
+
+        //        WebViewBrush b = new WebViewBrush();
+        //        b.SetSource(webView);
+        //        b.Redraw();
+        //        var rect = new Rectangle()
+        //        {
+        //            Width = width,
+        //            Height = height,
+        //            Fill = b
+        //        };
+        //        rect.Loaded += async (s,e) =>
+        //        {
+        //            RenderTargetBitmap render = new RenderTargetBitmap();
+        //            await render.RenderAsync(rect);
+        //            DocPreview = render;
+        //        };
+        //    }
+
+        //}
+
         private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             var view = obj as DocumentView;
             view.UpdateView();
         }
 
-        void UpdateIcon()
+        private void OpenIcon()
         {
             xFreeFormDocViewCol.Width = new GridLength(0);
             xStandardDocViewCol.Width = new GridLength();
+        }
+
+        private void OpenFreeform()
+        {
+            xFreeFormDocViewCol.Width = new GridLength();
+            xStandardDocViewCol.Width = new GridLength(0);
+        }
+
+        void UpdateIcon()
+        {
+            OpenIcon();
             var type = ViewModel.DocumentController.DocumentType;
             // TODO: make icons for different types
             if (type.Equals(CollectionBox.DocumentType))
@@ -337,7 +473,7 @@ namespace Dash
             {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/img-icon.png"));
             }
-            else if (type.Equals(HtmlNote.DocumentType))
+            else if (type.Equals(WebBox.DocumentType))
             {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/html-icon.png"));
             }
@@ -359,13 +495,15 @@ namespace Dash
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
-                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+                    CloseDocPreview();
+                    OpenFreeform();
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
-                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+                    GetDocPreview();
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
-                    //xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+                    CloseDocPreview();
+                    UpdateIcon();
                     break;
             }
         }
@@ -800,7 +938,7 @@ namespace Dash
 
         public void DocumentView_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (!IsViewStandard)
+            if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
                 if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
                     ViewModel.DecorationState = false;
@@ -809,7 +947,7 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (!IsViewStandard)
+            if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
                 ViewModel.DecorationState = ViewModel?.Undecorated == false;
             }

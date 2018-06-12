@@ -75,7 +75,8 @@ namespace Dash
             var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
-            var web = new WebView();
+            var webView = new WebBoxView();
+            var web = webView.GetView();
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
                 if (html.StartsWith("http"))
@@ -96,7 +97,7 @@ namespace Dash
             if (html == null)
                 SetupTextBinding(web, docController, context);
             
-            return web;
+            return webView;
         }
 
         private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)

@@ -51,7 +51,8 @@
                 <DataTemplate>
                     <dash:DocumentView
                         BindRenderTransform="True"
-                                       Loaded="DocumentViewOnLoaded"/>
+                        Loaded="DocumentViewOnLoaded"
+                        />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

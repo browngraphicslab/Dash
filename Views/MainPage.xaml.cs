@@ -318,7 +318,7 @@ namespace Dash
 
         private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag)
         {
-            if (xMainTreeView.ViewModel.ViewLevel != CollectionViewModel.StandardViewLevel.None) return;
+            if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {

@@ -53,9 +53,9 @@ namespace Dash
         protected override void OnLoad(object sender, RoutedEventArgs e)
         {
             base.OnLoad(sender,e);
-            UpdateViewLevel();
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
+            UpdateViewLevel();
         }
 
         public override Canvas GetCanvas()
@@ -101,18 +101,34 @@ namespace Dash
         protected override void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformation, bool abs)
         {
             base.ManipulationControls_OnManipulatorTranslated(transformation, abs);
-            var scaleX = transformation.ScaleAmount.X;
-            var scaleY = transformation.ScaleAmount.Y;
-            var currentView = (int)ViewModel.ViewLevel;
-            if (scaleX < 1 && scaleY < 1 && currentView > 1)
+            //var scaleX = transformation.ScaleAmount.X;
+            //var scaleY = transformation.ScaleAmount.Y;
+            //var currentView = (int)ViewModel.ViewLevel;
+            //if (scaleX < 1 && scaleY < 1 && currentView > 1)
+            //{
+            //    var newView = currentView - 1;
+            //    ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel) newView;
+            //}
+            //else if (scaleX > 1 && scaleY > 1 && currentView < 3)
+            //{
+            //    var newView = currentView + 1;
+            //    ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel) newView;
+            //}
+            var scale = ViewManipulationControls.ElementScale;
+            if (scale <= 0.3)
             {
-                var newView = currentView - 1;
-                ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel) newView;
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
+                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
             }
-            else if (scaleX > 1 && scaleY > 1 && currentView < 3)
+            else if (scale <= 1)
             {
-                var newView = currentView + 1;
-                ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel) newView;
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
+                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
+            }
+            else
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
+                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
             }
         }
 
@@ -125,7 +141,7 @@ namespace Dash
                 ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
                 MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
             }
-            else if (scale <= 1)
+            else if (scale <= 1.75)
             {
                 ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
                 MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;

@@ -139,7 +139,6 @@ namespace Dash
         }
         public void Highlight(bool ? flag)
         {
-            if (ViewModel.ViewLevel != CollectionViewModel.StandardViewLevel.None) return;
             if (flag == null)
                 ViewModel.DecorationState = (ViewModel.Undecorated == false) && !ViewModel.DecorationState;
             else if (flag == true)
