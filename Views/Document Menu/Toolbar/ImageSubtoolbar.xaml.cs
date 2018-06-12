@@ -89,5 +89,23 @@ namespace Dash
             _currentDocView = selection;
             _currentDocControl = _currentDocView.ViewModel.DocumentController;
         }
+
+        private void Rotate_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnRotate?.Invoke();
+        }
+
+        private void VerticalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnVerticalMirror?.Invoke();
+        }
+
+        private void HorizontalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnHorizontalMirror?.Invoke();
+        }
     }
 }

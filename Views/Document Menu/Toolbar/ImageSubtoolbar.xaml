@@ -19,10 +19,13 @@
                     <ComboBoxItem Content="SmartFit"/>
                 </ComboBox>
             </CommandBar.Content>
-            
+
             <AppBarButton x:Name="xCrop" Icon="Crop" Label="Crop" Click="Crop_Click"/>
-            <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
             <AppBarButton x:Name="xReplace" Icon="Upload" Label="Replace" Click="Replace_Click"/>
+            <AppBarButton x:Name="xRotate" Icon="Sync" Label="Rotate" Click="Rotate_Click"/>
+            <AppBarButton x:Name="xHorizontalMirror" Icon="Switch"  Label="Horizontal" Click="HorizontalMirror_Click"/>
+            <AppBarButton x:Name="xVerticalMirror" Icon="Sort" Label="Vertical" Click="VerticalMirror_Click"/>
+            <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
         </CommandBar>
     </Grid>
 </UserControl>

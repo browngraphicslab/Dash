@@ -136,8 +136,46 @@ namespace Dash
             _docview.OnCropClick += OnCropClick;
             _docview.OnRevert += OnRevert;
             _docview.OnReplaceImage += OnReplaceImage;
+            _docview.OnRotate += OnRotate;
+            _docview.OnHorizontalMirror += OnHorizontalMirror;
+            _docview.OnVerticalMirror += OnVerticalMirror;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
+        }
+
+        private void OnRotate()
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Width = Math.Floor(Image.ActualHeight),
+                Height = Math.Floor(Image.ActualWidth)
+            };
+
+            OnCrop(rect, BitmapRotation.Clockwise90Degrees);
+        }
+
+        private void OnHorizontalMirror()
+        {
+            MirrorImage(BitmapFlip.Horizontal);
+        }
+
+        private void OnVerticalMirror()
+        {
+            MirrorImage(BitmapFlip.Vertical);
+        }
+
+        private void MirrorImage(BitmapFlip flip)
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Height = Math.Floor(Image.ActualHeight),
+                Width = Math.Floor(Image.ActualWidth)
+            };
+            OnCrop(rect, BitmapRotation.None, flip);
         }
 
         // called when the cropclick action is invoked in the image subtoolbar
@@ -163,7 +201,7 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        private async void OnCrop(Rect rectangleGeometry)
+        private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
             if (_ogImage == null)
             {
@@ -219,6 +257,8 @@ namespace Dash
                     Width = width,
                     Height = height
                 };
+                bitmapTransform.Rotation = rot;
+                bitmapTransform.Flip = flip;
                 bitmapTransform.Bounds = bounds;
                 bitmapTransform.ScaledWidth = scaledWidth;
                 bitmapTransform.ScaledHeight = scaledHeight;
