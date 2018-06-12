@@ -195,11 +195,6 @@ namespace Dash
             }
         }
 
-		public void ClearAll()
-		{
-			DocumentViewModels.Clear();
-		}
-
         #region DocumentModel and DocumentViewModel Data Changes
 
         void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)

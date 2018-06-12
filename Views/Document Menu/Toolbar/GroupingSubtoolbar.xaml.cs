@@ -81,6 +81,7 @@ namespace Dash
         private void UpdateColor()
         {
             _currentColorString = GetColorWithUpdatedOpacity();
+            //Toolbar TODO
             //...shape's background color
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, _currentColorString, true);
             //...indirectly, the shape's opacity
@@ -222,6 +223,7 @@ namespace Dash
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
             
+            //Toolbar TODO
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
             var storedSliderValue = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.OpacitySliderValueKey, null)?.Data;
 

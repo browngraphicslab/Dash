@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace Dash.Views.Document_Menu.Toolbar
 {
+    //Toolbar TODO
 	public class CustomButtonFormatter : Formatter
 	{
 		public CustomButtonFormatter(TextToolbar model)
