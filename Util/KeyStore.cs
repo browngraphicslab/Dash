@@ -24,6 +24,7 @@ namespace Dash
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
+        public static KeyController OpacitySliderValueKey = new KeyController(DashConstants.KeyStore.OpacitySliderValueKey);
         public static KeyController AdornmentShapeKey = new KeyController(DashConstants.KeyStore.AdornmentShapeKey);
         public static KeyController PositionFieldKey = new KeyController(DashConstants.KeyStore.PositionFieldKey);
         public static KeyController LinkFromKey = new KeyController(DashConstants.KeyStore.LinkFromFieldKey);

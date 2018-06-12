@@ -172,6 +172,7 @@ namespace Dash
                 }
             }
         }
+
         void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
         {
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
