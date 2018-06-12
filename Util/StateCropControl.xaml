@@ -44,6 +44,8 @@
             Fill="{x:Bind Fill}"
             StrokeThickness="4"
             Stroke="Black"
+            PointerEntered="xBasePointerEntered"
+            PointerExited="AllPointerExited"
             ManipulationStarted="OnAllManipulationStarted"
             ManipulationDelta="XBase_OnManipulationDelta"
             ManipulationCompleted="XBase_OnManipulationCompleted"
@@ -53,33 +55,40 @@
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xLeft"
-            Fill="Transparent" Width="10" Height="40" Stroke="Black" StrokeThickness="4"
+            x:Name="xLeft" PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Fill="Transparent" Width="20" Height="60" Stroke="Black" StrokeThickness="4"
             ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
             ManipulationCompleted="OnAllManipulationCompleted" ManipulationMode="TranslateX" HorizontalAlignment="Left"
             VerticalAlignment="Center" />
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="10"
+            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="20"
             Stroke="Black" StrokeThickness="4"
-            Height="40" ManipulationDelta="XRight_OnManipulationDelta"
+            PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="60" ManipulationDelta="XRight_OnManipulationDelta"
             ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX"
             ManipulationCompleted="OnAllManipulationCompleted" />
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="40"
+            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="60"
             Stroke="Black" StrokeThickness="4"
-            Height="10" ManipulationDelta="XTop_OnManipulationDelta"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="20" ManipulationDelta="XTop_OnManipulationDelta"
             ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
             ManipulationCompleted="OnAllManipulationCompleted" />
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="40"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="60"
             Stroke="Black" StrokeThickness="4"
-            Height="10" ManipulationDelta="XBottom_OnManipulationDelta"
+            Height="20" ManipulationDelta="XBottom_OnManipulationDelta"
             ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
             ManipulationCompleted="OnAllManipulationCompleted" />
     </Grid>

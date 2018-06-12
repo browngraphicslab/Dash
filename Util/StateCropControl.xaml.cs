@@ -112,11 +112,12 @@ namespace Dash
             // e.handled is required for manipulation delta to work
             e.Handled = true;
 
+
             // calculates the new left boundary
             var left = Canvas.GetLeft(xLeft);
             left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             // checks for validity in new left boundaries
-            if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 50) return;
+            if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 70) return;
             Canvas.SetLeft(xLeft, left);
             UpdateRect();
         }
@@ -128,7 +129,7 @@ namespace Dash
             var top = Canvas.GetTop(xBottom);
             top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight ||
-                Math.Abs(top - Canvas.GetTop(xTop)) <= 50) return;
+                Math.Abs(top - Canvas.GetTop(xTop)) <= 70) return;
             Canvas.SetTop(xBottom, top);
             UpdateRect();
         }
@@ -140,7 +141,7 @@ namespace Dash
             var left = Canvas.GetLeft(xRight);
             left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             if (left + xRight.Width > ImageBase.Image.ActualWidth ||
-                Math.Abs(left - Canvas.GetLeft(xLeft)) <= 50) return;
+                Math.Abs(left - Canvas.GetLeft(xLeft)) <= 70) return;
             Canvas.SetLeft(xRight, left);
             UpdateRect();
         }
@@ -151,7 +152,7 @@ namespace Dash
 
             var top = Canvas.GetTop(xTop);
             top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
-            if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 50) return;
+            if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 70) return;
             Canvas.SetTop(xTop, top);
             UpdateRect();
         }
@@ -222,16 +223,16 @@ namespace Dash
         {
             // TODO: fix bug with hyperextending boundaries when moving fast as heck
             //checks validity on minimum crop
-            if (Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft) <= 50)
-                Canvas.SetLeft(xLeft, Canvas.GetLeft(xRight) - 40);
+            if (Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft) <= 70)
+                Canvas.SetLeft(xLeft, Canvas.GetLeft(xRight) - 60);
 
-            if (Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop) <= 50)
-                Canvas.SetTop(xBottom, Canvas.GetTop(xTop) + 40);
+            if (Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop) <= 70)
+                Canvas.SetTop(xBottom, Canvas.GetTop(xTop) + 60);
 
-            if (Canvas.GetLeft(xLeft) + 40 >= Canvas.GetLeft(xRight))
-                Canvas.SetLeft(xRight, Canvas.GetLeft(xLeft) + 40);
+            if (Canvas.GetLeft(xLeft) + 60 >= Canvas.GetLeft(xRight))
+                Canvas.SetLeft(xRight, Canvas.GetLeft(xLeft) + 60);
 
-            if (Canvas.GetTop(xTop) + 40 >= Canvas.GetTop(xBottom)) Canvas.SetTop(xTop, Canvas.GetTop(xBottom) - 40);
+            if (Canvas.GetTop(xTop) + 60 >= Canvas.GetTop(xBottom)) Canvas.SetTop(xTop, Canvas.GetTop(xBottom) - 60);
 
             //checks validity on maximum crop
 
@@ -286,6 +287,26 @@ namespace Dash
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void LeftRightPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
+        }
+
+        private void AllPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        private void TopBottomPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthSouth, 0);
+        }
+
+        private void xBasePointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
         }
     }
 }

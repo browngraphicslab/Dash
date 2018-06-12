@@ -69,13 +69,38 @@ namespace Dash
             _cropControl = new StateCropControl(_docCtrl, this);
         }
 
-        private void OnReplaceImage()
+        private async void OnReplaceImage()
         {
+            _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+
+            // finds local uri path of image controller's image source
+            StorageFile file;
+
+            /*
+             * try catch is literally the only way we can deal with regular
+             * local uris, absolute uris, and website uris as the same time
+             */
+            try
+            {
+                // method of getting file from local uri
+                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+            }
+            catch (Exception)
+            {
+                // method of getting file from absolute uri
+                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+            }
+
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            _originalWidth = fileProperties.Width;
             //var newImg = new Image();
             //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
             Image.Width = double.NaN;
-            
-            _originalWidth = Image.ActualWidth;
+            Image.Source = new BitmapImage(new Uri(file.Path));
+
+            _ogImage = Image.Source;
+            _ogWidth = _originalWidth;
+            _ogUri = _imgctrl.ImageSource;
             /*
              *  onReplaceClicked
              *      _ogImage = new image.source
@@ -266,7 +291,6 @@ namespace Dash
 
             _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
             _cropControl = new StateCropControl(_docCtrl, this);
-
 
             // TODO: Test that replace button works with cropping when merged with master
         }
