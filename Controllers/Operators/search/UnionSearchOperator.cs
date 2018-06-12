@@ -47,6 +47,7 @@ namespace Dash
             foreach (var kvp in d1.EnumFields())
             {
                 var l1 = kvp.Value as ListController<DocumentController>;
+                if(l1 == null) continue;
                 var l3 = d3.GetField<ListController<DocumentController>>(kvp.Key);
 
                 if (l3 == null)
@@ -59,6 +60,7 @@ namespace Dash
             foreach (var kvp in d2.EnumFields())
             {
                 var l2 = kvp.Value as ListController<DocumentController>;
+                if(l2 == null) continue;
                 var l3 = d3.GetField<ListController<DocumentController>>(kvp.Key);
 
                 if (l3 == null)

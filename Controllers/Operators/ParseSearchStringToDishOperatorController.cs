@@ -116,14 +116,7 @@ namespace Dash
                 char curChar = inputString[i];
                 if (curChar == '"')
                 {
-                    if (inQuote)
-                    {
-                        inQuote = false;
-                    } else
-                    {
-                        inQuote = true;
-                    }
-
+                    inQuote = !inQuote;
                 }
                 else if (!inQuote && (curChar == ' ' || curChar == ','))
                 {
@@ -138,7 +131,7 @@ namespace Dash
             int dividerIndex = FindNextDivider(inputString);
             String searchTerm = inputString.Substring(0, dividerIndex);
             var modifiedSearchTerm = searchTerm.Replace("\"", "");
-            bool isNegated = searchTerm.StartsWith("!") ? true : false;
+            bool isNegated = searchTerm.StartsWith("!");
             String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
             String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
 
