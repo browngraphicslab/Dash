@@ -365,5 +365,35 @@ namespace Dash
                 StopImageFromMoving(sender, e);
             }
         }
-    }
+
+	    public bool IsSomethingSelected()
+	    {
+		    return xRegionPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
+	    }
+
+	    public DocumentController GetRegionDocument()
+	    {
+		    if (!this.IsSomethingSelected()) return _docCtrl;
+
+		    return null;
+		    /*
+		    var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+		    var s1 = xRichEditBox.Document.Selection.StartPosition;
+		    var s2 = xRichEditBox.Document.Selection.EndPosition;
+		    createRTFHyperlink(dc, ref s1, ref s2, false, false);
+		    var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		    if (regions == null)
+		    {
+			    var dregions = new List<DocumentController>();
+			    dregions.Add(dc);
+			    DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+		    }
+		    else
+		    {
+			    regions.Add(dc);
+		    }
+		    return dc;
+		    */
+	    }
+	}
 }
