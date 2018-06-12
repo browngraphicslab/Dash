@@ -10,7 +10,7 @@
 
     <ScrollViewer>
 
-    <StackPanel x:Name="xViewPanel" Padding="10" Background="SlateGray" Visibility ="Collapsed">
+    <StackPanel x:Name="xViewPanel" Padding="10" Background="SlateGray" Visibility ="Visible">
         
         <!--Textboxes added here in code!-->
 

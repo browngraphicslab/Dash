@@ -42,6 +42,8 @@ namespace Dash.Views
 			xViewPanel.Children.Add(newA);
 		}
 
+		/**
+
 		public void CollapseView()
 		{
 			xViewPanel.Visibility = Visibility.Collapsed;
@@ -56,5 +58,7 @@ namespace Dash.Views
 		{
 			xViewPanel.Visibility = (xViewPanel.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
 		}
+	*/
+		
 	}
 }

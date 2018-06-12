@@ -1062,7 +1062,8 @@ namespace Dash
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
-		    xAnnotationView.ToggleView();
+			//toggles visibiliy of annotation view
+			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed; ;
 	    }
     }
 }
