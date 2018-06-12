@@ -57,13 +57,17 @@ namespace Dash
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
             return OperatorScript.GetDishOperatorName<UnionSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
         {
             return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
+        }
+
+        private string NegateSearch(string search)
+        {
+            return OperatorScript.GetDishOperatorName<NegationSearchOperator>() + "(" + search + ")";
         }
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
@@ -118,15 +122,41 @@ namespace Dash
                 outputs[ScriptKey] = new TextController("");
                 return;
             }
+
+            var negateSeq = new List<bool>();
             for (int i = 0; i < parts.Length; i++)
             {
-                parts[i] = parts[i].Replace(@"\", @"\\");
+                var searchToken = parts[i];
+                parts[i] = searchToken.Replace(@"\", @"\\");
+                if (searchToken.StartsWith("!"))
+                {
+                    parts[i] = searchToken.Substring(1);
+                    negateSeq.Add(true);
+                } else
+                {
+                    negateSeq.Add(false);
+                }
             }
+
+
             var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
+            if (negateSeq.FirstOrDefault())
+            {
+                var search = searches.Pop();
+                searches.Push(NegateSearch(search));
+                negateSeq.RemoveAt(0);
+            }
             while (searches.Count() > 1)
             {
                 var search1 = searches.Pop();
                 var search2 = searches.Pop();
+
+                if (negateSeq.FirstOrDefault())
+                {
+                    searches.Push(NegateSearch(search2));
+                    negateSeq.RemoveAt(0);
+                }
+                
                 switch (charSeq.ElementAt(0))
                 {
                     case ' ':

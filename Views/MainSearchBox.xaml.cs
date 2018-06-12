@@ -724,7 +724,6 @@ namespace Dash
             /// <returns></returns>
             private static IEnumerable<SearchResultViewModel> LocalSearch(string searchString)
             {
-                Debug.WriteLine("SearchString: " + searchString);
                 var documentTree = DocumentTree.MainPageTree;
                 var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
                 var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();
@@ -734,7 +733,7 @@ namespace Dash
                     string lastTopText = "";
                     StringSearchModel lastKeySearch = null;
                     StringSearchModel lastFieldSearch = null;
-                    
+
                     foreach (var kvp in documentController.EnumDisplayableFields())
                     {
                         var keySearch = kvp.Key.SearchForString(searchString);
