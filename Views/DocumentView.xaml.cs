@@ -41,6 +41,10 @@ namespace Dash
         public MenuFlyout MenuFlyout { get; set; }
         public Action OnCropClick;
         public Action OnRevert;
+        public Action OnReplaceImage;
+        public Action OnRotate;
+        public Action OnHorizontalMirror;
+        public Action OnVerticalMirror;
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 
@@ -81,6 +85,7 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
 
         // == CONSTRUCTORs ==
 
