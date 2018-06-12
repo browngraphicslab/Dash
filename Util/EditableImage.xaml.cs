@@ -34,8 +34,11 @@ namespace Dash
         private Image _originalImage;
         private Point _anchorPoint;
         private bool _isDragging;
+        private ImageSource _ogImage;
 
-        public RectangleGeometry RectGeo;
+        public Rect RectGeo;
+        private double _ogWidth;
+        private Uri _ogUri;
 
         public Image Image => xImage;
 
@@ -54,41 +57,127 @@ namespace Dash
         public EditableImage(DocumentController docCtrl, Context context)
         {
             InitializeComponent();
-            RectGeo = new RectangleGeometry();
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
             Image.SizeChanged += Image_SizeChanged;
-
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
         private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            _docview = this.GetFirstAncestorOfType<DocumentView>();
-            _docview.OnCropClick += OnCropClick;
-            _docview.OnRevert += OnRevert;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
         }
 
+        private async void OnReplaceImage()
+        {
+            _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+
+            // finds local uri path of image controller's image source
+            StorageFile file;
+
+            /*
+             * try catch is literally the only way we can deal with regular
+             * local uris, absolute uris, and website uris as the same time
+             */
+            try
+            {
+                // method of getting file from local uri
+                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+            }
+            catch (Exception)
+            {
+                // method of getting file from absolute uri
+                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+            }
+
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            _originalWidth = fileProperties.Width;
+            //var newImg = new Image();
+            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
+            Image.Width = double.NaN;
+            Image.Source = new BitmapImage(new Uri(file.Path));
+
+            _ogImage = Image.Source;
+            _ogWidth = _originalWidth;
+            _ogUri = _imgctrl.ImageSource;
+            /*
+             *  onReplaceClicked
+             *      _ogImage = new image.source
+             *      _ogWidth = new image.width
+             *      _ogUri = new image uri
+             */
+        }
+
         private void OnRevert()
         {
-            Image.Source = _originalImage.Source;
-            Image.Height = _originalImage.Height;
-            Image.Width = _originalImage.Width;
+            if (_ogImage != null)
+            {
+                Image.Source = _ogImage;
+                Image.Width = _ogWidth;
+                _originalWidth = _ogWidth;
+
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
+
+                //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+                //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
+
+                //_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+                //_cropControl = new StateCropControl(_docCtrl, this);
+            }
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // initialize values that rely on the image
             _originalImage = Image;
-            _originalWidth = Image.Width;
+            _originalWidth = Image.ActualWidth;
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             _docview.OnCropClick += OnCropClick;
+            _docview.OnRevert += OnRevert;
+            _docview.OnReplaceImage += OnReplaceImage;
+            _docview.OnRotate += OnRotate;
+            _docview.OnHorizontalMirror += OnHorizontalMirror;
+            _docview.OnVerticalMirror += OnVerticalMirror;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
+        }
+
+        private void OnRotate()
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Width = Math.Floor(Image.ActualHeight),
+                Height = Math.Floor(Image.ActualWidth)
+            };
+
+            OnCrop(rect, BitmapRotation.Clockwise90Degrees);
+        }
+
+        private void OnHorizontalMirror()
+        {
+            MirrorImage(BitmapFlip.Horizontal);
+        }
+
+        private void OnVerticalMirror()
+        {
+            MirrorImage(BitmapFlip.Vertical);
+        }
+
+        private void MirrorImage(BitmapFlip flip)
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Height = Math.Floor(Image.ActualHeight),
+                Width = Math.Floor(Image.ActualWidth)
+            };
+            OnCrop(rect, BitmapRotation.None, flip);
         }
 
         // called when the cropclick action is invoked in the image subtoolbar
@@ -114,9 +203,15 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        private async void OnCrop(Rect rectangleGeometry)
+        private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-
+            if (_ogImage == null)
+            {
+                _ogImage = Image.Source;
+                _ogWidth = Image.ActualWidth;
+                _ogUri = _imgctrl.Data;
+            }
+            //_originalWidth is original width of owl, not replaced image
             var scale = _originalWidth / Image.ActualWidth;
 
             // retrieves data from rectangle
@@ -164,6 +259,8 @@ namespace Dash
                     Width = width,
                     Height = height
                 };
+                bitmapTransform.Rotation = rot;
+                bitmapTransform.Flip = flip;
                 bitmapTransform.Bounds = bounds;
                 bitmapTransform.ScaledWidth = scaledWidth;
                 bitmapTransform.ScaledHeight = scaledHeight;
@@ -221,7 +318,6 @@ namespace Dash
             var path = "ms-appdata:///local/" + newFile.Name;
             var uri = new Uri(path);
             _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
-            SetupImageBinding(Image, _docCtrl, _context);
 
             // update the image source, width, and positions
             Image.Source = cropBmp;
@@ -232,54 +328,13 @@ namespace Dash
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
 
             var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X, oldpoint.Y + _cropControl.GetBounds().Y);
+            var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
+            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X, oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
             _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
             _cropControl = new StateCropControl(_docCtrl, this);
 
-
             // TODO: Test that replace button works with cropping when merged with master
-        }
-
-        // stolen directly from Util/Courtesy Documents/ImageBox. tbh don't really know what it does
-        private static void SetupImageBinding(Image image, DocumentController controller,
-            Context context)
-        {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceController reference)
-            {
-                var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        var doc = (DocumentController) sender;
-                        var dargs =
-                            (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-                            return;
-                        BindImageSource(image, doc, c, reference.FieldKey);
-                    });
-            }
-
-            BindImageSource(image, controller, context, KeyStore.DataKey);
-        }
-
-        // stolen directly from Util/Courtesy Documents/ImageBox. tbh don't really know what it does
-        protected static void BindImageSource(Image image, DocumentController docController, Context context,
-            KeyController key)
-        {
-            var data = docController.GetDereferencedField(key, context) as ImageController;
-            if (data == null)
-                return;
-            var binding = new FieldBinding<ImageController>
-            {
-                Document = docController,
-                Key = KeyStore.DataKey,
-                Mode = BindingMode.OneWay,
-                Context = context,
-                Converter = UriToBitmapImageConverter.Instance
-            };
-            image.AddFieldBinding(Image.SourceProperty, binding);
         }
 
         [NotifyPropertyChangedInvocator]

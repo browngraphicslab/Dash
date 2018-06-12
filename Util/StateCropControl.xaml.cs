@@ -38,6 +38,8 @@ namespace Dash
 
         private EditableImage _imageBase;
 
+        private DocumentView _docView;
+
         public Brush Fill { get; } = new SolidColorBrush(Color.FromArgb(55, 255, 255, 255));
 
         public EditableImage ImageBase
@@ -70,12 +72,6 @@ namespace Dash
             return new Rect(Canvas.GetLeft(xLeft), Canvas.GetTop(xTop), xBounds.Width, xBounds.Height);
         }
 
-        // will show/hide the green dot. The default is to hide.
-        public void EnableLinkingFromRange(bool enable)
-        {
-            xAnnotateEllipseBorder.Visibility = enable ? Visibility.Visible : Visibility.Collapsed;
-        }
-
         // initializes the cropping guides and cropping box
         private void StateCropControl_Loaded(object sender, RoutedEventArgs e)
         {
@@ -90,6 +86,7 @@ namespace Dash
             Canvas.SetTop(xBottom, ImageMaxY);
 
             UpdateRect();
+            _docView = ImageBase.GetFirstAncestorOfType<DocumentView>();
         }
 
         // updates the cropping boundaries 
@@ -98,7 +95,7 @@ namespace Dash
             // xBounds represents the geometry that we are actually going to crop. logically most important
             xBounds.Width = Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft);
             xBounds.Height = Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop);
-            xStackPanel.RenderTransform = new TranslateTransform
+            xBounds.RenderTransform = new TranslateTransform
             {
                 X = Canvas.GetLeft(xLeft),
                 Y = Canvas.GetTop(xTop)
@@ -115,12 +112,27 @@ namespace Dash
             // e.handled is required for manipulation delta to work
             e.Handled = true;
 
+
             // calculates the new left boundary
             var left = Canvas.GetLeft(xLeft);
-            left += e.Delta.Translation.X;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             // checks for validity in new left boundaries
-            if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 50) return;
+            if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 70) return;
             Canvas.SetLeft(xLeft, left);
+
+            var leftBounds = Canvas.GetLeft(xLeft);
+            var rightBounds = Canvas.GetLeft(xRight);
+
+            if (leftBounds < 0)
+            {
+                Canvas.SetLeft(xLeft, 0);
+            }
+
+            if (rightBounds - leftBounds <= 70)
+            {
+                Canvas.SetLeft(xLeft, rightBounds - 70);
+            }
+
             UpdateRect();
         }
 
@@ -129,10 +141,24 @@ namespace Dash
             e.Handled = true;
 
             var top = Canvas.GetTop(xBottom);
-            top += e.Delta.Translation.Y;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight ||
-                Math.Abs(top - Canvas.GetTop(xTop)) <= 50) return;
+                Math.Abs(top - Canvas.GetTop(xTop)) <= 70) return;
             Canvas.SetTop(xBottom, top);
+
+            var topBounds = Canvas.GetTop(xTop);
+            var bottomBounds = Canvas.GetTop(xBottom);
+
+            if (bottomBounds > ImageMaxY)
+            {
+                Canvas.SetTop(xBottom, ImageMaxY);
+            }
+
+            if (bottomBounds - topBounds <= 70)
+            {
+                Canvas.SetTop(xBottom, topBounds + 70);
+            }
+
             UpdateRect();
         }
 
@@ -141,10 +167,24 @@ namespace Dash
             e.Handled = true;
 
             var left = Canvas.GetLeft(xRight);
-            left += e.Delta.Translation.X;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             if (left + xRight.Width > ImageBase.Image.ActualWidth ||
-                Math.Abs(left - Canvas.GetLeft(xLeft)) <= 50) return;
+                Math.Abs(left - Canvas.GetLeft(xLeft)) <= 70) return;
             Canvas.SetLeft(xRight, left);
+
+            var leftBounds = Canvas.GetLeft(xLeft);
+            var rightBounds = Canvas.GetLeft(xRight);
+
+            if (rightBounds > ImageMaxX)
+            {
+                Canvas.SetLeft(xRight, ImageMaxX);
+            }
+
+            if (rightBounds - leftBounds <= 70)
+            {
+                Canvas.SetLeft(xRight, leftBounds + 70);
+            }
+
             UpdateRect();
         }
 
@@ -153,9 +193,23 @@ namespace Dash
             e.Handled = true;
 
             var top = Canvas.GetTop(xTop);
-            top += e.Delta.Translation.Y;
-            if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 50) return;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
+            if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 70) return;
             Canvas.SetTop(xTop, top);
+
+            var topBounds = Canvas.GetTop(xTop);
+            var bottomBounds = Canvas.GetTop(xBottom);
+
+            if (topBounds < 0)
+            {
+                Canvas.SetTop(xTop, 0);
+            }
+
+            if (bottomBounds - topBounds <= 70)
+            {
+                Canvas.SetLeft(xTop, bottomBounds - 70);
+            }
+
             UpdateRect();
         }
 
@@ -220,37 +274,6 @@ namespace Dash
             e.Handled = true;
         }
 
-        // once manipulation completes, re-check the validity of the bounding box
-        private void OnAllManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            // TODO: fix bug with hyperextending boundaries when moving fast as heck
-            //checks validity on minimum crop
-            if (Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft) <= 50)
-                Canvas.SetLeft(xLeft, Canvas.GetLeft(xRight) - 40);
-
-            if (Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop) <= 50)
-                Canvas.SetTop(xBottom, Canvas.GetTop(xTop) + 40);
-
-            if (Canvas.GetLeft(xLeft) + 40 >= Canvas.GetLeft(xRight))
-                Canvas.SetLeft(xRight, Canvas.GetLeft(xLeft) + 40);
-
-            if (Canvas.GetTop(xTop) + 40 >= Canvas.GetTop(xBottom)) Canvas.SetTop(xTop, Canvas.GetTop(xBottom) - 40);
-
-            //checks validity on maximum crop
-
-            if (Canvas.GetLeft(xLeft) < 0) Canvas.SetLeft(xLeft, 0);
-
-            if (Canvas.GetTop(xTop) < 0) Canvas.SetTop(xTop, 0);
-
-            if (Canvas.GetLeft(xRight) + xRight.Width > ImageBase.Image.ActualWidth)
-                Canvas.SetLeft(xRight, ImageBase.Image.ActualWidth - xRight.Width);
-
-            if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight)
-                Canvas.SetTop(xBottom, ImageBase.Image.ActualHeight - xBottom.Height);
-
-            UpdateRect();
-        }
-
         // used to click and drag the cropping box around the image
         private void XBase_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
@@ -260,15 +283,15 @@ namespace Dash
             // calculates the position to move the bounding box to
             var top = Canvas.GetTop(xBase);
             var left = Canvas.GetLeft(xBase);
-            top += e.Delta.Translation.Y;
-            left += e.Delta.Translation.X;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             // check validity of each side
             if (left < 0 || top < 0 || left + xBounds.Width > ImageBase.Image.ActualWidth ||
                 top + xBounds.Height > ImageBase.Image.ActualHeight) return;
             Canvas.SetLeft(xBase, left);
             Canvas.SetTop(xBase, top);
 
-            xStackPanel.RenderTransform = new TranslateTransform
+            xBounds.RenderTransform = new TranslateTransform
             {
                 X = left,
                 Y = top
@@ -290,16 +313,24 @@ namespace Dash
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void AnnotateEllipseUnhighlight_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        private void LeftRightPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            AnnotateEllipseHighlight.Visibility = Visibility.Visible;
-            AnnotateEllipseUnhighlight.Visibility = Visibility.Collapsed;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
         }
 
-        private void AnnotateEllipseHighlight_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void AllPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            AnnotateEllipseHighlight.Visibility = Visibility.Collapsed;
-            AnnotateEllipseUnhighlight.Visibility = Visibility.Visible;
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        private void TopBottomPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeNorthSouth, 0);
+        }
+
+        private void xBasePointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
         }
     }
 }

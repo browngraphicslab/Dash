@@ -77,14 +77,35 @@ namespace Dash
 
             var replacement = await imagePicker.PickSingleFileAsync();
             if (replacement != null)
+            {
                 _currentDocControl.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
+                _currentDocView.OnReplaceImage?.Invoke();
+            }
         }
 
         internal void SetImageBinding(DocumentView selection)
         {
             _currentDocView = selection;
             _currentDocControl = _currentDocView.ViewModel.DocumentController;
+        }
+
+        private void Rotate_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnRotate?.Invoke();
+        }
+
+        private void VerticalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnVerticalMirror?.Invoke();
+        }
+
+        private void HorizontalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentDocView.OnHorizontalMirror?.Invoke();
         }
     }
 }

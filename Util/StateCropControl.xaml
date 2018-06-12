@@ -10,89 +10,83 @@
     d:DesignWidth="400"
     d:DataContext="{d:DesignInstance local:StateCropControl}">
 
-    <StackPanel x:Name="xStackPanel" Orientation="Horizontal">
-        <Grid x:Name="xBounds" Width="Auto" Height="Auto" Background="Transparent" HorizontalAlignment="Left"
+    <Grid x:Name="xBounds" Width="Auto" Height="Auto" Background="Transparent" HorizontalAlignment="Left"
           VerticalAlignment="Top">
-            <Grid.Resources>
-                <SolidColorBrush x:Key="Brush" Color="DarkSlateGray" />
-            </Grid.Resources>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <!-- creates the 3x3 cropping lines -->
-            <Border Grid.Column="0" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
-            <Border Grid.Column="1" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
-            <Border Grid.Column="2" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 1 1" />
-            <Border Grid.Column="0" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
-            <Border Grid.Column="1" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
-            <Border Grid.Column="2" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
-            <Border Grid.Column="0" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
-            <Border Grid.Column="1" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
-            <Border Grid.Column="2" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
+        <Grid.Resources>
+            <SolidColorBrush x:Key="Brush" Color="DarkSlateGray" />
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- creates the 3x3 cropping lines -->
+        <Border Grid.Column="0" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
+        <Border Grid.Column="1" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
+        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 1 1" />
+        <Border Grid.Column="0" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="1" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="2" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
+        <Border Grid.Column="0" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="1" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="2" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
 
-            <!-- base cropping rectangle shape -->
-            <Rectangle
+        <!-- base cropping rectangle shape -->
+        <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
             x:Name="xBase"
             Fill="{x:Bind Fill}"
             StrokeThickness="4"
             Stroke="Black"
+            PointerEntered="xBasePointerEntered"
+            PointerExited="AllPointerExited"
             ManipulationStarted="OnAllManipulationStarted"
             ManipulationDelta="XBase_OnManipulationDelta"
             ManipulationCompleted="XBase_OnManipulationCompleted"
             ManipulationMode="All" />
 
-            <!-- creates the four cropping guides -->
-            <Rectangle
+        <!-- creates the four cropping guides -->
+        <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xLeft"
-            Fill="Transparent" Width="10" Height="40" Stroke="Black" StrokeThickness="4"
+            x:Name="xLeft" PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Fill="Transparent" Width="20" Height="60" Stroke="Black" StrokeThickness="4"
             ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
-            ManipulationCompleted="OnAllManipulationCompleted" ManipulationMode="TranslateX" HorizontalAlignment="Left"
+            ManipulationMode="TranslateX" HorizontalAlignment="Left"
             VerticalAlignment="Center" />
-            <Rectangle
+        <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="10"
+            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="20"
             Stroke="Black" StrokeThickness="4"
-            Height="40" ManipulationDelta="XRight_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX"
-            ManipulationCompleted="OnAllManipulationCompleted" />
-            <Rectangle
+            PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="60" ManipulationDelta="XRight_OnManipulationDelta"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" />
+        <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="40"
+            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="60"
             Stroke="Black" StrokeThickness="4"
-            Height="10" ManipulationDelta="XTop_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
-            ManipulationCompleted="OnAllManipulationCompleted" />
-            <Rectangle
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="20" ManipulationDelta="XTop_OnManipulationDelta"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+        <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
-            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="40"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="60"
             Stroke="Black" StrokeThickness="4"
-            Height="10" ManipulationDelta="XBottom_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
-            ManipulationCompleted="OnAllManipulationCompleted" />
-        </Grid>
-
-        <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0" Visibility="Collapsed">
-            <Grid>
-                <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}" PointerEntered="AnnotateEllipseUnhighlight_OnPointerEntered"/>
-                <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}" PointerExited="AnnotateEllipseHighlight_OnPointerExited"
-                         Visibility="Collapsed"/>
-            </Grid>
-        </Border>
-
-    </StackPanel>
+            Height="20" ManipulationDelta="XBottom_OnManipulationDelta"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+    </Grid>
 </UserControl>
