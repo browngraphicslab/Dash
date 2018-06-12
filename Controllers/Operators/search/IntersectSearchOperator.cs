@@ -60,18 +60,6 @@ namespace Dash
                 }
             }
 
-            foreach (var kvp in d2.EnumFields())
-            {
-                var l1 = kvp.Value as ListController<DocumentController>;
-                var l2 = d1.GetField<ListController<DocumentController>>(kvp.Key);
-                var l3 = d3.GetField<ListController<DocumentController>>(kvp.Key);
-
-                if (d3 == null && l1 != null && l2 != null)
-                {
-                    d3.SetField(kvp.Key, new ListController<DocumentController>(l1.TypedData.Concat(l2.TypedData)), true);
-                }
-            }
-
             outputs[ResultsKey] = d3;
         }
 

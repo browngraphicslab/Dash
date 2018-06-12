@@ -65,6 +65,7 @@ namespace Dash
             //first unhightlight old results
             unHighlightAllDocs();
 
+            //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
