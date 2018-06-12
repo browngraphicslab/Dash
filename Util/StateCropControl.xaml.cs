@@ -95,7 +95,7 @@ namespace Dash
             // xBounds represents the geometry that we are actually going to crop. logically most important
             xBounds.Width = Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft);
             xBounds.Height = Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop);
-            xStackPanel.RenderTransform = new TranslateTransform
+            xBounds.RenderTransform = new TranslateTransform
             {
                 X = Canvas.GetLeft(xLeft),
                 Y = Canvas.GetTop(xTop)
@@ -291,7 +291,7 @@ namespace Dash
             Canvas.SetLeft(xBase, left);
             Canvas.SetTop(xBase, top);
 
-            xStackPanel.RenderTransform = new TranslateTransform
+            xBounds.RenderTransform = new TranslateTransform
             {
                 X = left,
                 Y = top
@@ -312,7 +312,7 @@ namespace Dash
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        
+
         private void LeftRightPointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeWestEast, 0);
