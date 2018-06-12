@@ -26,10 +26,6 @@ namespace Dash
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         
-       
-
-       
-        
 
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
@@ -54,9 +50,7 @@ namespace Dash
             return editableImage;
             //cropping logic here
         }
-
         
-
         protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
