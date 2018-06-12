@@ -258,8 +258,8 @@ namespace Dash
             // calculates the position to move the bounding box to
             var top = Canvas.GetTop(xBase);
             var left = Canvas.GetLeft(xBase);
-            top += e.Delta.Translation.Y;
-            left += e.Delta.Translation.X;
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, this).X;
             // check validity of each side
             if (left < 0 || top < 0 || left + xBounds.Width > ImageBase.Image.ActualWidth ||
                 top + xBounds.Height > ImageBase.Image.ActualHeight) return;

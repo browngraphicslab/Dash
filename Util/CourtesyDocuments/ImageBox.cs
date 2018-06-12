@@ -60,22 +60,6 @@ namespace Dash
         protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceController)
-            {
-                var reference = data as ReferenceController;
-                var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        var doc = (DocumentController) sender;
-                        var dargs =
-                            (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-                            return;
-                        BindImageSource(image, doc, c, reference.FieldKey);
-                    });
-            }
             BindImageSource(image, controller, context, KeyStore.DataKey);
         }
 

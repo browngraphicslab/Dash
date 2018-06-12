@@ -71,7 +71,6 @@ namespace Dash
 
         private void OnReplaceImage()
         {
-            SetupImageBinding(Image, _docCtrl, _context);
             //var newImg = new Image();
             //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
             Image.Width = double.NaN;
@@ -94,7 +93,6 @@ namespace Dash
                 _originalWidth = _ogWidth;
 
                 _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
-                SetupImageBinding(Image, _docCtrl, _context);
 
                 //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
                 //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
@@ -148,7 +146,7 @@ namespace Dash
                 _ogWidth = Image.ActualWidth;
                 _ogUri = _imgctrl.Data;
             }
-
+            //_originalWidth is original width of owl, not replaced image
             var scale = _originalWidth / Image.ActualWidth;
 
             // retrieves data from rectangle
@@ -253,7 +251,6 @@ namespace Dash
             var path = "ms-appdata:///local/" + newFile.Name;
             var uri = new Uri(path);
             _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
-            SetupImageBinding(Image, _docCtrl, _context);
 
             // update the image source, width, and positions
             Image.Source = cropBmp;
@@ -264,54 +261,14 @@ namespace Dash
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
 
             var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X, oldpoint.Y + _cropControl.GetBounds().Y);
+            var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
+            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X, oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
             _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
             _cropControl = new StateCropControl(_docCtrl, this);
 
 
             // TODO: Test that replace button works with cropping when merged with master
-        }
-
-        // stolen directly from Util/Courtesy Documents/ImageBox. tbh don't really know what it does
-        private static void SetupImageBinding(Image image, DocumentController controller,
-            Context context)
-        {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceController reference)
-            {
-                var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        var doc = (DocumentController) sender;
-                        var dargs =
-                            (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-                            return;
-                        BindImageSource(image, doc, c, reference.FieldKey);
-                    });
-            }
-
-            BindImageSource(image, controller, context, KeyStore.DataKey);
-        }
-
-        // stolen directly from Util/Courtesy Documents/ImageBox. tbh don't really know what it does
-        protected static void BindImageSource(Image image, DocumentController docController, Context context,
-            KeyController key)
-        {
-            var data = docController.GetDereferencedField(key, context) as ImageController;
-            if (data == null)
-                return;
-            var binding = new FieldBinding<ImageController>
-            {
-                Document = docController,
-                Key = KeyStore.DataKey,
-                Mode = BindingMode.OneWay,
-                Context = context,
-                Converter = UriToBitmapImageConverter.Instance
-            };
-            image.AddFieldBinding(Image.SourceProperty, binding);
         }
 
         [NotifyPropertyChangedInvocator]
