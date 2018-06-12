@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Dash.Views;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -70,6 +71,7 @@ namespace Dash
         /// </summary>
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
+
         
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
@@ -589,6 +591,8 @@ namespace Dash
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
             
             e.Handled = true;
+
+	        
         }
 
         // Controls functionality for the Right-click context menu
@@ -1040,6 +1044,7 @@ namespace Dash
             xTitleIcon.Visibility = Visibility.Collapsed;
             xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
             xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+	        xAnnotationView.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
@@ -1057,5 +1062,15 @@ namespace Dash
         {
             MainPage.Instance.PinToPresentation(ViewModel);
         }
+
+	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+	    {
+			/**
+			//toggles visibiliy of annotation view
+		    xAnnotationView.Height = LayoutRoot.ActualHeight;
+			//xAnnotationView.SetValue(AnnotationView.HeightDependencyProperty, LayoutRoot.ActualHeight);
+			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
+		    **/
+	    }
     }
 }

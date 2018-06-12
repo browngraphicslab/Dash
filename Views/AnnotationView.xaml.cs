@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -19,9 +20,52 @@ namespace Dash.Views
 {
 	public sealed partial class AnnotationView : UserControl
 	{
+
+		public static readonly DependencyProperty HeightDependencyProperty = DependencyProperty.Register(
+			"BindHeight", typeof(double), typeof(Grid), new PropertyMetadata(0));
+
 		public AnnotationView()
 		{
 			this.InitializeComponent();
+			this.AddAnnotation();
+			this.AddAnnotation();
+			this.AddAnnotation();
 		}
+
+		/**
+		 * Method for adding an annotation to the visual stack.
+		 */
+		public void AddAnnotation()
+		{
+			//UI 
+			TextBox newA = new TextBox();
+			newA.Margin = new Thickness(5);
+			newA.Height = 50;
+			newA.Background = new SolidColorBrush(Colors.White);
+			newA.PlaceholderText = "Comment";
+			newA.BorderThickness = new Thickness(3.0);
+			newA.BorderBrush = new SolidColorBrush(Colors.White);
+
+			xViewPanel.Children.Add(newA);
+		}
+
+		/**
+
+		public void CollapseView()
+		{
+			xViewPanel.Visibility = Visibility.Collapsed;
+		}
+
+		public void OpenView()
+		{
+			xViewPanel.Visibility = Visibility.Visible;
+		}
+
+		public void ToggleView()
+		{
+			xViewPanel.Visibility = (xViewPanel.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
+		}
+	*/
+		
 	}
 }

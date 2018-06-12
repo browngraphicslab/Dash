@@ -26,9 +26,12 @@
     <Grid x:Name="xMasterStack" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width=".5*" MinWidth="50"/>
+            <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
-        
+
+        <views:AnnotationView x:Name="xAnnotationView" Grid.Column="1" Height="20" MaxHeight="{Binding ActualHeight, ElementName=HalfHeightRow}" Visibility ="Collapsed">
+
+        </views:AnnotationView>
 
         <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
 
@@ -81,20 +84,7 @@
                 </Border>
             </Border>
 
-            <Border x:Name="xOperatorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
-                <Grid  >
-                    <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}"/>
-                    <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}"
-                         Visibility="Collapsed"/>
-                </Grid>
-            </Border>
-            <Border x:Name="xAnnotateEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -30, 0">
-                <Grid  >
-                    <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
-                    <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
-                         Visibility="Collapsed"/>
-                </Grid>
-            </Border>
+            
 
             <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <HyperlinkButton   
@@ -128,9 +118,22 @@
     AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>
         </Grid>
 
-        <views:AnnotationView x:Name="xAnnotationView" Grid.Column="1" Height="20" MaxHeight="{Binding ActualHeight, ElementName=HalfHeightRow}">
+       
 
-        </views:AnnotationView>
+        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+            <Grid  >
+                <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}"/>
+                <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}"
+                         Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+        <Border x:Name="xAnnotateEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -30, 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
+            <Grid  >
+                <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
+                <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
+                         Visibility="Collapsed"/>
+            </Grid>
+        </Border>
 
     </Grid>
 </UserControl>
