@@ -24,7 +24,7 @@
     }
   ],
 
-  "content_security_policy": "script-src 'self' https://apis.google.com/js/api.js; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js; object-src 'self'",
 
   "background": {
     "scripts": [ "jquery.js", "tabManager.js", "requestHandler.js", "bg.js" ]
