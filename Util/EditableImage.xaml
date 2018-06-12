@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
     x:Name="xCanvas"
     mc:Ignorable="d"
     LostFocus="EditableImage_OnLostFocus"
@@ -11,11 +12,12 @@
     Background="Beige" IsTabStop="True">
 
     <Grid x:Name="xGrid" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
-          PointerPressed="OnPointerPressed">
+          PointerPressed="OnPointerPressed" Loaded="OnLoaded">
         <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill"
                Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache" />
         <Grid x:Name="xRegionsGrid"/>
-        <Rectangle x:Name="xRegionPreview" Fill="AntiqueWhite" Opacity="0.6" StrokeThickness="1" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
+        <dash:ImageRegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed"/>
+        <Rectangle x:Name="xRegionDuringManipulationPreview" Fill="AntiqueWhite" Opacity="0.4" StrokeThickness="2" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
     </Grid>
 
 

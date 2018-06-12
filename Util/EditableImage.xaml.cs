@@ -380,7 +380,8 @@ namespace Dash
 			_isCropping = false;
 			_docview.showControls();
 			xGrid.Children.Remove(_cropControl);
-			xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 		}
 
 		private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -391,41 +392,49 @@ namespace Dash
 
 				var x = Math.Min(pos.X, _anchorPoint.X);
 				var y = Math.Min(pos.Y, _anchorPoint.Y);
-				xRegionPreview.Margin = new Thickness(x, y, 0, 0);
+				xRegionDuringManipulationPreview.Margin = new Thickness(x, y, 0, 0);
 
-				xRegionPreview.Width = Math.Abs(pos.X - _anchorPoint.X);
-				xRegionPreview.Height = Math.Abs(pos.Y - _anchorPoint.Y);
+				xRegionDuringManipulationPreview.Width = Math.Abs(pos.X - _anchorPoint.X);
+				xRegionDuringManipulationPreview.Height = Math.Abs(pos.Y - _anchorPoint.Y);
 			}
 		}
 
 		private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			StopImageFromMoving(sender, e);
-			if (xRegionPreview.Width < 50 && xRegionPreview.Height < 50)
-			{
-				xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-			}
+			xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 			_isDragging = false;
+
+			if (xRegionDuringManipulationPreview.Width < 50 && xRegionDuringManipulationPreview.Height < 50) return;
+
+			// the box only sticks around if it's of a large enough size
+			xRegionPostManipulationPreview.SetPosition(
+				new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+				new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height),
+				new Size(xImage.ActualWidth, xImage.ActualHeight)
+			);
+			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
 		}
 
 		private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			if (!_isCropping)
 			{
+				xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 				var pos = e.GetCurrentPoint(xImage).Position;
 				_anchorPoint = pos;
 				_isDragging = true;
-				xRegionPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
-				xRegionPreview.Width = 0;
-				xRegionPreview.Height = 0;
-				xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+				xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+				xRegionDuringManipulationPreview.Width = 0;
+				xRegionDuringManipulationPreview.Height = 0;
+				xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
 				StopImageFromMoving(sender, e);
 			}
 		}
 
 		public bool IsSomethingSelected()
 		{
-			return xRegionPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
+			return xRegionPostManipulationPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
 		}
 
 
@@ -433,7 +442,8 @@ namespace Dash
 		{
 			if (!this.IsSomethingSelected()) return _docCtrl;
 
-			var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height)).Document;
+			// the bitmap streaming to crop doesn't work yet
+			var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPostManipulationPreview.Margin.Left, xRegionPostManipulationPreview.Margin.Top), new Size(xRegionPostManipulationPreview.ActualWidth, xRegionPostManipulationPreview.ActualHeight)).Document;
 
 			var regions = _docCtrl.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
 			if (regions == null)
@@ -448,10 +458,12 @@ namespace Dash
 			}
 
 			var newBox = new ImageRegionBox { LinkTo = imNote };
-			newBox.SetPosition(new Point(xRegionPreview.Margin.Left, xRegionPreview.Margin.Top), new Size(xRegionPreview.Width, xRegionPreview.Height), new Size(xImage.ActualWidth, xImage.ActualHeight));
+
+			// use during here because it's the one with actual pixel measurements
+			newBox.SetPosition(new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top), new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height), new Size(xImage.ActualWidth, xImage.ActualHeight));
 			xRegionsGrid.Children.Add(newBox);
 			newBox.PointerPressed += xRegion_OnPointerPressed;
-			xRegionPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
 			return imNote;
 
@@ -485,14 +497,12 @@ namespace Dash
 		    {
 			    link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
 		    }
-
 		    if (xRichEditBox.Document.Selection.Link != link)
 		    {
 			    if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
 			    {
 				    xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
 			    }
-
 			    // set the hyperlink for the matched text
 			    this.xRichEditBox.Document.Selection.Link = link;
 			    // advance the end selection past the RTF embedded HYPERLINK keyword
@@ -509,10 +519,22 @@ namespace Dash
 		private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			e.Handled = false;
-			if (sender is ImageRegionBox box)
 
+			if (sender is ImageRegionBox box)
 			{
 				var theDoc = box.LinkTo;
+				if (theDoc == null) return;
+
+				xRegionDuringManipulationPreview.Width = 0;
+				xRegionDuringManipulationPreview.Height = 0;
+				xRegionPostManipulationPreview.Column1.Width = box.Column1.Width;
+				xRegionPostManipulationPreview.Column2.Width = box.Column2.Width;
+				xRegionPostManipulationPreview.Column3.Width = box.Column3.Width;
+				xRegionPostManipulationPreview.Row1.Height = box.Row1.Height;
+				xRegionPostManipulationPreview.Row2.Height = box.Row2.Height;
+				xRegionPostManipulationPreview.Row3.Height = box.Row3.Height;
+				xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+
 				var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
 				var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
 				if (linkFromDoc != null)
@@ -545,31 +567,6 @@ namespace Dash
 				e.Handled = true;
 			}
 
-			DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
-			{
-				double dist = double.MaxValue;
-				DocumentView nearest = null;
-				foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-				{
-					var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-					if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
-					{
-						var mprect = dvm.GetBoundingRect(MainPage.Instance);
-						var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-						if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-						{
-							var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-							if (d < dist)
-							{
-								d = dist;
-								nearest = dvm;
-							}
-						}
-					}
-				}
-
-				return nearest;
-			}
 			DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
 			{
 				double dist = double.MaxValue;
@@ -595,6 +592,14 @@ namespace Dash
 
 				return nearest;
 			}
+		}
+
+		private void OnLoaded(object sender, RoutedEventArgs e)
+		{
+			xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
+			xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
+			xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
+			xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
 		}
 	}
 }
