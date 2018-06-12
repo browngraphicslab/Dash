@@ -171,6 +171,7 @@ namespace Dash
                 MainDocView.ViewModel.DisableDecorations = true;
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                //TODO This might not be necessary and shouldn't be necessary
                 treeContext.Loaded(true);
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("My Workspaces");

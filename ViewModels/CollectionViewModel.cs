@@ -864,26 +864,28 @@ namespace Dash
             else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                if (dragModel.CreateLink)
+                if (dragModel.LinkSourceView != null) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                 {
-                    if (MainPage.Instance.IsShiftPressed())
+                    if (MainPage.Instance.IsShiftPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                     {
                         var links = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData;
                         var targets = links.SelectMany((d) => d.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData).ToList();
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, targets);
                         AddDocument(cnote.Document);
                     }
-                    else
-                    if (MainPage.Instance.IsCtrlPressed())
+                    else if (MainPage.Instance.IsCtrlPressed()) // if control is pressed during this drag, we want to see a collection of the actual link documents
                     {
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
                             dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData);
                         AddDocument(cnote.Document);
                     }
-                    else
+                    else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
                     {
+                        var dragDoc = dragModel.DraggedDocument;
+                        if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                            dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                         var note = new RichTextNote("<annotation>", where).Document;
-                        dragModel.DraggedDocument.Link(note);
+                        dragDoc.Link(note);
                         AddDocument(note);
                     }
                 }
