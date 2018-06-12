@@ -591,6 +591,8 @@ namespace Dash
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
             
             e.Handled = true;
+
+	        
         }
 
         // Controls functionality for the Right-click context menu
@@ -1042,6 +1044,7 @@ namespace Dash
             xTitleIcon.Visibility = Visibility.Collapsed;
             xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
             xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+	        xAnnotationView.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
@@ -1062,8 +1065,12 @@ namespace Dash
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
+			/**
 			//toggles visibiliy of annotation view
-			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed; ;
+		    xAnnotationView.Height = LayoutRoot.ActualHeight;
+			//xAnnotationView.SetValue(AnnotationView.HeightDependencyProperty, LayoutRoot.ActualHeight);
+			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
+		    **/
 	    }
     }
 }

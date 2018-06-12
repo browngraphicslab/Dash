@@ -20,9 +20,16 @@ namespace Dash.Views
 {
 	public sealed partial class AnnotationView : UserControl
 	{
+
+		public static readonly DependencyProperty HeightDependencyProperty = DependencyProperty.Register(
+			"BindHeight", typeof(double), typeof(Grid), new PropertyMetadata(0));
+
 		public AnnotationView()
 		{
 			this.InitializeComponent();
+			this.AddAnnotation();
+			this.AddAnnotation();
+			this.AddAnnotation();
 		}
 
 		/**
