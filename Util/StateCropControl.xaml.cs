@@ -301,6 +301,7 @@ namespace Dash
         // when bounding box is moved, guide positions are not, this updates them.
         private void XBase_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
+            e.Handled = true;
             Canvas.SetLeft(xLeft, Canvas.GetLeft(xBase));
             Canvas.SetLeft(xRight, Canvas.GetLeft(xBase) + xBounds.Width - xRight.Width);
             Canvas.SetTop(xTop, Canvas.GetTop(xBase));
@@ -331,6 +332,11 @@ namespace Dash
         private void xBasePointerEntered(object sender, PointerRoutedEventArgs e)
         {
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+        }
+
+        private void OnAllManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

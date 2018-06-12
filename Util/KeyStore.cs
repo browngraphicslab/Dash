@@ -48,6 +48,7 @@ namespace Dash
         public static KeyController ActualSizeKey = new KeyController(DashConstants.KeyStore.ActualSizeKey);
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
+        public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
 
         public static class SearchResultDocumentOutline
         {

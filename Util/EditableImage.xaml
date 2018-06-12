@@ -12,7 +12,7 @@
 
     <Grid x:Name="xGrid" PointerMoved="StopImageFromMoving" PointerReleased="StopImageFromMoving"
           PointerPressed="StopImageFromMoving">
-        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill"
+        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform"
                Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache" />
     </Grid>
 

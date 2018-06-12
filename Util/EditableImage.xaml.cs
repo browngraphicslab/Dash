@@ -65,8 +65,8 @@ namespace Dash
 
         private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Focus(FocusState.Keyboard);
-            _cropControl = new StateCropControl(_docCtrl, this);
+            //Focus(FocusState.Keyboard);
+            //_cropControl = new StateCropControl(_docCtrl, this);
         }
 
         private async void OnReplaceImage()
@@ -95,10 +95,12 @@ namespace Dash
             _originalWidth = fileProperties.Width;
             //var newImg = new Image();
             //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
-            Image.Width = double.NaN;
+            Image.Width = _originalWidth;
             Image.Source = new BitmapImage(new Uri(file.Path));
 
             _ogImage = Image.Source;
+            var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
             _ogWidth = _originalWidth;
             _ogUri = _imgctrl.ImageSource;
             /*
@@ -111,14 +113,14 @@ namespace Dash
 
         private void OnRevert()
         {
-            if (_ogImage != null)
+            if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
                 Image.Source = _ogImage;
                 Image.Width = _ogWidth;
                 _originalWidth = _ogWidth;
-
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
-
+                
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
+                _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
                 //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
                 //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
 
@@ -203,20 +205,6 @@ namespace Dash
         /// </param>
         private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-            if (_ogImage == null)
-            {
-                _ogImage = Image.Source;
-                _ogWidth = Image.ActualWidth;
-                _ogUri = _imgctrl.Data;
-            }
-            //_originalWidth is original width of owl, not replaced image
-            var scale = _originalWidth / Image.ActualWidth;
-
-            // retrieves data from rectangle
-            var startPointX = (uint) rectangleGeometry.X;
-            var startPointY = (uint) rectangleGeometry.Y;
-            var height = (uint) rectangleGeometry.Height;
-            var width = (uint) rectangleGeometry.Width;
 
             // finds local uri path of image controller's image source
             StorageFile file;
@@ -236,6 +224,27 @@ namespace Dash
                 file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
             }
 
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
+
+            if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
+            {
+                _ogImage = Image.Source;
+                var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+                _ogWidth = fileProperties.Width;
+                _ogUri = _imgctrl.Data;
+            }
+
+            _originalWidth = fileProperties.Width;
+            //_originalWidth is original width of owl, not replaced image
+            var scale = _originalWidth / Image.ActualWidth;
+
+            // retrieves data from rectangle
+            var startPointX = (uint)rectangleGeometry.X;
+            var startPointY = (uint)rectangleGeometry.Y;
+            var height = (uint)rectangleGeometry.Height;
+            var width = (uint)rectangleGeometry.Width;
+
             Debug.Assert(file != null); // if neither works, something's hecked up
             WriteableBitmap cropBmp;
 
@@ -245,8 +254,24 @@ namespace Dash
                 var decoder = await BitmapDecoder.CreateAsync(stream);
 
                 // finds scaled size of the new bitmap image
-                var scaledWidth = (uint) Math.Floor(decoder.PixelWidth / scale);
-                var scaledHeight = (uint) Math.Floor(decoder.PixelHeight / scale);
+                var scaledWidth = (uint)Math.Ceiling(decoder.PixelWidth / scale);
+                var scaledHeight = (uint)Math.Ceiling(decoder.PixelHeight / scale);
+
+                if (flip != BitmapFlip.None && (height != scaledHeight || width != scaledWidth))
+                {
+                    height = scaledHeight;
+                    width = scaledWidth;
+                    rectangleGeometry.Height = scaledHeight;
+                    rectangleGeometry.Width = scaledWidth;
+                }
+
+                if (rot == BitmapRotation.Clockwise90Degrees && (height != scaledWidth || width != scaledHeight))
+                {
+                    height = scaledWidth;
+                    width = scaledHeight;
+                    rectangleGeometry.Height = scaledWidth;
+                    rectangleGeometry.Width = scaledHeight;
+                }
 
                 // sets the boundaries for how we are cropping the bitmap image
                 var bitmapTransform = new BitmapTransform();
