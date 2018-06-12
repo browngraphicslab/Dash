@@ -21,8 +21,8 @@
             </CommandBar.Content>
             
             <AppBarButton x:Name="xCrop" Icon="Crop" Label="Crop" Click="Crop_Click"/>
-            <AppBarButton x:Name="xRevert" Icon="Crop"  Label="Revert" Click="Revert_Click"/>
-            <AppBarButton x:Name="xReplace" Icon="Pictures" Label="Replace" Click="Replace_Click"/>
+            <AppBarButton x:Name="xRevert" Icon="Back"  Label="Revert" Click="Revert_Click"/>
+            <AppBarButton x:Name="xReplace" Icon="Upload" Label="Replace" Click="Replace_Click"/>
         </CommandBar>
     </Grid>
 </UserControl>
