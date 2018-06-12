@@ -594,10 +594,8 @@ namespace Dash
             ViewModel.Position = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
-            
-            e.Handled = true;
 
-	        
+            e.Handled = true;
         }
 
         // Controls functionality for the Right-click context menu

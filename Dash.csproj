@@ -225,7 +225,6 @@
     <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
-    <Compile Include="Util\AnnotationController.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
