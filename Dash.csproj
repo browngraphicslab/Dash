@@ -373,7 +373,6 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\CustomButtonFormatter.cs" />
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
     </Compile>

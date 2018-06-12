@@ -133,7 +133,7 @@ namespace Dash
                         break;
 
                     case 4:
-                        _collection.SetView(CollectionView.CollectionViewType.Freeform);
+                        _collection.SetView(CollectionView.CollectionViewType.Schema);
                         break;
 
                     case 5:

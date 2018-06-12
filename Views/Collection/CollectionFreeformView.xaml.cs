@@ -630,12 +630,14 @@ namespace Dash
 
             var toSelectFrom = viewsToSelectFrom.ToList();
 
+            bool deselect = false;
             switch (modifier)
             {
                 //create a viewcopy of everything selected
                 case VirtualKey.A:
                     var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
                     ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs).Document);
+                    deselect = true;
                     break;
                 case VirtualKey.T:
                     type = CollectionView.CollectionViewType.Schema;
@@ -651,13 +653,15 @@ namespace Dash
                     {
                         v.DeleteDocument();
                     }
+                    deselect = true;
                     break;
                 case VirtualKey.G:
                     ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, marquee.Width, marquee.Height));
+                    deselect = true;
                     break;
             }
 
-            DeselectAll();
+            if(deselect) DeselectAll();
         }
 
         #endregion
