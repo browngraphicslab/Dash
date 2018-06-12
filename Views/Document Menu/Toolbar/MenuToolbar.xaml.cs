@@ -302,7 +302,7 @@ namespace Dash
 
                     // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
-                    //Toolbar TODO
+                    // TODO Revisit this when selection is refactored
                     // Collection controls  
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
                     {
@@ -545,7 +545,6 @@ namespace Dash
         /// <summary>
         /// When the "Add Audio" btn is clicked, this launches a file picker & adds selected audio files to the workspace
         /// </summary>
-        //Toolbar TODO
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
             //instantiates a file picker, set to open in user's audio library

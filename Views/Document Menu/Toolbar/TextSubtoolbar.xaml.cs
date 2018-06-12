@@ -48,8 +48,6 @@ namespace Dash
             this.InitializeComponent();
             _buttons = new Dictionary<string, Button>();
 
-            //instantiate formatter to create custom buttons
-            Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
             _currBox = null;
 
             //add an additional sub-toolbar for further operations

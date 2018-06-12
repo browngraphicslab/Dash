@@ -81,11 +81,11 @@ namespace Dash
         private void UpdateColor()
         {
             _currentColorString = GetColorWithUpdatedOpacity();
-            //Toolbar TODO
+            //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
             //...shape's background color
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, _currentColorString, true);
             //...indirectly, the shape's opacity
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value.ToString("G"), true);
+            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
         }
 
         /*
@@ -130,7 +130,7 @@ namespace Dash
         */
         public void TryMakeGroupEditable(bool makeAdornmentGroup)
         {
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", !makeAdornmentGroup);
+            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", true);
         }
 
     //EVENT HANDLERS
@@ -223,12 +223,13 @@ namespace Dash
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
             
-            //Toolbar TODO
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            var storedSliderValue = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.OpacitySliderValueKey, null)?.Data;
+            var storedSliderValue = _currentDocController?.GetDataDocument()
+                                        .GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)
+                                        ?.Data ?? 128;
 
             //...parses it to extract double and sets slider value to computed value
-            if (double.TryParse(storedSliderValue, out var doubleSliderValue)) xOpacitySlider.Value = doubleSliderValue;
+            xOpacitySlider.Value = storedSliderValue;
         }
 
         /*

@@ -707,7 +707,7 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //Toolbar TODO
+            //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup && !ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
             {
                 FocusedDocument = this;
