@@ -119,6 +119,20 @@ namespace Dash
             // checks for validity in new left boundaries
             if (Canvas.GetLeft(xLeft) < 0 || Math.Abs(left - Canvas.GetLeft(xRight)) <= 70) return;
             Canvas.SetLeft(xLeft, left);
+
+            var leftBounds = Canvas.GetLeft(xLeft);
+            var rightBounds = Canvas.GetLeft(xRight);
+
+            if (leftBounds < 0)
+            {
+                Canvas.SetLeft(xLeft, 0);
+            }
+
+            if (rightBounds - leftBounds <= 70)
+            {
+                Canvas.SetLeft(xLeft, rightBounds - 70);
+            }
+
             UpdateRect();
         }
 
@@ -131,6 +145,20 @@ namespace Dash
             if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight ||
                 Math.Abs(top - Canvas.GetTop(xTop)) <= 70) return;
             Canvas.SetTop(xBottom, top);
+
+            var topBounds = Canvas.GetTop(xTop);
+            var bottomBounds = Canvas.GetTop(xBottom);
+
+            if (bottomBounds > ImageMaxY)
+            {
+                Canvas.SetTop(xBottom, ImageMaxY);
+            }
+
+            if (bottomBounds - topBounds <= 70)
+            {
+                Canvas.SetTop(xBottom, topBounds + 70);
+            }
+
             UpdateRect();
         }
 
@@ -143,6 +171,20 @@ namespace Dash
             if (left + xRight.Width > ImageBase.Image.ActualWidth ||
                 Math.Abs(left - Canvas.GetLeft(xLeft)) <= 70) return;
             Canvas.SetLeft(xRight, left);
+
+            var leftBounds = Canvas.GetLeft(xLeft);
+            var rightBounds = Canvas.GetLeft(xRight);
+
+            if (rightBounds > ImageMaxX)
+            {
+                Canvas.SetLeft(xRight, ImageMaxX);
+            }
+
+            if (rightBounds - leftBounds <= 70)
+            {
+                Canvas.SetLeft(xRight, leftBounds + 70);
+            }
+
             UpdateRect();
         }
 
@@ -154,6 +196,20 @@ namespace Dash
             top += Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xTop) < 0 || Math.Abs(top - Canvas.GetTop(xBottom)) <= 70) return;
             Canvas.SetTop(xTop, top);
+
+            var topBounds = Canvas.GetTop(xTop);
+            var bottomBounds = Canvas.GetTop(xBottom);
+
+            if (topBounds < 0)
+            {
+                Canvas.SetTop(xTop, 0);
+            }
+
+            if (bottomBounds - topBounds <= 70)
+            {
+                Canvas.SetLeft(xTop, bottomBounds - 70);
+            }
+
             UpdateRect();
         }
 
@@ -215,38 +271,6 @@ namespace Dash
         private void OnAllManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
 
-            e.Handled = true;
-        }
-
-        // once manipulation completes, re-check the validity of the bounding box
-        private void OnAllManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            // TODO: fix bug with hyperextending boundaries when moving fast as heck
-            //checks validity on minimum crop
-            if (Canvas.GetLeft(xRight) + xRight.Width - Canvas.GetLeft(xLeft) <= 70)
-                Canvas.SetLeft(xLeft, Canvas.GetLeft(xRight) - 60);
-
-            if (Canvas.GetTop(xBottom) + xBottom.Height - Canvas.GetTop(xTop) <= 70)
-                Canvas.SetTop(xBottom, Canvas.GetTop(xTop) + 60);
-
-            if (Canvas.GetLeft(xLeft) + 60 >= Canvas.GetLeft(xRight))
-                Canvas.SetLeft(xRight, Canvas.GetLeft(xLeft) + 60);
-
-            if (Canvas.GetTop(xTop) + 60 >= Canvas.GetTop(xBottom)) Canvas.SetTop(xTop, Canvas.GetTop(xBottom) - 60);
-
-            //checks validity on maximum crop
-
-            if (Canvas.GetLeft(xLeft) < 0) Canvas.SetLeft(xLeft, 0);
-
-            if (Canvas.GetTop(xTop) < 0) Canvas.SetTop(xTop, 0);
-
-            if (Canvas.GetLeft(xRight) + xRight.Width > ImageBase.Image.ActualWidth)
-                Canvas.SetLeft(xRight, ImageBase.Image.ActualWidth - xRight.Width);
-
-            if (Canvas.GetTop(xBottom) + xBottom.Height > ImageBase.Image.ActualHeight)
-                Canvas.SetTop(xBottom, ImageBase.Image.ActualHeight - xBottom.Height);
-
-            UpdateRect();
             e.Handled = true;
         }
 

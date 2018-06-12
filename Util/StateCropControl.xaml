@@ -59,7 +59,7 @@
             PointerExited="AllPointerExited"
             Fill="Transparent" Width="20" Height="60" Stroke="Black" StrokeThickness="4"
             ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
-            ManipulationCompleted="OnAllManipulationCompleted" ManipulationMode="TranslateX" HorizontalAlignment="Left"
+            ManipulationMode="TranslateX" HorizontalAlignment="Left"
             VerticalAlignment="Center" />
         <Rectangle
             Grid.ColumnSpan="3"
@@ -69,8 +69,7 @@
             PointerEntered="LeftRightPointerEntered"
             PointerExited="AllPointerExited"
             Height="60" ManipulationDelta="XRight_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX"
-            ManipulationCompleted="OnAllManipulationCompleted" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" />
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
@@ -79,8 +78,7 @@
             PointerEntered="TopBottomPointerEntered"
             PointerExited="AllPointerExited"
             Height="20" ManipulationDelta="XTop_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
-            ManipulationCompleted="OnAllManipulationCompleted" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
         <Rectangle
             Grid.ColumnSpan="3"
             Grid.RowSpan="3"
@@ -89,7 +87,6 @@
             x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="60"
             Stroke="Black" StrokeThickness="4"
             Height="20" ManipulationDelta="XBottom_OnManipulationDelta"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY"
-            ManipulationCompleted="OnAllManipulationCompleted" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
     </Grid>
 </UserControl>
