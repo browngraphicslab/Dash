@@ -6,15 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="50" Width="100">
+    d:DesignHeight="80" Width="100">
 
     <ScrollViewer>
-    <StackPanel x:Name="xViewPanel" Padding="10" Background="SlateGray">
 
-            <TextBox Background="White" Margin="5" Height ="50" PlaceholderText="Comment" BorderBrush="White" BorderThickness="4">
+    <StackPanel x:Name="xViewPanel" Padding="10" Background="SlateGray" Visibility ="Collapsed">
+        
+        <!--Textboxes added here in code!-->
 
-        </TextBox>
     </StackPanel>
+
         </ScrollViewer>
     
 </UserControl>
