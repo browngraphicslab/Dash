@@ -426,9 +426,16 @@ namespace Dash
 		    return xRegionPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
 	    }
 
+	    public void SelectionToImage()
+	    {
+
+	    }
+
 	    public DocumentController GetRegionDocument()
 	    {
 		    if (!this.IsSomethingSelected()) return _docCtrl;
+
+
 
 		    return null;
 		    /*

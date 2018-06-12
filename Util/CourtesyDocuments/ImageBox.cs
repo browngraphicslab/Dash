@@ -77,7 +77,7 @@ namespace Dash
 
 	    public static DocumentController MakeRegionDocument(DocumentView image)
 	    {
-		    var im = image.GetFirstDescendantOfType<RichTextView>();
+		    var im = image.GetFirstDescendantOfType<EditableImage>();
 		    return im.GetRegionDocument();
 	    }
 
