@@ -14,8 +14,8 @@
           PointerPressed="OnPointerPressed">
         <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill"
                Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache" />
-        <Grid x:Name="xRegionsGrid" PointerPressed="xRegionsGrid_OnPointerPressed"/>
-        <Rectangle x:Name="xRegionPreview" Fill="Gold" Opacity="0.6" StrokeThickness="1" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
+        <Grid x:Name="xRegionsGrid"/>
+        <Rectangle x:Name="xRegionPreview" Fill="AntiqueWhite" Opacity="0.6" StrokeThickness="1" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
     </Grid>
 
 
