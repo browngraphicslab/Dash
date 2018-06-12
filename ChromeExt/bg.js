@@ -53,7 +53,7 @@ var start = function(ip) {
     var messagesToSend = []
     var sending = false;
 
-    var pollSend = function() {
+    var pollSend = function () {
         if (socketOpen === true && messagesToSend.length > 0 && !sending) {
             sending = true;
             var array = JSON.stringify(messagesToSend)
@@ -66,6 +66,7 @@ var start = function(ip) {
 
     setInterval(pollSend, 50);
 
+    //this function is used in tabManager whenever it gets a result
     var sendFunction = function(messageObject) {
         //console.log(socket)
         //messagesToSend.push(messageObject)
@@ -74,6 +75,8 @@ var start = function(ip) {
 
     var manager = new tabManager(sendFunction);
     var handler = new requestHandler(manager);
+
+    var managerG = new googleManager(sendFunction);
 
     if (useSocket) {
         if ("WebSocket" in window) {

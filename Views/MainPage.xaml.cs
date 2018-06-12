@@ -31,6 +31,9 @@ using Dash.Views.Document_Menu;
 using Dash.Controllers;
 using Windows.UI.Popups;
 using Windows.Foundation.Collections;
+using System.IO;
+using System.Security.Permissions;
+using Windows.Storage;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -188,6 +191,27 @@ namespace Dash
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
+
+            FileSystemWatcher watcher = new FileSystemWatcher();
+            watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState";
+            /* Watch for changes in LastAccess and LastWrite times, and
+               the renaming of files or directories. */
+            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
+               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            // Only watch text files.
+            watcher.Filter = "*.pdf";
+
+            //Subscribe to the Created event.
+            watcher.Created += new FileSystemEventHandler(watcher_FileCreated);
+
+            //Enable the FileSystemWatcher events.
+            watcher.EnableRaisingEvents = true;
+        }
+
+        private static void watcher_FileCreated(object sender, FileSystemEventArgs e)
+        {
+            // Specify what is done when a file is changed, created, or deleted.
+            Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
         }
 
         /// <summary>

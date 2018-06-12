@@ -789,7 +789,7 @@
     <Content Include="ChromeExt\bg.js" />
     <Content Include="ChromeExt\bgTest.html" />
     <Content Include="ChromeExt\close-icon.svg" />
-    <Content Include="ChromeExt\googleDownload.js" />
+    <Content Include="ChromeExt\googleManager.js" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
     <Content Include="ChromeExt\jan_2018_dash_logo.png" />
