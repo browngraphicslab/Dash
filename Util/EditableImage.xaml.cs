@@ -505,7 +505,7 @@ namespace Dash
         private void xRegionsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = false;
-            foreach (var box in xRegionsGrid.Children)
+            foreach (ImageRegionBox box in xRegionsGrid.Children)
             {
                 box.Background = new SolidColorBrush(Colors.Transparent);
             }
