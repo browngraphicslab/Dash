@@ -46,6 +46,7 @@
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />
                 <dash:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar" />
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xCollectionToolbar" />
+                <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />
             </StackPanel>
         </StackPanel>
     </dash:Floating>
