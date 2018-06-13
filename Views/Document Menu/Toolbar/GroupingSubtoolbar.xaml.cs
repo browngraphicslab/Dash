@@ -4,6 +4,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Dash.Converters;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -209,11 +211,10 @@ namespace Dash
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
-            
+            xOpacitySlider.Background = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
+
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            var storedSliderValue = _currentDocController?.GetDataDocument()
-                                        .GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)
-                                        ?.Data ?? 128;
+            var storedSliderValue = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
             //...parses it to extract double and sets slider value to computed value
             xOpacitySlider.Value = storedSliderValue;
@@ -225,6 +226,7 @@ namespace Dash
         private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _currentColorString = xGroupForegroundColorPicker.SelectedColor.ToString();
+            xOpacitySlider.Background = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
             UpdateColor();
         }
     }
