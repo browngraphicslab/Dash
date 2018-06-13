@@ -178,7 +178,7 @@ namespace Dash
                 case CollectionViewModel.StandardViewLevel.None:
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
-                    scale = ViewManipulationControls.MinScale / ViewManipulationControls.ElementScale + 0.01;
+                    scale = ViewManipulationControls.MinScale / ViewManipulationControls.ElementScale;
                     ViewManipulationControls.ElementScale = ViewManipulationControls.ElementScale * scale;
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
