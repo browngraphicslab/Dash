@@ -38,15 +38,31 @@ document.addEventListener('DOMContentLoaded', function () {
                             blob = new Blob([text], { type: 'octet/stream' }),
                             anchor = document.createElement('a');
 
-                        anchor.download = "hello.pdf";
+                        anchor.download = "byes.pdf";
                         anchor.href = (window.webkitURL || window.URL).createObjectURL(blob);
-                        //anchor.dataset.downloadurl = ['application/pdf', anchor.download, anchor.href].join(':');
+                        //['application/pdf', anchor.download, anchor.href].join(':');
                         anchor.click();
+
 
                         
                     }
                     xhr.send('alt=media');
+
+                    /*
+                    var object = new ActiveXObject("Scripting.FileSystemObject");
+                    var file = object.GetFile("C:\\Users\\GFX lab\\Downloads\\byes.pdf");
+                    file.Move("C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\test\\");
+
+                    var sourceFolder = new Folder("C:\\Users\\GFX lab\\Downloads");
+                    var destFolder = new Folder("C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\test");
+                    var fileList = sourceFolder.getFiles();
+                    for (var i = 0; i < fileList.length; i++) {
+                        if (fileList[i].copy(decodeURI(destFolder) + "/" + fileList[i].displayName)) {
+                            //fileList[i].remove();
+                        }
+                    } */ 
                 }
+
                 
             });
         });
