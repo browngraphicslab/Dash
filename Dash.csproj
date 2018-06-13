@@ -385,6 +385,9 @@
     <Compile Include="Views\DockedView.xaml.cs">
       <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml.cs">
+      <DependentUpon>AnnotationSubtoolbar.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\CustomButtonFormatter.cs" />
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
@@ -877,6 +880,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DockedView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

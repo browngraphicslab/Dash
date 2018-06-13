@@ -89,151 +89,152 @@ namespace Dash
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
-            try
-            {
-                // method of getting file from local uri
-                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
-            }
-            catch (Exception)
-            {
-                // method of getting file from absolute uri
-                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
-            }
+			try
+			{
+				// method of getting file from local uri
+				file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+			}
+			catch (Exception)
+			{
+				// method of getting file from absolute uri
+				file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+			}
 
-            var fileProperties = await file.Properties.GetImagePropertiesAsync();
-            _originalWidth = fileProperties.Width;
-            //var newImg = new Image();
-            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
-            Image.Width = double.NaN;
-            Image.Source = new BitmapImage(new Uri(file.Path));
+			var fileProperties = await file.Properties.GetImagePropertiesAsync();
+			_originalWidth = fileProperties.Width;
+			//var newImg = new Image();
+			//newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
+			Image.Width = double.NaN;
+			Image.Source = new BitmapImage(new Uri(file.Path));
 
-            _ogImage = Image.Source;
-            _ogWidth = _originalWidth;
-            _ogUri = _imgctrl.ImageSource;
-            /*
+			_ogImage = Image.Source;
+			_ogWidth = _originalWidth;
+			_ogUri = _imgctrl.ImageSource;
+			/*
              *  onReplaceClicked
              *      _ogImage = new image.source
              *      _ogWidth = new image.width
              *      _ogUri = new image uri
              */
-        }
+		}
 
-        private void OnRevert()
-        {
-            if (_ogImage != null)
-            {
-                Image.Source = _ogImage;
-                Image.Width = _ogWidth;
-                _originalWidth = _ogWidth;
+		private void OnRevert()
+		{
+			if (_ogImage != null)
+			{
+				Image.Source = _ogImage;
+				Image.Width = _ogWidth;
+				_originalWidth = _ogWidth;
 
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
+				_docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
 
-                //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-                //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
+				//var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+				//Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
 
-                //_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
-                //_cropControl = new StateCropControl(_docCtrl, this);
-            }
-        }
+				//_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+				//_cropControl = new StateCropControl(_docCtrl, this);
+			}
+		}
 
-        private void Image_Loaded(object sender, RoutedEventArgs e)
-        {
-            // initialize values that rely on the image
-            _originalImage = Image;
-            _originalWidth = Image.ActualWidth;
-            _docview = this.GetFirstAncestorOfType<DocumentView>();
-            _docview.OnCropClick += OnCropClick;
-            _docview.OnRevert += OnRevert;
-            _docview.OnReplaceImage += OnReplaceImage;
-            _docview.OnRotate += OnRotate;
-            _docview.OnHorizontalMirror += OnHorizontalMirror;
-            _docview.OnVerticalMirror += OnVerticalMirror;
-            Focus(FocusState.Keyboard);
-            _cropControl = new StateCropControl(_docCtrl, this);
-        }
+		private void Image_Loaded(object sender, RoutedEventArgs e)
+		{
+			// initialize values that rely on the image
+			_originalImage = Image;
+			_originalWidth = Image.ActualWidth;
+			_docview = this.GetFirstAncestorOfType<DocumentView>();
+			_docview.OnCropClick += OnCropClick;
+			_docview.OnRevert += OnRevert;
+			_docview.OnReplaceImage += OnReplaceImage;
+			_docview.OnRotate += OnRotate;
+			_docview.OnHorizontalMirror += OnHorizontalMirror;
+			_docview.OnVerticalMirror += OnVerticalMirror;
+			Focus(FocusState.Keyboard);
+			_cropControl = new StateCropControl(_docCtrl, this);
+		}
 
-        private void OnRotate()
-        {
-            Rect rect = new Rect
-            {
-                X = 0,
-                Y = 0,
-                Width = Math.Floor(Image.ActualHeight),
-                Height = Math.Floor(Image.ActualWidth)
-            };
+		private void OnRotate()
+		{
+			Rect rect = new Rect
+			{
+				X = 0,
+				Y = 0,
+				Width = Math.Floor(Image.ActualHeight),
+				Height = Math.Floor(Image.ActualWidth)
+			};
 
-            OnCrop(rect, BitmapRotation.Clockwise90Degrees);
-        }
+			OnCrop(rect, BitmapRotation.Clockwise90Degrees);
+		}
 
-        private void OnHorizontalMirror()
-        {
-            MirrorImage(BitmapFlip.Horizontal);
-        }
+		private void OnHorizontalMirror()
+		{
+			MirrorImage(BitmapFlip.Horizontal);
+		}
 
-        private void OnVerticalMirror()
-        {
-            MirrorImage(BitmapFlip.Vertical);
-        }
+		private void OnVerticalMirror()
+		{
+			MirrorImage(BitmapFlip.Vertical);
+		}
 
-        private void MirrorImage(BitmapFlip flip)
-        {
-            Rect rect = new Rect
-            {
-                X = 0,
-                Y = 0,
-                Height = Math.Floor(Image.ActualHeight),
-                Width = Math.Floor(Image.ActualWidth)
-            };
-            OnCrop(rect, BitmapRotation.None, flip);
-        }
+		private void MirrorImage(BitmapFlip flip)
+		{
+			Rect rect = new Rect
+			{
+				X = 0,
+				Y = 0,
+				Height = Math.Floor(Image.ActualHeight),
+				Width = Math.Floor(Image.ActualWidth)
+			};
+			OnCrop(rect, BitmapRotation.None, flip);
+		}
 
-        // called when the cropclick action is invoked in the image subtoolbar
-        private void OnCropClick()
-        {
-            // make sure that we aren't already cropping
-            if (xGrid.Children.Contains(_cropControl)) return;
-            Focus(FocusState.Programmatic);
-            xGrid.Children.Add(_cropControl);
-            _docview.hideControls();
-            _isCropping = true;
-        }
+		// called when the cropclick action is invoked in the image subtoolbar
+		private void OnCropClick()
+		{
+			// make sure that we aren't already cropping
+			if (xGrid.Children.Contains(_cropControl)) return;
+			Focus(FocusState.Programmatic);
+			xGrid.Children.Add(_cropControl);
+			_docview.hideControls();
+			_isCropping = true;
+		}
 
-        private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
-        {
-            // prevent the image from being moved while being cropped
-            if (_isCropping) e.Handled = true;
-        }
+		private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
+		{
+			// prevent the image from being moved while being cropped
+			if (_isCropping) e.Handled = true;
+		}
 
-        /// <summary>
-        ///     crops the image with respect to the values of the rectangle passed in
-        /// </summary>
-        /// <param name="rectangleGeometry">
-        ///     rectangle geometry that determines the size and starting point of the crop
-        /// </param>
-        private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
-        {
-            if (_ogImage == null)
-            {
-                _ogImage = Image.Source;
-                _ogWidth = Image.ActualWidth;
-                _ogUri = _imgctrl.Data;
-            }
-            //_originalWidth is original width of owl, not replaced image
-            var scale = _originalWidth / Image.ActualWidth;
+		/// <summary>
+		///     crops the image with respect to the values of the rectangle passed in
+		/// </summary>
+		/// <param name="rectangleGeometry">
+		///     rectangle geometry that determines the size and starting point of the crop
+		/// </param>
+		private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
+		{
+			if (_ogImage == null)
+			{
+				_ogImage = Image.Source;
+				_ogWidth = Image.ActualWidth;
+				_ogUri = _imgctrl.Data;
+			}
+			//_originalWidth is original width of owl, not replaced image
+			var scale = _originalWidth / Image.ActualWidth;
 
-            // retrieves data from rectangle
-            var startPointX = (uint)rectangleGeometry.X;
-            var startPointY = (uint)rectangleGeometry.Y;
-            var height = (uint)rectangleGeometry.Height;
-            var width = (uint)rectangleGeometry.Width;
+			// retrieves data from rectangle
+			var startPointX = (uint)rectangleGeometry.X;
+			var startPointY = (uint)rectangleGeometry.Y;
+			var height = (uint)rectangleGeometry.Height;
+			var width = (uint)rectangleGeometry.Width;
 
-            // finds local uri path of image controller's image source
-            StorageFile file;
+			// finds local uri path of image controller's image source
+			StorageFile file;
 
-            /*
+			/*
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
+
             try
             {
                 // method of getting file from local uri
@@ -468,87 +469,46 @@ namespace Dash
             return xRegionPostManipulationPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
         }
 
-        
+
         public DocumentController GetRegionDocument()
         {
             if (!this.IsSomethingSelected()) return _docCtrl;
 
             // the bitmap streaming to crop doesn't work yet
-            var imNote = new ImageNote(_imgctrl.ImageSource, new Point(xRegionPostManipulationPreview.Margin.Left, xRegionPostManipulationPreview.Margin.Top), new Size(xRegionPostManipulationPreview.ActualWidth, xRegionPostManipulationPreview.ActualHeight)).Document;
+            var imNote = new ImageNote(_imgctrl.ImageSource,
+                    new Point(xRegionPostManipulationPreview.Margin.Left, xRegionPostManipulationPreview.Margin.Top),
+                    new Size(xRegionPostManipulationPreview.ActualWidth, xRegionPostManipulationPreview.ActualHeight))
+                .Document;
 
-            var regions = _docCtrl.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            var regions = _docCtrl.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
             {
                 var dregions = new List<DocumentController>();
                 dregions.Add(imNote);
-                _docCtrl.GetDataDocument().SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+                _docCtrl.GetDataDocument()
+                    .SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
             }
             else
             {
                 regions.Add(imNote);
             }
 
-            var newBox = new ImageRegionBox { LinkTo = imNote };
+            var newBox = new ImageRegionBox {LinkTo = imNote};
 
             // use during here because it's the one with actual pixel measurements
-            newBox.SetPosition(new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top), new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height), new Size(xImage.ActualWidth, xImage.ActualHeight));
+            newBox.SetPosition(
+                new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+                new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height),
+                new Size(xImage.ActualWidth, xImage.ActualHeight));
             xRegionsGrid.Children.Add(newBox);
             newBox.PointerPressed += xRegion_OnPointerPressed;
             xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             return imNote;
-
-            /*
-            var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
-            var s1 = xRichEditBox.Document.Selection.StartPosition;
-            var s2 = xRichEditBox.Document.Selection.EndPosition;
-            createRTFHyperlink(dc, ref s1, ref s2, false, false);
-            var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-            if (regions == null)
-            {
-                var dregions = new List<DocumentController>();
-                dregions.Add(dc);
-                DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
-            }
-            else
-            {
-                regions.Add(dc);
-            }
-            return dc;
-            */
         }
 
-        /*
-	    void createRTFHyperlink(DocumentController theDoc, ref int s1, ref int s2, bool createIfNeeded, bool forceLocal)
-	    {
-		    Point startPt;
-		    this.xRichEditBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
-		    string link = "\"" + theDoc.GetId() + "\"";
-		    if (!forceLocal && theDoc.GetDataDocument().DocumentType.Equals(HtmlNote.DocumentType) && (bool)theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data?.StartsWith("http"))
-		    {
-			    link = "\"" + theDoc.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null).Data + "\"";
-		    }
-
-		    if (xRichEditBox.Document.Selection.Link != link)
-		    {
-			    if (xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
-			    {
-				    xRichEditBox.Document.Selection.SetText(TextSetOptions.None, theDoc.Title);
-			    }
-
-			    // set the hyperlink for the matched text
-			    this.xRichEditBox.Document.Selection.Link = link;
-			    // advance the end selection past the RTF embedded HYPERLINK keyword
-			    s2 += this.xRichEditBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-			    s1 = s2;
-			    this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-			    this.xRichEditBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
-		    }
-	    }
-		*/
-
-
-
+        
         private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = false;
@@ -637,4 +597,5 @@ namespace Dash
             xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
         }
     }
+
 }
