@@ -261,9 +261,19 @@ namespace Dash
         #region ComboBox
         private void FontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var comboBox = sender as ComboBox;
+			var comboBox = sender as ComboBox;
             var selectedFontFamily = comboBox.SelectedValue as FontFamily;
-            xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+	        
+	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+	        {
+		       // xRichEditBox.Document.Selection.CharacterFormat.Name
+		       xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
+			}
+	        else
+	        {
+		        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+			}
+            
         }
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
