@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,6 +28,7 @@ namespace Dash
         public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
         private DocumentView _currentDocView;
+        private EditableImage _currentImage;
         private DocumentController _currentDocController;
 
 
@@ -70,15 +72,15 @@ namespace Dash
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
-            _currentDocView.OnCropClick?.Invoke();
+            _currentImage.StartCrop();
         }
 
         /// <summary>
         /// Called when the Replace Button is clicked. Calls on helper method to replace the most recently selected image.
         /// </summary>
-        private void Replace_Click(object sender, RoutedEventArgs e)
+        private async void Replace_Click(object sender, RoutedEventArgs e)
         {
-            ReplaceImage();
+            await ReplaceImage();
             xImageCommandbar.IsOpen = true;
         }
 
@@ -97,13 +99,13 @@ namespace Dash
         private void Revert_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
-            _currentDocView.OnRevert?.Invoke();
+            _currentImage.Revert();
         }
 
         /// <summary>
         /// Helper method for replacing the selected image. Opens file picker and and sets the field of the image controller to the new image's URI.
         /// </summary>
-        private async void ReplaceImage()
+        private async Task ReplaceImage()
         {
             var imagePicker = new FileOpenPicker
             {
@@ -121,7 +123,7 @@ namespace Dash
             {
                 _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
-                _currentDocView.OnReplaceImage?.Invoke();
+                await _currentImage.ReplaceImage();
             }
         }
 
@@ -131,25 +133,26 @@ namespace Dash
         internal void SetImageBinding(DocumentView selection)
         {
             _currentDocView = selection;
+            _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
             _currentDocController = _currentDocView.ViewModel.DocumentController;
         }
 
-        private void Rotate_Click(object sender, RoutedEventArgs e)
+        private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
-            _currentDocView.OnRotate?.Invoke();
+            await _currentImage.Rotate();
         }
 
-        private void VerticalMirror_Click(object sender, RoutedEventArgs e)
+        private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
-            _currentDocView.OnVerticalMirror?.Invoke();
+            await _currentImage.MirrorVertical();
         }
 
-        private void HorizontalMirror_Click(object sender, RoutedEventArgs e)
+        private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
-            _currentDocView.OnHorizontalMirror?.Invoke();
+            await _currentImage.MirrorHorizontal();
         }
     }
 }

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
@@ -58,18 +59,11 @@ namespace Dash
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
-            Image.SizeChanged += Image_SizeChanged;
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
         }
 
-        private void Image_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            //Focus(FocusState.Keyboard);
-            //_cropControl = new StateCropControl(_docCtrl, this);
-        }
-
-        private async void OnReplaceImage()
+        public async Task ReplaceImage()
         {
             _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
@@ -111,7 +105,7 @@ namespace Dash
              */
         }
 
-        private void OnRevert()
+        public void Revert()
         {
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
@@ -134,17 +128,11 @@ namespace Dash
             _originalImage = Image;
             _originalWidth = Image.ActualWidth;
             _docview = this.GetFirstAncestorOfType<DocumentView>();
-            _docview.OnCropClick += OnCropClick;
-            _docview.OnRevert += OnRevert;
-            _docview.OnReplaceImage += OnReplaceImage;
-            _docview.OnRotate += OnRotate;
-            _docview.OnHorizontalMirror += OnHorizontalMirror;
-            _docview.OnVerticalMirror += OnVerticalMirror;
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
         }
 
-        private void OnRotate()
+        public async Task Rotate()
         {
             Rect rect = new Rect
             {
@@ -154,20 +142,20 @@ namespace Dash
                 Height = Math.Floor(Image.ActualWidth)
             };
 
-            OnCrop(rect, BitmapRotation.Clockwise90Degrees);
+            await Crop(rect, BitmapRotation.Clockwise90Degrees);
         }
 
-        private void OnHorizontalMirror()
+        public async Task MirrorHorizontal()
         {
-            MirrorImage(BitmapFlip.Horizontal);
+            await MirrorImage(BitmapFlip.Horizontal);
         }
 
-        private void OnVerticalMirror()
+        public async Task MirrorVertical()
         {
-            MirrorImage(BitmapFlip.Vertical);
+            await MirrorImage(BitmapFlip.Vertical);
         }
 
-        private void MirrorImage(BitmapFlip flip)
+        private async Task MirrorImage(BitmapFlip flip)
         {
             Rect rect = new Rect
             {
@@ -176,11 +164,11 @@ namespace Dash
                 Height = Math.Floor(Image.ActualHeight),
                 Width = Math.Floor(Image.ActualWidth)
             };
-            OnCrop(rect, BitmapRotation.None, flip);
+            await Crop(rect, BitmapRotation.None, flip);
         }
 
         // called when the cropclick action is invoked in the image subtoolbar
-        private void OnCropClick()
+        public void StartCrop()
         {
             // make sure that we aren't already cropping
             if (xGrid.Children.Contains(_cropControl)) return;
@@ -202,7 +190,7 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
+        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
 
             // finds local uri path of image controller's image source
@@ -366,7 +354,7 @@ namespace Dash
         }
 
         // functionality for saving a crop and for moving the cropping boxes with directional keys
-        private void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (_isCropping)
                 switch (e.Key)
@@ -375,7 +363,7 @@ namespace Dash
                         // crop the image!
                         _isCropping = false;
                         xGrid.Children.Remove(_cropControl);
-                        OnCrop(_cropControl.GetBounds());
+                        await Crop(_cropControl.GetBounds());
                         _docview.showControls();
                       
 
