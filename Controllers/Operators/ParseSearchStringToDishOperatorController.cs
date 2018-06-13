@@ -109,44 +109,84 @@ namespace Dash
 
         private int FindNextDivider(String inputString)
         {
+            bool inParen = inputString.Trim('!').StartsWith("(");
             bool inQuote = false;
             int len = inputString.Length;
             for (int i = 0; i < len; i++)
             {
                 char curChar = inputString[i];
-                if (curChar == '"')
+                if (inParen)
                 {
-                    if (inQuote)
+                    if (curChar == '"')
                     {
-                        inQuote = false;
-                    } else
-                    {
-                        inQuote = true;
-                    }
+                        if (inQuote)
+                        {
+                            inQuote = false;
+                        }
+                        else
+                        {
+                            inQuote = true;
+                        }
 
+                    }
+                    else if (!inQuote && (curChar == ' ' || curChar == ','))
+                    {
+                        return i;
+                    }
                 }
-                else if (!inQuote && (curChar == ' ' || curChar == ','))
+            }
+            return len;
+        }
+
+        private int FindEndParenthesis(String inputString)
+        {
+            int len = inputString.Length;
+            for (int i = 0; i < len; i++)
+            {
+                // Making sure to ignore parenthesis captured within quotation marks 
+                if (inputString[i] == ')' && (i == len-1 || inputString[i+1] == ' ' || inputString[i+1] == ','))
                 {
                     return i;
                 }
             }
-            return len;
+            return -1;
         }
 
         private String Parse(String inputString)
         {
             int dividerIndex = FindNextDivider(inputString);
             String searchTerm = inputString.Substring(0, dividerIndex);
-            var modifiedSearchTerm = searchTerm.Replace("\"", "");
             bool isNegated = searchTerm.StartsWith("!") ? true : false;
-            String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
-            String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+            String modifiedSearchTerm = isNegated ? searchTerm.Substring(1) : searchTerm;
+            String finalSearchTerm = modifiedSearchTerm.Replace("\"", "");
+
+            int endParenthesis = -1;
+
+            // Making sure parenthesis doesn't clash with regex
+            if (modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")"))
+            {
+                endParenthesis = FindEndParenthesis(inputString);
+            }
+
+            // Using modifiedSearchTerm since we still want quotes inside, while giving the user option to negate the whole grouping
+            String searchDict;
+            if (endParenthesis >= 0)
+            {
+                if (isNegated)
+                {
+                    String newInput = inputString.Substring(1); 
+                }
+                searchDict = Parse()
+            } else {
+                searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+            }
 
             if (isNegated)
                 searchDict = NegateSearch(searchDict);
 
 
-            if (dividerIndex == inputString.Length)
+            int len = inputString.Length;
+            if (dividerIndex == len || endParenthesis == len - 1)
             {
                 return searchDict;
             } else
