@@ -115,7 +115,7 @@ namespace Dash
             for (int i = 0; i < len; i++)
             {
                 char curChar = inputString[i];
-                if (inParen)
+                if (!inParen)
                 {
                     if (curChar == '"')
                     {
@@ -132,6 +132,12 @@ namespace Dash
                     else if (!inQuote && (curChar == ' ' || curChar == ','))
                     {
                         return i;
+                    }
+                } else
+                {
+                    if (curChar == ')')
+                    {
+
                     }
                 }
             }
@@ -176,7 +182,7 @@ namespace Dash
                 {
                     String newInput = inputString.Substring(1); 
                 }
-                searchDict = Parse()
+                searchDict = Parse("insert string here");
             } else {
                 searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
             }

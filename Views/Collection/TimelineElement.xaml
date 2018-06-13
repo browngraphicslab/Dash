@@ -22,7 +22,7 @@
                     <RowDefinition Height="40"></RowDefinition>
                     <RowDefinition x:Name="xTopY" Height="50"></RowDefinition>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="{Binding DocumentViewModel.DocumentController.Title}"/>
+                <TextBlock x:Name="xTitleTextBlock" Grid.Row="1" Height="50" Width="170" TextAlignment="Center" FontSize="14" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
                 <Rectangle Name="xUpperLine" Grid.Row="2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2" Visibility="Visible"></Rectangle>
             </Grid>
             <!--time stamp-->
@@ -42,7 +42,7 @@
                 <!--document preview text-->
                 <StackPanel Grid.Row="1" HorizontalAlignment="Center" Height="70" VerticalAlignment="Center">
                     <local:DocumentView  x:Name="xDocumentPreview"
-                        DataContext="{Binding DisplayViewModel}" IsHitTestVisible="False" VerticalAlignment="Center">
+                        DataContext="{Binding DocumentViewModel}" IsHitTestVisible="False" VerticalAlignment="Center">
                     </local:DocumentView>
                 </StackPanel>
                 <Rectangle Grid.Row="2" Name="xLowerLine2" Width="1" Fill="LightGray" RadiusY="2" RadiusX="2"></Rectangle>
