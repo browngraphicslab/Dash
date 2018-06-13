@@ -311,15 +311,16 @@ namespace Dash
         {
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
                          ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
+            //TODO This can be a list of keys, it doesn't have to be a list of TextControllers anymore
             var headerList = ParentDocument
-                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
+                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.TypedData ?? new List<TextController>();
             if (dbDocs != null)
             {
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 {
-                    var fieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data);
+                    var fieldKey = ContentController<FieldModel>.GetController<KeyController>(h.Data);
                     var hvm = new CollectionDBSchemaHeader.HeaderViewModel()
                     {
                         SchemaView = this,

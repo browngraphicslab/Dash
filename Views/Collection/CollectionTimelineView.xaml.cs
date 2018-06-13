@@ -390,6 +390,7 @@ namespace Dash
                     // add all document viewmodels as timeline element view models
                     _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm, SortKey));
                     // add an event listener for the document to listen to when sortkey changes
+                    //TODO This event handler is probably never removed
                     dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
 
