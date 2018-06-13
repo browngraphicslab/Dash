@@ -405,7 +405,7 @@ namespace Dash
                 _isDragging = true;
 
                 //reset and get rid of the region preview
-                xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                //xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
                 xRegionDuringManipulationPreview.Width = 0;
                 xRegionDuringManipulationPreview.Height = 0;
                 xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
