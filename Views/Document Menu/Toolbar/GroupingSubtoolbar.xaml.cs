@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using System.Diagnostics;
-using System.Text;
-using Windows.UI;
-using Zu.TypeScript.TsTypes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -140,26 +128,23 @@ namespace Dash
          */
         private void ShapeOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch (xShapeOptionsDropdown.SelectedIndex)
+            var switchList = new List<string>
             {
-                case 0: //RECTANGLE
-                    _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
-                    break;
-                case 1: //ELLIPSE
-                    _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Elliptical.ToString(), true);
-                    break;
-                case 2: //ROUNDED RECTANGLE
-                    _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rounded.ToString(), true);
-                    break;
-                case 3: //ARBITRARY POLYGON
+                BackgroundShape.AdornmentShape.Rectangular.ToString(),
+                BackgroundShape.AdornmentShape.Elliptical.ToString(),
+                BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
+                BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
+                BackgroundShape.AdornmentShape.Pentagonal.ToString(),
+                BackgroundShape.AdornmentShape.Hexagonal.ToString(),
+                BackgroundShape.AdornmentShape.Octagonal.ToString(),
+                BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                BackgroundShape.AdornmentShape.Clover.ToString(),
+            };
 
-                    //TODO: collect user input points with a nice UI.
 
-                    break;
-                default: //DEFAULT = RECTANGLE
-                    _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, BackgroundShape.AdornmentShape.Rectangular.ToString(), true);
-                    break;
-            }
+            var index = xShapeOptionsDropdown.SelectedIndex;
+            var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
+            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
         }
 
         /*
@@ -206,18 +191,20 @@ namespace Dash
             //SHAPE: If it's present, retrieves the stored shape associated with this group and reflects it in the combo box field
             var shape = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data;
 
-            if (shape == "Rectangular")
+            var switchDictionary = new Dictionary<string, int>
             {
-                xShapeOptionsDropdown.SelectedIndex = 0;
-            }
-            else if (shape == "Elliptical")
-            {
-                xShapeOptionsDropdown.SelectedIndex = 1;
-            }
-            else if (shape == "Rounded")
-            {
-                xShapeOptionsDropdown.SelectedIndex = 2;
-            }
+                [BackgroundShape.AdornmentShape.Rectangular.ToString()] = 0,
+                [BackgroundShape.AdornmentShape.Elliptical.ToString()] = 1,
+                [BackgroundShape.AdornmentShape.RoundedRectangle.ToString()] = 2,
+                [BackgroundShape.AdornmentShape.RoundedFrame.ToString()] = 3,
+                [BackgroundShape.AdornmentShape.Pentagonal.ToString()] = 4,
+                [BackgroundShape.AdornmentShape.Hexagonal.ToString()] = 5,
+                [BackgroundShape.AdornmentShape.Octagonal.ToString()] = 6,
+                [BackgroundShape.AdornmentShape.CustomPolygon.ToString()] = 7,
+                [BackgroundShape.AdornmentShape.Clover.ToString()] = 8,
+            };
+
+            xShapeOptionsDropdown.SelectedIndex = switchDictionary.ContainsKey(shape) ? switchDictionary[shape] : 0;
 
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color

@@ -16,15 +16,32 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="322"/>
+                        <ColumnDefinition x:Name="xSliderWidth" Width="322"/>
                     </Grid.ColumnDefinitions>
                     <ComboBox x:Name="xShapeOptionsDropdown" SelectedIndex="0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
                         <ComboBoxItem Content="Rectangle"/>
                         <ComboBoxItem Content="Ellipse"/>
                         <ComboBoxItem Content="Rounded"/>
-                        <ComboBoxItem Content="Polygon"/>
+                        <ComboBoxItem Content="Frame"/>
+                        <ComboBoxItem Content="Pentagon"/>
+                        <ComboBoxItem Content="Hexagon"/>
+                        <ComboBoxItem Content="Octagon"/>
+                        <ComboBoxItem Content="CustomPoly"/>
+                        <ComboBoxItem Content="Clover"/>
+                        
                     </ComboBox>
-                    <Slider x:Name="xOpacitySlider" Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1" SnapsTo="StepValues" TickPlacement="None"  Grid.Column="1" IntermediateValue="128" Margin="22, 11, 0, 0" RightTapped="XOpacitySlider_OnRightTapped"  ValueChanged="XOpacitySlider_OnValueChanged"/>
+                    <Slider x:Name="xOpacitySlider" 
+                            Minimum="0" 
+                            Maximum="255"
+                            TickFrequency="1" 
+                            StepFrequency="1" 
+                            SnapsTo="StepValues" 
+                            TickPlacement="None"  
+                            Grid.Column="1" 
+                            IntermediateValue="128" 
+                            Margin="22, 11, 0, 0" 
+                            RightTapped="XOpacitySlider_OnRightTapped"  
+                            ValueChanged="XOpacitySlider_OnValueChanged"/>
                 </Grid>
             </CommandBar.Content>
             <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
