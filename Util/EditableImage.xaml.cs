@@ -405,7 +405,7 @@ namespace Dash
                 _isDragging = true;
 
                 //reset and get rid of the region preview
-                xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                //xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
                 xRegionDuringManipulationPreview.Width = 0;
                 xRegionDuringManipulationPreview.Height = 0;
                 xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
@@ -425,6 +425,10 @@ namespace Dash
                     {
                         MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
                     }
+                }
+                else
+                {
+                    if (_lastNearest != null) MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController, true);
                 }
             }
         }
@@ -483,6 +487,7 @@ namespace Dash
 
             if (sender is ImageRegionBox box)
             {
+               
                 //get the linked doc of the selected region
                 var theDoc = box.LinkTo;
                 if (theDoc == null) return;
