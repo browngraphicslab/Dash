@@ -209,12 +209,13 @@ namespace Dash
 
             //TODO: UWP apps can't access Downloads
             StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync("C:\\Users\\GFX lab\\Downloads");
-            StorageFile file = await downloads.GetFileAsync("hello.pdf");
+            StorageFile file = await downloads.GetFileAsync("bye.pdf");
             IStorageFile Ifile = file;
             //DataPackageView dataPack = file;
             FileData fileD = FileDropHelper.GetFileData(file, null).Result;
-           // DocumentController docPdf = PdfToDashUtil.ParseFileAsync(fileD);
-
+            PdfToDashUtil PdftoDash = new PdfToDashUtil();
+            DocumentController docPdf = PdftoDash.ParseFileAsync(fileD).Result;
+            //now maybe use makeview in pdfBox
         }
 
         private static void watcher_FileCreated(object sender, FileSystemEventArgs e)
