@@ -426,6 +426,10 @@ namespace Dash
                         MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
                     }
                 }
+                else
+                {
+                    if (_lastNearest != null) MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController, true);
+                }
             }
         }
 
@@ -483,6 +487,7 @@ namespace Dash
 
             if (sender is ImageRegionBox box)
             {
+               
                 //get the linked doc of the selected region
                 var theDoc = box.LinkTo;
                 if (theDoc == null) return;
