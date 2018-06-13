@@ -10,9 +10,9 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar x:Name="xImageCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
+        <CommandBar Background="LightGray" x:Name="xImageCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
-                <ComboBox x:Name="xScaleOpetionsDropdown" SelectedIndex="0">
+                <ComboBox x:Name="xScaleOptionsDropdown" SelectedIndex="0">
                     <ComboBoxItem Content="Scale to Size"/>
                     <ComboBoxItem Content="Stretch"/>
                     <ComboBoxItem Content="Clipped"/>

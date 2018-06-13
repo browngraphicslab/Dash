@@ -58,10 +58,9 @@ namespace Dash
 
                 var tree = DocumentTree.MainPageTree;
                 var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
-               
+
                 Debug.Assert(allResults != null);
-                var stringContainResults = allResults.TypedData
-                    .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound));
+                var stringContainResults = allResults.TypedData.Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound));
 
                 var finalResults = (negateCategory ? allResults.TypedData.Except(stringContainResults) : stringContainResults).ToArray();
 
@@ -78,7 +77,7 @@ namespace Dash
                         resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = $"Didn't contain the specified negated key/value: {keyQuery}/{valueQuery} ";
                     }
                 }
-                
+
 
                 toReturn.AddRange(finalResults);
             }

@@ -219,7 +219,7 @@ namespace Dash
             xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xAnnotateEllipseBorder.DragStarting += (sender, args) =>
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, true);
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, this);
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 ViewModel.DecorationState = false;
@@ -713,7 +713,8 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!ViewModel.IsAdornmentGroup)
+            //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
+            if (!ViewModel.IsAdornmentGroup && !ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
             {
                 FocusedDocument = this;
                 ToFront();
@@ -724,8 +725,20 @@ namespace Dash
                 //}
                 if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
                 {
-                    if (!this.IsShiftPressed())
-                        cfview.DeselectAll();
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
+                    cfview.SelectDocs(d);
+                    if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                    {
+                        cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    }
+                }
+            }
+            else if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType) && this.IsCtrlPressed())
+            {
+                var d = new List<DocumentView>(new DocumentView[] { this });
+                if (ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
+                {
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
                     cfview.SelectDocs(d);
                     if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                     {
@@ -914,9 +927,17 @@ namespace Dash
         {
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
-                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
+                var dragDoc = dragModel.DraggedDocument;
+                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+
+                var dropDoc = ViewModel.DocumentController;
+                if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                    dropDoc = KeyStore.RegionCreator[dragDoc.DocumentType](this);
+
+                dragDoc.Link(dropDoc);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
 
@@ -927,7 +948,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
                 var note = new RichTextNote("<annotation>").Document;
                 dragModel.DraggedDocument.Link(note);
@@ -943,7 +964,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
                 var note = new RichTextNote("<annotation>").Document;
                 dragModel.DraggedDocument.Link(note);

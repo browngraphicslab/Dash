@@ -115,7 +115,6 @@ namespace Dash
         {
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
-                Image.Source = _ogImage;
                 Image.Width = _ogWidth;
                 _originalWidth = _ogWidth;
                 
@@ -340,7 +339,7 @@ namespace Dash
             // retrieve the uri from the file to update the image controller
             var path = "ms-appdata:///local/" + newFile.Name;
             var uri = new Uri(path);
-            _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
+            _docCtrl.SetField(KeyStore.DataKey, new ImageController(uri), true);
 
             // update the image source, width, and positions
             Image.Source = cropBmp;

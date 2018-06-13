@@ -156,6 +156,7 @@ namespace DashShared
             public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text"); 
             public static KeyModel TextWrappingKey = new KeyModel("FF488D09-BBB7-4158-A5E4-0C4530DF2F56", "Text Wrapping");
             public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "Background Color");
+            public static KeyModel OpacitySliderValueKey = new KeyModel("3FD448B7-8AEE-4FBD-B68C-514E098D8D31", "Opacity Slider Value");
             public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
             public static KeyModel AdornmentKey = new KeyModel("FF3329BD-AA78-46E4-9A42-47CAB1E62123", "Is Adornment");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");

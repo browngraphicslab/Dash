@@ -11,7 +11,7 @@
     d:DesignWidth="400">
 
     <Grid>
-        <CommandBar x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
+        <CommandBar Background="LightGray" x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
                 <ComboBox x:Name="xViewModesDropdown" SelectedIndex="0" SelectionChanged="ViewModesDropdown_OnSelectionChanged">
                     <ComboBoxItem Content="Freeform"/>

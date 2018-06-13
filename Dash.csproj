@@ -180,7 +180,9 @@
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
     <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
@@ -376,12 +378,14 @@
     <Compile Include="Views\CSVImportHelper.xaml.cs">
       <DependentUpon>CSVImportHelper.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
+      <DependentUpon>DropDownTextButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DockedView.xaml.cs">
       <DependentUpon>DockedView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\CustomButtonFormatter.cs" />
-    <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
-      <DependentUpon>DropDownTextButton.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
+      <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -756,6 +760,7 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\GroupColorIcon.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\jan_2018_dash_logo.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-100.png" />
@@ -765,11 +770,13 @@
     <Content Include="Assets\Large\Large310x310Logo.scale-400.png" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />
+    <Content Include="Assets\locked.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-100.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-125.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\Small\Small71x71Logo.scale-100.png" />
@@ -789,6 +796,8 @@
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\DefaultVideo.mp4" />
+    <Content Include="Assets\unlocked.png" />
+    <Content Include="Assets\pinned.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-125.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-150.png" />
@@ -862,11 +871,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DockedView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml">
+    <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

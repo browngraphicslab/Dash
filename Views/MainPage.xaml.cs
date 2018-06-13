@@ -51,7 +51,7 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
-        private MenuToolbar Toolbar;
+
         private bool IsPresentationModeToggled = false;
 
         private bool[] _firstDock = {true, true, true, true};
@@ -78,11 +78,6 @@ namespace Dash
         {
             SelectedDocuments = docs;
             Toolbar.Update(docs);
-        }
-        public void AddToAndUpdateSelectedDocuments(DocumentView toAdd)
-        {
-            SelectedDocuments = new List<DocumentView> { toAdd };
-            Toolbar.Update(SelectedDocuments);
         }
 
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
@@ -116,11 +111,9 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            Toolbar = new MenuToolbar(xCanvas);
+			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
-        }
-
-
+		}
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -167,10 +160,10 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace);
-                MainDocView.ViewModel.DisableDecorations = true;
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) {DisableDecorations = true};
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                //TODO This might not be necessary and shouldn't be necessary
                 treeContext.Loaded(true);
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("My Workspaces");
@@ -566,6 +559,7 @@ namespace Dash
         public void ThemeChange(bool nightModeOn)
         {
             RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
+			Toolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
