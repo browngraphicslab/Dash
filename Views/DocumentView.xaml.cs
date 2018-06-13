@@ -317,8 +317,6 @@ namespace Dash
                 DocPreview = await this.GetPreview();
             if (DocPreview != null)
             {
-                xIconImage.Height = 180;
-                xIconImage.Width = 180;
                 xIconImage.Source = DocPreview;
             }
             else
@@ -339,8 +337,6 @@ namespace Dash
         private void CloseDocPreview()
         {
             xIconImage.Visibility = Visibility.Visible;
-            xIconImage.Width = 60;
-            xIconImage.Height = 60;
             xSmallIconImage.Visibility = Visibility.Collapsed;
             xIconBorder.BorderThickness = new Thickness(0);
             xIconBorder.Background = new SolidColorBrush(Colors.Transparent);

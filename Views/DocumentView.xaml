@@ -124,8 +124,8 @@
 
             <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
                 <Grid>
-                    <Image x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/Icons/doc-icon.png" />
-                    <Image x:Name="xSmallIconImage" Height="60" Width="60" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="ms-appx:///Assets/Icons/doc-icon.png"/>
+                    <Image x:Name="xIconImage" Height="180" HorizontalAlignment="Center" Width="180"  Source="ms-appx:///Assets/Icons/doc-icon.png" />
+                    <Image x:Name="xSmallIconImage" Height="50" Width="50" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="ms-appx:///Assets/Icons/doc-icon.png"/>
                 </Grid>
             </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
