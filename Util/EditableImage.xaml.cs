@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -40,6 +41,7 @@ namespace Dash
         private Point _anchorPoint;
         private bool _isDragging;
         private ImageSource _ogImage;
+        private DocumentView _lastNearest = null;
 
         public Rect RectGeo;
         private double _ogWidth;
@@ -382,6 +384,17 @@ namespace Dash
             xGrid.Children.Remove(_cropControl);
             xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            if (_lastNearest != null)
+            {
+                _lastNearest.DocHighlight.BorderThickness = new Thickness(0);
+            }
+            
+        }
+
+        private void Region_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            //var region = (ImageRegionBox)sender;
+            //region.LinkTo.View.DocHighlight.BorderThickness = new Thickness(5);
         }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -424,12 +437,30 @@ namespace Dash
                 var pos = e.GetCurrentPoint(xImage).Position;
                 _anchorPoint = pos;
                 _isDragging = true;
-                xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
-                xRegionDuringManipulationPreview.Width = 0;
-                xRegionDuringManipulationPreview.Height = 0;
-                xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                StopImageFromMoving(sender, e);
+
+                if ((xRegionDuringManipulationPreview.Margin.Left < pos.X && pos.X <
+                     xRegionDuringManipulationPreview.Margin.Left + xRegionDuringManipulationPreview.Width) &&
+                    (xRegionDuringManipulationPreview.Margin.Top < pos.Y && pos.Y <
+                     xRegionDuringManipulationPreview.Margin.Top + xRegionDuringManipulationPreview.Height))
+                {
+
+                }
+                else
+                {
+                    xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                    xRegionDuringManipulationPreview.Width = 0;
+                    xRegionDuringManipulationPreview.Height = 0;
+                    xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
+                    xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                    StopImageFromMoving(sender, e);
+                }
+                
             }
+        }
+
+        private void Region_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xRegionDuringManipulationPreview.Visibility = Visibility.Visible;
         }
 
         public bool IsSomethingSelected()
@@ -437,7 +468,7 @@ namespace Dash
             return xRegionPostManipulationPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
         }
 
-
+        
         public DocumentController GetRegionDocument()
         {
             if (!this.IsSomethingSelected()) return _docCtrl;
@@ -557,6 +588,8 @@ namespace Dash
                     if (this.IsCtrlPressed())
                         nearest.DeleteDocument();
                     else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                    _lastNearest = nearest;
+                    nearest.DocHighlight.BorderThickness = new Thickness(5);
                 }
                 else
                 {

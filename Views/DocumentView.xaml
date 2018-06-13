@@ -84,7 +84,6 @@
                 </Border>
             </Border>
 
-            
 
             <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <HyperlinkButton   

@@ -16,7 +16,7 @@
         <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="UniformToFill"
                Width="500" Source="{x:Bind ImageSource}" CacheMode="BitmapCache" />
         <Grid x:Name="xRegionsGrid"/>
-        <dash:ImageRegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed"/>
+        <dash:ImageRegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed" LostFocus="Region_OnLostFocus" Tapped="Region_Tapped"/>
         <Rectangle x:Name="xRegionDuringManipulationPreview" Fill="AntiqueWhite" Opacity="0.4" StrokeThickness="2" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
     </Grid>
 
