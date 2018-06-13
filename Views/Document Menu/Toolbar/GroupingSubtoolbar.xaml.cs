@@ -205,22 +205,6 @@ namespace Dash
 
             xShapeOptionsDropdown.SelectedIndex = switchDictionary.ContainsKey(shape) ? switchDictionary[shape] : 0;
 
-            // POTENTIALLY LET USER INPUT NUMBER OF SIDES
-            //if (xShapeOptionsDropdown.SelectedIndex == 7)
-            //{
-            //    var margin = xOpacitySlider.Margin;
-            //    margin.Left = 50;
-            //    xOpacitySlider.Margin = margin;
-            //    xSliderWidth.Width = new GridLength(294);
-            //}
-            //else
-            //{
-            //    var margin = xOpacitySlider.Margin;
-            //    margin.Left = 22;
-            //    xOpacitySlider.Margin = margin;
-            //    xSliderWidth.Width = new GridLength(322);
-            //}
-
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
