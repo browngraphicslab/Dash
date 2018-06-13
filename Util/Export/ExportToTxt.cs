@@ -27,6 +27,7 @@ using Dash.Controllers;
 using DashShared;
 using Flurl.Util;
 using Newtonsoft.Json.Serialization;
+using System.IO;
 
 namespace Dash
 {
@@ -642,19 +643,9 @@ namespace Dash
                 
                 StorageFolder localFolder =
                     Windows.Storage.ApplicationData.Current.LocalFolder;
-                int pathLength = localFolder.Path.Length + 3;
 
-                string url;
-
-                if (pathLength < rawUrl.Length)
-                {
-                    url = rawUrl.Substring(5, rawUrl.Length - 5);
-                }
-                else
-                {
-                    //get path without local folder
-                    url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
-                }
+                var parts = rawUrl.Split('/');
+                string url = parts[parts.Length - 1];
 
                 StorageFile imgFile = await localFolder.GetFileAsync(url);
                 StorageFolder imgFolder = await folder.GetFolderAsync(type);
