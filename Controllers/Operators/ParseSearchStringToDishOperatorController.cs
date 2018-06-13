@@ -147,7 +147,7 @@ namespace Dash
                         inParen = false;
                     }
                 }
-                else if (!inQuote && !inParen && (curChar == ' ' || curChar == ','))
+                else if (!inQuote && !inParen && (curChar == ' ' || curChar == '|'))
                 {
                     return i;
                 }
@@ -213,7 +213,7 @@ namespace Dash
 
             
             String searchDict;
-            if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains(','))))
+            if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
                 String newInput = modInput.Substring(1, modInput.Length - 2);
                 searchDict = Parse(newInput);
@@ -240,7 +240,7 @@ namespace Dash
                 if (divider == ' ')
                 {
                     return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
-                } else if (divider == ',')
+                } else if (divider == '|')
                 {
                     return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
                 } else
