@@ -1,20 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Storage;
+using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
 using Dash.Views.Document_Menu.Toolbar;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -38,13 +27,14 @@ namespace Dash
 
         public void SetComboBoxVisibility(Visibility visibility) => xScaleOptionsDropdown.Visibility = visibility;
 
-        private DocumentView currentDocView;
-        private DocumentController currentDocController;
+        private DocumentView _currentDocView;
+        private EditableImage _currentImage;
+        private DocumentController _currentDocController;
 
 
         public ImageSubtoolbar()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             FormatDropdownMenu();
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
@@ -79,19 +69,18 @@ namespace Dash
             xImageCommandbar.IsOpen = true;
         }
 
-
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
-            //TODO: Implement cropping on the selected image
             xImageCommandbar.IsOpen = true;
+            _currentImage.StartCrop();
         }
 
         /// <summary>
         /// Called when the Replace Button is clicked. Calls on helper method to replace the most recently selected image.
         /// </summary>
-        private void Replace_Click(object sender, RoutedEventArgs e)
+        private async void Replace_Click(object sender, RoutedEventArgs e)
         {
-            ReplaceImage();
+            await ReplaceImage();
             xImageCommandbar.IsOpen = true;
         }
 
@@ -107,10 +96,16 @@ namespace Dash
             xScaleOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
         }
 
+        private void Revert_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            _currentImage.Revert();
+        }
+
         /// <summary>
         /// Helper method for replacing the selected image. Opens file picker and and sets the field of the image controller to the new image's URI.
         /// </summary>
-        private async void ReplaceImage()
+        private async Task ReplaceImage()
         {
             var imagePicker = new FileOpenPicker
             {
@@ -123,9 +118,13 @@ namespace Dash
             imagePicker.FileTypeFilter.Add(".png");
             imagePicker.FileTypeFilter.Add(".svg");
 
-            //update image controller's URI to the new image's URI
             var replacement = await imagePicker.PickSingleFileAsync();
-            if (replacement != null) { currentDocController.SetField<ImageController>(KeyStore.DataKey, await ImageToDashUtil.GetLocalURI(replacement), true); }
+            if (replacement != null)
+            {
+                _currentDocController.SetField<ImageController>(KeyStore.DataKey,
+                    await ImageToDashUtil.GetLocalURI(replacement), true);
+                await _currentImage.ReplaceImage();
+            }
         }
 
         /// <summary>
@@ -133,8 +132,27 @@ namespace Dash
         /// </summary>
         internal void SetImageBinding(DocumentView selection)
         {
-            currentDocView = selection;
-            currentDocController = currentDocView.ViewModel.DocumentController;
+            _currentDocView = selection;
+            _currentImage = _currentDocView.GetFirstDescendantOfType<EditableImage>();
+            _currentDocController = _currentDocView.ViewModel.DocumentController;
+        }
+
+        private async void Rotate_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            await _currentImage.Rotate();
+        }
+
+        private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            await _currentImage.MirrorVertical();
+        }
+
+        private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
+        {
+            xImageCommandbar.IsOpen = true;
+            await _currentImage.MirrorHorizontal();
         }
     }
 }

@@ -182,6 +182,8 @@ namespace DashShared
             public static KeyModel ActualSizeKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualSize");
             public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
+            public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
+
         }
 
         public static class TypeStore

@@ -538,6 +538,7 @@ namespace Dash
                     docController.GetPositionField().Data = where;
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
+
                 //add error message for null file?
             }
         }
@@ -573,7 +574,6 @@ namespace Dash
                     docController.GetPositionField().Data = where;
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
-
                 //add error message for null file?
             }
         }

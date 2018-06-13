@@ -38,7 +38,6 @@ namespace Dash
         }
 
         public MenuFlyout MenuFlyout { get; set; }
-
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 
@@ -78,6 +77,7 @@ namespace Dash
             get { return (bool)GetValue(BindRenderTransformProperty); }
             set { SetValue(BindRenderTransformProperty, value); }
         }
+
 
         // == CONSTRUCTORs ==
 
@@ -1043,6 +1043,32 @@ namespace Dash
         {
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
+        }
+
+       
+
+    
+
+        public void hideControls()
+        {
+            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            xTitleIcon.Visibility = Visibility.Collapsed;
+            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+        }
+
+        public void showControls()
+        {
+            ResizeHandleBottomLeft.Visibility = Visibility.Visible;
+            ResizeHandleBottomRight.Visibility = Visibility.Visible;
+            ResizeHandleTopLeft.Visibility = Visibility.Visible;
+            ResizeHandleTopRight.Visibility = Visibility.Visible;
+            xTitleIcon.Visibility = Visibility.Visible;
+            xAnnotateEllipseBorder.Visibility = Visibility.Visible;
+            xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)

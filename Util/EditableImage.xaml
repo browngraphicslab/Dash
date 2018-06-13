@@ -5,8 +5,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     x:Name="xCanvas"
-    mc:Ignorable="d" >
+    mc:Ignorable="d"
+    LostFocus="EditableImage_OnLostFocus"
+    KeyDown="XGrid_OnKeyDown"
+    Background="Beige" IsTabStop="True">
 
-    <!--image-->
-    <Image x:Name="xImage" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" CacheMode="BitmapCache"/>
+    <Grid x:Name="xGrid" PointerMoved="StopImageFromMoving" PointerReleased="StopImageFromMoving"
+          PointerPressed="StopImageFromMoving">
+        <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" CacheMode="BitmapCache" />
+    </Grid>
+
+
 </UserControl>
