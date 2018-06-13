@@ -33,7 +33,9 @@ namespace Dash
 			{
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
-				AreTransportControlsEnabled = true
+				AreTransportControlsEnabled = true,
+                MinWidth = 250,
+                MinHeight = 100
 			};
 
 			// setup bindings on the video

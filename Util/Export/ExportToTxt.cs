@@ -27,6 +27,7 @@ using Dash.Controllers;
 using DashShared;
 using Flurl.Util;
 using Newtonsoft.Json.Serialization;
+using System.IO;
 
 namespace Dash
 {
@@ -322,7 +323,15 @@ namespace Dash
                 var text = rawText.Data;
                 var margins = getMargin(doc, minMax);
 
-                return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey);
+
+                if (stringWidth == null) {
+                    return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+
+                } else {
+                    return "<p style=\"width: " + dashToHtml(Convert.ToDouble(stringWidth.DereferenceToRoot(null).ToString()), minMax)
+                       + "px; position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                }
             }
             else
             {
@@ -642,12 +651,10 @@ namespace Dash
                 
                 StorageFolder localFolder =
                     Windows.Storage.ApplicationData.Current.LocalFolder;
-                int pathLength = localFolder.Path.Length + 3;
 
-                //get path without local folder
-                string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
+                var parts = rawUrl.Split('/');
+                string url = parts[parts.Length - 1];
 
-                
                 StorageFile imgFile = await localFolder.GetFileAsync(url);
                 StorageFolder imgFolder = await folder.GetFolderAsync(type);
 

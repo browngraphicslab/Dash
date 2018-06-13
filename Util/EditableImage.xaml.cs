@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dash.Annotations;
+using DashShared;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -12,12 +14,8 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Annotations;
-using DashShared;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -29,7 +27,7 @@ namespace Dash
         private readonly DocumentController _docCtrl;
         private StateCropControl _cropControl;
         private ImageController _imgctrl;
-        private bool _isCropping;
+        public bool IsCropping;
         private DocumentView _docview;
         public Image Image => xImage;
 
@@ -53,27 +51,19 @@ namespace Dash
 
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
-            //var newImg = new Image();
-            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
             Image.Width = fileProperties.Width;
             Image.Source = new BitmapImage(new Uri(file.Path));
             
             var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
             _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-            /*
-             *  onReplaceClicked
-             *      _ogImage = new image.source
-             *      _ogWidth = new image.width
-             *      _ogUri = new image uri
-             */
         }
 
-        private async Task<StorageFile> GetImageFile(bool OriginalImage = false)
+        private async Task<StorageFile> GetImageFile(bool originalImage = false)
         {
             // finds local uri path of image controller's image source
             StorageFile file;
             Uri src;
-            if (OriginalImage)
+            if (originalImage)
             {
                 src = _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
             }
@@ -165,13 +155,13 @@ namespace Dash
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
             _docview.hideControls();
-            _isCropping = true;
+            IsCropping = true;
         }
 
         private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
         {
             // prevent the image from being moved while being cropped
-            if (_isCropping) e.Handled = true;
+            if (IsCropping) e.Handled = true;
         }
 
         /// <summary>
@@ -324,12 +314,12 @@ namespace Dash
         // functionality for saving a crop and for moving the cropping boxes with directional keys
         private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_isCropping)
+            if (IsCropping)
                 switch (e.Key)
                 {
                     case VirtualKey.Enter:
                         // crop the image!
-                        _isCropping = false;
+                        IsCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
                         _docview.showControls();
@@ -348,8 +338,8 @@ namespace Dash
         // removes the cropping controls and allows image to be moved and used when focus is lost
         private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            if (!_isCropping) return;
-            _isCropping = false;
+            if (!IsCropping) return;
+            IsCropping = false;
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
         }
