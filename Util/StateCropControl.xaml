@@ -1,0 +1,96 @@
+﻿<UserControl
+    x:Class="Dash.StateCropControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    d:DataContext="{d:DesignInstance local:StateCropControl}">
+
+    <Grid x:Name="xBounds" Width="Auto" Height="Auto" Background="Transparent" HorizontalAlignment="Left"
+          VerticalAlignment="Top">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="Brush" Color="DarkSlateGray" />
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- creates the 3x3 cropping lines -->
+        <Border Grid.Column="0" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
+        <Border Grid.Column="1" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 0 1" />
+        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{StaticResource Brush}" BorderThickness="1 1 1 1" />
+        <Border Grid.Column="0" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="1" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="2" Grid.Row="1" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
+        <Border Grid.Column="0" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="1" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 0 1" />
+        <Border Grid.Column="2" Grid.Row="2" BorderBrush="{StaticResource Brush}" BorderThickness="1 0 1 1" />
+
+        <!-- base cropping rectangle shape -->
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            x:Name="xBase"
+            Fill="{x:Bind Fill}"
+            StrokeThickness="4"
+            Stroke="Black"
+            PointerEntered="xBasePointerEntered"
+            PointerExited="AllPointerExited"
+            ManipulationStarted="OnAllManipulationStarted"
+            ManipulationDelta="XBase_OnManipulationDelta"
+            ManipulationCompleted="XBase_OnManipulationCompleted"
+            ManipulationMode="All" />
+
+        <!-- creates the four cropping guides -->
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            x:Name="xLeft" PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Fill="Transparent" Width="20" Height="60" Stroke="Black" StrokeThickness="4"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationMode="TranslateX" HorizontalAlignment="Left"
+            VerticalAlignment="Center" />
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            x:Name="xRight" HorizontalAlignment="Right" VerticalAlignment="Center" Fill="Transparent" Width="20"
+            Stroke="Black" StrokeThickness="4"
+            PointerEntered="LeftRightPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="60" ManipulationDelta="XRight_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" />
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="60"
+            Stroke="Black" StrokeThickness="4"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            Height="20" ManipulationDelta="XTop_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+        <Rectangle
+            Grid.ColumnSpan="3"
+            Grid.RowSpan="3"
+            PointerEntered="TopBottomPointerEntered"
+            PointerExited="AllPointerExited"
+            x:Name="xBottom" HorizontalAlignment="Center" VerticalAlignment="Bottom" Fill="Transparent" Width="60"
+            Stroke="Black" StrokeThickness="4"
+            Height="20" ManipulationDelta="XBottom_OnManipulationDelta"
+            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+    </Grid>
+</UserControl>

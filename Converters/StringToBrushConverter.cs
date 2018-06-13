@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash.Converters
 {
-    class StringToBrushConverter : SafeDataToXamlConverter<string, Brush>
+    internal class StringToBrushConverter : SafeDataToXamlConverter<string, Brush>
     {
         public override Brush ConvertDataToXaml(string data, object parameter = null)
         {
@@ -17,7 +17,8 @@ namespace Dash.Converters
             return (string)XamlBindingHelper.ConvertValue(typeof(string), (data as SolidColorBrush)?.Color ?? Colors.White);
         }
     }
-    class StringToNamedColorConverter : SafeDataToXamlConverter<string, NamedColor>
+
+    internal class StringToNamedColorConverter : SafeDataToXamlConverter<string, NamedColor>
     {
         public override NamedColor ConvertDataToXaml(string data, object parameter = null)
         {

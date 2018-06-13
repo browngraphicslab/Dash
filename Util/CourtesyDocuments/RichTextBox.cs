@@ -46,7 +46,11 @@ namespace Dash
                 element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, wrapBinding);
             }
         }
-
+        public static DocumentController MakeRegionDocument(DocumentView richTextBox)
+        {
+            var rtv = richTextBox.GetFirstDescendantOfType<RichTextView>();
+            return rtv.GetRegionDocument();
+        }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             RichTextView rtv = null;
