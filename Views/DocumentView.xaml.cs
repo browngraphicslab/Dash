@@ -785,6 +785,8 @@ namespace Dash
                     {
                         return nestedCollection;
                     }
+
+                    return null;
                 }
             }
 
@@ -793,6 +795,7 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
+            Debug.WriteLine("Move");
             var selectedDocs = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
