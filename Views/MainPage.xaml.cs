@@ -419,6 +419,8 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
+                return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
@@ -449,7 +451,7 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
-            if (e.Handled)
+            if (e.Handled  || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
