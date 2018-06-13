@@ -943,7 +943,7 @@ namespace Dash
 
                 var dropDoc = ViewModel.DocumentController;
                 if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
-                    dropDoc = KeyStore.RegionCreator[dragDoc.DocumentType](this);
+                    dropDoc = KeyStore.RegionCreator[dropDoc.DocumentType](this);
 
                 dragDoc.Link(dropDoc);
 
