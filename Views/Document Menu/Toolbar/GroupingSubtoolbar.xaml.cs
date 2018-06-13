@@ -127,21 +127,22 @@ namespace Dash
          */
         private void ShapeOptionsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var switchDictionary = new Dictionary<int, string>
+            var switchList = new List<string>
             {
-                [0] = BackgroundShape.AdornmentShape.Rectangular.ToString(),
-                [1] = BackgroundShape.AdornmentShape.Elliptical.ToString(),
-                [2] = BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
-                [3] = BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
-                [4] = BackgroundShape.AdornmentShape.Pentagonal.ToString(),
-                [5] = BackgroundShape.AdornmentShape.Hexagonal.ToString(),
-                [6] = BackgroundShape.AdornmentShape.Octagonal.ToString(),
-                [7] = BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
-                [8] = BackgroundShape.AdornmentShape.Clover.ToString(),
+                BackgroundShape.AdornmentShape.Rectangular.ToString(),
+                BackgroundShape.AdornmentShape.Elliptical.ToString(),
+                BackgroundShape.AdornmentShape.RoundedRectangle.ToString(),
+                BackgroundShape.AdornmentShape.RoundedFrame.ToString(),
+                BackgroundShape.AdornmentShape.Pentagonal.ToString(),
+                BackgroundShape.AdornmentShape.Hexagonal.ToString(),
+                BackgroundShape.AdornmentShape.Octagonal.ToString(),
+                BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                BackgroundShape.AdornmentShape.Clover.ToString(),
             };
 
+
             var index = xShapeOptionsDropdown.SelectedIndex;
-            var selectedLabel = switchDictionary.ContainsKey(index) ? switchDictionary[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
+            var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
         }
 

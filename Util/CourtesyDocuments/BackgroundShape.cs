@@ -51,23 +51,6 @@ namespace Dash
             var corePath = new Path {Fill = new SolidColorBrush(Colors.Blue), StrokeThickness = 0};
             pathBox.Child = corePath;
 
-            Enum.TryParse<AdornmentShape>(docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data ?? AdornmentShape.Rectangular.ToString(), out var ashape);
-
-            var switchDictionary = new Dictionary<AdornmentShape, Geometry>
-            {
-                [AdornmentShape.Rectangular] = new RectangleGeometry { Rect = new Rect(0, 0, 1, 1) },
-                [AdornmentShape.Elliptical] = new EllipseGeometry { Center = new Point(1, 1), RadiusX = 1, RadiusY = 1 },
-                [AdornmentShape.RoundedRectangle] = CustomGroupGeometryTemplate.RoundedRectangle(),
-                [AdornmentShape.RoundedFrame] = CustomGroupGeometryTemplate.RoundedFrame(),
-                [AdornmentShape.Pentagonal] = CustomGroupGeometryTemplate.LinearPolygon(5),
-                [AdornmentShape.Hexagonal] = CustomGroupGeometryTemplate.LinearPolygon(6),
-                [AdornmentShape.Octagonal] = CustomGroupGeometryTemplate.LinearPolygon(8),
-                [AdornmentShape.CustomPolygon] = CustomGroupGeometryTemplate.LinearPolygon(15),
-                [AdornmentShape.Clover] = CustomGroupGeometryTemplate.Clover(),
-            };
-
-            corePath.Data = (switchDictionary.ContainsKey(ashape)) ? switchDictionary[ashape] : new RectangleGeometry();
-
             SetupBindings(pathBox, docController, context);
             BindPathShape(corePath, docController, context);
             BindPathFill(corePath, docController, context);
