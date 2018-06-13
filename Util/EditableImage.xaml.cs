@@ -466,7 +466,7 @@ namespace Dash
             // use during here because it's the one with actual pixel measurements
             newBox.SetPosition(
                 new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-                new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height),
+                new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
                 new Size(xImage.ActualWidth, xImage.ActualHeight));
             xRegionsGrid.Children.Add(newBox);
             newBox.PointerPressed += xRegion_OnPointerPressed;
