@@ -161,7 +161,7 @@ namespace Dash
             }; 
             allSeparators = tempSeparators;
 
-            this.AddSecondaryButtonEventHandlers();
+            AddSecondaryButtonEventHandlers();
         }
 
 		/// <summary>

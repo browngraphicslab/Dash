@@ -19,7 +19,7 @@
                     <ComboBoxItem Content="SmartFit"/>
                 </ComboBox>
             </CommandBar.Content>
-            
+
             <AppBarButton x:Name="xCrop" Icon="Crop" Label="Crop" Click="Crop_Click"/>
             <AppBarButton x:Name="xReplace" Icon="Pictures" Label="Replace" Click="Replace_Click"/>
         </CommandBar>
