@@ -41,6 +41,7 @@ namespace Dash
         private Point _anchorPoint;
         private bool _isDragging;
         private ImageSource _ogImage;
+        private ImageRegionBox _lastSelected = null;
         private DocumentView _lastNearest = null;
 
         public Rect RectGeo;
@@ -89,148 +90,148 @@ namespace Dash
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
-			try
-			{
-				// method of getting file from local uri
-				file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
-			}
-			catch (Exception)
-			{
-				// method of getting file from absolute uri
-				file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
-			}
+            try
+            {
+                // method of getting file from local uri
+                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+            }
+            catch (Exception)
+            {
+                // method of getting file from absolute uri
+                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+            }
 
-			var fileProperties = await file.Properties.GetImagePropertiesAsync();
-			_originalWidth = fileProperties.Width;
-			//var newImg = new Image();
-			//newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
-			Image.Width = double.NaN;
-			Image.Source = new BitmapImage(new Uri(file.Path));
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            _originalWidth = fileProperties.Width;
+            //var newImg = new Image();
+            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
+            Image.Width = double.NaN;
+            Image.Source = new BitmapImage(new Uri(file.Path));
 
-			_ogImage = Image.Source;
-			_ogWidth = _originalWidth;
-			_ogUri = _imgctrl.ImageSource;
-			/*
+            _ogImage = Image.Source;
+            _ogWidth = _originalWidth;
+            _ogUri = _imgctrl.ImageSource;
+            /*
              *  onReplaceClicked
              *      _ogImage = new image.source
              *      _ogWidth = new image.width
              *      _ogUri = new image uri
              */
-		}
+        }
 
-		private void OnRevert()
-		{
-			if (_ogImage != null)
-			{
-				Image.Source = _ogImage;
-				Image.Width = _ogWidth;
-				_originalWidth = _ogWidth;
+        private void OnRevert()
+        {
+            if (_ogImage != null)
+            {
+                Image.Source = _ogImage;
+                Image.Width = _ogWidth;
+                _originalWidth = _ogWidth;
 
-				_docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _ogUri, true);
 
-				//var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-				//Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
+                //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+                //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
 
-				//_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
-				//_cropControl = new StateCropControl(_docCtrl, this);
-			}
-		}
+                //_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+                //_cropControl = new StateCropControl(_docCtrl, this);
+            }
+        }
 
-		private void Image_Loaded(object sender, RoutedEventArgs e)
-		{
-			// initialize values that rely on the image
-			_originalImage = Image;
-			_originalWidth = Image.ActualWidth;
-			_docview = this.GetFirstAncestorOfType<DocumentView>();
-			_docview.OnCropClick += OnCropClick;
-			_docview.OnRevert += OnRevert;
-			_docview.OnReplaceImage += OnReplaceImage;
-			_docview.OnRotate += OnRotate;
-			_docview.OnHorizontalMirror += OnHorizontalMirror;
-			_docview.OnVerticalMirror += OnVerticalMirror;
-			Focus(FocusState.Keyboard);
-			_cropControl = new StateCropControl(_docCtrl, this);
-		}
+        private void Image_Loaded(object sender, RoutedEventArgs e)
+        {
+            // initialize values that rely on the image
+            _originalImage = Image;
+            _originalWidth = Image.ActualWidth;
+            _docview = this.GetFirstAncestorOfType<DocumentView>();
+            _docview.OnCropClick += OnCropClick;
+            _docview.OnRevert += OnRevert;
+            _docview.OnReplaceImage += OnReplaceImage;
+            _docview.OnRotate += OnRotate;
+            _docview.OnHorizontalMirror += OnHorizontalMirror;
+            _docview.OnVerticalMirror += OnVerticalMirror;
+            Focus(FocusState.Keyboard);
+            _cropControl = new StateCropControl(_docCtrl, this);
+        }
 
-		private void OnRotate()
-		{
-			Rect rect = new Rect
-			{
-				X = 0,
-				Y = 0,
-				Width = Math.Floor(Image.ActualHeight),
-				Height = Math.Floor(Image.ActualWidth)
-			};
+        private void OnRotate()
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Width = Math.Floor(Image.ActualHeight),
+                Height = Math.Floor(Image.ActualWidth)
+            };
 
-			OnCrop(rect, BitmapRotation.Clockwise90Degrees);
-		}
+            OnCrop(rect, BitmapRotation.Clockwise90Degrees);
+        }
 
-		private void OnHorizontalMirror()
-		{
-			MirrorImage(BitmapFlip.Horizontal);
-		}
+        private void OnHorizontalMirror()
+        {
+            MirrorImage(BitmapFlip.Horizontal);
+        }
 
-		private void OnVerticalMirror()
-		{
-			MirrorImage(BitmapFlip.Vertical);
-		}
+        private void OnVerticalMirror()
+        {
+            MirrorImage(BitmapFlip.Vertical);
+        }
 
-		private void MirrorImage(BitmapFlip flip)
-		{
-			Rect rect = new Rect
-			{
-				X = 0,
-				Y = 0,
-				Height = Math.Floor(Image.ActualHeight),
-				Width = Math.Floor(Image.ActualWidth)
-			};
-			OnCrop(rect, BitmapRotation.None, flip);
-		}
+        private void MirrorImage(BitmapFlip flip)
+        {
+            Rect rect = new Rect
+            {
+                X = 0,
+                Y = 0,
+                Height = Math.Floor(Image.ActualHeight),
+                Width = Math.Floor(Image.ActualWidth)
+            };
+            OnCrop(rect, BitmapRotation.None, flip);
+        }
 
-		// called when the cropclick action is invoked in the image subtoolbar
-		private void OnCropClick()
-		{
-			// make sure that we aren't already cropping
-			if (xGrid.Children.Contains(_cropControl)) return;
-			Focus(FocusState.Programmatic);
-			xGrid.Children.Add(_cropControl);
-			_docview.hideControls();
-			_isCropping = true;
-		}
+        // called when the cropclick action is invoked in the image subtoolbar
+        private void OnCropClick()
+        {
+            // make sure that we aren't already cropping
+            if (xGrid.Children.Contains(_cropControl)) return;
+            Focus(FocusState.Programmatic);
+            xGrid.Children.Add(_cropControl);
+            _docview.hideControls();
+            _isCropping = true;
+        }
 
-		private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
-		{
-			// prevent the image from being moved while being cropped
-			if (_isCropping) e.Handled = true;
-		}
+        private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
+        {
+            // prevent the image from being moved while being cropped
+            if (_isCropping) e.Handled = true;
+        }
 
-		/// <summary>
-		///     crops the image with respect to the values of the rectangle passed in
-		/// </summary>
-		/// <param name="rectangleGeometry">
-		///     rectangle geometry that determines the size and starting point of the crop
-		/// </param>
-		private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
-		{
-			if (_ogImage == null)
-			{
-				_ogImage = Image.Source;
-				_ogWidth = Image.ActualWidth;
-				_ogUri = _imgctrl.Data;
-			}
-			//_originalWidth is original width of owl, not replaced image
-			var scale = _originalWidth / Image.ActualWidth;
+        /// <summary>
+        ///     crops the image with respect to the values of the rectangle passed in
+        /// </summary>
+        /// <param name="rectangleGeometry">
+        ///     rectangle geometry that determines the size and starting point of the crop
+        /// </param>
+        private async void OnCrop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
+        {
+            if (_ogImage == null)
+            {
+                _ogImage = Image.Source;
+                _ogWidth = Image.ActualWidth;
+                _ogUri = _imgctrl.Data;
+            }
+            //_originalWidth is original width of owl, not replaced image
+            var scale = _originalWidth / Image.ActualWidth;
 
-			// retrieves data from rectangle
-			var startPointX = (uint)rectangleGeometry.X;
-			var startPointY = (uint)rectangleGeometry.Y;
-			var height = (uint)rectangleGeometry.Height;
-			var width = (uint)rectangleGeometry.Width;
+            // retrieves data from rectangle
+            var startPointX = (uint)rectangleGeometry.X;
+            var startPointY = (uint)rectangleGeometry.Y;
+            var height = (uint)rectangleGeometry.Height;
+            var width = (uint)rectangleGeometry.Width;
 
-			// finds local uri path of image controller's image source
-			StorageFile file;
+            // finds local uri path of image controller's image source
+            StorageFile file;
 
-			/*
+            /*
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
@@ -385,23 +386,17 @@ namespace Dash
             xGrid.Children.Remove(_cropControl);
             xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-            if (_lastNearest != null)
-            {
-                _lastNearest.DocHighlight.BorderThickness = new Thickness(0);
-            }
-            
         }
 
-        private void Region_OnLostFocus(object sender, RoutedEventArgs e)
-        {
-            //var region = (ImageRegionBox)sender;
-            //region.LinkTo.View.DocHighlight.BorderThickness = new Thickness(5);
-        }
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (_isDragging)
+            var properties = e.GetCurrentPoint(this).Properties;
+
+            if (_isDragging && properties.IsRightButtonPressed == false)
             {
+                //update size of preview region box according to mouse movement
+
                 var pos = e.GetCurrentPoint(xImage).Position;
 
                 var x = Math.Min(pos.X, _anchorPoint.X);
@@ -432,37 +427,44 @@ namespace Dash
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (!_isCropping)
+            var properties = e.GetCurrentPoint(this).Properties;
+
+            if (!_isCropping && properties.IsRightButtonPressed == false)
             {
-                xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
                 var pos = e.GetCurrentPoint(xImage).Position;
                 _anchorPoint = pos;
                 _isDragging = true;
 
-                if ((xRegionDuringManipulationPreview.Margin.Left < pos.X && pos.X <
-                     xRegionDuringManipulationPreview.Margin.Left + xRegionDuringManipulationPreview.Width) &&
-                    (xRegionDuringManipulationPreview.Margin.Top < pos.Y && pos.Y <
-                     xRegionDuringManipulationPreview.Margin.Top + xRegionDuringManipulationPreview.Height))
-                {
+                //reset and get rid of the region preview
+                xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                xRegionDuringManipulationPreview.Width = 0;
+                xRegionDuringManipulationPreview.Height = 0;
+                xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
+                xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                StopImageFromMoving(sender, e);
 
+                //if selecting an already selected region, keep visible
+                if (((xRegionPostManipulationPreview.Column1.ActualWidth < pos.X) &&
+                (pos.X < xRegionPostManipulationPreview.Column1.ActualWidth + xRegionPostManipulationPreview.Column2.ActualWidth)) &&
+                    (xRegionPostManipulationPreview.Row1.ActualHeight < pos.Y && pos.Y <
+                     xRegionPostManipulationPreview.Row1.ActualHeight + xRegionPostManipulationPreview.Row2.ActualHeight))
+                {
+                    xRegionPostManipulationPreview.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
-                    xRegionDuringManipulationPreview.Width = 0;
-                    xRegionDuringManipulationPreview.Height = 0;
-                    xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
-                    xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                    StopImageFromMoving(sender, e);
+                    xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                    //unhighlight last selected regions' link
+                    if (_lastNearest != null)
+                    {
+                        MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+                    }
+
                 }
-                
             }
         }
 
-        private void Region_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            xRegionDuringManipulationPreview.Visibility = Visibility.Visible;
-        }
 
         public bool IsSomethingSelected()
         {
@@ -480,6 +482,7 @@ namespace Dash
                     new Size(xRegionPostManipulationPreview.ActualWidth, xRegionPostManipulationPreview.ActualHeight))
                 .Document;
 
+            //add to regions list
             var regions = _docCtrl.GetDataDocument()
                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
@@ -494,7 +497,7 @@ namespace Dash
                 regions.Add(imNote);
             }
 
-            var newBox = new ImageRegionBox {LinkTo = imNote};
+            var newBox = new ImageRegionBox { LinkTo = imNote };
 
             // use during here because it's the one with actual pixel measurements
             newBox.SetPosition(
@@ -503,21 +506,24 @@ namespace Dash
                 new Size(xImage.ActualWidth, xImage.ActualHeight));
             xRegionsGrid.Children.Add(newBox);
             newBox.PointerPressed += xRegion_OnPointerPressed;
+            //newBox.LostFocus += Region_OnLostFocus;
             xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             return imNote;
         }
 
-        
+
         private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = false;
 
             if (sender is ImageRegionBox box)
             {
+                //get the linked doc of the selected region
                 var theDoc = box.LinkTo;
                 if (theDoc == null) return;
 
+                //create a preview region to show that this region is selected
                 xRegionDuringManipulationPreview.Width = 0;
                 xRegionDuringManipulationPreview.Height = 0;
                 xRegionPostManipulationPreview.Column1.Width = box.Column1.Width;
@@ -528,6 +534,7 @@ namespace Dash
                 xRegionPostManipulationPreview.Row3.Height = box.Row3.Height;
                 xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
 
+                //handle linking
                 var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
                 var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
                 if (linkFromDoc != null)
@@ -548,8 +555,14 @@ namespace Dash
                     if (this.IsCtrlPressed())
                         nearest.DeleteDocument();
                     else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                    //unhighlight last doc
+                    if (_lastNearest != null)
+                    {
+                        MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+                    }
+                    //highlight this linked doc
                     _lastNearest = nearest;
-                    nearest.DocHighlight.BorderThickness = new Thickness(5);
+                    MainPage.Instance.HighlightDoc(nearest.ViewModel.DocumentController, false, 1);
                 }
                 else
                 {
@@ -561,7 +574,7 @@ namespace Dash
                 }
                 e.Handled = true;
             }
-            
+
             DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
             {
                 double dist = double.MaxValue;
@@ -591,6 +604,7 @@ namespace Dash
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            //UI for preview boxes
             xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
             xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
             xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
