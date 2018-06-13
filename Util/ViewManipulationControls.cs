@@ -25,6 +25,7 @@ namespace Dash
         public double MinScale { get; set; } = .2;
         public double MaxScale { get; set; } = 5.0;
 
+        public bool IsScaleDiscrete = false;
         private double _elementScale = 1.0;
         public double ElementScale
         {
@@ -82,8 +83,9 @@ namespace Dash
                 // get the scale amount from the mousepoint in canvas space
                 float scaleAmount = e.GetCurrentPoint(_freeformView).Properties.MouseWheelDelta > 0 ? 1.07f : 1 / 1.07f;
 
-                //Clamp the scale factor 
-                ElementScale *= scaleAmount;
+                if (!IsScaleDiscrete)
+                    //Clamp the scale factor 
+                    ElementScale *= scaleAmount;
 
                 if (!ClampScale(scaleAmount))
                     OnManipulatorTranslatedOrScaled?.Invoke(
@@ -114,7 +116,8 @@ namespace Dash
 
                 if (_processManipulation)
                 {
-                    ElementScale *= e.Delta.Scale;
+                    if (!IsScaleDiscrete)
+                        ElementScale *= e.Delta.Scale;
                     if (!ClampScale(e.Delta.Scale))
                     {
                         OnManipulatorTranslatedOrScaled?.Invoke(

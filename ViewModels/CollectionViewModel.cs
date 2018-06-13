@@ -44,7 +44,7 @@ namespace Dash
 
         private StandardViewLevel _viewLevel = StandardViewLevel.None;
 
-        private double _prevScale;
+        private double _prevScale = 1;
 
         public StandardViewLevel ViewLevel
         {
@@ -170,7 +170,7 @@ namespace Dash
 
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  
-        /// This only applies of the CollectionViewType is Freeform, and the CollectionFitToParent field is true
+        /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
         public void FitContents()
         {

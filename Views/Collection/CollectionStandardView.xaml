@@ -52,7 +52,7 @@
                     <dash:DocumentView
                         BindRenderTransform="True"
                         Loaded="DocumentViewOnLoaded"
-                        StandardViewLevel="{Binding Path=ViewLevel, Mode=TwoWay}"/>
+                        StandardViewLevel="{Binding Path=ViewLevel, Mode=OneWay}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
