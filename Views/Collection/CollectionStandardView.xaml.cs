@@ -114,7 +114,7 @@ namespace Dash
                 zoom--;
                 if (zoom < -3)
                 {
-                    if (currentView > 1 && ViewManipulationControls.ElementScale >= ViewManipulationControls.MinScale + 0.01)
+                    if (currentView > 1 && ViewManipulationControls.ElementScale >= ViewManipulationControls.MinScale)
                     {
                         newView = currentView - 1;
                         newScale = SetScale((CollectionViewModel.StandardViewLevel)newView);
