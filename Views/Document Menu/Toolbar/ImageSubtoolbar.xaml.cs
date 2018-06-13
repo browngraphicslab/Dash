@@ -72,6 +72,7 @@ namespace Dash
         private void Crop_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
+            if (_currentImage.IsCropping) return;
             _currentImage.StartCrop();
         }
 
@@ -80,8 +81,9 @@ namespace Dash
         /// </summary>
         private async void Replace_Click(object sender, RoutedEventArgs e)
         {
-            await ReplaceImage();
             xImageCommandbar.IsOpen = true;
+            if (_currentImage.IsCropping) return;
+            await ReplaceImage();
         }
 
         /// <summary>
@@ -140,18 +142,21 @@ namespace Dash
         private async void Rotate_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
+            if (_currentImage.IsCropping) return;
             await _currentImage.Rotate();
         }
 
         private async void VerticalMirror_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
+            if (_currentImage.IsCropping) return;
             await _currentImage.MirrorVertical();
         }
 
         private async void HorizontalMirror_Click(object sender, RoutedEventArgs e)
         {
             xImageCommandbar.IsOpen = true;
+            if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
         }
     }
