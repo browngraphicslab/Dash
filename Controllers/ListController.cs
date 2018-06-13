@@ -136,6 +136,11 @@ namespace Dash
             return true;
         }
 
+        public static explicit operator ListController<T>(FieldUpdatedEventArgs v)
+        {
+            throw new NotImplementedException();
+        }
+
         private bool RemoveHelper(T element)
         {
             element.FieldModelUpdated -= ContainedFieldUpdated;
