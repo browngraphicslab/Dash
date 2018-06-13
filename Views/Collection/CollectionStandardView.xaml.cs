@@ -55,7 +55,6 @@ namespace Dash
             base.OnLoad(sender,e);
             if (ViewModel.PrevScale != 0)
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
-            //ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
             ViewManipulationControls.IsScaleDiscrete = true;
             UpdateViewLevel();
         }
@@ -129,7 +128,7 @@ namespace Dash
                 zoom++;
                 if (zoom > 3)
                 {
-                    if (currentView < 3 && ViewManipulationControls.ElementScale <= 1.5)
+                    if (currentView < 3 && ViewManipulationControls.ElementScale <= 2)
                     {
                         newView = currentView + 1;
                         newScale = SetScale((CollectionViewModel.StandardViewLevel)newView);
@@ -229,7 +228,7 @@ namespace Dash
                     ViewManipulationControls.ElementScale = ViewManipulationControls.ElementScale * scale;
                     break;
                 case CollectionViewModel.StandardViewLevel.Detail:
-                    scale = 1.5 / ViewManipulationControls.ElementScale;
+                    scale = 2 / ViewManipulationControls.ElementScale;
                     ViewManipulationControls.ElementScale = ViewManipulationControls.ElementScale * scale;
                     break;
             }
