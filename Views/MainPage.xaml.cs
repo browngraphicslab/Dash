@@ -421,6 +421,7 @@ namespace Dash
         {
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
+            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
