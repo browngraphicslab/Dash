@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
+
 namespace Dash
 {
     [OperatorType("parseSearchString")]
@@ -56,13 +57,17 @@ namespace Dash
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return "unionByValue(A:" +search1+",B:"+search2+")";
+            return OperatorScript.GetDishOperatorName<UnionSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
         {
             return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
+        }
+
+        private string NegateSearch(string search)
+        {
+            return OperatorScript.GetDishOperatorName<NegationSearchOperator>() + "(" + search + ")";
         }
 
         private string WrapInParameterizedFunction(string funcName, string paramName)
@@ -102,66 +107,67 @@ namespace Dash
             }
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        private int FindNextDivider(String inputString)
         {
-            //very simple for now, can only join with intersections
-            var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-
-            //this splits string into parts, seperated by spaces or quotes
-            List<string> parts = new List<string>();
-            int lastCut = 0;
             bool inQuote = false;
-            for (int i = 0; i < inputString.Length; i++)
+            int len = inputString.Length;
+            for (int i = 0; i < len; i++)
             {
-               var currChar = inputString[i];
-               if (currChar == '"')
+                char curChar = inputString[i];
+                if (curChar == '"')
                 {
-                    if (inQuote)
-                    {
-                        //add string from last quote to this quote
-                        var quotedString = inputString.Substring(lastCut + 1, i - lastCut - 1);
-                        quotedString = quotedString.Replace("\"", "\\\"");
-                        parts.Add(quotedString);
-                        lastCut = i + 1;
-                        inQuote = false;
-                    }
-                    else
-                    {
-                        inQuote = true;
-                    }
-                } else if (currChar == ' ' && !inQuote)
+                    inQuote = !inQuote;
+                }
+                else if (!inQuote && (curChar == ' ' || curChar == ','))
                 {
-                    if (i == lastCut)
-                    {
-                        lastCut++;
-                        continue;
-                    }
-                    var newstring = inputString.Substring(lastCut, i - lastCut);
-                    lastCut = i + 1;
-                    parts.Add(newstring);
+                    return i;
                 }
             }
+            return len;
+        }
 
-            if (lastCut != inputString.Length && !inQuote)
-            {
-                parts.Add(inputString.Substring(lastCut, inputString.Length - lastCut));
-            }
+        private String Parse(String inputString)
+        {
+            int dividerIndex = FindNextDivider(inputString);
+            String searchTerm = inputString.Substring(0, dividerIndex);
+            var modifiedSearchTerm = searchTerm.Replace("\"", "");
+            bool isNegated = searchTerm.StartsWith("!");
+            String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
+            String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
 
-            if (parts.Count < 1)
-            {
-                outputs[ScriptKey] = new TextController("");
-                return;
-            }
+            if (isNegated)
+                searchDict = NegateSearch(searchDict);
 
-            var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
-            while (searches.Count() > 1)
+
+            if (dividerIndex == inputString.Length)
             {
-                var search1 = searches.Pop();
-                var search2 = searches.Pop();
-                searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
+                return searchDict;
+            } else
+            {
+                char divider = inputString[dividerIndex];
+                String rest = inputString.Substring(dividerIndex + 1);
+
+                if (divider == ' ')
+                {
+                    return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
+                } else if (divider == ',')
+                {
+                    return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
+                } else
+                {
+                    throw new Exception("Unknown Divider");
+                }
+
             }
-            //now we have one long script string to run
-            outputs[ScriptKey] = new TextController(searches.First());
+        }
+
+        /// <summary>
+        /// Right now, we can join with intersections and unions, and negate searches
+        /// </summary>
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        {
+            var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
+            outputs[ScriptKey] = new TextController(Parse(inputString));
         }
     }
 }

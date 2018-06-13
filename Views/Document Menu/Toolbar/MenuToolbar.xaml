@@ -12,29 +12,43 @@
     d:DesignWidth="800">
 
     <!--Stackpanel containing toolbars wrapped in an instance of floating, which manages all dragging and repositioning events externally-->
-    <dash:Floating x:Name="Floating" IsBoundByParent="False" IsBoundByScreen="True">
-        <StackPanel>
+    <dash:Floating x:Name="xFloating" IsBoundByParent="False" IsBoundByScreen="True">
+        <StackPanel Name="xStackPanel" Orientation="Vertical">
+            <StackPanel.RenderTransform>
+                <RotateTransform x:Name="rotateToolbar" CenterX="0" CenterY="0" Angle="0"/>
+            </StackPanel.RenderTransform>
+            <ctrl:CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" PointerEntered="XToolbar_OnPointerEntered" PointerExited="XToolbar_OnPointerExited">
 
-            <ctrl:CommandBar x:Name="xToolbar" IsOpen="False">
+                <AppBarButton x:Name="xCollapse" Background="{x:Bind ExpandColor, Mode=OneWay}"  Icon="BackToWindow"  Label="Collapse" Tapped="XCollapse_OnTapped"/>
+                <AppBarButton x:Name="xPin" IsEnabled ="True" Label="Floating" Click="XPin_OnClick">
+                    <Image x:Name="xLockIcon" Width="38" Source="ms-appx:///Assets/unpinned.png" HorizontalAlignment="Stretch" Margin="0,-4,0,-4" VerticalAlignment="Stretch"/>
+                </AppBarButton>
+
+                <AppBarSeparator x:Name="xSepThree"/>
+
                 <AppBarToggleButton x:Name="xTouch" Icon="Rename"  Label="Note Tool" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
-                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
-                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"></AppBarToggleButton>
+                <AppBarToggleButton x:Name="xInk" IsEnabled="False" Opacity="0.5" Icon="Edit" Label="Ink" Unchecked="AppBarToggleButton_UnChecked" Checked="AppBarToggleButton_Checked"/>
+                <AppBarToggleButton x:Name="xGroup" Icon="TouchPointer" Label="Quick Pan"  Unchecked="AppBarToggleButton_UnChecked"  Checked="AppBarToggleButton_Checked"/>
 
-                <AppBarSeparator/>
+                <AppBarSeparator x:Name="xSepOne"/>
+
                 <!--AppBarButton Icon="Rename" Label="Add Note" ></-->
-                <AppBarButton Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
-                <AppBarButton Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
-                <AppBarButton Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
+                <AppBarButton x:Name="xAddGroup" Icon="ViewAll" IsEnabled="False" Opacity="0.5" Label="Add Group"/>
+                <AppBarButton x:Name="xAddImage" Icon="Pictures" Label="Add Image" Tapped="AddImage_OnTapped"/>
+                <AppBarButton x:Name="xAddVideo" Icon="Video" Label="Add Video" Click="Add_Video_On_Click"/>
                 <AppBarButton Icon="Audio" Label="Add Audio" Click="Add_Audio_On_Click"/>
-                <AppBarSeparator/>
-                <AppBarButton Icon="Copy" IsEnabled="False" x:Name="xCopy" Opacity="0.5" Label="Duplicate" Click="Copy" />
-                <AppBarButton Icon="Delete" IsEnabled="False"  x:Name="xDelete" Opacity="0.5" Label="Delete" Click="Delete" />
+                <AppBarSeparator x:Name="xSepTwo"/>
+
+                <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy"/>
+                <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete"/>
 
             </ctrl:CommandBar>
-            <StackPanel Margin="0,12,0,0">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Visibility="Collapsed" />
-                <dash:ImageSubtoolbar Visibility="Collapsed" x:Name="xImageToolbar" />
-                <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xCollectionToolbar" />
+            <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
+            <StackPanel x:Name="xSubtoolbarStackPanel">
+                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:GroupingSubtoolbar x:Name="xGroupToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
             </StackPanel>
         </StackPanel>
     </dash:Floating>

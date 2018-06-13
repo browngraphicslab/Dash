@@ -414,9 +414,8 @@ namespace Dash
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields()
                 .Where(pf => selectedBars.Contains(pf.Key.Name) || pf.Value is DocumentController))
-                if (pfield.Value is DocumentController)
+                if (pfield.Value is DocumentController nestedDoc)
                 {
-                    var nestedDoc = pfield.Value as DocumentController;
                     if (!visited.Contains(nestedDoc))
                     {
                         visited.Add(nestedDoc);

@@ -48,6 +48,7 @@ namespace Dash
 
             var time = (inputs[TimeKey] as TextController)?.Data?.ToLower();
 
+
             if (!DateTime.TryParse(time, out DateTime givenTime))
             {
                 Debug.WriteLine("Invalid time input");
