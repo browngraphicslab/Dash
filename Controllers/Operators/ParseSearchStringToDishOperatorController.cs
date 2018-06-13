@@ -109,50 +109,84 @@ namespace Dash
 
         private int FindNextDivider(String inputString)
         {
-            bool inParen = inputString.Trim('!').StartsWith("(");
+            bool inParen = false;
+            int parenCounter = 0;
+            if (inputString.TrimStart('!').StartsWith("("))
+            {
+                inParen = true;
+            }
+
             bool inQuote = false;
             int len = inputString.Length;
             for (int i = 0; i < len; i++)
             {
+                // if it starts with quotes, ignore parenthesis, if it starts with parenthesis, ignore quotes
                 char curChar = inputString[i];
-                if (!inParen)
+                if (curChar == '"')
                 {
-                    if (curChar == '"')
+                    if (inQuote && !inParen)
                     {
-                        if (inQuote)
-                        {
-                            inQuote = false;
-                        }
-                        else
-                        {
-                            inQuote = true;
-                        }
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                    }
 
-                    }
-                    else if (!inQuote && (curChar == ' ' || curChar == ','))
-                    {
-                        return i;
-                    }
-                } else
+                }
+                else if (!inQuote && curChar == '(')
                 {
-                    if (curChar == ')')
+                    inParen = true;
+                    parenCounter += 1;
+                }
+                else if (!inQuote && inParen && curChar == ')')
+                {
+                    parenCounter -= 1;
+                    if (parenCounter == 0)
                     {
-
+                        inParen = false;
                     }
+                }
+                else if (!inQuote && !inParen && (curChar == ' ' || curChar == ','))
+                {
+                    return i;
                 }
             }
             return len;
         }
 
+        // Assumes that the inputString starts with "(" or "!("
         private int FindEndParenthesis(String inputString)
         {
+            int parenCounter = 0;
+            bool inQuote = false;
             int len = inputString.Length;
             for (int i = 0; i < len; i++)
             {
-                // Making sure to ignore parenthesis captured within quotation marks 
-                if (inputString[i] == ')' && (i == len-1 || inputString[i+1] == ' ' || inputString[i+1] == ','))
+                char curChar = inputString[i];
+                if (curChar == '"')
                 {
-                    return i;
+                    if (inQuote)
+                    {
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                    }
+
+                }
+                else if (!inQuote && curChar == '(')
+                {
+                    parenCounter += 1;
+                }
+                else if (!inQuote && curChar == ')')
+                {
+                    parenCounter -= 1;
+                    if (parenCounter == 0)
+                    {
+                        return i;
+                    }
                 }
             }
             return -1;
@@ -163,26 +197,26 @@ namespace Dash
             int dividerIndex = FindNextDivider(inputString);
             String searchTerm = inputString.Substring(0, dividerIndex);
             bool isNegated = searchTerm.StartsWith("!") ? true : false;
-            String modifiedSearchTerm = isNegated ? searchTerm.Substring(1) : searchTerm;
+            String modifiedSearchTerm = searchTerm.TrimStart('!');
             String finalSearchTerm = modifiedSearchTerm.Replace("\"", "");
 
-            int endParenthesis = -1;
+            String modInput = inputString.TrimStart('!');
+
+            int endParenthesis = -2;
 
             // Making sure parenthesis doesn't clash with regex
-            if (modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")"))
+            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")) || 
+                (isNegated && modifiedSearchTerm.StartsWith("(") && modifiedSearchTerm.EndsWith(")")))
             {
                 endParenthesis = FindEndParenthesis(inputString);
             }
 
-            // Using modifiedSearchTerm since we still want quotes inside, while giving the user option to negate the whole grouping
+            
             String searchDict;
-            if (endParenthesis >= 0)
+            if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains(','))))
             {
-                if (isNegated)
-                {
-                    String newInput = inputString.Substring(1); 
-                }
-                searchDict = Parse("insert string here");
+                String newInput = modInput.Substring(1, modInput.Length - 2);
+                searchDict = Parse(newInput);
             } else {
                 searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
             }
@@ -192,7 +226,10 @@ namespace Dash
 
 
             int len = inputString.Length;
-            if (dividerIndex == len || endParenthesis == len - 1)
+
+            // Debugging check - make sure that Dash doesn't crash with open parenthesis input - if user types in something like "(fafe afeef",
+            // it doesn't necessarily have to show anything unless its in quotes, but it should at least not crash
+            if (dividerIndex == len)
             {
                 return searchDict;
             } else
