@@ -16,7 +16,7 @@ namespace Dash
     /// <summary>
     /// Allows interactions with underlying DocumentModel.
     /// </summary>
-	[DebuggerDisplay("{Tag}")]
+	// [DebuggerDisplay("DocumentController: {Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
         /// <summary>
@@ -286,6 +286,11 @@ namespace Dash
                             {
                                 opModel.SetField(target.Key, new VideoController(new Uri(a)), true);
                             }
+
+                            else if (target.Value.Type == TypeInfo.Audio)
+                            {
+                                opModel.SetField(target.Key, new AudioController(new Uri(a)), true);
+                            }
                         }
                     }
                     SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
@@ -337,6 +342,19 @@ namespace Dash
                         catch (Exception)
                         {
                             vc.Data = null;
+                        }
+                    }
+                    else if (curField is AudioController ac)
+                    {
+                        try
+                        {
+                            if (copy)
+                                SetField(key, new AudioController(new Uri(textInput)), true);
+                            else ac.Data = new Uri(textInput);
+                        }
+                        catch (Exception)
+                        {
+                            ac.Data = null;
                         }
                     }
                     else if (curField is DocumentController)

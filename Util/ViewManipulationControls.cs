@@ -56,7 +56,7 @@ namespace Dash
         public ViewManipulationControls(CollectionFreeformBase element)
         {
             _freeformView = element;
-            _processManipulation = true;
+            _processManipulation = true; 
             element.ManipulationDelta += ElementOnManipulationDelta;
             element.PointerWheelChanged += ElementOnPointerWheelChanged;
             element.ManipulationMode = ManipulationModes.All;

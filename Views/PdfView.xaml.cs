@@ -42,11 +42,6 @@ namespace Dash
                     System.Diagnostics.Debug.WriteLine("Scroll to " + xPdfView.VerticalOffset);
                     doc.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, (double)xPdfView.VerticalOffset, true);
                 }
-                else
-                {
-                    var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
-                    System.Diagnostics.Debug.WriteLine("===> to " + xPdfView.VerticalOffset + "(" + curOffset );
-                }
             };
         }
 

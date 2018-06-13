@@ -17,6 +17,7 @@ namespace Dash
         bool _showLocalContext;
         bool _decorationState = false;
         private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
+        Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
         
         // == CONSTRUCTOR ==
@@ -160,7 +161,18 @@ namespace Dash
         public bool DecorationState
         {
             get => _decorationState;
-            set => SetProperty(ref _decorationState, value);
+            set
+            {
+                if (!DisableDecorations) SetProperty(ref _decorationState, value);
+                else SetProperty(ref _decorationState, false);
+            }
+        }
+
+
+        public Thickness SearchHighlightState
+        {
+            get => _searchHighlightState;
+            set { SetProperty(ref _searchHighlightState, value); }
         }
 
         public CollectionViewModel.StandardViewLevel ViewLevel
@@ -168,6 +180,8 @@ namespace Dash
             get => _standardViewLevel;
             set => SetProperty(ref _standardViewLevel, value);
         }
+        public bool DisableDecorations { get; set; } = false;
+
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update

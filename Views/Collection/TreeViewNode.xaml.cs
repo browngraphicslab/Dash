@@ -3,6 +3,7 @@ using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -90,15 +91,6 @@ namespace Dash
                 if (collection != null)
                 {
                     _isCollection = true;
-                    XIconBox.Visibility = Visibility.Visible;
-                    if (dvm.LayoutDocument.LayoutName.ToLower().Contains("group"))//tfs: Hack
-                    {
-                        XIconBox.Symbol = Symbol.Copy;
-                    }
-                    else //Collection 
-                    {
-                        XIconBox.Symbol = Symbol.Library;
-                    }
                     var collectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.DataKey);
                     CollectionTreeView.DataContext =
                         collectionViewModel;
@@ -113,7 +105,6 @@ namespace Dash
                     _isCollection = false;
                     XArrowBlock.Text = "";
                     XArrowBlock.Visibility = Visibility.Collapsed;
-                    XIconBox.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
                 }
@@ -188,6 +179,7 @@ namespace Dash
 
         private void XTextBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
@@ -275,11 +267,14 @@ namespace Dash
             XTextBlock.Visibility = Visibility.Visible;
         }
 
+
         private void XTextBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
+            //finish rename on enter
             if (e.Key == VirtualKey.Enter)
             {
-                XTextBlock.Focus(FocusState.Programmatic);
+                xBorder.Visibility = Visibility.Collapsed;
+                XTextBlock.Visibility = Visibility.Visible;
             }
         }
 

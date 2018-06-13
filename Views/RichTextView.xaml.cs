@@ -27,7 +27,7 @@ namespace Dash
     public sealed partial class RichTextView : UserControl
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-            "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD)));
+            "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(
             "TextWrapping", typeof(TextWrapping), typeof(RichTextView), new PropertyMetadata(default(TextWrapping)));
         
@@ -49,6 +49,7 @@ namespace Dash
         {
             this.InitializeComponent();
             Loaded += OnLoaded;
+            Unloaded += UnLoaded;
 
             AddHandler(PointerPressedEvent, new PointerEventHandler((object s, PointerRoutedEventArgs e) =>
             {
@@ -80,7 +81,7 @@ namespace Dash
                 this.GetFirstAncestorOfType<DocumentView>()?.This_DragLeave(null, null); // bcz: rich text Drop's don't bubble to parent docs even if they are set to grab handled events
             };
 
-            PointerWheelChanged += (s, e) => e.Handled = true;
+            //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
             xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
@@ -221,8 +222,13 @@ namespace Dash
 
         #region eventhandlers
         string _lastXamlRTFText = "";
-        void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyProperty dp)
+        static void xRichTextView_TextChangedCallback(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
+            (sender as RichTextView).xRichTextView_TextChangedCallback2(sender, dp);
+        }
+
+        void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
+        { 
             if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
                 if (Text.RtfFormatString != _lastXamlRTFText)
@@ -250,6 +256,21 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                {
+                    var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+                    var linkToDoc   = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+                    if (linkFromDoc != null)
+                    {
+                        var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
+                        theDoc = targetDoc;
+                    } else if (linkToDoc != null)
+                    {
+
+                        var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
+                        theDoc = targetDoc;
+                    }
+                 }
                 var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
                 if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
                 {
@@ -344,10 +365,22 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                if (dragModel.CreateLink)
+                if (dragModel.LinkSourceView != null)
                 {
-                    dragModel.DraggedDocument.Link(getDataDoc());
-                } else
+                    var dragDoc = dragModel.DraggedDocument;
+                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+
+                    var dropDoc = GetRegionDocument();
+
+                    dragDoc.Link(dropDoc);
+
+                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
+
+                    e.Handled = true;
+                    //dragModel.DraggedDocument.Link(getDataDoc());
+                }
+                else
                     linkDocumentToSelection(dragModel.DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -383,9 +416,11 @@ namespace Dash
                 getDocView().HandleCtrlEnter();
                 e.Handled = true;
             }
-            else if (this.IsAltPressed()) // opens the format options flyout 
+			
+			/**
+			else if (this.IsAltPressed()) // opens the format options flyout 
             {
-                if (xFormattingMenuView == null)
+				if (xFormattingMenuView == null)
                 {
                     xFormattingMenuView = new FormattingMenuView();
                     // store a clone of character format after initialization as default format
@@ -400,6 +435,8 @@ namespace Dash
                 FlyoutBase.GetAttachedFlyout(sender as FrameworkElement)?.ShowAt(sender as FrameworkElement);
                 e.Handled = true;
             }
+	*/
+		
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -444,27 +481,48 @@ namespace Dash
         #endregion
 
         #region load/unload
+        void selectedFieldUpdatedHdlr(object sender, FieldUpdatedEventArgs e, Context c)
+        {
+            MatchQuery(getSelected());
+        }
+        void UnLoaded(object s, RoutedEventArgs e)
+        {
+            ClearSearchHighlights(true);
+            setSelected("");
+            DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
+        }
+
         void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            var selectedFieldUpdatedHdlr = new FieldUpdatedHandler((s, e, c) => MatchQuery(getSelected()));
             DataDocument.AddFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-            var id = RegisterPropertyChangedCallback(TextProperty, xRichTextView_TextChangedCallback);
-
-            void UnLoaded(object s, RoutedEventArgs e)
-            {
-                ClearSearchHighlights(true);
-                setSelected("");
-                UnregisterPropertyChangedCallback(TextProperty, id);
-                DataDocument.RemoveFieldUpdatedListener(CollectionDBView.SelectedKey, selectedFieldUpdatedHdlr);
-                Unloaded -= UnLoaded;
-            }
-
-            Unloaded += UnLoaded;
         }
 
         #endregion
 
         #region hyperlink
+
+        public DocumentController GetRegionDocument()
+        {
+            if (string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text))
+                return this.DataDocument;
+
+            var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            createRTFHyperlink(dc, ref s1, ref s2, false, false);
+            var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            if (regions == null)
+            {
+                var dregions = new List<DocumentController>();
+                dregions.Add(dc);
+                DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+            }
+            else
+            {
+                regions.Add(dc);
+            }
+            return dc;
+        }
 
         string getHyperlinkTargetForSelection()
         {
@@ -565,7 +623,7 @@ namespace Dash
             xRichEditBox.Document.Selection.EndPosition = 0;
             int i = 1;
             // find and highlight all matches
-            while (i > 0)
+            while (i > 0 && !string.IsNullOrEmpty(query))
             {
                 i = xRichEditBox.Document.Selection.FindText(query, length, FindOptions.None);
                 var s = xRichEditBox.Document.Selection.StartPosition;

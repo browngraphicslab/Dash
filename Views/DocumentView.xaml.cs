@@ -1,8 +1,10 @@
 ﻿using DashShared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -32,10 +34,13 @@ namespace Dash
         /// </summary>
         public ManipulationControls ManipulationControls { get; set; }
 
-        public DocumentViewModel ViewModel { get { return DataContext == null ? null : DataContext as DocumentViewModel; } }
+        public DocumentViewModel ViewModel
+        {
+            get => DataContext as DocumentViewModel;
+            set => DataContext = value;
+        }
 
         public MenuFlyout MenuFlyout { get; set; }
-
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor  = new SolidColorBrush(Colors.LightBlue);
 
@@ -90,6 +95,7 @@ namespace Dash
         }
 
         private ImageSource DocPreview = null;
+
         // == CONSTRUCTORs ==
 
         public DocumentView()
@@ -225,7 +231,7 @@ namespace Dash
             xAnnotateEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
             xAnnotateEllipseBorder.DragStarting += (sender, args) =>
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, true);
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(ViewModel.DocumentController, false, this);
                 args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 ViewModel.DecorationState = false;
@@ -474,6 +480,51 @@ namespace Dash
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount }); 
         }
 
+        public void TransformDelta(Point moveTo)
+        {
+            var scaleAmount = new Point(ViewModel.InteractiveManipulationScale.X, ViewModel.InteractiveManipulationScale.Y);
+
+            ViewModel.InteractiveManipulationPosition = moveTo;
+            RenderTransform =
+                TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> {moveTo, scaleAmount});
+        }
+        
+        /// <summary>
+        /// Handles keypress events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoreWindow_KeyUp(CoreWindow sender, KeyEventArgs args)
+        {
+            if (!this.IsF1Pressed())
+                ShowLocalContext(false);
+        }
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs e)
+        {
+            if (this.IsF1Pressed() && this.IsPointerOver())
+            {
+                ShowLocalContext(true);
+            }
+            if (this.IsF2Pressed() && this.IsPointerOver())
+            {
+                ShowSelectedContext();
+            }
+            
+            if (this.IsShiftPressed() && !e.VirtualKey.Equals(VirtualKey.Shift)) {
+                var focusedEle = (FocusManager.GetFocusedElement() as FrameworkElement);
+                var docView = focusedEle?.GetFirstAncestorOfType<DocumentView>();
+                var focused = docView == this;
+
+                if (ViewModel != null && focused && e.VirtualKey.Equals(VirtualKey.Enter)) // shift + Enter
+                {
+                    // don't shift enter on KeyValue documents (since they already display the key/value adding)
+                    if (!ViewModel.LayoutDocument.DocumentType.Equals(KeyValueDocumentBox.DocumentType) &&
+                        !ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType))
+                        HandleShiftEnter();
+                }
+            }
+        }
+
         public void ShowLocalContext(bool showContext)
         {
             if (ViewModel == null)
@@ -637,25 +688,6 @@ namespace Dash
         /// <param name="e"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
-
-            /// <summary>
-            /// Resizes the document while keeping its original width/height ratio.
-            /// </summary>
-            /// <param name="e"></param>
-            void ProportionalResize(ManipulationDeltaRoutedEventArgs args)
-            {
-
-                /*
-                var curScale = ViewModel.Scale;
-                var pos = Util.PointTransformFromVisual(e.Position, e.Container);
-                var origin = Util.PointTransformFromVisual(new Point(0, 0), this);
-                var projectedDelta = new Point(ActualWidth, ActualHeight).PointProjectArg(
-                    new Point(e.Delta.Translation.X / curScale.X, e.Delta.Translation.Y / curScale.Y));
-                var scale = Math.Max(Math.Min((1 + projectedDelta.X / ActualWidth) * curScale.X, 5), 0.2);
-                ViewModel.Scale = new Point(scale, scale);
-                */
-            }
-
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
@@ -672,7 +704,7 @@ namespace Dash
             int moveXScale = shiftLeft ? 1 : 0;
             int moveYScale = shiftTop ? 1 : 0;
 
-            if (this.IsCtrlPressed())
+            if (this.IsCtrlPressed() || this.IsShiftPressed())
             {
                 // proportional resizing
                 var diffX = cursorXDirection * p.X;
@@ -680,41 +712,38 @@ namespace Dash
             }
             else
             {
-                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. So flip the negative sign by multiplying by -1.
+                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
+                // So flip the negative sign by multiplying by -1.
                 newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
 
                 // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
                 newSize.Height = double.IsNaN(newSize.Height)
-                    ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
-                    : newSize.Height;
+                   ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
+                   : newSize.Height;
             }
 
-            /// <summary>
-            /// Resizes the CollectionView according to the increments in width and height. 
-            /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
-            /// the Grid must change size to accomodate the height of the ListView.
-            /// </summary>
-            /// <param name="dx"></param>
-            /// <param name="dy"></param>
             Size Resize(double dx = 0, double dy = 0)
             {
                 if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
                 {
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X: ViewModel.Width) : ViewModel.ActualSize.X;
+                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
                     var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
+
                     return new Size(ViewModel.Width, ViewModel.Height);
                 }
                 return new Size();
             }
 
+            this.Measure(new Size(newSize.Width, 5000));
+            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
-                (ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X),
-                (ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y));
-
+                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+            
             e.Handled = true;
         }
 
@@ -837,7 +866,8 @@ namespace Dash
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.IsAdornmentGroup)
+            //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
+            if (!ViewModel.IsAdornmentGroup && !ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
             {
                 FocusedDocument = this;
                 ToFront();
@@ -848,13 +878,27 @@ namespace Dash
                 //}
                 if (FocusedDocument?.Equals(this) == true && ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
                 {
-                    if (!this.IsShiftPressed())
-                        cfview.DeselectAll();
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
                     cfview.SelectDocs(d);
                     if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                     {
                         cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     }
+                }
+            }
+            else if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType) && this.IsCtrlPressed())
+            {
+                var d = new List<DocumentView>(new DocumentView[] { this });
+                if (ParentCollection?.CurrentView is CollectionFreeformView cfview && (e == null || !e.Handled))
+                {
+                    if (!this.IsShiftPressed()) cfview.DeselectAll();
+                    cfview.SelectDocs(d);
+                    if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                    {
+                        cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    }
+                    if (e != null)
+                        e.Handled = true;
                 }
             }
         }
@@ -870,22 +914,26 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            DocumentView_PointerEntered();
+        }
+
+        public void DocumentView_PointerEntered()
+        {
             if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-            {
                 ViewModel.DecorationState = ViewModel?.Undecorated == false;
-            }
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
         }
 
         #region UtilityFuncions
-        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+
+        public CollectionView GetCollectionToMoveTo(List<DocumentView> overlappedViews)
         {
             var selectedDocs = SelectedDocuments();
-
             var collection = this.GetFirstAncestorOfType<CollectionView>();
+
             if (collection == null || ViewModel == null || selectedDocs == null)
-                return false;
+                return null;
 
             foreach (var nestedDocument in overlappedViews)
             {
@@ -894,23 +942,38 @@ namespace Dash
                 {
                     if (!nestedCollection.Equals(collection))
                     {
-                        foreach (var selDoc in selectedDocs)
-                        {
-                            var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                            var where = nestedCollection.CurrentView is CollectionFreeformBase ?
-                                Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformBase), pos) :
-                                new Point();
-                            nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
-                            collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
-
-                        }
-                        return true;
+                        return nestedCollection;
                     }
-                    else break;
                 }
             }
-            return false;
+
+            return null;
         }
+
+        public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
+        {
+            var selectedDocs = SelectedDocuments();
+
+            var collection = this.GetFirstAncestorOfType<CollectionView>();
+            var nestedCollection = GetCollectionToMoveTo(overlappedViews);
+
+            if (nestedCollection == null)
+            {
+                return false;
+            }
+            
+            foreach (var selDoc in selectedDocs)
+            {
+                var pos = selDoc.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                var where = nestedCollection.CurrentView is CollectionFreeformView ?
+                    Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
+                    new Point();
+                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
+                collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+            }
+            return true;
+        }
+
         public void HandleShiftEnter()
         {
             var collection = this.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -1021,9 +1084,17 @@ namespace Dash
         {
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
-                dragModel.DraggedDocument.Link(ViewModel.DocumentController);
+                var dragDoc = dragModel.DraggedDocument;
+                if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+
+                var dropDoc = ViewModel.DocumentController;
+                if (KeyStore.RegionCreator[dropDoc.DocumentType] != null)
+                    dropDoc = KeyStore.RegionCreator[dragDoc.DocumentType](this);
+
+                dragDoc.Link(dropDoc);
 
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
 
@@ -1034,7 +1105,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
                 var note = new RichTextNote("<annotation>").Document;
                 dragModel.DraggedDocument.Link(note);
@@ -1050,7 +1121,7 @@ namespace Dash
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.CreateLink != null)
+            if (dragModel?.LinkSourceView != null)
             {
                 var note = new RichTextNote("<annotation>").Document;
                 dragModel.DraggedDocument.Link(note);
@@ -1135,6 +1206,37 @@ namespace Dash
         {
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
+        }
+
+       
+
+    
+
+        public void hideControls()
+        {
+            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            xTitleIcon.Visibility = Visibility.Collapsed;
+            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+        }
+
+        public void showControls()
+        {
+            ResizeHandleBottomLeft.Visibility = Visibility.Visible;
+            ResizeHandleBottomRight.Visibility = Visibility.Visible;
+            ResizeHandleTopLeft.Visibility = Visibility.Visible;
+            ResizeHandleTopRight.Visibility = Visibility.Visible;
+            xTitleIcon.Visibility = Visibility.Visible;
+            xAnnotateEllipseBorder.Visibility = Visibility.Visible;
+            xOperatorEllipseBorder.Visibility = Visibility.Visible;
+        }
+
+        private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
+        {
+            MainPage.Instance.PinToPresentation(ViewModel);
         }
     }
 }

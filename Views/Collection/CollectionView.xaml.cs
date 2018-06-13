@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -8,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
 using Dash.Views.Collection;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,13 +37,14 @@ namespace Dash
 
         public event Action<object, RoutedEventArgs> CurrentViewLoaded;
 
+        CollectionViewModel _lastViewModel = null;
         public CollectionView(CollectionViewModel vm)
         {
             Loaded += CollectionView_Loaded;
             InitializeComponent();
             _viewType = vm.ViewType;
             DataContext = vm;
-
+            _lastViewModel = vm;
             Unloaded += CollectionView_Unloaded;
             DragLeave += (sender, e) => ViewModel.CollectionViewOnDragLeave(sender, e);
             DragEnter += (sender, e) => ViewModel.CollectionViewOnDragEnter(sender, e);
@@ -81,12 +84,15 @@ namespace Dash
 
         private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
         {
-            Loaded -= CollectionView_Loaded;
-            Unloaded -= CollectionView_Unloaded;
+            _lastViewModel?.Loaded(false);
+            _lastViewModel = null;
         }
 
         private void CollectionView_Loaded(object s, RoutedEventArgs args)
         {
+            _lastViewModel = ViewModel;
+            ViewModel.Loaded(true);
+
             // ParentDocument can be null if we are rendering collections for thumbnails
             if (ParentDocument == null)
             {
@@ -240,6 +246,8 @@ namespace Dash
                     CurrentView = new CollectionDBSchemaView();
                     break;
                 case CollectionViewType.TreeView:
+                    if (CurrentView is CollectionTreeView) return;
+                    CurrentView = new CollectionTreeView();
                     break;
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
@@ -254,10 +262,13 @@ namespace Dash
             }
             CurrentView.Loaded -= CurrentView_Loaded;
             CurrentView.Loaded += CurrentView_Loaded;
+            
             xContentControl.Content = CurrentView;
             if (ViewModel.ViewType != _viewType)
                 ViewModel.ViewType = viewType;
         }
+
+        
 
         private void CurrentView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -275,5 +286,16 @@ namespace Dash
         }
 
         #endregion
+
+        public void Highlight()
+        {
+            xOuterGrid.BorderBrush = new SolidColorBrush(Color.FromArgb(102, 255, 215, 0));
+        }
+
+        public void Unhighlight()
+        {
+            xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
+        }
+        
     }
 }
