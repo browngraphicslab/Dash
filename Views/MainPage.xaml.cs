@@ -34,6 +34,7 @@ using Windows.Foundation.Collections;
 using System.IO;
 using System.Security.Permissions;
 using Windows.Storage;
+using Windows.ApplicationModel.DataTransfer;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -192,7 +193,7 @@ namespace Dash
 
 
             //FileSystemWatcher watcher = new FileSystemWatcher();
-            //watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState";
+            //watcher.Path = "C:\\Users\\GFX lab\\Downloads";
             ///* Watch for changes in LastAccess and LastWrite times, and
             //   the renaming of files or directories. */
             //watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
@@ -200,15 +201,20 @@ namespace Dash
             //// Only watch text files.
             //watcher.Filter = "*.pdf";
 
-            ////Subscribe to the Created event.
+            //Subscribe to the Created event.
             //watcher.Created += new FileSystemEventHandler(watcher_FileCreated);
 
             ////Enable the FileSystemWatcher events.
             //watcher.EnableRaisingEvents = true;
 
             //TODO: UWP apps can't access Downloads
-            //StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync("C:\\Users\\GFX lab\\Downloads");
-            //StorageFile file = await downloads.GetFileAsync("hello.pdf");
+            StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync("C:\\Users\\GFX lab\\Downloads");
+            StorageFile file = await downloads.GetFileAsync("hello.pdf");
+            IStorageFile Ifile = file;
+            //DataPackageView dataPack = file;
+            FileData fileD = FileDropHelper.GetFileData(file, null).Result;
+           // DocumentController docPdf = PdfToDashUtil.ParseFileAsync(fileD);
+
         }
 
         private static void watcher_FileCreated(object sender, FileSystemEventArgs e)

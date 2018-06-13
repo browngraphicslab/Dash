@@ -24,6 +24,8 @@
     }
   ],
 
+   "content_security_policy": "script-src 'self' https://cdn.socket.io/socket.io-1.0.0.js; object-src 'self'",
+
   "background": {
     "scripts": [ "jquery.js", "tabManager.js", "requestHandler.js", "bg.js" ]
   },
@@ -36,6 +38,7 @@
     "https://*/",
     "*://*/",
     "<all_urls>",
+    "downloads",
     "identity"
   ],
 

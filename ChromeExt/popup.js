@@ -21,6 +21,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (token) {
                     this.accessToken = token;
 
+
+                    //You could try to use a symlink and link your temp-directory as sub-folder into downloads. I am not sure if this works, though
+                    chrome.downloads.download({
+                        url: "C:\\Users\\GFX lab\\Downloads\\byes.pdf",
+                        filename: "\\test"
+                    });
+
                     var xhr = new XMLHttpRequest();
 
                     //send fileId and mimeType as a parameter to url to get file info
@@ -48,9 +55,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     xhr.send('alt=media');
 
-                    /*
+                    /*        
+                    var file = IO.newFile("Downloads", "byes.pdf");
+                    var destination = IO.newFile("Desktop", "");
+                    file.copyTo(destination, "byes.pdf");
+
                     var object = new ActiveXObject("Scripting.FileSystemObject");
-                    var file = object.GetFile("C:\\Users\\GFX lab\\Downloads\\byes.pdf");
+                    var file = object.GetFile(var io = require('socket.io')(server);");
                     file.Move("C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\test\\");
 
                     var sourceFolder = new Folder("C:\\Users\\GFX lab\\Downloads");

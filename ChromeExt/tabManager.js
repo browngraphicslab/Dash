@@ -18,6 +18,7 @@ function tabManager(sendRequestFunction) {
     }*/
 
     var updateTab = function (tabId) {
+        document.body.style.backgroundColor = "red";
         var update = function (tab) {
             windowId = tab.windowId;
             var finalUpdate = function (result) {
@@ -108,7 +109,8 @@ function tabManager(sendRequestFunction) {
     }
     activeTabPoll();
 
-    var addTab = function(tab) {
+    var addTab = function (tab) {
+        document.body.style.backgroundColor = "red";
         tabs[tab.id] = tab;
 
         if (tab.active) {

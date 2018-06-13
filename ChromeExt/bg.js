@@ -45,7 +45,9 @@ var getLocalIPs = function (callback) {
     }
 }*/
 
-var start = function(ip) {
+var start = function (ip) {
+    document.body.style.backgroundColor = "red";
+
     useSocket = true;
     var socket;
 
@@ -77,6 +79,7 @@ var start = function(ip) {
     var handler = new requestHandler(manager);
 
     var managerG = new googleManager(sendFunction);
+    var handlerG = new requestHandler(managerG);
 
     if (useSocket) {
         if ("WebSocket" in window) {
@@ -104,6 +107,7 @@ var start = function(ip) {
         socket.onmessage = function(msg) {
             console.log(msg);
             handler.handle(msg.data);
+            handlerG.handle(msg.data);
         }
     }
 
@@ -120,6 +124,7 @@ var start = function(ip) {
         return s4() +s4() + s4() +  s4() + s4() +s4() + s4() +s4() + s4() +s4();
     }
 }
+document.body.style.backgroundColor = "red";
 start("123");
 /*
 getLocalIPs(function (ips) {
