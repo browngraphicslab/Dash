@@ -191,7 +191,7 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
 
             FileSystemWatcher watcher = new FileSystemWatcher();
-            watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState\\test";
+            watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState";
             /* Watch for changes in LastAccess and LastWrite times, and
                the renaming of files or directories. */
             watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite

@@ -644,10 +644,18 @@ namespace Dash
                     Windows.Storage.ApplicationData.Current.LocalFolder;
                 int pathLength = localFolder.Path.Length + 3;
 
-                //get path without local folder
-                string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
+                string url;
 
-                
+                if (pathLength < rawUrl.Length)
+                {
+                    url = rawUrl.Substring(5, rawUrl.Length - 5);
+                }
+                else
+                {
+                    //get path without local folder
+                    url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
+                }
+
                 StorageFile imgFile = await localFolder.GetFileAsync(url);
                 StorageFolder imgFolder = await folder.GetFolderAsync(type);
 
