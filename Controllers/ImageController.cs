@@ -60,7 +60,9 @@ namespace Dash
             var data = (Model as ImageModel)?.Data;
             if (searchString == null)
                 return new StringSearchModel(data.AbsoluteUri);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString)))
+
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString) || reg.IsMatch(data.AbsoluteUri)))
             {
                 return new StringSearchModel(data.AbsoluteUri);
             }
@@ -99,5 +101,7 @@ namespace Dash
         {
             return new ImageController(ImageFieldModel.Data, ImageFieldModel.ByteData);
         }
+
+        
     }
 }

@@ -37,6 +37,12 @@ namespace Dash
         {
             [ResultsKey] = TypeInfo.Document
         };
+
+        /// <summary>
+        /// Compares two dictionaries that are obtained by searching the two terms individually in 
+        /// PutSearchResultsIntoDictionaryOperator. Once that is done, both dictionaries are compares for similiarities,
+        /// which are put into a new dictionary.
+        /// </summary>
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
             var d1 = inputs[Dict1Key] as DocumentController;
@@ -47,6 +53,7 @@ namespace Dash
             {
                 var l1 = kvp.Value as ListController<DocumentController>;
                 var l2 = d2.GetField<ListController<DocumentController>>(kvp.Key);
+
                 if (l1 != null && l2 != null)
                 {
                     d3.SetField(kvp.Key, new ListController<DocumentController>(l1.TypedData.Concat(l2.TypedData)), true);

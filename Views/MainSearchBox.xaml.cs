@@ -10,6 +10,7 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
 using System.IO;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,6 +23,7 @@ namespace Dash
         private string _currentSearch = "";
         
         public const string SearchCollectionDragKey = "Search Collection";
+        
 
         public MainSearchBox()
         {
@@ -37,6 +39,7 @@ namespace Dash
                 sender.Text = _currentSearch;
                 return;
             }
+
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
@@ -48,7 +51,7 @@ namespace Dash
                 ExecuteDishSearch(sender);
 
             }
-            _currentSearch = sender.Text.ToLower(); ;
+            _currentSearch = sender.Text.ToLower();
         }
 
 
@@ -59,7 +62,10 @@ namespace Dash
                 return;
             }
 
+            //first unhightlight old results
+            unHighlightAllDocs();
 
+            //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             var text = searchBox.Text.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
@@ -73,9 +79,16 @@ namespace Dash
             DocumentController resultDict = null;
             try
             {
+                //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
+
+                // Might end up with too many backslashes - please double check
+                text = text.Replace(@"\", @"\\");
+                text = text.Replace("\"", "\\\"");
+                
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
+          
             catch (DSLException e)
             {
                 Debug.WriteLine("Search Failed");
@@ -85,11 +98,15 @@ namespace Dash
             {
                 return;
             }
+            
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
             var tree = DocumentTree.MainPageTree;
             var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
+
+            //highlight doc results
+            HighlightSearchResults(docs.ToList<DocumentController>());
 
             foreach (var doc in docs)
             {
@@ -99,12 +116,57 @@ namespace Dash
             }
             
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
             }
+            
         }
+
+        public static void HighlightSearchResults(List<DocumentController> docs)
+        {
+            //highlight new search results
+            foreach (var doc in docs)
+            {
+                var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
+
+                //make border thickness of DocHighlight for each doc 8
+                MainPage.Instance.HighlightDoc(resultDoc, false, 1);
+            }
+        }
+
+        public static void unHighlightAllDocs()
+        {
+
+            //TODO:call this when search is unfocused
+
+            //list of all collections
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+
+            foreach (var coll in allCollections)
+            {
+                unHighlightDocs(coll);
+            }
+        }
+
+        public static void unHighlightDocs(DocumentController coll)
+        {
+            var colDocs = coll.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            //unhighlight each doc in collection
+            foreach (var doc in colDocs)
+            {
+                MainPage.Instance.HighlightDoc(doc, false, 2);
+                if (doc.DocumentType.ToString() == "Collection Box")
+                {
+                    unHighlightDocs(doc);
+                }
+            }
+        }
+
+
 
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
             DocumentController searchResultsDictionary, string originalSearch)
@@ -158,7 +220,6 @@ namespace Dash
             //var vms = listController.Data;
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
@@ -171,7 +232,6 @@ namespace Dash
             var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController : thisController);
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 return searchResultViewModel.ViewDocument;
@@ -796,6 +856,7 @@ namespace Dash
                         countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
                     }
                 }
+                
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
                 //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
             }

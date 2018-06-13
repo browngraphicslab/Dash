@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
+
 namespace Dash
 {
     [OperatorType("parseSearchString")]
@@ -56,8 +57,7 @@ namespace Dash
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)
         {
-            //TODO not have the function name and paremter name strings be hardcoded here
-            return "unionByValue(A:" +search1+",B:"+search2+")";
+            return OperatorScript.GetDishOperatorName<UnionSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
         private string JoinTwoSearchesWithIntersection(string search1, string search2)
@@ -65,9 +65,16 @@ namespace Dash
             return OperatorScript.GetDishOperatorName<IntersectSearchOperator>() + "(" + search1 + "," + search2 + ")";
         }
 
+        private string NegateSearch(string search)
+        {
+            return OperatorScript.GetDishOperatorName<NegationSearchOperator>() + "(" + search + ")";
+        }
+
         private string WrapInParameterizedFunction(string funcName, string paramName)
         {
+            //this returns a string that more closely follows function syntax
             //TODO check if func exists
+
             if (!DSL.FuncNameExists(funcName))
             {
                 return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
@@ -84,11 +91,15 @@ namespace Dash
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
             searchPart = searchPart?.ToLower() ?? " ";
-            if (searchPart.Contains(":"))
+            //if the part is a quote, it ignores the colon
+            if (searchPart.Contains(":") && searchPart[0] != '"')
             {
-                Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
-                var parts = searchPart.Split(':').Select(s => s.Trim()).ToArray();
-                return WrapInParameterizedFunction(parts[0], parts[1]);
+                //   Debug.Assert(searchPart.Count(c => c == ':') == 1);//TODO handle the case of multiple ':'
+
+                //splits after first colon
+                var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
+                //created a key field query function with both parts as parameters if parts[0] isn't a function name
+               return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -96,25 +107,67 @@ namespace Dash
             }
         }
 
+        private int FindNextDivider(String inputString)
+        {
+            bool inQuote = false;
+            int len = inputString.Length;
+            for (int i = 0; i < len; i++)
+            {
+                char curChar = inputString[i];
+                if (curChar == '"')
+                {
+                    inQuote = !inQuote;
+                }
+                else if (!inQuote && (curChar == ' ' || curChar == ','))
+                {
+                    return i;
+                }
+            }
+            return len;
+        }
+
+        private String Parse(String inputString)
+        {
+            int dividerIndex = FindNextDivider(inputString);
+            String searchTerm = inputString.Substring(0, dividerIndex);
+            var modifiedSearchTerm = searchTerm.Replace("\"", "");
+            bool isNegated = searchTerm.StartsWith("!");
+            String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
+            String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+
+            if (isNegated)
+                searchDict = NegateSearch(searchDict);
+
+
+            if (dividerIndex == inputString.Length)
+            {
+                return searchDict;
+            } else
+            {
+                char divider = inputString[dividerIndex];
+                String rest = inputString.Substring(dividerIndex + 1);
+
+                if (divider == ' ')
+                {
+                    return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
+                } else if (divider == ',')
+                {
+                    return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
+                } else
+                {
+                    throw new Exception("Unknown Divider");
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// Right now, we can join with intersections and unions, and negate searches
+        /// </summary>
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            //very simple for now, can only join with intersections
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            var parts = inputString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length < 1)
-            {
-                outputs[ScriptKey] = new TextController("");
-                return;
-            }
-
-            var searches = new Stack<string>(parts.Select(GetBasicSearchResultsFromSearchPart).Select(WrapInDictifyFunc));
-            while (searches.Count() > 1)
-            {
-                var search1 = searches.Pop();
-                var search2 = searches.Pop();
-                searches.Push(JoinTwoSearchesWithIntersection(search1, search2));
-            }
-            outputs[ScriptKey] = new TextController(searches.First());
+            outputs[ScriptKey] = new TextController(Parse(inputString));
         }
     }
 }

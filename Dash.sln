@@ -4,8 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dash", "Dash.csproj", "{7355FA95-4259-465B-8C8D-26DEED418788}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567} = {A8CBE04A-A64E-431C-863D-7AB72EA8F567}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashShared", "DashShared\DashShared.csproj", "{4A1E5C52-06B9-436C-8FE0-8238809C1F57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashShared", "DashShared\DashShared.csproj", "{4A1E5C52-06B9-436C-8FE0-8238809C1F57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Office.Interop", "Office.Interop\Office.Interop.csproj", "{A8CBE04A-A64E-431C-863D-7AB72EA8F567}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +64,22 @@ Global
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x64.Build.0 = Release|Any CPU
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x86.ActiveCfg = Release|Any CPU
 		{4A1E5C52-06B9-436C-8FE0-8238809C1F57}.Release|x86.Build.0 = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|ARM.Build.0 = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|x64.Build.0 = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8CBE04A-A64E-431C-863D-7AB72EA8F567}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

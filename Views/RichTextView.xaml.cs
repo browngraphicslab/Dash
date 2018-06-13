@@ -254,6 +254,21 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                {
+                    var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+                    var linkToDoc   = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+                    if (linkFromDoc != null)
+                    {
+                        var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
+                        theDoc = targetDoc;
+                    } else if (linkToDoc != null)
+                    {
+
+                        var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
+                        theDoc = targetDoc;
+                    }
+                 }
                 var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
                 if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
                 {
@@ -348,10 +363,22 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                if (dragModel.CreateLink)
+                if (dragModel.LinkSourceView != null)
                 {
-                    dragModel.DraggedDocument.Link(getDataDoc());
-                } else
+                    var dragDoc = dragModel.DraggedDocument;
+                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+
+                    var dropDoc = GetRegionDocument();
+
+                    dragDoc.Link(dropDoc);
+
+                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
+
+                    e.Handled = true;
+                    //dragModel.DraggedDocument.Link(getDataDoc());
+                }
+                else
                     linkDocumentToSelection(dragModel.DraggedDocument, true);
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -471,6 +498,29 @@ namespace Dash
         #endregion
 
         #region hyperlink
+
+        public DocumentController GetRegionDocument()
+        {
+            if (string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text))
+                return this.DataDocument;
+
+            var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+            var s1 = xRichEditBox.Document.Selection.StartPosition;
+            var s2 = xRichEditBox.Document.Selection.EndPosition;
+            createRTFHyperlink(dc, ref s1, ref s2, false, false);
+            var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            if (regions == null)
+            {
+                var dregions = new List<DocumentController>();
+                dregions.Add(dc);
+                DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+            }
+            else
+            {
+                regions.Add(dc);
+            }
+            return dc;
+        }
 
         string getHyperlinkTargetForSelection()
         {

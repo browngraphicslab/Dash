@@ -34,11 +34,11 @@ namespace Dash
 
         public Orientation Orientation
         {
-            get { return (Orientation) GetValue(OrientationProperty); }
+            get { return (Orientation)GetValue(OrientationProperty); }
             set { SetValue(OrientationProperty, value); }
         }
 
-	    private RichEditBox _currBox;
+        private RichEditBox _currBox;
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
@@ -48,11 +48,9 @@ namespace Dash
             this.InitializeComponent();
             _buttons = new Dictionary<string, Button>();
 
-			//instantiate formatter to create custom buttons
-			Formatter customButtonFormatter = new CustomButtonFormatter(xDashTextSubtoolbar);
-	        _currBox = null;
+            _currBox = null;
 
-			//add an additional sub-toolbar for further operations
+            //add an additional sub-toolbar for further operations
             this.AddButton("Font", Symbol.Add, 0, (sender, args) =>
             {
                 /**
@@ -77,10 +75,10 @@ namespace Dash
                         fontButton.Width = 67;
                     }
                 }
-            //Width meant to be 67 to match actual rendered width of main toolbar collapse button
+                //Width meant to be 67 to match actual rendered width of main toolbar collapse button
             }, 67);
 
-			//binds orientation of toolbar to the orientation of the main toolbar
+            //binds orientation of toolbar to the orientation of the main toolbar
             xDashTextSubtoolbar.Loaded += delegate
             {
                 var sp = xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>();
@@ -94,7 +92,7 @@ namespace Dash
             };
         }
 
-		/**
+        /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.
 		 */
         public void SetMenuToolBarBinding(RichEditBox selection)
@@ -102,57 +100,57 @@ namespace Dash
             xDashTextSubtoolbar.Editor = selection;
         }
 
-		/**
+        /**
 		 * Helper method for adding custom buttons.
 		 */
         public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 70, bool includeSeparator = false)
         {
-           //instantiate ToolbarButton & set properties
-	        var button = new ToolbarButton
-	        {
-		        Name = name,
-		        Icon = new SymbolIcon(icon),
-		        Position = position,
-				Background = new SolidColorBrush(Colors.LightSlateGray),
-				Width = width,
-	        }; //add to toolbar
-	        xDashTextSubtoolbar.CustomButtons.Add(button);
+            //instantiate ToolbarButton & set properties
+            var button = new ToolbarButton
+            {
+                Name = name,
+                Icon = new SymbolIcon(icon),
+                Position = position,
+                Background = new SolidColorBrush(Colors.LightSlateGray),
+                Width = width,
+            }; //add to toolbar
+            xDashTextSubtoolbar.CustomButtons.Add(button);
             //assign event handler to button on tapped
-            button.Tapped += onTapped;        
-			//add small separation between other buttons
+            button.Tapped += onTapped;
+            //add small separation between other buttons
             if (includeSeparator) xDashTextSubtoolbar.CustomButtons.Add(new ToolbarSeparator { Position = position + 1 });
             //add button to dictionary for accessibility
             _buttons.Add(name, button);
             return button;
         }
 
-		/**
+        /**
 		 *  Sets the current text box used for editing
 		 */
-	    public void SetCurrTextBox(RichEditBox box)
-	    {
-		    _currBox = box;
-	    }
+        public void SetCurrTextBox(RichEditBox box)
+        {
+            _currBox = box;
+        }
 
-		/**
+        /**
 		 * Setter for the documnentview of the richedittextbox, used for accessing text edit methods
 		 */
-	    public void SetDocs(DocumentView docs)
-	    {
-		    _docs = docs;
-	    }
+        public void SetDocs(DocumentView docs)
+        {
+            _docs = docs;
+        }
 
-		/**
+        /**
 		 * Used to toggle between text sub-menus
 		 */
-	    public void CloseSubMenu()
-	    {
-			xStack.Children.Remove(_menuView);
-		    _menuView = null;
-			//restore other menu
-		    xDashTextSubtoolbar.Visibility = Visibility.Visible;
+        public void CloseSubMenu()
+        {
+            xStack.Children.Remove(_menuView);
+            _menuView = null;
+            //restore other menu
+            xDashTextSubtoolbar.Visibility = Visibility.Visible;
 
-		}
+        }
 
-	}
+    }
 }
