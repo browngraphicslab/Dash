@@ -420,6 +420,8 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
+                return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
@@ -450,7 +452,7 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
-            if (e.Handled)
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
@@ -471,23 +473,25 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
-               if (FocusManager.GetFocusedElement() is TextBox)
-                    return;
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
-                foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformBase>())
-                    if (c.SelectedDocs.Count() > 0)
-                    {
-                        foreach (var d in c.SelectedDocs)
-                            d.DeleteDocument();
-                        break;
-                    }
+                if (!(FocusManager.GetFocusedElement() is TextBox))
+                {
+                    var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
+                        .OfType<CollectionView>().ToList();
+                    foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformBase>())
+                        if (c.SelectedDocs.Count() > 0)
+                        {
+                            foreach (var d in c.SelectedDocs)
+                                d.DeleteDocument();
+                            break;
+                        }
+                }
             }
 
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            if (!coll.IsMarqueeActive())
+            if (!coll.IsMarqueeActive() && !(FocusManager.GetFocusedElement() is TextBox))
             {
                 coll.TriggerActionFromSelection(e.VirtualKey, false);
             }

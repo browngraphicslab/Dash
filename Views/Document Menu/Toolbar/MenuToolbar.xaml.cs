@@ -134,7 +134,7 @@ namespace Dash
             };
             docSpecificButtons = buttons;
 
-            //List of all buttons on main menu toolbar - used for collapsing and rotation
+            //List of all buttons on main menu toolbar - used for collapsing and event handler assignment
             //ADD NEW BUTTONS HERE!!!
             ButtonBase[] tempButtons =
             {
@@ -143,6 +143,7 @@ namespace Dash
                 xAddGroup,
                 xAddImage,
                 xAddVideo,
+                xAddAudio,
                 xGroup,
                 xInk,
                 xTouch,
@@ -160,7 +161,7 @@ namespace Dash
             };
             allSeparators = tempSeparators;
 
-            this.AddSecondaryButtonEventHandlers();
+            AddSecondaryButtonEventHandlers();
         }
 
         /// <summary>

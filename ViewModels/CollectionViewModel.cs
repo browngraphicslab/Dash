@@ -209,7 +209,7 @@ namespace Dash
                     var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
                     if (scaleAmt > 0)
                     {
-                        TransformGroup = new TransformGroupData(trans, scale);
+                        //TransformGroup = new TransformGroupData(trans, scale);
                     }
                 }
             }
@@ -239,6 +239,7 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
+        public string Tag;
         void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
             switch (args.ListAction)

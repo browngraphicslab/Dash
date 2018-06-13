@@ -465,8 +465,7 @@ namespace Dash
 
 		private void Dock(bool preview)
 		{
-			if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control) ==
-				CoreVirtualKeyStates.Down)
+			if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
 			{
 				MainPage.Instance.UnhighlightDock();
 				return;
