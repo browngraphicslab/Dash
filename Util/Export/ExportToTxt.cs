@@ -323,7 +323,15 @@ namespace Dash
                 var text = rawText.Data;
                 var margins = getMargin(doc, minMax);
 
-                return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey);
+
+                if (stringWidth == null) {
+                    return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+
+                } else {
+                    return "<p style=\"width: " + dashToHtml(Convert.ToDouble(stringWidth.DereferenceToRoot(null).ToString()), minMax)
+                       + "px; position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                }
             }
             else
             {
