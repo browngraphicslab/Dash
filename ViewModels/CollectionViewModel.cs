@@ -94,18 +94,18 @@ namespace Dash
         #endregion
 
 
-        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-        {
-            OnPropertyChanged(nameof(TransformGroup));
-        }
-        void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
-        {
-            if (!MainPage.Instance.IsShiftPressed())
-                FitContents();   // pan/zoom collection so all of its contents are visible
-        }
-
         public void Loaded(bool isLoaded)
         {
+            void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                OnPropertyChanged(nameof(TransformGroup));
+            }
+            void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+            {
+                if (!MainPage.Instance.IsShiftPressed())
+                    FitContents();   // pan/zoom collection so all of its contents are visible
+            }
+
             if (isLoaded)
             {
                 _isLoaded++;
@@ -193,7 +193,6 @@ namespace Dash
         public void FitContents()
         {
             if (FitToParent &&  (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
-
             {
                 var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
                 var r = Rect.Empty;

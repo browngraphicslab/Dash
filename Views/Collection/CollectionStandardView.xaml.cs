@@ -137,32 +137,6 @@ namespace Dash
                 }
             }
 
-
-            //if (zoomOut >= 3)
-            //{
-            //    zoomOut = 0;
-            //    zoomIn = 0;
-            //    if (currentView > 1 && ViewManipulationControls.ElementScale >= ViewManipulationControls.MinScale + 0.01)
-            //    {
-            //        newView = currentView - 1;
-            //        newScale = SetScale((CollectionViewModel.StandardViewLevel)newView);
-            //    }
-            //}
-            //if (zoomIn >= 3)
-            //{
-            //    zoomOut = 0;
-            //    zoomIn = 0;
-            //    if (currentView < 3 && ViewManipulationControls.ElementScale < ViewManipulationControls.MaxScale)
-            //    {
-            //        newView = currentView + 1;
-            //        newScale = SetScale((CollectionViewModel.StandardViewLevel) newView);
-            //    }
-            //    else
-            //    {
-            //        newScale = scaleX;
-            //    }
-            //}
-
             // calculate the translate delta
             var translateDelta = new TranslateTransform
             {
@@ -194,22 +168,6 @@ namespace Dash
                 ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
                 MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
             }
-            //var scale = ViewManipulationControls.ElementScale;
-            //if (scale <= 0.3)
-            //{
-            //    ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
-            //    MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
-            //}
-            //else if (scale <= 1)
-            //{
-            //    ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
-            //    MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
-            //}
-            //else
-            //{
-            //    ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
-            //    MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
-            //}
         }
 
         private double SetScale(CollectionViewModel.StandardViewLevel viewLevel)
