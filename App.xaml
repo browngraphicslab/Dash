@@ -1055,6 +1055,16 @@
                     <SolidColorBrush x:Key="DBTextBrush" Color="#e1eded"></SolidColorBrush>
                     <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="#2a4a63"></SolidColorBrush>
                 </ResourceDictionary>
+                <ResourceDictionary x:Key="RedAF">
+                    <SolidColorBrush x:Key="TextBrush" Color="Red" />
+                    <SolidColorBrush x:Key="CollectionBackgroundBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="GridSplitterBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="TreeviewBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="CollectionBorderBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBCollectionBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="DBTextBrush" Color="Red"></SolidColorBrush>
+                    <SolidColorBrush x:Key="WorkspaceButtonBrush" Color="Red"></SolidColorBrush>
+                </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>

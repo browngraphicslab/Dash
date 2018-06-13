@@ -4,6 +4,14 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
+using Windows.UI.Xaml.Media;
+using System.Threading.Tasks;
+using Windows.Storage.Streams;
+using Windows.Storage;
+using Windows.Graphics.Imaging;
+using Windows.UI.Xaml.Media.Imaging;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Dash
 {
@@ -17,6 +25,11 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
+        
+       
+
+       
+        
 
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
@@ -28,44 +41,29 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the image
-            var editableImage = new EditableImage();
+
+           var editableImage = new EditableImage(docController, context);
+           
             var image = editableImage.Image;
 
             // setup bindings on the image
             SetupBindings(image, docController, context);
-            SetupImageBinding(image, docController, context);   
+            SetupImageBinding(image, docController, context);
+          
 
             return editableImage;
         }
 
+        
+
         protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceController)
-            {
-                var reference = data as ReferenceController;
-                var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                    {
-                        var doc = (DocumentController) sender;
-                        var dargs =
-                            (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
-                            return;
-                        BindImageSource(image, doc, c, reference.FieldKey);
-                    });
-            }
-            BindImageSource(image, controller, context, KeyStore.DataKey);
+            BindImageSource(image, controller, context);
         }
 
-        protected static void BindImageSource(Image image, DocumentController docController, Context context,
-            KeyController key)
+        protected static void BindImageSource(Image image, DocumentController docController, Context context)
         {
-            var data = docController.GetDereferencedField(key, context) as ImageController;
-            if (data == null)
-                return;
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,

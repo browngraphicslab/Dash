@@ -156,6 +156,7 @@ namespace DashShared
             public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text"); 
             public static KeyModel TextWrappingKey = new KeyModel("FF488D09-BBB7-4158-A5E4-0C4530DF2F56", "Text Wrapping");
             public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "Background Color");
+            public static KeyModel OpacitySliderValueKey = new KeyModel("3FD448B7-8AEE-4FBD-B68C-514E098D8D31", "Opacity Slider Value");
             public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
             public static KeyModel AdornmentKey = new KeyModel("FF3329BD-AA78-46E4-9A42-47CAB1E62123", "Is Adornment");
             public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");
@@ -181,6 +182,8 @@ namespace DashShared
             public static KeyModel ActualSizeKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualSize");
             public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
+            public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
+
         }
 
         public static class TypeStore

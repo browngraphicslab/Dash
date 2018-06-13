@@ -7,14 +7,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
+    xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
+    xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
+
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
-        <controls:TextToolbar
-            x:Name="xDashMenuToolBar"
-            Visibility="Visible">
-        </controls:TextToolbar>
+  
 
-    </Grid>
+    <StackPanel x:Name="xStack">
+       
+        <controls:TextToolbar 
+            x:Name="xDashTextSubtoolbar"
+            Visibility="Visible"
+            Background="LightGray">
+            <!--remove Link button from default text toolbar-->
+            <controls:TextToolbar.ButtonModifications >
+                <buttons:DefaultButton Type="Link" IsVisible="False" />
+            </controls:TextToolbar.ButtonModifications>
+            
+        </controls:TextToolbar>
+    
+    </StackPanel>
 </UserControl>

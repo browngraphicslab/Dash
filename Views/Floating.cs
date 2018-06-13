@@ -6,11 +6,13 @@
     using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Input;
+	using Windows.UI.Xaml.Media;
+	using Windows.UI.Xaml.Media.Animation;
 
-    /// <summary>
-    /// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
-    /// </summary>
-    [TemplatePart(Name = BorderPartName, Type = typeof(Border))]
+	/// <summary>
+	/// A Content Control that can be dragged around. Huge thanks to Diederik Kols for the smartness behind this.
+	/// </summary>
+	[TemplatePart(Name = BorderPartName, Type = typeof(Border))]
     public class Floating : ContentControl
     {
         private const string BorderPartName = "DraggingBorder";
@@ -24,6 +26,13 @@
         public static readonly DependencyProperty ShouldManiuplateChildProperty =
             DependencyProperty.Register("ShouldManipulateChild", typeof(bool), typeof(Floating), new PropertyMetadata(false));
         private Border _border;
+		private bool _expanding;
+
+		private double CurrCanvasTop
+		{
+			get { return (double)_border.GetValue(Canvas.TopProperty); }
+			set { _border.SetValue(Canvas.TopProperty, value); }
+		}
 
         /// <summary>
         /// Prevents the Floating control from manipulating it's content
@@ -40,6 +49,7 @@
         {
             DefaultStyleKey = typeof(Floating);
             ShouldManipulateChild = true;
+			_expanding = false;
         }
 
         /// <summary>
@@ -93,6 +103,11 @@
             Loaded += Floating_Loaded;
         }
 
+        public double GetCurrentTop()
+        {
+            return Canvas.GetTop(_border);
+        }
+
         /// <summary>
         /// Loaded handler which registers for the SizeChanged event.
         /// </summary>
@@ -114,7 +129,7 @@
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Floating_SizeChanged(object sender, SizeChangedEventArgs e)
+        public void Floating_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             var left = Canvas.GetLeft(_border);
             var top = Canvas.GetTop(_border);
@@ -155,7 +170,8 @@
         /// <param name="expectedWidth">Expected width of the floating control</param>
         public void ManipulateControlPosition(double x, double y, double expectedHeight, double expectedWidth)
         {
-            var left = Canvas.GetLeft(_border) + x;
+			_border.SetValue(Canvas.ZIndexProperty, 20);
+			var left = Canvas.GetLeft(_border) + x;
             var top = Canvas.GetTop(_border) + y;
 
             Rect rect = new Rect(left, top, expectedWidth, expectedHeight);
@@ -208,10 +224,19 @@
                 position = AdjustedPosition(rect, parentRect);
             }
 
-            // Set new position
-            Canvas.SetLeft(_border, position.X);
-            Canvas.SetTop(_border, position.Y);
-        }
+			//if the object is moving to account for additional width/height (of size greater than 1), then animate it
+			if (_expanding && (Math.Abs(Canvas.GetTop(_border) - position.Y) > 1 || Math.Abs(Canvas.GetLeft(_border) - position.X) > 1))
+			{
+				this.MoveAnimation(position.X - Canvas.GetLeft(_border), -(Canvas.GetTop(_border) - position.Y), position.Y, position.X);
+			}
+			else
+			{
+				// Set new position
+				Canvas.SetLeft(_border, position.X);
+				Canvas.SetTop(_border, position.Y);
+			}
+			
+		}
 
         /// <summary>
         /// Returns the adjusted the topleft position of a rectangle so that is stays within a parent rectangle.
@@ -258,5 +283,89 @@
 
             return element;
         }
-    }
+
+	    /// <summary>
+	    /// Adjusts position of floating object to account for an expansion
+	    /// </summary>
+		public void AdjustPositionForExpansion(double height, double width)
+	    {
+		    if (IsBoundByScreen)
+		    {
+				_expanding = true;
+				FrameworkElement el = GetClosestParentWithSize(this);
+
+				//var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el);
+
+				double elHeight = _border.ActualHeight;
+				double topY = Canvas.GetTop(_border);
+
+                double elWidth = _border.ActualWidth;
+                double leftX = Canvas.GetLeft(_border);
+
+				double newLowY = topY + elHeight + height;
+                double newMaxX = leftX + elWidth + width;
+
+				//if expansion would cause the object to extend past the bottom of the screen, adjust y position by the difference
+				if (newLowY >= Window.Current.Bounds.Height)
+				{
+					this.ManipulateControlPosition(0, Window.Current.Bounds.Height - newLowY);
+				}
+                if (newMaxX >= Window.Current.Bounds.Width)
+                {
+                    this.ManipulateControlPosition(Window.Current.Bounds.Width - newMaxX, 0);
+                }
+				_expanding = false;
+			}
+	   
+	    }
+
+		/// <summary>
+		/// Animates the movement of a floating object by the difference in x,y dist
+		/// </summary>
+		public void MoveAnimation(double xDist, double yDist, double yPos, double xPos)
+		{
+			// Create the transform
+			TranslateTransform moveTransform = new TranslateTransform();
+			moveTransform.X = 0;
+			moveTransform.Y = 0;
+			this.RenderTransform = moveTransform;
+
+			// Create a duration of .5 seconds.
+			Duration duration = new Duration(TimeSpan.FromSeconds(.5));
+			// Create two DoubleAnimations and set their properties.
+			DoubleAnimation myDoubleAnimationX = new DoubleAnimation();
+			DoubleAnimation myDoubleAnimationY = new DoubleAnimation();
+			myDoubleAnimationX.Duration = duration;
+			myDoubleAnimationY.Duration = duration;
+			Storyboard justintimeStoryboard = new Storyboard();
+			justintimeStoryboard.Duration = duration;
+			justintimeStoryboard.Children.Add(myDoubleAnimationX);
+			justintimeStoryboard.Children.Add(myDoubleAnimationY);
+			Storyboard.SetTarget(myDoubleAnimationX, moveTransform);
+			Storyboard.SetTarget(myDoubleAnimationY, moveTransform);
+
+			// Set the X and Y properties of the Transform to be the target properties
+			// of the two respective DoubleAnimations.
+			Storyboard.SetTargetProperty(myDoubleAnimationX, "X");
+			Storyboard.SetTargetProperty(myDoubleAnimationY, "Y");
+			myDoubleAnimationX.To = xDist;
+			myDoubleAnimationY.To = yDist - 15;
+
+			// Begin the animation.
+			justintimeStoryboard.Begin();
+			
+			//when completed, re-adjust canvas and positioning to avoid an unwanted offset
+			justintimeStoryboard.Completed += (s, e) =>
+			{
+				moveTransform.X = moveTransform.X - xDist;
+				Canvas.SetLeft(_border, xPos);
+				moveTransform.Y = moveTransform.Y - yDist + 15;
+				Canvas.SetTop(_border, yPos - 15);
+              
+            };
+			
+		}
+
+		
+	}
 }

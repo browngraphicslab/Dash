@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
 using Dash.Converters;
@@ -13,18 +15,24 @@ namespace Dash
 { 
     public class BackgroundShape : CourtesyDocument
     {
+
         /// <summary>
-     /// The document type which is uniquely associated with pdf boxes
-     /// </summary>
+        /// The document type which is uniquely associated with pdf boxes
+        /// </summary>
         public static DocumentType DocumentType = new DocumentType("B15BB50C-0C84-46F9-BFD7-D25BAF0E80A5", "Background Shape");
 
         public enum AdornmentShape {
             Elliptical,
             Rectangular,
-            Rounded
+            RoundedRectangle,
+            RoundedFrame,
+            Pentagonal,
+            Hexagonal,
+            Octagonal,
+            CustomPolygon,
+            Clover,
         }
 
-       
         /// <summary>
         /// The prototype id is used to make sure that only one prototype is every created
         /// </summary>
@@ -37,10 +45,36 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);
         }
 
-        protected static void BindShape(ContentPresenter Outelement, DocumentController docController,
-            Context context)
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var backgroundBinding = new FieldBinding<TextController>()
+            var pathBox = new Viewbox {Stretch = Stretch.Fill};
+            var corePath = new Path {Fill = new SolidColorBrush(Colors.Blue), StrokeThickness = 0};
+            pathBox.Child = corePath;
+
+            SetupBindings(pathBox, docController, context);
+            BindPathShape(corePath, docController, context);
+            BindPathFill(corePath, docController, context);
+
+            return pathBox;
+        }
+
+        private static void BindPathShape(Path corePath, DocumentController docController, Context context)
+        {
+            var shapeBinding = new FieldBinding<TextController>()
+            {
+                Mode = BindingMode.OneWay,
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Converter = new ShapeNameToGeometryConverter(),
+                Context = context,
+                Tag = "BackgroundShape Shape"
+            };
+            corePath.AddFieldBinding(Path.DataProperty, shapeBinding);
+        }
+
+        private static void BindPathFill(Path corePath, DocumentController docController, Context context)
+        {
+            var fillBinding = new FieldBinding<TextController>()
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController.GetDataDocument(),
@@ -49,48 +83,7 @@ namespace Dash
                 Context = context,
                 Tag = "BackgroundShape Fill"
             };
-            (Outelement.Content as Shape).AddFieldBinding(Shape.FillProperty, backgroundBinding);
-            (Outelement.Content as Shape).Fill = new Windows.UI.Xaml.Media.SolidColorBrush(Colors.Red);
-
-            var binding = new FieldBinding<TextController>()
-            {
-                Mode = BindingMode.OneWay,
-                Document = docController,
-                Key = KeyStore.DataKey,
-                Context = context,
-                Converter = new ShapeNameToShapeConverter(),
-                ConverterParameter = backgroundBinding,
-                Tag = "BackgroundShape Content"
-            };
-            
-            Outelement.AddFieldBinding(ContentPresenter.ContentProperty, binding);
-        }
-
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
-        {
-            // create the  view
-            ContentPresenter shape = new ContentPresenter();
-            AdornmentShape ashape = AdornmentShape.Rectangular;
-            Enum.TryParse<AdornmentShape>(docController.GetDereferencedField<TextController>(KeyStore.AdornmentShapeKey, context)?.Data ?? AdornmentShape.Rounded.ToString(), out ashape);
-            switch (ashape) {
-                case AdornmentShape.Elliptical:
-                    shape.Content = new Ellipse();
-                    break;
-                case AdornmentShape.Rectangular:
-                    shape.Content = new Rectangle();
-                    break;
-                case AdornmentShape.Rounded:
-                    Shape innerRectangle = new Rectangle();
-                    (innerRectangle as Rectangle).RadiusX = (innerRectangle as Rectangle).RadiusY = 40;
-                    shape.Content = innerRectangle;
-                    break;
-            }
-
-            SetupBindings(shape, docController, context);
-
-            BindShape(shape, docController, context);
-
-            return shape;
+            corePath.AddFieldBinding(Shape.FillProperty, fillBinding);
         }
     }
 }
