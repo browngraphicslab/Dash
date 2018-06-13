@@ -329,8 +329,16 @@ namespace Dash
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
-                    //If the user has clicked on valid content (text, image, video, etc)...
-                    if (subtoolbarElement != null)
+					//Annnotation controls
+	                var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+	                if (annot != null)
+	                {
+		                System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+						
+	                }
+
+					//If the user has clicked on valid content (text, image, video, etc)...
+					if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;

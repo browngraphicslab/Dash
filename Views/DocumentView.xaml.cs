@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Dash.Views;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -86,6 +87,8 @@ namespace Dash
             InitializeComponent();
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
+
+	        xAnnotationView.Height = LayoutRoot.Height;
 
             // set bounds
             MinWidth = 35;
@@ -904,7 +907,7 @@ namespace Dash
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(xMasterStack); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
@@ -1072,6 +1075,7 @@ namespace Dash
             xTitleIcon.Visibility = Visibility.Collapsed;
             xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
             xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+	        xAnnotationView.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
@@ -1089,5 +1093,15 @@ namespace Dash
         {
             MainPage.Instance.PinToPresentation(ViewModel);
         }
+
+	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+	    {
+			/**
+			//toggles visibiliy of annotation view
+		    xAnnotationView.Height = LayoutRoot.ActualHeight;
+			//xAnnotationView.SetValue(AnnotationView.HeightDependencyProperty, LayoutRoot.ActualHeight);
+			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
+		    **/
+	    }
     }
 }

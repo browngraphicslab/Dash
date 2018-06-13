@@ -1,9 +1,12 @@
-﻿using Dash.Annotations;
-using DashShared;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -12,10 +15,17 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.System;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Annotations;
+using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -29,6 +39,10 @@ namespace Dash
         private ImageController _imgctrl;
         public bool IsCropping;
         private DocumentView _docview;
+        private Point _anchorPoint;
+        private bool _isDragging;
+        private DocumentView _lastNearest;
+
         public Image Image => xImage;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -53,7 +67,7 @@ namespace Dash
 
             Image.Width = fileProperties.Width;
             Image.Source = new BitmapImage(new Uri(file.Path));
-            
+
             var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
             _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
         }
@@ -158,12 +172,6 @@ namespace Dash
             IsCropping = true;
         }
 
-        private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
-        {
-            // prevent the image from being moved while being cropped
-            if (IsCropping) e.Handled = true;
-        }
-
         /// <summary>
         ///     crops the image with respect to the values of the rectangle passed in
         /// </summary>
@@ -246,9 +254,9 @@ namespace Dash
                 var pixels = pix.DetachPixelData();
 
                 // dis is it, the new bitmap image
-                cropBmp = new WriteableBitmap((int) width, (int) height);
+                cropBmp = new WriteableBitmap((int)width, (int)height);
                 var pixStream = cropBmp.PixelBuffer.AsStream();
-                pixStream.Write(pixels, 0, (int) (width * height * 4));
+                pixStream.Write(pixels, 0, (int)(width * height * 4));
 
                 SaveCroppedImageAsync(cropBmp, decoder, rectangleGeometry, pixels);
             }
@@ -257,8 +265,8 @@ namespace Dash
         private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
             byte[] pixels)
         {
-            var width = (uint) rectgeo.Width;
-            var height = (uint) rectgeo.Height;
+            var width = (uint)rectgeo.Width;
+            var height = (uint)rectgeo.Height;
 
             // randomly generate a new guid for the filename
             var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
@@ -342,6 +350,230 @@ namespace Dash
             IsCropping = false;
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
+            xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
+
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
+            var properties = e.GetCurrentPoint(this).Properties;
+
+            if (_isDragging && properties.IsRightButtonPressed == false)
+            {
+                //update size of preview region box according to mouse movement
+
+                var pos = e.GetCurrentPoint(xImage).Position;
+
+                var x = Math.Min(pos.X, _anchorPoint.X);
+                var y = Math.Min(pos.Y, _anchorPoint.Y);
+                xRegionDuringManipulationPreview.Margin = new Thickness(x, y, 0, 0);
+
+                xRegionDuringManipulationPreview.Width = Math.Abs(pos.X - _anchorPoint.X);
+                xRegionDuringManipulationPreview.Height = Math.Abs(pos.Y - _anchorPoint.Y);
+            }
+        }
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
+            xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            _isDragging = false;
+
+            if (xRegionDuringManipulationPreview.Width < 50 && xRegionDuringManipulationPreview.Height < 50) return;
+
+            // the box only sticks around if it's of a large enough size
+            xRegionPostManipulationPreview.SetPosition(
+                new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+                new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
+                new Size(xImage.ActualWidth, xImage.ActualHeight)
+            );
+            xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsCropping) e.Handled = true;
+            var properties = e.GetCurrentPoint(this).Properties;
+
+            if (!IsCropping && properties.IsRightButtonPressed == false)
+            {
+
+                var pos = e.GetCurrentPoint(xImage).Position;
+                _anchorPoint = pos;
+                _isDragging = true;
+
+                //reset and get rid of the region preview
+                xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
+                xRegionDuringManipulationPreview.Width = 0;
+                xRegionDuringManipulationPreview.Height = 0;
+                xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
+                xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+
+                //if selecting an already selected region, keep visible
+                if (!(xRegionPostManipulationPreview.Column1.ActualWidth < pos.X) ||
+                    !(pos.X < xRegionPostManipulationPreview.Column1.ActualWidth +
+                      xRegionPostManipulationPreview.Column2.ActualWidth) ||
+                    !(xRegionPostManipulationPreview.Row1.ActualHeight < pos.Y) ||
+                    !(pos.Y < xRegionPostManipulationPreview.Row1.ActualHeight +
+                      xRegionPostManipulationPreview.Row2.ActualHeight))
+                {
+                    xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                    //unhighlight last selected regions' link
+                    if (_lastNearest != null)
+                    {
+                        MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+                    }
+                }
+            }
+        }
+
+
+        public bool IsSomethingSelected()
+        {
+            return xRegionPostManipulationPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
+        }
+
+
+        public DocumentController GetRegionDocument()
+        {
+            if (!this.IsSomethingSelected()) return _docCtrl;
+
+            // the bitmap streaming to crop doesn't work yet
+            var imNote = new ImageNote(_imgctrl.ImageSource,
+                    new Point(xRegionPostManipulationPreview.Margin.Left, xRegionPostManipulationPreview.Margin.Top),
+                    new Size(xRegionPostManipulationPreview.ActualWidth, xRegionPostManipulationPreview.ActualHeight))
+                .Document;
+
+            //add to regions list
+            var regions = _docCtrl.GetDataDocument()
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            if (regions == null)
+            {
+                var dregions = new List<DocumentController>();
+                dregions.Add(imNote);
+                _docCtrl.GetDataDocument()
+                    .SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+            }
+            else
+            {
+                regions.Add(imNote);
+            }
+
+            var newBox = new ImageRegionBox { LinkTo = imNote };
+
+            // use during here because it's the one with actual pixel measurements
+            newBox.SetPosition(
+                new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+                new Size(xRegionDuringManipulationPreview.Width, xRegionDuringManipulationPreview.Height),
+                new Size(xImage.ActualWidth, xImage.ActualHeight));
+            xRegionsGrid.Children.Add(newBox);
+            newBox.PointerPressed += xRegion_OnPointerPressed;
+            //newBox.LostFocus += Region_OnLostFocus;
+            xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+            return imNote;
+        }
+
+
+        private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = false;
+
+            if (sender is ImageRegionBox box)
+            {
+                //get the linked doc of the selected region
+                var theDoc = box.LinkTo;
+                if (theDoc == null) return;
+
+                //create a preview region to show that this region is selected
+                xRegionDuringManipulationPreview.Width = 0;
+                xRegionDuringManipulationPreview.Height = 0;
+                xRegionPostManipulationPreview.Column1.Width = box.Column1.Width;
+                xRegionPostManipulationPreview.Column2.Width = box.Column2.Width;
+                xRegionPostManipulationPreview.Column3.Width = box.Column3.Width;
+                xRegionPostManipulationPreview.Row1.Height = box.Row1.Height;
+                xRegionPostManipulationPreview.Row2.Height = box.Row2.Height;
+                xRegionPostManipulationPreview.Row3.Height = box.Row3.Height;
+                xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+
+                //handle linking
+                var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+                var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+                if (linkFromDoc != null)
+                {
+                    var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
+                    theDoc = targetDoc;
+                }
+                else if (linkToDoc != null)
+                {
+
+                    var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
+                    theDoc = targetDoc;
+                }
+
+                var nearest = FindNearestDisplayedTarget(e.GetCurrentPoint(MainPage.Instance).Position, theDoc?.GetDataDocument(), this.IsCtrlPressed());
+                if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
+                {
+                    if (this.IsCtrlPressed())
+                        nearest.DeleteDocument();
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                    //unhighlight last doc
+                    if (_lastNearest != null)
+                    {
+                        MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+                    }
+                    //highlight this linked doc
+                    _lastNearest = nearest;
+                    MainPage.Instance.HighlightDoc(nearest.ViewModel.DocumentController, false, 1);
+                }
+                else
+                {
+                    var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
+                    if (theDoc != null)
+                    {
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+                    }
+                }
+                e.Handled = true;
+            }
+
+            DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
+            {
+                double dist = double.MaxValue;
+                DocumentView nearest = null;
+                foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+                {
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
+                    {
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                        {
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
+                        }
+                    }
+                }
+
+                return nearest;
+            }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            //UI for preview boxes
+            xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
+            xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
+            xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
+            xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
         }
     }
+
 }

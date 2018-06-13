@@ -26,10 +26,6 @@ namespace Dash
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         
-       
-
-       
-        
 
         public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
@@ -38,6 +34,7 @@ namespace Dash
             (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
         }
+
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the image
@@ -53,9 +50,7 @@ namespace Dash
 
             return editableImage;
         }
-
         
-
         protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
@@ -74,5 +69,13 @@ namespace Dash
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
         }
-    }
+
+	    public static DocumentController MakeRegionDocument(DocumentView image)
+	    {
+		    var im = image.GetFirstDescendantOfType<EditableImage>();
+		    return im.GetRegionDocument();
+	    }
+
+		
+	}
 }
