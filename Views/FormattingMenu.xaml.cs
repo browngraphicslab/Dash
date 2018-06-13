@@ -269,22 +269,28 @@ namespace Dash
 	        
 	        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
 	        {
-		       // xRichEditBox.Document.Selection.CharacterFormat.Name
-		       xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
+		        xRichEditBox.Focus(FocusState.Pointer);
+				xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
 			}
-	        else
-	        {
-		        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
-			}
-            
+
+	        xRichEditBox.Document.Selection.CharacterFormat.Name = selectedFontFamily.Source;
+			
         }
 
         private void FontSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var comboBox = sender as ComboBox;
             var selectedFontSize = comboBox?.SelectedValue;
-            if (selectedFontSize != null)
-                xRichEditBox.Document.Selection.CharacterFormat.Size = (float) Convert.ToDouble(selectedFontSize.ToString());
+	        if (selectedFontSize != null)
+	        {
+		        if (xRichEditBox.Document.Selection == null || xRichEditBox.Document.Selection.StartPosition == xRichEditBox.Document.Selection.EndPosition)
+		        {
+			        //xRichEditBox.Document.CaretPosition.MoveToPosition(this.radRichTextBox.Document.Selection.Ranges.First.EndPosition);
+					xRichEditBox.Document.Selection.SetRange(0, xRichEditBox.Document.Selection.EndPosition);
+		        }
+		        xRichEditBox.Document.Selection.CharacterFormat.Size = (float)Convert.ToDouble(selectedFontSize.ToString());
+			}
+               
         }
 
         #endregion
