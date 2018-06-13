@@ -141,7 +141,7 @@ namespace Dash
         {
             try
             {
-                if (e.Key == Windows.System.VirtualKey.Enter)
+                if (e.Key == VirtualKey.Enter)
                 {
                     if (xEditTextBox.Text == "\r")
                     {
@@ -311,21 +311,25 @@ namespace Dash
         {
             var dbDocs = ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(ViewModel.CollectionKey, context)?.TypedData ??
                          ParentDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, context)?.TypedData;
+            //TODO This can be a list of keys, it doesn't have to be a list of TextControllers anymore
             var headerList = ParentDocument
-                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.Data ?? new List<FieldControllerBase>();
+                .GetDereferencedField<ListController<TextController>>(HeaderListKey, context)?.TypedData ?? new List<TextController>();
             if (dbDocs != null)
             {
                 SchemaHeaders.CollectionChanged -= SchemaHeaders_CollectionChanged;
                 SchemaHeaders.Clear();
                 foreach (var h in headerList)
                 {
-                    SchemaHeaders.Add(new CollectionDBSchemaHeader.HeaderViewModel()
+                    var fieldKey = ContentController<FieldModel>.GetController<KeyController>(h.Data);
+                    var hvm = new CollectionDBSchemaHeader.HeaderViewModel()
                     {
                         SchemaView = this,
                         SchemaDocument = ParentDocument,
+                        // TODO: Allow width to carry over when regenerating header list
                         Width = 150,
-                        FieldKey = ContentController<FieldModel>.GetController<KeyController>((h as TextController).Data)
-                    });
+                        FieldKey = fieldKey
+                    };
+                    SchemaHeaders.Add(hvm);
                 }
                 // for each document we add any header we find with a name not matching a current name. This is the UNION of all fields *assuming no collisions
                 foreach (var d in dbDocs.Select((db) => db.GetDataDocument()))
@@ -514,7 +518,7 @@ namespace Dash
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new field to the schema view
-            _schemaFieldsNotInDocs.Add(new KeyController());
+            _schemaFieldsNotInDocs.Add(new KeyController(UtilShared.GenerateNewId(), "New Field"));
             UpdateFields(new Context(ParentDocument));
         }
     }

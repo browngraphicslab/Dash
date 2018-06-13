@@ -738,8 +738,12 @@ namespace Dash
                     {
                         cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                     }
+
+                    //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
                     if (e != null)
+                    {
                         e.Handled = true;
+                    }
                 }
             }
         }
