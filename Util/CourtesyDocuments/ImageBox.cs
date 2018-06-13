@@ -52,7 +52,6 @@ namespace Dash
           
 
             return editableImage;
-            //cropping logic here
         }
 
         
@@ -60,15 +59,11 @@ namespace Dash
         protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
-            BindImageSource(image, controller, context, KeyStore.DataKey);
+            BindImageSource(image, controller, context);
         }
 
-        protected static void BindImageSource(Image image, DocumentController docController, Context context,
-            KeyController key)
+        protected static void BindImageSource(Image image, DocumentController docController, Context context)
         {
-            var data = docController.GetDereferencedField(key, context) as ImageController;
-            if (data == null)
-                return;
             var binding = new FieldBinding<ImageController>
             {
                 Document = docController,
