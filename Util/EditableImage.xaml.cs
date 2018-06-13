@@ -71,6 +71,7 @@ namespace Dash
             StorageFile file;
 
             /*
+             * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
@@ -197,6 +198,7 @@ namespace Dash
             StorageFile file;
 
             /*
+             * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
              * try catch is literally the only way we can deal with regular
              * local uris, absolute uris, and website uris as the same time
              */
