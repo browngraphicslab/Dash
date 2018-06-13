@@ -190,20 +190,25 @@ namespace Dash
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
 
-            FileSystemWatcher watcher = new FileSystemWatcher();
-            watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState";
-            /* Watch for changes in LastAccess and LastWrite times, and
-               the renaming of files or directories. */
-            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
-               | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            // Only watch text files.
-            watcher.Filter = "*.pdf";
 
-            //Subscribe to the Created event.
-            watcher.Created += new FileSystemEventHandler(watcher_FileCreated);
+            //FileSystemWatcher watcher = new FileSystemWatcher();
+            //watcher.Path = "C:\\Users\\GFX lab\\AppData\\Local\\Packages\\115b743b-4c3a-45e5-a780-6fbd26aec201_hz258y3tkez3a\\LocalState";
+            ///* Watch for changes in LastAccess and LastWrite times, and
+            //   the renaming of files or directories. */
+            //watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
+            //   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            //// Only watch text files.
+            //watcher.Filter = "*.pdf";
 
-            //Enable the FileSystemWatcher events.
-            watcher.EnableRaisingEvents = true;
+            ////Subscribe to the Created event.
+            //watcher.Created += new FileSystemEventHandler(watcher_FileCreated);
+
+            ////Enable the FileSystemWatcher events.
+            //watcher.EnableRaisingEvents = true;
+
+            //TODO: UWP apps can't access Downloads
+            //StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync("C:\\Users\\GFX lab\\Downloads");
+            //StorageFile file = await downloads.GetFileAsync("hello.pdf");
         }
 
         private static void watcher_FileCreated(object sender, FileSystemEventArgs e)
