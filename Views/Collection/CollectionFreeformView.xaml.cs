@@ -820,6 +820,7 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
+                //TODO: make a markdown box here instead
                 var postitNote = new RichTextNote(text: text).Document;
                 Actions.DisplayDocument(ViewModel, postitNote, where);
             }
