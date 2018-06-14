@@ -10,13 +10,16 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-
+   
+    
     public class GraphNodeViewModel : ViewModelBase
     {
         #region variables
 
         private DocumentViewModel _documentViewModel;
         private DocumentController _documentController;
+        private double _xPosition;
+        private double _yPosition;
 
         public DocumentViewModel DocumentViewModel
         {
@@ -24,8 +27,23 @@ namespace Dash
             set => SetProperty(ref _documentViewModel, value);
         }
 
-        public double XPosition { get; set; }
-        public double YPosition { get; set; }
+        public DocumentController DocumentController
+        {
+            get => _documentController;
+            set => SetProperty(ref _documentController, value);
+        }
+
+        public double XPosition
+        {
+            get => _xPosition;
+            set => SetProperty(ref _xPosition, value);
+        }
+
+        public double YPosition
+        {
+            get => _yPosition;
+            set => SetProperty(ref _yPosition, value);
+        }
 
         #endregion
 
@@ -37,11 +55,15 @@ namespace Dash
         public GraphNodeViewModel(DocumentViewModel dvm, double x, double y)
         {
             DocumentViewModel = dvm;
+            DocumentController = dvm.DocumentController;
             XPosition = x;
             YPosition = y;
         }
+
         #endregion
     }
+
+
 
     public sealed partial class CollectionGraphView : UserControl, ICollectionView
     {
@@ -51,7 +73,7 @@ namespace Dash
         private ObservableCollection<DocumentController> CollectionDocuments { get; set; }
 
         public CollectionViewModel ViewModel { get; set; }
-        
+
         public DocumentController ParentDocument
         {
             get => _parentDocument;
@@ -68,7 +90,7 @@ namespace Dash
 
         private ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
 
-        private ObservableDictionary<DocumentViewModel, DocumentViewModel> Connections { get; set; }
+        public ObservableDictionary<DocumentViewModel, DocumentViewModel> Connections { get; private set; }
 
         private double _minGap = 50;
         private double _maxGap = 100;
@@ -88,8 +110,12 @@ namespace Dash
 
         private void CollectionGraphView_Loaded(object sender, RoutedEventArgs e)
         {
+            xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
+            xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
+
             DataContextChanged += CollectionGraphView_DataContextChanged;
             CollectionGraphView_DataContextChanged(null, null);
+            xInfoPanel.Children.Add(new GraphInfoView(ViewModel, this));
         }
 
         private void CollectionGraphView_Unloaded(object sender, RoutedEventArgs e)
@@ -173,7 +199,7 @@ namespace Dash
             {
                 if (dvm != null)
                 {
-                    _nodes.Add(new GraphNodeViewModel(dvm, _randInt.Next(0, 1000), _randInt.Next(0, 1000)));
+                    _nodes.Add(new GraphNodeViewModel(dvm, _randInt.Next(0, (int)xScrollViewCanvas.Width - 100), _randInt.Next(0, (int)xScrollViewCanvas.Height - 100)));
                     var fromConnections = dvm.DataDocument
                                               .GetDereferencedField<ListController<DocumentController>>(
                                                   KeyStore.LinkFromKey, null)?.TypedData ??
@@ -212,8 +238,24 @@ namespace Dash
                 if (!CollectionDocuments.Contains(newDoc.DocumentController.GetDataDocument()))
                 {
                     CollectionDocuments.Add(newDoc.DocumentController.GetDataDocument());
-                    _nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, 1000), _randInt.Next(0, 1000)));
+                    _nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
                 }
+            }
+        }
+
+        private void CollectionGraphView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var offsetX = e.NewSize.Width - e.PreviousSize.Width;
+            var offsetY = e.NewSize.Height - e.PreviousSize.Height;
+            xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
+            xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
+
+            foreach (var node in _nodes)
+            {
+                var x = node.XPosition;
+                var y = node.YPosition;
+                node.XPosition = x + (offsetX * (x / e.PreviousSize.Width));
+                node.YPosition = y + (offsetY * (y / e.PreviousSize.Height));
             }
         }
     }

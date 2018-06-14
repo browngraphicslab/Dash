@@ -16,7 +16,7 @@ namespace Dash
     /// <summary>
     /// Allows interactions with underlying DocumentModel.
     /// </summary>
-	[DebuggerDisplay("{Tag}")]
+	[DebuggerDisplay("DocumentController: {Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
         /// <summary>

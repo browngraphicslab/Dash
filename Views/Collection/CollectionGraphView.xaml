@@ -10,16 +10,22 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
-    AllowDrop="True">
+    AllowDrop="True"
+    SizeChanged="CollectionGraphView_OnSizeChanged">
 
     <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.Resources>
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
         </Grid.Resources>
-        <ScrollViewer Name="xScrollViewer" Width="Auto" HorizontalAlignment="Left"  Height="Auto" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
-            <Grid Margin="0,-250,0,0">
-                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Width="1000" Height="1000">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer Name="xScrollViewer" Grid.Column="0" Width="Auto" HorizontalAlignment="Stretch" Height="Auto"
+                      HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch">
+            <Grid Margin="0,0,0,0">
+                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <!--timeline elements-->
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
@@ -44,6 +50,10 @@
                 </Canvas>
             </Grid>
         </ScrollViewer>
+
+        <StackPanel Grid.Column="1" x:Name="xInfoPanel" Orientation="Vertical" HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" Background="{ThemeResource TreeviewBrush}">
+        </StackPanel>
 
         <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*" />

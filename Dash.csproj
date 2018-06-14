@@ -360,6 +360,9 @@
     <Compile Include="Views\Collection\CollectionTreeView.xaml.cs">
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Collection\GraphInfoView.xaml.cs">
+      <DependentUpon>GraphInfoView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\GraphNodeView.xaml.cs">
       <DependentUpon>GraphNodeView.xaml</DependentUpon>
     </Compile>
@@ -836,6 +839,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionTreeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\GraphInfoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
