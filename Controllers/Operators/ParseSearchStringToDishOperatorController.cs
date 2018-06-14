@@ -47,6 +47,7 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
+            searchTerm = searchTerm.Replace(@"\", @"\\");
             return OperatorScript.GetDishOperatorName<SearchOperatorController>()+ "(\"" + searchTerm + "\")";
         }
 
@@ -90,7 +91,7 @@ namespace Dash
 
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
-            searchPart = searchPart?.ToLower() ?? " ";
+            searchPart = searchPart ?? " ";
             //if the part is a quote, it ignores the colon
             if (searchPart.Contains(":") && searchPart[0] != '"')
             {

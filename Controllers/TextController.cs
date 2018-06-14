@@ -81,12 +81,7 @@ namespace Dash
             if (Data != null)
             {
                 var reg = new System.Text.RegularExpressions.Regex(searchString);
-
-                //System.Diagnostics.Debug.WriteLine("reg: " + reg);
-                //System.Diagnostics.Debug.WriteLine("Data: " + Data);
-                //System.Diagnostics.Debug.WriteLine("ismatch?: " + reg.IsMatch(Data));
-                
-                var index = _lowerData.IndexOf(searchString);
+                var index = _lowerData.IndexOf(searchString.ToLower());
                 if (index >= 0 || reg.IsMatch(Data))
                 {
                     if (index < 0)
