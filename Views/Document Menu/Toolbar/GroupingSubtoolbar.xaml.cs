@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -6,6 +7,10 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
+using System;
+using Windows.Networking.BackgroundTransfer;
+using Windows.UI.Xaml.Shapes;
+using StringToBrushConverter = Dash.Converters.StringToBrushConverter;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,7 +35,7 @@ namespace Dash
         //CONSTRUCTOR
         public GroupingSubtoolbar()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             //Initial values
             xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
@@ -51,6 +56,8 @@ namespace Dash
                 });
                 Visibility = Visibility.Collapsed;
             };
+
+            CheckForCustom();
         }
 
         //SETUP AND HELPER METHODS
@@ -113,6 +120,15 @@ namespace Dash
             xGroupCommandbar.Visibility = Visibility.Visible;
             //Updates combo box dimensions
             xShapeOptionsDropdown.Margin = status ? new Thickness(ToolbarConstants.ComboBoxMarginOpen) : new Thickness(ToolbarConstants.ComboBoxMarginClosed);
+
+            var margin = xOpacitySlider.Margin;
+            margin.Top = status ? ToolbarConstants.OpacitySliderMarginOpen : ToolbarConstants.OpacitySliderMarginClosed;
+            margin.Left = 22;
+            xOpacitySlider.Margin = margin;
+
+            margin = xSideCounter.Margin;
+            margin.Top = status ? ToolbarConstants.SideCounterMarginOpen : ToolbarConstants.SideCounterMarginClosed;
+            xSideCounter.Margin = margin;
         }
 
         /*
@@ -122,6 +138,8 @@ namespace Dash
         {
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", true);
         }
+
+        
 
     //EVENT HANDLERS
 
@@ -143,10 +161,34 @@ namespace Dash
                 BackgroundShape.AdornmentShape.Clover.ToString(),
             };
 
+            CheckForCustom();
 
             var index = xShapeOptionsDropdown.SelectedIndex;
             var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
+
+            if (index != GroupGeometryConstants.CustomPolyDropdownIndex) return;
+
+            var storedSideNum = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
+            var safeSideCount = storedSideNum ?? GroupGeometryConstants.DefaultCustomPolySideCount;
+            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.SideCountKey, safeSideCount, true);
+            xSideCounter.Text = safeSideCount.ToString("G");
+        }
+
+        private void CheckForCustom()
+        {
+            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
+            {
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
+                xRadialCol.Width = new GridLength(50);
+                xSliderCol.Width = new GridLength(316);
+            }
+            else
+            {
+                if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Collapsed;
+                xRadialCol.Width = new GridLength(0);
+                xSliderCol.Width = new GridLength(344);
+            }
         }
 
         /*
@@ -211,13 +253,22 @@ namespace Dash
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
             _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
-            xOpacitySlider.Background = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
+            UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
-            var storedSliderValue = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
+            xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
-            //...parses it to extract double and sets slider value to computed value
-            xOpacitySlider.Value = storedSliderValue;
+            //NUM SIDES
+            xSideCounter.Text = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data.ToString("G") ?? GroupGeometryConstants.DefaultCustomPolySideCount.ToString();
+            
+        }
+
+        private void UpdateToolbarAccentColors()
+        {
+            var asBrush = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
+            xOpacitySlider.Background = asBrush;
+            xSideGauge.NeedleBrush = (SolidColorBrush)asBrush;
+            xSideGauge.TrailBrush = (SolidColorBrush)asBrush;
         }
 
         /*
@@ -226,8 +277,33 @@ namespace Dash
         private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _currentColorString = xGroupForegroundColorPicker.SelectedColor.ToString();
-            xOpacitySlider.Background = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
+            UpdateToolbarAccentColors();
             UpdateColor();
+        }
+
+        private void XAddSide_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var inc = (MainPage.Instance.IsShiftPressed()) ? GroupGeometryConstants.MassiveInc : GroupGeometryConstants.SmallInc;
+            IncrementCounterByStep(inc);
+        }
+
+        private void XAddSide_OnRightTapped(object sender, RightTappedRoutedEventArgs e) { IncrementCounterByStep(GroupGeometryConstants.LargeInc); }
+
+        private void XRemoveSide_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var inc = (MainPage.Instance.IsShiftPressed()) ? GroupGeometryConstants.MassiveInc : GroupGeometryConstants.SmallInc;
+            IncrementCounterByStep(-1 * inc);
+        }
+
+        private void XRemoveSide_OnRightTapped(object sender, RightTappedRoutedEventArgs e) { IncrementCounterByStep(-1 * GroupGeometryConstants.LargeInc); }
+
+        private void IncrementCounterByStep(int step)
+        {
+            int.TryParse(xSideCounter.Text, out var numSides);
+            if (numSides + step < 3 || numSides + step > 99) return;
+            numSides += step;
+            xSideCounter.Text = numSides.ToString();
+            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.SideCountKey, numSides, true);
         }
     }
 }

@@ -16,7 +16,6 @@ namespace Dash
             [BackgroundShape.AdornmentShape.Pentagonal] = () => CustomGroupGeometryTemplate.LinearPolygon(5),
             [BackgroundShape.AdornmentShape.Hexagonal] = () => CustomGroupGeometryTemplate.LinearPolygon(6),
             [BackgroundShape.AdornmentShape.Octagonal] = () => CustomGroupGeometryTemplate.LinearPolygon(8),
-            [BackgroundShape.AdornmentShape.CustomPolygon] = () => CustomGroupGeometryTemplate.LinearPolygon(15),
             [BackgroundShape.AdornmentShape.Clover] = CustomGroupGeometryTemplate.Clover,
         };
     }
