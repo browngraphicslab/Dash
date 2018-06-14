@@ -215,38 +215,53 @@ namespace Dash
             {
                 AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
 
-                var fromConnections = dvm.DataDocument
-                                          .GetDereferencedField<ListController<DocumentController>>(
-                                              KeyStore.LinkFromKey, null)?.TypedData ??
-                                      new List<DocumentController>();
-                var toConnections = dvm.DataDocument
-                                        .GetDereferencedField<ListController<DocumentController>>(
-                                            KeyStore.LinkToKey, null)?.TypedData ??
-                                    new List<DocumentController>();
-
-                //foreach (var doc in fromConnections)
-                //{
-                //    var toViewmodel = ViewModel.DocumentViewModels.First(vm => vm.DocumentController.Equals(doc));
-                //    if (toViewmodel != null)
-                //    {
-                //        AdjacencyLists[dvm].Add(toViewmodel);
-                //        Connections.Add(dvm, toViewmodel);
-                //        AddLink(dvm, toViewmodel);
-                //    }
-                //}
-                foreach (var link in toConnections)
+                if (dvm.DataDocument != null)
                 {
-                    var toDocs = link.GetDataDocument()
-                        .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
-                    foreach (var toDoc in toDocs)
-                    {
-                        var toViewModel = ViewModel.DocumentViewModels.First(vm => vm.DocumentController.GetDataDocument().Equals(toDoc));
+                    var fromConnections = dvm.DataDocument
+                                              .GetDereferencedField<ListController<DocumentController>>(
+                                                  KeyStore.LinkFromKey, null)?.TypedData ??
+                                          new List<DocumentController>();
+                    var toConnections = dvm.DataDocument
+                                            .GetDereferencedField<ListController<DocumentController>>(
+                                                KeyStore.LinkToKey, null)?.TypedData ??
+                                        new List<DocumentController>();
 
-                        if (toViewModel != null)
+
+                    //if a to connection has already connection, a from connection cannot be added
+                    //foreach (var link in fromConnections)
+                    //{
+                    //    var fromDocs = link.GetDataDocument()
+                    //        .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
+
+                    //    foreach (var fromDoc in fromDocs)
+                    //    {
+                    //        var fromViewModel = ViewModel.DocumentViewModels.First(vm =>
+                    //            vm.DocumentController.GetDataDocument().Equals(fromDoc));
+                    //        if (fromViewModel != null)
+                    //        {
+                    //            AdjacencyLists[dvm].Add(fromViewModel);
+                    //            Connections.Add(fromViewModel, dvm);
+                    //            AddLink(fromViewModel, dvm);
+                    //        }
+                    //    }
+
+                    //}
+
+                    foreach (var link in toConnections)
+                    {
+                        var toDocs = link.GetDataDocument()
+                            .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
+                        foreach (var toDoc in toDocs)
                         {
-                            AdjacencyLists[dvm].Add(toViewModel);
-                            Connections.Add(toViewModel, dvm);
-                            AddLink(toViewModel, dvm);
+                            var toViewModel = ViewModel.DocumentViewModels.First(vm =>
+                                vm.DocumentController.GetDataDocument().Equals(toDoc));
+
+                            if (toViewModel != null)
+                            {
+                                AdjacencyLists[dvm].Add(toViewModel);
+                                Connections.Add(toViewModel, dvm);
+                                AddLink(toViewModel, dvm);
+                            }
                         }
                     }
                 }
@@ -257,12 +272,7 @@ namespace Dash
         private void AddLink(DocumentViewModel fromViewModel, DocumentViewModel toViewmodel)
         {
             Polyline link = new Polyline();
-            //var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
-            //Point fromPoint = new Point
-            //{
-            //    X = fromGvm.XPosition,
-            //    Y = fromGvm.YPosition
-            //};
+            
 
             var toGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(toViewmodel.DataDocument));
             Point toPoint = new Point
@@ -271,8 +281,19 @@ namespace Dash
                 Y = toGvm.YPosition
             };
 
-            //link.Points.Add(fromPoint);
+            var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
+            Point fromPoint = new Point
+            {
+                X = fromGvm.XPosition,
+                Y = fromGvm.YPosition
+            };
+
+            link.Points.Add(fromPoint);
             link.Points.Add(toPoint);
+            link.Fill = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
+
+            xScrollViewCanvas.Children.Add(link);
+
         }
 
         private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)

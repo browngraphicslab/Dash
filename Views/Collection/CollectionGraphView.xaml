@@ -32,7 +32,7 @@
                       ItemsSource="{x:Bind _nodes}"   
                       IsHitTestVisible="{Binding IsSelected}">
                         <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
+                            <ItemsPanelTemplate x:Name="yeet">
                                 <Canvas x:Name="xCollectionCanvas"
                                     x:FieldModifier="public"
                                     Background="Transparent"
