@@ -44,7 +44,7 @@ namespace Dash
 		{
 			var data = (Model as VideoModel)?.Data;
             var reg = new System.Text.RegularExpressions.Regex(searchString);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString) || reg.IsMatch(data.AbsoluteUri)))
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
 			{
 				return new StringSearchModel(data.AbsoluteUri);
 			}
