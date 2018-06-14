@@ -88,7 +88,7 @@ namespace Dash
 
             _dataMessageWriter = new DataWriter(_socket.OutputStream);
 
-            await _socket.ConnectAsync(new Uri("ws://dashchromewebapp.azurewebsites.net/api/values"));
+            //await _socket.ConnectAsync(new Uri("ws://dashchromewebapp.azurewebsites.net/api/values"));
         }
 
         private static void SocketClosed(IWebSocket sender, WebSocketClosedEventArgs args)
@@ -155,7 +155,7 @@ namespace Dash
         */
 
         private static string _prevPartialString = "";
-        private static async Task HandleIncomingMessage(string read)
+        public static async Task HandleIncomingMessage(string read)
         {
             if (read.Equals("both"))
             {
@@ -239,8 +239,8 @@ namespace Dash
                 {
                     await InitSocket();
                     var ip = "123";
-                    _dataMessageWriter.WriteString("dash:" + ip);
-                    await _dataMessageWriter.StoreAsync();
+                    //_dataMessageWriter.WriteString("dash:" + ip);
+                    //await _dataMessageWriter.StoreAsync();
                     _ready = true;
                 }
 
@@ -252,8 +252,9 @@ namespace Dash
 
 
 
-                _dataMessageWriter.WriteString(message);
-                await _dataMessageWriter.StoreAsync();
+                //_dataMessageWriter.WriteString(message);
+                //await _dataMessageWriter.StoreAsync();
+                await DotNetRPC.ChromeRequest(message);
             }
             catch (Exception e)
             {

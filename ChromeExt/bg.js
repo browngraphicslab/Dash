@@ -78,8 +78,8 @@ var start = function (ip) {
     var manager = new tabManager(sendFunction);
     var handler = new requestHandler(manager);
 
-    var managerG = new googleManager(sendFunction);
-    var handlerG = new requestHandler(managerG);
+    //var managerG = new googleManager(sendFunction);
+    //var handlerG = new requestHandler(managerG);
 
     if (useSocket) {
         if ("WebSocket" in window) {

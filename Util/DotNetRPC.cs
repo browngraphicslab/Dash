@@ -21,6 +21,7 @@ namespace Dash
         public static async Task Init()
         {
             App.AppServiceConnected += AppOnAppServiceConnected;
+            App.Connection.RequestReceived += ConnectionOnRequestReceived;
 
             // launch the fulltrust process and for it to connect to the app service            
             if (ApiInformation.IsApiContractPresent("Windows.ApplicationModel.FullTrustAppContract", 1, 0))
@@ -34,7 +35,22 @@ namespace Dash
             }
         }
 
-        private static void AppOnAppServiceConnected(object sender, EventArgs eventArgs)
+        private static async void ConnectionOnRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        {
+            ValueSet data = args.Request.Message;
+            var type = data["REQUEST"] as string;
+            switch (type)
+            {
+                case "Chrome":
+                    string requestData = data["DATA"] as string;
+                    await BrowserView.HandleIncomingMessage(requestData);
+                    break;
+                default://Unhandled request
+                    throw new NotImplementedException();
+            }
+        }
+
+        private static void AppOnAppServiceConnected()
         {
             Connected = true;
         }
@@ -57,6 +73,15 @@ namespace Dash
 
             return response.Message;
 
+        }
+
+        public static async Task ChromeRequest(string data)
+        {
+            await CallRPCAsync(new ValueSet
+            {
+                ["REQUEST"] = "Chrome",
+                ["DATA"] = data
+            });
         }
     }
 }
