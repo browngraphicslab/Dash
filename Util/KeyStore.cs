@@ -51,6 +51,8 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
         public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
+        public static KeyController SideCountKey = new KeyController(DashConstants.KeyStore.SideCountKey);
+
 
         public static class SearchResultDocumentOutline
         {
