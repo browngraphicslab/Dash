@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -45,6 +48,8 @@ namespace Dash
             set => SetProperty(ref _yPosition, value);
         }
 
+        public ObservableCollection<Polyline> Links;
+
         #endregion
 
         #region constructors
@@ -54,6 +59,7 @@ namespace Dash
 
         public GraphNodeViewModel(DocumentViewModel dvm, double x, double y)
         {
+            Links = new ObservableCollection<Polyline>();
             DocumentViewModel = dvm;
             DocumentController = dvm.DocumentController;
             XPosition = x;
@@ -188,6 +194,7 @@ namespace Dash
                 if (dvm != null)
                 {
                     CollectionDocuments.Add(dvm.DocumentController);
+                    
                 }
             }
         }
@@ -199,18 +206,73 @@ namespace Dash
             {
                 if (dvm != null)
                 {
-                    _nodes.Add(new GraphNodeViewModel(dvm, _randInt.Next(0, (int)xScrollViewCanvas.Width - 100), _randInt.Next(0, (int)xScrollViewCanvas.Height - 100)));
-                    var fromConnections = dvm.DataDocument
-                                              .GetDereferencedField<ListController<DocumentController>>(
-                                                  KeyStore.LinkFromKey, null)?.TypedData ??
-                                          new List<DocumentController>();
-                    AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
-                    foreach (var doc in fromConnections)
+                    _nodes.Add(new GraphNodeViewModel(dvm, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
+                   
+                }
+            }
+
+            foreach (var dvm in ViewModel.DocumentViewModels)
+            {
+                AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
+
+                var fromConnections = dvm.DataDocument
+                                          .GetDereferencedField<ListController<DocumentController>>(
+                                              KeyStore.LinkFromKey, null)?.TypedData ??
+                                      new List<DocumentController>();
+                var toConnections = dvm.DataDocument
+                                        .GetDereferencedField<ListController<DocumentController>>(
+                                            KeyStore.LinkToKey, null)?.TypedData ??
+                                    new List<DocumentController>();
+
+                //foreach (var doc in fromConnections)
+                //{
+                //    var toViewmodel = ViewModel.DocumentViewModels.First(vm => vm.DocumentController.Equals(doc));
+                //    if (toViewmodel != null)
+                //    {
+                //        AdjacencyLists[dvm].Add(toViewmodel);
+                //        Connections.Add(dvm, toViewmodel);
+                //        AddLink(dvm, toViewmodel);
+                //    }
+                //}
+                foreach (var link in toConnections)
+                {
+                    var toDocs = link.GetDataDocument()
+                        .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
+                    foreach (var toDoc in toDocs)
                     {
+                        var toViewModel = ViewModel.DocumentViewModels.First(vm => vm.DocumentController.GetDataDocument().Equals(toDoc));
+
+                        if (toViewModel != null)
+                        {
+                            AdjacencyLists[dvm].Add(toViewModel);
+                            Connections.Add(toViewModel, dvm);
+                            AddLink(toViewModel, dvm);
+                        }
                     }
                 }
             }
 
+        }
+
+        private void AddLink(DocumentViewModel fromViewModel, DocumentViewModel toViewmodel)
+        {
+            Polyline link = new Polyline();
+            //var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
+            //Point fromPoint = new Point
+            //{
+            //    X = fromGvm.XPosition,
+            //    Y = fromGvm.YPosition
+            //};
+
+            var toGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(toViewmodel.DataDocument));
+            Point toPoint = new Point
+            {
+                X = toGvm.XPosition,
+                Y = toGvm.YPosition
+            };
+
+            //link.Points.Add(fromPoint);
+            link.Points.Add(toPoint);
         }
 
         private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
