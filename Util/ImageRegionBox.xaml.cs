@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Graphics.Printing3D;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -21,11 +23,15 @@ namespace Dash
     {
         public DocumentController LinkTo;
 
+	    public ImageRegionBox _permRegionBox = null;
+	    public EditableImage _image;
+
         public ImageRegionBox()
         {
             this.InitializeComponent();
         }
 
+		//sets position of region box in center square of 3x3 grid (the entire grid is the size of the image)
         public void SetPosition(Point topLeftPoint, Size size, Size imageSize)
         {
             var row1 = topLeftPoint.Y / imageSize.Height;
@@ -42,5 +48,12 @@ namespace Dash
             Row2.Height = new GridLength(row2 * 100, GridUnitType.Star);
             Row3.Height = new GridLength(row3 * 100, GridUnitType.Star);
         }
+
+	    private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+	    {
+			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
+		    _image.DeleteRegion(_image._selectedRegion);
+	    }
+		
     }
 }

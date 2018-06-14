@@ -420,7 +420,7 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being removed from the list</param>
-        public void RemoveFromListField<T>(KeyController key, T value) where T: FieldControllerBase
+        public void  RemoveFromListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
             GetDereferencedField<ListController<T>>(key, null)?.Remove(value);
 

@@ -42,6 +42,7 @@ namespace Dash
         private Point _anchorPoint;
         private bool _isDragging;
         private DocumentView _lastNearest;
+	    public ImageRegionBox _selectedRegion = null;
 
         public Image Image => xImage;
 
@@ -55,7 +56,8 @@ namespace Dash
             Image.Loaded += Image_Loaded;
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
-        }
+	        xRegionPostManipulationPreview._image = this;
+		}
 
         public async Task ReplaceImage()
         {
@@ -378,7 +380,13 @@ namespace Dash
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (IsCropping) e.Handled = true;
-            xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+	        xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+	        if (MainPage.Instance.IsCtrlPressed())
+			{
+				return;
+			}
+			
             _isDragging = false;
 
             if (xRegionDuringManipulationPreview.Width < 50 && xRegionDuringManipulationPreview.Height < 50) return;
@@ -396,8 +404,8 @@ namespace Dash
         {
             if (IsCropping) e.Handled = true;
             var properties = e.GetCurrentPoint(this).Properties;
-
-            if (!IsCropping && properties.IsRightButtonPressed == false)
+			
+			if (!IsCropping && properties.IsRightButtonPressed == false)
             {
 
                 var pos = e.GetCurrentPoint(xImage).Position;
@@ -405,13 +413,12 @@ namespace Dash
                 _isDragging = true;
 
                 //reset and get rid of the region preview
-                //xRegionDuringManipulationPreview.Margin = new Thickness(pos.X, pos.Y, 0, 0);
                 xRegionDuringManipulationPreview.Width = 0;
                 xRegionDuringManipulationPreview.Height = 0;
                 xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
                 xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
 
-                //if selecting an already selected region, keep visible
+                //if not selecting an already selected region, collapse preview boxes
                 if (!(xRegionPostManipulationPreview.Column1.ActualWidth < pos.X) ||
                     !(pos.X < xRegionPostManipulationPreview.Column1.ActualWidth +
                       xRegionPostManipulationPreview.Column2.ActualWidth) ||
@@ -420,6 +427,7 @@ namespace Dash
                       xRegionPostManipulationPreview.Row2.ActualHeight))
                 {
                     xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+	                xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
                     //unhighlight last selected regions' link
                     if (_lastNearest != null)
                     {
@@ -427,8 +435,15 @@ namespace Dash
                     }
                 }
                 else
-                {
-                    if (_lastNearest != null) MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController, true);
+				{
+					//delete if control is pressed
+					if (MainPage.Instance.IsCtrlPressed())
+					{
+						this.DeleteRegion(_selectedRegion);
+						return;
+					}
+					//navigate to link
+					if (_lastNearest != null) MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController, true);
                 }
             }
         }
@@ -474,6 +489,7 @@ namespace Dash
                 new Size(xImage.ActualWidth, xImage.ActualHeight));
             xRegionsGrid.Children.Add(newBox);
             newBox.PointerPressed += xRegion_OnPointerPressed;
+	        newBox._image = this;
             //newBox.LostFocus += Region_OnLostFocus;
             xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
@@ -485,9 +501,17 @@ namespace Dash
         {
             e.Handled = false;
 
-            if (sender is ImageRegionBox box)
+			if (sender is ImageRegionBox box)
             {
-               
+				//delete if control is pressed
+	            if (MainPage.Instance.IsCtrlPressed())
+	            {
+					this.DeleteRegion((ImageRegionBox)sender);
+		            return;
+	            }
+				
+               _selectedRegion = (ImageRegionBox) sender;
+	           
                 //get the linked doc of the selected region
                 var theDoc = box.LinkTo;
                 if (theDoc == null) return;
@@ -502,9 +526,11 @@ namespace Dash
                 xRegionPostManipulationPreview.Row2.Height = box.Row2.Height;
                 xRegionPostManipulationPreview.Row3.Height = box.Row3.Height;
                 xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+	            xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+				
 
-                //handle linking
-                var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+				//handle linking
+				var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
                 var linkToDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
                 if (linkFromDoc != null)
                 {
@@ -579,6 +605,24 @@ namespace Dash
             xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
             xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
         }
+
+		//delete passed-in region
+	    public void DeleteRegion(ImageRegionBox region)
+	    {
+			//collapse any open selection box
+		    xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
+
+			//remove actual region
+		    if (region != null)  xRegionsGrid.Children.Remove(region);
+
+			//if region is selected, unhighlight the linked doc
+		    if (region == _selectedRegion && _lastNearest != null)
+		    {
+			    MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+			    _lastNearest = null;
+				//TODO: Remove annotaion from workspace?
+		    }
+		}
     }
 
 }
