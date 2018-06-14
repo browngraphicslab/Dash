@@ -14,9 +14,6 @@ namespace OfficeInterop
     {
         private Task _listenerTask;
 
-        private TcpClient _client;
-        private TcpListener _listener;
-
         private Mutex _queueMutex = new Mutex(false);
         private List<byte[]> _queue = new List<byte[]>();
 
