@@ -47,13 +47,15 @@ namespace Dash
         {
             _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
+            // get the file from the current image controller
             var file = await GetImageFile();
-
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
-            Image.Width = fileProperties.Width;
+            // set image source to the new file path and fix the width
             Image.Source = new BitmapImage(new Uri(file.Path));
-            
+            Image.Width = fileProperties.Width;
+
+            // on replace image, change the original image value for revert
             var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
             _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
         }
@@ -93,8 +95,10 @@ namespace Dash
 
         public async void Revert()
         {
+            // make sure if we have an original image stored (which we always should)
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
+                // get the storagefile of the original image so we can revert
                 var file = await GetImageFile(true);
                 var fileProperties = await file.Properties.GetImagePropertiesAsync();
                 Image.Width = fileProperties.Width;
