@@ -440,7 +440,8 @@ namespace Dash
                     doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ResultDocumentViewId), true);
                     // not sure what the purpose of the commented out code below is for
                     doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title /*+ " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")*/), true);
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController("Matched: " + srvm.HelpfulText), true);
+                    // For future: Maybe find a way to insert "Matched: " or some helpful text disambiguating the help text from the text
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(/*"Matched: " + */srvm.HelpfulText), true);
                     list.Add(doc);
                 }
                 return list;
