@@ -50,7 +50,6 @@ namespace Dash
 
             // check the result
             response.Message.TryGetValue("RESPONSE", out var result);
-            Debug.WriteLine(response.Message["DEBUG"] as string);
             if (result.ToString() != "SUCCESS")
             {
                 return null;

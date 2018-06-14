@@ -16,35 +16,36 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
-using Excel = Microsoft.Office.Interop.Excel;
-using Word = Microsoft.Office.Interop.Word;
 
-namespace ExcelInterop
+namespace OfficeInterop
 {
     class Program
     {
-        static AppServiceConnection connection = null;
-        static AutoResetEvent appServiceExit;
-        private static readonly Word.Application Word = new Word.Application();
-        private static Word.Document _doc = Word.Documents.Add();
+        private static AppServiceConnection _connection = null;
+        private static AutoResetEvent _appServiceExit;
 
-        static void Main(string[] args)
+        private static readonly MessageHandler Handler = new MessageHandler();
+
+        public static void Main(string[] args)
         {
             // connect to app service and wait until the connection gets closed
-            appServiceExit = new AutoResetEvent(false);
+            _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
-            appServiceExit.WaitOne();
+            _appServiceExit.WaitOne();
         }
 
-        static async void InitializeAppServiceConnection()
+        private static async void InitializeAppServiceConnection()
         {
-            connection = new AppServiceConnection();
-            connection.AppServiceName = "OfficeInteropService";
-            connection.PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName;
-            connection.RequestReceived += Connection_RequestReceived;
-            connection.ServiceClosed += Connection_ServiceClosed;
+            _connection = new AppServiceConnection
+            {
+                AppServiceName = "OfficeInteropService",
+                PackageFamilyName = Windows.ApplicationModel.Package.Current.Id.FamilyName
+            };
+            _connection.RequestReceived += Connection_RequestReceived;
+            _connection.ServiceClosed += Connection_ServiceClosed;
+            Handler.SendRequest += async delegate(ValueSet set) { await _connection.SendMessageAsync(set); };
 
-            AppServiceConnectionStatus status = await connection.OpenAsync();
+            AppServiceConnectionStatus status = await _connection.OpenAsync();
             if (status != AppServiceConnectionStatus.Success)
             {
                 // TODO: error handling
@@ -54,47 +55,12 @@ namespace ExcelInterop
         private static void Connection_ServiceClosed(AppServiceConnection sender, AppServiceClosedEventArgs args)
         {
             // signal the event so the process can shut down
-            appServiceExit.Set();
+            _appServiceExit.Set();
         }
 
         private static async void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
         {
-            string value = args.Request.Message["REQUEST"] as string;
-            var response = new ValueSet();
-            string debug = "";
-            string result = "";
-            switch (value)
-            {
-                case "HTML to RTF":
-                    try
-                    {
-                        _doc.Content.Select();//Select all and delete in case we are reusing a document
-                        debug += $"select \n";
-                        _doc.Content.Delete();
-                        debug += $"delete \n";
-
-                        _doc.Content.Paste();//paste html
-                        debug += $"paste \n";
-                        _doc.Content.Select();//select all
-                        debug += $"select 2\n";
-                        _doc.Content.Copy();//copy rtf
-                        debug += $"copy\n";
-                        result = "SUCCESS";
-                    }
-                    catch (Exception exc)
-                    {
-                        debug += exc.Message;
-                        result = exc.Message;
-                    }
-                    break;
-                default:
-                    result = "unknown request";
-                    break;
-            }
-
-            response.Add("RESPONSE", result);
-            response.Add("DEBUG", debug);
-            await args.Request.SendResponseAsync(response);
+            await args.Request.SendResponseAsync(Handler.ProcessMessage(args.Request.Message));
         }
     }
 }
