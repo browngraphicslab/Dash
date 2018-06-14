@@ -821,8 +821,19 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 //TODO: make a markdown box here instead
-                var postitNote = new RichTextNote(text: text).Document;
-                Actions.DisplayDocument(ViewModel, postitNote, where);
+                if (SettingsView.Instance.MarkdownEditOn)
+                {
+                  //  EditableMarkdownBlock.Instance.XTextBox.Visibility = Visibility.Visible;
+                    //var postitNote = new EditableMarkdownBlock();
+                    //postitNote.Text = text;
+                    //DocumentController noteDoc = await TextToDashUtil.ParseFileAsync();
+                   // Actions.DisplayDocument(ViewModel, postitNote.DataContext as EditableScriptViewModel, where);
+                }
+                else
+                {
+                    var postitNote = new RichTextNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
