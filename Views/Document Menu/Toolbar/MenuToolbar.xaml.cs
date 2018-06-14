@@ -753,10 +753,15 @@ namespace Dash
             xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
 
-            //ensure toolbar is visible
-            xToolbar.IsEnabled = true;
-            xToolbar.Visibility = Visibility.Visible;
+            EnsureVisible();
         }
+
+	    public void EnsureVisible()
+	    {
+		    //ensure toolbar is visible
+		    xToolbar.IsEnabled = true;
+		    xToolbar.Visibility = Visibility.Visible;
+		}
 
         /// <summary>
         /// Toggles toolbar locked-state when pin button is clicked.
