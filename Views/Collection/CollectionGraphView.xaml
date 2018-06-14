@@ -17,9 +17,9 @@
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
         </Grid.Resources>
-        <ScrollViewer Name="xScrollViewer" Width="500" HorizontalAlignment="Left"  Height="500" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+        <ScrollViewer Name="xScrollViewer" Width="Auto" HorizontalAlignment="Left"  Height="Auto" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
             <Grid Margin="0,-250,0,0">
-                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="80" Width="500" Height="500">
+                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Center" HorizontalAlignment="Left" Width="1000" Height="1000">
                     <!--timeline elements-->
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
@@ -37,13 +37,14 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Ellipse Width="500" Height="500"></Ellipse>
+                                <local:GraphNodeView></local:GraphNodeView>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Canvas>
             </Grid>
         </ScrollViewer>
+
         <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*" />
             <ColumnDefinition Width="*" />
