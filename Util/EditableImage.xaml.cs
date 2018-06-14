@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Dash.Annotations;
+using DashShared;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
@@ -11,12 +14,8 @@ using Windows.Storage.Streams;
 using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Annotations;
-using DashShared;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -28,28 +27,9 @@ namespace Dash
         private readonly DocumentController _docCtrl;
         private StateCropControl _cropControl;
         private ImageController _imgctrl;
-        private ImageSource _imgSource;
-        private bool _isCropping;
-        private double _originalWidth;
+        public bool IsCropping;
         private DocumentView _docview;
-        private Image _originalImage;
-        private ImageSource _ogImage;
-
-        public Rect RectGeo;
-        private double _ogWidth;
-        private Uri _ogUri;
-
         public Image Image => xImage;
-
-        public ImageSource ImageSource
-        {
-            get => _imgSource;
-            set
-            {
-                _imgSource = value;
-                OnPropertyChanged();
-            }
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -67,8 +47,30 @@ namespace Dash
         {
             _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
+            var file = await GetImageFile();
+
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
+
+            Image.Width = fileProperties.Width;
+            Image.Source = new BitmapImage(new Uri(file.Path));
+            
+            var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+        }
+
+        private async Task<StorageFile> GetImageFile(bool originalImage = false)
+        {
             // finds local uri path of image controller's image source
             StorageFile file;
+            Uri src;
+            if (originalImage)
+            {
+                src = _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource;
+            }
+            else
+            {
+                src = _imgctrl.ImageSource;
+            }
 
             /*
              * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
@@ -78,56 +80,33 @@ namespace Dash
             try
             {
                 // method of getting file from local uri
-                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
+                file = await StorageFile.GetFileFromPathAsync(src.LocalPath);
             }
             catch (Exception)
             {
                 // method of getting file from absolute uri
-                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
+                file = await StorageFile.GetFileFromApplicationUriAsync(src);
             }
 
-            var fileProperties = await file.Properties.GetImagePropertiesAsync();
-            _originalWidth = fileProperties.Width;
-            //var newImg = new Image();
-            //newImg.Source = new BitmapImage(_docCtrl.GetField<ImageController>(KeyStore.DataKey).Data);
-            Image.Width = _originalWidth;
-            Image.Source = new BitmapImage(new Uri(file.Path));
-
-            _ogImage = Image.Source;
-            var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-            _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-            _ogWidth = _originalWidth;
-            _ogUri = _imgctrl.ImageSource;
-            /*
-             *  onReplaceClicked
-             *      _ogImage = new image.source
-             *      _ogWidth = new image.width
-             *      _ogUri = new image uri
-             */
+            return file;
         }
 
-        public void Revert()
+        public async void Revert()
         {
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
-                Image.Width = _ogWidth;
-                _originalWidth = _ogWidth;
-                
+                var file = await GetImageFile(true);
+                var fileProperties = await file.Properties.GetImagePropertiesAsync();
+                Image.Width = fileProperties.Width;
+
                 _docCtrl.SetField<ImageController>(KeyStore.DataKey, _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
                 _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-                //var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-                //Point point = new Point(oldpoint.X - RectGeo.X, oldpoint.Y - RectGeo.Y);
-
-                //_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
-                //_cropControl = new StateCropControl(_docCtrl, this);
             }
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             // initialize values that rely on the image
-            _originalImage = Image;
-            _originalWidth = Image.ActualWidth;
             _docview = this.GetFirstAncestorOfType<DocumentView>();
             Focus(FocusState.Keyboard);
             _cropControl = new StateCropControl(_docCtrl, this);
@@ -176,13 +155,13 @@ namespace Dash
             Focus(FocusState.Programmatic);
             xGrid.Children.Add(_cropControl);
             _docview.hideControls();
-            _isCropping = true;
+            IsCropping = true;
         }
 
         private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
         {
             // prevent the image from being moved while being cropped
-            if (_isCropping) e.Handled = true;
+            if (IsCropping) e.Handled = true;
         }
 
         /// <summary>
@@ -193,40 +172,18 @@ namespace Dash
         /// </param>
         public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
         {
-
-            // finds local uri path of image controller's image source
-            StorageFile file;
-
-            /*
-             * TODO There has to be a better way to do this. Maybe ask Bob and see if he has any ideas?
-             * try catch is literally the only way we can deal with regular
-             * local uris, absolute uris, and website uris as the same time
-             */
-            try
-            {
-                // method of getting file from local uri
-                file = await StorageFile.GetFileFromPathAsync(_imgctrl.ImageSource.LocalPath);
-            }
-            catch (Exception)
-            {
-                // method of getting file from absolute uri
-                file = await StorageFile.GetFileFromApplicationUriAsync(_imgctrl.ImageSource);
-            }
+            var file = await GetImageFile();
 
             var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) == null)
             {
-                _ogImage = Image.Source;
                 var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
                 _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-                _ogWidth = fileProperties.Width;
-                _ogUri = _imgctrl.Data;
             }
 
-            _originalWidth = fileProperties.Width;
             //_originalWidth is original width of owl, not replaced image
-            var scale = _originalWidth / Image.ActualWidth;
+            var scale = fileProperties.Width / Image.ActualWidth;
 
             // retrieves data from rectangle
             var startPointX = (uint)rectangleGeometry.X;
@@ -336,7 +293,6 @@ namespace Dash
             Image.Width = width;
 
             // store new image information so that multiple crops can be made
-            _originalWidth = width;
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
 
             var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
@@ -358,19 +314,15 @@ namespace Dash
         // functionality for saving a crop and for moving the cropping boxes with directional keys
         private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (_isCropping)
+            if (IsCropping)
                 switch (e.Key)
                 {
                     case VirtualKey.Enter:
                         // crop the image!
-                        _isCropping = false;
+                        IsCropping = false;
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
                         _docview.showControls();
-                      
-
-
-
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:
@@ -386,8 +338,8 @@ namespace Dash
         // removes the cropping controls and allows image to be moved and used when focus is lost
         private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            if (!_isCropping) return;
-            _isCropping = false;
+            if (!IsCropping) return;
+            IsCropping = false;
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
         }

@@ -207,7 +207,7 @@ namespace Dash
 
             if (bottomBounds - topBounds <= 70)
             {
-                Canvas.SetLeft(xTop, bottomBounds - 70);
+                Canvas.SetTop(xTop, bottomBounds - 70);
             }
 
             UpdateRect();

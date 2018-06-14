@@ -34,13 +34,33 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
+        private CollectionViewModel _oldViewModel;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
+
+        private bool _needsToLoad = false;
 
         public TreeViewCollectionNode()
         {
             this.InitializeComponent();
             this.RegisterPropertyChangedCallback(FilterStringProperty,
                 (sender, dp) => ViewModel?.BindableDocumentViewModels.RefreshFilter());
+
+
+            Loaded += (sender, e) =>
+            {
+                if (ViewModel != null)
+                {
+                    ViewModel.Loaded(true);
+                }
+                else
+                {
+                    _needsToLoad = true;
+                }
+            };
+            Unloaded += (sender, e) =>
+            {
+                ViewModel?.Loaded(false);
+            };
         }
         
         public void Highlight(DocumentController document, bool? flag)
@@ -70,13 +90,20 @@ namespace Dash
 
         private void TreeViewCollectionNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var cvm = args.NewValue as CollectionViewModel;
-            if (cvm == null)
+            if (ViewModel == _oldViewModel || ViewModel == null)
             {
                 return;
             }
-            cvm.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
-            cvm.BindableDocumentViewModels.Filter = Filter;
+
+            _oldViewModel = ViewModel;
+
+            if (_needsToLoad)
+            {
+                ViewModel.Loaded(true);
+                _needsToLoad = false;
+            }
+            ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            ViewModel.BindableDocumentViewModels.Filter = Filter;
         }
         private bool Filter(object o)
         {
