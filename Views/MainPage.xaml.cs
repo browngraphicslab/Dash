@@ -192,36 +192,18 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
 
 
-            //FileSystemWatcher watcher = new FileSystemWatcher();
-            //watcher.Path = "C:\\Users\\GFX lab\\Downloads";
-            ///* Watch for changes in LastAccess and LastWrite times, and
-            //   the renaming of files or directories. */
-            //watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
-            //   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-            //// Only watch text files.
-            //watcher.Filter = "*.pdf";
-
-            //Subscribe to the Created event.
-            //watcher.Created += new FileSystemEventHandler(watcher_FileCreated);
-
-            ////Enable the FileSystemWatcher events.
-            //watcher.EnableRaisingEvents = true;
-
-            //TODO: UWP apps can't access Downloads
-            StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync("C:\\Users\\GFX lab\\Downloads");
-            StorageFile file = await downloads.GetFileAsync("bye.pdf");
-            IStorageFile Ifile = file;
-            //DataPackageView dataPack = file;
+            string localfolder = ApplicationData.Current.LocalFolder.Path;
+            var array = localfolder.Split('\\');
+            var username = array[2];
+            StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
+            //replace byes (8).pdf with uploaded file name
+            StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
             FileData fileD = FileDropHelper.GetFileData(file, null).Result;
             PdfToDashUtil PdftoDash = new PdfToDashUtil();
-            DocumentController docPdf = PdftoDash.ParseFileAsync(fileD).Result;
-            //now maybe use makeview in pdfBox
-        }
-
-        private static void watcher_FileCreated(object sender, FileSystemEventArgs e)
-        {
-            // Specify what is done when a file is changed, created, or deleted.
-            Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+           DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
+            var mainPageCollectionView =
+                          MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+            mainPageCollectionView.ViewModel.AddDocument(docC);
         }
 
         /// <summary>
