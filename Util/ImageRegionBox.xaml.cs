@@ -22,8 +22,6 @@ namespace Dash
     public sealed partial class ImageRegionBox : UserControl
     {
         public DocumentController LinkTo;
-
-	    public ImageRegionBox _permRegionBox = null;
 	    public EditableImage _image;
 
         public ImageRegionBox()
@@ -52,7 +50,7 @@ namespace Dash
 	    private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
-		    _image.DeleteRegion(_image._selectedRegion);
+		    _image?.DeleteRegion(_image._selectedRegion);
 	    }
 		
     }
