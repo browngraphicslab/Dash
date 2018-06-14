@@ -54,41 +54,24 @@ namespace Dash
         protected static void SetupPdfBinding(SfPdfViewerControl pdf, DocumentController controller,
             Context context)
         {
-            var reference = GetPdfReference(controller);
-            var dataDoc = reference.GetDocumentController(context);
-            dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                {
-                    var doc = (DocumentController)sender;
-                    var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-                    if (args.Action != DocumentController.FieldUpdatedAction.Update && !dargs.FromDelegate)
-                    {
-                        BindPdfSource(pdf, doc, c, reference.FieldKey);
-                    }
-                });
 
-            controller.AddFieldUpdatedListener(KeyStore.PdfVOffsetFieldKey, 
-                delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
-                {
-                    if (!pdf.IsPointerOver())
-                    {
-                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-                        System.Diagnostics.Debug.WriteLine("Telling me" + ((dargs.NewValue as NumberController)?.Data ?? 0));
-                        pdf.ScrollToVerticalOffset((dargs.NewValue as NumberController)?.Data ?? 0);
-                    }
-                });
+            //controller.AddFieldUpdatedListener(KeyStore.PdfVOffsetFieldKey, 
+            //    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            //    {
+            //        if (!pdf.IsPointerOver())
+            //        {
+            //            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            //            System.Diagnostics.Debug.WriteLine("Telling me" + ((dargs.NewValue as NumberController)?.Data ?? 0));
+            //            pdf.ScrollToVerticalOffset((dargs.NewValue as NumberController)?.Data ?? 0);
+            //        }
+            //    });
 
 
-            BindPdfSource(pdf, controller, context, KeyStore.DataKey);
+            BindPdfSource(pdf, controller, context);
         }
 
-        protected static void BindPdfSource(SfPdfViewerControl pdf, DocumentController docController, Context context, KeyController key)
+        protected static void BindPdfSource(SfPdfViewerControl pdf, DocumentController docController, Context context)
         {
-            var data = docController.GetDereferencedField(key, context) as ImageController;
-            if (data == null)
-            {
-                return;
-            }
             var binding = new FieldBinding<ImageController>()
             {
                 Document = docController,

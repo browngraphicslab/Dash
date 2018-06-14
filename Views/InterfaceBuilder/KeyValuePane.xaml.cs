@@ -185,7 +185,7 @@ namespace Dash
             // reset the fields to the empty values
             xNewKeyText.Text = "";
             xNewValueText.Text = "";
-            xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
+            xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
 
             return;
         }

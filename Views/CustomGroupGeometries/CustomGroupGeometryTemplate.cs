@@ -43,16 +43,14 @@ namespace Dash
 
         public static PathGeometry LinearPolygon(int numSides)
         {
-            if (numSides.GetType() != typeof(int) || numSides < 5) return null;
-
-            var points = CalculateVertices(numSides, 100, 90, new Point(100, 100));
+            var points = CalculateVertices(numSides, 100, new Point(100, 100));
             var smallestX = float.PositiveInfinity;
 
             var polyPathSegs = new PathSegmentCollection();
             var polygon = new PathFigure { Segments = polyPathSegs };
 
             foreach (var pt in points) if (pt.X < smallestX) smallestX = (float)pt.X;
-            for (int i = 0; i < points.Count; i++)
+            for (var i = 0; i < points.Count; i++)
             {
                 var thisPoint = points[i];
                 points[i] = new Point(thisPoint.X - smallestX, thisPoint.Y);
@@ -66,13 +64,13 @@ namespace Dash
             return new PathGeometry { Figures = new PathFigureCollection { polygon } };
         }
 
-        private static List<Point> CalculateVertices(int sides, int radius, int startingAngle, Point center)
+        private static List<Point> CalculateVertices(int sides, int radius, Point center)
         {
             var points = new List<Point>();
             var step = 360.0f / sides;
 
-            float angle = startingAngle; //starting angle
-            for (double i = startingAngle; i < startingAngle + 360.0; i += step) //go in a full circle
+            float angle = GroupGeometryConstants.StartingAngleDegrees; //starting angle
+            for (double i = GroupGeometryConstants.StartingAngleDegrees; i < GroupGeometryConstants.StartingAngleDegrees + 360.0; i += step) //go in a full circle
             {
                 points.Add(DegreesToPoint(angle, radius, center)); //code snippet from above
                 angle += step;
