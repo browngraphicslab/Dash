@@ -31,6 +31,7 @@ namespace Dash
         public double ConstantRadiusWidth { get; set; }
         public ObservableCollection<ListViewItem> Labels { get; set; }
         public ObservableCollection<ListViewItem> LabelData { get; set; }
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -93,7 +94,7 @@ namespace Dash
             Labels.Add(new ListViewItem { Content = "Connections: "});
             LabelData.Add(new ListViewItem { Content = connections.Count.ToString() });
             Labels.Add(new ListViewItem {Content = "Average: "});
-            LabelData.Add(new ListViewItem { Content = (connections.Count / nodes.Count).ToString() });
+            LabelData.Add(new ListViewItem { Content = ((double) ((double) connections.Count / (double) nodes.Count)).ToString() });
             Labels.Add(new ListViewItem { Content = "Min: " });
             LabelData.Add(new ListViewItem { Content = min.ToString() });
             Labels.Add(new ListViewItem { Content = "Max: " });

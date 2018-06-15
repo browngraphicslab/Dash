@@ -8,12 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
+    IsTapEnabled="True"
+    Tapped="CollectionGraphView_OnTapped"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     AllowDrop="True"
     SizeChanged="CollectionGraphView_OnSizeChanged">
 
-    <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTapEnabled="True" Tapped="XBase_OnTapped">
         <Grid.Resources>
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
@@ -25,7 +27,7 @@
         <ScrollViewer Name="xScrollViewer" Grid.Column="0" Width="Auto" HorizontalAlignment="Stretch" Height="Auto"
                       HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch">
             <Grid Margin="0,0,0,0">
-                <Canvas Name="xScrollViewCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Canvas Name="xScrollViewCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <!--timeline elements-->
                     <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
@@ -51,7 +53,7 @@
             </Grid>
         </ScrollViewer>
 
-        <StackPanel Grid.Column="1" x:Name="xInfoPanel" Orientation="Vertical" HorizontalAlignment="Stretch"
+        <StackPanel Grid.Column="1" x:Name="xInfoPanel" x:FieldModifier="public" Orientation="Vertical" HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch" Background="{ThemeResource TreeviewBrush}">
         </StackPanel>
 

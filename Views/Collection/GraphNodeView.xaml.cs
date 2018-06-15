@@ -37,12 +37,13 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             Loaded += GraphNodeView_Loaded;
             Unloaded += GraphNodeView_Unloaded;
-            ConstantRadiusWidth = 50;
+           
         }
 
         private void GraphNodeView_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -63,20 +64,29 @@ namespace Dash
 
         private void GraphNodeView_Loaded(object sender, RoutedEventArgs e)
         {
+
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             ParentGraph = this.GetFirstAncestorOfType<CollectionGraphView>();
+            ConstantRadiusWidth = ParentGraph.ActualWidth / 20;
 
-            var toConnections = ViewModel.DocumentViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
-            var fromConnections = ViewModel.DocumentViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+            var dataDoc = ViewModel.DocumentViewModel.DataDocument;
+            var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+            var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
             xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
             xEllipse.Height = xEllipse.Width;
 
-            var title = ViewModel.DocumentController
-                            .GetDereferencedField<TextController>(KeyStore.TitleKey, new Context())?.Data ??
-                        "Untitled " + ViewModel.DocumentController.DocumentType.Type;
+            if (toConnections > 1)
+            {
+                CreateLink(dataDoc, KeyStore.LinkToKey);
+            }
 
-            xTitleBlock.Text = title;
+            if (fromConnections > 1)
+            {
+                CreateLink(dataDoc, KeyStore.LinkFromKey);
+            }
+            
+            DocumentController_TitleUpdated(null, null, null);
 
             ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
 
@@ -86,6 +96,74 @@ namespace Dash
                 Y = ViewModel.YPosition
             };
             xGrid.RenderTransform = transformation;
+        }
+
+        private void CreateLink(DocumentController dataDoc, KeyController startKey)
+        {
+            var startLinks =
+                dataDoc.GetDereferencedField<ListController<DocumentController>>(startKey, null)
+                    ?.TypedData ??
+                new List<DocumentController>();
+
+            foreach (var link in startLinks)
+            {
+                var startDocs = link.GetDataDocument()
+                    .GetField<ListController<DocumentController>>(startKey).TypedData;
+                foreach (var startDoc in startDocs)
+                {
+                    var startViewModel = ParentGraph.ViewModel.DocumentViewModels.First(vm =>
+                        vm.DocumentController.GetDataDocument().Equals(startDoc));
+
+                    if (startViewModel != null)
+                    {
+                        ParentGraph.AdjacencyLists[ViewModel.DocumentViewModel].Add(startViewModel);
+                        ParentGraph.Connections.Add(
+                            new KeyValuePair<DocumentViewModel, DocumentViewModel>(startViewModel,
+                                ViewModel.DocumentViewModel));
+
+                        GraphConnection existingLink = null;
+                        if (startKey == KeyStore.LinkFromKey)
+                        {
+                            existingLink = ParentGraph.Links.FirstOrDefault(gc =>
+                                gc.FromDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
+                        }
+                        else
+                        {
+                            existingLink = ParentGraph.Links.FirstOrDefault(gc =>
+                                gc.ToDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
+                        }
+                        if (existingLink != null && ((startKey == KeyStore.LinkFromKey && existingLink.ToDoc == null) ||
+                                                     (startKey == KeyStore.LinkToKey && existingLink.FromDoc == null)))
+                        {
+                            if (startKey == KeyStore.LinkFromKey)
+                            {
+                                existingLink.ToDoc = this;
+                            }
+                            else
+                            {
+                                existingLink.FromDoc = this;
+                            }
+                            ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
+                            
+                        }
+                        else
+                        {
+                            var newConnection = new GraphConnection();
+
+                            if (startKey == KeyStore.LinkFromKey)
+                            {
+                                newConnection.ToDoc = this;
+                            }
+                            else
+                            {
+                                newConnection.FromDoc = this;
+                            }
+
+                            ParentGraph.Links.Add(newConnection);
+                        }
+                    }
+                }
+            }
         }
 
         private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -117,9 +195,14 @@ namespace Dash
 
         #endregion
 
+
+
         private void Node_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-
+            ParentGraph.xInfoPanel.Children.Add(new NodeInfoView(ViewModel.DocumentViewModel, ParentGraph));
+            e.Handled = true;
         }
+
+
     }
 }

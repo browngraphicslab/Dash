@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -69,14 +71,14 @@ namespace Dash
         #endregion
     }
 
-
-
     public sealed partial class CollectionGraphView : UserControl, ICollectionView
     {
         private DocumentController _parentDocument;
         private ObservableCollection<GraphNodeViewModel> _nodes;
         private Random _randInt;
         private ObservableCollection<DocumentController> CollectionDocuments { get; set; }
+
+        public ObservableCollection<GraphConnection> Links { get; set; }
 
         public CollectionViewModel ViewModel { get; set; }
 
@@ -94,9 +96,9 @@ namespace Dash
             }
         }
 
-        private ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
+        public ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
 
-        public ObservableDictionary<DocumentViewModel, DocumentViewModel> Connections { get; private set; }
+        public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
 
         private double _minGap = 50;
         private double _maxGap = 100;
@@ -105,8 +107,9 @@ namespace Dash
         {
             InitializeComponent();
             AdjacencyLists = new ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>>();
-            Connections = new ObservableDictionary<DocumentViewModel, DocumentViewModel>();
+            Connections = new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
             CollectionDocuments = new ObservableCollection<DocumentController>();
+            Links = new ObservableCollection<GraphConnection>();
             _nodes = new ObservableCollection<GraphNodeViewModel>();
             _randInt = new Random();
 
@@ -202,12 +205,35 @@ namespace Dash
         private void GenerateGraph()
         {
             AdjacencyLists.Clear();
+            var sortX = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
+            var sortedX = sortX.OrderBy(i => i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.X);
+            var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
+            var sortedY = sortY.OrderBy(i => i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
+
+            var gridX = xScrollViewCanvas.ActualWidth / sortedX.Count();
+            var gridY = xScrollViewCanvas.ActualHeight / sortedY.Count();
+
+            var xPositons = new ObservableDictionary<DocumentViewModel, double>();
+            double x = 0;
+            foreach (var dvm in sortedX)
+            {
+                xPositons.Add(dvm, (_randInt.Next((int) x, (int) (x + gridX))));
+                x += gridX;
+            }
+
+            var yPositons = new ObservableDictionary<DocumentViewModel, double>();
+            double y = 0;
+            foreach (var dvm in sortedY)
+            {
+                yPositons.Add(dvm, (_randInt.Next((int)y, (int)(y + gridY))));
+                y += gridY;
+            }
+
             foreach (var dvm in ViewModel.DocumentViewModels)
             {
                 if (dvm != null)
                 {
-                    _nodes.Add(new GraphNodeViewModel(dvm, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
-                   
+                    _nodes.Add(new GraphNodeViewModel(dvm, xPositons.First(i => i.Key.Equals(dvm)).Value, yPositons.First(i => i.Key.Equals(dvm)).Value));
                 }
             }
 
@@ -226,27 +252,6 @@ namespace Dash
                                                 KeyStore.LinkToKey, null)?.TypedData ??
                                         new List<DocumentController>();
 
-
-                    //if a to connection has already connection, a from connection cannot be added
-                    //foreach (var link in fromConnections)
-                    //{
-                    //    var fromDocs = link.GetDataDocument()
-                    //        .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
-
-                    //    foreach (var fromDoc in fromDocs)
-                    //    {
-                    //        var fromViewModel = ViewModel.DocumentViewModels.First(vm =>
-                    //            vm.DocumentController.GetDataDocument().Equals(fromDoc));
-                    //        if (fromViewModel != null)
-                    //        {
-                    //            AdjacencyLists[dvm].Add(fromViewModel);
-                    //            Connections.Add(fromViewModel, dvm);
-                    //            AddLink(fromViewModel, dvm);
-                    //        }
-                    //    }
-
-                    //}
-
                     foreach (var link in toConnections)
                     {
                         var toDocs = link.GetDataDocument()
@@ -259,8 +264,7 @@ namespace Dash
                             if (toViewModel != null)
                             {
                                 AdjacencyLists[dvm].Add(toViewModel);
-                                Connections.Add(toViewModel, dvm);
-                                AddLink(toViewModel, dvm);
+                                Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(toViewModel, dvm));
                             }
                         }
                     }
@@ -271,29 +275,27 @@ namespace Dash
 
         private void AddLink(DocumentViewModel fromViewModel, DocumentViewModel toViewmodel)
         {
-            Polyline link = new Polyline();
-            
+            //var link = new GraphConnection();
 
-            var toGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(toViewmodel.DataDocument));
-            Point toPoint = new Point
-            {
-                X = toGvm.XPosition,
-                Y = toGvm.YPosition
-            };
+            //var toGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(toViewmodel.DataDocument));
+            //Point toPoint = new Point
+            //{
+            //    X = toGvm.XPosition,
+            //    Y = toGvm.YPosition
+            //};
 
-            var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
-            Point fromPoint = new Point
-            {
-                X = fromGvm.XPosition,
-                Y = fromGvm.YPosition
-            };
+            //var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
+            //Point fromPoint = new Point
+            //{
+            //    X = fromGvm.XPosition,
+            //    Y = fromGvm.YPosition
+            //};
 
-            link.Points.Add(fromPoint);
-            link.Points.Add(toPoint);
-            link.Fill = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
+            //link.Points.Add(fromPoint);
+            //link.Points.Add(toPoint);
+            //link.Fill = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
 
-            xScrollViewCanvas.Children.Add(link);
-
+            //xScrollViewCanvas.Children.Add(link);
         }
 
         private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
@@ -340,6 +342,11 @@ namespace Dash
                 node.XPosition = x + (offsetX * (x / e.PreviousSize.Width));
                 node.YPosition = y + (offsetY * (y / e.PreviousSize.Height));
             }
+        }
+
+        private void CollectionGraphView_OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }
