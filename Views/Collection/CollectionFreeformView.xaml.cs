@@ -776,6 +776,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
+            previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
@@ -787,6 +788,15 @@ namespace Dash
             RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+        }
+
+        private void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
+        {
+            var text = previewTextbox.Text;
+            if (previewTextbox.Visibility != Visibility.Collapsed)
+            {
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            }
         }
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -820,16 +830,10 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                //TODO: make a markdown box here instead
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
                     var postitNote = new MarkdownNote(text: text).Document;
                     Actions.DisplayDocument(ViewModel, postitNote, where);
-                    //  EditableMarkdownBlock.Instance.XTextBox.Visibility = Visibility.Visible;
-                    //var postitNote = new EditableMarkdownBlock();
-                    //postitNote.Text = text;
-                    //DocumentController noteDoc = await TextToDashUtil.ParseFileAsync();
-                    // Actions.DisplayDocument(ViewModel, postitNote.DataContext as EditableScriptViewModel, where);
                 }
                 else
                 {

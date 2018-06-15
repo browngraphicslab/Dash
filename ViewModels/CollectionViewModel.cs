@@ -543,9 +543,19 @@ namespace Dash
                 var text = await dvp.GetRtfAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(text: "hello", size: new Size(300, double.NaN)).Document;
-                    postitNote.GetDataDocument().SetField(KeyStore.DataKey, new RichTextController(new RichTextModel.RTD(text)), true);
-                    Actions.DisplayDocument(this, postitNote, where);
+                    if (SettingsView.Instance.MarkdownEditOn)
+                    {
+                        var postitNote = new MarkdownNote(text: "hello", size: new Size(300, double.NaN)).Document;
+                        postitNote.GetDataDocument().SetField(KeyStore.DataKey, new TextController(text), true);
+                        Actions.DisplayDocument(this, postitNote, where);
+                    }
+                    else
+                    {
+                        var postitNote = new RichTextNote(text: "hello", size: new Size(300, double.NaN)).Document;
+                        postitNote.GetDataDocument().SetField(KeyStore.DataKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                        Actions.DisplayDocument(this, postitNote, where);
+                    }
+                       
                 }
             }
             else if (dvp.Contains(StandardDataFormats.Html) && false)
@@ -575,8 +585,16 @@ namespace Dash
                 var text = await dvp.GetTextAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
-                    Actions.DisplayDocument(this, postitNote, where);
+                    if (SettingsView.Instance.MarkdownEditOn)
+                    {
+                        var postitNote = new MarkdownNote(text: text, size: new Size(300, double.NaN)).Document;
+                        Actions.DisplayDocument(this, postitNote, where);
+                    }
+                    else
+                    {
+                        var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
+                        Actions.DisplayDocument(this, postitNote, where);
+                    }  
                 }
             }
         }
