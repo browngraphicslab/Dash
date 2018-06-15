@@ -823,11 +823,16 @@ namespace Dash
                 //TODO: make a markdown box here instead
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
-                  //  EditableMarkdownBlock.Instance.XTextBox.Visibility = Visibility.Visible;
+                    var postitNote = new MarkdownNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+
+                    var postitNote2 = new PostitNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote2, where);
+                    //  EditableMarkdownBlock.Instance.XTextBox.Visibility = Visibility.Visible;
                     //var postitNote = new EditableMarkdownBlock();
                     //postitNote.Text = text;
                     //DocumentController noteDoc = await TextToDashUtil.ParseFileAsync();
-                   // Actions.DisplayDocument(ViewModel, postitNote.DataContext as EditableScriptViewModel, where);
+                    // Actions.DisplayDocument(ViewModel, postitNote.DataContext as EditableScriptViewModel, where);
                 }
                 else
                 {
@@ -970,6 +975,13 @@ namespace Dash
                         editableScriptBox.Loaded -= EditableScriptView_Loaded;
                         editableScriptBox.Loaded += EditableScriptView_Loaded;
                     }
+                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
+                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
+                    if (editableMarkdownBox != null)
+                    {
+                        editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
+                        editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
+                    }
                 }
             }
 
@@ -994,6 +1006,15 @@ namespace Dash
             textBox.XTextBox.GotFocus += TextBox_GotFocus;
             textBox.XTextBox.Focus(FocusState.Programmatic);
         }
+        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableMarkdownBlock;
+            textBox.Loaded -= EditableMarkdownBlock_Loaded;
+            textBox.MakeEditable();
+            textBox.XMarkdownBox.GotFocus -= TextBox_GotFocus;
+            textBox.XMarkdownBox.GotFocus += TextBox_GotFocus;
+            textBox.XMarkdownBox.Focus(FocusState.Programmatic);
+        }
 
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -1008,6 +1029,7 @@ namespace Dash
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
+
         void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;

@@ -25,7 +25,7 @@
                  FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                  TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                  Foreground="{x:Bind Foreground}"
-                 Background="{x:Bind Background}"
+                 Background="Yellow"
                  HorizontalAlignment="Stretch" 
                  VerticalAlignment="Top" 
                  TextWrapping="Wrap" 

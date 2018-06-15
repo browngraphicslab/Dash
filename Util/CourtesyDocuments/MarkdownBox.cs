@@ -21,6 +21,7 @@ namespace Dash
         }
         protected static void SetupTextBinding(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
+            /*
             var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
@@ -44,16 +45,30 @@ namespace Dash
                     Tag = "Markdown Box Text Wrapping Binding"
                 };
                 element.XMarkdownBox.AddFieldBinding(RichEditBox.TextWrappingProperty, wrapBinding);
-            }
+            }*/
+
+            var binding = new FieldBinding<FieldControllerBase>()
+            {
+                Document = docController,
+                Key = KeyStore.DataKey,
+                Mode = BindingMode.TwoWay,
+                Context = context,
+                GetConverter = FieldConversion.GetFieldtoStringConverter,
+                FallbackValue = "<null>",
+                Tag = "TextingBox SetupTextBinding"
+            };
+            element.AddFieldBinding(EditableMarkdownBlock.TextProperty, binding);
         }
+        /*
         public static DocumentController MakeRegionDocument(DocumentView richTextBox)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<EditableMarkdownBlock>();
             return rtv.GetRegionDocument();
-        }
+        }*/
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            RichTextView rtv = null;
+            /*
+            EditableMarkdownBlock rtv = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
             var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as RichTextController;
@@ -75,12 +90,24 @@ namespace Dash
                 SetupBindings(rtv, docController, context);
             }
 
-            return rtv;
+            return rtv;*/
+
+            var textController = docController.GetField(KeyStore.DataKey);
+            // create the textblock
+            var tb = new EditableMarkdownBlock
+            {
+                TargetFieldController = textController,
+                TargetDocContext = context
+            };
+            SetupBindings(tb, docController, context);
+
+            return tb;
         }
 
+        /*
         private static ReferenceController GetTextReference(DocumentController docController)
         {
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
-        }
+        }*/
     }
 }

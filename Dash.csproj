@@ -236,6 +236,7 @@
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\MarkdownBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -303,6 +304,7 @@
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
