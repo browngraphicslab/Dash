@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +15,9 @@ namespace OfficeInterop
     public class ChromeApp
     {
         private Task _listenerTask;
+        private HttpListener _listener;
+
+        private WebSocket _client;
 
         private Mutex _queueMutex = new Mutex(false);
         private List<byte[]> _queue = new List<byte[]>();
@@ -21,8 +26,8 @@ namespace OfficeInterop
 
         public ChromeApp()
         {
-            _client = new TcpClient();
-            _listener = new TcpListener(IPAddress.Loopback, 12345);
+            _listener = new HttpListener();
+            _listener.Prefixes.Add("ws://localhost:12345/dash/chrome");
         }
 
         public void Start()
@@ -30,49 +35,61 @@ namespace OfficeInterop
             _listenerTask = Task.Factory.StartNew(StartConnection);
         }
 
-        private void StartConnection()
+        private async void StartConnection()
         {
             //TODO This doesn't deal with dropped connection perfectly
             while (true)
             {
-                if (!_client.ConnectAsync(IPAddress.Loopback, 54321).Wait(100))
-                {
-                    _listener.Start();
-                    _client = _listener.AcceptTcpClient();
-                }
+                _listener.Start();
+                var context = _listener.GetContext();
+                var wsContext = await context.AcceptWebSocketAsync("");
+                _client = wsContext.WebSocket;
+                _listener.Stop();
                 ProcessEvents();
             }
         }
 
         private void ProcessEvents()
         {
-            var stream = _client.GetStream();
-            stream.ReadTimeout = 100;
-            stream.WriteTimeout = 100;
-            byte[] buffer = new byte[512];
-            while (_client.Connected)
+            while (_client.State == WebSocketState.Connecting)
+            {
+                Thread.Sleep(10);
+            }
+            Debug.Assert(_client.State == WebSocketState.Open);
+            byte[] rbuffer = new byte[512];
+            string receiveString = "";
+            ArraySegment<byte> readBuffer = new ArraySegment<byte>(rbuffer);
+            var receiveTask = _client.ReceiveAsync(readBuffer, CancellationToken.None);
+
+            Task sendTask = null;
+
+            while (_client.State == WebSocketState.Open)
             {
 
                 _queueMutex.WaitOne();
-                foreach (var bytese in _queue)
+                if (_queue.Count > 0)
                 {
-                    stream.Write(bytese, 0, bytese.Length);
+                    var wbytes = _queue[0];
+                    if (sendTask == null || sendTask.IsCompleted)
+                    {
+                        sendTask = _client.SendAsync(new ArraySegment<byte>(wbytes), WebSocketMessageType.Text, true,
+                            CancellationToken.None);
+                    }
+                    _queue.RemoveAt(0);
                 }
                 _queueMutex.ReleaseMutex();
 
-                List<byte> bytes = new List<byte>();
-                int bytesRead;
-                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                if (receiveTask.IsCompleted)
                 {
-                    for (int i = 0; i < bytesRead; ++i)
+                    var res = receiveTask.Result;
+                    receiveString += Encoding.UTF8.GetString(readBuffer.Array, 0, res.Count);
+                    if (res.EndOfMessage)
                     {
-                        bytes.Add(bytes[i]);
+                        ProcessMessage(receiveString);
+                        receiveString = "";
                     }
-                }
 
-                if (bytes.Count > 0)
-                {
-                    ProcessMessage(Encoding.UTF8.GetString(bytes.ToArray()));
+                    receiveTask = _client.ReceiveAsync(readBuffer, CancellationToken.None);
                 }
             }
         }

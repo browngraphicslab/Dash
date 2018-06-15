@@ -48,6 +48,7 @@ namespace Dash
                 default://Unhandled request
                     throw new NotImplementedException();
             }
+            Debug.WriteLine("Received Request " + data["DEBUG"]);
         }
 
         private static void AppOnAppServiceConnected()

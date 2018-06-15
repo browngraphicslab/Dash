@@ -52,24 +52,24 @@ var start = function (ip) {
     var socket;
 
     var socketOpen = false;
-    var messagesToSend = []
+    var messagesToSend = [];
     var sending = false;
 
     var pollSend = function () {
         if (socketOpen === true && messagesToSend.length > 0 && !sending) {
             sending = true;
-            var array = JSON.stringify(messagesToSend)
+            var array = JSON.stringify(messagesToSend);
             messagesToSend.length = 0;
             console.log("sending message array with length: " + array.length);
-            socket.send(array)
-            sending = false
+            socket.send(array);
+            sending = false;
         }
     }
 
     setInterval(pollSend, 50);
 
     //this function is used in tabManager whenever it gets a result
-    var sendFunction = function(messageObject) {
+    var sendFunction = function (messageObject) {
         //console.log(socket)
         //messagesToSend.push(messageObject)
         messagesToSend.push(JSON.stringify(messageObject))
@@ -78,37 +78,36 @@ var start = function (ip) {
     var manager = new tabManager(sendFunction);
     var handler = new requestHandler(manager);
 
-    //var managerG = new googleManager(sendFunction);
-    //var handlerG = new requestHandler(managerG);
-
     if (useSocket) {
-        if ("WebSocket" in window) {
-            socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
-        } else {
-            console.log("WebSocket is NOT supported by your Browser!");
+
+        var restart = function () {
+            if ("WebSocket" in window) {
+                socket = new WebSocket("ws://localhost:12345/dash/chrome");
+            } else {
+                console.log("WebSocket is NOT supported by your Browser!");
+            }
         }
 
-        socket.onopen = function() {
+        socket.onopen = function () {
             console.log("Connection Opened");
-            socket.send("browser:"+ip)
             socketOpen = true;
         }
 
         socket.onclose = function () {
-            console.log("close occurred... starting again")
-            //start();
+            console.log("close occurred... starting again");
+            restart();
         }
 
         socket.onerror = function () {
-            console.log("error occurred... starting again")
-            //start();
+            console.log("error occurred... starting again");
+            restart();
         }
 
-        socket.onmessage = function(msg) {
-            console.log(msg);
+        socket.onmessage = function (msg) {
+            console.log("Received message from interop");
             handler.handle(msg.data);
-            handlerG.handle(msg.data);
         }
+        restart();
     }
 
     tabs_initialized = {}
@@ -121,7 +120,7 @@ var start = function (ip) {
                 .substring(1);
         }
 
-        return s4() +s4() + s4() +  s4() + s4() +s4() + s4() +s4() + s4() +s4();
+        return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
     }
 }
 document.body.style.backgroundColor = "red";

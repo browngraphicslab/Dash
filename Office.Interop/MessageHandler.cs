@@ -26,13 +26,20 @@ namespace OfficeInterop
                 OnSendRequest(new ValueSet()
                 {
                     ["REQUEST"] = "Chrome",
+                    ["DEBUG"] = "Received Chrome message",
                     ["DATA"] = s
                 });
             };
         }
 
+        //Event that is triggered when we want to send a message through the interop to Dash
         public event Action<ValueSet> SendRequest; 
 
+        /// <summary>
+        /// Processes a message that was received through the interop from Dash and dispatches is to the correct place
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public ValueSet ProcessMessage(ValueSet request)
         {
             string value = request["REQUEST"] as string;
@@ -66,10 +73,7 @@ namespace OfficeInterop
             }
 
             response.Add("RESPONSE", result);
-            if (!string.IsNullOrEmpty(debug))
-            {
-                response.Add("DEBUG", debug);
-            }
+            response.Add("DEBUG", debug);
 
             return response;
         }
