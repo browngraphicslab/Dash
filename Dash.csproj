@@ -361,6 +361,9 @@
       <DependentUpon>CollectionTreeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\GraphConnection.cs" />
+    <Compile Include="Views\Collection\NodeConnectionsView.xaml.cs">
+      <DependentUpon>NodeConnectionsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Collection\NodeInfoView.xaml.cs">
       <DependentUpon>NodeInfoView.xaml</DependentUpon>
     </Compile>
@@ -845,6 +848,10 @@
     <Page Include="Views\Collection\CollectionTreeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\NodeConnectionsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\Collection\NodeInfoView.xaml">
       <Generator>MSBuild:Compile</Generator>

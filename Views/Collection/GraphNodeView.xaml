@@ -8,14 +8,26 @@
     mc:Ignorable="d"
     d:DesignWidth="50" d:DesignHeight="400" d:DataContext="{d:DesignInstance local:GraphNodeViewModel}">
 
-    <Grid x:Name="xGrid" Width="Auto" Height="Auto" Background="Transparent" IsHitTestVisible="True" IsTapEnabled="True" Tapped="Node_OnTapped">
+    <Grid x:Name="xGrid" x:FieldModifier="public" Width="Auto" Height="Auto" Background="Transparent"
+          IsHitTestVisible="True" IsTapEnabled="True" Tapped="Node_OnTapped">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
         <!--tappable toggle ellipse-->
-        <Ellipse Name="xEllipse" x:FieldModifier="public" Fill="#CC114433" Grid.Row="0"  />
-        <TextBlock  Name="xTitleBlock" Grid.Row="1" FontSize="20" HorizontalTextAlignment="Center"
-                    VerticalAlignment="Center"  HorizontalAlignment="Center"></TextBlock>
+        <Ellipse Name="xEllipse" x:FieldModifier="public" Fill="#78918b" Grid.Row="0" >
+        
+        </Ellipse>
+       
+        <TextBlock x:Name="xTitleBlock" 
+                   Grid.Row="1"
+                   HorizontalTextAlignment="Center"
+                   VerticalAlignment="Center" 
+                   FontFamily="{StaticResource FontAwesome}" 
+                   Foreground="{StaticResource TitleText}"
+                   Text="{StaticResource DocumentPlainIcon}"
+                   HorizontalAlignment="Stretch"
+                   Height="50"
+        />
     </Grid>
 </UserControl>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -27,6 +28,8 @@ namespace Dash
         public GraphNodeViewModel ViewModel { get; private set; }
         public CollectionGraphView ParentGraph { get; private set; }
         public double ConstantRadiusWidth { get; set; }
+    
+    
 
         /// <summary>
         /// Constructor
@@ -37,7 +40,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             Loaded += GraphNodeView_Loaded;
             Unloaded += GraphNodeView_Unloaded;
-           
+            
+
         }
 
         private void GraphNodeView_Unloaded(object sender, RoutedEventArgs e)
@@ -75,6 +79,10 @@ namespace Dash
 
             xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
             xEllipse.Height = xEllipse.Width;
+            if (xEllipse.Width > ParentGraph.MaxNodeWidth)
+            {
+                ParentGraph.MaxNodeWidth = xEllipse.Width;
+            }
 
             if (toConnections > 1)
             {
@@ -143,6 +151,9 @@ namespace Dash
                             {
                                 existingLink.FromDoc = this;
                             }
+                            ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                                existingLink.FromDoc.ViewModel.DocumentViewModel,
+                                existingLink.ToDoc.ViewModel.DocumentViewModel));
                             ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             
                         }
@@ -168,7 +179,7 @@ namespace Dash
 
         private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            xTitleBlock.Text =
+            xTitleBlock.Text += "   " + 
                 ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, context)
                     .Data ?? "Untitled " + ViewModel.DocumentController.DocumentType.Type;
         }
@@ -199,10 +210,15 @@ namespace Dash
 
         private void Node_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            ParentGraph.SelectedNode = this;
+            var infoviews = ParentGraph.xInfoPanel.Children.FirstOrDefault(i => i is NodeInfoView);
+            if (infoviews != null) ParentGraph.xInfoPanel.Children.Remove(infoviews);
+            var connectionviews = ParentGraph.xInfoPanel.Children.FirstOrDefault(i => i is NodeConnectionsView);
+            if (connectionviews != null) ParentGraph.xInfoPanel.Children.Remove(connectionviews);
+            //ParentGraph.xInfoPanel.Children.RemoveAt(2);
             ParentGraph.xInfoPanel.Children.Add(new NodeInfoView(ViewModel.DocumentViewModel, ParentGraph));
+            ParentGraph.xInfoPanel.Children.Add(new NodeConnectionsView( ViewModel.DocumentViewModel, ParentGraph));
             e.Handled = true;
         }
-
-
     }
 }

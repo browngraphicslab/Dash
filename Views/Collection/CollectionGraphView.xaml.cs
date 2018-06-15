@@ -78,6 +78,18 @@ namespace Dash
         private Random _randInt;
         private ObservableCollection<DocumentController> CollectionDocuments { get; set; }
 
+        public GraphNodeView SelectedNode
+        {
+            get => _selectedNode;
+            set
+            {
+                if (_selectedNode != null) _selectedNode.xEllipse.Stroke = null;
+                _selectedNode = value;
+                _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(155, 255, 255, 0));
+                _selectedNode.xEllipse.StrokeThickness = 6;
+            }
+        }
+
         public ObservableCollection<GraphConnection> Links { get; set; }
 
         public CollectionViewModel ViewModel { get; set; }
@@ -99,9 +111,11 @@ namespace Dash
         public ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
 
         public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
+        public double MaxNodeWidth = 0;
 
         private double _minGap = 50;
         private double _maxGap = 100;
+        private GraphNodeView _selectedNode;
 
         public CollectionGraphView()
         {
@@ -208,10 +222,11 @@ namespace Dash
             var sortX = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedX = sortX.OrderBy(i => i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.X);
             var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
-            var sortedY = sortY.OrderBy(i => i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
+            var sortedY = sortY.OrderBy(i =>
+                i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
 
-            var gridX = xScrollViewCanvas.ActualWidth / sortedX.Count();
-            var gridY = xScrollViewCanvas.ActualHeight / sortedY.Count();
+            var gridX = (xScrollViewCanvas.ActualWidth - MaxNodeWidth) / sortedX.Count();
+            var gridY = (xScrollViewCanvas.ActualHeight - MaxNodeWidth) / sortedY.Count();
 
             var xPositons = new ObservableDictionary<DocumentViewModel, double>();
             double x = 0;
@@ -261,11 +276,7 @@ namespace Dash
                             var toViewModel = ViewModel.DocumentViewModels.First(vm =>
                                 vm.DocumentController.GetDataDocument().Equals(toDoc));
 
-                            if (toViewModel != null)
-                            {
-                                AdjacencyLists[dvm].Add(toViewModel);
-                                Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(toViewModel, dvm));
-                            }
+                           
                         }
                     }
                 }

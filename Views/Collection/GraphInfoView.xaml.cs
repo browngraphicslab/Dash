@@ -82,6 +82,7 @@ namespace Dash
         {
             var nodes = ViewModel.DocumentViewModels;
             var connections = ParentGraph.Connections;
+            connections.CollectionChanged += Connections_CollectionChanged;
             var min = nodes.Min(i =>
                 (i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count ?? 0 +
                  i.DataDocument.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count) ?? 0);
@@ -92,7 +93,7 @@ namespace Dash
             Labels.Add(new ListViewItem{ Content = "Nodes: "});
             LabelData.Add(new ListViewItem { Content = nodes.Count.ToString() });
             Labels.Add(new ListViewItem { Content = "Connections: "});
-            LabelData.Add(new ListViewItem { Content = connections.Count.ToString() });
+            LabelData.Add(new ListViewItem { Content = connections.Count.ToString(), Name = nameof(ParentGraph.Connections) });
             Labels.Add(new ListViewItem {Content = "Average: "});
             LabelData.Add(new ListViewItem { Content = ((double) ((double) connections.Count / (double) nodes.Count)).ToString() });
             Labels.Add(new ListViewItem { Content = "Min: " });
@@ -102,7 +103,12 @@ namespace Dash
             Labels.Add(new ListViewItem { Content = "Range: " });
             LabelData.Add(new ListViewItem { Content = (max - min).ToString() });
         }
-    
+
+        private void Connections_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            LabelData.First(i => i.Name.Equals(nameof(ParentGraph.Connections))).Content =
+                ParentGraph.Connections.Count;
+        }
 
         private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {

@@ -15,7 +15,7 @@
     AllowDrop="True"
     SizeChanged="CollectionGraphView_OnSizeChanged">
 
-    <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTapEnabled="True" Tapped="XBase_OnTapped">
+    <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTapEnabled="True" >
         <Grid.Resources>
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
@@ -30,6 +30,7 @@
                 <Canvas Name="xScrollViewCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <!--timeline elements-->
                     <ItemsControl x:Name="xItemsControl"
+                                  Canvas.ZIndex="1000"
                       x:FieldModifier="public"
                       ItemsSource="{x:Bind _nodes}"   
                       IsHitTestVisible="{Binding IsSelected}">
