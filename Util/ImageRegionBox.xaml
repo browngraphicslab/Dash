@@ -22,7 +22,12 @@
             <RowDefinition x:Name="Row2" x:FieldModifier="Public" Height="*"/>
             <RowDefinition x:Name="Row3" x:FieldModifier="Public" Height="*"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Fill="Gold" Opacity="0.4"/>
-        <SymbolIcon x:Name="xCloseRegionButton" Grid.Row="1" Grid.Column="1" Symbol="Cancel" Opacity="0.7" Visibility="Collapsed" Width="20" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top" x:FieldModifier="public" PointerPressed="XCloseRegionButton_OnPointerPressed" Margin="0,6,4,0" />
+        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Stroke="White" StrokeDashArray="4" StrokeThickness="2" >
+            <Rectangle.Fill>
+                <SolidColorBrush Color="Gold" Opacity=".15"></SolidColorBrush>
+            </Rectangle.Fill>
+            
+        </Rectangle>
+            <SymbolIcon x:Name="xCloseRegionButton" Grid.Row="1" Grid.Column="1" Symbol="Cancel" Opacity="0.7" Visibility="Collapsed" Width="20" Height="14" HorizontalAlignment="Right" VerticalAlignment="Top" x:FieldModifier="public" PointerPressed="XCloseRegionButton_OnPointerPressed" Margin="0,6,4,0" />
     </Grid>
 </UserControl>

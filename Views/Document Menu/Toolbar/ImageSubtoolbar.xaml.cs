@@ -36,6 +36,7 @@ namespace Dash
         {
             InitializeComponent();
             FormatDropdownMenu();
+	        xToggleAnnotations.IsChecked = true;
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
             xImageCommandbar.Loaded += delegate
@@ -129,6 +130,7 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         /// Enables the subtoolbar access to the Document View of the image that was selected on tap.
         /// </summary>
@@ -159,5 +161,20 @@ namespace Dash
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
         }
-    }
+
+
+	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
+	    {
+		    _currentImage?.ShowRegions();
+		    xToggleAnnotations.Label = "Hide";
+	
+	    }
+
+	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
+	    {
+		    _currentImage?.HideRegions();
+		    xToggleAnnotations.Label = "Show";
+	    }
+
+	}
 }

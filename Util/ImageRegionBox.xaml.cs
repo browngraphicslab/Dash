@@ -34,6 +34,9 @@ namespace Dash
         {
             var row1 = topLeftPoint.Y / imageSize.Height;
             var row2 = size.Height / imageSize.Height;
+
+			//TODO: fix issue regarding why row1 + row2 > 1
+	     
             var row3 = 1 - row1 - row2;
             var column1 = topLeftPoint.X / imageSize.Width;
             var column2 = size.Width / imageSize.Width;
