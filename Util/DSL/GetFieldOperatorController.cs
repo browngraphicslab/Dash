@@ -16,6 +16,7 @@ namespace Dash
         }
         public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override FieldControllerBase GetDefaultController()

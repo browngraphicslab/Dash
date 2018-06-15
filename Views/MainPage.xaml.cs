@@ -122,8 +122,7 @@ namespace Dash
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout = new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
+                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }

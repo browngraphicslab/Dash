@@ -21,6 +21,7 @@ namespace Dash.Controllers.Operators
 
         public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

@@ -19,6 +19,7 @@ namespace Dash
 
         public NegationSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public NegationSearchOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

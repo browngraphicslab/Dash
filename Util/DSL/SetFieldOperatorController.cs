@@ -13,6 +13,7 @@ namespace Dash
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public SetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

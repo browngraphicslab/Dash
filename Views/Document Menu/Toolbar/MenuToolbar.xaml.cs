@@ -123,7 +123,7 @@ namespace Dash
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                xFloating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents

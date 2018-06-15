@@ -51,6 +51,7 @@ namespace Dash
 
         #region DATABASE MUTATORS
 
+
         public void AddDocument(FieldModel newDocument, Action<FieldModel> success, Action<Exception> error)
         {
             var watch = Stopwatch.StartNew();

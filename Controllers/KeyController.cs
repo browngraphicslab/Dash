@@ -15,6 +15,7 @@ namespace Dash
             set
             {
                 KeyModel.Name = value;
+                UpdateOnServer();
                 OnFieldModelUpdated(null);
             }
         }

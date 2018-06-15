@@ -28,7 +28,8 @@
                         <ComboBoxItem Content="Pentagon"/>
                         <ComboBoxItem Content="Hexagon"/>
                         <ComboBoxItem Content="Octagon"/>
-                        <ComboBoxItem x:Name="xCustomPoly" Content="CustomPoly"/>
+                        <ComboBoxItem Content="CustomPoly"/>
+                        <ComboBoxItem Content="CustomStar"/>
                         <ComboBoxItem Content="Clover"/>
                     </ComboBox>
                     <Grid x:Name="xSideToggleButtonGrid" Grid.Column ="1">

@@ -64,6 +64,7 @@ namespace Dash
                 if(PointFieldModel.Data != value)
                 {
                     PointFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

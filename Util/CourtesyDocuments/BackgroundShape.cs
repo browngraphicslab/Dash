@@ -27,6 +27,7 @@ namespace Dash
             Hexagonal,
             Octagonal,
             CustomPolygon,
+            CustomStar,
             Clover,
         }
 

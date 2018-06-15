@@ -872,11 +872,15 @@ namespace Dash
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
         public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var fieldChanged = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
                 UpdateOnServer();
             }
+            sw.Stop();
+            Debug.WriteLine($"SetField took {sw.ElapsedMilliseconds} milliseconds");
             return fieldChanged;
         }
         public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
