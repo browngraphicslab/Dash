@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using DashShared;
 using Microsoft.Data.Sqlite;
 
@@ -15,6 +17,11 @@ namespace Dash
         /// Connection to the sqlite database
         /// </summary>
         private SqliteConnection _db;
+
+        private System.Timers.Timer _saveTimer;
+        private SqliteTransaction _currentTransaction;
+
+        private Mutex _transactionMutex = new Mutex();
 
         #region DATABASE INITIALIZED IN CONSTRUCTOR
 
@@ -45,6 +52,19 @@ namespace Dash
             };
             //Create database
             createFieldCommand.ExecuteNonQuery();
+            _currentTransaction = _db.BeginTransaction();
+
+            _saveTimer = new System.Timers.Timer(1000);
+            _saveTimer.Elapsed += Timer_Elapsed;
+            _saveTimer.Start();
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _transactionMutex.WaitOne();
+            _currentTransaction.Commit();
+            _currentTransaction = _db.BeginTransaction();
+            _transactionMutex.ReleaseMutex();
         }
 
         #endregion
@@ -56,12 +76,14 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var addDocCommand = new SqliteCommand
             {
                 //i.e. "In the database "Fields", insert a new field (filled with the serialized text of the received document) at/with the document id specified
                 //if something already exists at the given document ID, replace it
                 CommandText = @"INSERT OR REPLACE INTO `Fields` VALUES (@id, @field);",
                 Connection = _db,
+                Transaction = _currentTransaction
             };
             addDocCommand.Parameters.AddWithValue("@id", newDocument.Id);
             addDocCommand.Parameters.AddWithValue("@field", newDocument.Serialize());
@@ -76,12 +98,14 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var updateDocCommand =
                 new SqliteCommand
                 {
                     //i.e. "Set the field attribute in the database to the field serialization (below) only for the tuplet with the document ID (also specified below)"
                     CommandText = @"UPDATE `Fields` SET `field`=@field WHERE `id`=@id;",
-                    Connection = _db
+                    Connection = _db,
+                    Transaction = _currentTransaction
                 };
             updateDocCommand.Parameters.AddWithValue("@id", documentToUpdate.Id);
             updateDocCommand.Parameters.AddWithValue("@field", documentToUpdate.Serialize());
@@ -96,11 +120,13 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var deleteDocCommand = new SqliteCommand
             {
                 //i.e. "Delete the tuplet from "Fields" that has the specified document id"
                 CommandText = @"DELETE FROM `Fields` WHERE `id`=@id;",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             deleteDocCommand.Parameters.AddWithValue("@id", documentToDelete.Id);
             watch.Stop();
@@ -114,15 +140,17 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var deleteAllCommand = new SqliteCommand
             {
                 //i.e. "Delete all tuplets (rows) from the database. In essence, clear the database"
                 CommandText = @"DELETE FROM `Fields`;",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             watch.Stop();
 
-            if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) return;
+            if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) {return;}
 
             success?.Invoke();
         }
@@ -135,11 +163,13 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var getDocCommand = new SqliteCommand
             {
                 //i.e. "In "Fields", return the field contents at the specified document id"
                 CommandText = @"SELECT `field` FROM `Fields` WHERE `id`=@id;",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             getDocCommand.Parameters.AddWithValue("@id", id);
             watch.Stop();
@@ -156,15 +186,17 @@ namespace Dash
 
             var enumerable = ids as string[] ?? ids.ToArray();
             var tempParams = new string[enumerable.Length];
-            
+
             for (var i = 0; i < enumerable.Length; ++i) { tempParams[i] = "@param" + i; }
 
+            _transactionMutex.WaitOne();
             //IN (" + string.Join(',', temp) + "
             var getDocCommand = new SqliteCommand
             {
                 //i.e. "In "Fields", return the field contents at the specified document ids"
                 CommandText = @"SELECT `field` from `Fields` WHERE `id` in (" + string.Join(", ", tempParams) + ");",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
 
             for (var i = 0; i < enumerable.Length; ++i) { getDocCommand.Parameters.AddWithValue(tempParams[i], enumerable[i]); }
@@ -186,10 +218,12 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var getAllDocsCommand = new SqliteCommand
             {
                 CommandText = @"SELECT `field` FROM `Fields`;",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             watch.Stop();
 
@@ -201,9 +235,14 @@ namespace Dash
             }
             catch (SqliteException e)
             {
-                Debug.WriteLine($"LocalSqliteEndpoint.cs, GetDocumentsByQuery @ Time Elapsed = {watch.ElapsedMilliseconds}");
+                Debug.WriteLine(
+                    $"LocalSqliteEndpoint.cs, GetDocumentsByQuery @ Time Elapsed = {watch.ElapsedMilliseconds}");
                 error?.Invoke(e);
                 return;
+            }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
             }
 
             success?.Invoke(new RestRequestReturnArgs(fieldModels));
@@ -213,10 +252,12 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var getAllDocsCommand = new SqliteCommand
             {
                 CommandText = @"SELECT field from Fields",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             watch.Stop();
 
@@ -228,9 +269,14 @@ namespace Dash
             }
             catch (SqliteException e)
             {
-                Debug.WriteLine($"LocalSqliteEndpoint.cs, GetDocumentsByQuery<V> (1) @ Time Elapsed = {watch.ElapsedMilliseconds}");
+                Debug.WriteLine(
+                    $"LocalSqliteEndpoint.cs, GetDocumentsByQuery<V> (1) @ Time Elapsed = {watch.ElapsedMilliseconds}");
                 error?.Invoke(e);
                 return;
+            }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
             }
 
             success?.Invoke(fieldModels.OfType<V>());
@@ -240,10 +286,12 @@ namespace Dash
         {
             var watch = Stopwatch.StartNew();
 
+            _transactionMutex.WaitOne();
             var hasDocCommand = new SqliteCommand
             {
                 CommandText = @"SELECT EXISTS (SELECT `id` FROM `Fields` WHERE `id`=@id LIMIT 1);",
-                Connection = _db
+                Connection = _db,
+                Transaction = _currentTransaction
             };
             hasDocCommand.Parameters.AddWithValue("@id", model.Id);
             watch.Stop();
@@ -263,6 +311,10 @@ namespace Dash
                 error?.Invoke(e);
                 return;
             }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
+            }
 
             success?.Invoke(hasDoc);
         }
@@ -276,10 +328,12 @@ namespace Dash
 
                 List<FieldModel> fieldModels;
 
+                _transactionMutex.WaitOne();
                 var getDocCommand = new SqliteCommand
                 {
                     CommandText = @"SELECT `field` from `Fields` WHERE `id`=@id;",
-                    Connection = _db
+                    Connection = _db,
+                    Transaction = _currentTransaction
                 };
                 getDocCommand.Parameters.AddWithValue("@id", doc.Id);
                 watch.Stop();
@@ -290,8 +344,13 @@ namespace Dash
                 }
                 catch (SqliteException e)
                 {
-                    Debug.WriteLine($"LocalSqliteEndpoint.cs, CheckAllDocuments @ Time Elapsed = {watch.ElapsedMilliseconds}");
+                    Debug.WriteLine(
+                        $"LocalSqliteEndpoint.cs, CheckAllDocuments @ Time Elapsed = {watch.ElapsedMilliseconds}");
                     throw;
+                }
+                finally
+                {
+                    _transactionMutex.ReleaseMutex();
                 }
 
                 if (!fieldModels.Any())
@@ -332,7 +391,12 @@ namespace Dash
             {
                 Debug.WriteLine("SQL ERROR: LocalSqliteEndpoint.cs, " + source + $" @ Time Elapsed = {elapsedTime}");
                 error?.Invoke(e);
+
                 return false;
+            }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
             }
 
             return true;
@@ -350,6 +414,10 @@ namespace Dash
                 Debug.WriteLine("SQL ERROR: LocalSqliteEndpoint.cs, " + source + $" @ Time Elapsed = {elapsedTime}");
                 error?.Invoke(e);
                 return null;
+            }
+            finally
+            {
+                _transactionMutex.ReleaseMutex();
             }
         }
 
