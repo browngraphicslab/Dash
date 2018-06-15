@@ -167,7 +167,7 @@ namespace Dash
                     var trans = new Point(-r.Left * scaleAmt, -r.Top * scaleAmt);
                     if (scaleAmt > 0)
                     {
-                        //TransformGroup = new TransformGroupData(trans, scale);
+                        TransformGroup = new TransformGroupData(trans, scale);
                     }
                 }
             }
@@ -636,7 +636,8 @@ namespace Dash
                 try
                 {
                     var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
-                    AddDocument(droppedDoc);
+                    if (droppedDoc != null)
+                        AddDocument(droppedDoc);
                     return;
                 }
                 catch (Exception exception)
@@ -686,7 +687,7 @@ namespace Dash
 
                 await DotNetRPC.CallRPCAsync(table);
 
-                DataPackageView dataPackageView = Clipboard.GetContent();
+                var dataPackageView = Clipboard.GetContent();
                 var richtext = await dataPackageView.GetRtfAsync();
                 var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
 
