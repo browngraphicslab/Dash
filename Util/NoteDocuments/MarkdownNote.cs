@@ -10,7 +10,6 @@ namespace Dash
         static string _prototypeID = "5296EA59-C0EB-4853-822B-D7BD426A316E";
         protected override DocumentController createPrototype(string prototypeID)
         {
-
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.TitleKey] = new TextController("Prototype Title"),
@@ -28,11 +27,16 @@ namespace Dash
             return new MarkdownBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
 
+        static int rcount = 1;
         public MarkdownNote(string text = null, string title = null, DocumentType type = null, Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
             var dataDocument = makeDataDelegate(new TextController(text ?? "Write something amazing!"));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
+            
+            Document.Tag = "Markdown Note Layout " + rcount;
+            dataDocument.Tag = "Markdown Note Data " + rcount++;
+            Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
         }
     }
 }

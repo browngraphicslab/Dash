@@ -17,13 +17,14 @@
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Top"
                    TextWrapping="Wrap" 
-                   DoubleTapped="XMarkdownBlock_DoubleTapped"></controls:MarkdownTextBlock>
+                   DoubleTapped="XMarkdownBlock_DoubleTapped"
+                   Tapped="XMarkdownBlock_Tapped"
+                   MarkdownRendered="XMarkdownBlock_MarkdownRendered"
+                   LinkClicked="XMarkdownBlock_LinkClicked" ></controls:MarkdownTextBlock>
         <TextBox x:Name="XMarkdownBox"
                    x:FieldModifier="public"
                  x:Load="{x:Bind MarkdownBoxLoaded, Mode=OneWay}"
-                 FontSize="{x:Bind FontSize, Mode=OneWay}"
-                 FontWeight="{x:Bind FontWeight, Mode=OneWay}"
-                 Foreground="{x:Bind Foreground}"
+                 
                  Background="Yellow"
                  HorizontalAlignment="Stretch" 
                  VerticalAlignment="Top" 

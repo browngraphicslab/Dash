@@ -55,9 +55,16 @@ namespace Dash
                 Context = context,
                 GetConverter = FieldConversion.GetFieldtoStringConverter,
                 FallbackValue = "<null>",
-                Tag = "TextingBox SetupTextBinding"
+                Tag = "MarkdownBox SetupTextBinding"
             };
             element.AddFieldBinding(EditableMarkdownBlock.TextProperty, binding);
+        }
+
+        protected static void SetupBindings(EditableMarkdownBlock element, DocumentController docController, Context context)
+        {
+            CourtesyDocument.SetupBindings(element, docController, context);
+            
+            SetupTextBinding(element, docController, context);
         }
         /*
         public static DocumentController MakeRegionDocument(DocumentView richTextBox)

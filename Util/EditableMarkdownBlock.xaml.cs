@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -27,14 +29,14 @@ namespace Dash
         #endregion
         
 
-        private bool _textBoxLoaded = false;
+        private bool _markdownBoxLoaded = false;
 
         public bool MarkdownBoxLoaded
         {
-            get => _textBoxLoaded;
+            get => _markdownBoxLoaded;
             set
             {
-                _textBoxLoaded = value;
+                _markdownBoxLoaded = value;
                 OnPropertyChanged();
             }
         }
@@ -51,6 +53,12 @@ namespace Dash
         }
 
         private void XMarkdownBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            MarkdownBoxLoaded = true;
+        }
+        
+        private void XMarkdownBlock_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
             MarkdownBoxLoaded = true;
@@ -91,7 +99,15 @@ namespace Dash
             XMarkdownBlock.Visibility = Visibility.Collapsed;
             XMarkdownBox.Focus(FocusState.Programmatic);
             XMarkdownBox.Text = GetExpression() ?? XMarkdownBlock.Text;
-            XMarkdownBox.SelectAll();
+
+            //this makes typing continue at end
+            if(XMarkdownBox.Text.Length > 0)
+            {
+                XMarkdownBox.SelectionStart = XMarkdownBox.Text.Length;
+                XMarkdownBox.SelectionLength = 0;
+            }
+            
+          //  XMarkdownBox.SelectAll();
         }
 
         private string GetExpression()
@@ -130,5 +146,20 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        private void XMarkdownBlock_MarkdownRendered(object sender, Microsoft.Toolkit.Uwp.UI.Controls.MarkdownRenderedEventArgs e)
+        {
+            var a = 3;
+        }
+
+        private async void XMarkdownBlock_LinkClicked(object sender, Microsoft.Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
+        {
+            if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
+            {
+                await Launcher.LaunchUriAsync(link);
+            }
+        }
+
+
     }
 }
