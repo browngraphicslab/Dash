@@ -17,6 +17,7 @@ namespace Dash
         public XamlDereferenceLevel XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceToRoot;
         public XamlDereferenceLevel FieldAssignmentDereferenceLevel = XamlDereferenceLevel.DereferenceOneLevel;
         public Object FallbackValue;
+        public bool CanBeNull = false;
 
         public SafeDataToXamlConverter<List<object>, TXaml> Converter;//TODO Should this be a list of objects of of FieldControllerBase?
         public Object ConverterParameter;
@@ -39,12 +40,12 @@ namespace Dash
                 foreach (var fieldReference in _references)
                 {
                     var fieldControllerBase = fieldReference.Dereference(context);
-                    if (fieldControllerBase == null)
+                    if (!CanBeNull && fieldControllerBase == null)
                     {
                         foundNullField = true;
                         break;
                     }
-                    fields.Add(fieldControllerBase.GetValue(context));
+                    fields.Add(fieldControllerBase?.GetValue(context));
                 }
             }
             else if (XamlAssignmentDereferenceLevel == XamlDereferenceLevel.DereferenceToRoot)
@@ -52,12 +53,12 @@ namespace Dash
                 foreach (var fieldReference in _references)
                 {
                     var fieldControllerBase = fieldReference.DereferenceToRoot(context);
-                    if (fieldControllerBase == null)
+                    if (!CanBeNull && fieldControllerBase == null)
                     {
                         foundNullField = true;
                         break;
                     }
-                    fields.Add(fieldControllerBase.GetValue(context));
+                    fields.Add(fieldControllerBase?.GetValue(context));
                 }
             }
             if (!foundNullField)
