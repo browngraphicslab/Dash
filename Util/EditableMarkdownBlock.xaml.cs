@@ -103,14 +103,14 @@ namespace Dash
             XMarkdownBox.Focus(FocusState.Programmatic);
             XMarkdownBox.Text = GetExpression() ?? XMarkdownBlock.Text;
 
+            //XMarkdownBox.BorderThickness = Thickness(5);
+
             //this makes typing continue at end
             if(XMarkdownBox.Text.Length > 0)
             {
                 XMarkdownBox.SelectionStart = XMarkdownBox.Text.Length;
                 XMarkdownBox.SelectionLength = 0;
             }
-            
-          //  XMarkdownBox.SelectAll();
         }
 
         private string GetExpression()
@@ -126,15 +126,6 @@ namespace Dash
             Text = expression;
             MarkdownBoxLoaded = false;
             XMarkdownBlock.Visibility = Visibility.Visible;
-            //if (TargetFieldReference?.SetValue(Tuple.Create(TargetDocContext, expression)) == false)
-            //    Text = GetExpression() ?? XMarkdownBlock.Text;
-            //TargetFieldReference?.Dereference(TargetDocContext)?.SetValue(expression);
-        }
-
-        private void XMarkdownBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-                SetExpression(XMarkdownBox.Text);
         }
 
         private void XMarkdownBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -148,11 +139,6 @@ namespace Dash
         private void XMarkdownBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             e.Handled = true;
-        }
-
-        private void XMarkdownBlock_MarkdownRendered(object sender, Microsoft.Toolkit.Uwp.UI.Controls.MarkdownRenderedEventArgs e)
-        {
-            var a = 3;
         }
 
         private async void XMarkdownBlock_LinkClicked(object sender, Microsoft.Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
