@@ -57,13 +57,13 @@ namespace Dash
 
         private void XMarkdownBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            e.Handled = false;
             MarkdownBoxLoaded = true;
         }
         
         private void XMarkdownBlock_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            e.Handled = false;
             MarkdownBoxLoaded = true;
         }
 
@@ -103,10 +103,8 @@ namespace Dash
             XMarkdownBox.Focus(FocusState.Programmatic);
             XMarkdownBox.Text = GetExpression() ?? XMarkdownBlock.Text;
 
-            //XMarkdownBox.BorderThickness = Thickness(5);
-
             //this makes typing continue at end
-            if(XMarkdownBox.Text.Length > 0)
+            if (XMarkdownBox.Text.Length > 0)
             {
                 XMarkdownBox.SelectionStart = XMarkdownBox.Text.Length;
                 XMarkdownBox.SelectionLength = 0;
