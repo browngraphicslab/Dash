@@ -38,7 +38,7 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            UpdateOnServer();
+            //UpdateOnServer();
 
             FieldModelUpdated?.Invoke(this,
                 args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),

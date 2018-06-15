@@ -219,7 +219,7 @@
     <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
     <Compile Include="Rest\Endpoints\LocalEverythingEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalSqlLiteEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalSqliteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />

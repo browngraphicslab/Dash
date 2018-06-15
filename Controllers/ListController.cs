@@ -255,10 +255,10 @@ namespace Dash
         public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.UpdateOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.UpdateOnServer();
-            }
+            //foreach (var fmc in TypedData)
+            //{
+            //    fmc.UpdateOnServer();
+            //}
 
             /*
             foreach (var fmc in TypedData)
@@ -278,10 +278,10 @@ namespace Dash
         public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.SaveOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.SaveOnServer();
-            }
+            //foreach (var fmc in TypedData)
+            //{
+            //    fmc.SaveOnServer();
+            //}
         }
 
         /// <summary>
