@@ -545,8 +545,7 @@ namespace Dash
                 {
                     if (SettingsView.Instance.MarkdownEditOn)
                     {
-                        var postitNote = new MarkdownNote(text: "hello", size: new Size(300, double.NaN)).Document;
-                        postitNote.GetDataDocument().SetField(KeyStore.DataKey, new TextController(text), true);
+                        var postitNote = new MarkdownNote(text: text, size: new Size(300, double.NaN)).Document;
                         Actions.DisplayDocument(this, postitNote, where);
                     }
                     else
