@@ -24,15 +24,6 @@ namespace Dash
             set => SetValue(TextProperty, value);
         }
 
-        public static readonly DependencyProperty TextAlignmentProperty = DependencyProperty.Register(
-            "TextAlignment", typeof(TextAlignment), typeof(EditableMarkdownBlock), new PropertyMetadata(default(TextAlignment)));
-
-        public TextAlignment TextAlignment
-        {
-            get => (TextAlignment)GetValue(TextAlignmentProperty);
-            set => SetValue(TextAlignmentProperty, value);
-        }
-
         #endregion
         
 

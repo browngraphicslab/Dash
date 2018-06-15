@@ -4,26 +4,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d">
 
     <Grid x:Name="xBackground" Background="Transparent">
-        <TextBlock x:Name="XMarkdownBlock"
+        <controls:MarkdownTextBlock x:Name="XMarkdownBlock"
                    x:FieldModifier="public"
                    Text="{x:Bind Text, Mode=OneWay}"
                    FontSize="{x:Bind FontSize, Mode=OneWay}"
                    FontWeight="{x:Bind FontWeight, Mode=OneWay}"
-                   TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                    Foreground="{x:Bind Foreground}"
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Top"
                    TextWrapping="Wrap" 
-                   DoubleTapped="XMarkdownBlock_DoubleTapped"></TextBlock>
+                   DoubleTapped="XMarkdownBlock_DoubleTapped"></controls:MarkdownTextBlock>
         <TextBox x:Name="XMarkdownBox"
                    x:FieldModifier="public"
                  x:Load="{x:Bind MarkdownBoxLoaded, Mode=OneWay}"
                  FontSize="{x:Bind FontSize, Mode=OneWay}"
                  FontWeight="{x:Bind FontWeight, Mode=OneWay}"
-                 TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                  Foreground="{x:Bind Foreground}"
                  Background="Yellow"
                  HorizontalAlignment="Stretch" 

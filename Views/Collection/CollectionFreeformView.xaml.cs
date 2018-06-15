@@ -825,9 +825,6 @@ namespace Dash
                 {
                     var postitNote = new MarkdownNote(text: text).Document;
                     Actions.DisplayDocument(ViewModel, postitNote, where);
-
-                    var postitNote2 = new PostitNote(text: text).Document;
-                    Actions.DisplayDocument(ViewModel, postitNote2, where);
                     //  EditableMarkdownBlock.Instance.XTextBox.Visibility = Visibility.Visible;
                     //var postitNote = new EditableMarkdownBlock();
                     //postitNote.Text = text;
