@@ -75,11 +75,6 @@
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
-            <localMicrosoft:MarkdownTextBlock
-    Text="**This is *Markdown*!****This is *Markdown*!****This is *Markdown*!**"
-    Margin="50"
-                Width="500px">
-            </localMicrosoft:MarkdownTextBlock>
         </Canvas>
 
         <Grid x:Name="xLeftGrid" Grid.Column="0" Grid.Row="0" Grid.RowSpan="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
