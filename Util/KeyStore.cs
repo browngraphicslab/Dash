@@ -9,6 +9,7 @@ namespace Dash
         public static KeyController DocumentContextKey = new KeyController(DashConstants.KeyStore.DocumentContextKey);
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
+        public static KeyController RegionsKey = new KeyController("1B958E26-624B-4E9A-82C9-2E18609D6A39", "Regions");
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
@@ -23,6 +24,7 @@ namespace Dash
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
+        public static KeyController OpacitySliderValueKey = new KeyController(DashConstants.KeyStore.OpacitySliderValueKey);
         public static KeyController AdornmentShapeKey = new KeyController(DashConstants.KeyStore.AdornmentShapeKey);
         public static KeyController PositionFieldKey = new KeyController(DashConstants.KeyStore.PositionFieldKey);
         public static KeyController LinkFromKey = new KeyController(DashConstants.KeyStore.LinkFromFieldKey);
@@ -48,6 +50,9 @@ namespace Dash
         public static KeyController ActualSizeKey = new KeyController(DashConstants.KeyStore.ActualSizeKey);
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
+        public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
+        public static KeyController SideCountKey = new KeyController(DashConstants.KeyStore.SideCountKey);
+
 
         public static class SearchResultDocumentOutline
         {
@@ -66,10 +71,16 @@ namespace Dash
         /// The selected row in the schema view for a collection. This always will contain a Document Field Model Controller
         /// </summary>
         public static KeyController SelectedSchemaRow = new KeyController("B9B5742B-E4C7-45BD-AD6E-F3C254E45027", "Selected Element");
-        public static object RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc func) { return TypeRenderer[type] = func; }
+        public static void RegisterDocumentTypeRenderer(DocumentType type, MakeViewFunc makeViewFunc, MakeRegionFunc makeRegionFunc)
+        {
+            TypeRenderer[type] = makeViewFunc;
+            RegionCreator[type] = makeRegionFunc;
+        }
 
-        public delegate FrameworkElement MakeViewFunc(DocumentController doc, Context context);
-        public static Dictionary<DocumentType, MakeViewFunc> TypeRenderer = new Dictionary<DocumentType, MakeViewFunc>();
+        public delegate FrameworkElement   MakeViewFunc(DocumentController doc, Context context);
+        public delegate DocumentController MakeRegionFunc(DocumentView view);
+        public static Dictionary<DocumentType, MakeViewFunc>   TypeRenderer  = new Dictionary<DocumentType, MakeViewFunc>();
+        public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
 
     }
 }

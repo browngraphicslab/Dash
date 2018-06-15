@@ -56,7 +56,8 @@ namespace Dash
             foreach (var fieldModelController in input.Data)
             {
                 inDict[inKey] = fieldModelController;
-                op.Execute(inDict, outDict, args);
+                op.
+                    Execute(inDict, outDict, args);
                 outputList.Add(outDict[outKey]);
             }
 

@@ -1,0 +1,102 @@
+﻿<UserControl
+    x:Class="Dash.GroupingSubtoolbar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="800">
+
+    <Grid>
+        <CommandBar Background="LightGray" x:Name="xGroupCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
+            <CommandBar.Content>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition x:Name="xRadialCol" Width="50"/>
+                        <ColumnDefinition x:Name="xSliderCol" Width="385"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="xShapeOptionsDropdown" SelectedIndex="0" SelectionChanged="ShapeOptionsDropdown_SelectionChanged" Grid.Column="0">
+                        <ComboBoxItem Content="Rectangle"/>
+                        <ComboBoxItem Content="Ellipse"/>
+                        <ComboBoxItem Content="Rounded"/>
+                        <ComboBoxItem Content="Frame"/>
+                        <ComboBoxItem Content="Pentagon"/>
+                        <ComboBoxItem Content="Hexagon"/>
+                        <ComboBoxItem Content="Octagon"/>
+                        <ComboBoxItem x:Name="xCustomPoly" Content="CustomPoly"/>
+                        <ComboBoxItem Content="Clover"/>
+                    </ComboBox>
+                    <Grid x:Name="xSideToggleButtonGrid" Grid.Column ="1">
+                        <Button x:Name="xRemoveSide" Margin="7, 20, 0, 0"  Width="20" Height="20" Background="Transparent" Tapped="XRemoveSide_OnTapped" RightTapped="XRemoveSide_OnRightTapped">
+                            <StackPanel>
+                                <Border CornerRadius="1" 
+                                    Background="Transparent" 
+                                    BorderBrush="Red" 
+                                    BorderThickness="7">
+                                </Border>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="xAddSide" Margin="7, -20, 0, 0" Width="20" Height="20" Background="Transparent" Tapped="XAddSide_OnTapped" RightTapped="XAddSide_OnRightTapped">
+                            <StackPanel>
+                                <Border CornerRadius="1" 
+                                        Background="Transparent" 
+                                        BorderBrush="Green" 
+                                        BorderThickness="7">
+                                </Border>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock x:Name="xSideCounter" Margin="25, 13, 0, 0" Text="7"/>
+                    </Grid>
+                    <controls:RadialGauge
+                        Visibility="Collapsed"
+                        x:Name="xSideGauge"
+                        Width="40"
+                        Grid.Column="1"
+                        IsInteractive="True"
+                        Minimum="5"
+                        Maximum="30"
+                        TrailBrush="Red"
+                        TickSpacing="15"
+                        TickBrush="White"
+                        TickWidth="0"
+                        ScaleTickBrush="Red"
+                        ScaleTickWidth="0"
+                        TickLength="0"
+                        ScaleWidth="25"
+                        ScaleBrush="DarkSlateGray"
+                        NeedleBrush="Red"
+                        NeedleLength="77"
+                        NeedleWidth="5"/>
+                    <Slider x:Name="xOpacitySlider" 
+                        Minimum="0" 
+                        Maximum="255"
+                        TickFrequency="1" 
+                        StepFrequency="1" 
+                        SnapsTo="StepValues" 
+                        TickPlacement="None"  
+                        Grid.Column="2" 
+                        IntermediateValue="128" 
+                        Margin="22, 11, 0, 0" 
+                        RightTapped="XOpacitySlider_OnRightTapped"  
+                        ValueChanged="XOpacitySlider_OnValueChanged"/>
+                </Grid>
+            </CommandBar.Content>
+            <AppBarButton x:Name="xGroup" Icon="Add"  Label="Group" Tapped="XGroup_OnTapped"/>
+            <AppBarButton x:Name="xFontColor" Label="Color">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker  x:Name="xGroupForegroundColorPicker"  PointerReleased="XGroupForegroundColorPicker_OnPointerReleased"/>
+                    </Flyout>
+                </Button.Flyout>
+                <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+            </AppBarButton>
+            <AppBarButton x:Name="xUngroup" Icon="Cancel" Label="Ungroup" Tapped="XUngroup_OnTapped"/>
+        </CommandBar>
+    </Grid>
+</UserControl>
+

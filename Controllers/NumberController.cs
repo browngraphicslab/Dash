@@ -84,7 +84,8 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            return searchString == null || Data.ToString().Contains(searchString) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            return searchString == null || (Data.ToString().Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString())) ? new StringSearchModel(Data.ToString()) :StringSearchModel.False; 
         }
 
         public override FieldControllerBase Copy()

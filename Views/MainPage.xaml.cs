@@ -15,18 +15,19 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
+using Windows.ApplicationModel;
+using Windows.ApplicationModel.AppService;
 using Windows.UI;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Toolkit.Uwp.UI;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
 using Dash.Views;
-using Dash.Views.Document_Menu;
 using Dash.Controllers;
+using Windows.UI.Popups;
+using Windows.Foundation.Collections;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -47,10 +48,13 @@ namespace Dash
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
         private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
-        private MenuToolbar Toolbar;
+
+        private bool IsPresentationModeToggled = false;
 
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
+
+        public static int GridSplitterThickness { get; } = 7;
 
         // TODO: change this to Toolbar binding to SelectedDocuments
         public void DeselectAllDocuments()
@@ -104,7 +108,8 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
 
-            Toolbar = new MenuToolbar(xCanvas);
+			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
+
 		}
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
@@ -152,13 +157,19 @@ namespace Dash
                 lastWorkspace.SetWidth(double.NaN);
                 lastWorkspace.SetHeight(double.NaN);
 
-                MainDocView.DataContext = new DocumentViewModel(lastWorkspace);
-                MainDocView.ViewModel.DisableDecorations = true;
+                MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) {DisableDecorations = true};
 
-                xMainTreeView.DataContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
+                //TODO This might not be necessary and shouldn't be necessary
+                treeContext.Loaded(true);
+                xMainTreeView.DataContext = treeContext;
+                xMainTreeView.ChangeTreeViewTitle("My Workspaces");
+                xMainTreeView.ToggleDarkMode(true);
 
                 setupMapView(lastWorkspace);
             }
+
+            await DotNetRPC.Init();
 
             await RESTClient.Instance.Fields.GetDocumentsByQuery<DocumentModel>(
                 new DocumentTypeLinqQuery(DashConstants.TypeStore.MainDocumentType), Success, ex => throw ex);
@@ -317,31 +328,45 @@ namespace Dash
             xMainTreeView.Highlight(document, flag);
         }
 
-        public void HighlightDoc(DocumentController document, bool? flag)
+        public void HighlightDoc(DocumentController document, bool? flag, int search=0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
             var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
             if (collection != null && document != null)
             {
-                highlightDoc(collection, document, flag);
+                highlightDoc(collection, document, flag, search);
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag)
+        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, int search)
         {
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
-                    if (flag == null)
-                        dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
-                    else if (flag == true)
-                        dm.DecorationState = (dm.Undecorated == false);
-                    else if (flag == false)
-                        dm.DecorationState = false;
+                    //for search - 0 means no change, 1 means turn highlight on, 2 means turn highlight off
+                    if (search == 0)
+                    {
+                        if (flag == null)
+                            dm.DecorationState = (dm.Undecorated == false) && !dm.DecorationState;
+                        else if (flag == true)
+                            dm.DecorationState = (dm.Undecorated == false);
+                        else if (flag == false)
+                            dm.DecorationState = false;
+                    }
+                    else if(search == 1)
+                    {
+                        //highlight doc
+                        dm.SearchHighlightState = new Thickness(8);
+                    }
+                    else
+                    {
+                        //unhighlight doc
+                        dm.SearchHighlightState = new Thickness(0);
+                    }
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
                 {
-                    highlightDoc(freeformView, document, flag);
+                    highlightDoc(freeformView, document, flag, search);
                 }
         }
 
@@ -391,7 +416,10 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
+                return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
+
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
@@ -421,7 +449,7 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
-            if (e.Handled)
+            if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
             {
@@ -436,23 +464,35 @@ namespace Dash
 
             if (e.VirtualKey == VirtualKey.Escape)
             {
-                MainPage.Instance.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
+                this.GetFirstDescendantOfType<CollectionView>().Focus(FocusState.Programmatic);
                 e.Handled = true;
             }
 
             if (e.VirtualKey == VirtualKey.Back || e.VirtualKey == VirtualKey.Delete)
             {
-               if (FocusManager.GetFocusedElement() is TextBox)
-                    return;
-                var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this).OfType<CollectionView>().ToList();
-                foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
-                    if (c.SelectedDocs.Count() > 0)
-                    {
-                        foreach (var d in c.SelectedDocs)
-                            d.DeleteDocument();
-                        break;
-                    }
+                if (!(FocusManager.GetFocusedElement() is TextBox))
+                {
+                    var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
+                        .OfType<CollectionView>().ToList();
+                    foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
+                        if (c.SelectedDocs.Count() > 0)
+                        {
+                            foreach (var d in c.SelectedDocs)
+                                d.DeleteDocument();
+                            break;
+                        }
+                }
             }
+
+            var dvm = MainDocView.DataContext as DocumentViewModel;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            
+            // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
+            if (!coll.IsMarqueeActive() && !(FocusManager.GetFocusedElement() is TextBox))
+            {
+                coll.TriggerActionFromSelection(e.VirtualKey, false);
+            }
+            
             if (DocumentView.FocusedDocument != null)
             {
                 if (!this.IsF1Pressed())
@@ -520,7 +560,8 @@ namespace Dash
 
         public void ThemeChange(bool nightModeOn)
         {
-            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light;
+            RequestedTheme = nightModeOn ? ElementTheme.Dark : ElementTheme.Light; 
+			Toolbar.SwitchTheme(nightModeOn);
         }
 
         private void xSearchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -591,22 +632,22 @@ namespace Dash
                 switch (dir)
                 {
                     case DockDirection.Left:
-                        xLeftDockSplitterColumn.Width = new GridLength(15);
+                        xLeftDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xLeftDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 2, 1, 0, 5);
                         break;
                     case DockDirection.Right:
-                        xRightDockSplitterColumn.Width = new GridLength(15);
+                        xRightDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xRightDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 6, 1, 0, 5);
                         break;
                     case DockDirection.Top:
-                        xTopDockSplitterRow.Height = new GridLength(15);
+                        xTopDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xTopDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 0, 1);
                         break;
                     case DockDirection.Bottom:
-                        xBottomDockSplitterRow.Height = new GridLength(15);
+                        xBottomDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xBottomDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 4, 1);
                         break;
@@ -734,9 +775,13 @@ namespace Dash
         
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var isVisible = xSettingsView.Visibility == Visibility.Visible;
-            xSettingsView.Visibility = isVisible ? Visibility.Collapsed : Visibility.Visible;
-            Toolbar.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+        }
+
+        public void ToggleSettingsVisibility(bool changeToVisible)
+        {
+            xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
+            Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -748,5 +793,21 @@ namespace Dash
         {
             xSettingsButton.Fill = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
         }
+
+        public void TogglePresentationMode()
+        {
+            IsPresentationModeToggled = !IsPresentationModeToggled;
+            xMainTreeView.TogglePresentationMode(IsPresentationModeToggled);
+            xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
+        }
+
+        public void PinToPresentation(DocumentViewModel viewModel)
+        {
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            if (!IsPresentationModeToggled)
+                TogglePresentationMode();
+        }
+
+      
     }
 }

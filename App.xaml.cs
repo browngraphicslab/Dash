@@ -2,6 +2,8 @@
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.AppService;
+using Windows.ApplicationModel.Background;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -20,6 +22,11 @@ namespace Dash
         /// The instance of the app this can be used to access the services for dependency injection
         /// </summary>
         public static App Instance;
+
+        //.NET interop stuff
+        public static BackgroundTaskDeferral AppServiceDeferral = null;
+        public static AppServiceConnection Connection = null;
+        public static event EventHandler AppServiceConnected;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -79,32 +86,32 @@ namespace Dash
             {
                 if (rootFrame.Content == null)
                 {
-                    KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(GridViewLayout.DocumentType, GridViewLayout.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(GridLayout.DocumentType, GridLayout.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView);
-					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView);
-                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, AudioBox.MakeView);
+                    KeyStore.RegisterDocumentTypeRenderer(ApiOperatorBox.DocumentType, ApiOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(BackgroundShape.DocumentType, BackgroundShape.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(RichTextBox.DocumentType, RichTextBox.MakeView, RichTextBox.MakeRegionDocument);
+                    KeyStore.RegisterDocumentTypeRenderer(ExecuteHtmlOperatorBox.DocumentType, ExecuteHtmlOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.ExtractSentencesDocumentType, ExtractSentencesOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DataBox.DocumentType, DataBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(GridViewLayout.DocumentType, GridViewLayout.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(GridLayout.DocumentType, GridLayout.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
+					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(AudioBox.DocumentType, AudioBox.MakeView, null);
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
@@ -119,6 +126,33 @@ namespace Dash
 
             //var result = RESTClient.Instance.Keys.AddKey(new DashShared.Key("B2C37434-04FD-4663-898A-944E3DB5AB78", "mykey")).Result;
         }
+
+
+        protected override void OnBackgroundActivated(BackgroundActivatedEventArgs args)
+        {
+            // connection established from the fulltrust process
+            if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails)
+            {
+                AppServiceDeferral = args.TaskInstance.GetDeferral();
+                args.TaskInstance.Canceled += OnTaskCanceled;
+
+                if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails details)
+                {
+                    Connection = details.AppServiceConnection;
+                    AppServiceConnected?.Invoke(this, null);
+                }
+            }
+        }
+
+        private void OnTaskCanceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+        {
+            if (AppServiceDeferral != null)
+            {
+                AppServiceDeferral.Complete();
+            }
+        }
+
+
 
         /// <summary>
         /// Invoked when Navigation to a certain page fails

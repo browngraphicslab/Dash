@@ -122,7 +122,8 @@ namespace Dash.Controllers
         {
             if (searchString == null)
                 return new StringSearchModel(Data.ToString("G"));
-            return Data.ToString("G").Contains(searchString) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            return Data.ToString("G").Contains(searchString.ToLower()) || reg.IsMatch(Data.ToString("G")) ? new StringSearchModel(Data.ToString("G")) : StringSearchModel.False;
         }
     }
 }

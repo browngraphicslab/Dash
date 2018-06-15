@@ -27,6 +27,7 @@ using Dash.Controllers;
 using DashShared;
 using Flurl.Util;
 using Newtonsoft.Json.Serialization;
+using System.IO;
 
 namespace Dash
 {
@@ -43,7 +44,7 @@ namespace Dash
 
         private int imgCount = 0;
         private int vidCount = 0;
-
+        private int audCount = 0;
 
         public async void DashToTxt(IEnumerable<DocumentController> collectionDataDocs)
         {
@@ -64,10 +65,6 @@ namespace Dash
                 //create a folder inside selected folder to save this export
                 folder = await outerFolder.CreateFolderAsync(daytimeString, CreationCollisionOption.ReplaceExisting);
 
-                //create folders to save media - images, videos, etc
-                await folder.CreateFolderAsync("imgs", CreationCollisionOption.ReplaceExisting);
-                await folder.CreateFolderAsync("vids", CreationCollisionOption.ReplaceExisting);
-
                 //save names of all collections for linking pruposes
                 List<String> colNames = new List<string>();
 
@@ -86,6 +83,8 @@ namespace Dash
                     {
                         colTitle = rawTitle.ToString();
                     }
+
+                    colTitle = SafeTitle(colTitle);
 
                     //make sure there isn't already reference to colTitle
                     int count = 1;
@@ -111,6 +110,7 @@ namespace Dash
                         }
                         count++;
                     }
+
                     UsedUrlNames.Add(colTitle);
 
                     colNames.Add(colTitle);
@@ -147,6 +147,7 @@ namespace Dash
                     string docType = doc.DocumentType.Type;
                     //create diffrent output for different document types by calling helper functions
                     string newText;
+                    //TODO TFS: This switch statement should switch on DocumentType instead of the string contained in DocumentType
                     switch (docType) 
                     {
                         case "Rich Text Box":
@@ -158,7 +159,10 @@ namespace Dash
                         case "Video Box":
                             newText = VideoToTxt(doc, minMax);
                             break;
-                        case "Background Box":
+                        case "Audio Box":
+                            newText = AudioToTxt(doc, minMax);
+                            break;
+                        case "Background Shape":
                             newText = BackgroundShapeToTxt(doc, minMax);
                             break; 
                         case "Collection Box":
@@ -168,7 +172,7 @@ namespace Dash
                             newText = KeyValToTxt(doc, minMax);
                             break;
                         default:
-                            newText = null;
+                            newText = "";
                             break;
                     }
 
@@ -235,11 +239,11 @@ namespace Dash
                     var y = pt1.Data.Y;
 
                     var rawWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
-                    var width = 0;
+                    var width = 0;/*
                     if (rawWidth != "NaN")
                     {
-                        width = Int32.Parse(doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString());
-                    }
+                        width = Int32.Parse(rawWidth);
+                    }*/
 
                     if (x < minX)
                     {
@@ -319,7 +323,15 @@ namespace Dash
                 var text = rawText.Data;
                 var margins = getMargin(doc, minMax);
 
-                return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey);
+
+                if (stringWidth == null) {
+                    return "<p style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+
+                } else {
+                    return "<p style=\"width: " + dashToHtml(Convert.ToDouble(stringWidth.DereferenceToRoot(null).ToString()), minMax)
+                       + "px; position: fixed; left: " + margins[0] + "px; top: " + margins[1] + "px;  z-index: 2; \">" + text + "</p>";
+                }
             }
             else
             {
@@ -338,7 +350,7 @@ namespace Dash
                 //create image with unique title
                 var imgTitle = "img" + imgCount + ".jpg";
                 imgCount++;
-                CopyFile(olduri, imgTitle, "imgs");
+                CopyFile(olduri, imgTitle, "imgs", imgCount);
 
                 var uri = "imgs\\" + imgTitle;
 
@@ -368,7 +380,7 @@ namespace Dash
                 //create image with unique title
                 var vidTitle = "vid" + vidCount + ".mp4";
                 vidCount++;
-                CopyFile(olduri, vidTitle, "vids");
+                CopyFile(olduri, vidTitle, "vids", vidCount);
 
                 var uri = "vids\\" + vidTitle; 
 
@@ -391,6 +403,40 @@ namespace Dash
             } 
         }
 
+        private string AudioToTxt(DocumentController doc, List<double> minMax)
+        {
+            //string version of the image uri
+            var uriRaw = doc.GetDereferencedField(KeyStore.DataKey, null);
+            if (uriRaw != null)
+            {
+                var olduri = uriRaw.ToString();
+
+                //create image with unique title
+                var audTitle = "aud" + audCount + ".mp3";
+                audCount++;
+                CopyFile(olduri, audTitle, "auds", audCount);
+
+                var uri = "auds\\" + audTitle;
+
+
+                //get image width and height
+                var stringWidth = doc.GetField(KeyStore.WidthFieldKey).DereferenceToRoot(null).ToString();
+
+                var margins = getMargin(doc, minMax);
+
+                //return uri with HTML video formatting
+                return "<audio width=\"" + dashToHtml(Convert.ToDouble(stringWidth), minMax) + "px\" " +
+                       "style=\"position: fixed; left: " + margins[0] + "px; top: " + margins[1] +
+                       "px;  z-index: 1; \" controls>" +
+                       "<source src=\"" + uri + "\" >" +
+                       "Your browser does not support audio. </audio>";
+            }
+            else
+            {
+                return "";
+            }
+        }
+
         private async Task<string> CollectionToTxt(DocumentController col, List<double> minMax)
         {
             //get text that must be added to file for this collection
@@ -398,6 +444,7 @@ namespace Dash
             //make sure there isn't already reference to colTitle
             string colTitle = col.GetDataDocument().GetDereferencedField(KeyStore.TitleKey, null)
                 .ToString();
+            colTitle = SafeTitle(colTitle);
             int count = 1;
             while (UsedUrlNames.Contains(colTitle))
             {
@@ -479,9 +526,15 @@ namespace Dash
         private string BackgroundShapeToTxt(DocumentController doc, List<double> minMax)
         {
             var text = "";
+
+            //var shape = doc.GetDereferencedField(KeyStore.AdornmentShapeKey, null).ToString();
+            DocumentController data = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null);
+
             // get shape of box
-            var shape = doc.GetDereferencedField(KeyStore.AdornmentShapeKey, null).ToString();
-            var colorC = doc.GetDereferencedField(KeyStore.BackgroundColorKey, null).ToString();
+            var shape = data.GetDereferencedField(KeyStore.DataKey, null).ToString();
+            var colorC = data.GetDereferencedField(KeyStore.BackgroundColorKey, null).ToString();
+
+
             //convert color to colro code used by html
             var color = "#" + colorC.Substring(3, 6) + colorC.Substring(1, 2);
             var width = doc.GetDereferencedField(KeyStore.WidthFieldKey, null).ToString();
@@ -555,6 +608,13 @@ namespace Dash
             
         }
 
+        private string SafeTitle(string title)
+        {
+            return title.Replace('/', 'a').Replace('\\', 'a').Replace(':', 'a').Replace('?', 'a')
+                .Replace('*', 'a').Replace('"', 'a').Replace('<', 'a').Replace('>', 'a').Replace('|', 'a')
+                .Replace('#', 'a');
+        }
+
 
         private async void CreateFile(List<string> text, string title)
         {
@@ -579,19 +639,22 @@ namespace Dash
             }
         }
 
-        private async void CopyFile(string rawUrl, string title, string type)
+        private async void CopyFile(string rawUrl, string title, string type, int count)
         {
             if (folder != null)
             {
+                if (count == 1)
+                {
+                    //create folder to save media - images, videos, etc
+                    await folder.CreateFolderAsync(type, CreationCollisionOption.ReplaceExisting);
+                }
                 
                 StorageFolder localFolder =
                     Windows.Storage.ApplicationData.Current.LocalFolder;
-                int pathLength = localFolder.Path.Length + 3;
 
-                //get path without local folder
-                string url = rawUrl.Substring(pathLength, rawUrl.Length - pathLength);
+                var parts = rawUrl.Split('/');
+                string url = parts[parts.Length - 1];
 
-                
                 StorageFile imgFile = await localFolder.GetFileAsync(url);
                 StorageFolder imgFolder = await folder.GetFolderAsync(type);
 
