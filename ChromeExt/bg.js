@@ -49,14 +49,14 @@ var start = function (ip) {
     document.body.style.backgroundColor = "red";
 
     useSocket = true;
-    var socket;
+    var socket = null;
 
-    var socketOpen = false;
     var messagesToSend = [];
     var sending = false;
 
     var pollSend = function () {
-        if (socketOpen === true && messagesToSend.length > 0 && !sending) {
+        //TODO Can we just call send and have socket buffer it?
+        if (socket.readyState === WebSocket.OPEN && messagesToSend.length > 0 && !sending) {
             sending = true;
             var array = JSON.stringify(messagesToSend);
             messagesToSend.length = 0;
@@ -78,36 +78,40 @@ var start = function (ip) {
     var manager = new tabManager(sendFunction);
     var handler = new requestHandler(manager);
 
-    if (useSocket) {
+    function connect() {
+        if (useSocket) {
+            socket = new WebSocket("ws://127.0.0.1:12345/dash/chrome");
 
-        var restart = function () {
-            if ("WebSocket" in window) {
-                socket = new WebSocket("ws://localhost:12345/dash/chrome");
-            } else {
-                console.log("WebSocket is NOT supported by your Browser!");
+            socket.onopen = function () {
+                console.log("Connection Opened");
+            }
+
+            socket.onclose = function () {
+                console.log("close occurred... starting again");
+            }
+
+            socket.onerror = function () {
+                console.log("error occurred... starting again");
+            }
+
+            socket.onmessage = function (msg) {
+                console.log("Received message from interop");
+                handler.handle(msg.data);
             }
         }
+    }
 
-        socket.onopen = function () {
-            console.log("Connection Opened");
-            socketOpen = true;
-        }
 
-        socket.onclose = function () {
-            console.log("close occurred... starting again");
-            restart();
-        }
-
-        socket.onerror = function () {
-            console.log("error occurred... starting again");
-            restart();
-        }
-
-        socket.onmessage = function (msg) {
-            console.log("Received message from interop");
-            handler.handle(msg.data);
-        }
-        restart();
+    if ("WebSocket" in window) {
+        setInterval(function () {
+            if (socket == null || socket.readyState === WebSocket.CLOSED) {
+                connect();
+            }
+        },
+            200);
+        connect();
+    } else {
+        console.log("WebSocket is NOT supported by your Browser!");
     }
 
     tabs_initialized = {}

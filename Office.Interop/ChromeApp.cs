@@ -27,7 +27,7 @@ namespace OfficeInterop
         public ChromeApp()
         {
             _listener = new HttpListener();
-            _listener.Prefixes.Add("ws://localhost:12345/dash/chrome");
+            _listener.Prefixes.Add("http://127.0.0.1:12345/dash/chrome/");
         }
 
         public void Start()
@@ -42,19 +42,14 @@ namespace OfficeInterop
             {
                 _listener.Start();
                 var context = _listener.GetContext();
-                var wsContext = await context.AcceptWebSocketAsync("");
+                var wsContext = await context.AcceptWebSocketAsync(null);
                 _client = wsContext.WebSocket;
-                _listener.Stop();
                 ProcessEvents();
             }
         }
 
         private void ProcessEvents()
         {
-            while (_client.State == WebSocketState.Connecting)
-            {
-                Thread.Sleep(10);
-            }
             Debug.Assert(_client.State == WebSocketState.Open);
             byte[] rbuffer = new byte[512];
             string receiveString = "";

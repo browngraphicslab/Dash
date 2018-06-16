@@ -30,6 +30,7 @@ namespace OfficeInterop
                     ["DATA"] = s
                 });
             };
+            _chrome.Start();
         }
 
         //Event that is triggered when we want to send a message through the interop to Dash

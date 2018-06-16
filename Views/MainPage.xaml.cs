@@ -192,18 +192,18 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
 
 
-            string localfolder = ApplicationData.Current.LocalFolder.Path;
-            var array = localfolder.Split('\\');
-            var username = array[2];
-            StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
-            //replace byes (8).pdf with uploaded file name
-            StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
-            FileData fileD = FileDropHelper.GetFileData(file, null).Result;
-            PdfToDashUtil PdftoDash = new PdfToDashUtil();
-           DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
-            var mainPageCollectionView =
-                          MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-            mainPageCollectionView.ViewModel.AddDocument(docC);
+           // string localfolder = ApplicationData.Current.LocalFolder.Path;
+           // var array = localfolder.Split('\\');
+           // var username = array[2];
+           // StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
+           // //replace byes (8).pdf with uploaded file name
+           // StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
+           // FileData fileD = FileDropHelper.GetFileData(file, null).Result;
+           // PdfToDashUtil PdftoDash = new PdfToDashUtil();
+           //DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
+           // var mainPageCollectionView =
+           //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+           // mainPageCollectionView.ViewModel.AddDocument(docC);
         }
 
         /// <summary>
