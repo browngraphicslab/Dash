@@ -8,23 +8,29 @@ namespace Dash
 {
     class UndoManager
     {
-        public static Stack<UndoCommand> redoStack;
-        public static Stack<UndoCommand> undoStack;
+        public static Stack<Stack<UndoCommand>> redoStack = new Stack<Stack<UndoCommand>>();
+        public static Stack<Stack<UndoCommand>> undoStack = new Stack<Stack<UndoCommand>>();
+
+        public static Stack<UndoCommand> currentBatch = new Stack<UndoCommand>();
 
         public static void EventOccured(UndoCommand e)
         {
-            undoStack.Push(e);
+            currentBatch.Push(e);
         }
 
         public static void UndoOccured()
         {
             //run undo action and remove from undo Stack
-            UndoCommand command = undoStack.Pop();
-            Action undo = command.undo;
-            undo();
+            Stack<UndoCommand> commands = undoStack.Pop();
 
+            foreach(UndoCommand command in commands)
+            {
+                Action undo = command.undo;
+                undo();
+            }
+            
             //Add command to redo stack
-            redoStack.Push(command);
+            redoStack.Push(commands);
         }
 
         public static void RedoOccured()

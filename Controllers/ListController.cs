@@ -280,29 +280,6 @@ namespace Dash
             return new ListController<T>();
         }
 
-        public override void UpdateOnServer(UndoCommand undoEvent, Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.UpdateOnServer(undoEvent, success, error);
-            //foreach (var fmc in TypedData)
-            //{
-            //    fmc.UpdateOnServer();
-            //}
-
-            /*
-            foreach (var fmc in TypedData)
-            {
-                RESTClient.Instance.GetEndpoint<FieldModel>().GetDocument(fmc.Id,
-                    async args =>
-                    {
-                        Debug.Assert(args.ReturnedObjects.Count() > 0);
-                    },
-                    exception =>
-                    {
-
-                    });
-            }*/
-        }
-
         public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.SaveOnServer(success, error);

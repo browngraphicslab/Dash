@@ -124,19 +124,5 @@ namespace Dash
         {
             return StringSearchModel.False;
         }
-
-        //public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        //{
-        //    base.SaveOnServer(success, error);
-        //    var controller = GetDocumentController(null);
-        //    controller.SaveOnServer();
-        //}
-
-        //public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        //{
-        //    base.UpdateOnServer(success, error);
-        //    var controller = GetDocumentController(null);
-        //    controller.UpdateOnServer();
-        //}
     }
 }
