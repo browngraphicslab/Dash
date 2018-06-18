@@ -275,31 +275,30 @@ namespace Dash
                 var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                 if (nearestOnCollection != null && !nearestOnCollection.Equals(this.GetFirstAncestorOfType<DocumentView>()))
                 {
-                    if (nearestOnScreen != null)
-                    {
-                        if (!Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController))
-                            cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
-                    }
-                    else if (this.IsCtrlPressed())
+                    if (this.IsCtrlPressed())
                     {
                         var viewCopy = theDoc.GetViewCopy(pt);
                         Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, viewCopy);
+                        // ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
+                        // the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
                         viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
                     }
+                    else if (nearestOnScreen != null)
+                    {
+                        // remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
+                        if (nearestOnScreen.ViewModel.DocumentController.GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
+                            cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
+                        else
+                            Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
+                    }
+                   
                     else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
                 }
                 else
                 {
                     if (theDoc != null)
                     {
-                        if (Actions.UnHideDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
-                        {
-                            //nearestOnScreen = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), false);
-                            //nearestOnCollection = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), true);
-                            //if (nearestOnScreen == null)
-                            //    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-                        }
-                        else
+                        if (!Actions.UnHideDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
                         {
                             Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
                         }
