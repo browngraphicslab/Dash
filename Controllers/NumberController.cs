@@ -69,8 +69,10 @@ namespace Dash
             {
                 if (!value.Equals(NumberFieldModel.Data))
                 {
+                    UndoManager newEvent = new UndoManager(value, NumberFieldModel.Data, (DocumentController)this, "Data");
+
                     NumberFieldModel.Data = value;
-                    UpdateOnServer();
+                    UpdateOnServer(newEvent);
                     OnFieldModelUpdated(null);
                 }
             }
