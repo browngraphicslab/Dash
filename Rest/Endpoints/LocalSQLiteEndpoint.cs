@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Windows.Storage;
 using DashShared;
 using Microsoft.Data.Sqlite;
+using Timer = System.Threading.Timer;
 
 namespace Dash
 {
@@ -17,11 +20,12 @@ namespace Dash
         /// Connection to the sqlite database
         /// </summary>
         private SqliteConnection _db;
-
-        private System.Timers.Timer _saveTimer;
         private SqliteTransaction _currentTransaction;
 
-        private Mutex _transactionMutex = new Mutex();
+        private readonly Mutex _transactionMutex = new Mutex();
+
+        private void BackupTimerCallback(object state) { CopyAsBackup(); }
+        private const string FileName = "dash.db";
 
         #region DATABASE INITIALIZED IN CONSTRUCTOR
 
@@ -30,7 +34,7 @@ namespace Dash
             // create a string to connect to the databse (this string can be parameterized using the builder)
             var connectionStringBuilder = new SqliteConnectionStringBuilder
             {
-                DataSource = Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db",
+                DataSource = Windows.Storage.ApplicationData.Current.LocalFolder.Path + "\\" + FileName,
             };
 
             // instantiate the connection to the database and open it
@@ -54,9 +58,13 @@ namespace Dash
             createFieldCommand.ExecuteNonQuery();
             _currentTransaction = _db.BeginTransaction();
 
-            _saveTimer = new System.Timers.Timer(1000);
-            _saveTimer.Elapsed += Timer_Elapsed;
-            _saveTimer.Start();
+            var saveTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalSave);
+            saveTimer.Elapsed += Timer_Elapsed;
+            saveTimer.Start();
+
+            var backupTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalBackup);
+            backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
+            backupTimer.Start();
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -65,6 +73,22 @@ namespace Dash
             _currentTransaction.Commit();
             _currentTransaction = _db.BeginTransaction();
             _transactionMutex.ReleaseMutex();
+        }
+
+        private void CopyAsBackup()
+        {
+            var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
+            if (!File.Exists(dbPath)) return;
+
+            var backupPath = dbPath + ".bak";
+
+            for (var i = DashConstants.NumBackupsToSave - 1; i >= 1; i--)
+            {
+                var source = backupPath + i;
+                var destination = backupPath + (i + 1);
+                if (File.Exists(source)) { File.Copy(source, destination, true); }
+            }
+            File.Copy(dbPath, backupPath + 1, true);
         }
 
         #endregion

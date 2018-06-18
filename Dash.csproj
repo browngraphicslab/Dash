@@ -781,6 +781,7 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\revert.png" />
     <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />

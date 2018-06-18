@@ -2,6 +2,8 @@
 
 //using Windows.Storage;
 
+using System;
+
 namespace DashShared
 {
     public static class DashConstants
@@ -90,7 +92,9 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 10000; //10 seconds
+        public static int MillisecondBetweenLocalSave = 1000; //1 second
+        public static int MillisecondBetweenLocalBackup = 150000; //2.5 minutes
+        public static int NumBackupsToSave = 3;
 
         #endregion LocalServer
 

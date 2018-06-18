@@ -27,14 +27,19 @@ namespace Dash
         /// private timer that simple calls a callback every time interval and forces this class to save the current objects
         /// </summary>
         public Timer SaveTimer { get; }
+        public Timer BackupTimer { get; }
 
+        private readonly Queue<string> _currentBackups = new Queue<string>(DashConstants.NumBackupsToSave);
         private readonly string _fileName = "dash." + typeof(T).Name;
 
         public LocalModelEndpoint()
         {
-            SaveTimer = new Timer(SaveTimerCallback, null,
-                new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond),
-                new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond));
+            var saveInterval = new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond);
+            var backupInterval = new TimeSpan(DashConstants.MillisecondBetweenLocalBackup * TimeSpan.TicksPerMillisecond);
+
+            SaveTimer = new Timer(SaveTimerCallback, null, saveInterval, saveInterval);
+            BackupTimer = new Timer(BackupTimerCallback, null, backupInterval, backupInterval);
+
             try
             {
                 if (File.Exists(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName))
@@ -42,19 +47,38 @@ namespace Dash
                     var dictionaryText = File.ReadAllText(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName);
                     ModelDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(dictionaryText);
                     ModelDictionary = ModelDictionary ?? new Dictionary<string, string>();
-                    File.Copy(ApplicationData.Current.LocalFolder.Path + "\\" + _fileName, ApplicationData.Current.LocalFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName, true);
+
+                    CopyAsBackup();
                 }
                 else
                 {
                     ModelDictionary = ModelDictionary ?? new Dictionary<string, string>();
                 }
 
-                Debug.WriteLine("\n\n\n\nDatabase at:   " + ApplicationData.Current.LocalFolder.Path + "\n\n\n\n");
+                Debug.WriteLine($"\n\n\n\nDatabase at:   {ApplicationData.Current.LocalFolder.Path}\n\n\n\n");
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ModelDictionary = new Dictionary<string, string>();
             }
+        }
+
+        private void BackupTimerCallback(object state) { CopyAsBackup(); }
+
+        private void CopyAsBackup()
+        {
+            var sourcePath = ApplicationData.Current.LocalFolder.Path + "\\" + _fileName;
+            var outPath = ApplicationData.Current.LocalFolder.Path + "\\" + DateTime.UtcNow.Ticks + "_backup_" + _fileName;
+
+            File.Copy(sourcePath, outPath, true);
+            _currentBackups.Enqueue(outPath);
+            var toDelete = _currentBackups.Dequeue();
+            if (_currentBackups.Count == DashConstants.NumBackupsToSave + 1)
+            {
+                File.Delete(toDelete);
+                Debug.WriteLine($"\n\n\nDELETED BACKUP AT {toDelete}\n\n\n\n");
+            }
+            Debug.WriteLine($"\n\n\nCURRENTLY, SYSTEM IS STORING {_currentBackups.Count} BACKUPS\n\n\n\n");
         }
 
         public Dictionary<string, string> GetBackups()
@@ -83,37 +107,35 @@ namespace Dash
         {
             try
             {
-                if (ModelDictionary != null)
+                if (ModelDictionary == null) return;
+                var d = new Dictionary<string, string>(ModelDictionary);
+                var dirty = new Dictionary<string, bool>(DirtyDict);
+                foreach (var b in dirty)
                 {
-                    var d = new Dictionary<string, string>(ModelDictionary);
-                    var dirty = new Dictionary<string, bool>(DirtyDict);
-                    foreach (var b in dirty)
+                    if (b.Value)
                     {
-                        if (b.Value)
-                        {
-                            var controller = ContentController<T>.GetModel((b.Key));
-                            var json = controller.Serialize();
-                            d[b.Key] = json;
-                        }
+                        var controller = ContentController<T>.GetModel((b.Key));
+                        var json = controller.Serialize();
+                        d[b.Key] = json;
                     }
-
-                    var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
-                    using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                    {
-                        using (var outgoingStream = stream.GetOutputStreamAt(0))
-                        {
-                            using (var dw = new DataWriter(outgoingStream))
-                            {
-                                dw.WriteString(JsonConvert.SerializeObject(d));
-                                await dw.StoreAsync();
-                                await dw.FlushAsync();
-                            }
-                        }
-                    }
-                    await file.RenameAsync(_fileName, NameCollisionOption.ReplaceExisting);
-                    ModelDictionary = d;
-                    DirtyDict = new Dictionary<string, bool>();
                 }
+
+                var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("temp_" + _fileName, CreationCollisionOption.ReplaceExisting);
+                using (var stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    using (var outgoingStream = stream.GetOutputStreamAt(0))
+                    {
+                        using (var dw = new DataWriter(outgoingStream))
+                        {
+                            dw.WriteString(JsonConvert.SerializeObject(d));
+                            await dw.StoreAsync();
+                            await dw.FlushAsync();
+                        }
+                    }
+                }
+                await file.RenameAsync(_fileName, NameCollisionOption.ReplaceExisting);
+                ModelDictionary = d;
+                DirtyDict = new Dictionary<string, bool>();
             }
             catch (Exception e)
             {
@@ -243,6 +265,7 @@ namespace Dash
         /// <returns></returns>
         public async Task Close()
         {
+            
         }
 
         public void HasDocument(T model, Action<bool> success, Action<Exception> error)
