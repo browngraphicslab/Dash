@@ -46,6 +46,8 @@ namespace Dash
 		private List<ImageRegionBox> _visualRegions;
 		private ListController<DocumentController> _dataRegions;
 		private RegionVisibilityState _regionState;
+		public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
+		//public static KeyController RegionDefinitionKey = new KeyController
 
 		public Image Image => xImage;
 
@@ -465,6 +467,7 @@ namespace Dash
 				xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
 				xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
 
+				
 				//if not selecting an already selected region, collapse preview boxes
 				if (!(xRegionPostManipulationPreview.Column1.ActualWidth < pos.X) ||
 				    !(pos.X < xRegionPostManipulationPreview.Column1.ActualWidth +
@@ -477,18 +480,7 @@ namespace Dash
 				}
 				else
 				{
-					//delete if control is pressed
-					if (MainPage.Instance.IsCtrlPressed())
-					{
-						this.DeleteRegion(_selectedRegion);
-						return;
-					}
-					else if (_lastNearest?.ViewModel != null)
-					{
-						//navigate to link
-						MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController,
-								true);
-					}
+					this.Region_Pressed(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
 				}
 			}
 		}
@@ -509,6 +501,7 @@ namespace Dash
 					new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
 					new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
 				.Document;
+			imNote.SetField(KeyStore.RegionDefinitionKey, _docCtrl, true);
 
 			//add to regions list
 			var regions = _docCtrl.GetDataDocument()
@@ -524,9 +517,6 @@ namespace Dash
 			{
 				regions.Add(imNote);
 			}
-
-			//store image as parent of region
-			imNote._parentOfRegion = _docCtrl;
 
 			var newBox = new ImageRegionBox {LinkTo = imNote};
 
@@ -550,22 +540,25 @@ namespace Dash
 		private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 		{
 			e.Handled = false;
+			this.Region_Pressed((ImageRegionBox) sender, e.GetCurrentPoint(MainPage.Instance).Position);
+			e.Handled = true;
+		}
 
-			if (sender is ImageRegionBox box)
-			{
+		private void Region_Pressed(ImageRegionBox box, Point pos)
+		{
 				//delete if control is pressed
 				if (MainPage.Instance.IsCtrlPressed())
 				{
-					this.DeleteRegion((ImageRegionBox) sender);
+					this.DeleteRegion(box);
 					return;
 				}
-				
+
 				//get the linked doc of the selected region
 				var theDoc = box.LinkTo;
 				if (theDoc == null) return;
 
 				this.SelectRegion(box);
-				
+
 				//handle linking
 				var linkFromDoc = theDoc.GetDataDocument()
 					.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
@@ -573,10 +566,18 @@ namespace Dash
 					.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
 				if (linkFromDoc != null)
 				{
-					var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData
-						.First();
-					theDoc = targetDoc;
+					if (linkFromDoc.Count == 1)
+					{
+						var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
+							.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData
+							.First();
+						targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
+						theDoc = targetDoc;
+				} else if (linkFromDoc.Count > 1)
+					{
+						this.OpenLinkMenu(linkFromDoc);
+					}
+					
 				}
 				else if (linkToDoc != null)
 				{
@@ -584,50 +585,69 @@ namespace Dash
 					var targetDoc = linkToDoc.TypedData.First().GetDataDocument()
 						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData
 						.First();
+					targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
 					theDoc = targetDoc;
 				}
 
-				var nearest = FindNearestDisplayedTarget(e.GetCurrentPoint(MainPage.Instance).Position,
-					theDoc?.GetDataDocument(), this.IsCtrlPressed());
-				if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
+				//find nearest linked doc that is currently displayed
+				var cvm = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+				var nearestOnScreen = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), true);
+				var nearestOnCollection = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), false);
+				var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
+
+				if (nearestOnCollection != null && !nearestOnCollection.Equals(this.GetFirstAncestorOfType<DocumentView>()))
 				{
 					if (this.IsCtrlPressed())
-						nearest.DeleteDocument();
-					else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
-					//unhighlight last doc
-					if (_lastNearest?.ViewModel != null)
 					{
-						MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+						var viewCopy = theDoc.GetViewCopy(pt);
+						Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
+							viewCopy);
+						// ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
+						// the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
+						viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
+					}
+					else if (nearestOnScreen != null)
+					{
+						// remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
+						if (nearestOnScreen.ViewModel.DocumentController
+								.GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
+							cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
+						else
+							Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
+
+					}
+					else
+					{
+
+						MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+
+						//unhighlight last doc
+						if (_lastNearest?.ViewModel != null)
+						{
+							MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+						}
+
+						//highlight this linked doc
+						_lastNearest = nearestOnCollection;
+						MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
 					}
 
-					//highlight this linked doc
-					_lastNearest = nearest;
-					MainPage.Instance.HighlightDoc(nearest.ViewModel.DocumentController, false, 1);
 				}
 				else
 				{
-					var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
 
 					if (theDoc != null)
 					{
-						//if it has a parent, display the parent
-						if (theDoc._parentOfRegion != null)
+						if (!Actions.UnHideDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
 						{
-							Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
-								theDoc._parentOfRegion.GetSameCopy(pt));
+
+							Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+
 						}
-						else
-						{
-							Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
-								theDoc.GetSameCopy(pt));
-						}
-							
+
 					}
 				}
-
-				e.Handled = true;
-			}
-
+				
 			DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
 			{
 				double dist = double.MaxValue;
@@ -644,7 +664,7 @@ namespace Dash
 						if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
 						{
 							var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) +
-							                  (where.Y - center.Y) * (where.Y - center.Y));
+											  (where.Y - center.Y) * (where.Y - center.Y));
 							if (d < dist)
 							{
 								d = dist;
@@ -771,8 +791,18 @@ namespace Dash
 				if (_regionState == RegionVisibilityState.Hidden) region.Hide(); 
 			}
 		}
-		
 
+		//opens a menu in which the user can select a link to pursue 
+		private void OpenLinkMenu(ListController<DocumentController> linksList)
+		{
+			xLinkStack.Visibility = Visibility.Visible;
+			foreach (DocumentController linkedDoc in linksList.GetElements())
+			{
+				//create preview for menu based on contents of linkedDoc
+				//each should call contents of _RegionPressed for that specific element
+				//key value pane for inspiration?
+			}
+		}
 	}
 
 }

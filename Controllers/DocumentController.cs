@@ -33,8 +33,6 @@ namespace Dash
             return Title;
         }
 
-	    public DocumentController _parentOfRegion = null;
-
         /// <summary>
         ///     A wrapper for <see cref="" />. Change this to propogate changes
         ///     to the server and across the client
