@@ -109,21 +109,25 @@ namespace Dash
             }
         }
 
+        public ObservableCollection<GraphNodeView> CollectionCanvas { get; set; }
+
         public ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
+
+        public ObservableDictionary<GraphNodeViewModel, double> OriginalXPositions { get; set; }
 
         public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
         public double ConstantRadiusWidth
         {
-            get => ActualWidth / 20;
+            get => ActualWidth / (10 * CollectionDocuments.Count);
         }
-
-        private double _minGap = 50;
-        private double _maxGap = 100;
+        
         private GraphNodeView _selectedNode;
 
         public CollectionGraphView()
         {
             InitializeComponent();
+            OriginalXPositions = new ObservableDictionary<GraphNodeViewModel, double>();
+            CollectionCanvas = new ObservableCollection<GraphNodeView>();
             AdjacencyLists = new ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>>();
             Connections = new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
             CollectionDocuments = new ObservableCollection<DocumentController>();
@@ -217,7 +221,6 @@ namespace Dash
                 if (dvm != null)
                 {
                     CollectionDocuments.Add(dvm.DocumentController);
-                    
                 }
             }
         }
@@ -233,10 +236,10 @@ namespace Dash
             var maxNodeDiam = ((ViewModel.DocumentViewModels.Max(dvm =>
                                 dvm.DataDocument
                                     .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey,
-                                        null)?.TypedData.Count ?? 0) + ViewModel.DocumentViewModels.Max(dvm =>
+                                        null)?.TypedData.Count ?? 1) + ViewModel.DocumentViewModels.Max(dvm =>
                                 dvm.DataDocument
                                     .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)
-                                    ?.TypedData.Count ?? 0)) * ConstantRadiusWidth) + 50;
+                                    ?.TypedData.Count ?? 1)) * ConstantRadiusWidth) + 50;
             var gridX = xScrollViewCanvas.Width / sortedX.Count();
             if (xScrollViewCanvas.Width > maxNodeDiam)
             {
@@ -325,6 +328,7 @@ namespace Dash
                 if (!CollectionDocuments.Contains(newDoc.DocumentController.GetDataDocument()))
                 {
                     CollectionDocuments.Add(newDoc.DocumentController.GetDataDocument());
+                    // TODO: Stop using random integer here
                     Nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
                 }
             }
@@ -364,6 +368,7 @@ namespace Dash
             foreach (var node in Nodes)
             {
                 var x = node.XPosition;
+                OriginalXPositions[node] = x;
                 node.XPosition = x + (-260 * (x / ActualWidth));
             }
         }
@@ -377,8 +382,7 @@ namespace Dash
 
             foreach (var node in Nodes)
             {
-                var x = node.XPosition;
-                node.XPosition = x + (260 * (x / ActualWidth));
+                node.XPosition = OriginalXPositions[node];
             }
         }
     }

@@ -64,7 +64,7 @@ namespace Dash
                 var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
                 var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
-                xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
+                xEllipse.Width = (toConnections + fromConnections) * ConstantRadiusWidth;
                 xEllipse.Height = xEllipse.Width;
             }
         }
@@ -74,17 +74,19 @@ namespace Dash
 
         private void GraphNodeView_Loaded(object sender, RoutedEventArgs e)
         {
-
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             ParentGraph = this.GetFirstAncestorOfType<CollectionGraphView>();
             ConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
+            ParentGraph.CollectionCanvas.Add(this);
 
             var dataDoc = ViewModel.DocumentViewModel.DataDocument;
             var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
             var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
-            xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
+            xEllipse.Width = (toConnections + fromConnections) * ConstantRadiusWidth;
             xEllipse.Height = xEllipse.Width;
+            xEllipse.MinWidth = xTitleBlock.ActualWidth;
+            xEllipse.MinHeight = xTitleBlock.ActualWidth;
 
             if (toConnections > 1)
             {
@@ -93,7 +95,7 @@ namespace Dash
 
             if (fromConnections > 1)
             {
-                CreateLink(dataDoc, KeyStore.LinkFromKey);
+                 CreateLink(dataDoc, KeyStore.LinkFromKey);
             }
             
             DocumentController_TitleUpdated(null, null, null);
@@ -137,27 +139,28 @@ namespace Dash
                             existingLink = ParentGraph.Links.FirstOrDefault(gc =>
                                 gc.ToDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
                         }
-
-                        if (existingLink == null)
-                        {
-
-                        }
+                        
                         if (existingLink != null && ((startKey == KeyStore.LinkFromKey && existingLink.ToDoc == null) ||
                                                      (startKey == KeyStore.LinkToKey && existingLink.FromDoc == null)))
                         {
                             if (startKey == KeyStore.LinkFromKey)
                             {
                                 existingLink.ToDoc = this;
+                                ParentGraph.AdjacencyLists[existingLink.FromDoc.ViewModel.DocumentViewModel].Add(this.ViewModel.DocumentViewModel);
+                                ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                                    existingLink.FromDoc.ViewModel.DocumentViewModel,
+                                    this.ViewModel.DocumentViewModel));
+                                ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             }
                             else
                             {
                                 existingLink.FromDoc = this;
+                                ParentGraph.AdjacencyLists[this.ViewModel.DocumentViewModel].Add(existingLink.ToDoc.ViewModel.DocumentViewModel);
+                                ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                                    this.ViewModel.DocumentViewModel,
+                                    existingLink.ToDoc.ViewModel.DocumentViewModel));
+                                ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             }
-                            ParentGraph.AdjacencyLists[existingLink.FromDoc.ViewModel.DocumentViewModel].Add(existingLink.ToDoc.ViewModel.DocumentViewModel);
-                            ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
-                                existingLink.FromDoc.ViewModel.DocumentViewModel,
-                                existingLink.ToDoc.ViewModel.DocumentViewModel));
-                            ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             
                         }
                         else
@@ -209,7 +212,10 @@ namespace Dash
 
         #endregion
 
-
+        public void NavigateTo()
+        {
+            Node_OnTapped(null, null);
+        }
 
         private void Node_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -221,7 +227,7 @@ namespace Dash
             //ParentGraph.xInfoPanel.Children.RemoveAt(2);
             ParentGraph.xInfoPanel.Children.Add(new NodeInfoView(ViewModel.DocumentViewModel, ParentGraph));
             ParentGraph.xInfoPanel.Children.Add(new NodeConnectionsView( ViewModel.DocumentViewModel, ParentGraph));
-            e.Handled = true;
+            if (e != null) e.Handled = true;
         }
     }
 }
