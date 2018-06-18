@@ -93,7 +93,7 @@ namespace DashShared
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
         public static int MillisecondBetweenLocalSave = 1000; //1 second
-        public static int MillisecondBetweenLocalBackup = 150000; //2.5 minutes
+        public static int MillisecondBetweenLocalBackup = 100000; //2.5 minutes
         public static int NumBackupsToSave = 3;
 
         #endregion LocalServer

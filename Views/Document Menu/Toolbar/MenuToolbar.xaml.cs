@@ -549,6 +549,8 @@ namespace Dash
         /// </summary>
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+
             //instantiates a file picker, set to open in user's audio library
             var picker = new FileOpenPicker
             {

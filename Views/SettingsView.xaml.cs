@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
@@ -16,8 +17,10 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -30,6 +33,14 @@ namespace Dash
     {
         private readonly string _dbPath;
         private readonly string _pathToRestore;
+        private BackupClearSafetyConfidence _confidence;
+
+        public enum BackupClearSafetyConfidence
+        {
+            Unconfident,
+            Confident
+        }
+
         public static SettingsView Instance { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -76,11 +87,11 @@ namespace Dash
             Instance = this;
             _dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db";
             _pathToRestore = _dbPath + ".toRestore";
+            _confidence = BackupClearSafetyConfidence.Unconfident;
         }
 
         private async void Restore_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //opens file picker and limits search by listed image extensions
             var backupPicker = new FileOpenPicker
             {
                 ViewMode = PickerViewMode.Thumbnail,
@@ -98,7 +109,6 @@ namespace Dash
             
             if (int.TryParse(selectedPath.Last().ToString(), out var numSelected))
             {
-                Debug.WriteLine($"Successfully parsed {numSelected} from path!");
                 for (var i = numSelected - 1; i >= 1; i--)
                 {
                     var source = backupPath + i;
@@ -110,6 +120,36 @@ namespace Dash
 
             File.Copy(_pathToRestore, _dbPath, true);
             File.Delete(_pathToRestore);
+
+            await CoreApplication.RequestRestartAsync("");
+        }
+
+        private void XClearButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_confidence == BackupClearSafetyConfidence.Unconfident)
+            {
+                xClearIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/seriousdelete.png"));
+                _confidence = BackupClearSafetyConfidence.Confident;
+                xReturnToSafetyIcon.Visibility = Visibility.Visible;
+            } else if (_confidence == BackupClearSafetyConfidence.Confident && MainPage.Instance.IsCtrlPressed())
+            {
+                for (var i = 1; i <= DashConstants.NumBackupsToSave; i++)
+                {
+                    var pathToDelete = _dbPath + ".bak" + i;
+                    if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
+                }
+
+                ResetDeleteButton();
+            }
+        }
+
+        private void XReturnToSafetyIcon_OnTapped(object sender, TappedRoutedEventArgs e) { ResetDeleteButton(); }
+
+        private void ResetDeleteButton()
+        {
+            _confidence = BackupClearSafetyConfidence.Unconfident;
+            xClearIcon.Source = new BitmapImage(new Uri("ms-appx:///Assets/delete.png"));
+            xReturnToSafetyIcon.Visibility = Visibility.Collapsed;
         }
     }
 }

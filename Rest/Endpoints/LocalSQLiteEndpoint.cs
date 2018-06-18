@@ -24,7 +24,6 @@ namespace Dash
 
         private readonly Mutex _transactionMutex = new Mutex();
 
-        private void BackupTimerCallback(object state) { CopyAsBackup(); }
         private const string FileName = "dash.db";
 
         #region DATABASE INITIALIZED IN CONSTRUCTOR
