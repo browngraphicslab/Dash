@@ -193,8 +193,13 @@ namespace Dash
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
+                 LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
-                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs && largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs && 
+                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
+                    largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
+                    largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove
+                    ))
                     ;
                 else
                     Content = null; // forces layout to be recomputed by listeners who will access Content
