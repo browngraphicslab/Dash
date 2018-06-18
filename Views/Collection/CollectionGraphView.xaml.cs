@@ -82,7 +82,17 @@ namespace Dash
             get => _selectedNode;
             set
             {
-                if (_selectedNode != null) _selectedNode.xEllipse.Stroke = null;
+                if (_selectedNode != null)
+                {
+                    foreach (var link in Links)
+                    {
+                        if (link.FromDoc.Equals(_selectedNode) || link.ToDoc.Equals(_selectedNode))
+                        {
+                            link.Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+                        }
+                    }
+                    _selectedNode.xEllipse.Stroke = null;
+                }
                 _selectedNode = value;
                 _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(180, 128, 185, 238));
                 _selectedNode.xEllipse.StrokeThickness = 6;

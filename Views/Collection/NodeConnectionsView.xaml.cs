@@ -81,6 +81,15 @@ namespace Dash
             var toLinks = ParentGraph.AdjacencyLists[ViewModel];
             foreach (var doc in toLinks)
             {
+                foreach (var link in ParentGraph.Links)
+                {
+                    if (link.FromDoc.ViewModel.DocumentViewModel.Equals(ViewModel) &&
+                        link.ToDoc.ViewModel.DocumentViewModel.Equals(doc))
+                    {
+                        link.Stroke = new SolidColorBrush(Color.FromArgb(255, 149, 174, 214));
+                    }
+                }
+
                 var lvi = new ListViewItem
                 {
                     Content =
@@ -96,6 +105,25 @@ namespace Dash
             {
                 if (link.Value.Equals(ViewModel))
                 {
+                    foreach (var connection in ParentGraph.Links)
+                    {
+                        if (connection.FromDoc.ViewModel.DocumentViewModel.Equals(link.Key) &&
+                            connection.ToDoc.ViewModel.DocumentViewModel.Equals(ViewModel))
+                        {
+                            var reverseLink = ParentGraph.Links.FirstOrDefault(i =>
+                                (i.FromDoc.Equals(connection.ToDoc) && i.ToDoc.Equals(connection.FromDoc)));
+                            if (reverseLink != null)
+                            {
+                                reverseLink.Stroke = new SolidColorBrush(Color.FromArgb(255, 181, 149, 214));
+                                connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 181, 149, 214));
+                            }
+                            else
+                            {
+                                connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 214, 153, 149));
+                            }
+                        }
+                    }
+
                     var lvi = new ListViewItem
                     {
                         Content =

@@ -182,7 +182,6 @@ namespace Dash
                             {
                                 newConnection.FromDoc = this;
                             }
-
                             // add the semicomplete link to ParentGraph.Links
                             ParentGraph.Links.Add(newConnection);
                         }

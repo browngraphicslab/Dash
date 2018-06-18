@@ -55,6 +55,12 @@ namespace Dash
 
         public Polyline Connection { get; }
 
+        public Brush Stroke
+        {
+            get => Connection.Stroke;
+            set => Connection.Stroke = value;
+        }
+
         public GraphConnection()
         {
             Connection = new Polyline
