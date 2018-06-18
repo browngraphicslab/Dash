@@ -261,11 +261,14 @@ namespace Dash
                     if (linkFromDoc != null)
                     {
                         var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData.First();
+                        targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
                         theDoc = targetDoc;
-                    } else if (linkToDoc != null)
+                    }
+                    else if (linkToDoc != null)
                     {
 
                         var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
+                        targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
                         theDoc = targetDoc;
                     }
                 }
@@ -517,6 +520,7 @@ namespace Dash
 
         #endregion
 
+
         #region hyperlink
 
         public DocumentController GetRegionDocument()
@@ -525,6 +529,7 @@ namespace Dash
                 return this.DataDocument;
 
             var dc = new RichTextNote(xRichEditBox.Document.Selection.Text).Document;
+            dc.SetField(KeyStore.RegionDefinitionKey, LayoutDocument, true);
             var s1 = xRichEditBox.Document.Selection.StartPosition;
             var s2 = xRichEditBox.Document.Selection.EndPosition;
             createRTFHyperlink(dc, ref s1, ref s2, false, false);
