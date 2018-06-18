@@ -9,23 +9,24 @@
     d:DesignWidth="50" d:DesignHeight="400" d:DataContext="{d:DesignInstance local:GraphNodeViewModel}">
 
     <Grid x:Name="xGrid" x:FieldModifier="public" Width="Auto" Height="Auto" Background="Transparent"
-          IsHitTestVisible="True" IsTapEnabled="True" Tapped="Node_OnTapped">
+          IsHitTestVisible="True" IsTapEnabled="True" Tapped="Node_OnTapped" DoubleTapped="XGrid_OnDoubleTapped">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
         <!--tappable toggle ellipse-->
-        <Ellipse Name="xEllipse" x:FieldModifier="public" Fill="#78918b" Grid.Row="0" >
+        <Ellipse Name="xEllipse" x:FieldModifier="public" PointerEntered="XEllipse_OnPointerEntered" PointerExited="XEllipse_OnPointerExited" Fill="#78918b" Grid.Row="0" >
         
         </Ellipse>
        
-        <TextBlock x:Name="xTitleBlock" 
+        <TextBlock x:Name="xTitleBlock"
+                   x:FieldModifier="public"
                    Grid.Row="1"
                    HorizontalTextAlignment="Center"
                    VerticalAlignment="Center" 
                    FontFamily="{StaticResource FontAwesome}" 
                    Foreground="{StaticResource TitleText}"
-                   Text="{StaticResource DocumentPlainIcon}"
+                   Text="{StaticResource DefaultIcon}"
                    HorizontalAlignment="Stretch"
                    Height="50"
         />

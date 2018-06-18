@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
 using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -84,18 +85,35 @@ namespace Dash
             {
                 if (_selectedNode != null)
                 {
-                    foreach (var link in Links)
+                    foreach (var connection in Links)
                     {
-                        if (link.FromDoc.Equals(_selectedNode) || link.ToDoc.Equals(_selectedNode))
+                        if (connection.FromDoc.Equals(_selectedNode) || connection.ToDoc.Equals(_selectedNode))
                         {
-                            link.Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+                            connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+                            connection.Thickness = 2;
                         }
                     }
                     _selectedNode.xEllipse.Stroke = null;
                 }
-                _selectedNode = value;
-                _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(180, 128, 185, 238));
-                _selectedNode.xEllipse.StrokeThickness = 6;
+
+                if (value == null)
+                {
+                   
+                    var infoviews = xInfoPanel.Children.FirstOrDefault(i => i is NodeInfoView);
+                    if (infoviews != null) xInfoPanel.Children.Remove(infoviews);
+                    var connectionviews = xInfoPanel.Children.FirstOrDefault(i => i is NodeConnectionsView);
+                    if (connectionviews != null) xInfoPanel.Children.Remove(connectionviews);
+                    _selectedNode = value;
+
+                }
+                else
+                {
+                    _selectedNode = value;
+                    _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(180, 128, 185, 238));
+                    _selectedNode.xEllipse.StrokeThickness = 6;
+                }
+               
+               
             }
         }
 
@@ -128,7 +146,14 @@ namespace Dash
         public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
         public double ConstantRadiusWidth
         {
-            get => ActualWidth / (10 * CollectionDocuments.Count);
+            get
+            {
+                if (CollectionDocuments.Count <= 3)
+                {
+                    return ActualWidth / 30;
+                }
+                return ActualWidth / (10 * CollectionDocuments.Count);
+            }
         }
         
         private GraphNodeView _selectedNode;
@@ -154,6 +179,8 @@ namespace Dash
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
             xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
             xExpandingBoy.Height = xScrollViewer.ActualHeight;
+            xInfoScroller.Height = xScrollViewer.ActualHeight;
+            xContainerGrid.Height = xInfoPanel.ActualHeight;
             xInfoPanel.Height = xScrollViewer.ActualHeight;
 
             DataContextChanged += CollectionGraphView_DataContextChanged;
@@ -197,7 +224,7 @@ namespace Dash
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    AddNodes(new ObservableCollection<DocumentViewModel>(e.NewItems.Cast<DocumentViewModel>()));
+                    //AddNodes(new ObservableCollection<DocumentViewModel>(e.NewItems.Cast<DocumentViewModel>()));
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
@@ -239,7 +266,7 @@ namespace Dash
         {
             AdjacencyLists.Clear();
             var sortX = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
-            var sortedX = sortX.OrderBy(i => i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.X);
+            var sortedX = sortX.OrderBy(i => i.DocumentController?.GetField<PointController>(KeyStore.PositionFieldKey).Data.X);
             var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedY = sortY.OrderBy(i =>
                 i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
@@ -265,7 +292,7 @@ namespace Dash
             double x = 0;
             foreach (var dvm in sortedX)
             {
-                xPositions.Add(dvm, (_randInt.Next((int) x, (int) (x + gridX))));
+                xPositions.Add(dvm, x + (gridX / 2));
                 x += gridX;
             }
 
@@ -273,7 +300,7 @@ namespace Dash
             double y = 0;
             foreach (var dvm in sortedY)
             {
-                yPositions.Add(dvm, (_randInt.Next((int)y, (int)(y + gridY))));
+                yPositions.Add(dvm, y + (gridY / 2));
                 y += gridY;
             }
 
@@ -351,6 +378,8 @@ namespace Dash
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
             xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
             xExpandingBoy.Height = xScrollViewer.ActualHeight;
+            xInfoScroller.Height = xScrollViewCanvas.ActualHeight;
+            xContainerGrid.Height = xInfoPanel.ActualHeight;
             xInfoPanel.Height = xScrollViewer.ActualHeight;
 
             foreach (var node in Nodes)
@@ -394,6 +423,24 @@ namespace Dash
             {
                 node.XPosition = OriginalXPositions[node];
             }
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            //var notes = new ObservableCollection<DocumentController>();
+            //for (var i = 0; i < 100; i++)
+            //{
+            //    var note = new RichTextNote("note " + (i + 1), new Point(_randInt.Next(0, 1000), _randInt.Next(0, 1000)), new Size(100, 100)).Document;
+            //    notes.Add(note);
+            //    ViewModel.AddDocument(note);
+            //}
+
+            //for (var i = 0; i < 50; i++)
+            //{
+            //    notes[_randInt.Next(0, 100)].Link(notes[_randInt.Next(0, 100)]);
+            //}
+
+            //GenerateGraph();
         }
     }
 }

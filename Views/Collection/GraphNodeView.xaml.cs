@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Foundation.Metadata;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -18,6 +19,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -129,7 +131,7 @@ namespace Dash
                 {
                     // gets the viewmodel for the documents in endDocs
                     var endViewModel = ParentGraph.ViewModel.DocumentViewModels.First(vm =>
-                        vm.DocumentController.GetDataDocument().Equals(endDoc));
+                        vm.DocumentController.GetDataDocument().Equals(endDoc.GetDataDocument()));
 
                     if (endViewModel != null)
                     {
@@ -192,9 +194,36 @@ namespace Dash
 
         private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            xTitleBlock.Text += "   " + 
-                ViewModel.DocumentController.GetDereferencedField<TextController>(KeyStore.TitleKey, context)
-                    .Data ?? "Untitled " + ViewModel.DocumentController.DocumentType.Type;
+            var type = ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo;
+
+
+
+            switch (type)
+            {
+                case TypeInfo.Image:
+                    xTitleBlock.Text = Application.Current.Resources["ImageIcon"] as string;
+                    break;
+                case TypeInfo.Audio:
+                    xTitleBlock.Text = Application.Current.Resources["AudioIcon"] as string;
+                    break;
+                case TypeInfo.Video:
+                    xTitleBlock.Text = Application.Current.Resources["VideoIcon"] as string;
+                    break;
+                case TypeInfo.RichText:
+                case TypeInfo.Text:
+                    xTitleBlock.Text = Application.Current.Resources["TextIcon"] as string;
+                    break;
+                case TypeInfo.Document:
+                    xTitleBlock.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
+                    break;
+                default:
+                    break;
+            }
+
+            var title = ViewModel.DocumentController
+                            .GetDereferencedField<TextController>(KeyStore.TitleKey, context)?
+                            .Data ?? "Untitled " + ViewModel.DocumentController.DocumentType.Type;
+            xTitleBlock.Text += "   " + title;
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -235,6 +264,42 @@ namespace Dash
             ParentGraph.xInfoPanel.Children.Add(new NodeInfoView(ViewModel.DocumentViewModel, ParentGraph));
             ParentGraph.xInfoPanel.Children.Add(new NodeConnectionsView( ViewModel.DocumentViewModel, ParentGraph));
             if (e != null) e.Handled = true;
+        }
+
+        private void XGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            ParentGraph.SelectedNode = null;
+            var existingPanel = (HiddenNodesView) ParentGraph.xInfoPanel.Children.FirstOrDefault(i => i is HiddenNodesView);
+            if (existingPanel == null)
+            {
+                var hnv = new HiddenNodesView(ParentGraph);
+                hnv.AddNode(this);
+                ParentGraph.xInfoPanel.Children.Add(hnv);
+            }
+            else
+            {
+                existingPanel.AddNode(this);
+            }
+        }
+
+        private void XEllipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 0);
+            (xGrid.RenderTransform as TranslateTransform).X -= xEllipse.Width * 0.1 / 2;
+            (xGrid.RenderTransform as TranslateTransform).Y -= xEllipse.Width * 0.1 / 2;
+            xEllipse.Width *= 1.1;
+            xEllipse.Height *= 1.1;
+            xEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 139, 165, 159));
+        }
+
+        private void XEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 0);
+            xEllipse.Width = xEllipse.Width * (10f / 11f);
+            xEllipse.Height = xEllipse.Width;
+            (xGrid.RenderTransform as TranslateTransform).X += xEllipse.Width * 0.1 / 2;
+            (xGrid.RenderTransform as TranslateTransform).Y += xEllipse.Width * 0.1 / 2;
+            xEllipse.Fill = new SolidColorBrush(Color.FromArgb(255, 120, 145, 139));
         }
     }
 }

@@ -55,6 +55,12 @@ namespace Dash
 
         public Polyline Connection { get; }
 
+        public double Thickness
+        {
+            get => Connection.StrokeThickness;
+            set => Connection.StrokeThickness = value;
+        }
+
         public Brush Stroke
         {
             get => Connection.Stroke;
@@ -98,10 +104,10 @@ namespace Dash
             if (ToDoc != null && FromDoc != null)
             {
                 Connection.Points.Clear();
-                _toPoint.X = ToDoc.ViewModel.XPosition + ToDoc.xEllipse.Width / 2;
-                _toPoint.Y = ToDoc.ViewModel.YPosition + ToDoc.xEllipse.Height / 2;
-                _fromPoint.X = FromDoc.ViewModel.XPosition + FromDoc.xEllipse.Width / 2;
-                _fromPoint.Y = FromDoc.ViewModel.YPosition + FromDoc.xEllipse.Height / 2;
+                _toPoint.X = ToDoc.ViewModel.XPosition + ToDoc.xGrid.ActualWidth / 2;
+                _toPoint.Y = ToDoc.ViewModel.YPosition + ToDoc.xGrid.ActualHeight / 2;
+                _fromPoint.X = FromDoc.ViewModel.XPosition + FromDoc.xGrid.ActualWidth / 2;
+                _fromPoint.Y = FromDoc.ViewModel.YPosition + FromDoc.xGrid.ActualHeight / 2;
                 Connection.Points.Add(_toPoint);
                 Connection.Points.Add(_fromPoint);
             }

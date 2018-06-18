@@ -52,6 +52,22 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    <StackPanel x:Name="xLegend" Orientation="Vertical" Width="200" Height="150">
+                        <TextBlock FontWeight="Bold" FontSize="16">Legend</TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <Line X1="10" Y1="17" X2="40" Y2="17" Stroke="#95AED6" StrokeThickness="5" />
+                            <TextBlock Foreground="Black">Connections From</TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Line X1="10" Y1="17" X2="40" Y2="17" Stroke="#D69995" StrokeThickness="5" />
+                            <TextBlock Foreground="Black">Connections To</TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Line X1="10" Y1="17" X2="40" Y2="17" Stroke="#B595D6" StrokeThickness="5" />
+                            <TextBlock Foreground="Black">Mutually Connected</TextBlock>
+                        </StackPanel>
+                        <Button Click="ButtonBase_OnClick">YEEEEEEEEEET!!!!!</Button>
+                    </StackPanel>
                 </Canvas>
             </Grid>
         </ScrollViewer>
@@ -60,9 +76,13 @@
                            ExpandDirection="Left" Width="40" HorizontalAlignment="Right"
                            Expanded="Expander_OnExpanded" Collapsed="Expander_OnCollapsed"
                            VerticalAlignment="Top" Background="{ThemeResource TreeviewBrush}">
-            <StackPanel x:Name="xInfoPanel" x:FieldModifier="public" Orientation="Vertical" HorizontalAlignment="Left"
-                    VerticalAlignment="Top" Width="250" Height="Auto"  Background="{ThemeResource TreeviewBrush}">
-            </StackPanel>
+            <ScrollViewer x:Name="xInfoScroller" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible" Height="Auto">
+                <Grid Width="Auto" x:Name="xContainerGrid">
+                    <StackPanel x:Name="xInfoPanel" x:FieldModifier="public"  Orientation="Vertical" HorizontalAlignment="Left"
+                                VerticalAlignment="Top" Width="250" Height="Auto"  Background="{ThemeResource TreeviewBrush}">
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
         </controls:Expander>
 
 
