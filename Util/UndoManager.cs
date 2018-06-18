@@ -6,28 +6,36 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-   public class UndoManager
+    class UndoManager
     {
-        //need to save old value, new value
-        public Any redo;
-        public Any undo;
+        public static Stack<UndoCommand> redoStack;
+        public static Stack<UndoCommand> undoStack;
 
-        //also save what doc and field is this value 
-        public DocumentController doc;
-        public String field;
-
-        public UndoManager(Any re, Any un, DocumentController d, String f)
+        public static void EventOccured(UndoCommand e)
         {
-            redo = re;
-            undo = un;
-            doc = d;
-            field = f;
+            undoStack.Push(e);
         }
 
-        public void addToStack()
+        public static void UndoOccured()
         {
-            //adds this undoManager to undo stack
+            //run undo action and remove from undo Stack
+            UndoCommand command = undoStack.Pop();
+            Action undo = command.undo;
+            undo();
+
+            //Add command to redo stack
+            redoStack.Push(command);
         }
 
+        public static void RedoOccured()
+        {
+            //run redo action and remove from redo Stack
+            UndoCommand command = redoStack.Pop();
+            Action redo = command.redo;
+            redo();
+
+            //Add command to undo stack
+            undoStack.Push(command);
+        }
     }
 }
