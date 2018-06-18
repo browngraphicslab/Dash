@@ -66,10 +66,10 @@ namespace Dash.Controllers
             //DocumentReference.SaveOnServer(success, error);
             base.SaveOnServer(success, error);
         }
-        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
+        public override void UpdateOnServer(UndoCommand undoEvent, Action<FieldModel> success = null, Action<Exception> error = null)
         {
             //DocumentReference.UpdateOnServer(success, error);
-            base.UpdateOnServer(success, error);
+            base.UpdateOnServer(undoEvent, success, error);
         }
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)

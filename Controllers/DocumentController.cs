@@ -870,23 +870,27 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true)
         {
+            var oldVal = GetField(key);
+            UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false), 
+                () => SetField(key, oldVal, forceMask, false));
+
             var fieldChanged = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
-                UpdateOnServer();
+                UpdateOnServer(withUndo ? newEvent : null);
             }
             return fieldChanged;
         }
-        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true) 
+            where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
             {
                 if (field.TrySetValue(v))
                 {
-                    UpdateOnServer();
                     return true;
                 }
             }
@@ -906,9 +910,14 @@ namespace Dash
         ///     otherwise each
         ///     field is written on the first prototype in the hierarchy which contains it
         /// </summary>
-        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
         {
             bool shouldSave = false;
+            var oldFields = new Dictionary<KeyController, FieldControllerBase>();
+            foreach (var kv in fields)
+            {
+                oldFields[kv.Key] = GetField(kv.Key);
+            }
             // update with each of the new fields
             foreach (var field in fields.ToArray().Where((f) => f.Key != null))
             {
@@ -918,7 +927,10 @@ namespace Dash
                 }
             }
             if (shouldSave)
-                UpdateOnServer();
+            {
+                UndoCommand newEvent = new UndoCommand(() => SetFields(fields, forceMask, false), () => SetFields(oldFields, forceMask, false));
+                UpdateOnServer(withUndo ? newEvent : null);
+            }
         }
 
         /// <summary>

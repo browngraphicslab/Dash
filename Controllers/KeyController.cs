@@ -14,12 +14,26 @@ namespace Dash
             get => KeyModel.Name;
             set
             {
-                KeyModel.Name = value;
-                UpdateOnServer();
-                OnFieldModelUpdated(null);
+                if (KeyModel.Name != value)
+                {
+                    SetName(value);
+                }
             }
         }
-        
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetName(string val, bool withUndo = true)
+        {
+            string data = KeyModel.Name;
+            UndoCommand newEvent = new UndoCommand(() => SetName(val, false), () => SetName(data, false));
+
+            KeyModel.Name = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
         public KeyModel KeyModel => Model as KeyModel;
         public KeyController(string guid, bool saveOnServer = true) : base(new KeyModel(guid))
         {

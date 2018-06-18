@@ -50,12 +50,23 @@ namespace Dash
             {
                 if (TextFieldModel.Data != value)
                 {
-                    _lowerData = value.ToLower();
-                    TextFieldModel.Data = value;
-                    UpdateOnServer();
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        /*
+        * Sets the data property and gives UpdateOnServer an UndoCommand 
+        */
+        private void SetData(string val, bool withUndo = true)
+        {
+            string data = TextFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            _lowerData = val.ToLower();
+            TextFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;

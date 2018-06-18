@@ -40,11 +40,19 @@ namespace Dash
             {
                 if (AudioFieldModel.Data != value)
                 {
-                    AudioFieldModel.Data = value;
-                    UpdateOnServer();
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            System.Uri data = AudioFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            AudioFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public override StringSearchModel SearchForString(string searchString)

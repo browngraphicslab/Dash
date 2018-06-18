@@ -72,6 +72,9 @@ namespace Dash
             }
         }
 
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
         private void SetData(double val, bool withUndo = true)
         {
             double data = NumberFieldModel.Data;

@@ -47,11 +47,22 @@ namespace Dash
             {
                 if (ImageFieldModel.Data != value)
                 {
-                    ImageFieldModel.Data = value;
-                    UpdateOnServer();
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            Uri data = ImageFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            ImageFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public Uri Data
