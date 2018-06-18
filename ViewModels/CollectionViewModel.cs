@@ -69,7 +69,6 @@ namespace Dash
             if (isLoaded)
             {
                 ContainerDocument.AddFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                ContainerDocument.AddFieldUpdatedListener(KeyStore.HiddenKey, hiddenFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanPositionKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 ContainerDocument.AddFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
@@ -85,7 +84,6 @@ namespace Dash
                 _lastDoc?.RemoveFieldUpdatedListener(KeyStore.PanZoomKey, PanZoomFieldChanged);
                 _lastDoc?.RemoveFieldUpdatedListener(KeyStore.ActualSizeKey, ActualSizeFieldChanged);
                 _lastDoc?.RemoveFieldUpdatedListener(CollectionKey, collectionFieldChanged);
-                _lastDoc?.RemoveFieldUpdatedListener(KeyStore.HiddenKey, hiddenFieldChanged);
                 _lastDoc = null;
             }
         }
@@ -174,51 +172,21 @@ namespace Dash
                 }
             }
         }
-     
-        void hiddenFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
-        {
-            var hidden = ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.HiddenKey, null).TypedData;
-            var newlyVisible = new List<DocumentController>();
-            var newlyInvisible = new List<DocumentController>();
-            foreach (var d in ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null).TypedData)
-            {
-                if (!hidden.Contains(d))
-                { 
-                    if (DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() == 0)
-                    {
-                        newlyVisible.Add(d);
-                    }
-                }
-                else
-                {
-                    if (DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() != 0)
-                    {
-                        newlyInvisible.Add(d);
-                    }
-                }
-            }
-            addViewModels(newlyVisible);
-            removeViewModels(newlyInvisible);
-        }
 
         void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-            if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            var docFieldArgs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var docListFieldArgs = docFieldArgs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+            if (docListFieldArgs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
             {
-                if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
+            }
+            else
+            {
+                var collectionFieldModelController = docFieldArgs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+                if (collectionFieldModelController != null)
                 {
-                    updateViewModels(cargs);
-                }
-                else
-                {
-                    var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-                    if (collectionFieldModelController != null)
-                    {
-                        DocumentViewModels.Clear();
-                        addViewModels(collectionFieldModelController.GetElements());
-                    }
+                    updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,  collectionFieldModelController.GetElements());
                 }
             }
         }
@@ -226,24 +194,34 @@ namespace Dash
         #region DocumentModel and DocumentViewModel Data Changes
 
         public string Tag;
-        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction action, List<DocumentController> docs)
         {
-            var hidden = ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.HiddenKey, null)?.TypedData ??
-                new List<DocumentController>();
-            switch (args.ListAction)
+            switch (action)
             {
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
+                    // we only care about changes to the Hidden field of the contained documents.
+                    foreach (var d in docs)
+                    {
+                        var visible = d.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1;
+                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
+                        if (visible && !shown)
+                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        if (!visible && shown)
+                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                    }
+                    break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(args.ChangedDocuments.Except(hidden).ToList());
+                    addViewModels(docs);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(args.ChangedDocuments);
+                    removeViewModels(docs);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
-                    AddDocuments(args.ChangedDocuments.Except(hidden).ToList());
+                    addViewModels(docs);
                     break;
                 default:
                     break;
@@ -257,7 +235,8 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                        if (documentController.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1)
+                            DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
         }
@@ -312,45 +291,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Hides a document from display within the collection
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="context"></param>
-        public bool HideDocument(DocumentController doc)
-        {
-            if (doc.GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
-                return false;
-            var hiddenDocs = ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.HiddenKey, null);
-            var hidden = hiddenDocs != null ? hiddenDocs.TypedData.Where((w) => w.GetDataDocument().Equals(doc.GetDataDocument())) : null;
-            if (hiddenDocs == null || hidden.Count() == 0)
-            {
-                if (hiddenDocs == null)
-                    ContainerDocument.SetField<ListController<DocumentController>>(KeyStore.HiddenKey, new List<DocumentController>(new DocumentController[] { doc }), true);
-                else hiddenDocs.Add(doc);
-                return true;
-            }
-            return false;
-            //ContainerDocument.GetDataDocument().AddToListField(KeyStore.HiddenKey, doc);
-        }
-        /// <summary>
-        /// Hides a document from display within the collection
-        /// </summary>
-        /// <param name="doc"></param>
-        /// <param name="context"></param>
-        public bool UnHideDocument(DocumentController doc)
-        {
-            var hiddenDocs = ContainerDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.HiddenKey, null);
-            var hidden = hiddenDocs != null ? hiddenDocs.TypedData.Where((w) => w.GetDataDocument().Equals(doc.GetDataDocument())) : null;
-            if (hidden != null && hidden?.Count() != 0)
-            {
-                hiddenDocs.Remove(hidden.FirstOrDefault());
-                return true;
-            }
-            return false;
-            // ContainerDocument.GetDataDocument().RemoveFromListField(KeyStore.HiddenKey, doc);
-        }
-
-        /// <summary>
         /// Adds a document to the given collectionview.
         /// </summary>
         /// <param name="doc"></param>
@@ -381,7 +321,6 @@ namespace Dash
         {
             // just update the collection, the colllection will update our view automatically
             ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
-            ContainerDocument.GetDataDocument().RemoveFromListField(KeyStore.HiddenKey, document);
         }
 
         #endregion

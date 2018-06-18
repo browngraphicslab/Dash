@@ -10,6 +10,7 @@ namespace Dash
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
         public static KeyController RegionsKey = new KeyController("1B958E26-624B-4E9A-82C9-2E18609D6A39", "Regions");
+        public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
