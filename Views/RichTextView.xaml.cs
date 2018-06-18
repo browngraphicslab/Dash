@@ -303,8 +303,7 @@ namespace Dash
                     {
                         if (!Actions.UnHideDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
                         {
-	                        var copy = this.LayoutDocument.GetViewCopy(pt);
-
+	                       
 	                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
 							
 						}
