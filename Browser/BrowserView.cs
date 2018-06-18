@@ -98,6 +98,7 @@ namespace Dash
             _dataMessageWriter = null;
         }
 
+        private static string MessageString = "";
         private static async void MessageRecieved(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
         {
             try
@@ -108,7 +109,12 @@ namespace Dash
                     var bytes = new byte[reader.UnconsumedBufferLength];
                     reader.ReadBytes(bytes);
                     string read = Encoding.UTF8.GetString(bytes);
-                    await HandleIncomingMessage(read);
+                    MessageString += read;
+                    if (args.IsMessageComplete)
+                    {
+                        await HandleIncomingMessage(MessageString);
+                        MessageString = "";
+                    }
                 }
             }
             catch (Exception)
@@ -154,7 +160,6 @@ namespace Dash
         }
         */
 
-        private static string _prevPartialString = "";
         public static async Task HandleIncomingMessage(string read)
         {
             if (read.Equals("both"))
@@ -172,36 +177,16 @@ namespace Dash
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(_prevPartialString) && !read.EndsWith(']'))
+                var array = read.CreateObjectList<BrowserRequest>().ToArray();
+                if (array.Length == 0)
                 {
-                    _prevPartialString += read;
-                    if (_prevPartialString.Length > 25000000)
-                    {
-                        _prevPartialString = "";
-                    }
+                    return;
                 }
-                else if (read.Contains("{") || read.Length > 100)
+                foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
                 {
-                    var array = (_prevPartialString + read).CreateObjectList<BrowserRequest>().ToArray();
-                    if (array.Count() == 0)
-                    {
-                        _prevPartialString += read;
-                        if (_prevPartialString.Length > 25000000)
-                        {
-                            _prevPartialString = "";
-                        }
-                        return;
-                    }
-                    else
-                    {
-                        _prevPartialString = "";
-                    }
-                    foreach (var request in array.Where(t => !_browserViews.ContainsKey(t.tabId)))
-                    {
-                        var browser = new BrowserView(request.tabId);
-                    }
-                    array.ToList().ForEach(t => t.Handle(_browserViews[t.tabId]));
+                    _browserViews.Add(request.tabId, new BrowserView(request.tabId));
                 }
+                Array.ForEach(array, t => t.Handle(_browserViews[t.tabId]));
             }
         }
 
@@ -295,7 +280,7 @@ namespace Dash
         public event EventHandler<string> TitleChanged;
         public event EventHandler<string> ImageDataChanged;
 
-        public string ImageData => _imageData; 
+        public string ImageData => _imageData;
         public double Scroll => _scroll;
         public bool IsCurrent => _isCurrent;
         public string Url => _url;
@@ -312,15 +297,14 @@ namespace Dash
                 {
                     return -1;
                 }
-                return (double) ((DateTime.Now.Ticks - _startTimeOfBeingCurrent) / TimeSpan.TicksPerMillisecond);
+                return (double)((DateTime.Now.Ticks - _startTimeOfBeingCurrent) / TimeSpan.TicksPerMillisecond);
             }
         }
 
         private BrowserView(int id)
         {
             Id = id;
-            _browserViews.Add(id, this);
-            NewTabCreated?.Invoke(this,this);
+            NewTabCreated?.Invoke(this, this);
         }
 
         public void FireUrlUpdated(string url)
@@ -339,14 +323,14 @@ namespace Dash
 
         public void FireImageUpdated(string imageData)
         {
-            Debug.WriteLine("Browser view image changed, with image different: "+ imageData != _imageData);
+            Debug.WriteLine("Browser view image changed, with image different: " + imageData != _imageData);
             if (!string.IsNullOrEmpty(imageData))
             {
                 Task.Run(SameImageTask);
             }
             _imageData = imageData;
             ImageDataChanged?.Invoke(this, imageData);
-            
+
         }
 
         /// <summary>
@@ -403,7 +387,7 @@ namespace Dash
 
         public string GetUrlHash()
         {
-            var hash =  UtilShared.GetDeterministicGuid(_url);
+            var hash = UtilShared.GetDeterministicGuid(_url);
             //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }
@@ -467,7 +451,7 @@ namespace Dash
                 }
                 catch (Exception e)
                 {
-                    
+
                 }
             });
         });
