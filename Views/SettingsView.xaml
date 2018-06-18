@@ -47,6 +47,12 @@
                 <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
                 <RadioButton>Zoom</RadioButton>
             </StackPanel>
+            
+            <!--Backup-->
+            <TextBlock Style="{StaticResource SubheaderStyle}">Restore from backup</TextBlock>
+            <Button x:Name="Restore" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="Restore_OnTapped">
+                <Image x:Name="xRevert" Source="ms-appx:///Assets/revert.png"/>
+            </Button>
         </StackPanel>
     </Grid>
 </Page>
