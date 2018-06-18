@@ -43,11 +43,19 @@ namespace Dash
 		private bool _isDragging;
 		private DocumentView _lastNearest;
 		public ImageRegionBox _selectedRegion = null;
-		public List<ImageRegionBox> _visualRegions;
+		private List<ImageRegionBox> _visualRegions;
+		private ListController<DocumentController> _dataRegions;
+		private RegionVisibilityState _regionState;
 
 		public Image Image => xImage;
 
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		private enum RegionVisibilityState
+		{
+			Visible,
+			Hidden
+		}
 
 		public EditableImage(DocumentController docCtrl, Context context)
 		{
@@ -61,12 +69,12 @@ namespace Dash
 
 			//load existing annotated regions
 			_visualRegions = new List<ImageRegionBox>();
+			_regionState = RegionVisibilityState.Hidden;
 			
-
-			var regions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-			if (regions != null)
+			_dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+			if (_dataRegions != null)
 			{
-				foreach (var region in regions.TypedData)
+				foreach (var region in _dataRegions.TypedData)
 				{
 					var pos = region.GetPositionField().Data;
 					var width = region.GetWidthField().Data;
@@ -75,15 +83,21 @@ namespace Dash
 
 					var newBox = new ImageRegionBox {LinkTo = region};
 
-					// use during here because it's the one with actual pixel measurements
-					newBox.SetPosition(
-						pos,
-						new Size(width, height),
-						new Size(imageSize.X, imageSize.Y));
-					xRegionsGrid.Children.Add(newBox);
-					newBox.PointerPressed += xRegion_OnPointerPressed;
-					newBox._image = this;
-					_visualRegions.Add(newBox);
+					if (pos.X + width <= imageSize.X && pos.Y + height <= imageSize.Y)
+					{
+						newBox.SetPosition(
+							pos,
+							new Size(width, height),
+							new Size(imageSize.X, imageSize.Y));
+						xRegionsGrid.Children.Add(newBox);
+						newBox.PointerPressed += xRegion_OnPointerPressed;
+						newBox.PointerEntered += Region_OnPointerEntered;
+						newBox.PointerExited += Region_OnPointerExited;
+						newBox._image = this;
+						_visualRegions.Add(newBox);
+						newBox.Hide();
+					}
+					
 				}
 			}
 			
@@ -459,13 +473,7 @@ namespace Dash
 				    !(pos.Y < xRegionPostManipulationPreview.Row1.ActualHeight +
 				      xRegionPostManipulationPreview.Row2.ActualHeight))
 				{
-					xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-					xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
-					//unhighlight last selected regions' link
-					if (_lastNearest?.ViewModel?.DocumentController != null)
-					{
-						MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-					}
+					this.DeselectRegions();
 				}
 				else
 				{
@@ -475,11 +483,12 @@ namespace Dash
 						this.DeleteRegion(_selectedRegion);
 						return;
 					}
-
-					//navigate to link
-					if (_lastNearest != null)
+					else if (_lastNearest?.ViewModel != null)
+					{
+						//navigate to link
 						MainPage.Instance.NavigateToDocumentInWorkspace(_lastNearest.ViewModel.DocumentController,
-							true);
+								true);
+					}
 				}
 			}
 		}
@@ -520,7 +529,7 @@ namespace Dash
 
 			var newBox = new ImageRegionBox {LinkTo = imNote};
 
-			// use during here because it's the one with actual pixel measurements
+			// use During Preview here because it's the one with actual pixel measurements
 			newBox.SetPosition(
 				new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
 				new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
@@ -529,7 +538,8 @@ namespace Dash
 			newBox.PointerPressed += xRegion_OnPointerPressed;
 			newBox._image = this;
 			_visualRegions.Add(newBox);
-			//newBox.LostFocus += Region_OnLostFocus;
+			newBox.PointerEntered += Region_OnPointerEntered;
+			newBox.PointerExited += Region_OnPointerExited;
 			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
 			return imNote;
@@ -548,26 +558,13 @@ namespace Dash
 					this.DeleteRegion((ImageRegionBox) sender);
 					return;
 				}
-
-				_selectedRegion = (ImageRegionBox) sender;
-
+				
 				//get the linked doc of the selected region
 				var theDoc = box.LinkTo;
 				if (theDoc == null) return;
 
-				//create a preview region to show that this region is selected
-				xRegionDuringManipulationPreview.Width = 0;
-				xRegionDuringManipulationPreview.Height = 0;
-				xRegionPostManipulationPreview.Column1.Width = box.Column1.Width;
-				xRegionPostManipulationPreview.Column2.Width = box.Column2.Width;
-				xRegionPostManipulationPreview.Column3.Width = box.Column3.Width;
-				xRegionPostManipulationPreview.Row1.Height = box.Row1.Height;
-				xRegionPostManipulationPreview.Row2.Height = box.Row2.Height;
-				xRegionPostManipulationPreview.Row3.Height = box.Row3.Height;
-				xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-				xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
-
-
+				this.SelectRegion(box);
+				
 				//handle linking
 				var linkFromDoc = theDoc.GetDataDocument()
 					.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
@@ -656,7 +653,7 @@ namespace Dash
 			xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
 			xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 4 };
 
-			xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 2;
+			xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 1.5;
 			xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
 		}
 
@@ -671,9 +668,9 @@ namespace Dash
 			{
 				xRegionsGrid.Children.Remove(region);
 				_visualRegions?.Remove(region);
+				_dataRegions?.Remove(region.LinkTo);
 			}
-
-
+			
 			//if region is selected, unhighlight the linked doc
 			if (region == _selectedRegion && _lastNearest?.ViewModel?.DocumentController != null)
 			{
@@ -683,27 +680,86 @@ namespace Dash
 			}
 		}
 
+		private void SelectRegion(ImageRegionBox region)
+		{
+			_selectedRegion = region;
+			//create a preview region to show that this region is selected
+			xRegionDuringManipulationPreview.Width = 0;
+			xRegionDuringManipulationPreview.Height = 0;
+			xRegionPostManipulationPreview.Column1.Width = region.Column1.Width;
+			xRegionPostManipulationPreview.Column2.Width = region.Column2.Width;
+			xRegionPostManipulationPreview.Column3.Width = region.Column3.Width;
+			xRegionPostManipulationPreview.Row1.Height = region.Row1.Height;
+			xRegionPostManipulationPreview.Row2.Height = region.Row2.Height;
+			xRegionPostManipulationPreview.Row3.Height = region.Row3.Height;
+			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+		}
+
+		//deselects all regions on an image
+		private void DeselectRegions()
+		{
+			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
+			//unhighlight last selected regions' link
+			if (_lastNearest?.ViewModel?.DocumentController != null)
+			{
+				MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+			}
+		}
+
+		//ensures all regions are visible
 		public void ShowRegions()
 		{
+			_regionState = RegionVisibilityState.Visible;
+
 			if (_visualRegions != null && _visualRegions.Any())
 			{
 				foreach (ImageRegionBox region in _visualRegions)
 				{
-					region.Visibility = Visibility.Visible;
+					region.Show();
 				}
 			}
 		}
 
+		//hides all visible regions 
 		public void HideRegions()
 		{
+			_regionState = RegionVisibilityState.Hidden;
+
 			if (_visualRegions != null && _visualRegions.Any())
 			{
+				//first, deselect any selected regions
+				this.DeselectRegions();
+
 				foreach (ImageRegionBox region in _visualRegions)
 				{
-					region.Visibility = Visibility.Collapsed;
+					//region.Visibility = Visibility.Collapsed;
+					region.Hide();
 				}
 			}
 		}
+
+		//shows region when user hovers over it
+		private void Region_OnPointerEntered(object sender, RoutedEventArgs e)
+		{
+			if (sender is ImageRegionBox)
+			{
+				ImageRegionBox region = (ImageRegionBox) sender;
+				region.Show();
+			}
+		}
+
+		//hides region when user's cursor leaves it if region visibiliyt mode is hidden
+		private void Region_OnPointerExited(object sender, RoutedEventArgs e)
+		{
+			if (sender is ImageRegionBox)
+			{
+				ImageRegionBox region = (ImageRegionBox)sender;
+				if (_regionState == RegionVisibilityState.Hidden) region.Hide(); 
+			}
+		}
+		
 
 	}
 }

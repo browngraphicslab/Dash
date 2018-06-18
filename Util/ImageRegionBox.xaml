@@ -22,9 +22,9 @@
             <RowDefinition x:Name="Row2" x:FieldModifier="Public" Height="*"/>
             <RowDefinition x:Name="Row3" x:FieldModifier="Public" Height="*"/>
         </Grid.RowDefinitions>
-        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Stroke="White" StrokeDashArray="4" StrokeThickness="2" >
+        <Rectangle x:Name="xRegionBox" x:FieldModifier="Public" Grid.Row="1" Grid.Column="1" Stroke="White" StrokeDashArray="4" StrokeThickness="1.5" Opacity="1">
             <Rectangle.Fill>
-                <SolidColorBrush Color="Gold" Opacity=".15"></SolidColorBrush>
+                <SolidColorBrush x:Name="xRegionBoxFill" Color="Gold" Opacity=".1"></SolidColorBrush>
             </Rectangle.Fill>
             
         </Rectangle>

@@ -117,20 +117,22 @@
     AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>
         </Grid>
 
-       
 
-        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -30, 0">
+
+        <Border x:Name="xOperatorEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 0, -33, 0">
             <Grid  >
                 <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}"/>
                 <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}"
                          Visibility="Collapsed"/>
+                <TextBlock Text="i" FontFamily="MingLiU-ExtB" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="18" FontWeight="Bold" Margin="1,-1,0,0" Foreground="Black" />
             </Grid>
         </Border>
-        <Border x:Name="xAnnotateEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -30, 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
+        <Border x:Name="xAnnotateEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -33, 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
             <Grid  >
                 <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
                 <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
                          Visibility="Collapsed"/>
+                <SymbolIcon Symbol="Link" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
             </Grid>
         </Border>
 
