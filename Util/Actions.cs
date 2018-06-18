@@ -38,6 +38,14 @@ namespace Dash
             collection.ViewModel.AddDocument(newDoc);
             //DBTest.DBDoc.AddChild(newDoc);
         }
+        public static bool HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
+        {
+            return collectionViewModel.HideDocument(docController);
+        }
+        public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
+        {
+            return collectionViewModel.UnHideDocument(docController);
+        }
 
         public static void DisplayDocument(CollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
         {

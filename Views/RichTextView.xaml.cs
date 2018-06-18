@@ -268,37 +268,61 @@ namespace Dash
                         var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData.First();
                         theDoc = targetDoc;
                     }
-                 }
-                var nearest = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), this.IsCtrlPressed());
-                if (nearest != null && !nearest.Equals(this.GetFirstAncestorOfType<DocumentView>()))
+                }
+                var cvm = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+                var nearestOnScreen = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), true);
+                var nearestOnCollection = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), false);
+                var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
+                if (nearestOnCollection != null && !nearestOnCollection.Equals(this.GetFirstAncestorOfType<DocumentView>()))
                 {
-                    if (this.IsCtrlPressed())
-                        nearest.DeleteDocument();
-                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                    if (nearestOnScreen != null)
+                    {
+                        if (!Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController))
+                            cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
+                    }
+                    else if (this.IsCtrlPressed())
+                    {
+                        var viewCopy = theDoc.GetViewCopy(pt);
+                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, viewCopy);
+                        viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
+                    }
+                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
                 }
                 else
                 {
-                    var pt = new Point(getDocView().ViewModel.XPos + getDocView().ActualWidth, getDocView().ViewModel.YPos);
                     if (theDoc != null)
                     {
-                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-                    }
+                        if (Actions.UnHideDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
+                        {
+                            //nearestOnScreen = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), false);
+                            //nearestOnCollection = FindNearestDisplayedTarget(e.GetPosition(MainPage.Instance), theDoc?.GetDataDocument(), true);
+                            //if (nearestOnScreen == null)
+                            //    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+                        }
+                        else
+                        {
+	                        var copy = this.LayoutDocument.GetViewCopy(pt);
+
+	                        Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+							
+						}
+					}
                     else if (target.StartsWith("http"))
                     {
                         if (MainPage.Instance.WebContext != null)
                             MainPage.Instance.WebContext.SetUrl(target);
                         else
                         {
-                            nearest = FindNearestDisplayedBrowser(pt, target);
-                            if (nearest != null)
+                            nearestOnCollection = FindNearestDisplayedBrowser(pt, target);
+                            if (nearestOnCollection != null)
                             {
                                 if (this.IsCtrlPressed())
-                                    nearest.DeleteDocument();
-                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
+                                    nearestOnCollection.DeleteDocument();
+                                else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
                             }
                             else
                             {
-                                theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
+	                            theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
                                 Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
                             }
                         }

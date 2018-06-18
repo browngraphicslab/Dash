@@ -18,6 +18,8 @@ namespace Dash
         public static KeyController UserSetWidthKey = new KeyController(DashConstants.KeyStore.UserSetWidthKey);
         public static KeyController WidthFieldKey = new KeyController(DashConstants.KeyStore.WidthFieldKey);
         public static KeyController HeightFieldKey = new KeyController(DashConstants.KeyStore.HeightFieldKey);
+        public static KeyController TransientKey = new KeyController("7553FBFA-B4C4-46D7-AEA6-76B22C5A3425", "Transient");
+        public static KeyController HiddenKey = new KeyController("A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6", "Hidden");
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
         public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
@@ -51,6 +53,8 @@ namespace Dash
         public static KeyController DocumentTypeKey = new KeyController(DashConstants.KeyStore.DocumentTypeKey);
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
         public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
+        public static KeyController SideCountKey = new KeyController(DashConstants.KeyStore.SideCountKey);
+
 
         public static class SearchResultDocumentOutline
         {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dash
+﻿namespace Dash
 {
     public static class ToolbarConstants
     {
@@ -14,6 +8,17 @@ namespace Dash
 
         public const int ComboBoxMarginOpen = 13;
         public const int ComboBoxMarginClosed = 7;
+
+        //GROUPING TOOLBAR COMPONENT DIMENSIONS
+
+        public const int OpacitySliderMarginOpen = 11;
+        public const int OpacitySliderMarginClosed = OpacitySliderMarginOpen - 6;
+
+        public const int RadialGaugeMarginOpen = 0;
+        public const int RadialGaugeMarginClosed = RadialGaugeMarginOpen;
+
+        public const int SideCounterMarginOpen = 13;
+        public const int SideCounterMarginClosed = SideCounterMarginOpen - 6;
 
         //BUTTON DIMENSIONS
         public const double ButtonWidth = 70;

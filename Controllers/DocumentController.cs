@@ -32,7 +32,8 @@ namespace Dash
         {
             return Title;
         }
-        
+
+	    public DocumentController _parentOfRegion = null;
 
         /// <summary>
         ///     A wrapper for <see cref="" />. Change this to propogate changes
@@ -1401,5 +1402,7 @@ namespace Dash
 
 
         #endregion
+
+		
     }
 }

@@ -31,7 +31,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             fields.Add(FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
             fields.Add(FontSizeKey, new NumberController(DefaultFontSize));
-            fields.Add(TextAlignmentKey, new NumberController(DefaultTextAlignment));
+          //  fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
             if (backgroundColor != null)
                 fields.Add(BackgroundColorKey, new TextController(backgroundColor.ToString()));
             if (w != 0 && !double.IsNaN(w))

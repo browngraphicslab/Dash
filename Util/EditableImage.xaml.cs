@@ -506,10 +506,8 @@ namespace Dash
 
 			// the bitmap streaming to crop doesn't work yet
 			var imNote = new ImageNote(_imgctrl.ImageSource,
-					new Point(xRegionDuringManipulationPreview.Margin.Left,
-						xRegionDuringManipulationPreview.Margin.Top),
-					new Size(xRegionDuringManipulationPreview.ActualWidth,
-						xRegionDuringManipulationPreview.ActualHeight))
+					new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+					new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
 				.Document;
 
 			//add to regions list
@@ -527,6 +525,9 @@ namespace Dash
 				regions.Add(imNote);
 			}
 
+			//store image as parent of region
+			imNote._parentOfRegion = _docCtrl;
+
 			var newBox = new ImageRegionBox {LinkTo = imNote};
 
 			// use During Preview here because it's the one with actual pixel measurements
@@ -540,7 +541,7 @@ namespace Dash
 			_visualRegions.Add(newBox);
 			newBox.PointerEntered += Region_OnPointerEntered;
 			newBox.PointerExited += Region_OnPointerExited;
-			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+			xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
 
 			return imNote;
 		}
@@ -594,7 +595,7 @@ namespace Dash
 						nearest.DeleteDocument();
 					else MainPage.Instance.NavigateToDocumentInWorkspace(nearest.ViewModel.DocumentController, true);
 					//unhighlight last doc
-					if (_lastNearest != null)
+					if (_lastNearest?.ViewModel != null)
 					{
 						MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
 					}
@@ -606,10 +607,21 @@ namespace Dash
 				else
 				{
 					var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
+
 					if (theDoc != null)
 					{
-						Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
-							theDoc.GetSameCopy(pt));
+						//if it has a parent, display the parent
+						if (theDoc._parentOfRegion != null)
+						{
+							Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
+								theDoc._parentOfRegion.GetSameCopy(pt));
+						}
+						else
+						{
+							Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
+								theDoc.GetSameCopy(pt));
+						}
+							
 					}
 				}
 
@@ -762,4 +774,5 @@ namespace Dash
 		
 
 	}
+
 }
