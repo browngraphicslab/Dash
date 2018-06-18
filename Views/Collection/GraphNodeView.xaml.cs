@@ -29,8 +29,6 @@ namespace Dash
         public CollectionGraphView ParentGraph { get; private set; }
         public double ConstantRadiusWidth { get; set; }
     
-    
-
         /// <summary>
         /// Constructor
         /// </summary>
@@ -40,14 +38,11 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             Loaded += GraphNodeView_Loaded;
             Unloaded += GraphNodeView_Unloaded;
-            
-
         }
 
         private void GraphNodeView_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -61,6 +56,17 @@ namespace Dash
                     (xGrid.RenderTransform as TranslateTransform).Y = ViewModel.YPosition;
                     break;
             }
+
+            if (ConstantRadiusWidth != ParentGraph.ConstantRadiusWidth)
+            {
+                ConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
+                var dataDoc = ViewModel.DocumentViewModel.DataDocument;
+                var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+                var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+
+                xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
+                xEllipse.Height = xEllipse.Width;
+            }
         }
 
 
@@ -71,7 +77,7 @@ namespace Dash
 
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             ParentGraph = this.GetFirstAncestorOfType<CollectionGraphView>();
-            ConstantRadiusWidth = ParentGraph.ActualWidth / 20;
+            ConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
 
             var dataDoc = ViewModel.DocumentViewModel.DataDocument;
             var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
@@ -79,10 +85,6 @@ namespace Dash
 
             xEllipse.Width = toConnections + fromConnections * ConstantRadiusWidth;
             xEllipse.Height = xEllipse.Width;
-            if (xEllipse.Width > ParentGraph.MaxNodeWidth)
-            {
-                ParentGraph.MaxNodeWidth = xEllipse.Width;
-            }
 
             if (toConnections > 1)
             {
@@ -124,11 +126,6 @@ namespace Dash
 
                     if (startViewModel != null)
                     {
-                        ParentGraph.AdjacencyLists[ViewModel.DocumentViewModel].Add(startViewModel);
-                        ParentGraph.Connections.Add(
-                            new KeyValuePair<DocumentViewModel, DocumentViewModel>(startViewModel,
-                                ViewModel.DocumentViewModel));
-
                         GraphConnection existingLink = null;
                         if (startKey == KeyStore.LinkFromKey)
                         {
@@ -139,6 +136,11 @@ namespace Dash
                         {
                             existingLink = ParentGraph.Links.FirstOrDefault(gc =>
                                 gc.ToDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
+                        }
+
+                        if (existingLink == null)
+                        {
+
                         }
                         if (existingLink != null && ((startKey == KeyStore.LinkFromKey && existingLink.ToDoc == null) ||
                                                      (startKey == KeyStore.LinkToKey && existingLink.FromDoc == null)))
@@ -151,6 +153,7 @@ namespace Dash
                             {
                                 existingLink.FromDoc = this;
                             }
+                            ParentGraph.AdjacencyLists[existingLink.FromDoc.ViewModel.DocumentViewModel].Add(existingLink.ToDoc.ViewModel.DocumentViewModel);
                             ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
                                 existingLink.FromDoc.ViewModel.DocumentViewModel,
                                 existingLink.ToDoc.ViewModel.DocumentViewModel));

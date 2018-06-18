@@ -74,7 +74,6 @@ namespace Dash
     public sealed partial class CollectionGraphView : UserControl, ICollectionView
     {
         private DocumentController _parentDocument;
-        private ObservableCollection<GraphNodeViewModel> _nodes;
         private Random _randInt;
         private ObservableCollection<DocumentController> CollectionDocuments { get; set; }
 
@@ -85,12 +84,14 @@ namespace Dash
             {
                 if (_selectedNode != null) _selectedNode.xEllipse.Stroke = null;
                 _selectedNode = value;
-                _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(155, 255, 255, 0));
+                _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(180, 128, 185, 238));
                 _selectedNode.xEllipse.StrokeThickness = 6;
             }
         }
 
         public ObservableCollection<GraphConnection> Links { get; set; }
+
+        public ObservableCollection<GraphNodeViewModel> Nodes { get; set; }
 
         public CollectionViewModel ViewModel { get; set; }
 
@@ -111,7 +112,10 @@ namespace Dash
         public ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists { get; set; }
 
         public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
-        public double MaxNodeWidth = 0;
+        public double ConstantRadiusWidth
+        {
+            get => ActualWidth / 20;
+        }
 
         private double _minGap = 50;
         private double _maxGap = 100;
@@ -124,7 +128,7 @@ namespace Dash
             Connections = new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
             CollectionDocuments = new ObservableCollection<DocumentController>();
             Links = new ObservableCollection<GraphConnection>();
-            _nodes = new ObservableCollection<GraphNodeViewModel>();
+            Nodes = new ObservableCollection<GraphNodeViewModel>();
             _randInt = new Random();
 
             Loaded += CollectionGraphView_Loaded;
@@ -135,6 +139,8 @@ namespace Dash
         {
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
             xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
+            xExpandingBoy.Height = xScrollViewer.ActualHeight;
+            xInfoPanel.Height = xScrollViewer.ActualHeight;
 
             DataContextChanged += CollectionGraphView_DataContextChanged;
             CollectionGraphView_DataContextChanged(null, null);
@@ -188,7 +194,7 @@ namespace Dash
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     CollectionDocuments.Clear();
-                    _nodes.Clear();
+                    Nodes.Clear();
                     break;
             }
         }
@@ -198,9 +204,9 @@ namespace Dash
             foreach (var doc in oldDocs)
             {
                 CollectionDocuments.Remove(doc.DocumentController);
-                var nodeToRemove = _nodes.First(gvm => gvm.DocumentViewModel.Equals(doc));
+                var nodeToRemove = Nodes.First(gvm => gvm.DocumentViewModel.Equals(doc));
                 if (nodeToRemove != null)
-                    _nodes.Remove(nodeToRemove);
+                    Nodes.Remove(nodeToRemove);
             }
         }
 
@@ -224,23 +230,37 @@ namespace Dash
             var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedY = sortY.OrderBy(i =>
                 i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
+            var maxNodeDiam = ((ViewModel.DocumentViewModels.Max(dvm =>
+                                dvm.DataDocument
+                                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey,
+                                        null)?.TypedData.Count ?? 0) + ViewModel.DocumentViewModels.Max(dvm =>
+                                dvm.DataDocument
+                                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)
+                                    ?.TypedData.Count ?? 0)) * ConstantRadiusWidth) + 50;
+            var gridX = xScrollViewCanvas.Width / sortedX.Count();
+            if (xScrollViewCanvas.Width > maxNodeDiam)
+            {
+                gridX = (xScrollViewCanvas.Width - maxNodeDiam) / sortedX.Count();
+            }
+            var gridY = xScrollViewCanvas.Height / sortedY.Count();
+            if (xScrollViewCanvas.Height > maxNodeDiam)
+            {
+                gridY = (xScrollViewCanvas.Height - maxNodeDiam) / sortedY.Count();
+            }
 
-            var gridX = (xScrollViewCanvas.ActualWidth - MaxNodeWidth) / sortedX.Count();
-            var gridY = (xScrollViewCanvas.ActualHeight - MaxNodeWidth) / sortedY.Count();
-
-            var xPositons = new ObservableDictionary<DocumentViewModel, double>();
+            var xPositions = new ObservableDictionary<DocumentViewModel, double>();
             double x = 0;
             foreach (var dvm in sortedX)
             {
-                xPositons.Add(dvm, (_randInt.Next((int) x, (int) (x + gridX))));
+                xPositions.Add(dvm, (_randInt.Next((int) x, (int) (x + gridX))));
                 x += gridX;
             }
 
-            var yPositons = new ObservableDictionary<DocumentViewModel, double>();
+            var yPositions = new ObservableDictionary<DocumentViewModel, double>();
             double y = 0;
             foreach (var dvm in sortedY)
             {
-                yPositons.Add(dvm, (_randInt.Next((int)y, (int)(y + gridY))));
+                yPositions.Add(dvm, (_randInt.Next((int)y, (int)(y + gridY))));
                 y += gridY;
             }
 
@@ -248,40 +268,11 @@ namespace Dash
             {
                 if (dvm != null)
                 {
-                    _nodes.Add(new GraphNodeViewModel(dvm, xPositons.First(i => i.Key.Equals(dvm)).Value, yPositons.First(i => i.Key.Equals(dvm)).Value));
+                    AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
+                    Nodes.Add(new GraphNodeViewModel(dvm, xPositions.First(i => i.Key.Equals(dvm)).Value,
+                        yPositions.First(i => i.Key.Equals(dvm)).Value));
                 }
             }
-
-            foreach (var dvm in ViewModel.DocumentViewModels)
-            {
-                AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
-
-                if (dvm.DataDocument != null)
-                {
-                    var fromConnections = dvm.DataDocument
-                                              .GetDereferencedField<ListController<DocumentController>>(
-                                                  KeyStore.LinkFromKey, null)?.TypedData ??
-                                          new List<DocumentController>();
-                    var toConnections = dvm.DataDocument
-                                            .GetDereferencedField<ListController<DocumentController>>(
-                                                KeyStore.LinkToKey, null)?.TypedData ??
-                                        new List<DocumentController>();
-
-                    foreach (var link in toConnections)
-                    {
-                        var toDocs = link.GetDataDocument()
-                            .GetField<ListController<DocumentController>>(KeyStore.LinkToKey).TypedData;
-                        foreach (var toDoc in toDocs)
-                        {
-                            var toViewModel = ViewModel.DocumentViewModels.First(vm =>
-                                vm.DocumentController.GetDataDocument().Equals(toDoc));
-
-                           
-                        }
-                    }
-                }
-            }
-
         }
 
         private void AddLink(DocumentViewModel fromViewModel, DocumentViewModel toViewmodel)
@@ -334,7 +325,7 @@ namespace Dash
                 if (!CollectionDocuments.Contains(newDoc.DocumentController.GetDataDocument()))
                 {
                     CollectionDocuments.Add(newDoc.DocumentController.GetDataDocument());
-                    _nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
+                    Nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
                 }
             }
         }
@@ -345,8 +336,10 @@ namespace Dash
             var offsetY = e.NewSize.Height - e.PreviousSize.Height;
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
             xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
+            xExpandingBoy.Height = xScrollViewer.ActualHeight;
+            xInfoPanel.Height = xScrollViewer.ActualHeight;
 
-            foreach (var node in _nodes)
+            foreach (var node in Nodes)
             {
                 var x = node.XPosition;
                 var y = node.YPosition;
@@ -358,6 +351,35 @@ namespace Dash
         private void CollectionGraphView_OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
             e.Handled = true;
+        }
+
+        private void Expander_OnExpanded(object sender, EventArgs e)
+        {
+            xExpandingBoy.Width = 300;
+            xExpandingBoy.Header = "Close Info Panel";
+            xScrollViewCanvas.Width -= 260;
+            xExpandingBoy.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+           
+
+            foreach (var node in Nodes)
+            {
+                var x = node.XPosition;
+                node.XPosition = x + (-260 * (x / ActualWidth));
+            }
+        }
+
+        private void Expander_OnCollapsed(object sender, EventArgs e)
+        {
+            xExpandingBoy.Width = 40;
+            xExpandingBoy.Header = "Open Info Panel";
+            xScrollViewCanvas.Width += 260;
+            xExpandingBoy.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+
+            foreach (var node in Nodes)
+            {
+                var x = node.XPosition;
+                node.XPosition = x + (260 * (x / ActualWidth));
+            }
         }
     }
 }

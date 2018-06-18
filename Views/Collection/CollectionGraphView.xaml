@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     IsTapEnabled="True"
     Tapped="CollectionGraphView_OnTapped"
@@ -15,14 +16,15 @@
     AllowDrop="True"
     SizeChanged="CollectionGraphView_OnSizeChanged">
 
+
     <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTapEnabled="True" >
         <Grid.Resources>
             <Color x:Key="timelineColor">#CC333333</Color>
             <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
         </Grid.Resources>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="4*" />
-            <ColumnDefinition />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width ="Auto" />
         </Grid.ColumnDefinitions>
         <ScrollViewer Name="xScrollViewer" Grid.Column="0" Width="Auto" HorizontalAlignment="Stretch" Height="Auto"
                       HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch">
@@ -32,7 +34,7 @@
                     <ItemsControl x:Name="xItemsControl"
                                   Canvas.ZIndex="1000"
                       x:FieldModifier="public"
-                      ItemsSource="{x:Bind _nodes}"   
+                      ItemsSource="{x:Bind Nodes}"   
                       IsHitTestVisible="{Binding IsSelected}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate x:Name="yeet">
@@ -53,10 +55,17 @@
                 </Canvas>
             </Grid>
         </ScrollViewer>
+        <controls:Expander x:Name="xExpandingBoy" Grid.Column="1" Header="Open Info Panel"
+                           Foreground="White"
+                           ExpandDirection="Left" Width="40" HorizontalAlignment="Right"
+                           Expanded="Expander_OnExpanded" Collapsed="Expander_OnCollapsed"
+                           VerticalAlignment="Top" Background="{ThemeResource TreeviewBrush}">
+            <StackPanel x:Name="xInfoPanel" x:FieldModifier="public" Orientation="Vertical" HorizontalAlignment="Left"
+                    VerticalAlignment="Top" Width="250" Height="Auto"  Background="{ThemeResource TreeviewBrush}">
+            </StackPanel>
+        </controls:Expander>
 
-        <StackPanel Grid.Column="1" x:Name="xInfoPanel" x:FieldModifier="public" Orientation="Vertical" HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch" Background="{ThemeResource TreeviewBrush}">
-        </StackPanel>
+
 
         <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*" />

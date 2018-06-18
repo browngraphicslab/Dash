@@ -8,43 +8,45 @@
     mc:Ignorable="d"
     d:DesignWidth="50" d:DesignHeight="400">
 
-    <Grid Name="xInfoGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="20 20 20 0">
+    <Grid Name="xInfoGrid" Margin="20 20 20 0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <!--key listview-->
-        <ListView Name="xLabelListView" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionMode="None" Background="White"
+        <ListView Name="xLabelListView" 
+                    Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" SelectionMode="None" Background="White"
                     ItemsSource="{x:Bind Labels}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" x:Name="CollapseBox">
+                    <Setter Property="MinHeight" Value="20" />
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                     <Setter Property="VerticalContentAlignment" Value="Center" />
-                    <Setter Property="Padding" Value="10" />
+                    <Setter Property="Padding" Value="10 0 0 0" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="BorderThickness" Value="0,0,0,.1" />
                     <Setter Property="BorderBrush" Value="LightGray" />
-                    <Setter Property="Height" Value="20" />
-                    <Setter Property="FontSize" Value="16" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="FontSize" Value="14" />
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
 
         <!--field listview-->
-        <ListView ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.IsVerticalRailEnabled="False"
-                        Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" Height="Auto"
+        <ListView 
+                        Name="xFieldListView" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" Background="White" Height="Auto"
                         SelectionMode="None" ItemsSource="{x:Bind LabelData}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
+                    <Setter Property="MinHeight" Value="20" />
                     <Setter Property="HorizontalContentAlignment" Value="Right" />
                     <Setter Property="VerticalContentAlignment" Value="Center" />
-                    <Setter Property="Padding" Value="10" />
+                    <Setter Property="Padding" Value="0 0 10 0" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="BorderThickness" Value="0,0,0,.1" />
                     <Setter Property="BorderBrush" Value="LightGray" />
-                    <Setter Property="Height" Value="20" />
-                    <Setter Property="FontSize" Value="16" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="FontSize" Value="14" />
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
