@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -46,7 +47,12 @@ namespace Dash
         public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public delegate void SetBackground(object backgroundImagePath);
+        static SetBackground setBackground;
 
+        public delegate void SetBackgroundOpacity(float opacity);
+
+        private static SetBackgroundOpacity setBackgroundOpacity;
         public CollectionFreeformView()
         {
             InitializeComponent();
@@ -67,6 +73,8 @@ namespace Dash
                 }
                 UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                setBackground += Redraw;
+                setBackgroundOpacity += ChangeOpacity;
             };
             Unloaded += (sender, e) =>
             {
@@ -76,6 +84,7 @@ namespace Dash
                 }
                 
                 _lastViewModel = null;
+                setBackground -= Redraw;
             };
             xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
             xOuterGrid.PointerExited   += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
@@ -242,22 +251,87 @@ namespace Dash
         bool             _resourcesLoaded;
         CanvasImageBrush _bgBrush;
         const double     NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        const float      BackgroundOpacity = 1.0f;
+        private float _backgroundOpacity = 1.0f;
+
+        /// <summary>
+        /// Collection background tiling image opacity
+        /// </summary>
+        public static float BackgroundOpacity
+        {
+            set
+            {
+                setBackgroundOpacity?.Invoke(value);
+            }   
+        }
+        private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private CanvasBitmap _bgImage;
+
+        /// <summary>
+        /// Collection background tiling image
+        /// </summary>
+        public static object BackgroundImage
+        {
+            set
+            {
+                setBackground?.Invoke(value);
+            }
+        }
+
+        /// <summary>
+        /// Called when background image or background opacity changes
+        /// </summary>
+        /// <param name="backgroundImagePath"></param>
+        private void Redraw(object backgroundImagePath)
+        {
+            _background = backgroundImagePath;
+            _resourcesLoaded = false;
+            var task = Task.Run(async () =>
+            {
+
+                // Load the background image and create an image brush from it
+                if (_background is string)
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri((string) _background));
+                else
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream) _background);
+                _bgBrush = new CanvasImageBrush(xBackgroundCanvas, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+                xBackgroundCanvas.Invalidate();
+            });
+        }
+
+        /// <summary>
+        /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
+        /// </summary>
+        /// <param name="opacity"></param>
+        private void ChangeOpacity(float opacity)
+        {
+            _backgroundOpacity = opacity;
+            Redraw(_background);
+        }
 
         void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
-                var bgImage = await CanvasBitmap.LoadAsync(sender, new Uri("ms-appx:///Assets/transparent_grid_tilable.png"));
-                _bgBrush = new CanvasImageBrush(sender, bgImage)
+                if (_background is string)
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri((string)_background));
+                else
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream)_background);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
-                    Opacity = BackgroundOpacity
+                    Opacity = _backgroundOpacity
                 };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
                 _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
                 _resourcesLoaded = true;
             });
             args.TrackAsyncAction(task.AsAsyncAction());
