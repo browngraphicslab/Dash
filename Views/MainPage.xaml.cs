@@ -160,8 +160,7 @@ namespace Dash
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) {DisableDecorations = true};
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
-                //TODO This might not be necessary and shouldn't be necessary
-                treeContext.Loaded(true);
+                treeContext.Tag = "TreeView VM";
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("My Workspaces");
                 xMainTreeView.ToggleDarkMode(true);
