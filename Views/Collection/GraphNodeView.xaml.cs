@@ -80,7 +80,9 @@ namespace Dash
             ParentGraph.CollectionCanvas.Add(this);
 
             var dataDoc = ViewModel.DocumentViewModel.DataDocument;
+            // gets all the connections that are emanating outwards from the datadoc
             var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+            // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
             var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
             xEllipse.Width = (toConnections + fromConnections) * ConstantRadiusWidth;
@@ -112,57 +114,62 @@ namespace Dash
 
         private void CreateLink(DocumentController dataDoc, KeyController startKey)
         {
-            var startLinks =
+            // gets all the links that come either from or out of the data doc, respective to startKey
+            var incidentLinks =
                 dataDoc.GetDereferencedField<ListController<DocumentController>>(startKey, null)
                     ?.TypedData ??
-                new List<DocumentController>();
+                new List<DocumentController>(); // or an empty list if neither
 
-            foreach (var link in startLinks)
+            foreach (var link in incidentLinks)
             {
-                var startDocs = link.GetDataDocument()
+                // gets all the docs that are at the other endpoint of each incident link
+                var endDocs = link.GetDataDocument()
                     .GetField<ListController<DocumentController>>(startKey).TypedData;
-                foreach (var startDoc in startDocs)
+                foreach (var endDoc in endDocs)
                 {
-                    var startViewModel = ParentGraph.ViewModel.DocumentViewModels.First(vm =>
-                        vm.DocumentController.GetDataDocument().Equals(startDoc));
+                    // gets the viewmodel for the documents in endDocs
+                    var endViewModel = ParentGraph.ViewModel.DocumentViewModels.First(vm =>
+                        vm.DocumentController.GetDataDocument().Equals(endDoc));
 
-                    if (startViewModel != null)
+                    if (endViewModel != null)
                     {
                         GraphConnection existingLink = null;
+                        /*
+                         * go into ParentGraph.Links (observable collection of all logical links) and try to find a link
+                         * whose endpoint as defined by the startKey is the same as the endViewModel variable, and whose
+                         * converse endpoint is not yet set
+                         */
                         if (startKey == KeyStore.LinkFromKey)
                         {
                             existingLink = ParentGraph.Links.FirstOrDefault(gc =>
-                                gc.FromDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
+                                (gc.FromDoc?.ViewModel.DocumentViewModel.Equals(endViewModel) ?? false) && (gc.ToDoc == null));
                         }
                         else
                         {
                             existingLink = ParentGraph.Links.FirstOrDefault(gc =>
-                                gc.ToDoc?.ViewModel.DocumentViewModel.Equals(startViewModel) ?? false);
+                                (gc.ToDoc?.ViewModel.DocumentViewModel.Equals(endViewModel) ?? false) && (gc.FromDoc == null));
                         }
                         
-                        if (existingLink != null && ((startKey == KeyStore.LinkFromKey && existingLink.ToDoc == null) ||
-                                                     (startKey == KeyStore.LinkToKey && existingLink.FromDoc == null)))
+                        if (existingLink != null)
                         {
+                            // if such a link exists, set the missing endpoint to this graph node view
                             if (startKey == KeyStore.LinkFromKey)
                             {
                                 existingLink.ToDoc = this;
-                                ParentGraph.AdjacencyLists[existingLink.FromDoc.ViewModel.DocumentViewModel].Add(this.ViewModel.DocumentViewModel);
-                                ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
-                                    existingLink.FromDoc.ViewModel.DocumentViewModel,
-                                    this.ViewModel.DocumentViewModel));
-                                ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             }
                             else
                             {
                                 existingLink.FromDoc = this;
-                                ParentGraph.AdjacencyLists[this.ViewModel.DocumentViewModel].Add(existingLink.ToDoc.ViewModel.DocumentViewModel);
-                                ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
-                                    this.ViewModel.DocumentViewModel,
-                                    existingLink.ToDoc.ViewModel.DocumentViewModel));
-                                ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                             }
-                            
+
+                            // after that, we are sure that both endpoints exist, so we can logically and graphically add it to the collection
+                            ParentGraph.AdjacencyLists[existingLink.FromDoc.ViewModel.DocumentViewModel].Add(existingLink.ToDoc.ViewModel.DocumentViewModel);
+                            ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                                existingLink.FromDoc.ViewModel.DocumentViewModel,
+                                existingLink.ToDoc.ViewModel.DocumentViewModel));
+                            ParentGraph.xScrollViewCanvas.Children.Add(existingLink.Connection);
                         }
+                        // if no such link exists, create a new connection with one endpoint instantiated
                         else
                         {
                             var newConnection = new GraphConnection();
@@ -176,6 +183,7 @@ namespace Dash
                                 newConnection.FromDoc = this;
                             }
 
+                            // add the semicomplete link to ParentGraph.Links
                             ParentGraph.Links.Add(newConnection);
                         }
                     }
