@@ -168,10 +168,11 @@ namespace Dash
             var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
 
-            if (index != GroupGeometryConstants.CustomPolyDropdownIndex) return;
+
+            if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
             
             var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetSideCount((int)safeSideCount);
+            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
             xSideCounter.Text = safeSideCount.ToString("G");
         }
 

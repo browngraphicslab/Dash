@@ -11,10 +11,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-<<<<<<< HEAD
-=======
 using Windows.Storage.Streams;
->>>>>>> 65ce2b19747cc60c18a0ed8bc7cd9c4d5dbbda5e
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -140,9 +137,16 @@ namespace Dash
 
             Debug.Assert(Instance == null);
             Instance = this;
-<<<<<<< HEAD
+
             _dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db";
             _pathToRestore = _dbPath + ".toRestore";
+
+            xCustomizeButton.Tapped += async delegate
+            {
+                var path = await GetPath();
+                if (path != null)
+                    CollectionFreeformView.BackgroundImage = path;
+            };
         }
 
         private async void Restore_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -177,13 +181,6 @@ namespace Dash
 
             File.Copy(_pathToRestore, _dbPath, true);
             File.Delete(_pathToRestore);
-=======
-            xCustomizeButton.Tapped += async delegate
-            {
-                var path = await GetPath();
-                if (path != null)
-                    CollectionFreeformView.BackgroundImage = path;
-            };
         }
 
         private async Task<IRandomAccessStreamWithContentType> GetPath()
@@ -205,7 +202,6 @@ namespace Dash
             {
                 return null;
             }
->>>>>>> 65ce2b19747cc60c18a0ed8bc7cd9c4d5dbbda5e
         }
     }
 }
