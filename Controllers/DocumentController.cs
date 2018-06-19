@@ -100,7 +100,7 @@ namespace Dash
                 //
                 //Enjoy your day,
                 //-Tyler
-                this.SetField(KeyStore.DocumentTypeKey, new TextController(value.Type), true, false);
+                this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
             }
         }
         

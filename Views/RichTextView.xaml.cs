@@ -132,11 +132,11 @@ namespace Dash
                     if (containerDoc != null)
                     {
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
-                        containerData.SetField(keycontroller, new RichTextController(new RichTextModel.RTD(value)), true);
+                        containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
                         var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-                        dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
+                        dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);
                         //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
                     }
@@ -284,12 +284,12 @@ namespace Dash
                         Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, viewCopy);
                         // ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
                         // the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
-                        viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
+                        viewCopy.SetTransient(true);
                     }
                     else if (nearestOnScreen != null)
                     {
                         // remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
-                        if (nearestOnScreen.ViewModel.DocumentController.GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
+                        if (nearestOnScreen.ViewModel.DocumentController.GetTransient())
                             cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
                         else
                             Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);

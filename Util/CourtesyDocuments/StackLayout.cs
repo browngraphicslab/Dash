@@ -93,15 +93,12 @@ namespace Dash
                     if (child is FrameworkElement fe)
                         if (fe.DataContext is DocumentViewModel dview)
                         {
-                            dview.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
+                            dview.LayoutDocument.SetActualSize(new Point(fe.ActualWidth, fe.ActualHeight));
                         }
                         else if (fe.DataContext is CollectionViewModel cview)
                         {
-
-                            cview.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
-
+                            cview.ContainerDocument.SetActualSize(new Point(fe.ActualWidth, fe.ActualHeight));
                         }
-           
             }
             SetupBindings(stack, docController, context);
 

@@ -184,11 +184,11 @@ namespace Dash
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
             if (_isCollection)
             {
-                var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                if (docsInGroup != null)
-                {
-                    docToFocus = docsInGroup.TypedData.FirstOrDefault();
-                }
+                //var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+                //if (docsInGroup != null)
+                //{
+                //    docToFocus = docsInGroup.TypedData.FirstOrDefault();
+                //}
             }
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
