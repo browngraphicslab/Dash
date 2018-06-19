@@ -176,6 +176,19 @@ namespace Dash
             Unloaded += CollectionGraphView_Unloaded;
         }
 
+        public void Reset()
+        {
+            foreach (var connection in Links)
+            {
+                xScrollViewCanvas.Children.Remove(connection.Connection);
+            }
+            Connections.Clear();
+            Links.Clear();
+            Nodes.Clear();
+
+            GenerateGraph();
+        }
+
         private void CollectionGraphView_Loaded(object sender, RoutedEventArgs e)
         {
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
@@ -346,12 +359,6 @@ namespace Dash
 
         private void AddNodes(ObservableCollection<DocumentViewModel> newDocs)
         {
-            var expanded = false;
-            if (xExpandingBoy.IsExpanded)
-            {
-                expanded = true;
-                xExpandingBoy.IsExpanded = false;
-            }
             foreach (var newDoc in newDocs)
             {
                 if (!CollectionDocuments.Contains(newDoc.DocumentController))
@@ -368,10 +375,19 @@ namespace Dash
             Nodes.Clear();
             GenerateGraph();
 
-            if (expanded)
+            if (xExpandingBoy.IsExpanded)
             {
-                xExpandingBoy.IsExpanded = true;
+                foreach (var newDoc in newDocs)
+                {
+                    var node = Nodes.First(gnvm => gnvm.DocumentViewModel.Equals(newDoc));
+                    OriginalXPositions.Add(node, (ActualWidth * node.XPosition) / (ActualWidth - 260));
+                }
             }
+
+            //if (expanded)
+            //{
+            //    xExpandingBoy.IsExpanded = true;
+            //}
         }
 
         private void CollectionGraphView_OnSizeChanged(object sender, SizeChangedEventArgs e)

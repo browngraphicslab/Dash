@@ -185,68 +185,7 @@ namespace Dash
 
         private void Links_Updated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            var dataDoc = sender as DocumentController;
-            // gets all the connections that are emanating outwards from the datadoc
-            var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
-
-            if (fromConnections > 1)
-            {
-                var oldLinks = ParentGraph.AdjacencyLists[ViewModel.DocumentViewModel];
-                var newLinks = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey).TypedData;
-                for (int i = oldLinks.Count; i < newLinks.Count; i++)
-                {
-                    var endDoc = newLinks[i].GetDataDocument()
-                        .GetField<ListController<DocumentController>>(KeyStore.LinkFromKey).TypedData[0];
-
-                    if (endDoc != null)
-                    {
-                        var newConnection = new GraphConnection
-                        {
-                            FromDoc = this,
-                            ToDoc = ParentGraph.CollectionCanvas.FirstOrDefault(gnv =>
-                                gnv.ViewModel.DocumentController.GetDataDocument().Equals(endDoc.GetDataDocument()))
-                        };
-
-                        var toDataDoc = newConnection.ToDoc.ViewModel.DocumentController.GetDataDocument();
-                        // gets all the connections that are emanating outwards from the datadoc
-                        var toDocToConnections = toDataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
-                        // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
-                        var toDocFromConnections = toDataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
-
-                        var toNewDiam = (toDocToConnections + toDocFromConnections) * ConstantRadiusWidth;
-                        if (toNewDiam > _smallWidth)
-                        {
-                            newConnection.ToDoc.xEllipse.Width = toNewDiam;
-                            newConnection.ToDoc.xEllipse.Height = newConnection.ToDoc.xEllipse.Width;
-                            newConnection.ToDoc.UpdateTitleBlock();
-                            newConnection.ToDoc.AppendToTitle();
-                            newConnection.ToDoc.PositionsLoaded?.Invoke();
-                        }
-
-                        fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
-                        // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
-                        var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
-
-                        var newDiam = (fromConnections + toConnections) * ConstantRadiusWidth;
-                        if (newDiam > _smallWidth)
-                        {
-                            xEllipse.Width = newDiam;
-                            xEllipse.Height = xEllipse.Width;
-                            UpdateTitleBlock();
-                            AppendToTitle();
-                            PositionsLoaded?.Invoke();
-                        }
-
-                        ParentGraph.Links.Add(newConnection);
-                        ParentGraph.AdjacencyLists[newConnection.FromDoc.ViewModel.DocumentViewModel]
-                            .Add(newConnection.ToDoc.ViewModel.DocumentViewModel);
-                        ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
-                            newConnection.FromDoc.ViewModel.DocumentViewModel,
-                            newConnection.ToDoc.ViewModel.DocumentViewModel));
-                        ParentGraph.xScrollViewCanvas.Children.Add(newConnection.Connection);
-                    }
-                }
-            }
+            ParentGraph.Reset();
         }
 
         private void CreateLink(DocumentController dataDoc, KeyController startKey)
