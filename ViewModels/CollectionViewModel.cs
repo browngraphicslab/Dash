@@ -297,12 +297,14 @@ namespace Dash
         /// <param name="context"></param>
         public void AddDocument(DocumentController doc)
         {
+            UndoManager.startBatch();
             if (!createsCycle(doc))
             {
                 doc.CaptureNeighboringContext();
 
                 ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
             }
+            UndoManager.endBatch();
         }
 
 
@@ -319,8 +321,10 @@ namespace Dash
 
         public void RemoveDocument(DocumentController document)
         {
+            UndoManager.startBatch();
             // just update the collection, the colllection will update our view automatically
             ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
+            UndoManager.endBatch();
         }
 
         #endregion

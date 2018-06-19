@@ -288,6 +288,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+            
         }
 
         /// <summary>

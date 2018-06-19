@@ -95,6 +95,7 @@ namespace Dash
 
         public async void Revert()
         {
+            UndoManager.startBatch();
             // make sure if we have an original image stored (which we always should)
             if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
             {
@@ -106,6 +107,7 @@ namespace Dash
                 _docCtrl.SetField<ImageController>(KeyStore.DataKey, _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
                 _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
             }
+            UndoManager.endBatch();
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
@@ -261,6 +263,8 @@ namespace Dash
         private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
             byte[] pixels)
         {
+            UndoManager.startBatch();
+
             var width = (uint) rectgeo.Width;
             var height = (uint) rectgeo.Height;
 
@@ -306,7 +310,7 @@ namespace Dash
             _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
             _cropControl = new StateCropControl(_docCtrl, this);
 
-            // TODO: Test that replace button works with cropping when merged with master
+            UndoManager.endBatch();
         }
 
         [NotifyPropertyChangedInvocator]
