@@ -55,7 +55,7 @@ namespace Dash
                 {
                     Debug.Assert(sender is T);
                     var fieldKey = dargs.Reference.FieldKey;
-                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey))
+                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey) || fieldKey.Equals(KeyStore.HiddenKey))
                     {
                         OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }), context);
                     }
@@ -185,7 +185,7 @@ namespace Dash
 
         public void Set(IEnumerable<T> elements)
         {
-            foreach (var element in TypedData)
+            foreach (var element in TypedData.ToArray())
             {
                 RemoveHelper(element);
             }
