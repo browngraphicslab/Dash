@@ -7,6 +7,7 @@
     x:Name="xCanvas"
     mc:Ignorable="d"
     LostFocus="EditableImage_OnLostFocus"
+   
     KeyDown="XGrid_OnKeyDown"
     Background="Beige" IsTabStop="True">
 
