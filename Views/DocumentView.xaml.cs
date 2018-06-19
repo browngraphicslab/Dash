@@ -803,8 +803,8 @@ namespace Dash
                 var where = nestedCollection.CurrentView is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                     new Point();
-                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }
             return true;
         }
