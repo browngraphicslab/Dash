@@ -15,11 +15,11 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views.Document_Menu.Toolbar
+namespace Dash.Views
 {
-    public sealed partial class ItemSubtoolbar : UserControl
+    public sealed partial class RoundedRectangleGeometry : UserControl
     {
-        public ItemSubtoolbar()
+        public RoundedRectangleGeometry()
         {
             this.InitializeComponent();
         }

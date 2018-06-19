@@ -129,7 +129,9 @@ namespace Dash
 
         public override StringSearchModel SearchForString(string searchString)
         {
-            return searchString == null ||  Name.ToLower().Contains(searchString) ? new StringSearchModel(Name) : StringSearchModel.False;
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            return searchString == null ||  (Name.ToLower().Contains(searchString.ToLower()) || 
+               reg.IsMatch(Name)) ? new StringSearchModel(Name) : StringSearchModel.False;
         }
 
         public override FieldControllerBase GetDefaultController()

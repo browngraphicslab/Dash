@@ -39,6 +39,7 @@ namespace Dash
                 sender.Text = _currentSearch;
                 return;
             }
+
             // Only get results when it was a user typing, 
             // otherwise assume the value got filled in by TextMemberPath 
             // or the handler for SuggestionChosen.
@@ -64,7 +65,8 @@ namespace Dash
             //first unhightlight old results
             unHighlightAllDocs();
 
-            var text = searchBox.Text.ToLower();
+            //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
+            var text = searchBox.Text; //.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
             if (string.IsNullOrWhiteSpace(text))
@@ -78,10 +80,14 @@ namespace Dash
             try
             {
                 //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
+
+                // Might end up with too many backslashes - please double check
+                text = text.Replace(@"\", @"\\");
                 text = text.Replace("\"", "\\\"");
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
+          
             catch (DSLException e)
             {
                 Debug.WriteLine("Search Failed");
@@ -91,6 +97,7 @@ namespace Dash
             {
                 return;
             }
+            
             Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
@@ -108,7 +115,6 @@ namespace Dash
             }
             
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
@@ -213,7 +219,6 @@ namespace Dash
             //var vms = listController.Data;
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
@@ -226,7 +231,6 @@ namespace Dash
             var vms = SearchHelper.SearchOverCollection(text.ToLower(), thisController : thisController);
 
             var first = vms.Where(doc => doc?.DocumentCollection != null && doc.DocumentCollection != MainPage.Instance.MainDocument).Take(maxSearchResultSize).ToArray();
-            Debug.WriteLine("Search Results: " + first.Length);
             foreach (var searchResultViewModel in first)
             {
                 return searchResultViewModel.ViewDocument;
@@ -399,7 +403,7 @@ namespace Dash
             }
 
             public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController docController)
-            {
+            {  
                 var id = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
                 var doc = ContentController<FieldModel>.GetController<DocumentController>(id.Data);
                 var title = docController.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey);
@@ -434,8 +438,10 @@ namespace Dash
                     var node = tree.GetNodeFromViewId(srvm.ResultDocumentViewId);
                     var doc = new DocumentController();
                     doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ResultDocumentViewId), true);
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title + " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")), true);
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(srvm.HelpfulText), true);
+                    // not sure what the purpose of the commented out code below is for
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title /*+ " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")*/), true);
+                    // For future: Maybe find a way to insert "Matched: " or some helpful text disambiguating the help text from the text
+                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(/*"Matched: " + */srvm.HelpfulText), true);
                     list.Add(doc);
                 }
                 return list;
@@ -791,7 +797,7 @@ namespace Dash
 
                     foreach (var kvp in documentController.EnumDisplayableFields())
                     {
-                        var keySearch = kvp.Key.SearchForString(searchString);
+                        var keySearch = StringSearchModel.False;//kvp.Key.SearchForString(searchString);
                         var fieldSearch = kvp.Value.Dereference(new Context(documentController))?.SearchForString(searchString) ?? StringSearchModel.False;
 
                         string topText = null;
@@ -851,6 +857,7 @@ namespace Dash
                         countToResults[1].AddRange(CreateSearchResults(documentTree, documentController, "test","test",true));
                     }
                 }
+                
                 return countToResults.OrderBy(kvp => -kvp.Key).SelectMany(i => i.Value);
                 //ContentController<FieldModel>.GetControllers<DocumentController>().Where(doc => SearchKeyFieldIdPair(doc.DocumentModel.Fields, searchString))
             }

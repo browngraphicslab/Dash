@@ -1,0 +1,43 @@
+﻿<UserControl
+    x:Class="Dash.HiddenNodesView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignWidth="50" d:DesignHeight="400">
+
+    <Grid Name="xInfoGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <!--field listview-->
+        <ListView Margin="20 20 20 0" Grid.Row="0"
+                        Name="xLinkToDocs" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="White" Height="Auto"
+                        SelectionMode="Single" ItemsSource="{x:Bind HiddenNodesList}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="MinHeight" Value="20" />
+                    <Setter Property="HorizontalContentAlignment" Value="Right" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="Padding" Value="0 0 10 0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="BorderThickness" Value="0,0,0,.1" />
+                    <Setter Property="BorderBrush" Value="LightGray" />
+                    <Setter Property="Height" Value="30" />
+                    <Setter Property="FontSize" Value="14" />
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            
+        </ListView>
+        <Button Name="xButton" Margin="20 20 20 20" Click="ButtonBase_OnClick" Grid.Row="1"  Height="30" 
+                Width="240" HorizontalAlignment="Center" Background="White" Foreground="Black">Show All</Button>
+
+        <!--field listview-->
+        
+    </Grid>
+
+</UserControl>

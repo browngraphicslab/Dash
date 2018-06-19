@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
 using DashShared;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -31,7 +32,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             fields.Add(FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
             fields.Add(FontSizeKey, new NumberController(DefaultFontSize));
-            fields.Add(TextAlignmentKey, new NumberController(DefaultTextAlignment));
+          //  fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
             if (backgroundColor != null)
                 fields.Add(BackgroundColorKey, new TextController(backgroundColor.ToString()));
             if (w != 0 && !double.IsNaN(w))
@@ -62,6 +63,7 @@ namespace Dash
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
             var textController = docController.GetField(KeyStore.DataKey);
+            var text = textController.GetValue(null);
             // create the textblock
             var tb = new EditableTextBlock
             {
@@ -90,15 +92,44 @@ namespace Dash
             element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
+        public class TypedTextAlignmentBinding : SafeDataToXamlConverter<List<object>, TextAlignment>
+        {
+            public override TextAlignment ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                bool isNumber = data[1] is double;
+                if (data[0] != null && data[0] is double) 
+                {
+                    switch ((int)(double)data[0]) {
+                        case (int)TextAlignment.Left:
+                            return TextAlignment.Left;
+                        case (int)TextAlignment.Right:
+                            return TextAlignment.Right;
+                        case (int)TextAlignment.Center:
+                            return TextAlignment.Center;
+                        case (int)TextAlignment.Justify:
+                            return TextAlignment.Justify;
+                    }
+                    
+                }
+                return isNumber ? TextAlignment.Right : TextAlignment.Center;
+            }
+
+            public override List<object> ConvertXamlToData(TextAlignment xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var alignmentBinding = new FieldBinding<NumberController>()
+            var dataRef = new DocumentFieldReference(docController.Id, TextAlignmentKey);
+            var sideCountRef = new DocumentFieldReference(docController.Id, KeyStore.DataKey);
+
+            var alignmentBinding = new FieldMultiBinding<TextAlignment>(dataRef, sideCountRef)
             {
-                Key = TextAlignmentKey,
-                Document = docController,
-                Converter = new IntToTextAlignmentConverter(),
-                Mode = BindingMode.TwoWay,
-                Context = context
+                Converter = new TypedTextAlignmentBinding(),
+                Mode = BindingMode.OneWay,
+                Context = context,
+                CanBeNull = true
             };
             element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
         }

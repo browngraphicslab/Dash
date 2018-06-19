@@ -172,46 +172,56 @@ namespace Dash
                 }
             }
         }
+
         void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            var cargs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-            if (cargs == null || cargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            var docFieldArgs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
+            var docListFieldArgs = docFieldArgs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+            if (docListFieldArgs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
             {
-                if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
+            }
+            else
+            {
+                var collectionFieldModelController = docFieldArgs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+                if (collectionFieldModelController != null)
                 {
-                    updateViewModels(cargs);
-                }
-                else
-                {
-                    var collectionFieldModelController = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-                    if (collectionFieldModelController == null) return;
-                    var documents = collectionFieldModelController.GetElements();
-                    DocumentViewModels.Clear();
-
-                    addViewModels(documents);
+                    updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,  collectionFieldModelController.GetElements());
                 }
             }
         }
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
+        public string Tag;
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction action, List<DocumentController> docs)
         {
-            switch (args.ListAction)
+            switch (action)
             {
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
+                    // we only care about changes to the Hidden field of the contained documents.
+                    foreach (var d in docs)
+                    {
+                        var visible = d.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1;
+                        var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
+                        if (visible && !shown)
+                            addViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                        if (!visible && shown)
+                            removeViewModels(new List<DocumentController>(new DocumentController[] { d }));
+                    }
+                    break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(args.ChangedDocuments);
+                    addViewModels(docs);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(args.ChangedDocuments);
+                    removeViewModels(docs);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
-                    AddDocuments(args.ChangedDocuments);
+                    addViewModels(docs);
                     break;
                 default:
                     break;
@@ -225,7 +235,8 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        DocumentViewModels.Add(new DocumentViewModel(documentController));
+                        if (documentController.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1)
+                            DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
         }
@@ -278,7 +289,6 @@ namespace Dash
             }
             return false;
         }
-
 
         /// <summary>
         /// Adds a document to the given collectionview.
@@ -634,7 +644,8 @@ namespace Dash
                 try
                 {
                     var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
-                    AddDocument(droppedDoc);
+                    if (droppedDoc != null)
+                        AddDocument(droppedDoc);
                     return;
                 }
                 catch (Exception exception)
@@ -684,7 +695,7 @@ namespace Dash
 
                 await DotNetRPC.CallRPCAsync(table);
 
-                DataPackageView dataPackageView = Clipboard.GetContent();
+                var dataPackageView = Clipboard.GetContent();
                 var richtext = await dataPackageView.GetRtfAsync();
                 var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
 
