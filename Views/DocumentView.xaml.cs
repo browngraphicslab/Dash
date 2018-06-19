@@ -143,6 +143,8 @@ namespace Dash
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                UndoManager.startBatch();
+
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
                     MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
@@ -162,6 +164,8 @@ namespace Dash
                 ResizeHandles_restorePointerTracking();
                 MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
+
+                UndoManager.endBatch();
             }
             ResizeHandleTopLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
             ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);

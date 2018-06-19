@@ -8,10 +8,10 @@ namespace Dash
 {
     static class UndoManager
     {
-        public static Stack<Stack<UndoCommand>> redoStack = new Stack<Stack<UndoCommand>>();
-        public static Stack<Stack<UndoCommand>> undoStack = new Stack<Stack<UndoCommand>>();
+        public static Stack<List<UndoCommand>> redoStack = new Stack<List<UndoCommand>>();
+        public static Stack<List<UndoCommand>> undoStack = new Stack<List<UndoCommand>>();
 
-        public static Stack<UndoCommand> currentBatch = new Stack<UndoCommand>();
+        public static List<UndoCommand> currentBatch = new List<UndoCommand>();
         public static int batchCounter = 0;
 
         public static void EventOccured(UndoCommand e)
@@ -19,7 +19,7 @@ namespace Dash
             //only add events if you are in a batch
             if(batchCounter > 0)
             {
-                currentBatch.Push(e);
+                currentBatch.Add(e);
             }
         }
 
@@ -36,12 +36,12 @@ namespace Dash
             {
                 //add batch to redo stack
                 undoStack.Push(currentBatch);
-                currentBatch = new Stack<UndoCommand>();
+                currentBatch = new List<UndoCommand>();
 
                 MenuToolbar.Instance.SetUndoEnabled(true);
 
                 //once event occurs, you can no longer redo
-                redoStack = new Stack<Stack<UndoCommand>>();
+                redoStack = new Stack<List<UndoCommand>>();
                 MenuToolbar.Instance.SetRedoEnabled(false);
             }
         }
@@ -49,11 +49,11 @@ namespace Dash
         public static void UndoOccured()
         {
             //run undo action and remove from undo Stack
-            Stack<UndoCommand> commands = undoStack.Pop();
+            List<UndoCommand> commands = undoStack.Pop();
 
-            foreach(UndoCommand command in commands)
+            for(int i= commands.Count - 1; i >= 0; i--)
             {
-                Action undo = command.undo;
+                Action undo = commands[i].undo;
                 undo();
             }
             
@@ -67,7 +67,7 @@ namespace Dash
         public static void RedoOccured()
         {
             //run redo action and remove from redo Stack
-            Stack<UndoCommand> commands = redoStack.Pop();
+            List<UndoCommand> commands = redoStack.Pop();
             foreach(UndoCommand command in commands)
             {
                 Action redo = command.redo;
