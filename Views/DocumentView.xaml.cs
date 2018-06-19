@@ -1062,24 +1062,26 @@ namespace Dash
 
         public void hideControls()
         {
-            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
-            xTitleIcon.Visibility = Visibility.Collapsed;
-            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            ViewModel.DecorationState = false;
+            //ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            //ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            //ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            //ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            //xTitleIcon.Visibility = Visibility.Collapsed;
+            //xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
         {
-            ResizeHandleBottomLeft.Visibility = Visibility.Visible;
-            ResizeHandleBottomRight.Visibility = Visibility.Visible;
-            ResizeHandleTopLeft.Visibility = Visibility.Visible;
-            ResizeHandleTopRight.Visibility = Visibility.Visible;
-            xTitleIcon.Visibility = Visibility.Visible;
-            xAnnotateEllipseBorder.Visibility = Visibility.Visible;
-            xOperatorEllipseBorder.Visibility = Visibility.Visible;
+            ViewModel.DecorationState = true;
+            //ResizeHandleBottomLeft.Visibility = Visibility.Visible;
+            //ResizeHandleBottomRight.Visibility = Visibility.Visible;
+            //ResizeHandleTopLeft.Visibility = Visibility.Visible;
+            //ResizeHandleTopRight.Visibility = Visibility.Visible;
+            //xTitleIcon.Visibility = Visibility.Visible;
+            //xAnnotateEllipseBorder.Visibility = Visibility.Visible;
+            //xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
