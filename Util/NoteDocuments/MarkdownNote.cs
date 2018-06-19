@@ -28,15 +28,14 @@ namespace Dash
         }
 
         static int rcount = 1;
-        public MarkdownNote(string text = null, string title = null, DocumentType type = null, Point where = new Point(), Size size = new Size()) :
+        public MarkdownNote(string text = "Write something amazing!", string title = null, DocumentType type = null, Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new TextController(text ?? "Write something amazing!"));
+            var dataDocument = makeDataDelegate(new TextController(text));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             
             Document.Tag = "Markdown Note Layout " + rcount;
             dataDocument.Tag = "Markdown Note Data " + rcount++;
-            Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
         }
     }
 }
