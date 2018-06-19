@@ -1061,11 +1061,7 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
-
-
-
-
-
+		
         public void hideControls()
         {
             ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
@@ -1096,12 +1092,15 @@ namespace Dash
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
-			/**
-			//toggles visibiliy of annotation view
-		    xAnnotationView.Height = LayoutRoot.ActualHeight;
-			//xAnnotationView.SetValue(AnnotationView.HeightDependencyProperty, LayoutRoot.ActualHeight);
-			xAnnotationView.Visibility = (xAnnotationView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
-		    **/
-	    }
+		    //ViewModel.DocumentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, DataContext);
+		    if (ViewModel.Content is EditableImage)
+		    {
+			    EditableImage image = (EditableImage) ViewModel.Content;
+			    image.Region_Pressed(image, new Point(0,0));
+
+		    }
+
+
+		}
     }
 }

@@ -54,6 +54,7 @@ namespace Dash
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
 		    _image?.DeleteRegion(_image._selectedRegion);
+			Debug.WriteLine("CLOSING");
 	    }
 
 	    public void Hide()
@@ -67,5 +68,6 @@ namespace Dash
 		    xRegionBoxFill.Opacity = 0.1;
 	    }
 
+		
 	}
 }

@@ -23,8 +23,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Annotations;
+using Dash.Views;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Extensions;
+using TextBlock = Windows.UI.Xaml.Controls.TextBlock;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -47,6 +49,12 @@ namespace Dash
 		private ListController<DocumentController> _dataRegions;
 		private RegionVisibilityState _regionState;
 		public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
+		private bool _isLinkMenuOpen = false;
+		private AnnotationManager _annotationManager;
+
+		private bool _isPreviousRegionSelected = false;
+
+		private Dictionary<TextBlock, DocumentController> _linkDict = null;
 		//public static KeyController RegionDefinitionKey = new KeyController
 
 		public Image Image => xImage;
@@ -68,6 +76,7 @@ namespace Dash
 			// gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
 			_imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
 			xRegionPostManipulationPreview._image = this;
+			_annotationManager = new AnnotationManager(this);
 
 			//load existing annotated regions
 			_visualRegions = new List<ImageRegionBox>();
@@ -102,6 +111,8 @@ namespace Dash
 					
 				}
 			}
+
+			this.FormatLinkMenu();
 			
 		}
 
@@ -480,7 +491,16 @@ namespace Dash
 				}
 				else
 				{
-					this.Region_Pressed(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
+					//delete if control is pressed
+					if (MainPage.Instance.IsAltPressed())
+					{
+						this.DeleteRegion(_selectedRegion);
+						_isPreviousRegionSelected = false;
+						return;
+					}  
+					//select otherwise
+					//if (xLinkStack.Visibility == Visibility.Collapsed)
+					if (!_isLinkMenuOpen) this.Region_Pressed(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
 				}
 			}
 		}
@@ -496,43 +516,53 @@ namespace Dash
 		{
 			if (!this.IsSomethingSelected()) return _docCtrl;
 
-			// the bitmap streaming to crop doesn't work yet
-			var imNote = new ImageNote(_imgctrl.ImageSource,
-					new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-					new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
-				.Document;
-			imNote.SetField(KeyStore.RegionDefinitionKey, _docCtrl, true);
+			DocumentController imNote = null;
 
-			//add to regions list
-			var regions = _docCtrl.GetDataDocument()
-				.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-			if (regions == null)
+			//if region is selected, access the selected region's doc controller
+			if (_isPreviousRegionSelected && _selectedRegion != null)
 			{
-				var dregions = new List<DocumentController>();
-				dregions.Add(imNote);
-				_docCtrl.GetDataDocument()
-					.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+				//add this link to list of links
+				imNote = _selectedRegion.LinkTo;
 			}
 			else
 			{
-				regions.Add(imNote);
+				// the bitmap streaming to crop doesn't work yet
+				imNote = new ImageNote(_imgctrl.ImageSource,
+						new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+						new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
+					.Document;
+				imNote.SetField(KeyStore.RegionDefinitionKey, _docCtrl, true);
+
+				//add to regions list
+				var regions = _docCtrl.GetDataDocument()
+					.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+				if (regions == null)
+				{
+					var dregions = new List<DocumentController>();
+					dregions.Add(imNote);
+					_docCtrl.GetDataDocument()
+						.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+				}
+				else
+				{
+					regions.Add(imNote);
+				}
+
+				var newBox = new ImageRegionBox { LinkTo = imNote };
+
+				// use During Preview here because it's the one with actual pixel measurements
+				newBox.SetPosition(
+					new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
+					new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
+					new Size(xImage.ActualWidth, xImage.ActualHeight));
+				xRegionsGrid.Children.Add(newBox);
+				newBox.PointerPressed += xRegion_OnPointerPressed;
+				newBox._image = this;
+				_visualRegions.Add(newBox);
+				newBox.PointerEntered += Region_OnPointerEntered;
+				newBox.PointerExited += Region_OnPointerExited;
+				xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
 			}
-
-			var newBox = new ImageRegionBox {LinkTo = imNote};
-
-			// use During Preview here because it's the one with actual pixel measurements
-			newBox.SetPosition(
-				new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-				new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
-				new Size(xImage.ActualWidth, xImage.ActualHeight));
-			xRegionsGrid.Children.Add(newBox);
-			newBox.PointerPressed += xRegion_OnPointerPressed;
-			newBox._image = this;
-			_visualRegions.Add(newBox);
-			newBox.PointerEntered += Region_OnPointerEntered;
-			newBox.PointerExited += Region_OnPointerExited;
-			xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
-
 			return imNote;
 		}
 
@@ -544,52 +574,99 @@ namespace Dash
 			e.Handled = true;
 		}
 
-		private void Region_Pressed(ImageRegionBox box, Point pos)
+		public void Region_Pressed(object region, Point pos, DocumentController chosenDC = null)
 		{
-				//delete if control is pressed
-				if (MainPage.Instance.IsCtrlPressed())
-				{
-					this.DeleteRegion(box);
-					return;
-				}
+			if (region == null) return;
 
+			DocumentController theDoc = null;
+
+			if (region is ImageRegionBox)
+			{
 				//get the linked doc of the selected region
-				var theDoc = box.LinkTo;
+				var imageRegion = (ImageRegionBox) region;
+				theDoc = imageRegion.LinkTo;
 				if (theDoc == null) return;
 
-				this.SelectRegion(box);
+				this.SelectRegion(imageRegion);
+			}
+			else
+			{
+				 theDoc = _docCtrl;
+			}
 
-				//handle linking
-				var linkFromDoc = theDoc.GetDataDocument()
-					.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
-				var linkToDoc = theDoc.GetDataDocument()
-					.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
-				if (linkFromDoc != null)
-				{
-					if (linkFromDoc.Count == 1)
-					{
-						var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
-							.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData
-							.First();
-						targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
-						theDoc = targetDoc;
-				} else if (linkFromDoc.Count > 1)
-					{
-						this.OpenLinkMenu(linkFromDoc);
-					}
-					
-				}
-				else if (linkToDoc != null)
-				{
+			//delete if control is pressed
+			if (MainPage.Instance.IsAltPressed() && region is ImageRegionBox)
+			{
+				this.DeleteRegion((ImageRegionBox) region);
+				_isPreviousRegionSelected = false;
+				return;
+			}
 
-					var targetDoc = linkToDoc.TypedData.First().GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData
+			if (pos.X == 0 && pos.Y == 0) pos = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+
+			
+			//handle linking
+			var linkFromDoc = theDoc.GetDataDocument()
+				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+			var linkToDoc = theDoc.GetDataDocument()
+				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+			if (linkFromDoc != null)
+			{
+				if (linkFromDoc.Count == 1)
+				{
+					var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
+						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData
 						.First();
-					targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ?? targetDoc;
+					targetDoc =
+						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
+						targetDoc;
+					theDoc = targetDoc;
+				}
+				else if (linkFromDoc.Count > 1 && chosenDC == null)
+				{
+					this.OpenLinkMenu(linkFromDoc.TypedData, KeyStore.LinkFromKey, pos);
+					Debug.WriteLine("LINK FROM DOC CONTAINS MORE THAN 1");
+					return;
+				}
+				else if (linkFromDoc.Count > 1 && chosenDC != null)
+				{
+					var targetDoc = chosenDC;
+					targetDoc =
+						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
+						targetDoc;
 					theDoc = targetDoc;
 				}
 
-				//find nearest linked doc that is currently displayed
+			}
+			else if (linkToDoc != null)
+			{
+				if (linkToDoc.Count == 1)
+				{
+					var targetDoc = linkToDoc.TypedData.First().GetDataDocument()
+						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData
+						.First();
+					targetDoc =
+						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
+						targetDoc;
+					theDoc = targetDoc;
+				}
+				else if (linkToDoc.Count > 1 && chosenDC == null)
+				{
+					this.OpenLinkMenu(linkToDoc.TypedData, KeyStore.LinkToKey, pos);
+					Debug.WriteLine("LINK TO DOC CONTAINS MORE THAN 1");
+					return; 
+				}
+				else if (linkToDoc.Count > 1 && chosenDC != null)
+				{
+					var targetDoc = chosenDC;
+					targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey,
+						            null) ?? targetDoc;
+					theDoc = targetDoc;
+				}
+			}
+
+
+		//find nearest linked doc that is currently displayed
 				var cvm = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
 				var nearestOnScreen = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), true);
 				var nearestOnCollection = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), false);
@@ -615,7 +692,7 @@ namespace Dash
 						else
 							Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
 
-					}
+					}i
 					else
 					{
 
@@ -692,9 +769,9 @@ namespace Dash
 		//delete passed-in region
 		public void DeleteRegion(ImageRegionBox region)
 		{
-			//collapse any open selection box
+			//collapse any open selection box & links
 			xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
-
+			
 			//remove actual region
 			if (region != null)
 			{
@@ -710,11 +787,14 @@ namespace Dash
 				_lastNearest = null;
 				//TODO: Remove annotaion from workspace?
 			}
+
+			this.DeselectRegions();
 		}
 
 		private void SelectRegion(ImageRegionBox region)
 		{
 			_selectedRegion = region;
+			_isPreviousRegionSelected = true;
 			//create a preview region to show that this region is selected
 			xRegionDuringManipulationPreview.Width = 0;
 			xRegionDuringManipulationPreview.Height = 0;
@@ -725,14 +805,19 @@ namespace Dash
 			xRegionPostManipulationPreview.Row2.Height = region.Row2.Height;
 			xRegionPostManipulationPreview.Row3.Height = region.Row3.Height;
 			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-			xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			//xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
 		}
 
 		//deselects all regions on an image
 		private void DeselectRegions()
 		{
+			_isPreviousRegionSelected = false;
 			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-			xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
+			//xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
+			//xLinkStack.Visibility = Visibility.Collapsed;
+			//xLinkStack.Children.Clear();
+			_linkDict?.Clear();
+
 			//unhighlight last selected regions' link
 			if (_lastNearest?.ViewModel?.DocumentController != null)
 			{
@@ -791,17 +876,94 @@ namespace Dash
 				if (_regionState == RegionVisibilityState.Hidden) region.Hide(); 
 			}
 		}
-
+		/*
 		//opens a menu in which the user can select a link to pursue 
-		private void OpenLinkMenu(ListController<DocumentController> linksList)
+		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey)
 		{
+			if (_selectedRegion == null) return;
+			
+			//create preview for menu based on contents of linkedDoc
+			
+			double stackX = _selectedRegion.Column1.ActualWidth;
+			double stackY = _selectedRegion.Row1.ActualHeight + 10;
+			xLinkStack.Margin = new Thickness(stackX, stackY, 0, 0);
+			xLinkStack.MaxWidth = _selectedRegion.ActualWidth;
+			xLinkStack.MaxHeight = _selectedRegion.ActualHeight;
 			xLinkStack.Visibility = Visibility.Visible;
-			foreach (DocumentController linkedDoc in linksList.GetElements())
+			
+			_linkDict = new Dictionary<TextBlock, DocumentController>();
+
+			//add contents of list as previews
+			foreach (DocumentController linkedDoc in linksList)
 			{
-				//create preview for menu based on contents of linkedDoc
-				//each should call contents of _RegionPressed for that specific element
-				//key value pane for inspiration?
+				//format
+				TextBlock linkPreview = new TextBlock();
+				linkPreview.Foreground = new SolidColorBrush(Colors.Black);
+				linkPreview.TextDecorations = TextDecorations.Underline;
+				linkPreview.FontSize = 12;
+
+				//data
+				var linkedDC = linkedDoc.GetDataDocument()
+					.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
+				linkPreview.Text = linkedDC.LayoutName + " : " + linkedDC.Title;
+				linkPreview.Width = _selectedRegion.Width - 10;
+				xLinkStack.Children.Add(linkPreview);
+
+				//add to dictionary & attach click handler
+				_linkDict.Add(linkPreview, linkedDC);
+				linkPreview.PointerPressed += Link_OnPointerPressed;
 			}
+		}
+
+		private void Link_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		{
+			e.Handled = false;
+			if (sender is TextBlock) this.Region_Pressed(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position, _linkDict[(TextBlock)sender]);
+			e.Handled = true;
+		}
+
+		*/
+
+		private void FormatLinkMenu()
+		{
+			xLinkFlyout.Closed += (s, e) =>
+			{
+				_isLinkMenuOpen = false;
+				xLinkFlyout.Items.Clear();
+			};
+
+			xLinkFlyout.Opening += (s, e) =>
+			{
+				_isLinkMenuOpen = true;
+			};
+		}
+
+		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey, Point point)
+		{
+			if (_isLinkMenuOpen == false)
+			{
+				//add all links as menu items
+				foreach (DocumentController linkedDoc in linksList)
+				{
+					//format new item
+					var linkItem = new MenuFlyoutItem();
+					var dc = linkedDoc.GetDataDocument()
+						.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
+					linkItem.Text = dc.Title;
+					linkItem.Click += (s, e) =>
+					{
+						this.Region_Pressed(_selectedRegion, point, dc);
+					};
+
+					// Add the item to the menu.
+					xLinkFlyout.Items.Add(linkItem);
+
+				}
+
+				//var selectedText = (FrameworkElement) xRichEditBox.Document.Selection;
+				xLinkFlyout.ShowAt(_selectedRegion);
+			}
+
 		}
 	}
 
