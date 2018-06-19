@@ -8,77 +8,83 @@ namespace Dash
 {
     static class UndoManager
     {
-        public static Stack<List<UndoCommand>> redoStack = new Stack<List<UndoCommand>>();
-        public static Stack<List<UndoCommand>> undoStack = new Stack<List<UndoCommand>>();
+        private static Stack<List<UndoCommand>> _redoStack = new Stack<List<UndoCommand>>();
+        private static Stack<List<UndoCommand>> _undoStack = new Stack<List<UndoCommand>>();
 
-        public static List<UndoCommand> currentBatch = new List<UndoCommand>();
-        public static int batchCounter = 0;
+        private static List<UndoCommand> _currentBatch = new List<UndoCommand>();
+        private static int _batchCounter;
 
         public static void EventOccured(UndoCommand e)
         {
             //only add events if you are in a batch
-            if(batchCounter > 0)
+            if(_batchCounter > 0)
             {
-                currentBatch.Add(e);
+                _currentBatch.Add(e);
             }
         }
 
         public static void startBatch()
         {
-            batchCounter++;
+            _batchCounter++;
         }
 
         public static void endBatch()
         {
-            batchCounter--;
+            _batchCounter--;
             //only finalize Batch is all batches closed and stuff happened in batch
-            if((batchCounter == 0) && (currentBatch.Count != 0))
+            if((_batchCounter == 0) && (_currentBatch.Count != 0))
             {
                 //add batch to redo stack
-                undoStack.Push(currentBatch);
-                currentBatch = new List<UndoCommand>();
+                _undoStack.Push(_currentBatch);
+                _currentBatch = new List<UndoCommand>();
 
                 MenuToolbar.Instance.SetUndoEnabled(true);
 
                 //once event occurs, you can no longer redo
-                redoStack = new Stack<List<UndoCommand>>();
+                _redoStack = new Stack<List<UndoCommand>>();
                 MenuToolbar.Instance.SetRedoEnabled(false);
             }
         }
 
         public static void UndoOccured()
         {
-            //run undo action and remove from undo Stack
-            List<UndoCommand> commands = undoStack.Pop();
-
-            for(int i= commands.Count - 1; i >= 0; i--)
+            if (_undoStack.Count > 0)
             {
-                Action undo = commands[i].undo;
-                undo();
-            }
-            
-            //Add command to redo stack
-            redoStack.Push(commands);
+                //run undo action and remove from undo Stack
+                List<UndoCommand> commands = _undoStack.Pop();
 
-            MenuToolbar.Instance.SetUndoEnabled(undoStack.Count > 0);
-            MenuToolbar.Instance.SetRedoEnabled(true);
+                for (int i = commands.Count - 1; i >= 0; i--)
+                {
+                    Action undo = commands[i].undo;
+                    undo();
+                }
+
+                //Add command to redo stack
+                _redoStack.Push(commands);
+
+                MenuToolbar.Instance.SetUndoEnabled(_undoStack.Count > 0);
+                MenuToolbar.Instance.SetRedoEnabled(true);
+            }
         }
 
         public static void RedoOccured()
         {
-            //run redo action and remove from redo Stack
-            List<UndoCommand> commands = redoStack.Pop();
-            foreach(UndoCommand command in commands)
+            if (_redoStack.Count > 0)
             {
-                Action redo = command.redo;
-                redo();
+                //run redo action and remove from redo Stack
+                List<UndoCommand> commands = _redoStack.Pop();
+                foreach (UndoCommand command in commands)
+                {
+                    Action redo = command.redo;
+                    redo();
+                }
+
+                //Add command to undo stack
+                _undoStack.Push(commands);
+
+                MenuToolbar.Instance.SetUndoEnabled(true);
+                MenuToolbar.Instance.SetRedoEnabled(_redoStack.Count > 0);
             }
-
-            //Add command to undo stack
-            undoStack.Push(commands);
-
-            MenuToolbar.Instance.SetUndoEnabled(true);
-            MenuToolbar.Instance.SetRedoEnabled(redoStack.Count > 0);
         }
     }
 }

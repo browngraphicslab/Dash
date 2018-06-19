@@ -54,6 +54,8 @@ namespace Dash
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
 
+        private bool controlDown = false;
+
         public static int GridSplitterThickness { get; } = 7;
 
         // TODO: change this to Toolbar binding to SelectedDocuments
@@ -416,6 +418,23 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            //event is fired when only one is clicked
+            if (e.VirtualKey == VirtualKey.Control)
+            {
+                controlDown = true;
+                e.Handled = true;
+            }
+            if (e.VirtualKey == VirtualKey.Z && controlDown)
+            {
+                UndoManager.UndoOccured();
+                e.Handled = true;
+            }
+            if (e.VirtualKey == VirtualKey.Y && controlDown)
+            {
+                UndoManager.RedoOccured();
+                e.Handled = true;
+            }
+
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
@@ -449,6 +468,11 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
+            if (e.VirtualKey == VirtualKey.Control)
+            {
+                controlDown = false;
+                e.Handled = true;
+            }
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))
