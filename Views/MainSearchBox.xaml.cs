@@ -69,7 +69,7 @@ namespace Dash
             var text = searchBox.Text; //.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
-            if (string.IsNullOrWhiteSpace(text))
+            if (!string.IsNullOrWhiteSpace(text))
             {
                 ExecuteSearch(searchBox);
                 return;
@@ -438,11 +438,11 @@ namespace Dash
                 {
                     var node = tree.GetNodeFromViewId(srvm.ResultDocumentViewId);
                     var doc = new DocumentController();
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, new TextController(srvm.ResultDocumentViewId), true);
+                    doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey, srvm.ResultDocumentViewId, true);
                     // not sure what the purpose of the commented out code below is for
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, new TextController(node.ViewDocument.Title /*+ " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")*/), true);
+                    doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey, node.ViewDocument.Title /*+ " >> " + (node.Parents.Length > 0 ? node.Parents[0].ViewDocument.Title : "")*/, true);
                     // For future: Maybe find a way to insert "Matched: " or some helpful text disambiguating the help text from the text
-                    doc.SetField(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, new TextController(/*"Matched: " + */srvm.HelpfulText), true);
+                    doc.SetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey, /*"Matched: " + */srvm.HelpfulText, true);
                     list.Add(doc);
                 }
                 return list;
@@ -734,27 +734,27 @@ namespace Dash
             /// </summary>
             /// <param name="criteria"></param>
             /// <returns></returns>
-            private static IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
-            {
-                var documentTree = DocumentTree.MainPageTree;
-                List<DocumentController> docControllers = new List<DocumentController>();
-                foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
-                {
-                    if (documentController.DocumentType.Type.ToLower().Contains(criteria.SearchText))
-                    {
-                        docControllers.Add(documentController);
-                    }
-                }
-                var results = new List<SearchResultViewModel>();
-                foreach (var docController in docControllers)
-                {
-                    var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.ImageFieldKey,
-                        null);
-                    var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
-                    results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));
-                }
-                return results;
-            }
+            //private static IEnumerable<SearchResultViewModel> HandleTypeSearch(SpecialSearchCriteria criteria)
+            //{
+            //    var documentTree = DocumentTree.MainPageTree;
+            //    List<DocumentController> docControllers = new List<DocumentController>();
+            //    foreach (var documentController in ContentController<FieldModel>.GetControllers<DocumentController>())
+            //    {
+            //        if (documentController.DocumentType.Type.ToLower().Contains(criteria.SearchText))
+            //        {
+            //            docControllers.Add(documentController);
+            //        }
+            //    }
+            //    var results = new List<SearchResultViewModel>();
+            //    foreach (var docController in docControllers)
+            //    {
+            //        var field = docController.GetDereferencedField<ImageController>(AnnotatedImage.ImageFieldKey,
+            //            null);
+            //        var imageUrl = (field as ImageController)?.Data?.AbsoluteUri ?? "";
+            //        results.AddRange(CreateSearchResults(documentTree, docController, imageUrl, docController.Title));
+            //    }
+            //    return results;
+            //}
 
 
             /// <summary>

@@ -290,7 +290,7 @@ namespace Dash
             // retrieve the uri from the file to update the image controller
             var path = "ms-appdata:///local/" + newFile.Name;
             var uri = new Uri(path);
-            _docCtrl.SetField(KeyStore.DataKey, new ImageController(uri), true);
+            _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
 
             // update the image source, width, and positions
             Image.Source = cropBmp;
@@ -299,11 +299,11 @@ namespace Dash
             // store new image information so that multiple crops can be made
             _imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
 
-            var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+            var oldpoint = _docCtrl.GetPosition() ?? new Point();
             var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
             Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X, oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
-            _docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
+            _docCtrl.SetPosition(point);
             _cropControl = new StateCropControl(_docCtrl, this);
 
             // TODO: Test that replace button works with cropping when merged with master

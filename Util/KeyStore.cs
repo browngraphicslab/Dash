@@ -10,6 +10,7 @@ namespace Dash
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
         public static KeyController RegionsKey = new KeyController("1B958E26-624B-4E9A-82C9-2E18609D6A39", "Regions");
+        public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
@@ -22,7 +23,7 @@ namespace Dash
         public static KeyController HiddenKey = new KeyController("A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6", "Hidden");
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
-        public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
+        public static KeyController IsAdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);

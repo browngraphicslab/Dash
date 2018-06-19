@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -35,18 +36,23 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : ICollectionView
     {
-        MatrixTransform     _transformBeingAnimated;// Transform being updated during animation
-        Canvas              _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
+        MatrixTransform _transformBeingAnimated;// Transform being updated during animation
+        Canvas _itemsPanelCanvas => xItemsControl.ItemsPanelRoot as Canvas;
         CollectionViewModel _lastViewModel = null;
-        List<DocumentView>  _selectedDocs = new List<DocumentView>();
+        List<DocumentView> _selectedDocs = new List<DocumentView>();
 
-        public ViewManipulationControls  ViewManipulationControls { get; set; }
-        public bool                      TagMode { get; set; }
-        public KeyController             TagKey { get; set; }
-        public CollectionViewModel       ViewModel { get => DataContext as CollectionViewModel; }
+        public ViewManipulationControls ViewManipulationControls { get; set; }
+        public bool TagMode { get; set; }
+        public KeyController TagKey { get; set; }
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
-        public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        public delegate void SetBackground(object backgroundImagePath);
+        private static event SetBackground setBackground;
 
+        public delegate void SetBackgroundOpacity(float opacity);
+
+        private static event SetBackgroundOpacity setBackgroundOpacity;
         public CollectionFreeformView()
         {
             InitializeComponent();
@@ -67,6 +73,8 @@ namespace Dash
                 }
                 UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                setBackground += Redraw;
+                setBackgroundOpacity += ChangeOpacity;
             };
             Unloaded += (sender, e) =>
             {
@@ -74,25 +82,27 @@ namespace Dash
                 {
                     _lastViewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 }
-                
+
                 _lastViewModel = null;
+                setBackground -= Redraw;
+                setBackgroundOpacity -= ChangeOpacity;
             };
-            xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
-            xOuterGrid.PointerExited   += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            xOuterGrid.SizeChanged     += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
-            xOuterGrid.PointerPressed  += OnPointerPressed;
+            xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
+            xOuterGrid.PointerExited += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            xOuterGrid.SizeChanged += (sender, e) => xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+            xOuterGrid.PointerPressed += OnPointerPressed;
             xOuterGrid.PointerReleased += OnPointerReleased;
             ViewManipulationControls = new ViewManipulationControls(this);
             ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
-        public DocumentController Snapshot(bool copyData=false)
+        public DocumentController Snapshot(bool copyData = false)
         {
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
-                controllers.Add(copyData  ? dvm.DocumentController.GetDataCopy():dvm.DocumentController.GetViewCopy());
+                controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
             var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
-            snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
+            snap.SetFitToParent(false);
             return snap;
         }
 
@@ -239,25 +249,91 @@ namespace Dash
 
         #region BackgroundTiling
 
-        bool             _resourcesLoaded;
+        bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
-        const double     NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        const float      BackgroundOpacity = 1.0f;
+        const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        private float _backgroundOpacity = 1.0f;
+
+        /// <summary>
+        /// Collection background tiling image opacity
+        /// </summary>
+        public static float BackgroundOpacity
+        {
+            set
+            {
+                setBackgroundOpacity?.Invoke(value);
+            }
+        }
+        private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private CanvasBitmap _bgImage;
+
+        /// <summary>
+        /// Collection background tiling image
+        /// </summary>
+        public static object BackgroundImage
+        {
+            set
+            {
+                setBackground?.Invoke(value);
+            }
+        }
+
+        /// <summary>
+        /// Called when background image changes
+        /// </summary>
+        /// <param name="backgroundImagePath"></param>
+        private void Redraw(object backgroundImagePath)
+        {
+            _background = backgroundImagePath;
+            _resourcesLoaded = false;
+            var task = Task.Run(async () =>
+            {
+
+                // Load the background image and create an image brush from it
+                if (_background is string s)
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri(s));
+                else
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream)_background);
+                _bgBrush = new CanvasImageBrush(xBackgroundCanvas, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+                xBackgroundCanvas.Invalidate();
+            });
+        }
+
+        /// <summary>
+        /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
+        /// </summary>
+        /// <param name="opacity"></param>
+        private void ChangeOpacity(float opacity)
+        {
+            _backgroundOpacity = opacity;
+            _bgBrush.Opacity = opacity;
+            xBackgroundCanvas.Invalidate();
+        }
 
         void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
             var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
-                var bgImage = await CanvasBitmap.LoadAsync(sender, new Uri("ms-appx:///Assets/transparent_grid_tilable.png"));
-                _bgBrush = new CanvasImageBrush(sender, bgImage)
+                if (_background is string)
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri((string)_background));
+                else
+                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream)_background);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
-                    Opacity = BackgroundOpacity
+                    Opacity = _backgroundOpacity
                 };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
                 _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
                 _resourcesLoaded = true;
             });
             args.TrackAsyncAction(task.AsAsyncAction());
@@ -423,10 +499,10 @@ namespace Dash
         #region Marquee Select
 
         Rectangle _marquee;
-        Point     _marqueeAnchor;
-        bool      _isMarqueeActive;
+        Point _marqueeAnchor;
+        bool _isMarqueeActive;
         private MarqueeInfo mInfo;
-        object    _marqueeKeyHandler = null;
+        object _marqueeKeyHandler = null;
 
         void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
@@ -456,8 +532,8 @@ namespace Dash
             if (_isMarqueeActive)
             {
                 var pos = args.GetCurrentPoint(SelectionCanvas).Position;
-                var dX  = pos.X - _marqueeAnchor.X;
-                var dY =  pos.Y - _marqueeAnchor.Y;
+                var dX = pos.X - _marqueeAnchor.X;
+                var dY = pos.Y - _marqueeAnchor.Y;
 
                 //Height and width depend on the difference in position of the current point and the anchor (initial point)
                 double newWidth = (dX > 0) ? dX : -dX;
@@ -496,7 +572,7 @@ namespace Dash
                     _marquee.Width = newWidth;
                     _marquee.Height = newHeight;
                     args.Handled = true;
-                   
+
                     Canvas.SetLeft(mInfo, newAnchor.X);
                     Canvas.SetTop(mInfo, newAnchor.Y + newHeight);
                 }
@@ -548,20 +624,20 @@ namespace Dash
         {
             return _isMarqueeActive;
         }
-        
+
         public List<DocumentView> DocsInMarquee(Rect marquee)
         {
             var selectedDocs = new List<DocumentView>();
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 var docs = xItemsControl.ItemsPanelRoot.Children;
-                foreach (var documentView in docs.Select((d)=>d.GetFirstDescendantOfType<DocumentView>()).Where(d => d != null && d.IsHitTestVisible))
+                foreach (var documentView in docs.Select((d) => d.GetFirstDescendantOfType<DocumentView>()).Where(d => d != null && d.IsHitTestVisible))
                 {
                     var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
-                        selectedDocs.Add( documentView);
+                        selectedDocs.Add(documentView);
                     }
                 }
             }
@@ -572,7 +648,7 @@ namespace Dash
         {
             Point topLeftMostPoint = new Point(Double.PositiveInfinity, Double.PositiveInfinity);
             Point bottomRightMostPoint = new Point(Double.NegativeInfinity, Double.NegativeInfinity);
-            
+
             bool isEmpty = true;
 
             foreach (DocumentView doc in SelectedDocs)
@@ -610,7 +686,7 @@ namespace Dash
                 where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     SelectionCanvas, xItemsControl.ItemsPanelRoot);
                 marquee = _marquee;
-               viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
             }
             else
             {
@@ -661,7 +737,7 @@ namespace Dash
                     break;
             }
 
-            if(deselect) DeselectAll();
+            if (deselect) DeselectAll();
         }
 
         #endregion
@@ -704,7 +780,7 @@ namespace Dash
         #endregion
 
         #region SELECTION
-        
+
         public void DeselectAll()
         {
             SelectionCanvas?.Children?.Clear();
@@ -717,7 +793,7 @@ namespace Dash
             _isMarqueeActive = false;
             MainPage.Instance.DeselectAllDocuments();
         }
-        
+
         /// <summary>
         /// Selects all of the documents in selected. Works on a view-specific level.
         /// </summary>
@@ -846,11 +922,11 @@ namespace Dash
         {
 
             var shiftState = this.IsShiftPressed();
-            var capState   = this.IsCapsPressed();
+            var capState = this.IsCapsPressed();
             var virtualKeyCode = (uint)key;
 
             string character = null;
-            
+
             // take care of symbols
             if (key == VirtualKey.Space)
             {

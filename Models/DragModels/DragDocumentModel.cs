@@ -75,7 +75,7 @@ namespace Dash.Models.DragModels
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);
                 //dbox.SetField(KeyStore.DataKey,
                 //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
-                dbox.SetField(KeyStore.TitleKey, new TextController(DraggedKey.Name), true);
+                dbox.SetTitle(DraggedKey.Name);
                 return dbox;
             }
 
@@ -93,9 +93,9 @@ namespace Dash.Models.DragModels
                 if (double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data) &&                    
                     vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType))
                 {
-                    vcopy.SetField<NumberController>(KeyStore.WidthFieldKey, 500, true);
-                    vcopy.SetField<NumberController>(KeyStore.HeightFieldKey,300, true);
-                    vcopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                    vcopy.SetWidth(500);
+                    vcopy.SetHeight(300);
+                    vcopy.SetFitToParent(true);
                 }
                 return vcopy;
             }
