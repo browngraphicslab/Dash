@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
 using Windows.UI;
+using Dash.FontIcons;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -162,7 +163,8 @@ namespace Dash
                 elementsToBeRemoved.Add(separatorTwo);
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
+                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As"};
+                
                 contextMenu.Items.Add(viewCollectionAs);
                 elementsToBeRemoved.Add(viewCollectionAs);
 

@@ -28,20 +28,20 @@
         <Grid.ContextFlyout>
             <MenuFlyout x:Name = "xMenuFlyout">
                 <!-- There's a MenuFlyoutItem for each clickable item in the right click menu for DocumentViews; CollectionViews will add more items to this-->
-                <MenuFlyoutItem Text="Open" Click="MenuFlyoutItemOpen_OnClick" />
+                <MenuFlyoutItem Text="Open" Icon="OpenFile" Click="MenuFlyoutItemOpen_OnClick" />
                 <MenuFlyoutItem Text="Delete" Icon="Delete" Click="MenuFlyoutItemDelete_Click"/>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
-                <MenuFlyoutItem Text="Alias" Click="MenuFlyoutItemAlias_Click"/>
+                <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click"/>
                 <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Fields" Click="MenuFlyoutItemFields_Click"/>
-                <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
+                <MenuFlyoutItem Text="Fields" Icon="ShowResults"  Click="MenuFlyoutItemFields_Click"/>
+                <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click"/>
                 <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Pin to Presentation" Click="MenuFlyoutItemPin_Click"/>
-                <MenuFlyoutItem Text="Toggle As Adornment" Click="MenuFlyoutItemToggleAsAdornment_Click"/>
-                <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
-                <MenuFlyoutItem Text="Launch app" Click="MenuFlyoutLaunch_Click"/>
-                <MenuFlyoutItem Text="Copy history to clipboard" Click="MenuFlyoutItemCopyHistory_Click"/>
+                <MenuFlyoutItem Text="Pin to Presentation" Icon="Pin"  Click="MenuFlyoutItemPin_Click"/>
+                <MenuFlyoutItem Text="Toggle As Adornment" Icon="Trim" Click="MenuFlyoutItemToggleAsAdornment_Click"/>
+                <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click"/>
+                <MenuFlyoutItem Text="Launch App" Icon="Go"  Click="MenuFlyoutLaunch_Click"/>
+                <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click"/>
             </MenuFlyout>
         </Grid.ContextFlyout>
 
