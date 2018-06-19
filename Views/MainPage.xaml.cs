@@ -55,6 +55,8 @@ namespace Dash
         private DockedView[] _lastDockedViews = {null, null, null, null};
 
         private bool controlDown = false;
+        private bool ZDown = false;
+        private bool YDown = false;
 
         public static int GridSplitterThickness { get; } = 7;
 
@@ -424,15 +426,23 @@ namespace Dash
                 controlDown = true;
                 e.Handled = true;
             }
-            if (e.VirtualKey == VirtualKey.Z && controlDown)
+            else if (e.VirtualKey == VirtualKey.Z)
             {
-                UndoManager.UndoOccured();
+                ZDown = true;
                 e.Handled = true;
             }
-            if (e.VirtualKey == VirtualKey.Y && controlDown)
+            else if (e.VirtualKey == VirtualKey.Y)
+            {
+                YDown = true;
+                e.Handled = true;
+            }
+
+            if (controlDown && YDown)
             {
                 UndoManager.RedoOccured();
-                e.Handled = true;
+            } else if (controlDown && ZDown)
+            {
+                UndoManager.UndoOccured();
             }
 
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
@@ -471,6 +481,16 @@ namespace Dash
             if (e.VirtualKey == VirtualKey.Control)
             {
                 controlDown = false;
+                e.Handled = true;
+            }
+            else if (e.VirtualKey == VirtualKey.Z)
+            {
+                ZDown = false;
+                e.Handled = true;
+            }
+            else if (e.VirtualKey == VirtualKey.Y)
+            {
+                YDown = false;
                 e.Handled = true;
             }
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
