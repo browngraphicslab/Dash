@@ -29,13 +29,13 @@ namespace Dash
         public Timer SaveTimer { get; }
         public Timer BackupTimer { get; }
 
-        private readonly Queue<string> _currentBackups = new Queue<string>(DashConstants.NumBackupsToSave);
+        private readonly Queue<string> _currentBackups = new Queue<string>(3);
         private readonly string _fileName = "dash." + typeof(T).Name;
 
         public LocalModelEndpoint()
         {
             var saveInterval = new TimeSpan(DashConstants.MillisecondBetweenLocalSave * TimeSpan.TicksPerMillisecond);
-            var backupInterval = new TimeSpan(DashConstants.MillisecondBetweenLocalBackup * TimeSpan.TicksPerMillisecond);
+            var backupInterval = new TimeSpan(DashConstants.DefaultBackupInterval * TimeSpan.TicksPerMillisecond);
 
             SaveTimer = new Timer(SaveTimerCallback, null, saveInterval, saveInterval);
             BackupTimer = new Timer(BackupTimerCallback, null, backupInterval, backupInterval);
@@ -63,6 +63,10 @@ namespace Dash
             }
         }
 
+        public void SetBackupInterval(int millis) { }
+
+        public void SetNumBackups(int numBackups) { }
+
         private void BackupTimerCallback(object state) { CopyAsBackup(); }
 
         private void CopyAsBackup()
@@ -73,7 +77,7 @@ namespace Dash
             File.Copy(sourcePath, outPath, true);
             _currentBackups.Enqueue(outPath);
             var toDelete = _currentBackups.Dequeue();
-            if (_currentBackups.Count == DashConstants.NumBackupsToSave + 1)
+            if (_currentBackups.Count == DashConstants.DefaultNumBackups + 1)
             {
                 File.Delete(toDelete);
                 Debug.WriteLine($"\n\n\nDELETED BACKUP AT {toDelete}\n\n\n\n");

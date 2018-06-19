@@ -33,7 +33,7 @@
     <Grid Background="{ThemeResource CollectionBackgroundBrush}" Padding="50">
         <StackPanel>
             <TextBlock Style="{StaticResource TitleStyle}">SETTINGS</TextBlock>
-            
+
             <!--UI-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
             <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}" >Night Mode</ToggleSwitch>
@@ -47,18 +47,53 @@
                 <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
                 <RadioButton>Zoom</RadioButton>
             </StackPanel>
-            
+
             <!--Backup-->
+            <TextBlock Style="{StaticResource SubheaderStyle}">Erase current database</TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="xEraseDbButton" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="XEraseDbButton_OnTapped">
+                    <Image x:Name="xEraseDbIcon" Source="ms-appx:///Assets/eraser.png"/>
+                </Button>
+                <Image x:Name="xEraseReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="10, 20, 0, 0" Tapped="XEraseReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                <ToggleSwitch x:Name="xEraseSafety" Margin="18,15,0,0" IsOn="True" Toggled="XEraseSafety_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
+            </StackPanel>
+
             <TextBlock Style="{StaticResource SubheaderStyle}">Restore from backup</TextBlock>
             <Button x:Name="xRestoreButton" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="Restore_OnTapped">
                 <Image x:Name="xRestoreIcon" Source="ms-appx:///Assets/revert.png"/>
             </Button>
 
+
             <TextBlock Style="{StaticResource SubheaderStyle}">Delete all backups</TextBlock>
-            <Button x:Name="xClearButton" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="XClearButton_OnTapped">
-                <Image x:Name="xClearIcon" Source="ms-appx:///Assets/delete.png"/>
-            </Button>
-            <Image x:Name="xReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="-1240, -50, 0, 0" Tapped="XReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="xClearButton" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="XClearButton_OnTapped">
+                    <Image x:Name="xClearIcon" Source="ms-appx:///Assets/delete.png"/>
+                </Button>
+                <Image x:Name="xReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="10, 20, 0, 0" Tapped="XReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                <ToggleSwitch x:Name="xSafety" Margin="18,15,0,0" IsOn="True" Toggled="ToggleSwitch_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <Slider x:Name="xNumBackupsSlider" 
+                        Width="300"  
+                        HorizontalAlignment="Left"
+                        Margin="10, 20, 0, 0"
+                        Header="Number of backups"
+                        StepFrequency="1"
+                        ValueChanged="XNumBackupsSlider_OnValueChanged"
+                        SnapsTo="StepValues"/>
+                <TextBlock x:Name="xCorrectionPrompt" Style="{StaticResource SubheaderStyle}" Margin="20, 42, 0, 0" Visibility="Collapsed">Delete backups _ through _?</TextBlock>
+                <Image x:Name="xCorrectReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="20, 35, 0, 0" Tapped="XCorrectReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="20, 30, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
+            </StackPanel>
+            <Slider x:Name="xBackupIntervalSlider" 
+                    Width="300"  
+                    HorizontalAlignment="Left"
+                    Margin="10, 10, 0, 0"
+                    Header="Seconds between backups"
+                    StepFrequency="10"
+                    ValueChanged="XBackupIntervalSlider_OnValueChanged"
+                    SnapsTo="StepValues"/>
         </StackPanel>
     </Grid>
 </Page>

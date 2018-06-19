@@ -137,6 +137,7 @@
     <Content Include="Assets\Badge\Badge.scale-400.png" />
     <Content Include="Assets\dashicon.png" />
     <Content Include="Assets\delete.png" />
+    <Content Include="Assets\eraser.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\seriousdelete.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />

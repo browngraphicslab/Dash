@@ -103,5 +103,17 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         Dictionary<string, string> GetBackups();
+
+        /// <summary>
+        /// Set the interval between backups in milliseconds
+        /// </summary>
+        /// <param name="millis"></param>
+        void SetBackupInterval(int millis);
+
+        /// <summary>
+        /// Set the max number of backups that should be maintained
+        /// </summary>
+        /// <param name="numBackups"></param>
+        void SetNumBackups(int numBackups);
     }
 }

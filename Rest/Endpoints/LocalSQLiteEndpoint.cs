@@ -21,6 +21,9 @@ namespace Dash
         /// </summary>
         private SqliteConnection _db;
         private SqliteTransaction _currentTransaction;
+        private readonly System.Timers.Timer _backupTimer;
+        private int _numBackups = DashConstants.DefaultNumBackups;
+        public bool NewChangesToBackup { get; set; }
 
         private readonly Mutex _transactionMutex = new Mutex();
 
@@ -61,10 +64,16 @@ namespace Dash
             saveTimer.Elapsed += Timer_Elapsed;
             saveTimer.Start();
 
-            var backupTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalBackup);
-            backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
-            backupTimer.Start();
+            _backupTimer = new System.Timers.Timer(DashConstants.DefaultBackupInterval * 1000);
+            _backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
+            _backupTimer.Start();
+
+            NewChangesToBackup = false;
         }
+
+        public void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
+
+        public void SetNumBackups(int numBackups) { _numBackups = numBackups; }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -76,12 +85,13 @@ namespace Dash
 
         private void CopyAsBackup()
         {
+            Debug.WriteLine("CREATING BACKUP!!!");
             var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
-            if (!File.Exists(dbPath)) return;
+            if (!NewChangesToBackup || !File.Exists(dbPath)) return;
 
             var backupPath = dbPath + ".bak";
 
-            for (var i = DashConstants.NumBackupsToSave - 1; i >= 1; i--)
+            for (var i = _numBackups - 1; i >= 1; i--)
             {
                 var source = backupPath + i;
                 var destination = backupPath + (i + 1);
@@ -115,6 +125,7 @@ namespace Dash
             if (!SafeExecuteMutateQuery(addDocCommand, error, "AddDocument", watch.ElapsedMilliseconds)) return;
 
             success?.Invoke(newDocument);
+            NewChangesToBackup = true;
         }
 
         public void UpdateDocument(FieldModel documentToUpdate, Action<FieldModel> success, Action<Exception> error)
@@ -137,6 +148,7 @@ namespace Dash
             if (!SafeExecuteMutateQuery(updateDocCommand, error, "UpdateDocument", watch.ElapsedMilliseconds)) return;
 
             success?.Invoke(documentToUpdate);
+            NewChangesToBackup = true;
         }
 
         public void DeleteDocument(FieldModel documentToDelete, Action success, Action<Exception> error)
@@ -157,6 +169,7 @@ namespace Dash
             if (!SafeExecuteMutateQuery(deleteDocCommand, error, "DeleteDocument", watch.ElapsedMilliseconds)) return;
 
             success?.Invoke();
+            NewChangesToBackup = true;
         }
 
         public void DeleteAllDocuments(Action success, Action<Exception> error)
@@ -176,6 +189,7 @@ namespace Dash
             if (!SafeExecuteMutateQuery(deleteAllCommand, error, "DeleteAllDocuments", watch.ElapsedMilliseconds)) {return;}
 
             success?.Invoke();
+            NewChangesToBackup = true;
         }
 
         #endregion

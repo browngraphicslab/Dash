@@ -93,8 +93,21 @@ namespace DashShared
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
         public static int MillisecondBetweenLocalSave = 1000; //1 second
-        public static int MillisecondBetweenLocalBackup = 100000; //2.5 minutes
-        public static int NumBackupsToSave = 3;
+
+        //BACKUP CONSTANTS
+
+        //Minimum
+        public static int MinNumBackups = 1;
+        public static int MinBackupInterval = 2;
+
+        //Default
+        public static int DefaultNumBackups = 3;
+        public static int DefaultBackupInterval = 150;
+
+        //Maximum
+        public static int MaxNumBackups = 10;
+        public static int MaxBackupInterval = 900;
+
 
         #endregion LocalServer
 

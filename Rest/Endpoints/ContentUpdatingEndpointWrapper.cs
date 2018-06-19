@@ -48,6 +48,10 @@ namespace Dash
             //modelList.OfType<DocumentModel>().ToList().ForEach(i => i.GetController().Init());
         }
 
+        public void SetBackupInterval(int millis) { _endpoint.SetBackupInterval(millis); }
+
+        public void SetNumBackups(int numBackups) { _endpoint.SetNumBackups(numBackups); }
+
         private Func<RestRequestReturnArgs, Task> GetSuccessFunc(Func<RestRequestReturnArgs, Task> success)
         {
             async Task func(RestRequestReturnArgs arg)

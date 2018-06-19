@@ -415,6 +415,7 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
@@ -444,6 +445,8 @@ namespace Dash
                     DocumentView.FocusedDocument.ShowSelectedContext();
                 }
             }
+
+            e.Handled = true;
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -497,6 +500,8 @@ namespace Dash
                 if (!this.IsF1Pressed())
                     DocumentView.FocusedDocument.ShowLocalContext(false);
             }
+
+            e.Handled = true;
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
