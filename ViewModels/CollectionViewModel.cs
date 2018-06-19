@@ -537,6 +537,7 @@ namespace Dash
 
         public async void Paste(DataPackageView dvp, Point where)
         {
+            UndoManager.startBatch();
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
                 var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
@@ -587,10 +588,12 @@ namespace Dash
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
+            UndoManager.endBatch();
         }
 
         private async void PasteBitmap(DataPackageView dvp, Point where)
         {
+            UndoManager.startBatch();
             var streamRef = await dvp.GetBitmapAsync();
             WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
             await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
@@ -610,6 +613,7 @@ namespace Dash
             dp.SetStorageItems(new IStorageItem[] { savefile });
             var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
             AddDocument(droppedDoc);
+            UndoManager.endBatch();
         }
 
         /// <summary>
@@ -619,6 +623,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            UndoManager.startBatch();
             e.Handled = true;
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move;
@@ -646,6 +651,7 @@ namespace Dash
                     var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
                     if (droppedDoc != null)
                         AddDocument(droppedDoc);
+                    UndoManager.endBatch();
                     return;
                 }
                 catch (Exception exception)
@@ -681,6 +687,7 @@ namespace Dash
                     var src = srcMatch.Substring(6, srcMatch.Length - 6);
                     var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
                     AddDocument(imgNote.Document);
+                    UndoManager.endBatch();
                     return;
                 }
 
@@ -915,6 +922,7 @@ namespace Dash
                     AddDocument(dragModel.GetDropDocument(where));
                 }
             }
+            UndoManager.endBatch();
         }
 
         /// <summary>

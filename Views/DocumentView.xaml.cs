@@ -243,6 +243,8 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
+                
+
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
                 var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!this.IsShiftPressed() && ParentCollection?.CurrentView is CollectionFreeformView cview)
@@ -261,6 +263,7 @@ namespace Dash
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
+                UndoManager.startBatch();
                 SelectedDocuments().ForEach((d) =>
                 {
                     d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
@@ -274,6 +277,8 @@ namespace Dash
                         cview.DeselectAll();
                     }
                 }
+
+                UndoManager.endBatch();
             };
 
             MenuFlyout = xMenuFlyout;
@@ -647,10 +652,12 @@ namespace Dash
         /// </summary>
         public void CopyDocument()
         {
+            UndoManager.startBatch();
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
             var doc = ViewModel.DocumentController.GetCopy(null);
             ParentCollection?.ViewModel.AddDocument(doc);
+            UndoManager.endBatch();
         }
 
         /// <summary>
