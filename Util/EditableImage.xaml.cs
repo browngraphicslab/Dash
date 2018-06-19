@@ -36,6 +36,7 @@ namespace Dash
         public EditableImage(DocumentController docCtrl, Context context)
         {
             InitializeComponent();
+
             _docCtrl = docCtrl;
             _context = context;
             Image.Loaded += Image_Loaded;
@@ -103,7 +104,8 @@ namespace Dash
                 var fileProperties = await file.Properties.GetImagePropertiesAsync();
                 Image.Width = fileProperties.Width;
 
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey, _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey,
+                    _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
                 _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
             }
         }
@@ -175,7 +177,8 @@ namespace Dash
         /// <param name="rectangleGeometry">
         ///     rectangle geometry that determines the size and starting point of the crop
         /// </param>
-        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None, BitmapFlip flip = BitmapFlip.None)
+        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None,
+            BitmapFlip flip = BitmapFlip.None)
         {
             var file = await GetImageFile();
 
@@ -191,10 +194,10 @@ namespace Dash
             var scale = fileProperties.Width / Image.ActualWidth;
 
             // retrieves data from rectangle
-            var startPointX = (uint)rectangleGeometry.X;
-            var startPointY = (uint)rectangleGeometry.Y;
-            var height = (uint)rectangleGeometry.Height;
-            var width = (uint)rectangleGeometry.Width;
+            var startPointX = (uint) rectangleGeometry.X;
+            var startPointY = (uint) rectangleGeometry.Y;
+            var height = (uint) rectangleGeometry.Height;
+            var width = (uint) rectangleGeometry.Width;
 
             Debug.Assert(file != null); // if neither works, something's hecked up
             WriteableBitmap cropBmp;
@@ -205,8 +208,8 @@ namespace Dash
                 var decoder = await BitmapDecoder.CreateAsync(stream);
 
                 // finds scaled size of the new bitmap image
-                var scaledWidth = (uint)Math.Ceiling(decoder.PixelWidth / scale);
-                var scaledHeight = (uint)Math.Ceiling(decoder.PixelHeight / scale);
+                var scaledWidth = (uint) Math.Ceiling(decoder.PixelWidth / scale);
+                var scaledHeight = (uint) Math.Ceiling(decoder.PixelHeight / scale);
 
                 if (flip != BitmapFlip.None && (height != scaledHeight || width != scaledWidth))
                 {
@@ -302,7 +305,8 @@ namespace Dash
 
             var oldpoint = _docCtrl.GetPosition() ?? new Point();
             var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
-            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X, oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
+            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
+                oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
             _docCtrl.SetPosition(point);
             _cropControl = new StateCropControl(_docCtrl, this);
@@ -328,7 +332,8 @@ namespace Dash
                         xGrid.Children.Remove(_cropControl);
                         await Crop(_cropControl.GetBounds());
                         _docview.ViewModel.DisableDecorations = false;
-                        _docview.showControls();
+                        _docview.hideControls();
+
                         break;
                     case VirtualKey.Left:
                     case VirtualKey.Right:
@@ -346,9 +351,11 @@ namespace Dash
         {
             if (!IsCropping) return;
             IsCropping = false;
-            _docview.ViewModel.DisableDecorations = false;
+
+            //_docview.ViewModel.DisableDecorations = false;
             _docview.showControls();
             xGrid.Children.Remove(_cropControl);
         }
     }
+
 }
