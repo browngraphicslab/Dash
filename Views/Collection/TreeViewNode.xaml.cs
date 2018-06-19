@@ -283,5 +283,32 @@ namespace Dash
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
         }
+
+        private void TreeViewNode_OnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            var treeViewCollection = (sender as TreeViewNode).GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var listView = treeViewCollection.GetFirstDescendantOfType<ListView>();
+            listView.CanReorderItems = true;
+            listView.AllowDrop = true;
+            listView.ReorderMode = ListViewReorderMode.Enabled;
+        }
+
+        private void TreeViewNode_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            var treeViewCollection = (sender as TreeViewNode).GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var listView = treeViewCollection.GetFirstDescendantOfType<ListView>();
+            listView.CanReorderItems = false;
+            listView.AllowDrop = false;
+            listView.ReorderMode = ListViewReorderMode.Disabled;
+        }
+
+        private void TreeViewNode_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var treeViewCollection = (sender as TreeViewNode).GetFirstAncestorOfType<TreeViewCollectionNode>();
+            var listView = treeViewCollection.GetFirstDescendantOfType<ListView>();
+            listView.CanReorderItems = true;
+            listView.AllowDrop = true;
+            listView.ReorderMode = ListViewReorderMode.Enabled;
+        }
     }
 }

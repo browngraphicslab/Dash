@@ -9,7 +9,8 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     x:Name="Control"
-    DataContextChanged="TreeViewNode_OnDataContextChanged">
+    DataContextChanged="TreeViewNode_OnDataContextChanged"
+    Tapped="TreeViewNode_OnTapped">
 
     <StackPanel>
         <StackPanel.ContextFlyout>
