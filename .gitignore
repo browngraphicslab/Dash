@@ -576,3 +576,5 @@ __pycache__/
 
 *.xsd.cs
 DashWebServer/Logs/
+
+win32
