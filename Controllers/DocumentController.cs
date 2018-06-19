@@ -761,10 +761,14 @@ namespace Dash
         {
             var proto = GetPrototypeWithFieldKey(key);
 
-            if (proto._fields.ContainsKey(key))
+            if (!proto._fields.ContainsKey(key))
                 return false;
 
-            return proto._fields.Remove(key);
+            proto._fields.Remove(key, out var value);
+
+            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(Id, key), null, false), new Context(this));
+
+            return true;
         }
 
         /// <summary>
@@ -814,7 +818,9 @@ namespace Dash
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
-                return false;
+            {
+                return RemoveField(key);
+            }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;

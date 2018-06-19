@@ -73,12 +73,19 @@ namespace Dash
         {
             try
             {
-                var field = DSL.InterpretUserInput(text, state: ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                UndoManager.startBatch();
+                var field = DSL.InterpretUserInput(text,
+                    state: ScriptState.CreateStateWithThisDocument(
+                        ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)
             {
                 return false;
+            }
+            finally
+            {
+                UndoManager.endBatch();
             }
             return true;
         }
