@@ -11,7 +11,7 @@ namespace Dash
 
         public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-
+            SaveOnServer();
         }
 
         public MultiplyOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -44,7 +44,7 @@ namespace Dash
         {
             var numberA = (NumberController)inputs[AKey];
             var numberB = (NumberController)inputs[BKey];
-            Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
+            //Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
 
             var a = numberA.Data;
             var b = numberB.Data;

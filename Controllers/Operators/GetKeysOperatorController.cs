@@ -16,6 +16,7 @@ namespace Dash
 
         public GetKeysOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public GetKeysOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

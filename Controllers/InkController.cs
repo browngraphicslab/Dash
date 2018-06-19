@@ -26,11 +26,13 @@ namespace Dash
 
         public InkController() : base(new InkModel())
         {
+            SaveOnServer();
             UpdateStrokesFromList(null, null);
         }
 
         public InkController(string data) : base(new InkModel(data))
         {
+            SaveOnServer();
             InkData = data;
             _undoStack.Push(data);
             SetState(data, null);
@@ -62,7 +64,7 @@ namespace Dash
                 if (InkFieldModel.Data != value)
                 {
                     InkFieldModel.Data = value;
-                    // Update the server
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

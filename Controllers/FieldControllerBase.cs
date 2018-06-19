@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -37,10 +38,13 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            UpdateOnServer();
+            //UpdateOnServer();
+
             FieldModelUpdated?.Invoke(this,
-                args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update),
+                args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),
                 context);
+
+            //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
 
         public virtual FieldControllerBase Dereference(Context context)

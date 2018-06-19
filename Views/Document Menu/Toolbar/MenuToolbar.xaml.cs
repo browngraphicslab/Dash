@@ -123,7 +123,7 @@ namespace Dash
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                xFloating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -549,6 +549,8 @@ namespace Dash
         /// </summary>
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+
             //instantiates a file picker, set to open in user's audio library
             var picker = new FileOpenPicker
             {

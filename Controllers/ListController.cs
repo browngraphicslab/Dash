@@ -38,9 +38,10 @@ namespace Dash
                             d.FieldModelUpdated += ContainedFieldUpdated;
                         }
                         _typedData = value;
-                        OnFieldModelUpdated(null);
 
                         UpdateOnServer();
+                        OnFieldModelUpdated(null);
+
                     }
                 }
                 _typedData = value;
@@ -94,16 +95,19 @@ namespace Dash
 
         public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
         public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc?.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
         public ListController(T item) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
@@ -111,9 +115,7 @@ namespace Dash
         {
             //why have a list of none?
             Debug.Assert(!(Model as ListModel).SubTypeInfo.Equals(TypeInfo.None));
-
             TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
-            UpdateOnServer();
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
@@ -179,7 +181,7 @@ namespace Dash
 
                 OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
                     ListFieldUpdatedEventArgs.ListChangedAction.Remove,
-                    new List<T> {element}));
+                    new List<T> { element }));
             }
         }
 
@@ -254,10 +256,10 @@ namespace Dash
         public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.UpdateOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.UpdateOnServer();
-            }
+            //foreach (var fmc in TypedData)
+            //{
+            //    fmc.UpdateOnServer();
+            //}
 
             /*
             foreach (var fmc in TypedData)
@@ -277,10 +279,10 @@ namespace Dash
         public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
         {
             base.SaveOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.SaveOnServer();
-            }
+            //foreach (var fmc in TypedData)
+            //{
+            //    fmc.SaveOnServer();
+            //}
         }
 
         /// <summary>

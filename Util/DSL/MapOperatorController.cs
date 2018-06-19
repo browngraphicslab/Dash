@@ -26,6 +26,7 @@ namespace Dash
 
         public MapOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
 

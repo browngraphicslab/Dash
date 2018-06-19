@@ -2,6 +2,8 @@
 
 //using Windows.Storage;
 
+using System;
+
 namespace DashShared
 {
     public static class DashConstants
@@ -10,7 +12,6 @@ namespace DashShared
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
         public const bool DEVELOP_LOCALLY = true;
-
 
         #region DocumentDB
 
@@ -91,7 +92,22 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 10000; //10 seconds
+        public static int MillisecondBetweenLocalSave = 1000; //1 second
+
+        //BACKUP CONSTANTS
+
+        //Minimum
+        public static int MinNumBackups = 1;
+        public static int MinBackupInterval = 2;
+
+        //Default
+        public static int DefaultNumBackups = 3;
+        public static int DefaultBackupInterval = 150;
+
+        //Maximum
+        public static int MaxNumBackups = 10;
+        public static int MaxBackupInterval = 900;
+
 
         #endregion LocalServer
 

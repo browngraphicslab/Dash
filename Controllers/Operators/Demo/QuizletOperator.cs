@@ -13,6 +13,8 @@ namespace Dash
 
         public QuizletOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

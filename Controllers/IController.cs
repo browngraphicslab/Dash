@@ -107,5 +107,10 @@ namespace Dash
             _serverEndpoint.AddDocument(Model, success, error);
         }
 
+        public virtual void IsOnServer(Action<bool> success = null, Action<Exception> error = null)
+        {
+            error = error ?? ((e) => throw e);
+            _serverEndpoint.HasDocument(Model, success, error);
+        }
     }
 }

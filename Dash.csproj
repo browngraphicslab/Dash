@@ -139,6 +139,10 @@
     <Content Include="Assets\Badge\Badge.scale-200.png" />
     <Content Include="Assets\Badge\Badge.scale-400.png" />
     <Content Include="Assets\dashicon.png" />
+    <Content Include="Assets\delete.png" />
+    <Content Include="Assets\eraser.png" />
+    <Content Include="Assets\return.png" />
+    <Content Include="Assets\seriousdelete.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -200,7 +204,6 @@
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
-    <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
@@ -230,9 +233,8 @@
     <Compile Include="Rest\Endpoints\IQuery.cs" />
     <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
     <Compile Include="Rest\Endpoints\LocalEverythingEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalSqliteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
@@ -789,6 +791,7 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\revert.png" />
     <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
@@ -1233,6 +1236,12 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.6</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite">
+      <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite.Core">
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.1.0</Version>

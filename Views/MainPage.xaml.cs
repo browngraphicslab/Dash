@@ -20,14 +20,11 @@ using Windows.ApplicationModel.AppService;
 using Windows.UI;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Toolkit.Uwp.UI;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
 using Dash.Views;
-using Dash.Views.Document_Menu;
 using Dash.Controllers;
 using Windows.UI.Popups;
 using Windows.Foundation.Collections;
@@ -119,14 +116,14 @@ namespace Dash
         {
             async Task Success(IEnumerable<DocumentModel> mainPages)
             {
+                Debug.WriteLine(ContentController<FieldModel>.GetControllers<FieldControllerBase>().Count());
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout = new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
+                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -418,6 +415,7 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
@@ -447,6 +445,8 @@ namespace Dash
                     DocumentView.FocusedDocument.ShowSelectedContext();
                 }
             }
+
+            e.Handled = true;
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -500,6 +500,8 @@ namespace Dash
                 if (!this.IsF1Pressed())
                     DocumentView.FocusedDocument.ShowLocalContext(false);
             }
+
+            e.Handled = true;
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

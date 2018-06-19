@@ -53,7 +53,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
             Init();
         }
@@ -826,7 +832,7 @@ namespace Dash
                 //    return false;
                 //}
 
-                field.SaveOnServer();
+                //field.SaveOnServer();
                 overwrittenField?.DisposeField();
 
                 doc._fields[key] = field;
@@ -1353,7 +1359,13 @@ namespace Dash
 
             // this invokes listeners which have been added on a per doc level of granularity
             if (!args.Reference.FieldKey.Equals(KeyStore.DocumentContextKey))
+            {
                 OnFieldModelUpdated(args, c);
+            }
+
+            // bubbles event down to delegates
+            //if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey)) //TODO TFS Can't we still use this event to let delegates know that our field was updated?
+            //    PrototypeFieldUpdated?.Invoke(sender, args, c);
             
             // now propagate this field model change to all delegates that don't override this field
             foreach (var d in GetDelegates().TypedData)

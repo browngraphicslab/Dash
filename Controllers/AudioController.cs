@@ -9,13 +9,19 @@ namespace Dash
     public class AudioController : FieldModelController<AudioModel>
     {
 
-        public AudioController() : base(new AudioModel()) { }
+        public AudioController() : base(new AudioModel())
+        {
+            SaveOnServer();
+        }
 
-        public AudioController(Uri path) : base(new AudioModel(path)) { }
+        public AudioController(Uri path) : base(new AudioModel(path))
+        {
+            SaveOnServer();
+        }
 
         public AudioController(AudioModel audFieldModel) : base(audFieldModel)
         {
-
+            SaveOnServer();
         }
 
         public override void Init()
@@ -35,6 +41,7 @@ namespace Dash
                 if (AudioFieldModel.Data != value)
                 {
                     AudioFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

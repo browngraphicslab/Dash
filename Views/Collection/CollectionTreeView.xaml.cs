@@ -23,7 +23,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
-    public sealed partial class CollectionTreeView : ICollectionView
+   public sealed partial class CollectionTreeView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 

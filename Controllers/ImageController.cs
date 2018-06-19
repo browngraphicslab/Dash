@@ -10,9 +10,15 @@ namespace Dash
     public class ImageController : FieldModelController<ImageModel>
     {
         // == CONSTRUCTORS ==
-        public ImageController() : base(new ImageModel()) { }
+        public ImageController() : base(new ImageModel())
+        {
+            SaveOnServer();
+        }
 
-        public ImageController(Uri path, string data = null) : base(new ImageModel(path, data)) { }
+        public ImageController(Uri path, string data = null) : base(new ImageModel(path, data))
+        {
+            SaveOnServer();
+        }
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
@@ -42,6 +48,7 @@ namespace Dash
                 if (ImageFieldModel.Data != value)
                 {
                     ImageFieldModel.Data = value;
+                    UpdateOnServer();
                     OnFieldModelUpdated(null);
                 }
             }

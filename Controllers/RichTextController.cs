@@ -7,8 +7,15 @@ namespace Dash
 {
     public class RichTextController: FieldModelController<RichTextModel>
     {
-        public RichTextController(): base(new RichTextModel()) { }
-        public RichTextController(RichTextModel.RTD data):base(new RichTextModel(data)) { }
+        public RichTextController() : base(new RichTextModel())
+        {
+            SaveOnServer();
+        }
+
+        public RichTextController(RichTextModel.RTD data) : base(new RichTextModel(data))
+        {
+            SaveOnServer();
+        }
 
         public RichTextController(RichTextModel richTextFieldModel) : base(richTextFieldModel)
         {
@@ -32,6 +39,7 @@ namespace Dash
             {
                 if (RichTextFieldModel.Data == value) return;
                 RichTextFieldModel.Data = value;
+                UpdateOnServer();
                 OnFieldModelUpdated(null);
             }
         }

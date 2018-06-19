@@ -15,32 +15,51 @@ namespace Dash
             set
             {
                 KeyModel.Name = value;
+                UpdateOnServer();
                 OnFieldModelUpdated(null);
             }
         }
         
         public KeyModel KeyModel => Model as KeyModel;
-        public KeyController(string guid, bool saveOnServer = true) : this(new KeyModel(guid))
+        public KeyController(string guid, bool saveOnServer = true) : base(new KeyModel(guid))
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate(bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
-        public KeyController(string guid, string name, bool saveOnServer = true) : this(new KeyModel(guid, name))
+        public KeyController(string guid, string name, bool saveOnServer = true) : base(new KeyModel(guid, name))
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
-        public KeyController(bool saveOnServer = true) : this(new KeyModel())
+        public KeyController(bool saveOnServer = true) : base(new KeyModel())
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
@@ -48,7 +67,13 @@ namespace Dash
         {
             if (saveOnServer)
             {
-                SaveOnServer();
+                IsOnServer(delegate (bool onServer)
+                {
+                    if (!onServer)
+                    {
+                        SaveOnServer();
+                    }
+                });
             }
         }
 
