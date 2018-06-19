@@ -38,13 +38,20 @@ namespace Dash
             collection.ViewModel.AddDocument(newDoc);
             //DBTest.DBDoc.AddChild(newDoc);
         }
-        public static bool HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
+        public static void HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            return collectionViewModel.HideDocument(docController);
+            docController.SetField<NumberController>(KeyStore.HiddenKey, 1, true);
         }
         public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            return collectionViewModel.UnHideDocument(docController);
+            foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null).TypedData)
+                if (vm.GetDataDocument().Equals(docController.GetDataDocument()) &&
+                    vm.GetDereferencedField<NumberController>(KeyStore.HiddenKey,null)?.Data == 1)
+                {
+                    vm.SetField<NumberController>(KeyStore.HiddenKey, 0, true);
+                    return true;
+                }
+            return false;
         }
 
         public static void DisplayDocument(CollectionViewModel collectionViewModel, DocumentController docController, Point? where = null)
@@ -53,11 +60,6 @@ namespace Dash
             {
                 var pos = (Point)where;
                 docController.GetPositionField().Data = pos;
-
-                // TODO this is arbitrary should not be getting set here
-                //var h = docController.GetHeightField().Data;
-                //var w = docController.GetWidthField().Data;
-                //docController.GetPositionField().Data = double.IsNaN(h) || double.IsNaN(w) ? pos : new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionViewModel.AddDocument(docController);
         }
