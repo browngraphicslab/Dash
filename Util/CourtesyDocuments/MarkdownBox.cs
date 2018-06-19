@@ -21,40 +21,13 @@ namespace Dash
         }
         protected static void SetupTextBinding(EditableMarkdownBlock element, DocumentController docController, Context context)
         {
-            /*
-            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
-            if (data != null)
-            {
-                var binding = new FieldBinding<RichTextController>()
-                {
-                    Document = docController,
-                    Key = KeyStore.DataKey,
-                    Mode = BindingMode.TwoWay,
-                    Context = context,
-                    Tag = "Markdown Box Text Binding"
-                };
-                element.AddFieldBinding(RichTextView.TextProperty, binding);
-
-                var wrapBinding = new FieldBinding<TextController>()
-                {
-                    Document = docController,
-                    Key = KeyStore.TextWrappingKey,
-                    Mode = BindingMode.OneWay,
-                    Converter = new StringToTextWrappingConverter(),
-                    Context = context,
-                    Tag = "Markdown Box Text Wrapping Binding"
-                };
-                element.XMarkdownBox.AddFieldBinding(RichEditBox.TextWrappingProperty, wrapBinding);
-            }*/
-
             var binding = new FieldBinding<FieldControllerBase>()
             {
                 Document = docController,
                 Key = KeyStore.DataKey,
                 Mode = BindingMode.TwoWay,
                 Context = context,
-                GetConverter = FieldConversion.GetFieldtoStringConverter,
-                FallbackValue = "<null>",
+                FallbackValue = "<empty>",
                 Tag = "MarkdownBox SetupTextBinding"
             };
             element.AddFieldBinding(EditableMarkdownBlock.TextProperty, binding);
@@ -66,41 +39,19 @@ namespace Dash
             
             SetupTextBinding(element, docController, context);
         }
+
         /*
         public static DocumentController MakeRegionDocument(DocumentView richTextBox)
         {
             var rtv = richTextBox.GetFirstDescendantOfType<EditableMarkdownBlock>();
             return rtv.GetRegionDocument();
         }*/
+
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            /*
-            EditableMarkdownBlock rtv = null;
-            var dataField = docController.GetField(KeyStore.DataKey);
-            var refToRichText = dataField as ReferenceController;
-            var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as RichTextController;
-            if (fieldModelController != null)
-            {
-                rtv = new EditableMarkdownBlock()
-                {
-                   // LayoutDocument = docController.GetActiveLayout() ?? docController,
-                   // DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument()
-                };
-                rtv.ManipulationMode = ManipulationModes.All;
-                rtv.PointerEntered += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.GotFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.None;
-                rtv.LostFocus += (sender, args) => rtv.ManipulationMode = ManipulationModes.All;
-                //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
-                rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
-                rtv.VerticalAlignment = VerticalAlignment.Stretch;
-                SetupTextBinding(rtv, docController, context);
-                SetupBindings(rtv, docController, context);
-            }
-
-            return rtv;*/
-
             var textController = docController.GetField(KeyStore.DataKey);
             // create the textblock
+            //TODO Make TargetFieldController be a FieldReference to the field instead of just the field
             var tb = new EditableMarkdownBlock
             {
                 TargetFieldController = textController,

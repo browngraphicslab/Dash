@@ -741,10 +741,13 @@ namespace Dash
             var operatorControllerStart = GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
             if (operatorControllerStart != null)
             {
-                var operatorController = GetField<ListController<OperatorController>>(KeyStore.OperatorKey).TypedData.First();
-                if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+                foreach (var controller in operatorControllerStart.TypedData)
                 {
-                    return operatorController.Outputs[key];
+                    if (controller != null && controller.Outputs.ContainsKey(key))
+                    {
+                        return controller.Outputs[key];
+                    }
+                    
                 }
             }
 
