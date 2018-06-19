@@ -17,8 +17,6 @@
                    HorizontalAlignment="Stretch"
                    VerticalAlignment="Top"
                    TextWrapping="Wrap" 
-                   DoubleTapped="XMarkdownBlock_DoubleTapped"
-                   Tapped="XMarkdownBlock_Tapped"
                    LinkClicked="XMarkdownBlock_LinkClicked" ></controls:MarkdownTextBlock>
         <TextBox x:Name="XMarkdownBox"
                    x:FieldModifier="public"

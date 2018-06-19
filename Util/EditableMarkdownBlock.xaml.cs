@@ -50,6 +50,9 @@ namespace Dash
         {
             InitializeComponent();
             RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
+
+            XMarkdownBlock.AddHandler(TappedEvent, new TappedEventHandler(XMarkdownBlock_Tapped), true);
+            XMarkdownBlock.AddHandler(DoubleTappedEvent, new DoubleTappedEventHandler(XMarkdownBlock_DoubleTapped), true);
         }
 
         private void XMarkdownBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
