@@ -84,7 +84,6 @@ namespace Dash
                 // Might end up with too many backslashes - please double check
                 text = text.Replace(@"\", @"\\");
                 text = text.Replace("\"", "\\\"");
-                Debug.WriteLine("Text: " + text);
                 var interpreted = DSL.Interpret(DSL.GetFuncName<ExecDishOperatorController>() + "(" + DSL.GetFuncName<ParseSearchStringToDishOperatorController>() + "(\"" + text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
@@ -786,7 +785,6 @@ namespace Dash
             /// <returns></returns>
             private static IEnumerable<SearchResultViewModel> LocalSearch(string searchString)
             {
-                Debug.WriteLine("Searchstring: " + searchString);
                 var documentTree = DocumentTree.MainPageTree;
                 var countToResults = new Dictionary<int, List<SearchResultViewModel>>();
                 var controllers = ContentController<FieldModel>.GetControllers<DocumentController>().ToArray();

@@ -249,17 +249,16 @@ namespace Dash
             string searchTerm = inputString.Substring(0, dividerIndex);
             bool isNegated = searchTerm.StartsWith("!") ? true : false;
             string modifiedSearchTerm = searchTerm.TrimStart('!');
-            //String finalSearchTerm = modifiedSearchTerm.Replace("\"", "");
-            Debug.WriteLine("modString: " + modifiedSearchTerm);
+
             if (modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
             {
                 modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
             }
+
             String finalSearchTerm = SelectivelyReplace(modifiedSearchTerm, "\"", "\\\"", "");
             finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\n", "\\\\n", "\n");
             finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\t", "\\\\t", "\t");
             finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\r", "\\\\r", "\r");
-            Debug.WriteLine("inputString: " + finalSearchTerm);
 
             string modInput = inputString.TrimStart('!');
 
