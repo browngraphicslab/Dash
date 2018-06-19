@@ -786,7 +786,6 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            Debug.WriteLine("Move");
             var selectedDocs = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
@@ -1017,9 +1016,15 @@ namespace Dash
                 }
                 activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout : newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
                 activeLayout.Tag = "StackLayout";
-                activeLayout.SetPosition(ViewModel.Position);
-                activeLayout.SetWidth(ViewModel.ActualSize.X);
-                activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
+                // we need to move the Height and Width fields from the current layout to the new active layout.
+                // this is because we want any bindings that were made to the current layout to still fire when changes
+                // are made to the new layout.
+                activeLayout.SetField(KeyStore.PositionFieldKey, curLayout.GetField(KeyStore.PositionFieldKey), true);
+                activeLayout.SetField(KeyStore.WidthFieldKey, curLayout.GetField(KeyStore.WidthFieldKey), true);
+                activeLayout.SetField(KeyStore.HeightFieldKey, curLayout.GetField(KeyStore.HeightFieldKey), true);
+                //activeLayout.SetPosition(ViewModel.Position);
+                //activeLayout.SetWidth(ViewModel.ActualSize.X);
+                //activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
                 activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                 ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }

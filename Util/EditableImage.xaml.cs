@@ -41,6 +41,18 @@ namespace Dash
             Image.Loaded += Image_Loaded;
             // gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
             _imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
+            SizeChanged += (sender, e) =>
+            {
+                // we always need to make sure that our own Height is NaN
+                // after any kind of resize happens so that we can grow as needed.
+                Height = double.NaN;
+                // if we're inside of a RelativePanel that was resized, we need to 
+                // reset it to have NaN height so that it can grow as we type.
+                if (Parent is RelativePanel relative)
+                {
+                    relative.Height = double.NaN;
+                }
+            };
         }
 
         public async Task ReplaceImage()
