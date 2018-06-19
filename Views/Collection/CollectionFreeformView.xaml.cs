@@ -279,7 +279,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Called when background image or background opacity changes
+        /// Called when background image changes
         /// </summary>
         /// <param name="backgroundImagePath"></param>
         private void Redraw(object backgroundImagePath)
@@ -314,14 +314,7 @@ namespace Dash
         private void ChangeOpacity(float opacity)
         {
             _backgroundOpacity = opacity;
-            _bgBrush = new CanvasImageBrush(xBackgroundCanvas, _bgImage)
-            {
-                Opacity = _backgroundOpacity
-            };
-
-            // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-            _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
+            _bgBrush.Opacity = opacity;
             xBackgroundCanvas.Invalidate();
         }
 
