@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.Foundation;
 using Dash.Converters;
 using Windows.UI.Xaml.Controls;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -18,6 +19,30 @@ namespace Dash
         {
             var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
             SetupDocument(DocumentType, PrototypeId, "RichTextBox Prototype Layout", fields);
+        }
+        public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<System.Collections.Generic.List<object>, Windows.UI.Xaml.TextWrapping>
+        {
+            public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                if (data[0] != null && data[0] is double)
+                {
+                    switch ((int)(double)data[0])
+                    {
+                        case (int)Windows.UI.Xaml.TextWrapping.Wrap:
+                            return Windows.UI.Xaml.TextWrapping.Wrap;
+                        case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
+                            return Windows.UI.Xaml.TextWrapping.NoWrap;
+                    }
+
+                }
+                double width = (double)data[1];
+                return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
+            }
+
+            public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
         }
         protected static void SetupTextBinding(RichTextView element, DocumentController docController, Context context)
         {
@@ -34,16 +59,17 @@ namespace Dash
                 };
                 element.AddFieldBinding(RichTextView.TextProperty, binding);
 
-                var wrapBinding = new FieldBinding<TextController>()
+                var textWrapRef = new DocumentFieldReference(docController.Id, KeyStore.TextWrappingKey);
+                var widthRef = new DocumentFieldReference(docController.Id, KeyStore.WidthFieldKey);
+                var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
                 {
-                    Document = docController,
-                    Key = KeyStore.TextWrappingKey,
                     Mode = BindingMode.OneWay,
-                    Converter = new StringToTextWrappingConverter(),
+                    Converter = new AutomatedTextWrappingBinding(),
                     Context = context,
-                    Tag = "Rich Text Box Text Wrapping Binding"
+                    Tag = "Rich Text Box Text Wrapping Binding",
+                    CanBeNull = true
                 };
-                element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, wrapBinding);
+                element.xRichEditBox.AddFieldBinding(RichEditBox.TextWrappingProperty, twrapBinding);
             }
         }
         public static DocumentController MakeRegionDocument(DocumentView richTextBox)

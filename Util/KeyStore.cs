@@ -23,7 +23,7 @@ namespace Dash
         public static KeyController HiddenKey = new KeyController("A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6", "Hidden");
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
-        public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
+        public static KeyController IsAdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);

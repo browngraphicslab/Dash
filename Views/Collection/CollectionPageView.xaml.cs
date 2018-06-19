@@ -80,7 +80,8 @@ namespace Dash
                     thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 }
                 thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) });
+                thumbnailImageViewDoc.SetBackgroundColor(Colors.Transparent);
+                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
             }
             CurPage = PageDocumentViewModels.LastOrDefault();
         }
