@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
@@ -94,11 +95,12 @@ namespace Dash
                         }
                     }
                     _selectedNode.xEllipse.Stroke = null;
+                    _selectedNode.UpdateTitleBlock();
+                    _selectedNode.AppendToTitle();
                 }
 
                 if (value == null)
                 {
-                   
                     var infoviews = xInfoPanel.Children.FirstOrDefault(i => i is NodeInfoView);
                     if (infoviews != null) xInfoPanel.Children.Remove(infoviews);
                     var connectionviews = xInfoPanel.Children.FirstOrDefault(i => i is NodeConnectionsView);
@@ -111,9 +113,9 @@ namespace Dash
                     _selectedNode = value;
                     _selectedNode.xEllipse.Stroke = new SolidColorBrush(Color.FromArgb(180, 128, 185, 238));
                     _selectedNode.xEllipse.StrokeThickness = 6;
+                    _selectedNode.UpdateTitleBlock();
+                    _selectedNode.AppendToTitle(true);
                 }
-               
-               
             }
         }
 
@@ -143,7 +145,7 @@ namespace Dash
 
         public ObservableDictionary<GraphNodeViewModel, double> OriginalXPositions { get; set; }
 
-        public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; private set; }
+        public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; set; }
         public double ConstantRadiusWidth
         {
             get
@@ -200,12 +202,7 @@ namespace Dash
                 // if datacontext hasn't actually changed just return
                 if (ViewModel != null && ViewModel.CollectionController.Equals(cvm.CollectionController)) return;
 
-                // remove events from previous datacontext
-                if (ViewModel != null)
-                    ViewModel.CollectionController.FieldModelUpdated -= CollectionController_FieldModelUpdated;
-
                 // add events to new datacontext and set it
-                // cvm.CollectionController.FieldModelUpdated += CollectionController_FieldModelUpdated;
                 ViewModel = cvm;
                 ViewModel.DocumentViewModels.CollectionChanged += DocumentViewModels_CollectionChanged;
 
@@ -219,12 +216,12 @@ namespace Dash
             }
         }
 
-        private void DocumentViewModels_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void DocumentViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    //AddNodes(new ObservableCollection<DocumentViewModel>(e.NewItems.Cast<DocumentViewModel>()));
+                    AddNodes(new ObservableCollection<DocumentViewModel>(e.NewItems.Cast<DocumentViewModel>()));
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
@@ -245,9 +242,33 @@ namespace Dash
             foreach (var doc in oldDocs)
             {
                 CollectionDocuments.Remove(doc.DocumentController);
-                var nodeToRemove = Nodes.First(gvm => gvm.DocumentViewModel.Equals(doc));
-                if (nodeToRemove != null)
-                    Nodes.Remove(nodeToRemove);
+                var nvmToRemove = Nodes.First(gvm => gvm.DocumentViewModel.Equals(doc));
+                var connectionsToRemove =
+                    new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
+                foreach (var connection in Links)
+                {
+                    if (connection.ToDoc.ViewModel == nvmToRemove ||
+                        connection.FromDoc.ViewModel == nvmToRemove)
+                    {
+                        xScrollViewCanvas.Children.Remove(connection.Connection);
+                    }
+                }
+
+                foreach (var connection in Connections)
+                {
+                    if (connection.Key.Equals(doc) || connection.Value.Equals(doc))
+                    {
+                        connectionsToRemove.Add(connection);
+                    }
+                }
+
+                foreach (var connection in connectionsToRemove)
+                {
+                    Connections.Remove(connection);
+                }
+
+                if (nvmToRemove != null)
+                    Nodes.Remove(nvmToRemove);
             }
         }
 
@@ -270,13 +291,21 @@ namespace Dash
             var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedY = sortY.OrderBy(i =>
                 i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
-            var maxNodeDiam = ((ViewModel.DocumentViewModels.Max(dvm =>
-                                dvm.DataDocument
-                                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey,
-                                        null)?.TypedData.Count ?? 1) + ViewModel.DocumentViewModels.Max(dvm =>
-                                dvm.DataDocument
-                                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)
-                                    ?.TypedData.Count ?? 1)) * ConstantRadiusWidth) + 50;
+            double maxNodeDiam;
+            if (ViewModel.DocumentViewModels.Count != 0)
+            {
+                maxNodeDiam = ((ViewModel.DocumentViewModels.Max(dvm =>
+                                        dvm.DataDocument
+                                            .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey,
+                                                null)?.TypedData.Count ?? 1) + ViewModel.DocumentViewModels.Max(dvm =>
+                                        dvm.DataDocument
+                                            .GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null)
+                                            ?.TypedData.Count ?? 1)) * ConstantRadiusWidth) + 50;
+            }
+            else
+            {
+                maxNodeDiam = 2 * ConstantRadiusWidth + 50;
+            }
             var gridX = xScrollViewCanvas.Width / sortedX.Count();
             if (xScrollViewCanvas.Width > maxNodeDiam)
             {
@@ -315,80 +344,59 @@ namespace Dash
             }
         }
 
-        private void AddLink(DocumentViewModel fromViewModel, DocumentViewModel toViewmodel)
-        {
-            //var link = new GraphConnection();
-
-            //var toGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(toViewmodel.DataDocument));
-            //Point toPoint = new Point
-            //{
-            //    X = toGvm.XPosition,
-            //    Y = toGvm.YPosition
-            //};
-
-            //var fromGvm = _nodes.First(gvm => gvm.DocumentViewModel.DataDocument.Equals(fromViewModel.DataDocument));
-            //Point fromPoint = new Point
-            //{
-            //    X = fromGvm.XPosition,
-            //    Y = fromGvm.YPosition
-            //};
-
-            //link.Points.Add(fromPoint);
-            //link.Points.Add(toPoint);
-            //link.Fill = Application.Current.Resources["BorderHighlight"] as SolidColorBrush;
-
-            //xScrollViewCanvas.Children.Add(link);
-        }
-
-        private void CollectionController_FieldModelUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-        {
-            //var properArgs = (ListController<DocumentController>.ListFieldUpdatedEventArgs) args;
-
-            //switch (properArgs.ListAction)
-            //{
-            //    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-            //        AddNodes(properArgs);
-            //        break;
-            //    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-            //        break;
-            //    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-            //        break;
-            //    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
-            //        break;
-            //}
-        }
-
         private void AddNodes(ObservableCollection<DocumentViewModel> newDocs)
         {
+            var expanded = false;
+            if (xExpandingBoy.IsExpanded)
+            {
+                expanded = true;
+                xExpandingBoy.IsExpanded = false;
+            }
             foreach (var newDoc in newDocs)
             {
-                if (!CollectionDocuments.Contains(newDoc.DocumentController.GetDataDocument()))
+                if (!CollectionDocuments.Contains(newDoc.DocumentController))
                 {
-                    CollectionDocuments.Add(newDoc.DocumentController.GetDataDocument());
-                    // TODO: Stop using random integer here
-                    Nodes.Add(new GraphNodeViewModel(newDoc, _randInt.Next(0, (int)xScrollViewCanvas.Width), _randInt.Next(0, (int)xScrollViewCanvas.Height)));
+                    CollectionDocuments.Add(newDoc.DocumentController);
                 }
+            }
+
+            foreach (var connection in Links)
+            {
+                xScrollViewCanvas.Children.Remove(connection.Connection);
+            }
+            Links.Clear();
+            Nodes.Clear();
+            GenerateGraph();
+
+            if (expanded)
+            {
+                xExpandingBoy.IsExpanded = true;
             }
         }
 
         private void CollectionGraphView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var offsetX = e.NewSize.Width - e.PreviousSize.Width;
-            var offsetY = e.NewSize.Height - e.PreviousSize.Height;
-            xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
-            xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
-            xExpandingBoy.Height = xScrollViewer.ActualHeight;
-            xInfoScroller.Height = xScrollViewCanvas.ActualHeight;
-            xContainerGrid.Height = xInfoPanel.ActualHeight;
-            xInfoPanel.Height = xScrollViewer.ActualHeight;
-
-            foreach (var node in Nodes)
+            var newWidth = e?.NewSize.Width ?? 400;
+            if (newWidth >= 300)
             {
-                var x = node.XPosition;
-                var y = node.YPosition;
-                node.XPosition = x + (offsetX * (x / e.PreviousSize.Width));
-                node.YPosition = y + (offsetY * (y / e.PreviousSize.Height));
+                var offsetX = e?.NewSize.Width - e?.PreviousSize.Width ?? 0;
+                var offsetY = e?.NewSize.Height - e?.PreviousSize.Height ?? 0;
+                xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
+                xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
+                xExpandingBoy.Height = xScrollViewer.ActualHeight;
+                xInfoScroller.Height = xScrollViewCanvas.ActualHeight;
+                xContainerGrid.Height = xInfoPanel.ActualHeight;
+                xInfoPanel.Height = xScrollViewer.ActualHeight;
+
+                foreach (var node in Nodes)
+                {
+                    var x = node.XPosition;
+                    var y = node.YPosition;
+                    node.XPosition = x + (offsetX * (x / e?.PreviousSize.Width ?? xScrollViewCanvas.Width));
+                    node.YPosition = y + (offsetY * (y / e?.PreviousSize.Height ?? xScrollViewCanvas.Height));
+                }
             }
+            
         }
 
         private void CollectionGraphView_OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -423,24 +431,6 @@ namespace Dash
             {
                 node.XPosition = OriginalXPositions[node];
             }
-        }
-
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-        {
-            //var notes = new ObservableCollection<DocumentController>();
-            //for (var i = 0; i < 100; i++)
-            //{
-            //    var note = new RichTextNote("note " + (i + 1), new Point(_randInt.Next(0, 1000), _randInt.Next(0, 1000)), new Size(100, 100)).Document;
-            //    notes.Add(note);
-            //    ViewModel.AddDocument(note);
-            //}
-
-            //for (var i = 0; i < 50; i++)
-            //{
-            //    notes[_randInt.Next(0, 100)].Link(notes[_randInt.Next(0, 100)]);
-            //}
-
-            //GenerateGraph();
         }
     }
 }

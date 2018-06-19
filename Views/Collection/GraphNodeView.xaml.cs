@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using DashShared;
 
@@ -27,10 +28,20 @@ namespace Dash
 {
     public sealed partial class GraphNodeView : UserControl, INotifyPropertyChanged
     {
+        private double _smallWidth = 0;
+        private double _largeWidth = 0;
         public GraphNodeViewModel ViewModel { get; private set; }
         public CollectionGraphView ParentGraph { get; private set; }
         public double ConstantRadiusWidth { get; set; }
-    
+
+        public Point Center => new Point
+        {
+            X = ViewModel.XPosition + (xGrid.ActualWidth) / 2,
+            Y = ViewModel.YPosition + (xEllipse.Height) / 2
+        };
+
+        public Action PositionsLoaded;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -40,6 +51,42 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             Loaded += GraphNodeView_Loaded;
             Unloaded += GraphNodeView_Unloaded;
+            PositionsLoaded += Positions_Loaded;
+        }
+
+        private void Positions_Loaded()
+        {
+            PositionsLoaded -= Positions_Loaded;
+            ConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
+            var dataDoc = ViewModel.DocumentViewModel.DataDocument;
+            var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+            var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+
+            var newDiam = (toConnections + fromConnections) * ConstantRadiusWidth;
+            if (newDiam > _smallWidth && newDiam < _largeWidth)
+            {
+                UpdateTitleBlock();
+                xEllipse.Width = newDiam;
+                xEllipse.Height = xEllipse.Width;
+            }
+            else if (newDiam > _smallWidth && newDiam > _largeWidth)
+            {
+                UpdateTitleBlock();
+                AppendToTitle();
+                xEllipse.Width = newDiam;
+                xEllipse.Height = xEllipse.Width;
+            }
+            PositionsLoaded?.Invoke();
+        }
+
+        private void Test_TitleHandler(object sender, SizeChangedEventArgs e)
+        {
+            if (_largeWidth != xTitleBlock.ActualWidth && _smallWidth == 0)
+            {
+                _largeWidth = xTitleBlock.ActualWidth;
+                _smallWidth = 12;
+                PositionsLoaded?.Invoke();
+            }
         }
 
         private void GraphNodeView_Unloaded(object sender, RoutedEventArgs e)
@@ -66,11 +113,22 @@ namespace Dash
                 var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
                 var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
-                xEllipse.Width = (toConnections + fromConnections) * ConstantRadiusWidth;
-                xEllipse.Height = xEllipse.Width;
+                var newDiam = (toConnections + fromConnections) * ConstantRadiusWidth;
+                if (newDiam > _smallWidth && newDiam < _largeWidth)
+                {
+                    UpdateTitleBlock();
+                    xEllipse.Width = newDiam;
+                    xEllipse.Height = xEllipse.Width;
+                }
+                else if (newDiam > _smallWidth && newDiam > _largeWidth)
+                {
+                    UpdateTitleBlock();
+                    AppendToTitle();
+                    xEllipse.Width = newDiam;
+                    xEllipse.Height = xEllipse.Width;
+                }
             }
         }
-
 
         #region loading
 
@@ -81,16 +139,38 @@ namespace Dash
             ConstantRadiusWidth = ParentGraph.ConstantRadiusWidth;
             ParentGraph.CollectionCanvas.Add(this);
 
+            CreateLinks();
+            xTitleBlock.SizeChanged += Test_TitleHandler;
+
+            DocumentController_TitleUpdated(null, null, null);
+
+            ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
+            ViewModel.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.LinkFromKey, Links_Updated);
+        }
+
+        private void CreateLinks()
+        {
             var dataDoc = ViewModel.DocumentViewModel.DataDocument;
             // gets all the connections that are emanating outwards from the datadoc
             var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
             // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
             var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
-            xEllipse.Width = (toConnections + fromConnections) * ConstantRadiusWidth;
-            xEllipse.Height = xEllipse.Width;
-            xEllipse.MinWidth = xTitleBlock.ActualWidth;
-            xEllipse.MinHeight = xTitleBlock.ActualWidth;
+            var newDiam = (toConnections + fromConnections) * ConstantRadiusWidth;
+            if (newDiam > _smallWidth)
+            {
+                xEllipse.Width = newDiam;
+                xEllipse.Height = xEllipse.Width;
+                UpdateTitleBlock();
+                AppendToTitle();
+            }
+          
+            TranslateTransform transformation = new TranslateTransform
+            {
+                X = ViewModel.XPosition,
+                Y = ViewModel.YPosition
+            };
+            xGrid.RenderTransform = transformation;
 
             if (toConnections > 1)
             {
@@ -99,19 +179,74 @@ namespace Dash
 
             if (fromConnections > 1)
             {
-                 CreateLink(dataDoc, KeyStore.LinkFromKey);
+                CreateLink(dataDoc, KeyStore.LinkFromKey);
             }
-            
-            DocumentController_TitleUpdated(null, null, null);
+        }
 
-            ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
+        private void Links_Updated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        {
+            var dataDoc = sender as DocumentController;
+            // gets all the connections that are emanating outwards from the datadoc
+            var fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
 
-            TranslateTransform transformation = new TranslateTransform
+            if (fromConnections > 1)
             {
-                X = ViewModel.XPosition,
-                Y = ViewModel.YPosition
-            };
-            xGrid.RenderTransform = transformation;
+                var oldLinks = ParentGraph.AdjacencyLists[ViewModel.DocumentViewModel];
+                var newLinks = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey).TypedData;
+                for (int i = oldLinks.Count; i < newLinks.Count; i++)
+                {
+                    var endDoc = newLinks[i].GetDataDocument()
+                        .GetField<ListController<DocumentController>>(KeyStore.LinkFromKey).TypedData[0];
+
+                    if (endDoc != null)
+                    {
+                        var newConnection = new GraphConnection
+                        {
+                            FromDoc = this,
+                            ToDoc = ParentGraph.CollectionCanvas.FirstOrDefault(gnv =>
+                                gnv.ViewModel.DocumentController.GetDataDocument().Equals(endDoc.GetDataDocument()))
+                        };
+
+                        var toDataDoc = newConnection.ToDoc.ViewModel.DocumentController.GetDataDocument();
+                        // gets all the connections that are emanating outwards from the datadoc
+                        var toDocToConnections = toDataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+                        // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
+                        var toDocFromConnections = toDataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+
+                        var toNewDiam = (toDocToConnections + toDocFromConnections) * ConstantRadiusWidth;
+                        if (toNewDiam > _smallWidth)
+                        {
+                            newConnection.ToDoc.xEllipse.Width = toNewDiam;
+                            newConnection.ToDoc.xEllipse.Height = newConnection.ToDoc.xEllipse.Width;
+                            newConnection.ToDoc.UpdateTitleBlock();
+                            newConnection.ToDoc.AppendToTitle();
+                            newConnection.ToDoc.PositionsLoaded?.Invoke();
+                        }
+
+                        fromConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)?.Count + 1 ?? 1;
+                        // incoming connections to the datadoc, + 1 to avoid any ellipses with a radius of 0
+                        var toConnections = dataDoc.GetField<ListController<DocumentController>>(KeyStore.LinkToKey)?.Count + 1 ?? 1;
+
+                        var newDiam = (fromConnections + toConnections) * ConstantRadiusWidth;
+                        if (newDiam > _smallWidth)
+                        {
+                            xEllipse.Width = newDiam;
+                            xEllipse.Height = xEllipse.Width;
+                            UpdateTitleBlock();
+                            AppendToTitle();
+                            PositionsLoaded?.Invoke();
+                        }
+
+                        ParentGraph.Links.Add(newConnection);
+                        ParentGraph.AdjacencyLists[newConnection.FromDoc.ViewModel.DocumentViewModel]
+                            .Add(newConnection.ToDoc.ViewModel.DocumentViewModel);
+                        ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                            newConnection.FromDoc.ViewModel.DocumentViewModel,
+                            newConnection.ToDoc.ViewModel.DocumentViewModel));
+                        ParentGraph.xScrollViewCanvas.Children.Add(newConnection.Connection);
+                    }
+                }
+            }
         }
 
         private void CreateLink(DocumentController dataDoc, KeyController startKey)
@@ -126,11 +261,11 @@ namespace Dash
             {
                 // gets all the docs that are at the other endpoint of each incident link
                 var endDocs = link.GetDataDocument()
-                    .GetField<ListController<DocumentController>>(startKey).TypedData;
+                    .GetField<ListController<DocumentController>>(startKey).TypedData ?? new List<DocumentController>();
                 foreach (var endDoc in endDocs)
                 {
                     // gets the viewmodel for the documents in endDocs
-                    var endViewModel = ParentGraph.ViewModel.DocumentViewModels.First(vm =>
+                    var endViewModel = ParentGraph.ViewModel.DocumentViewModels.FirstOrDefault(vm =>
                         vm.DocumentController.GetDataDocument().Equals(endDoc.GetDataDocument()));
 
                     if (endViewModel != null)
@@ -194,9 +329,24 @@ namespace Dash
 
         private void DocumentController_TitleUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
+            UpdateTitleBlock();
+            AppendToTitle();
+        }
+
+        public void AppendToTitle(bool forceAppend = false)
+        {
+            if (xEllipse.Width > _largeWidth || forceAppend)
+            {
+                var title = ViewModel.DocumentController
+                                .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?
+                                .Data ?? "Untitled " + ViewModel.DocumentController.DocumentType.Type;
+                xTitleBlock.Text += "   " + title;
+            }
+        }
+
+        public void UpdateTitleBlock()
+        {
             var type = ViewModel.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo;
-
-
 
             switch (type)
             {
@@ -217,13 +367,9 @@ namespace Dash
                     xTitleBlock.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
                     break;
                 default:
+                    xTitleBlock.Text = Application.Current.Resources["DefaultIcon"] as string;
                     break;
             }
-
-            var title = ViewModel.DocumentController
-                            .GetDereferencedField<TextController>(KeyStore.TitleKey, context)?
-                            .Data ?? "Untitled " + ViewModel.DocumentController.DocumentType.Type;
-            xTitleBlock.Text += "   " + title;
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
@@ -38,19 +39,44 @@ namespace Dash
             set
             {
                 _fromDoc = value;
-                OnPropertyChanged(nameof(FromDoc));
-                FromDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                if (_fromDoc != null)
+                {
+                    OnPropertyChanged(nameof(FromDoc));
+                    FromDoc.PositionsLoaded += FromDoc_Loaded;
+                    FromDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                }
             }
         }
+
         public GraphNodeView ToDoc
         {
             get => _toDoc;
             set
             {
                 _toDoc = value;
-                OnPropertyChanged(nameof(ToDoc));
-                ToDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                if (_toDoc != null)
+                {
+                    OnPropertyChanged(nameof(ToDoc));
+                    ToDoc.PositionsLoaded += ToDoc_Loaded;
+                    ToDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                }
             }
+        }
+
+        private void FromDoc_Loaded()
+        {
+            Connection.Points.Remove(_fromPoint);
+            _fromPoint.X = FromDoc.Center.X;
+            _fromPoint.Y = FromDoc.Center.Y;
+            Connection.Points.Add(_fromPoint);
+        }
+
+        private void ToDoc_Loaded()
+        {
+            Connection.Points.Remove(_toPoint);
+            _toPoint.X = ToDoc.Center.X;
+            _toPoint.Y = ToDoc.Center.Y;
+            Connection.Points.Add(_toPoint);
         }
 
         public Polyline Connection { get; }
@@ -92,11 +118,7 @@ namespace Dash
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName.Equals(nameof(ToDoc.ViewModel.XPosition)) ||
-                e.PropertyName.Equals(nameof(ToDoc.ViewModel.YPosition)))
-            {
-                UpdateConnection();
-            }
+            UpdateConnection();
         }
 
         private void UpdateConnection()
@@ -104,10 +126,10 @@ namespace Dash
             if (ToDoc != null && FromDoc != null)
             {
                 Connection.Points.Clear();
-                _toPoint.X = ToDoc.ViewModel.XPosition + ToDoc.xGrid.ActualWidth / 2;
-                _toPoint.Y = ToDoc.ViewModel.YPosition + ToDoc.xGrid.ActualHeight / 2;
-                _fromPoint.X = FromDoc.ViewModel.XPosition + FromDoc.xGrid.ActualWidth / 2;
-                _fromPoint.Y = FromDoc.ViewModel.YPosition + FromDoc.xGrid.ActualHeight / 2;
+                _toPoint.X = ToDoc.Center.X;
+                _toPoint.Y = ToDoc.Center.Y;
+                _fromPoint.X = FromDoc.Center.X;
+                _fromPoint.Y = FromDoc.Center.Y;
                 Connection.Points.Add(_toPoint);
                 Connection.Points.Add(_fromPoint);
             }

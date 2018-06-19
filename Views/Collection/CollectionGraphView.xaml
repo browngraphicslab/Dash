@@ -18,16 +18,11 @@
 
 
     <Grid x:Name="xBase" Background="White" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTapEnabled="True" >
-        <Grid.Resources>
-            <Color x:Key="timelineColor">#CC333333</Color>
-            <SolidColorBrush x:Key="timelineBrush" Color="{StaticResource timelineColor}"/>
-        </Grid.Resources>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width ="Auto" />
         </Grid.ColumnDefinitions>
-        <ScrollViewer Name="xScrollViewer" Grid.Column="0" Width="Auto" HorizontalAlignment="Stretch" Height="Auto"
-                      HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Stretch">
+        <ScrollViewer Name="xScrollViewer" Grid.Column="0" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" VerticalAlignment="Stretch">
             <Grid Margin="0,0,0,0">
                 <Canvas Name="xScrollViewCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <!--timeline elements-->
@@ -66,7 +61,6 @@
                             <Line X1="10" Y1="17" X2="40" Y2="17" Stroke="#B595D6" StrokeThickness="5" />
                             <TextBlock Foreground="Black">Mutually Connected</TextBlock>
                         </StackPanel>
-                        <Button Click="ButtonBase_OnClick">YEEEEEEEEEET!!!!!</Button>
                     </StackPanel>
                 </Canvas>
             </Grid>

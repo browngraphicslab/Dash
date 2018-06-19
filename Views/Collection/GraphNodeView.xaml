@@ -15,7 +15,8 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <!--tappable toggle ellipse-->
-        <Ellipse Name="xEllipse" x:FieldModifier="public" PointerEntered="XEllipse_OnPointerEntered" PointerExited="XEllipse_OnPointerExited" Fill="#78918b" Grid.Row="0" >
+        <Ellipse Name="xEllipse" x:FieldModifier="public" Opacity="0.5"  PointerEntered="XEllipse_OnPointerEntered"
+                 PointerExited="XEllipse_OnPointerExited" Fill="#78918b" Grid.Row="0" >
         
         </Ellipse>
        
@@ -26,9 +27,11 @@
                    VerticalAlignment="Center" 
                    FontFamily="{StaticResource FontAwesome}" 
                    Foreground="{StaticResource TitleText}"
-                   Text="{StaticResource DefaultIcon}"
+                   Padding="0 10 0 0"
                    HorizontalAlignment="Stretch"
                    Height="50"
         />
+        <!--Text="{StaticResource DefaultIcon}"-->
+
     </Grid>
 </UserControl>
