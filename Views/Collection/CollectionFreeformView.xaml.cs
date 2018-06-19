@@ -48,11 +48,11 @@ namespace Dash
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView              ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
         public delegate void SetBackground(object backgroundImagePath);
-        static SetBackground setBackground;
+        private static event SetBackground setBackground;
 
         public delegate void SetBackgroundOpacity(float opacity);
 
-        private static SetBackgroundOpacity setBackgroundOpacity;
+        private static event SetBackgroundOpacity setBackgroundOpacity;
         public CollectionFreeformView()
         {
             InitializeComponent();
@@ -85,6 +85,7 @@ namespace Dash
                 
                 _lastViewModel = null;
                 setBackground -= Redraw;
+                setBackgroundOpacity -= ChangeOpacity;
             };
             xOuterGrid.PointerEntered  += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
             xOuterGrid.PointerExited   += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
