@@ -278,7 +278,7 @@ namespace Dash
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.TitleKey, adornment ? "true":"false", true);
+            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)
