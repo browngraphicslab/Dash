@@ -26,10 +26,14 @@ namespace Dash
 {
     public sealed partial class NodeConnectionsView : UserControl, INotifyPropertyChanged
     {
+        //the viewmodel of the particular node
         public DocumentViewModel ViewModel { get; set; }
+        //the graph the node is in
         public CollectionGraphView ParentGraph { get; private set; }
         public double ConstantRadiusWidth { get; set; }
+        //list of toconnections of a node
         public ObservableCollection<ListViewItem> ToConnections { get; set; }
+        //list of fromconnections of a node
         public ObservableCollection<ListViewItem> FromConnections { get; set; }
         /// <summary>
         /// Constructor
@@ -49,6 +53,7 @@ namespace Dash
             Unloaded += GraphInfoView_Unloaded;
         }
 
+        //removes properties tracking handler when info panel is exited
         private void GraphInfoView_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
@@ -58,13 +63,12 @@ namespace Dash
         {
            
         }
-
-
+        
         #region loading
 
+        //adds properties tracking handler and instantiates information when info panel loads
         private void GraphInfoView_Loaded(object sender, RoutedEventArgs e)
         {
-           
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             CreateInfo();
         }
@@ -78,21 +82,24 @@ namespace Dash
 
         private void CreateInfo()
         {
+            //handles toconnections
             var toLinks = ParentGraph.AdjacencyLists[ViewModel];
             foreach (var doc in toLinks)
             {
                 foreach (var connection in ParentGraph.Links)
-                {
+                {   //if links to and from the same two documents exist, make their strokes a mutual connection
                     if (connection.FromDoc.ViewModel.DocumentViewModel.Equals(ViewModel) &&
                         connection.ToDoc.ViewModel.DocumentViewModel.Equals(doc))
                     {
                         var reverseLink = ParentGraph.Links.FirstOrDefault(i =>
                             (i.FromDoc.Equals(connection.ToDoc) && i.ToDoc.Equals(connection.FromDoc)));
+                        
                         if (reverseLink != null)
                         {
                             reverseLink.Stroke = new SolidColorBrush(Color.FromArgb(255, 181, 149, 214));
                             connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 181, 149, 214));
                         }
+                        //otherwise make the connections have a from stroke
                         else
                         {
                             connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 149, 174, 214));
@@ -101,6 +108,7 @@ namespace Dash
                     }
                 }
 
+                //add this toconnection to the list
                 var lvi = new ListViewItem
                 {
                     Content =
@@ -111,6 +119,7 @@ namespace Dash
                 ToConnections.Add(lvi);
             }
 
+            //handles fromconnections
             var allLinks = ParentGraph.Connections;
             foreach (var link in allLinks)
             {
@@ -118,6 +127,7 @@ namespace Dash
                 {
                     foreach (var connection in ParentGraph.Links)
                     {
+                        //if links to and from the same two documents exist, make their strokes a mutual connection
                         if (connection.FromDoc.ViewModel.DocumentViewModel.Equals(link.Key) &&
                             connection.ToDoc.ViewModel.DocumentViewModel.Equals(ViewModel))
                         {
@@ -130,6 +140,7 @@ namespace Dash
                             }
                             else
                             {
+                                //otherwise make the connections have a to stroke
                                 connection.Stroke = new SolidColorBrush(Color.FromArgb(255, 214, 153, 149));
                             }
 
@@ -137,6 +148,7 @@ namespace Dash
                         }
                     }
 
+                    //add this fromconnection to the list
                     var lvi = new ListViewItem
                     {
                         Content =
@@ -148,19 +160,23 @@ namespace Dash
                 }
             }
 
+            //if there are no current toconnections, hide the panel
             if (ToConnections.Count <= 1)
             {
                 xLinkToDocs.Visibility = Visibility.Collapsed;
             }
 
+            //if there are no current fromconnections, hide the panel
             if (FromConnections.Count <= 1)
             {
                 xLinkFromDocs.Visibility = Visibility.Collapsed;
             }
         }
 
+        //navigates to endpoint of connection when clicked
         private void ListItem_Tapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
+            //so long as the enpoint is found/correct
             if ((sender as ListViewItem)?.DataContext is DocumentViewModel dvm)
             {
                 var gnv = ParentGraph.CollectionCanvas.First(i => i.ViewModel.DocumentViewModel.Equals(dvm));

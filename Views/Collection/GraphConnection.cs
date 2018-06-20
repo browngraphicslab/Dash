@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
@@ -17,10 +11,24 @@ namespace Dash
     public class GraphConnection : INotifyPropertyChanged
     {
         private GraphNodeView _fromDoc;
+        private Point _fromPoint;
         private GraphNodeView _toDoc;
         private Point _toPoint;
-        private Point _fromPoint;
 
+        public GraphConnection()
+        {
+            //sets visual styling and positioning of line
+            Connection = new Polyline
+            {
+                Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
+                StrokeThickness = 2
+            };
+            _fromPoint = new Point();
+            _toPoint = new Point();
+            PropertyChanged += GraphConnection_PropertyChanged;
+        }
+
+        //sets the points to which the link is connected
         public Point ToPoint
         {
             get => _toPoint;
@@ -33,6 +41,7 @@ namespace Dash
             set => _fromPoint = value;
         }
 
+        //specifies which document the link connects from
         public GraphNodeView FromDoc
         {
             get => _fromDoc;
@@ -49,6 +58,7 @@ namespace Dash
             }
         }
 
+        //specifies which document the link connects to
         public GraphNodeView ToDoc
         {
             get => _toDoc;
@@ -65,38 +75,7 @@ namespace Dash
             }
         }
 
-        private void FromDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Connection.Points.Remove(_fromPoint);
-            _fromPoint.X = FromDoc.Center.X;
-            _fromPoint.Y = FromDoc.Center.Y;
-            Connection.Points.Add(_fromPoint);
-        }
-
-        private void ToDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            Connection.Points.Remove(_toPoint);
-            _toPoint.X = ToDoc.Center.X;
-            _toPoint.Y = ToDoc.Center.Y;
-            Connection.Points.Add(_toPoint);
-        }
-
-        private void FromDoc_Loaded()
-        {
-            Connection.Points.Remove(_fromPoint);
-            _fromPoint.X = FromDoc.Center.X;
-            _fromPoint.Y = FromDoc.Center.Y;
-            Connection.Points.Add(_fromPoint);
-        }
-
-        private void ToDoc_Loaded()
-        {
-            Connection.Points.Remove(_toPoint);
-            _toPoint.X = ToDoc.Center.X;
-            _toPoint.Y = ToDoc.Center.Y;
-            Connection.Points.Add(_toPoint);
-        }
-
+        //the actual, graphical line that represents a link
         public Polyline Connection { get; }
 
         public double Thickness
@@ -111,18 +90,49 @@ namespace Dash
             set => Connection.Stroke = value;
         }
 
-        public GraphConnection()
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        //recalculates positioning when fromdoc is changed
+        private void FromDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Connection = new Polyline
-            {
-                Stroke = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0)),
-                StrokeThickness = 2
-            };
-            _fromPoint = new Point();
-            _toPoint = new Point();
-            PropertyChanged += GraphConnection_PropertyChanged;
+            Connection.Points.Remove(_fromPoint);
+            //for some reason must remove/add or else will not update
+            _fromPoint.X = FromDoc.Center.X;
+            _fromPoint.Y = FromDoc.Center.Y;
+            Connection.Points.Add(_fromPoint);
         }
 
+        //recalculates positioning when todoc is changed
+        private void ToDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Connection.Points.Remove(_toPoint);
+            //for some reason must remove/add or else will not update
+            _toPoint.X = ToDoc.Center.X;
+            _toPoint.Y = ToDoc.Center.Y;
+            Connection.Points.Add(_toPoint);
+        }
+
+        //calculates positioning when fromdoc is loaded 
+        private void FromDoc_Loaded()
+        {
+            Connection.Points.Remove(_fromPoint);
+            //for some reason must remove/add or else will not update
+            _fromPoint.X = FromDoc.Center.X;
+            _fromPoint.Y = FromDoc.Center.Y;
+            Connection.Points.Add(_fromPoint);
+        }
+
+        //calculates positioning when todoc is loaded 
+        private void ToDoc_Loaded()
+        {
+            Connection.Points.Remove(_toPoint);
+            //for some reason must remove/add or else will not update
+            _toPoint.X = ToDoc.Center.X;
+            _toPoint.Y = ToDoc.Center.Y;
+            Connection.Points.Add(_toPoint);
+        }
+
+        //when either of the nodes are changed
         private void GraphConnection_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             switch (e.PropertyName)
@@ -134,15 +144,18 @@ namespace Dash
             }
         }
 
+        //when the link itself is changed
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             UpdateConnection();
         }
 
+        //updates the positioning of the link when the nodes' positions are changed
         private void UpdateConnection()
         {
             if (ToDoc != null && FromDoc != null)
             {
+                //clears the previous points, and recalculates
                 Connection.Points.Clear();
                 _toPoint.X = ToDoc.Center.X;
                 _toPoint.Y = ToDoc.Center.Y;
@@ -152,8 +165,6 @@ namespace Dash
                 Connection.Points.Add(_fromPoint);
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

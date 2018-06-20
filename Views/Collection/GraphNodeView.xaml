@@ -15,7 +15,7 @@
             <RowDefinition />
         </Grid.RowDefinitions>
         <!--tappable toggle ellipse-->
-        <Ellipse Name="xEllipse" x:FieldModifier="public" Opacity="0.7"  PointerEntered="XEllipse_OnPointerEntered"
+        <Ellipse Name="xEllipse" x:FieldModifier="public" Opacity="0.7" HorizontalAlignment="Center" PointerEntered="XEllipse_OnPointerEntered"
                  PointerExited="XEllipse_OnPointerExited" Fill="#78918b" Grid.Row="0" >
         
         </Ellipse>

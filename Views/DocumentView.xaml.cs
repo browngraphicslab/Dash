@@ -125,7 +125,7 @@ namespace Dash
                 ViewModel?.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(ActualWidth, ActualHeight), true);
                 SetZLayer();
 
-                var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null).TypeInfo;
+                var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
 
                 switch (type)
                 {
