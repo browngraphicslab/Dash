@@ -84,13 +84,6 @@
                 <RowDefinition Height="325" />
             </Grid.RowDefinitions>
             <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="25" />
-                    <!--<RowDefinition Height="750" />-->
-                </Grid.RowDefinitions>
-
-                <Button x:Name="snapshotButton" Grid.Row="1" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Background="Gray" Foreground="Black" Tapped="snapshotButton_Tapped">SNAPSHOT</Button>
                 <!--
                 <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
                 </local:DishReplView>-->

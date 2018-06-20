@@ -145,6 +145,7 @@ namespace Dash
             {
                 UndoManager.startBatch();
 
+                MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
                     MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());

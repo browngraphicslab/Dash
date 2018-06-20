@@ -645,13 +645,6 @@ namespace Dash
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
             mapTimer.Start();
         }
-
-        private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
-                xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
-        }
-
         public void Dock(DocumentView toDock, DockDirection dir)
         {
             DocumentController context = toDock.ViewModel.DocumentController;

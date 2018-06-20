@@ -18,22 +18,17 @@ namespace Dash
 {
     public sealed partial class KeyValuePane : UserControl
     {
-        /// <summary>
-        /// True if we are editing the key of the selected key value
-        /// </summary>
-        private bool _editKey;
 
-        /// <summary>
-        /// The key value which we are currently editing
-        /// </summary>
-        private KeyFieldContainer _selectedKV;
+        private bool _showDataDoc = true;
 
-        private TextBox _tb;
+        DocumentController activeContextDoc {  get => _showDataDoc ? _dataContextDocument : _layoutContextDocument; }
 
         /// <summary>
         /// This is a local reference to the DataContext and the Document we render fields for
         /// </summary>
         private DocumentController _dataContextDocument;
+        private DocumentController _layoutContextDocument;
+        private DocumentController _contextDocument;
 
         /// <summary>
         ///     The list of fields displayed on the key value pane
@@ -92,20 +87,25 @@ namespace Dash
             // if the datacontext is a document controller
             if (DataContext is DocumentController dc)
             {
-                if (dc.Equals(_dataContextDocument))
+                if (dc.Equals(_contextDocument))
                 {
                     return;
                 }
+                _contextDocument = dc;
                 // remove old events from the previous datacontext
                 if (_dataContextDocument != null)
                 {
                     _dataContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
+                    _layoutContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
                 }
 
                 // assign the new datacontext to a variable, and add events
-                _dataContextDocument = dc;
+                _dataContextDocument =  dc.GetDataDocument();
+                _layoutContextDocument = dc.GetActiveLayout() ?? dc;
                 _dataContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
                 _dataContextDocument.FieldModelUpdated += ViewDocumentFieldUpdated;
+                _layoutContextDocument.FieldModelUpdated -= ViewDocumentFieldUpdated;
+                _layoutContextDocument.FieldModelUpdated += ViewDocumentFieldUpdated;
 
                 // set the field list item source to the new datacontext
                 SetListItemSourceToCurrentDataContext();
@@ -118,17 +118,15 @@ namespace Dash
         /// </summary>
         private void SetListItemSourceToCurrentDataContext()
         {
-
             ListItemSource.Clear();
-            if (_dataContextDocument != null)
+            if (activeContextDoc != null)
             {
-                foreach (var keyFieldPair in _dataContextDocument.EnumFields())
+                foreach (var keyFieldPair in activeContextDoc.EnumFields())
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(
                             new EditableScriptViewModel(
-                                new DocumentFieldReference(_dataContextDocument.Id, keyFieldPair.Key)));
+                                new DocumentFieldReference(activeContextDoc.Id, keyFieldPair.Key)));
             }
-
         }
 
         /// <summary>
@@ -137,12 +135,13 @@ namespace Dash
         private void ViewDocumentFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             // if a field has been replaced or updated then set it's source to be the new element
-            // otherwise replcae the entire data source to reflect the new set of fields (due to add or remove)
+            // otherwise replace the entire data source to reflect the new set of fields (due to add or remove)
             var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             if (args.Action == DocumentController.FieldUpdatedAction.Add)
             {
                 addField(dargs);
-            } else if (args.Action == DocumentController.FieldUpdatedAction.Remove)
+            }
+            else if (args.Action == DocumentController.FieldUpdatedAction.Remove)
             {
                 removeField(dargs);
             }
@@ -158,7 +157,8 @@ namespace Dash
 
         private void addField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
         {
-            ListItemSource.Add(new EditableScriptViewModel(dargs.Reference));
+            if (!dargs.Reference.FieldKey.Name.StartsWith("_"))
+                ListItemSource.Add(new EditableScriptViewModel(dargs.Reference));
         }
 
 
@@ -178,14 +178,14 @@ namespace Dash
             try
             {
                 //fmController = DSL.InterpretUserInput(stringValue, true);
-                fmController = DSL.InterpretUserInput(stringValue, state: ScriptState.CreateStateWithThisDocument(_dataContextDocument));
+                fmController = DSL.InterpretUserInput(stringValue, state: ScriptState.CreateStateWithThisDocument(activeContextDoc));
             }
             catch (DSLException e)
             {
                 fmController = new TextController(e.GetHelpfulString());
             }
 
-            _dataContextDocument.SetField(key, fmController, true);
+            activeContextDoc.SetField(key, fmController, true);
             
             // reset the fields to the empty values
             xNewKeyText.Text = "";
@@ -201,14 +201,6 @@ namespace Dash
             var docView = this.GetFirstAncestorOfType<DocumentView>();
             docView.DeleteDocument();
             e.Handled = true;
-        }
-
-        private void Icon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            var container = (KeyFieldContainer) ((FrameworkElement) sender).DataContext;
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move;
-            args.Data.RequestedOperation = DataPackageOperation.Link;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, container.Key);
         }
 
         private void XNewKeyField_OnKeyUp(object sender, KeyRoutedEventArgs e)
@@ -312,7 +304,7 @@ namespace Dash
             foreach (var m in args.Items)
             {
                 var docField = _dataContextDocument.GetField<DocumentController>((m as EditableScriptViewModel).Key);
-                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                args.Data.Properties[nameof(DragDocumentModel)] =docField != null ? new DragDocumentModel(docField, true) : new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
@@ -328,11 +320,25 @@ namespace Dash
         {
             foreach (var m in args.Items)
             {
-                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(_dataContextDocument, (m as EditableScriptViewModel).Key);
+                args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(activeContextDoc, (m as EditableScriptViewModel).Key);
                 // args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
                 args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
                 break;
             }
+        }
+
+        private void SwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _showDataDoc = !_showDataDoc;
+            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+            this.SetListItemSourceToCurrentDataContext();
+        }
+
+        private void xDocBlock_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _showDataDoc = !_showDataDoc;
+            this.xDocBlock.Text = _showDataDoc ? "Data" : "Layout";
+            this.SetListItemSourceToCurrentDataContext();
         }
     }
 }

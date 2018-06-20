@@ -8,6 +8,7 @@
     mc:Ignorable="d"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
     xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
     xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
@@ -17,8 +18,13 @@
 
   
 
-    <StackPanel x:Name="xStack">
-       
+    <Grid x:Name="xStack" >
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
             Visibility="Visible"
@@ -27,8 +33,32 @@
             <controls:TextToolbar.ButtonModifications >
                 <buttons:DefaultButton Type="Link" IsVisible="False" />
             </controls:TextToolbar.ButtonModifications>
-            
+
         </controls:TextToolbar>
-    
-    </StackPanel>
+        <Grid Grid.Column="1" 
+                Background="LightGray">
+            <Slider x:Name="xOpacitySlider" Grid.Column="1"
+                            Minimum="0" 
+                            Maximum="255"
+                            TickFrequency="1" 
+                            StepFrequency="1" 
+                            SnapsTo="StepValues" 
+                            TickPlacement="None"  
+                            IntermediateValue="128" 
+                            Margin="22, 11, 0, 0" 
+                            RightTapped="XOpacitySlider_OnRightTapped"  
+                            ValueChanged="XOpacitySlider_OnValueChanged"/>
+        </Grid>
+        <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
+            Background="LightGray">
+        <Button.Flyout>
+                <Flyout>
+                    <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
+                </Flyout>
+            </Button.Flyout>
+            <Image Source="ms-appx:///Assets/GroupColorIcon.png"/>
+
+        </AppBarButton>
+
+    </Grid>
 </UserControl>
