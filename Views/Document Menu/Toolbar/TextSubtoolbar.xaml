@@ -10,6 +10,7 @@
     xmlns:buttons="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarButtons"
     xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
     xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
+    xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
     d:DesignWidth="400">

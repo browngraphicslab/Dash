@@ -81,7 +81,7 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) =>  FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
-            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
+            xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.KeyUp += (s, e) => 
             {
@@ -121,7 +121,7 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
-            UndoManager.startBatch();
+            
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null && Text != null)
@@ -152,7 +152,6 @@ namespace Dash
                     }
                 }
             }
-            UndoManager.endBatch();
         }
         public RichTextModel.RTD   Text
         {
@@ -399,6 +398,9 @@ namespace Dash
         /// <param name="e"></param>
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            //handles batching for undo typing
+            TypeTimer.typeEvent();
+
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
                 getDataDoc().CaptureNeighboringContext();
