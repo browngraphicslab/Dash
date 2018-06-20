@@ -48,15 +48,28 @@
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                        Fill="{ThemeResource TranslucentWindowsBlue}" />
-            <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="40"></ColumnDefinition>
+                    <ColumnDefinition Width="40"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
+                <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Padding="0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
-            <!--close button-->
-                <AppBarButton Height="40" Margin="0,0,0,0" Foreground="White" Background="Transparent"
-                    Tapped="CloseButton_Tapped" HorizontalAlignment="Right">
+                <AppBarButton Width="40"  Foreground="White" Background="Transparent" Label="Data"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
+                    <AppBarButton.Icon>
+                        <SymbolIcon Symbol="Switch"  FocusVisualPrimaryBrush="White" HorizontalAlignment="Right"></SymbolIcon>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+                <!--close button-->
+                <AppBarButton Width="40" Foreground="White" Background="Transparent" Tapped="CloseButton_Tapped"   Grid.Column="3">
                     <AppBarButton.Icon>
                         <SymbolIcon Symbol="Cancel" Foreground="White" HorizontalAlignment="Right"></SymbolIcon>
                     </AppBarButton.Icon>
                 </AppBarButton>
+            </Grid>
         </Grid>
 
         <!--scrolling fields-->
