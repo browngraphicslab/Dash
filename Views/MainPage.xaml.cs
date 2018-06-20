@@ -78,6 +78,8 @@ namespace Dash
             Toolbar.Update(docs);
         }
 
+        public SettingsView GetSettingsView => xSettingsView;
+
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()

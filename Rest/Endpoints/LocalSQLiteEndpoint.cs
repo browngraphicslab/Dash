@@ -76,7 +76,7 @@ namespace Dash
 
         public void SetBackupInterval(int millis) { _backupTimer.Interval = millis; }
 
-        public void SetNumBackups(int numBackups) { _numBackups = numBackups; }
+        public void SetNumBackups(int numBackups) { }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -88,6 +88,7 @@ namespace Dash
 
         private void CopyAsBackup()
         {
+            _numBackups = MainPage.Instance.GetSettingsView.NumBackups;
             var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
             if (!NewChangesToBackup || !File.Exists(dbPath)) return;
 

@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -99,7 +100,6 @@ namespace Dash
                 var prevNumBackups = (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsNumBackupsKey).Data;
 
                 _settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, value, true);
-                _endpoint.SetNumBackups(value);
 
                 var test2 = NumBackups;
                 if (prevNumBackups <= value) return;
@@ -110,17 +110,16 @@ namespace Dash
                     var pathToDelete = _dbPath + ".bak" + i;
                     if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
                 }
+
+                var suffix = NumBackups == 1 ? "" : "s";
+                xNumBackupsSlider.Header = $"System is storing the {NumBackups} most recent backup" + suffix;
             }
         }
 
         public int BackupInterval
         {
             get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsBackupIntervalKey).Data;
-            set
-            {
-                _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
-                _endpoint.SetBackupInterval(value * 1000);
-            }
+            set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
         }
 
         #endregion
@@ -169,10 +168,23 @@ namespace Dash
 
             AddSettingsBinding<BoolController>(xNightModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsNightModeKey, tag:"Settings Night Mode", handler: (sender, dp) => MainPage.Instance.ThemeChange(NightModeOn));
             AddSettingsBinding<NumberController>(xFontSizeSlider, RangeBase.ValueProperty, KeyStore.SettingsFontSizeKey, tag:"Settings Font Size");
-            AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Scroll), "Settings Scroll Radio", (sender, dp) => Debug.WriteLine($"\nSCROLL RADIO: MouseScrollOn is {MouseScrollOn}, and IsChecked is {xScrollRadio.IsChecked}"));
-            AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Zoom), "Settings Zoom Radio" , (sender, dp) => Debug.WriteLine($"ZOOM RADIO: MouseScrollOn is {MouseScrollOn}, and IsChecked is {xZoomRadio.IsChecked}\n"));
+            AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Scroll), "Settings Scroll Radio");
+            AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Zoom), "Settings Zoom Radio");
             AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: OnNumBackupsChanged, mode: BindingMode.OneWay);
-            AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => _endpoint.SetBackupInterval(BackupInterval * 1000));
+            AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) =>
+            {
+                _endpoint.SetBackupInterval((int)xBackupIntervalSlider.Value * 1000);
+
+                var interval = (int) xBackupIntervalSlider.Value;
+                var numSec = interval % 60;
+                var numMin = (interval - numSec) / 60;
+
+                var suffix = numMin == 1 ? "" : "s";
+                var minToDisplay = numMin == 0 ? "" : $" {numMin} minute" + suffix;
+                var secToDisplay = numSec == 0 ? "" : $" {numSec} seconds";
+
+                xBackupIntervalSlider.Header = "Backups overwritten every" + minToDisplay + secToDisplay;
+            });
         }
 
         private void OnNumBackupsChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
@@ -188,6 +200,9 @@ namespace Dash
                 NumBackups = _newNumBackups;
                 SetPromptVisibility(Visibility.Collapsed);
             }
+
+            var suffix = NumBackups == 1 ? "" : "s";
+            xNumBackupsSlider.Header = $"System is storing the {NumBackups} most recent backup" + suffix;
         }
 
         #endregion

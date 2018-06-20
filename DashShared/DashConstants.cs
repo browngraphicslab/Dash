@@ -98,7 +98,7 @@ namespace DashShared
 
         //Minimum
         public const int MinNumBackups = 1;
-        public const int MinBackupInterval = 2;
+        public const int MinBackupInterval = 30;
 
         //Maximum
         public const int MaxNumBackups = 10;
