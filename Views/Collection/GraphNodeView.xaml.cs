@@ -36,8 +36,8 @@ namespace Dash
 
         public Point Center => new Point
         {
-            X = ViewModel.XPosition + (xGrid.ActualWidth) / 2,
-            Y = ViewModel.YPosition + (xEllipse.Height) / 2
+            X = (xGrid.RenderTransform as TranslateTransform).X + Math.Max(xEllipse.Width, xTitleBlock.ActualWidth) / 2,
+            Y = (xGrid.RenderTransform as TranslateTransform).Y + (xEllipse.Height) / 2
         };
 
         public Action PositionsLoaded;
@@ -92,6 +92,8 @@ namespace Dash
         private void GraphNodeView_Unloaded(object sender, RoutedEventArgs e)
         {
             ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            ViewModel.DocumentController.RemoveFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
+            ViewModel.DocumentController.GetDataDocument().RemoveFieldUpdatedListener(KeyStore.LinkToKey, LinkFieldUpdated);
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -145,7 +147,7 @@ namespace Dash
             DocumentController_TitleUpdated(null, null, null);
 
             ViewModel.DocumentController.AddFieldUpdatedListener(KeyStore.TitleKey, DocumentController_TitleUpdated);
-            ViewModel.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.LinkFromKey, Links_Updated);
+            ViewModel.DocumentController.GetDataDocument().AddFieldUpdatedListener(KeyStore.LinkToKey, LinkFieldUpdated);
         }
 
         private void CreateLinks()
@@ -183,9 +185,69 @@ namespace Dash
             }
         }
 
-        private void Links_Updated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void LinkFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
-            ParentGraph.Reset();
+            var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
+            if (dargs.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs)
+            {
+                switch (largs.ListAction)
+                {
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
+                        AddLinks(largs.ChangedDocuments);
+                        var panel = ParentGraph.xInfoPanel.Children.FirstOrDefault(i => i is NodeConnectionsView);
+                        if (panel != null)
+                        {
+                            ParentGraph.xInfoPanel.Children.Remove(panel);
+                            ParentGraph.xInfoPanel.Children.Add(new NodeConnectionsView(ParentGraph.SelectedNode.ViewModel.DocumentViewModel, ParentGraph));
+                        }
+                        break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
+                        break;
+                    case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
+                        break;
+                }
+            }
+        }
+
+        private void AddLinks(List<DocumentController> newLinks)
+        {
+            foreach (var link in newLinks)
+            {
+                var fromDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkFromKey)
+                    .TypedData[0];
+                var toDoc = link.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.LinkToKey)
+                    .TypedData[0];
+                var matchingFromDoc =
+                    ParentGraph.CollectionDocuments.FirstOrDefault(cdc => cdc.GetDataDocument().Equals(fromDoc));
+                var matchingToDoc =
+                    ParentGraph.CollectionDocuments.FirstOrDefault(cdc => cdc.GetDataDocument().Equals(toDoc));
+                if (matchingFromDoc != null && matchingToDoc != null)
+                {
+                    var fromGnv = ParentGraph.CollectionCanvas.FirstOrDefault(gnv =>
+                        gnv.ViewModel.DocumentController.GetDataDocument().Equals(fromDoc.GetDataDocument()));
+                    var toGnv = ParentGraph.CollectionCanvas.FirstOrDefault(gnv =>
+                        gnv.ViewModel.DocumentController.GetDataDocument().Equals(toDoc.GetDataDocument()));
+                    if (fromGnv != null && toGnv != null)
+                    {
+                        var newConnection = new GraphConnection
+                        {
+                            FromDoc = fromGnv,
+                            ToDoc = toGnv
+                        };
+
+                        ParentGraph.AdjacencyLists[newConnection.FromDoc.ViewModel.DocumentViewModel].Add(newConnection.ToDoc.ViewModel.DocumentViewModel);
+                        ParentGraph.Connections.Add(new KeyValuePair<DocumentViewModel, DocumentViewModel>(
+                            newConnection.FromDoc.ViewModel.DocumentViewModel,
+                            newConnection.ToDoc.ViewModel.DocumentViewModel));
+                        ParentGraph.xScrollViewCanvas.Children.Add(newConnection.Connection);
+                        ParentGraph.Links.Add(newConnection);
+                    }
+                    else
+                    {
+                        throw new Exception("CollectionDocuments was not updated");
+                    }
+                }
+            }
         }
 
         private void CreateLink(DocumentController dataDoc, KeyController startKey)

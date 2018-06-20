@@ -2,16 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
-using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using DashShared;
-using Microsoft.Toolkit.Uwp.UI;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -77,7 +74,7 @@ namespace Dash
     {
         private DocumentController _parentDocument;
         private Random _randInt;
-        private ObservableCollection<DocumentController> CollectionDocuments { get; set; }
+        public ObservableCollection<DocumentController> CollectionDocuments { get; set; }
 
         public GraphNodeView SelectedNode
         {
@@ -373,16 +370,9 @@ namespace Dash
             }
             Links.Clear();
             Nodes.Clear();
+            Connections.Clear();
+            CollectionCanvas.Clear();
             GenerateGraph();
-
-            if (xExpandingBoy.IsExpanded)
-            {
-                foreach (var newDoc in newDocs)
-                {
-                    var node = Nodes.First(gnvm => gnvm.DocumentViewModel.Equals(newDoc));
-                    OriginalXPositions.Add(node, (ActualWidth * node.XPosition) / (ActualWidth - 260));
-                }
-            }
 
             //if (expanded)
             //{
@@ -415,7 +405,7 @@ namespace Dash
             
         }
 
-        private void CollectionGraphView_OnTapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        private void CollectionGraphView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
         }
@@ -445,6 +435,11 @@ namespace Dash
 
             foreach (var node in Nodes)
             {
+                if (!OriginalXPositions.ContainsKey(node))
+                {
+                    OriginalXPositions.Add(node, (ActualWidth * node.XPosition) / (ActualWidth - 260));
+                }
+
                 node.XPosition = OriginalXPositions[node];
             }
         }

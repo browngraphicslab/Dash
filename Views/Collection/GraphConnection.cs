@@ -44,6 +44,7 @@ namespace Dash
                     OnPropertyChanged(nameof(FromDoc));
                     FromDoc.PositionsLoaded += FromDoc_Loaded;
                     FromDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                    FromDoc.PropertyChanged += FromDoc_PropertyChanged;
                 }
             }
         }
@@ -59,8 +60,25 @@ namespace Dash
                     OnPropertyChanged(nameof(ToDoc));
                     ToDoc.PositionsLoaded += ToDoc_Loaded;
                     ToDoc.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+                    ToDoc.PropertyChanged += ToDoc_PropertyChanged;
                 }
             }
+        }
+
+        private void FromDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Connection.Points.Remove(_fromPoint);
+            _fromPoint.X = FromDoc.Center.X;
+            _fromPoint.Y = FromDoc.Center.Y;
+            Connection.Points.Add(_fromPoint);
+        }
+
+        private void ToDoc_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Connection.Points.Remove(_toPoint);
+            _toPoint.X = ToDoc.Center.X;
+            _toPoint.Y = ToDoc.Center.Y;
+            Connection.Points.Add(_toPoint);
         }
 
         private void FromDoc_Loaded()
