@@ -32,7 +32,6 @@ namespace Dash
         
         int   _prevQueryLength;// The length of the previous search query
         int   _nextMatch = 0;// Index of the next highlighted search result
-        FormattingMenuView xFormattingMenuView = null;
 
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
@@ -114,6 +113,19 @@ namespace Dash
             xRichEditBox.SetBinding(FontSizeProperty, sizeBinding);
 
 	        _annotationManager = new AnnotationManager(this, getDocView());
+
+            this.SizeChanged += (object sender, SizeChangedEventArgs e) =>
+            {
+                // we always need to make sure that our own Height is NaN
+                // after any kind of resize happens so that we can grow as needed.
+                Height = double.NaN;
+                // if we're inside of a RelativePanel that was resized, we need to 
+                // reset it to have NaN height so that it can grow as we type.
+                if (Parent is RelativePanel relative)
+                {
+                    relative.Height = double.NaN;
+                }
+            };
         }
 
         public void UpdateDocumentFromXaml()
@@ -123,7 +135,6 @@ namespace Dash
             if (DataContext != null && Text != null)
             {
                 convertTextFromXamlRTF();
-                setContainerHeight();
 
                 // auto-generate key/value pairs by scanning the text
                 var reg = new Regex("[a-zA-Z 0-9]*:=[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
@@ -139,11 +150,11 @@ namespace Dash
                     if (containerDoc != null)
                     {
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
-                        containerData.SetField(keycontroller, new RichTextController(new RichTextModel.RTD(value)), true);
+                        containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
                         var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-                        dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
+                        dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);
                         //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
                     }
@@ -193,36 +204,6 @@ namespace Dash
             if (!xamlRTF.Equals(_lastXamlRTFText))  // don't update if the Text is the same as what we last set it to
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
-        }
-        void               setContainerHeight()
-        {
-            if (FocusManager.GetFocusedElement() == xRichEditBox)
-            {
-                if (Parent is RelativePanel relative)
-                {
-                    if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
-                        LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
-                    xRichEditBox.Measure(new Size(ActualWidth, 1000));
-                    if (relative != null)
-                    {
-                        double pad = 0;
-                        foreach (var child in relative.Children.OfType<FrameworkElement>())
-                            if (child != this)
-                            {
-                                if (child is RichTextView rview)
-                                {
-                                    rview.xRichEditBox.Measure(new Size(rview.ActualWidth, 1000));
-                                    pad += rview.DesiredSize.Height;
-                                }
-                                else
-                                    pad += child.ActualHeight;
-                            }
-                        relative.Height = xRichEditBox.DesiredSize.Height + pad;
-                    }
-                }
-                else
-                    Height = double.NaN;
-            }
         }
 
         #region eventhandlers
@@ -333,12 +314,8 @@ namespace Dash
 		void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = false;
-
 			this.RegionSelected(sender, e.GetPosition(MainPage.Instance));
-
 	        e.Handled = true;
-
-            
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)

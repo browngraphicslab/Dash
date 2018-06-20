@@ -33,6 +33,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
+
 	public partial class EditableImage : INotifyPropertyChanged, IAnnotationEnabled
 	{
 		private readonly Context _context;
@@ -746,5 +747,6 @@ namespace Dash
 
 		
 	}
+
 
 }
