@@ -183,10 +183,16 @@ namespace Dash
             }
             else
             {
-                var collectionFieldModelController = docFieldArgs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
-                if (collectionFieldModelController != null)
+                if (docFieldArgs.NewValue != null)
                 {
-                    updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,  collectionFieldModelController.GetElements());
+                    var collectionFieldModelController =
+                        docFieldArgs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+                    if (collectionFieldModelController != null)
+                    {
+                        updateViewModels(
+                            ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,
+                            collectionFieldModelController.GetElements());
+                    }
                 }
             }
         }

@@ -707,6 +707,7 @@ namespace Dash
             var toSelectFrom = viewsToSelectFrom.ToList();
 
             bool deselect = false;
+            UndoManager.startBatch();
             switch (modifier)
             {
                 //create a viewcopy of everything selected
@@ -736,8 +737,9 @@ namespace Dash
                     deselect = true;
                     break;
             }
-
+            UndoManager.endBatch();
             if (deselect) DeselectAll();
+            
         }
 
         #endregion
