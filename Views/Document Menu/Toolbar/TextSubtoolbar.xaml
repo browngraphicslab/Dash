@@ -20,7 +20,7 @@
     <Grid x:Name="xStack" >
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="6*"/>
+            <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -34,18 +34,22 @@
             </controls:TextToolbar.ButtonModifications>
 
         </controls:TextToolbar>
-        <Slider x:Name="xOpacitySlider" Grid.Column="1"
-                        Minimum="0" 
-                        Maximum="255"
-                        TickFrequency="1" 
-                        StepFrequency="1" 
-                        SnapsTo="StepValues" 
-                        TickPlacement="None"  
-                        IntermediateValue="128" 
-                        Margin="22, 11, 0, 0" 
-                        RightTapped="XOpacitySlider_OnRightTapped"  
-                        ValueChanged="XOpacitySlider_OnValueChanged"/>
-        <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2">
+        <Grid Grid.Column="1" 
+                Background="LightGray">
+            <Slider x:Name="xOpacitySlider" Grid.Column="1"
+                            Minimum="0" 
+                            Maximum="255"
+                            TickFrequency="1" 
+                            StepFrequency="1" 
+                            SnapsTo="StepValues" 
+                            TickPlacement="None"  
+                            IntermediateValue="128" 
+                            Margin="22, 11, 0, 0" 
+                            RightTapped="XOpacitySlider_OnRightTapped"  
+                            ValueChanged="XOpacitySlider_OnValueChanged"/>
+        </Grid>
+        <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
+            Background="LightGray">
         <Button.Flyout>
                 <Flyout>
                     <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
