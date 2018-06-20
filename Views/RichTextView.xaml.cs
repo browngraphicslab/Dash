@@ -121,6 +121,7 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
+            UndoManager.startBatch();
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null && Text != null)
@@ -151,6 +152,7 @@ namespace Dash
                     }
                 }
             }
+            UndoManager.endBatch();
         }
         public RichTextModel.RTD   Text
         {
@@ -416,8 +418,8 @@ namespace Dash
                 getDocView().HandleCtrlEnter();
                 e.Handled = true;
             }
-			
-			/**
+
+            /**
 			else if (this.IsAltPressed()) // opens the format options flyout 
             {
 				if (xFormattingMenuView == null)
@@ -436,7 +438,7 @@ namespace Dash
                 e.Handled = true;
             }
 	*/
-		
+
             else if (this.IsTabPressed())
             {
                 xRichEditBox.Document.Selection.TypeText("\t");
@@ -446,10 +448,6 @@ namespace Dash
             {
                 switch (e.Key)
                 {
-                    case VirtualKey.N:
-                        xRichEditBox.Document.Redo();
-                        e.Handled = true;
-                        break;
                     case VirtualKey.H:
                         this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
                         e.Handled = true;
@@ -473,6 +471,15 @@ namespace Dash
                             }
                             e.Handled = true;
                         }
+                        break;
+                    case VirtualKey.Z:
+                        xRichEditBox.Document.Redo();
+                        string docText;
+                        xRichEditBox.Document.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out docText);
+                        int textLength = docText.Length;
+                        xRichEditBox.Document.Selection.SetRange(textLength, textLength);
+                        UndoManager.UndoOccured();
+                        //e.Handled = true;
                         break;
                 }
             }

@@ -350,6 +350,7 @@
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
+    <Compile Include="Util\TextBoxNoUndo.cs" />
     <Compile Include="Util\UndoCommand.cs" />
     <Compile Include="Util\UndoManager.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />

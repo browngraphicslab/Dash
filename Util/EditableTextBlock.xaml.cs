@@ -37,6 +37,10 @@ namespace Dash
 
         private bool _textBoxLoaded = false;
 
+        private bool controlDown;
+        private bool ZDown;
+        private bool YDown;
+
         public bool TextBoxLoaded
         {
             get => _textBoxLoaded;
@@ -127,8 +131,24 @@ namespace Dash
 
         private void XTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            /*
             if (e.Key == Windows.System.VirtualKey.Enter)
                 SetExpression(XTextBox.Text);
+            if (e.Key == Windows.System.VirtualKey.Control)
+            {
+                controlDown = true;
+                e.Handled = true;
+            } else if (e.Key == Windows.System.VirtualKey.Z)
+            {
+                ZDown = true;
+                if (controlDown)
+                {
+                    e.Handled = true;
+                }
+            }
+
+    */
+
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -141,6 +161,13 @@ namespace Dash
 
         private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
         {
+            if (controlDown && YDown)
+            {
+                controlDown = false;
+                YDown = false;
+                e.Handled = true;
+            }
+
             e.Handled = true;
         }
     }
