@@ -30,15 +30,18 @@ namespace Dash
     /// <summary>
     /// Settings pane 
     /// </summary>
-    public sealed partial class SettingsView : Page, INotifyPropertyChanged
+    public sealed partial class SettingsView : Page
     {
+        public static SettingsView Instance { get; private set; }
+        private DocumentController _settingsDoc;
         private readonly string _dbPath;
         private readonly string _pathToRestore;
         private BackupClearSafetyConfidence _clearConfidence;
         private DbEraseSafetyConfidence _eraseConfidence;
-        private int _numBackups = DashConstants.DefaultNumBackups;
-        private int _newNumBackups = 0;
-        private bool _showPrompt = false;
+        private readonly IModelEndpoint<FieldModel> _endpoint;
+        private int _newNumBackups;
+
+        #region ENUMS
 
         public enum BackupClearSafetyConfidence
         {
@@ -46,7 +49,7 @@ namespace Dash
             Intermediate,
             Confident
         }
-    
+
         public enum DbEraseSafetyConfidence
         {
             Unconfident,
@@ -54,43 +57,75 @@ namespace Dash
             Confident
         }
 
-        public static SettingsView Instance { get; private set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
+        public enum MouseFuncMode
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            Scroll,
+            Zoom,
+            Null,
         }
 
-        #region Binding variables 
-        private bool _nightModeOn = false; 
+        #endregion
+
+        #region BINDING VARIABLES 
+
         public bool NightModeOn
         {
-            get => _nightModeOn; 
-            private set {
-                _nightModeOn = value;
+            get => _settingsDoc.GetField<BoolController>(KeyStore.SettingsNightModeKey).Data; 
+            private set
+            {
+                _settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, value, true);
                 MainPage.Instance.ThemeChange(value);
             }
         }
 
-        private int _fontSize = 16;
         public int NoteFontSize
         {
-            get => _fontSize; 
-            private set {
-                _fontSize = value;
-                NotifyPropertyChanged(); 
+            get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsFontSizeKey).Data; 
+            private set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, value, true);
+        }
+
+        public MouseFuncMode MouseScrollOn
+        {
+            get => Enum.Parse<MouseFuncMode>(_settingsDoc.GetField<TextController>(KeyStore.SettingsMouseFuncKey).Data);
+            private set => _settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, value.ToString(), true);
+        }
+
+        public int NumBackups
+        {
+            get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsNumBackupsKey).Data;
+            set
+            {
+                var test1 = NumBackups;
+                var prevNumBackups = (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsNumBackupsKey).Data;
+
+                _settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, value, true);
+                _endpoint.SetNumBackups(value);
+
+                var test2 = NumBackups;
+                if (prevNumBackups <= value) return;
+
+                //CONFIRM DELETE PARTIAL LIST OF BACKUPS
+                for (var i = prevNumBackups; i > NumBackups; i--)
+                {
+                    var pathToDelete = _dbPath + ".bak" + i;
+                    if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
+                }
             }
         }
 
-        private bool _mouseScroll = true;
-        public bool MouseScrollOn
+        public int BackupInterval
         {
-            get => _mouseScroll; 
-            private set { _mouseScroll = value; }
+            get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsBackupIntervalKey).Data;
+            set
+            {
+                _settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, value, true);
+                _endpoint.SetBackupInterval(value * 1000);
+            }
         }
 
         #endregion
+
+        #region CONSTRUCTOR
 
         public SettingsView()
         {
@@ -102,22 +137,84 @@ namespace Dash
             _pathToRestore = _dbPath + ".toRestore";
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
             _eraseConfidence = DbEraseSafetyConfidence.Unconfident;
+            _endpoint = App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>();
 
             SetupSliderBounds();
         }
 
+        #endregion
+
+        #region SETTINGS AND BINDING PROCESSING
+
+        //TODO Maybe handler should be removed in favor of having SettingsView have events for when the settings are changed.
+        private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase
+        {
+            if (handler != null) element.RegisterPropertyChangedCallback(prop, handler);
+            var binding = new FieldBinding<T>
+            {
+                Document = _settingsDoc,
+                Key = key,
+                Mode = mode,
+                Converter = converter,
+                Tag = tag
+            };
+            element.AddFieldBinding(prop, binding);
+        }
+
+        public void LoadSettings(DocumentController settingsDoc)
+        {
+            _settingsDoc = settingsDoc;
+
+            Debug.WriteLine(settingsDoc.GetField<BoolController>(KeyStore.SettingsMouseFuncKey));
+
+            AddSettingsBinding<BoolController>(xNightModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsNightModeKey, tag:"Settings Night Mode", handler: (sender, dp) => MainPage.Instance.ThemeChange(NightModeOn));
+            AddSettingsBinding<NumberController>(xFontSizeSlider, RangeBase.ValueProperty, KeyStore.SettingsFontSizeKey, tag:"Settings Font Size");
+            AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Scroll), "Settings Scroll Radio", (sender, dp) => Debug.WriteLine($"\nSCROLL RADIO: MouseScrollOn is {MouseScrollOn}, and IsChecked is {xScrollRadio.IsChecked}"));
+            AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Zoom), "Settings Zoom Radio" , (sender, dp) => Debug.WriteLine($"ZOOM RADIO: MouseScrollOn is {MouseScrollOn}, and IsChecked is {xZoomRadio.IsChecked}\n"));
+            AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: OnNumBackupsChanged, mode: BindingMode.OneWay);
+            AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => _endpoint.SetBackupInterval(BackupInterval * 1000));
+        }
+
+        private void OnNumBackupsChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
+        {
+            _newNumBackups = (int)xNumBackupsSlider.Value;
+            if (_newNumBackups < NumBackups)
+            {
+                xCorrectionPrompt.Text = (_newNumBackups == NumBackups - 1) ? $"Delete backup {NumBackups}?" : $"Delete backups {_newNumBackups + 1} through {NumBackups}?";
+                SetPromptVisibility(Visibility.Visible);
+            }
+            else
+            {
+                NumBackups = _newNumBackups;
+                SetPromptVisibility(Visibility.Collapsed);
+            }
+        }
+
+        #endregion
+
+        #region HELPER METHODS
+
         private void SetupSliderBounds()
         {
             xBackupIntervalSlider.Minimum = DashConstants.MinBackupInterval;
-            xBackupIntervalSlider.IntermediateValue = DashConstants.DefaultBackupInterval;
             xBackupIntervalSlider.Value = DashConstants.DefaultBackupInterval;
             xBackupIntervalSlider.Maximum = DashConstants.MaxBackupInterval;
 
             xNumBackupsSlider.Minimum = DashConstants.MinNumBackups;
-            xNumBackupsSlider.IntermediateValue = DashConstants.DefaultNumBackups;
             xNumBackupsSlider.Value = DashConstants.DefaultNumBackups;
             xNumBackupsSlider.Maximum = DashConstants.MaxNumBackups;
         }
+
+        private void SetPromptVisibility(Visibility status)
+        {
+            xCorrectDelete.Visibility = status;
+            xCorrectionPrompt.Visibility = status;
+            xCorrectReturnToSafetyIcon.Visibility = status;
+        }
+
+        #endregion
+
+        #region RESTORE FROM BACKUP
 
         private async void Restore_OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -126,7 +223,7 @@ namespace Dash
                 ViewMode = PickerViewMode.Thumbnail,
                 SuggestedStartLocation = PickerLocationId.HomeGroup
             };
-            for (var i = 1; i <= _numBackups; i++) { backupPicker.FileTypeFilter.Add(".bak" + i); }
+            for (var i = 1; i <= NumBackups; i++) { backupPicker.FileTypeFilter.Add(".bak" + i); }
 
             var selectedBackup = await backupPicker.PickSingleFileAsync();
             if (selectedBackup == null) return;
@@ -135,7 +232,7 @@ namespace Dash
 
             var selectedPath = selectedBackup.Path;
             File.Copy(selectedPath, _pathToRestore);
-            
+
             if (int.TryParse(selectedPath.Last().ToString(), out var numSelected))
             {
                 for (var i = numSelected - 1; i >= 1; i--)
@@ -153,6 +250,10 @@ namespace Dash
             await CoreApplication.RequestRestartAsync("");
         }
 
+        #endregion
+
+        #region CLEAR ALL BACKUPS
+
         private void XClearButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (_clearConfidence == BackupClearSafetyConfidence.Unconfident)
@@ -160,9 +261,11 @@ namespace Dash
                 _clearConfidence = BackupClearSafetyConfidence.Intermediate;
                 xReturnToSafetyIcon.Visibility = Visibility.Visible;
                 xSafety.Visibility = Visibility.Visible;
-            } else if (_clearConfidence == BackupClearSafetyConfidence.Confident)
+            }
+            //CONFIRM DELETE ALL BACKUPS
+            else if (_clearConfidence == BackupClearSafetyConfidence.Confident)
             {
-                for (var i = 1; i <= _numBackups; i++)
+                for (var i = 1; i <= NumBackups; i++)
                 {
                     var pathToDelete = _dbPath + ".bak" + i;
                     if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
@@ -197,6 +300,10 @@ namespace Dash
             }
         }
 
+        #endregion
+
+        #region ERASE DATABASE
+
         private async void XEraseDbButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (_eraseConfidence == DbEraseSafetyConfidence.Unconfident)
@@ -205,9 +312,10 @@ namespace Dash
                 xEraseReturnToSafetyIcon.Visibility = Visibility.Visible;
                 xEraseSafety.Visibility = Visibility.Visible;
             }
+            //CONFIRM ERASE DATABASE
             else if (_eraseConfidence == DbEraseSafetyConfidence.Confident)
             {
-                App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>().DeleteAllDocuments(null, null);
+                _endpoint.DeleteAllDocuments(null, null);
                 ResetEraseButton();
 
                 await CoreApplication.RequestRestartAsync("");
@@ -239,57 +347,24 @@ namespace Dash
             }
         }
 
-        private void XBackupIntervalSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>().SetBackupInterval((int) xBackupIntervalSlider.Value * 1000);
-        }
+        #endregion
 
-        private void XNumBackupsSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            if (!_showPrompt)
-            {
-                _showPrompt = true;
-                return;
-            }
-            _newNumBackups = (int) xNumBackupsSlider.Value;
-            if (_newNumBackups < _numBackups)
-            {
-                xCorrectionPrompt.Text = $"Delete backups {_newNumBackups + 1} through {_numBackups}?";
-                SetPromptVisibility(Visibility.Visible);
-            }
-            else
-            {
-                App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>().SetNumBackups(_newNumBackups);
-                _numBackups = _newNumBackups;
-                SetPromptVisibility(Visibility.Collapsed);
-            }
-        }
+        #region UPDATE NUM BACKUPS
 
         private void XCorrectReturnToSafetyIcon_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             SetPromptVisibility(Visibility.Collapsed);
-            _showPrompt = false;
-            xNumBackupsSlider.Value = _numBackups;
+            xNumBackupsSlider.Value = NumBackups;
         }
 
         private void XCorrectDelete_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            for (var i = _numBackups; i > _newNumBackups; i--)
-            {
-                var pathToDelete = _dbPath + ".bak" + i;
-                if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
-            }
-            App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>().SetNumBackups(_newNumBackups);
-            _numBackups = _newNumBackups;
+            NumBackups = _newNumBackups;
             _newNumBackups = 0;
             SetPromptVisibility(Visibility.Collapsed);
         }
 
-        private void SetPromptVisibility(Visibility status)
-        {
-            xCorrectDelete.Visibility = status;
-            xCorrectionPrompt.Visibility = status;
-            xCorrectReturnToSafetyIcon.Visibility = status;
-        }
+        #endregion
+
     }
 }

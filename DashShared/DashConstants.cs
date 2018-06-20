@@ -92,22 +92,24 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 1000; //1 second
+        public const int MillisecondBetweenLocalSave = 1000; //1 second
 
         //BACKUP CONSTANTS
 
         //Minimum
-        public static int MinNumBackups = 1;
-        public static int MinBackupInterval = 2;
-
-        //Default
-        public static int DefaultNumBackups = 3;
-        public static int DefaultBackupInterval = 150;
+        public const int MinNumBackups = 1;
+        public const int MinBackupInterval = 2;
 
         //Maximum
-        public static int MaxNumBackups = 10;
-        public static int MaxBackupInterval = 900;
+        public const int MaxNumBackups = 10;
+        public const int MaxBackupInterval = 900;
 
+        //DEFAULT SETTINGS CONSTANTS
+
+        public const bool DefaultNightModeEngaged = false; //theme state
+        public const int DefaultFontSize = 16; //pt
+        public const int DefaultNumBackups = 3; //backups
+        public const int DefaultBackupInterval = 150; //seconds
 
         #endregion LocalServer
 
@@ -200,7 +202,12 @@ namespace DashShared
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
             public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
             public static KeyModel SideCountKey = new KeyModel("276302FF-0E5F-4009-A308-A4EE8B4224F7", "Side Count");
-
+            public static KeyModel SettingsDocKey = new KeyModel("EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70", "Settings Doc");
+            public static KeyModel SettingsNightModeKey = new KeyModel("7AA22643-3D28-433E-83E9-ECD6A7475270", "Settings Night Mode");
+            public static KeyModel SettingsFontSizeKey = new KeyModel("BD720922-FAD9-4821-9877-F62E3273DED8", "Settings Font Size");
+            public static KeyModel SettingsMouseFuncKey = new KeyModel("867225EC-F9C7-4B14-9A5F-22B7BB71DCCB", "Settings Mouse Functionality");
+            public static KeyModel SettingsNumBackupsKey = new KeyModel("25F0DB4F-D6DE-4D48-A090-77E48C1F621C", "Settings Number of Backups");
+            public static KeyModel SettingsBackupIntervalKey = new KeyModel("8C00E2CD-6272-4E6C-ADC1-622B108A0D9F", "Settings Backup Interval");
         }
 
         public static class TypeStore

@@ -36,16 +36,16 @@
 
             <!--UI-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
-            <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}" >Night Mode</ToggleSwitch>
-            <Slider Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" 
+            <ToggleSwitch x:Name="xNightModeToggle" Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}" >Night Mode</ToggleSwitch>
+            <Slider x:Name="xFontSizeSlider" Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" 
                     Value="{x:Bind NoteFontSize, Mode=TwoWay}"  ></Slider>
 
             <!--Controls-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
             <TextBlock Style="{StaticResource ParagraphStyle}">Mouse scroll functionality</TextBlock>
             <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
-                <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
-                <RadioButton>Zoom</RadioButton>
+                <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
+                <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
             </StackPanel>
 
             <!--Backup-->
@@ -80,11 +80,10 @@
                         Margin="10, 20, 0, 0"
                         Header="Number of backups"
                         StepFrequency="1"
-                        ValueChanged="XNumBackupsSlider_OnValueChanged"
                         SnapsTo="StepValues"/>
-                <TextBlock x:Name="xCorrectionPrompt" Style="{StaticResource SubheaderStyle}" Margin="20, 42, 0, 0" Visibility="Collapsed">Delete backups _ through _?</TextBlock>
-                <Image x:Name="xCorrectReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="20, 35, 0, 0" Tapped="XCorrectReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
-                <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="20, 30, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
+                <TextBlock x:Name="xCorrectionPrompt" Style="{StaticResource SubheaderStyle}" Margin="20, 47, 0, 0" FontSize="15" Visibility="Collapsed">Delete backups _ through _?</TextBlock>
+                <Image x:Name="xCorrectReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="20, 32, 0, 0" Tapped="XCorrectReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="18, 28, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
             </StackPanel>
             <Slider x:Name="xBackupIntervalSlider" 
                     Width="300"  
@@ -92,7 +91,6 @@
                     Margin="10, 10, 0, 0"
                     Header="Seconds between backups"
                     StepFrequency="10"
-                    ValueChanged="XBackupIntervalSlider_OnValueChanged"
                     SnapsTo="StepValues"/>
         </StackPanel>
     </Grid>

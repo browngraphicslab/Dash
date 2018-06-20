@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Windows.Storage;
+using Windows.UI.Xaml;
 using DashShared;
 using Microsoft.Data.Sqlite;
 using Timer = System.Threading.Timer;
@@ -63,6 +64,8 @@ namespace Dash
             var saveTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalSave);
             saveTimer.Elapsed += Timer_Elapsed;
             saveTimer.Start();
+            Application.Current.Suspending += (sender, args) => { _currentTransaction.Commit(); };
+            Application.Current.Resuming += (sender, o) => { _currentTransaction = _db.BeginTransaction(); };
 
             _backupTimer = new System.Timers.Timer(DashConstants.DefaultBackupInterval * 1000);
             _backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
@@ -85,7 +88,6 @@ namespace Dash
 
         private void CopyAsBackup()
         {
-            Debug.WriteLine("CREATING BACKUP!!!");
             var dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + FileName;
             if (!NewChangesToBackup || !File.Exists(dbPath)) return;
 

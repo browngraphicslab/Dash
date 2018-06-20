@@ -55,7 +55,12 @@ namespace Dash
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
         public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
         public static KeyController SideCountKey = new KeyController(DashConstants.KeyStore.SideCountKey);
-
+        public static KeyController SettingsDocKey = new KeyController(DashConstants.KeyStore.SettingsDocKey);
+        public static KeyController SettingsNightModeKey = new KeyController(DashConstants.KeyStore.SettingsNightModeKey);
+        public static KeyController SettingsFontSizeKey = new KeyController(DashConstants.KeyStore.SettingsFontSizeKey);
+        public static KeyController SettingsMouseFuncKey = new KeyController(DashConstants.KeyStore.SettingsMouseFuncKey);
+        public static KeyController SettingsNumBackupsKey = new KeyController(DashConstants.KeyStore.SettingsNumBackupsKey);
+        public static KeyController SettingsBackupIntervalKey = new KeyController(DashConstants.KeyStore.SettingsBackupIntervalKey);
 
         public static class SearchResultDocumentOutline
         {

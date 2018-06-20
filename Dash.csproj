@@ -139,7 +139,6 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\eraser.png" />
     <Content Include="Assets\return.png" />
-    <Content Include="Assets\seriousdelete.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
@@ -156,6 +155,7 @@
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
     <Compile Include="Controllers\AudioController.cs" />
+    <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -197,17 +197,19 @@
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
+    <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
+    <Compile Include="Converters\MouseModeEnumToBoolConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\ShapeInformationToGeometryConverter.cs" />
-    <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
     <Compile Include="Models\AudioModel.cs" />
+    <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
@@ -643,7 +645,6 @@
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
-    <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
@@ -786,6 +787,7 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
     <Content Include="Assets\revert.png" />
+    <Content Include="Assets\seriousdelete.png" />
     <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />

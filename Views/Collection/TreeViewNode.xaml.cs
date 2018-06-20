@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -283,5 +284,6 @@ namespace Dash
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
         }
+
     }
 }

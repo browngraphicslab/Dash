@@ -28,6 +28,7 @@ using Dash.Views;
 using Dash.Controllers;
 using Windows.UI.Popups;
 using Windows.Foundation.Collections;
+using Newtonsoft.Json.Linq;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -137,6 +138,7 @@ namespace Dash
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
+                LoadSettings();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -183,6 +185,35 @@ namespace Dash
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
+
+        #region LOAD AND UPDATE SETTINGS
+
+        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+
+        private DocumentController GetAppropriateSettingsDoc()
+        {
+            var settingsDoc = MainDocument.GetField<DocumentController>(KeyStore.SettingsDocKey);
+            if (settingsDoc != null) return settingsDoc;
+
+            settingsDoc = GetDefaultSettingsDoc();
+            MainDocument.SetField(KeyStore.SettingsDocKey, settingsDoc, true);
+            return settingsDoc;
+        }
+
+        private static DocumentController GetDefaultSettingsDoc()
+        {
+            var settingsDoc = new DocumentController();
+
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
+            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
+
+            return settingsDoc;
+        }
+
+        #endregion
 
         /// <summary>
         /// Updates the workspace currently displayed on the canvas.

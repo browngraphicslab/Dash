@@ -22,7 +22,8 @@ namespace DashShared
         Key = 0x2000,
         DateTime = 0x4000,
         Audio = 0x8000,
+        Bool = 0x10000,
         Reference = PointerReference | DocumentReference,
-        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video | DateTime | Audio
+        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video | DateTime | Audio | Bool
     }
 }
