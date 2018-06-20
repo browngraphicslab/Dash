@@ -233,6 +233,7 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                var regionParent = theDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
                 if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                 {
                     var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
@@ -515,15 +516,14 @@ namespace Dash
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
             {
-                var dregions = new List<DocumentController>();
-                dregions.Add(dc);
-                DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+                var dregions = new ListController<DocumentController>(dc);
+                DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
             }
             else
             {
                 regions.Add(dc);
             }
-            return dc;
+           return dc;
         }
 
         string getHyperlinkTargetForSelection()
