@@ -237,8 +237,10 @@ namespace Dash
                         cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
                         cview.ViewModel.FitContents();
                     }
+                    cview.ViewModel.ContainerDocument.SetActualSize(new Windows.Foundation.Point(xDocView.ActualWidth, xDocView.ActualHeight));
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
+                    cview.ViewModel.FitContents();
                 }
             }
         }
