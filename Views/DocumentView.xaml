@@ -29,10 +29,6 @@
             <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
 
-        <views:AnnotationView x:Name="xAnnotationView" Grid.Column="1" Height="20" MaxHeight="{Binding ActualHeight, ElementName=HalfHeightRow}" Visibility ="Collapsed">
-
-        </views:AnnotationView>
-
         <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
 
             <!-- Main document view -->

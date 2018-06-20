@@ -88,8 +88,6 @@ namespace Dash
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
-	        xAnnotationView.Height = LayoutRoot.Height;
-
             // set bounds
             MinWidth = 35;
             MinHeight = 35;
@@ -1071,7 +1069,6 @@ namespace Dash
             xTitleIcon.Visibility = Visibility.Collapsed;
             xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
             xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
-	        xAnnotationView.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
@@ -1092,17 +1089,10 @@ namespace Dash
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
-		    //ViewModel.DocumentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, DataContext);
-			Debug.WriteLine("VIEMMODEL.CONTENT: " + ViewModel.Content);
-		    Debug.WriteLine("VIEMMODEL: " + ViewModel);
-
-		   
-
-			IAnnotationEnabled element = null;
 
 		    if (ViewModel.Content is IAnnotationEnabled)
 		    {
-			    element = (IAnnotationEnabled) ViewModel.Content;
+			    var element = (IAnnotationEnabled) ViewModel.Content;
 			    element?.RegionSelected(element, new Point(0, 0));
 
 			}
