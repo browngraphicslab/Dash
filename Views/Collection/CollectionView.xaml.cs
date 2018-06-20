@@ -153,6 +153,12 @@ namespace Dash
                     }
                 }
 
+                var icon1 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Tags
+                };
+                tagMode.Icon = icon1;
+
                 tagMode.Click += EnterTagMode;
                 contextMenu.Items.Add(tagMode);
                 elementsToBeRemoved.Add(tagMode);
@@ -163,7 +169,12 @@ namespace Dash
                 elementsToBeRemoved.Add(separatorTwo);
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
-                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As"};
+                var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
+                var icon2 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Eye
+                };
+                viewCollectionAs.Icon = icon2;
                 
                 contextMenu.Items.Add(viewCollectionAs);
                 elementsToBeRemoved.Add(viewCollectionAs);
@@ -178,12 +189,25 @@ namespace Dash
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
                 viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+
+                var icon3 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Search
+                };
+                viewCollectionPreview.Icon = icon3;
+
                 contextMenu.Items.Add(viewCollectionPreview);
                 elementsToBeRemoved.Add(viewCollectionPreview);
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var fitToParent = new MenuFlyoutItem() { Text = "Toggle Fit To Parent" };
                 fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+
+                var icon4 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.WindowMaximize
+                };
+                fitToParent.Icon = icon4;
                 contextMenu.Items.Add(fitToParent);
                 elementsToBeRemoved.Add(fitToParent);
 
