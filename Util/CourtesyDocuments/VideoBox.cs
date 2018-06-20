@@ -9,7 +9,7 @@ using Dash.Converters;
 
 namespace Dash
 {
-	class VideoBox : CourtesyDocument, IAnnotationEnabled
+	class VideoBox : CourtesyDocument
 	{
 		public static DocumentType DocumentType = new DocumentType("7C4D8D1A-4E2B-45F4-A148-17EAFB4356B2", "Video Box");
 		private static readonly string PrototypeId = "513A5CEB-90FE-45A6-911E-1E46E933B553";
@@ -29,9 +29,6 @@ namespace Dash
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
 			//create the media player element 
-			//EditableVideo edVideo = new EditableVideo(docController, context);
-			//var video = edVideo.GetMediaPlayerElement();
-
 			
 			MediaPlayerElement video = new MediaPlayerElement
 			{
@@ -41,13 +38,11 @@ namespace Dash
                 MinWidth = 250,
                 MinHeight = 100
 			};
-			
-
+	
 			// setup bindings on the video
 			SetupBindings(video, docController, context);
 			SetupVideoBinding(video, docController, context);
-
-
+			
 			return video;
 		}
 
@@ -95,10 +90,7 @@ namespace Dash
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
 
-		public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
-		{
-			Debug.WriteLine("VIDEO SELECTED");
-		}
+		
 	}
 }
 

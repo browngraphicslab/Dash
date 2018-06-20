@@ -730,6 +730,7 @@ namespace Dash
 			}
 		}
 
+		//called when the selected region changes
 		public void UpdateHighlight(DocumentView nearestOnCollection)
 		{
 			//unhighlight last doc
@@ -743,97 +744,7 @@ namespace Dash
 			MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
 		}
 
-		/*
-		//opens a menu in which the user can select a link to pursue 
-		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey)
-		{
-			if (_selectedRegion == null) return;
-			
-			//create preview for menu based on contents of linkedDoc
-			
-			double stackX = _selectedRegion.Column1.ActualWidth;
-			double stackY = _selectedRegion.Row1.ActualHeight + 10;
-			xLinkStack.Margin = new Thickness(stackX, stackY, 0, 0);
-			xLinkStack.MaxWidth = _selectedRegion.ActualWidth;
-			xLinkStack.MaxHeight = _selectedRegion.ActualHeight;
-			xLinkStack.Visibility = Visibility.Visible;
-			
-			_linkDict = new Dictionary<TextBlock, DocumentController>();
-
-			//add contents of list as previews
-			foreach (DocumentController linkedDoc in linksList)
-			{
-				//format
-				TextBlock linkPreview = new TextBlock();
-				linkPreview.Foreground = new SolidColorBrush(Colors.Black);
-				linkPreview.TextDecorations = TextDecorations.Underline;
-				linkPreview.FontSize = 12;
-
-				//data
-				var linkedDC = linkedDoc.GetDataDocument()
-					.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
-				linkPreview.Text = linkedDC.LayoutName + " : " + linkedDC.Title;
-				linkPreview.Width = _selectedRegion.Width - 10;
-				xLinkStack.Children.Add(linkPreview);
-
-				//add to dictionary & attach click handler
-				_linkDict.Add(linkPreview, linkedDC);
-				linkPreview.PointerPressed += Link_OnPointerPressed;
-			}
-		}
-
-		private void Link_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-		{
-			e.Handled = false;
-			if (sender is TextBlock) this.Region_Pressed(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position, _linkDict[(TextBlock)sender]);
-			e.Handled = true;
-		}
-
-		*/
-
-		/*
-		private void FormatLinkMenu()
-		{
-			xLinkFlyout.Closed += (s, e) =>
-			{
-				_isLinkMenuOpen = false;
-				xLinkFlyout.Items.Clear();
-			};
-
-			xLinkFlyout.Opening += (s, e) =>
-			{
-				_isLinkMenuOpen = true;
-			};
-		}
-
-		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey, Point point)
-		{
-			if (_isLinkMenuOpen == false)
-			{
-				//add all links as menu items
-				foreach (DocumentController linkedDoc in linksList)
-				{
-					//format new item
-					var linkItem = new MenuFlyoutItem();
-					var dc = linkedDoc.GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
-					linkItem.Text = dc.Title;
-					linkItem.Click += (s, e) =>
-					{
-						this.Region_Pressed(_selectedRegion, point, dc);
-					};
-
-					// Add the item to the menu.
-					xLinkFlyout.Items.Add(linkItem);
-
-				}
-
-				//var selectedText = (FrameworkElement) xRichEditBox.Document.Selection;
-				xLinkFlyout.ShowAt(_selectedRegion);
-			}
-
-		}
-		*/
+		
 	}
 
 }
