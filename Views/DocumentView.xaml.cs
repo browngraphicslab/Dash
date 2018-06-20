@@ -1093,12 +1093,26 @@ namespace Dash
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
 		    //ViewModel.DocumentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, DataContext);
-		    if (ViewModel.Content is EditableImage)
-		    {
-			    EditableImage image = (EditableImage) ViewModel.Content;
-			    image.Region_Pressed(image, new Point(0,0));
+			Debug.WriteLine("VIEMMODEL.CONTENT: " + ViewModel.Content);
+		    Debug.WriteLine("VIEMMODEL: " + ViewModel);
 
+		   
+
+			IAnnotationEnabled element = null;
+
+		    if (ViewModel.Content is IAnnotationEnabled)
+		    {
+			    element = (IAnnotationEnabled) ViewModel.Content;
+			    element?.RegionSelected(element, new Point(0, 0));
+
+			}
+		    else
+		    {
+			    AnnotationManager ann = new AnnotationManager(ViewModel.Content, this);
+			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
+			
+		   
 
 
 		}

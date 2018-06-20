@@ -24,15 +24,17 @@ namespace Dash
 			this.FormatLinkMenu();
 		}
 
+		//navigation and toggling of linked annotations to the pressed region
 		public void RegionPressed(DocumentController theDoc, Windows.Foundation.Point pos, DocumentController chosenDC = null)
 		{
-			//handle linking
+			//get "linked to" docs and "linked from" docs
 			var linkFromDoc = theDoc.GetDataDocument()
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
 			var linkToDoc = theDoc.GetDataDocument()
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
 			if (linkFromDoc != null)
 			{
+				//if there is only 1 link, get that link
 				if (linkFromDoc.Count == 1)
 				{
 					var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
@@ -42,13 +44,14 @@ namespace Dash
 						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
 						targetDoc;
 					theDoc = targetDoc;
-				}
+				} 
+				//if there are multiple links & one has not been chosen, open the link menu to let user decide which link to pursue
 				else if (linkFromDoc.Count > 1 && chosenDC == null)
 				{
-					this.OpenLinkMenu(linkFromDoc.TypedData, KeyStore.LinkFromKey, pos);
-					Debug.WriteLine("LINK FROM DOC CONTAINS MORE THAN 1");
+					this.OpenLinkMenu(linkFromDoc.TypedData, KeyStore.LinkFromKey, pos, theDoc);
 					return;
 				}
+				//if a link has been chosen, check if that doc controller has a parent to display instead
 				else if (linkFromDoc.Count > 1 && chosenDC != null)
 				{
 					var targetDoc = chosenDC;
@@ -58,7 +61,7 @@ namespace Dash
 					theDoc = targetDoc;
 				}
 
-			}
+			} //same procedure for links TO the doc
 			else if (linkToDoc != null)
 			{
 				if (linkToDoc.Count == 1)
@@ -73,7 +76,7 @@ namespace Dash
 				}
 				else if (linkToDoc.Count > 1 && chosenDC == null)
 				{
-					this.OpenLinkMenu(linkToDoc.TypedData, KeyStore.LinkToKey, pos);
+					this.OpenLinkMenu(linkToDoc.TypedData, KeyStore.LinkToKey, pos, theDoc);
 					Debug.WriteLine("LINK TO DOC CONTAINS MORE THAN 1");
 					return;
 				}
@@ -84,13 +87,18 @@ namespace Dash
 									null) ?? targetDoc;
 					theDoc = targetDoc;
 				}
+			} 
+			//else, there are no links and nothing should happen
+			else
+			{
+				return;
 			}
-
-
+			
 			//find nearest linked doc that is currently displayed
 			var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), false);
+			if (_docview == null) _docview = _element.GetFirstAncestorOfType<DocumentView>();
 			var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
 
 			if (nearestOnCollection != null && !nearestOnCollection.Equals(_element.GetFirstAncestorOfType<DocumentView>()))
@@ -116,24 +124,22 @@ namespace Dash
 				}
 				else
 				{
-
+					//navigate to the linked doc
 					MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
 
-					//unhighlight last doc
-					if (_lastNearest?.ViewModel != null)
+					//images have additional highlighting features that should be implemented
+					if (_element is EditableImage)
 					{
-						MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
+						var image = (EditableImage) _element;
+						image.UpdateHighlight(nearestOnCollection);
 					}
-
-					//highlight this linked doc
-					_lastNearest = nearestOnCollection;
-					MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
+					
 				}
 
 			}
 			else
 			{
-
+				//toggle the visibility of the linked doc
 				if (theDoc != null)
 				{
 					if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
@@ -143,9 +149,15 @@ namespace Dash
 
 					}
 
+				} //if working with RichTextView, check web context as well
+				else if (_element is RichTextView)
+				{
+					var richTextView = (RichTextView)_element;
+					richTextView.CheckWebContext(nearestOnCollection, pt, theDoc);
 				}
 			}
 
+			//finds the nearest document view of the desired document controller that is displayed on the canvas
 			DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
 			{
 				double dist = double.MaxValue;
@@ -171,13 +183,15 @@ namespace Dash
 						}
 					}
 				}
-
 				return nearest;
 			}
 		}
 
+		//creates & adds handlers to the link menu
 		private void FormatLinkMenu()
 		{
+			_linkFlyout = new MenuFlyout();
+
 			_linkFlyout.Closed += (s, e) =>
 			{
 				_isLinkMenuOpen = false;
@@ -190,7 +204,9 @@ namespace Dash
 			};
 		}
 
-		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey, Point point)
+		//opens a flyout menu of all the links associated to the region
+		//clicking a link will then choose the desired link to pursue
+		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey, Point point, DocumentController theDoc)
 		{
 			if (_isLinkMenuOpen == false)
 			{
@@ -204,7 +220,7 @@ namespace Dash
 					linkItem.Text = dc.Title;
 					linkItem.Click += (s, e) =>
 					{
-						this.RegionPressed(_selectedRegion, point, dc);
+						this.RegionPressed(theDoc, point, dc);
 					};
 
 					// Add the item to the menu.

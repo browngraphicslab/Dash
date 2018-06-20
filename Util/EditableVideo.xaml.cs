@@ -1,54 +1,52 @@
-﻿using DashShared;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using System;
+using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
-using System.Diagnostics;
-using Dash.Converters;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
+
+// The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-	class VideoBox : CourtesyDocument, IAnnotationEnabled
+	public sealed partial class EditableVideo : UserControl, IAnnotationEnabled
 	{
-		public static DocumentType DocumentType = new DocumentType("7C4D8D1A-4E2B-45F4-A148-17EAFB4356B2", "Video Box");
-		private static readonly string PrototypeId = "513A5CEB-90FE-45A6-911E-1E46E933B553";
-		private static Uri DefaultVideoUri => new Uri("ms-appx://Dash/Assets/DefaultVideo.mp4");
+		private MediaPlayerElement _video;
 
-		public VideoBox(FieldControllerBase refToVideo, double x = 0, double y = 0, double w = 320, double h = 180)
+		public EditableVideo(DocumentController docController, Context context)
 		{
-			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToVideo);
-			(fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
-			(fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
-            SetupDocument(DocumentType, PrototypeId, "VideoBox Prototype Layout", fields);
-        }
-
-		/// <summary>
-		///   Creates a MediaPlayerElement that will be binded to video reference.
-		/// </summary>
-		public static FrameworkElement MakeView(DocumentController docController, Context context)
-		{
-			//create the media player element 
-			//EditableVideo edVideo = new EditableVideo(docController, context);
-			//var video = edVideo.GetMediaPlayerElement();
-
-			
-			MediaPlayerElement video = new MediaPlayerElement
+			this.InitializeComponent();
+			_video = new MediaPlayerElement
 			{
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
 				AreTransportControlsEnabled = true,
-                MinWidth = 250,
-                MinHeight = 100
+				MinWidth = 250,
+				MinHeight = 100
 			};
-			
 
 			// setup bindings on the video
-			SetupBindings(video, docController, context);
-			SetupVideoBinding(video, docController, context);
+			//SetupBindings(video, docController, context);
+			SetupVideoBinding(_video, docController, context);
+		}
 
+		public MediaPlayerElement GetMediaPlayerElement()
+		{
+			return _video;
+		}
 
-			return video;
+		public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
+		{
+			Debug.WriteLine("REGION SELECTED VIDEO");
 		}
 
 		protected static void SetupVideoBinding(MediaPlayerElement video, DocumentController controller,
@@ -89,18 +87,10 @@ namespace Dash
 				Mode = BindingMode.OneWay,
 				Context = context,
 				//converts uri to source data of the MediaPlayerElement
-				Converter = UriToIMediaPlayBackSourceConverter.Instance
+				Converter = Dash.Converters.UriToIMediaPlayBackSourceConverter.Instance
 			};
 			//bind to source property of MediaPlayerElement
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
-
-		public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
-		{
-			Debug.WriteLine("VIDEO SELECTED");
-		}
 	}
 }
-
-
-
