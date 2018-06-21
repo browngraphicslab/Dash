@@ -5,7 +5,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Windows.System;
 using Dash.Converters;
+using Windows.UI.Core;
 
 namespace Dash
 {
@@ -29,6 +31,7 @@ namespace Dash
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
 			//create the media player element 
+			
 			MediaPlayerElement video = new MediaPlayerElement
 			{
 				//set autoplay to false so the vid doesn't play automatically
@@ -38,10 +41,19 @@ namespace Dash
                 MinHeight = 100
 			};
 
+			//enables fullscreen exit with escape shortcut
+			video.KeyDown += (s, e) =>
+			{
+				if (e.Key == VirtualKey.Escape && video.IsFullWindow)
+				{
+					video.IsFullWindow = false;
+				}
+			};
+
 			// setup bindings on the video
 			SetupBindings(video, docController, context);
 			SetupVideoBinding(video, docController, context);
-
+			
 			return video;
 		}
 
@@ -88,7 +100,9 @@ namespace Dash
 			//bind to source property of MediaPlayerElement
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
-    }
+
+		
+	}
 }
 
 

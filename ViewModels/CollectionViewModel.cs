@@ -866,15 +866,15 @@ namespace Dash
                 {
                     if (MainPage.Instance.IsShiftPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                     {
-                        var links = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData;
-                        var targets = links.SelectMany((d) => d.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData).ToList();
+                        var links = dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData;
+                        var targets = links.SelectMany((d) => d.GetDataDocument().GetLinkTo().TypedData).ToList();
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, targets);
                         AddDocument(cnote.Document);
                     }
                     else if (MainPage.Instance.IsCtrlPressed()) // if control is pressed during this drag, we want to see a collection of the actual link documents
                     {
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
-                            dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData);
+                            dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData);
                         AddDocument(cnote.Document);
                     }
                     else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
