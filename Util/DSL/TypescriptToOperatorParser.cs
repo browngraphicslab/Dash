@@ -157,10 +157,9 @@ namespace Dash
            return ParseToExpression(root);
         }
 
-
         private static ScriptExpression ParseToExpression(INode node)
         {
-            //this converts node to ScriptExpress - most cases call ParseToExpression
+            //this converts node to ScriptExpression - most cases call ParseToExpression
             //on individual inner pieces of node
             switch (node.Kind)
             {
@@ -676,11 +675,13 @@ namespace Dash
 
                     var ifBinary = ParseToExpression(ifChild[0]);
                     var ifBlock = ParseToExpression(ifChild[1]);
+                    var elseBlock = ifChild.Count > 2 ? ParseToExpression(ifChild[2]) : null;
 
                     return new FunctionExpression(DSL.GetFuncName<IfOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                             {
                                 {IfOperatorController.BoolKey,  ifBinary},
-                                {IfOperatorController.BlockKey,  ifBlock},
+                                {IfOperatorController.IfBlockKey,  ifBlock},
+                                {IfOperatorController.ElseBlockKey,  elseBlock},
                             });
                     break;
                 case SyntaxKind.DoStatement:
