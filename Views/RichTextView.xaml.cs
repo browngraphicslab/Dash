@@ -126,6 +126,7 @@ namespace Dash
                     relative.Height = double.NaN;
                 }
             };
+            xRichEditBox.Document.UndoLimit = 0;
         }
 
         public void UpdateDocumentFromXaml()
@@ -476,12 +477,10 @@ namespace Dash
                         }
                         break;
                     case VirtualKey.Z:
-                        xRichEditBox.Document.Redo();
-                        string docText;
-                        xRichEditBox.Document.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out docText);
+                        UndoManager.UndoOccured();
+                        xRichEditBox.Document.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out var docText);
                         int textLength = docText.Length;
                         xRichEditBox.Document.Selection.SetRange(textLength, textLength);
-                        UndoManager.UndoOccured();
                         //e.Handled = true;
                         break;
                 }

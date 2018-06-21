@@ -26,13 +26,8 @@ namespace Dash
             }
             else
             {
-                //end old timer
+                //reset timer
                 disTimer.Stop();
-
-                //the timer is already going - set up new timer
-                disTimer = new DispatcherTimer();
-                disTimer.Tick += disTimer_Tick;
-                disTimer.Interval = new TimeSpan(0, 0, 1);
                 disTimer.Start();
             }
         }
