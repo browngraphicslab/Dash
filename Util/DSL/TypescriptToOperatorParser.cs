@@ -677,7 +677,13 @@ namespace Dash
 
                     var ifBinary = ParseToExpression(ifChild[0]);
                     var ifBlock = ParseToExpression(ifChild[1]);
+                    var a = ifBlock;
 
+                    return new FunctionExpression(DSL.GetFuncName<IfOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {IfOperatorController.BoolKey,  ifBinary},
+                                {IfOperatorController.BlockKey,  ifBlock},
+                            });
                     break;
                 case SyntaxKind.DoStatement:
                     break;
