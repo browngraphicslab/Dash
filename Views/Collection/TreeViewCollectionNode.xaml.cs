@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Microsoft.Toolkit.Uwp.UI;
 using Dash.Models.DragModels;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.UI;
 using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -102,7 +103,7 @@ namespace Dash
                 ViewModel.Loaded(true);
                 _needsToLoad = false;
             }
-            ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            //ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
             ViewModel.BindableDocumentViewModels.Filter = Filter;
         }
         private bool Filter(object o)
@@ -126,29 +127,57 @@ namespace Dash
             throw new NotImplementedException();
         }
 
+        private void printItems(AdvancedCollectionView view, string message)
+        {
+            Debug.WriteLine(message + "\n");
+            foreach (var item in view)
+            {
+                Debug.WriteLine(item.ToString() + "\n");
+            }
+        }
+
         private void TreeViewNode_Drop(object sender, DragEventArgs e)
         {
-            if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
+            xLayoutRoot.Background = new SolidColorBrush(Colors.Blue);
+            var itemDroppedTo = sender as TreeViewNode;
+            if (itemDroppedTo != null && e.DataView.RequestedOperation.Equals(DataPackageOperation.Move) &&
+                e.DataView.Properties.ContainsKey(nameof(TreeViewCollectionNode)))
             {
-                var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && !doc.Equals(data.DraggedDocument))
+                // if dropping into the same collection (not to parent/sibling collections) within tree
+                if (e.DataView.Properties[nameof(TreeViewCollectionNode)].Equals(this))
                 {
-                    coll.Add(data.GetDropDocument(new Point(), true));
+                    // TreeViewCollectionNode that the item being dragged is from
+                    var tree = e.DataView.Properties[nameof(TreeViewCollectionNode)] as TreeViewCollectionNode;
+                    // view model of TreeViewNode that contains the TreeViewCollectionNode
+                    var doc = tree.GetFirstAncestorOfType<TreeViewNode>()?.DataContext as DocumentViewModel;
+                    var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                    coll.Move((e.DataView.Properties[nameof(TreeViewNode)] as TreeViewNode).ViewModel.DocumentController, itemDroppedTo.ViewModel.DocumentController);
                 }
             }
-            if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+            else
             {
-                var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
-                var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
-                var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-                if (coll != null && data.Count > 0)
+                if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
                 {
-                    var start = data.First().DraggedDocument.GetPositionField().Data;
-                    coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X-start.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y-start.Y), true)).ToList());
+                    var data = e.DataView.Properties[nameof(DragDocumentModel)] as DragDocumentModel;
+                    var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
+                    var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                    if (coll != null && !doc.Equals(data.DraggedDocument))
+                    {
+                        coll.Add(data.GetDropDocument(doc.Position, true));
+                    }
+                }
+                if (e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
+                {
+                    var data = e.DataView.Properties[nameof(List<DragDocumentModel>)] as List<DragDocumentModel>;
+                    var doc = (sender as TreeViewNode).DataContext as DocumentViewModel;
+                    var coll = doc.DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+                    if (coll != null && data.Count > 0)
+                    {
+                        var start = data.First().DraggedDocument.GetPositionField().Data;
+                        coll.AddRange(data.Where((dm) => !doc.DocumentController.Equals(dm.DraggedDocument)).
+                            Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X,
+                                dm.DraggedDocument.GetPositionField().Data.Y - start.Y), true)).ToList());
+                    }
                 }
             }
             e.Handled = true;
@@ -156,6 +185,7 @@ namespace Dash
 
         private void TreeViewNode_DragOver(object sender, DragEventArgs e)
         {
+            xLayoutRoot.Background = new SolidColorBrush(Colors.Purple);
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

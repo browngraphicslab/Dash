@@ -223,6 +223,9 @@ namespace Dash
                     DocumentViewModels.Clear();
                     addViewModels(docs);
                     break;
+                case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Move:
+                    moveViewModels(docs);
+                    break;
                 default:
                     break;
             }
@@ -254,6 +257,22 @@ namespace Dash
             }
         }
 
+        void moveViewModels(List<DocumentController> documents)
+        {
+            using (BindableDocumentViewModels.DeferRefresh()) {
+                var ids = documents.Select(doc => doc.GetId());
+                var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+                if (vms.Count >= 2)
+                {
+                    var from = vms[1];
+                    var to = vms[0];
+                    var toIndex = DocumentViewModels.IndexOf(to);
+                    DocumentViewModels.Remove(from);
+                    DocumentViewModels.Insert(toIndex, from);
+                }
+            }
+        }
+        
         public void AddDocuments(List<DocumentController> documents)
         {
             using (BindableDocumentViewModels.DeferRefresh())

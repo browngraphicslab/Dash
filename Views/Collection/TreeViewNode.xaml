@@ -10,7 +10,9 @@
     d:DesignWidth="400"
     x:Name="Control"
     DataContextChanged="TreeViewNode_OnDataContextChanged"
-    Tapped="TreeViewNode_OnTapped">
+    PointerPressed="TreeViewNode_OnPointerPressed"
+    PointerReleased="TreeViewNode_OnPointerReleased"
+>
 
     <StackPanel>
         <StackPanel.ContextFlyout>
@@ -33,7 +35,7 @@
             <TextBlock x:Name="XTextBlock" Grid.Column="1" FontSize="{StaticResource DataSizing}" 
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
-                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="{x:Bind Foreground, Mode=OneWay}" />
+                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" DropCompleted="XTextBlock_OnDropCompleted" Foreground="{x:Bind Foreground, Mode=OneWay}" />
             <Border x:Name="xBorder" Grid.Column="1" Visibility="Collapsed">
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
