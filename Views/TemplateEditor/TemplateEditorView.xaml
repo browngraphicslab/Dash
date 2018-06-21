@@ -10,16 +10,16 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel Orientation="Horizontal" Width="500" Height="500" Background="Blue">
-        <StackPanel Orientation="Vertical" x:Name="DataPanel">
+    <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="200" Background="Blue">
 
         </StackPanel>
         
-        <Grid x:Name="xWorkspaceOuterGrid">
+        <Grid x:Name="xWorkspaceOuterGrid" Width="500" Background="Green">
 
         </Grid>
 
-        <StackPanel Orientation="Vertical" x:Name="LayoutPanel">
+        <StackPanel Orientation="Vertical" x:Name="LayoutPanel" Width="200" Background="Red">
 
         </StackPanel>
     </StackPanel>

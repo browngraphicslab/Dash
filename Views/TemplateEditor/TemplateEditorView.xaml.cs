@@ -22,17 +22,27 @@ namespace Dash
         private double xPos;
         private double yPos;
 
+        public DocumentView Document
+        {
+            get;
+            set;
+        }
+
         public TemplateEditorView()
         {
+            this.InitializeComponent();
         }
 
         public TemplateEditorView(DocumentView doc)
         {
-            this.InitializeComponent();
+        }
+
+        public void Load()
+        {
+            if (Document == null) return;
             xEditorControl.RenderTransform = new TranslateTransform
             {
-                X = doc.ViewModel.XPos + doc.ActualWidth + 50,
-                Y = doc.ViewModel.YPos
+                X = 10
             };
         }
     }
