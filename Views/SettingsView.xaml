@@ -61,6 +61,7 @@
                 <RadioButton IsChecked="{x:Bind MouseScrollOn, Mode=TwoWay}">Scroll</RadioButton>
                 <RadioButton>Zoom</RadioButton>
             </StackPanel>
+            <ToggleSwitch Margin="10" IsOn="{x:Bind NoUpperLimit, Mode=TwoWay}" >Allow Infinite Upwards Panning</ToggleSwitch>
         </StackPanel>
     </Grid>
 </Page>
