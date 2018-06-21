@@ -17,41 +17,41 @@ namespace Dash
 
         public static void TEST()
         {
-            TestNumber("7", 7);
-            TestNumber("add(3,6)", 9);
-            TestString($"\"hello\"","hello");
-            TestNumber("add(5,add(div(9,3),mult(2,6)))", 20);
+            //    TestNumber("7", 7);
+            //    TestNumber("add(3,6)", 9);
+            //    TestString($"\"hello\"","hello");
+            //    TestNumber("add(5,add(div(9,3),mult(2,6)))", 20);
 
-            TestNumber("var a = 8;" +
-                       "var b = add(a,2);" +
-                       "add(a,b)",18);
+            //    TestNumber("var a = 8;" +
+            //               "var b = add(a,2);" +
+            //               "add(a,b)",18);
 
-            TestNumber("var a = 8 + 3;", 11);
-            TestNumber("7 + 9 + 45 + 7", 68);
-            
+            //    TestNumber("var a = 8 + 3;", 11);
+            //    TestNumber("7 + 9 + 45 + 7", 68);
 
-            TestNumber("var a = 8;" +
-                       "var b = (6 + 36)/14;" +
-                       "((a * b) + 1) * 4", 100);
 
-            TestNumber("var myVar = 6; myVar.myField = 67; 3", 3);
+            //    TestNumber("var a = 8;" +
+            //               "var b = (6 + 36)/14;" +
+            //               "((a * b) + 1) * 4", 100);
+
+            //    TestNumber("var myVar = 6; myVar.myField = 67; 3", 3);
         }
 
 
-        private static void TestNumber(string script, double correctValue)
-        {
-            var number = Interpret(script);
-            var num = (double)number.GetValue(null);
-            Debug.Assert(num.Equals(correctValue));
-        }
+        //private static void TestNumber(string script, double correctValue)
+        //{
+        //    var number = Interpret(script);
+        //    var num = (double)number.GetValue(null);
+        //    Debug.Assert(num.Equals(correctValue));
+        //}
 
-        private static void TestString(string script, string correctValue)
-        {
-            var s = Interpret(script);
-            Debug.Assert(s.GetValue(null).Equals(correctValue));
-        }
+        //private static void TestString(string script, string correctValue)
+        //{
+        //    var s = Interpret(script);
+        //    Debug.Assert(s.GetValue(null).Equals(correctValue));
+        //}
 
-        /// <summary>
+        ///// <summary>
         /// Public method to call to COMPILE but not Execute a Dish script.  
         /// This will return the helpful error message of the invalid script, or NULL if the script compiled correctly.
         /// 
@@ -150,6 +150,7 @@ namespace Dash
 
         private static ScriptExpression ParseToExpression(string script)
         {
+            //this formats string to INode and sends it to below function
             script = script.EndsWith(';') ? script : script + ";";
             var ast = new TypeScriptAST(script);
             var root = ast.RootNode;
@@ -159,6 +160,8 @@ namespace Dash
 
         private static ScriptExpression ParseToExpression(INode node)
         {
+            //this converts node to ScriptExpress - most cases call ParseToExpression
+            //on individual inner pieces of node
             switch (node.Kind)
             {
                 case SyntaxKind.Unknown:
@@ -648,10 +651,25 @@ namespace Dash
                     return ParseToExpression(exp);
                     break;
                 case SyntaxKind.IfStatement:
+                    var ifs = (node as IfStatement);
+                    var a = ifs;
                     break;
                 case SyntaxKind.DoStatement:
                     break;
                 case SyntaxKind.WhileStatement:
+                    var whilChild = (node as WhileStatement).Children;
+                    Debug.Assert(whilChild.Count == 2);
+
+                    var whilBinary = whilChild[0];
+                    var whilBlock = whilChild[1];
+
+                    //make a while operator and call it in this function 
+                    //return new FunctionExpression(DSL.GetFuncName<W>(), new Dictionary<KeyController, ScriptExpression>()
+                    //{
+                    //    {AddOperatorController.AKey,  leftBinExpr},
+                    //    {AddOperatorController.BKey,  rightBinExpr},
+                    //});
+                    
                     break;
                 case SyntaxKind.ForStatement:
                     break;
