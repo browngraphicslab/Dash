@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -36,8 +37,16 @@ namespace Dash
             get => _markdownBoxLoaded;
             set
             {
+                if (!value)
+                {
+                    XMarkdownBox?.RemoveHandler(KeyDownEvent, _markdownBoxKeyDownHandler);
+                }
                 _markdownBoxLoaded = value;
                 OnPropertyChanged();
+                if (value)
+                {
+                    XMarkdownBox.AddHandler(KeyDownEvent, _markdownBoxKeyDownHandler, true);
+                }
             }
         }
 
@@ -46,6 +55,8 @@ namespace Dash
         public FieldControllerBase TargetFieldController { get; set; }
         public Context TargetDocContext { get; set; }
 
+        private KeyEventHandler _markdownBoxKeyDownHandler;
+
         public EditableMarkdownBlock()
         {
             InitializeComponent();
@@ -53,6 +64,8 @@ namespace Dash
 
             XMarkdownBlock.AddHandler(TappedEvent, new TappedEventHandler(XMarkdownBlock_Tapped), true);
             XMarkdownBlock.AddHandler(DoubleTappedEvent, new DoubleTappedEventHandler(XMarkdownBlock_DoubleTapped), true);
+
+            _markdownBoxKeyDownHandler = new KeyEventHandler(xMarkdownBox_KeyDown);
         }
 
         private void XMarkdownBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
@@ -74,6 +87,7 @@ namespace Dash
         }
         private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
+            //TODO this gets called more than it should
             if (MarkdownBoxLoaded)
             {
                 SetExpression(XMarkdownBox.Text);
@@ -139,6 +153,17 @@ namespace Dash
             e.Handled = true;
         }
 
+        private void xMarkdownBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter && Window.Current.CoreWindow.GetKeyState(VirtualKey.Control)
+                    .HasFlag(CoreVirtualKeyStates.Down))
+            {
+                XMarkdownBox.Text = XMarkdownBox.Text.Remove(XMarkdownBox.SelectionStart - 1, 1);
+                SetExpression(XMarkdownBox.Text);
+                e.Handled = true;
+            }
+        }
+
         private async void XMarkdownBlock_LinkClicked(object sender, Microsoft.Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
         {
             if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
@@ -146,7 +171,5 @@ namespace Dash
                 await Launcher.LaunchUriAsync(link);
             }
         }
-
-
     }
 }

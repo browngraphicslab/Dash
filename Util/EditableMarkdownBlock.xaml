@@ -15,8 +15,9 @@
                    FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                    Foreground="{x:Bind Foreground}"
                    HorizontalAlignment="Stretch"
-                   VerticalAlignment="Top"
+                   VerticalAlignment="Stretch"
                    TextWrapping="Wrap" 
+                   Background="Transparent"
                    LinkClicked="XMarkdownBlock_LinkClicked" ></controls:MarkdownTextBlock>
         <TextBox x:Name="XMarkdownBox"
                    x:FieldModifier="public"
@@ -28,12 +29,11 @@
                  VerticalAlignment="Top"
                   TextWrapping="NoWrap" 
                  AcceptsReturn="True"
-
                  BorderThickness="0" 
                  PointerWheelChanged="XMarkdownBox_OnPointerWheelChanged"
                  ManipulationDelta="XMarkdownBox_OnManipulationDelta"
                  KeyUp="XMarkdownBox_KeyUp"
                  LostFocus="XMarkdownBox_OnLostFocus"
-                 Loaded="XMarkdownBox_OnLoaded"></TextBox>
+                 Loaded="XMarkdownBox_OnLoaded"/>
     </Grid>
 </UserControl>
