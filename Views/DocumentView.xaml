@@ -21,12 +21,7 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition x:Name="xTemplateColumn" Width="0" />
-        </Grid.ColumnDefinitions>
-        <Grid x:Name="LayoutRoot" Grid.Column="0" Background="{Binding BackgroundBrush}" BorderThickness="0">
+    <Grid x:Name="LayoutRoot" Grid.Column="0" Background="{Binding BackgroundBrush}" BorderThickness="0">
             <!-- Main document view -->
 
             <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
@@ -133,6 +128,4 @@
     AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>
 
         </Grid>
-        <local:TemplateEditorView Grid.Column="1" x:Name="xTemplateEditor" Visibility="Collapsed"></local:TemplateEditorView>
-    </Grid>
 </UserControl>

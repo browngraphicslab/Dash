@@ -28,10 +28,12 @@ namespace Dash
             set;
         }
 
+        public DocumentController LayoutDocument { get; set; }
+        public DocumentController DataDocument { get; set; }
+
         public TemplateEditorView()
         {
             this.InitializeComponent();
-			
         }
 
         public void Load()
