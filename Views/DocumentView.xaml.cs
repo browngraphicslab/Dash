@@ -65,6 +65,8 @@ namespace Dash
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
 
+        private TemplateEditorBase _templateEditor;
+
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
 
@@ -329,18 +331,21 @@ namespace Dash
 
         private void ToggleTemplateEditor()
         {
-            xTemplateEditor.Document = this;
-            xTemplateEditor.Load();
-            switch (xTemplateEditor.Visibility)
+            if (_templateEditor == null)
             {
-                case Visibility.Collapsed:
-                    xTemplateEditor.Visibility = Visibility.Visible;
-                    xTemplateColumn.Width = GridLength.Auto;
-                    break;
-                case Visibility.Visible:
-                    xTemplateEditor.Visibility = Visibility.Collapsed;
-                    xTemplateColumn.Width = new GridLength(0);
-                    break;
+                var mainPageCollectionView =
+                    MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                var where = Util.GetCollectionFreeFormPoint(
+                    mainPageCollectionView.CurrentView as CollectionFreeformView, new Point((this.RenderTransform as MatrixTransform).Matrix.OffsetX,
+                        (this.RenderTransform as MatrixTransform).Matrix.OffsetY));
+                _templateEditor = new TemplateEditorBase(this.ViewModel.DataDocument, where, new Size(900, 500));
+                //creates a doc controller for the image(s)
+                mainPageCollectionView.ViewModel.AddDocument(_templateEditor.Document);
+                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);
+            }
+            else
+            {
+                _templateEditor = null;
             }
         }
 
