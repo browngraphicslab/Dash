@@ -22,7 +22,7 @@ namespace Dash
         /// </summary>
         private SqliteConnection _db;
         private SqliteTransaction _currentTransaction;
-        private readonly System.Timers.Timer _backupTimer;
+        private readonly System.Timers.Timer _backupTimer, _saveTimer;
         private int _numBackups = DashConstants.DefaultNumBackups;
         public bool NewChangesToBackup { get; set; }
 
@@ -61,11 +61,11 @@ namespace Dash
             createFieldCommand.ExecuteNonQuery();
             _currentTransaction = _db.BeginTransaction();
 
-            var saveTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalSave);
-            saveTimer.Elapsed += Timer_Elapsed;
-            saveTimer.Start();
-            Application.Current.Suspending += (sender, args) => { _currentTransaction.Commit(); };
-            Application.Current.Resuming += (sender, o) => { _currentTransaction = _db.BeginTransaction(); };
+            _saveTimer = new System.Timers.Timer(DashConstants.MillisecondBetweenLocalSave);
+            _saveTimer.Elapsed += Timer_Elapsed;
+            _saveTimer.Start();
+            //Application.Current.Suspending += (sender, args) => { _currentTransaction.Commit(); };
+            //Application.Current.Resuming += (sender, o) => { _currentTransaction = _db.BeginTransaction(); };
 
             _backupTimer = new System.Timers.Timer(DashConstants.DefaultBackupInterval * 1000);
             _backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
@@ -416,7 +416,15 @@ namespace Dash
 
         #region CONVENIENCE AND HELPER METHODS
 
-        public async Task Close() { _db.Close(); }
+        public async Task Close()
+        {
+            _saveTimer.Stop();
+            _transactionMutex.WaitOne();
+            _currentTransaction?.Commit();
+            _currentTransaction = null;
+            _transactionMutex.ReleaseMutex();
+            _db.Close();
+        }
 
         public Dictionary<string, string> GetBackups() { return new Dictionary<string, string>(); }
 

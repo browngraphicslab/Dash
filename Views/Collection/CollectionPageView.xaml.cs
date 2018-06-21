@@ -80,7 +80,8 @@ namespace Dash
                     thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 }
                 thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) });
+                thumbnailImageViewDoc.SetBackgroundColor(Colors.Transparent);
+                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
             }
             CurPage = PageDocumentViewModels.LastOrDefault();
         }
@@ -236,8 +237,10 @@ namespace Dash
                         cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
                         cview.ViewModel.FitContents();
                     }
+                    cview.ViewModel.ContainerDocument.SetActualSize(new Windows.Foundation.Point(xDocView.ActualWidth, xDocView.ActualHeight));
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
+                    cview.ViewModel.FitContents();
                 }
             }
         }

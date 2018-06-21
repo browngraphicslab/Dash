@@ -22,8 +22,9 @@ namespace Dash
         public static KeyController TransientKey = new KeyController("7553FBFA-B4C4-46D7-AEA6-76B22C5A3425", "Transient");
         public static KeyController HiddenKey = new KeyController("A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6", "Hidden");
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
+        public static KeyController SnapshotsKey = new KeyController("94358B4F-83DD-41A6-8440-BA5973DC9E97", "Snaphshots");
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
-        public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
+        public static KeyController IsAdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
@@ -61,6 +62,9 @@ namespace Dash
         public static KeyController SettingsMouseFuncKey = new KeyController(DashConstants.KeyStore.SettingsMouseFuncKey);
         public static KeyController SettingsNumBackupsKey = new KeyController(DashConstants.KeyStore.SettingsNumBackupsKey);
         public static KeyController SettingsBackupIntervalKey = new KeyController(DashConstants.KeyStore.SettingsBackupIntervalKey);
+        public static KeyController BackgroundImageStateKey = new KeyController(DashConstants.KeyStore.BackgroundImageStateKey);
+        public static KeyController CustomBackgroundImagePathKey = new KeyController(DashConstants.KeyStore.CustomBackgroundImagePathKey);
+        public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
 
         public static class SearchResultDocumentOutline
         {

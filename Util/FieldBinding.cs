@@ -250,7 +250,7 @@ namespace Dash
                 };
 
             int refCount = 0;
-            if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
+            //if (element.ActualWidth != 0 || element.ActualHeight != 0) // element.IsInVisualTree())
             {
                 binding.ConvertToXaml(element, property, binding.Context);
                 binding.Add(handler);
@@ -259,6 +259,9 @@ namespace Dash
 
             void OnElementOnUnloaded(object sender, RoutedEventArgs args)
             {
+                element.Loaded -= OnElementOnLoaded;
+                element.Loaded += OnElementOnLoaded;
+
                 if (--refCount == 0)
                 {
                     binding.Remove(handler);
@@ -276,7 +279,7 @@ namespace Dash
 
             element.Unloaded += OnElementOnUnloaded;
 
-            element.Loaded += OnElementOnLoaded;
+            //element.Loaded += OnElementOnLoaded;
 
             void RemoveBinding()
             {

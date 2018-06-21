@@ -112,7 +112,7 @@ namespace Dash
         public virtual FrameworkElement GetTableCellView(Context context)
         {
             var tb = new TextingBox(this);
-            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(1), true);
+            tb.Document.SetField<NumberController>(TextingBox.TextAlignmentKey, (int)TextAlignment.Left, true);
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(double.NaN);

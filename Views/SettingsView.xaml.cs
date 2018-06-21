@@ -12,6 +12,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Dash.Annotations;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Visibility = Windows.UI.Xaml.Visibility;
@@ -31,7 +33,7 @@ namespace Dash
     /// <summary>
     /// Settings pane 
     /// </summary>
-    public sealed partial class SettingsView : Page
+    public sealed partial class SettingsView : Page, INotifyPropertyChanged
     {
         public static SettingsView Instance { get; private set; }
         private DocumentController _settingsDoc;
@@ -39,8 +41,14 @@ namespace Dash
         private readonly string _pathToRestore;
         private BackupClearSafetyConfidence _clearConfidence;
         private DbEraseSafetyConfidence _eraseConfidence;
+        private BackgroundImageState _lastNonCustom = BackgroundImageState.Grid;
         private readonly IModelEndpoint<FieldModel> _endpoint;
         private int _newNumBackups;
+
+        private const string Grid = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private const string Line = "ms-appx:///Assets/transparent_line_tilable.png";
+        private const string Dot = "ms-appx:///Assets/transparent_dot_tilable.png";
+        private const string Blank = "ms-appx:///Assets/transparent_blank_tilable.png";
 
         #region ENUMS
 
@@ -65,6 +73,23 @@ namespace Dash
             Null,
         }
 
+        public enum BackgroundImageState
+        {
+            Grid,
+            Line,
+            Dot,
+            Blank,
+            Custom
+        }
+
+        public readonly Dictionary<BackgroundImageState, string> EnumToPathDict = new Dictionary<BackgroundImageState, string>
+        {
+            [BackgroundImageState.Grid] = Grid,
+            [BackgroundImageState.Line] = Line,
+            [BackgroundImageState.Dot] = Dot,
+            [BackgroundImageState.Blank] = Blank,
+        };
+
         #endregion
 
         #region BINDING VARIABLES 
@@ -88,7 +113,25 @@ namespace Dash
         public MouseFuncMode MouseScrollOn
         {
             get => Enum.Parse<MouseFuncMode>(_settingsDoc.GetField<TextController>(KeyStore.SettingsMouseFuncKey).Data);
-            private set => _settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, value.ToString(), true);
+            set => _settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, value.ToString(), true);
+        }
+
+        public BackgroundImageState ImageState
+        {
+            get => Enum.Parse<BackgroundImageState>(_settingsDoc.GetField<TextController>(KeyStore.BackgroundImageStateKey).Data);
+            set => _settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, value.ToString(), true);
+        }
+
+        public string CustomImagePath
+        {
+            get => _settingsDoc.GetField<TextController>(KeyStore.CustomBackgroundImagePathKey)?.Data;
+            set => _settingsDoc.SetField<TextController>(KeyStore.CustomBackgroundImagePathKey, value, true);
+        }
+
+        public float BackgroundImageOpacity
+        {
+            get => (float) _settingsDoc.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+            set => _settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, value, true);
         }
 
         public int NumBackups
@@ -96,12 +139,9 @@ namespace Dash
             get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsNumBackupsKey).Data;
             set
             {
-                var test1 = NumBackups;
                 var prevNumBackups = (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsNumBackupsKey).Data;
 
                 _settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, value, true);
-
-                var test2 = NumBackups;
                 if (prevNumBackups <= value) return;
 
                 //CONFIRM DELETE PARTIAL LIST OF BACKUPS
@@ -111,8 +151,7 @@ namespace Dash
                     if (File.Exists(pathToDelete)) { File.Delete(pathToDelete); }
                 }
 
-                var suffix = NumBackups == 1 ? "" : "s";
-                xNumBackupsSlider.Header = $"System is storing the {NumBackups} most recent backup" + suffix;
+                xNumBackupDisplay.Text = NumBackups.ToString();
             }
         }
 
@@ -132,6 +171,7 @@ namespace Dash
 
             Debug.Assert(Instance == null);
             Instance = this;
+
             _dbPath = ApplicationData.Current.LocalFolder.Path + "\\" + "dash.db";
             _pathToRestore = _dbPath + ".toRestore";
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
@@ -141,6 +181,31 @@ namespace Dash
             SetupSliderBounds();
         }
 
+        private async Task<bool> TrySetUserPath()
+        {
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            var file = await picker.PickSingleFileAsync();
+            if (file == null)
+            {
+                if (CustomImagePath != null) { CollectionFreeformView.BackgroundImage = CustomImagePath; return false; }
+                ImageState = _lastNonCustom;
+                return false;
+            }
+
+            CollectionFreeformView.BackgroundImage = file.Path;
+            CustomImagePath = file.Path;
+
+            return true;
+        }
+
         #endregion
 
         #region SETTINGS AND BINDING PROCESSING
@@ -148,7 +213,6 @@ namespace Dash
         //TODO Maybe handler should be removed in favor of having SettingsView have events for when the settings are changed.
         private void AddSettingsBinding<T>(FrameworkElement element, DependencyProperty prop, KeyController key, IValueConverter converter = null, string tag = null, DependencyPropertyChangedCallback handler = null, BindingMode mode = BindingMode.TwoWay) where T : FieldControllerBase
         {
-            if (handler != null) element.RegisterPropertyChangedCallback(prop, handler);
             var binding = new FieldBinding<T>
             {
                 Document = _settingsDoc,
@@ -158,36 +222,68 @@ namespace Dash
                 Tag = tag
             };
             element.AddFieldBinding(prop, binding);
+
+            if (handler != null) element.RegisterPropertyChangedCallback(prop, handler);
+            if (element != xCustomRadio) handler?.Invoke(element, prop);
         }
 
         public void LoadSettings(DocumentController settingsDoc)
         {
             _settingsDoc = settingsDoc;
 
-            Debug.WriteLine(settingsDoc.GetField<BoolController>(KeyStore.SettingsMouseFuncKey));
-
-            AddSettingsBinding<BoolController>(xNightModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsNightModeKey, tag:"Settings Night Mode", handler: (sender, dp) => MainPage.Instance.ThemeChange(NightModeOn));
-            AddSettingsBinding<NumberController>(xFontSizeSlider, RangeBase.ValueProperty, KeyStore.SettingsFontSizeKey, tag:"Settings Font Size");
-            AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Scroll), "Settings Scroll Radio");
-            AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new MouseModeEnumToBoolConverter(MouseFuncMode.Zoom), "Settings Zoom Radio");
-            AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: OnNumBackupsChanged, mode: BindingMode.OneWay);
-            AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) =>
+            var binding = new FieldBinding<TextController>
             {
-                _endpoint.SetBackupInterval((int)xBackupIntervalSlider.Value * 1000);
+                Document = _settingsDoc,
+                Key = KeyStore.BackgroundImageStateKey,
+                Mode = BindingMode.OneWay,
+                Converter = new RadioEnumToVisibilityConverter(BackgroundImageState.Custom)
+            };
+            xCustomizeButton.AddFieldBinding(VisibilityProperty, binding);
 
-                var interval = (int) xBackupIntervalSlider.Value;
-                var numSec = interval % 60;
-                var numMin = (interval - numSec) / 60;
+            AddSettingsBinding<BoolController>(xNightModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsNightModeKey, handler: (sender, dp) => MainPage.Instance.ThemeChange(NightModeOn));
+            AddSettingsBinding<NumberController>(xFontSizeSlider, RangeBase.ValueProperty, KeyStore.SettingsFontSizeKey);
 
-                var suffix = numMin == 1 ? "" : "s";
-                var minToDisplay = numMin == 0 ? "" : $" {numMin} minute" + suffix;
-                var secToDisplay = numSec == 0 ? "" : $" {numSec} seconds";
+            AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Scroll));
+            AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Zoom));
 
-                xBackupIntervalSlider.Header = "Backups overwritten every" + minToDisplay + secToDisplay;
+            AddSettingsBinding<TextController>(xGridRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Grid), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Grid));
+            AddSettingsBinding<TextController>(xLineRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Line), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Line));
+            AddSettingsBinding<TextController>(xDotRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Dot), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Dot));
+            AddSettingsBinding<TextController>(xBlankRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Blank), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Blank));
+            AddSettingsBinding<TextController>(xCustomRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Custom), handler: async (sender, dp) =>
+            {
+                if (ImageState != BackgroundImageState.Custom) return;
+                if (CustomImagePath != null) { CollectionFreeformView.BackgroundImage = CustomImagePath; return; }
+                await TrySetUserPath();
             });
+
+            AddSettingsBinding<NumberController>(xNumBackupsSlider, RangeBase.ValueProperty, KeyStore.SettingsNumBackupsKey, handler: (sender, dp) => UpdateNumBackups(), mode: BindingMode.OneWay);
+            AddSettingsBinding<NumberController>(xBackupIntervalSlider, RangeBase.ValueProperty, KeyStore.SettingsBackupIntervalKey, handler: (sender, dp) => UpdateInterval());
+            AddSettingsBinding<NumberController>(xBackgroundOpacitySlider, RangeBase.ValueProperty, KeyStore.BackgroundImageOpacityKey, handler: (sender, dp) => CollectionFreeformView.BackgroundOpacity = BackgroundImageOpacity);
         }
 
-        private void OnNumBackupsChanged(DependencyObject dependencyObject, DependencyProperty dependencyProperty)
+        private void ProcessEnumsAndImage(BackgroundImageState thisState)
+        {
+            if (ImageState != thisState) return;
+            _lastNonCustom = thisState;
+            CollectionFreeformView.BackgroundImage = EnumToPathDict[thisState];
+        }
+
+        private void UpdateInterval()
+        {
+            _endpoint.SetBackupInterval((int)xBackupIntervalSlider.Value * 1000);
+
+            var interval = (int)xBackupIntervalSlider.Value;
+            var numSec = interval % 60;
+            var numMin = (interval - numSec) / 60;
+
+            var minToDisplay = numMin == 0 ? "" : $" {numMin}\'";
+            var secToDisplay = numSec == 0 ? "" : $" {numSec}\"";
+
+            xIntervalDisplay.Text = minToDisplay + secToDisplay;
+        }
+
+        private void UpdateNumBackups()
         {
             _newNumBackups = (int)xNumBackupsSlider.Value;
             if (_newNumBackups < NumBackups)
@@ -201,8 +297,16 @@ namespace Dash
                 SetPromptVisibility(Visibility.Collapsed);
             }
 
-            var suffix = NumBackups == 1 ? "" : "s";
-            xNumBackupsSlider.Header = $"System is storing the {NumBackups} most recent backup" + suffix;
+            //if (ExcessBackupsPresent()) { }
+
+            xNumBackupDisplay.Text = NumBackups.ToString();
+        }
+
+        private bool ExcessBackupsPresent()
+        {
+            var status = false;
+            for (var i = 1; i <= 10; i++) { if (i > NumBackups && File.Exists(_dbPath + ".bak" + i)) status = true; }
+            return status;
         }
 
         #endregion
@@ -381,5 +485,18 @@ namespace Dash
 
         #endregion
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private async void XCustomizeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ImageState != BackgroundImageState.Custom) return;
+            await TrySetUserPath();
+        }
     }
 }

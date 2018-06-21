@@ -196,7 +196,7 @@ namespace Dash
         {
             var settingsDoc = MainDocument.GetField<DocumentController>(KeyStore.SettingsDocKey);
             if (settingsDoc != null) return settingsDoc;
-
+            Debug.WriteLine("GETTING DEFAULT");
             settingsDoc = GetDefaultSettingsDoc();
             MainDocument.SetField(KeyStore.SettingsDocKey, settingsDoc, true);
             return settingsDoc;
@@ -211,6 +211,8 @@ namespace Dash
             settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
+            settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
+            settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, 1.0, true);
 
             return settingsDoc;
         }
@@ -234,17 +236,18 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceViewCopy = workspace.GetViewCopy();
-            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-            if (workspaceViewCopy.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true") //  !isWorkspace)
+            var workspaceView = workspace;
+            if (!double.IsNaN(workspaceView.GetWidthField().Data) || !double.IsNaN(workspaceView.GetHeightField().Data) ||
+                workspaceView.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true")
             {
-                workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+                workspaceView.SetWidth(double.NaN);
+                workspaceView.SetHeight(double.NaN);
+                workspaceView.SetFitToParent(false);
             }
-            MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
-            setupMapView(workspaceViewCopy);
+            MainDocView.DataContext = new DocumentViewModel(workspaceView);
+            setupMapView(workspaceView);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceViewCopy, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
             return true;
         }
 
@@ -623,9 +626,9 @@ namespace Dash
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
-                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                xMap.SetFitToParent(true);
+                xMap.SetWidth(double.NaN);
+                xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 //xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
@@ -638,13 +641,6 @@ namespace Dash
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
             mapTimer.Start();
         }
-
-        private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
-                xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
-        }
-
         public void Dock(DocumentView toDock, DockDirection dir)
         {
             DocumentController context = toDock.ViewModel.DocumentController;

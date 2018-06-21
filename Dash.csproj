@@ -18,11 +18,14 @@
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>Dash_TemporaryKey.pfx</PackageCertificateKeyFile>
     <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
-    <PackageCertificateThumbprint>102900712F8D559B6BF28D3E358030F881201953</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>98DB1B12D47C5E4609E7D10FFC216AB2AC95AE4E</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HockeyAppResourceId>76a6328a3b574146b9d1a171d67f9af2</HockeyAppResourceId>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
+    <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -47,7 +50,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
     <DebugSymbols>true</DebugSymbols>
@@ -70,7 +73,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -93,7 +96,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
-    <UseDotNetNativeToolchain>true</UseDotNetNativeToolchain>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
@@ -138,8 +141,12 @@
     <Content Include="Assets\dashicon.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\eraser.png" />
+    <Content Include="Assets\changeImage.png" />
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="win32\Office.Interop.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
     <None Include="ChromeExt\README.md" />
@@ -163,6 +170,7 @@
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
@@ -177,7 +185,6 @@
     <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
     <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
-    <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
@@ -196,12 +203,13 @@
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
+    <Compile Include="Controllers\AccessStreamController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
-    <Compile Include="Converters\MouseModeEnumToBoolConverter.cs" />
+    <Compile Include="Converters\RadioEnumToBoolConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\ShapeInformationToGeometryConverter.cs" />
@@ -214,6 +222,7 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\AccessStreamModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
@@ -233,7 +242,6 @@
     <Compile Include="Rest\Endpoints\LocalSqliteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
-    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
@@ -457,8 +465,8 @@
     <Compile Include="Views\ImageNode.xaml.cs">
       <DependentUpon>ImageNode.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\KeyValueSettings.xaml.cs">
-      <DependentUpon>KeyValueSettings.xaml</DependentUpon>
+    <Compile Include="Views\KeyValuePane.xaml.cs">
+      <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\KeyValueScriptView.xaml.cs">
       <DependentUpon>KeyValueScriptView.xaml</DependentUpon>
@@ -542,9 +550,6 @@
     <Compile Include="Views\Ink\InkSelectionRect.xaml.cs">
       <DependentUpon>InkSelectionRect.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
-      <DependentUpon>AlignmentSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -556,15 +561,6 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
-    <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
-      <DependentUpon>GridViewSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\InkSettings.xaml.cs">
-      <DependentUpon>InkSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
-      <DependentUpon>ListViewSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\Document Menu\MenuButtonList.xaml.cs">
       <DependentUpon>MenuButtonList.xaml</DependentUpon>
@@ -590,9 +586,6 @@
     <Compile Include="Util\DocumentPointerFieldReference.cs" />
     <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
-    <Compile Include="Views\InterfaceBuilder\RichTextSettings.xaml.cs">
-      <DependentUpon>RichTextSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Models\RichTextModel.cs" />
     <Compile Include="Controllers\RichTextController.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
@@ -701,9 +694,6 @@
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
-    <Compile Include="Views\InterfaceBuilder\CollectionSettings.xaml.cs">
-      <DependentUpon>CollectionSettings.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Collection\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
@@ -719,9 +709,6 @@
     <Compile Include="Views\Ink\InkCanvasControl.xaml.cs">
       <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
-      <DependentUpon>KeyValuePane.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -736,18 +723,6 @@
     </Compile>
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\PositionSettings.xaml.cs">
-      <DependentUpon>PositionSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\SettingsPaneBlock.xaml.cs">
-      <DependentUpon>SettingsPaneBlock.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\SizeSettings.xaml.cs">
-      <DependentUpon>SizeSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
-      <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TabMenu.xaml.cs">
       <DependentUpon>TabMenu.xaml</DependentUpon>
@@ -788,6 +763,9 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
     <Content Include="Assets\revert.png" />
     <Content Include="Assets\seriousdelete.png" />
+    <Content Include="Assets\transparent_blank_tilable.png" />
+    <Content Include="Assets\transparent_dot_tilable.png" />
+    <Content Include="Assets\transparent_line_tilable.png" />
     <Content Include="Assets\unpinned.png" />
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\Rightlg.png" />
@@ -963,9 +941,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InterfaceBuilder\KeyValueSettings.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\KeyValuePane.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\KeyValueScriptView.xaml">
       <SubType>Designer</SubType>
@@ -1063,23 +1041,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\InkSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Document Menu\MenuButtonList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1100,10 +1062,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Tab Menu\GenericSearchView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\RichTextSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1131,10 +1089,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InterfaceBuilder\CollectionSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Collection\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1155,10 +1109,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InterfaceBuilder\KeyValuePane.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -1177,21 +1127,6 @@
     </Page>
     <Page Include="Views\OverlayMenu.xaml">
       <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\PositionSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\SettingsPaneBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\SizeSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TabMenu.xaml">

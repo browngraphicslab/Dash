@@ -59,7 +59,7 @@ namespace Dash
         protected DocumentController initSharedLayout(DocumentController layout, DocumentController dataDocument, string title = null)
         {
             if (!string.IsNullOrEmpty(title))
-                dataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+                dataDocument.SetTitle(title);
             layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
             layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
             // layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
