@@ -20,16 +20,17 @@ namespace Dash
 {
 	public sealed partial class KeyValueTemplatePane : UserControl
 	{
-		private DocumentController _kvPane;
+		private KeyValuePane _kvPane;
 
-		public KeyValueTemplatePane(DocumentController docController, Context context)
+		public KeyValueTemplatePane(TemplateEditorView editor)
 		{
 			this.InitializeComponent();
 			//_kvPane = docController.GetKeyValueAlias();
 			//_kvPane = new KeyValueDocumentBox.MakeView(docController, null);
 
-			_kvPane = docController.GetKeyValueAlias();
-
+			//_kvPane = new KeyValuePane();
+			var box = KeyValueDocumentBox.MakeView(editor.Document.ViewModel.DocumentController, new Context(editor.Document.ViewModel.DocumentController));
+			xGrid.Children.Add(box);
 		}
 	}
 }

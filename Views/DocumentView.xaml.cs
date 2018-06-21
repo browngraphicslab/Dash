@@ -331,6 +331,7 @@ namespace Dash
         {
             xTemplateEditor.Document = this;
             xTemplateEditor.Load();
+
             switch (xTemplateEditor.Visibility)
             {
                 case Visibility.Collapsed:

@@ -31,10 +31,7 @@ namespace Dash
         public TemplateEditorView()
         {
             this.InitializeComponent();
-        }
-
-        public TemplateEditorView(DocumentView doc)
-        {
+			
         }
 
         public void Load()
@@ -44,6 +41,16 @@ namespace Dash
             {
                 X = 10
             };
-        }
+	        this.UpdatePanes();
+		}
+
+	    public void UpdatePanes()
+	    {
+		    if (Document != null && DataPanel.Children.Count == 0)
+		    {
+			    DataPanel.Children.Add(new KeyValueTemplatePane(this));
+			}
+			   
+		}
     }
 }

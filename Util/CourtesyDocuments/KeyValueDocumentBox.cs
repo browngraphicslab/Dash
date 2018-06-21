@@ -24,7 +24,7 @@ namespace Dash
             var keyValuePane = new KeyValuePane
             {
                 TypeColumnWidth = new GridLength(0),
-                DataContext = docController.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? docController
+                DataContext = docController?.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? docController
             };
             border.Child = keyValuePane;
             SetupBindings(border, docController, context);

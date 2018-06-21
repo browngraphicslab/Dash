@@ -12,7 +12,7 @@
 
     <StackPanel Orientation="Horizontal">
         <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="200" Background="Blue">
-
+           
         </StackPanel>
         
         <Grid x:Name="xWorkspaceOuterGrid" Width="500" Background="Green">
