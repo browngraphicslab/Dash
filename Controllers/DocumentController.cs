@@ -40,12 +40,8 @@ namespace Dash
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
-        public DocumentController(DocumentModel model, bool saveOnServer = true) : base(model)
+        public DocumentController(DocumentModel model) : base(model)
         {
-            if (saveOnServer)
-            {
-                SaveOnServer();
-            }
         }
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
@@ -627,11 +623,12 @@ namespace Dash
         /// <returns></returns>
         public DocumentController MakeDelegate()
         {
-            var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
-                DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+            //var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
+            //    DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
-            // create a controller for the child
-            var delegateController = new DocumentController(delegateModel);
+            //// create a controller for the child
+            //var delegateController = new DocumentController(delegateModel);
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
             delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
@@ -888,7 +885,7 @@ namespace Dash
             }
             return fieldChanged;
         }
-        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true) 
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
             where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
