@@ -658,7 +658,7 @@ namespace Dash
                     {
                         expressions.Add(ParseToExpression(child));
                     }
-                    ExpressionChain result = new ExpressionChain(expressions);
+                    ScriptExpression result = new ExpressionChain(expressions);
                     return result;
                     break;
                 case SyntaxKind.VariableStatement:
@@ -677,7 +677,6 @@ namespace Dash
 
                     var ifBinary = ParseToExpression(ifChild[0]);
                     var ifBlock = ParseToExpression(ifChild[1]);
-                    var a = ifBlock;
 
                     return new FunctionExpression(DSL.GetFuncName<IfOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                             {

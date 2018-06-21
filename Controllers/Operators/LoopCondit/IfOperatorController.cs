@@ -42,24 +42,21 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            double sum = 0;
-            foreach (var value in inputs.Values)
+            var expBool = (NumberController)inputs[BoolKey];
+            var expBlock = (NumberController)inputs[BlockKey];
+
+            bool Bool = expBool.Data == 1.0;
+
+            if (Bool)
             {
-                if (value is NumberController controller)
-                {
-                    sum += controller.Data;
-                }
-                else if (value is TextController text)
-                {
-                    double d;
-                    if (double.TryParse(text.Data, out d))
-                    {
-                        sum += d;
-                    }
-                }
+                var b = expBlock.Data;
             }
 
-            outputs[ResultKey] = ;
+            var a = expBlock;
+
+           // if(expBool.)
+
+            outputs[ResultKey] = new NumberController(5);
         }
 
         public override FieldControllerBase GetDefaultController()
