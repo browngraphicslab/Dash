@@ -236,8 +236,8 @@ namespace Dash
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
-                this.xRichEditBox.Document.Selection.StartPosition = s1;
-                this.xRichEditBox.Document.Selection.EndPosition = s2;
+                //this.xRichEditBox.Document.Selection.StartPosition = s1;
+                //this.xRichEditBox.Document.Selection.EndPosition = s2;
             }
         }
 

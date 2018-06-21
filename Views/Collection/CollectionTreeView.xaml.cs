@@ -57,11 +57,11 @@ namespace Dash
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
         public void Highlight(DocumentController document, bool? flag)

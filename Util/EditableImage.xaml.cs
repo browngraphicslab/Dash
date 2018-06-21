@@ -168,20 +168,21 @@ namespace Dash
 
         public async void Revert()
         {
-            UndoManager.startBatch();
-            // make sure if we have an original image stored (which we always should)
-            if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+            using (UndoManager.GetBatchHandle())
             {
-                // get the storagefile of the original image so we can revert
-                var file = await GetImageFile(true);
-                var fileProperties = await file.Properties.GetImagePropertiesAsync();
-                Image.Width = fileProperties.Width;
+                // make sure if we have an original image stored (which we always should)
+                if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+                {
+                    // get the storagefile of the original image so we can revert
+                    var file = await GetImageFile(true);
+                    var fileProperties = await file.Properties.GetImagePropertiesAsync();
+                    Image.Width = fileProperties.Width;
 
-                _docCtrl.SetField<ImageController>(KeyStore.DataKey,
-                    _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
-                _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                    _docCtrl.SetField<ImageController>(KeyStore.DataKey,
+                        _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
+                    _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                }
             }
-            UndoManager.endBatch();
         }
 
 		private void Image_Loaded(object sender, RoutedEventArgs e)
@@ -340,56 +341,57 @@ namespace Dash
         private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
             byte[] pixels)
         {
-            UndoManager.startBatch();
+            using (UndoManager.GetBatchHandle())
+            {
 
-            var width = (uint) rectgeo.Width;
-            var height = (uint) rectgeo.Height;
+                var width = (uint) rectgeo.Width;
+                var height = (uint) rectgeo.Height;
 
-			// randomly generate a new guid for the filename
-			var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
-			var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-			// create the file
-			var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
-				CreationCollisionOption.ReplaceExisting);
+                // randomly generate a new guid for the filename
+                var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
+                var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
+                // create the file
+                var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
+                    CreationCollisionOption.ReplaceExisting);
 
-			// load the file with the iamge information
-			using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
-			{
-				var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
+                // load the file with the iamge information
+                using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
 
-                encoder.SetPixelData(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Straight,
-                    width,
-                    height,
-                    decoder.DpiX,
-                    decoder.DpiY,
-                    pixels);
-                await encoder.FlushAsync();
+                    encoder.SetPixelData(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Straight,
+                        width,
+                        height,
+                        decoder.DpiX,
+                        decoder.DpiY,
+                        pixels);
+                    await encoder.FlushAsync();
+                }
+
+                // retrieve the uri from the file to update the image controller
+                var path = "ms-appdata:///local/" + newFile.Name;
+                var uri = new Uri(path);
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
+
+                // update the image source, width, and positions
+                Image.Source = cropBmp;
+                Image.Width = width;
+
+                // store new image information so that multiple crops can be made
+                _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
+
+                var oldpoint = _docCtrl.GetPosition() ?? new Point();
+                var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
+                Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
+                    oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
+
+                _docCtrl.SetPosition(point);
+                _cropControl = new StateCropControl(_docCtrl, this);
+
+                // TODO: Test that replace button works with cropping when merged with master
             }
-
-            // retrieve the uri from the file to update the image controller
-            var path = "ms-appdata:///local/" + newFile.Name;
-            var uri = new Uri(path);
-            _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
-
-			// update the image source, width, and positions
-			Image.Source = cropBmp;
-			Image.Width = width;
-
-			// store new image information so that multiple crops can be made
-			_imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
-
-            var oldpoint = _docCtrl.GetPosition() ?? new Point();
-            var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
-            Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
-                oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
-
-            _docCtrl.SetPosition(point);
-            _cropControl = new StateCropControl(_docCtrl, this);
-
-			// TODO: Test that replace button works with cropping when merged with master
-            UndoManager.endBatch();
         }
 
 		[NotifyPropertyChangedInvocator]

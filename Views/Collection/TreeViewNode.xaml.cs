@@ -256,7 +256,7 @@ namespace Dash
 
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
@@ -272,7 +272,7 @@ namespace Dash
         {
             xBorder.Visibility = Visibility.Collapsed;
             XTextBlock.Visibility = Visibility.Visible;
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
 

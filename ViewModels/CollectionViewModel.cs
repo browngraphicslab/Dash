@@ -303,14 +303,14 @@ namespace Dash
         /// <param name="context"></param>
         public void AddDocument(DocumentController doc)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             if (!createsCycle(doc))
             {
                 doc.CaptureNeighboringContext();
 
                 ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
             }
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
 
@@ -327,10 +327,10 @@ namespace Dash
 
         public void RemoveDocument(DocumentController document)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             // just update the collection, the colllection will update our view automatically
             ContainerDocument.GetDataDocument().RemoveFromListField(CollectionKey, document);
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
         #endregion
@@ -535,7 +535,7 @@ namespace Dash
 
         public async void Paste(DataPackageView dvp, Point where)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             if (dvp.Contains(StandardDataFormats.StorageItems))
             {
                 var droppedDoc = await FileDropHelper.HandleDrop(where, dvp, this);
@@ -601,12 +601,12 @@ namespace Dash
                     }  
                 }
             }
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
         private async void PasteBitmap(DataPackageView dvp, Point where)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             var streamRef = await dvp.GetBitmapAsync();
             WriteableBitmap writeableBitmap = new WriteableBitmap(400, 400);
             await writeableBitmap.SetSourceAsync(await streamRef.OpenReadAsync());
@@ -626,7 +626,7 @@ namespace Dash
             dp.SetStorageItems(new IStorageItem[] { savefile });
             var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
             AddDocument(droppedDoc);
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
         /// <summary>
@@ -636,7 +636,7 @@ namespace Dash
         /// <param name="e"></param>
         public async void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            UndoManager.startBatch();
+            UndoManager.StartBatch();
             e.Handled = true;
             // accept move, then copy, and finally accept whatever they requested (for now)
             if (e.AllowedOperations.HasFlag(DataPackageOperation.Move)) e.AcceptedOperation = DataPackageOperation.Move;
@@ -664,7 +664,7 @@ namespace Dash
                     var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, this);
                     if (droppedDoc != null)
                         AddDocument(droppedDoc);
-                    UndoManager.endBatch();
+                    UndoManager.EndBatch();
                     return;
                 }
                 catch (Exception exception)
@@ -700,7 +700,7 @@ namespace Dash
                     var src = srcMatch.Substring(6, srcMatch.Length - 6);
                     var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
                     AddDocument(imgNote.Document);
-                    UndoManager.endBatch();
+                    UndoManager.EndBatch();
                     return;
                 }
 
@@ -935,7 +935,7 @@ namespace Dash
                     AddDocument(dragModel.GetDropDocument(where));
                 }
             }
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
         }
 
         /// <summary>

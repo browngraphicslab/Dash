@@ -17,7 +17,7 @@ namespace Dash
             if (disTimer == null)
             {
                 //start batch 
-                UndoManager.startBatch();
+                UndoManager.StartBatch();
                 //and set up timer
                 disTimer = new DispatcherTimer();
                 disTimer.Tick += disTimer_Tick;
@@ -36,7 +36,7 @@ namespace Dash
         {
             disTimer.Stop();
             //time out - finish batch
-            UndoManager.endBatch();
+            UndoManager.EndBatch();
 
             disTimer = null;
         }

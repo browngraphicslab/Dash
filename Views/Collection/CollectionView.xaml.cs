@@ -171,9 +171,9 @@ namespace Dash
                     var vtype = new MenuFlyoutItem() { Text = n.ToString() };
                     vtype.Click += (sender, e) =>
                     {
-                        UndoManager.startBatch();
+                        UndoManager.StartBatch();
                         SetView(n);
-                        UndoManager.endBatch();
+                        UndoManager.EndBatch();
                     };
                     viewCollectionAs.Items.Add(vtype);
                 }
