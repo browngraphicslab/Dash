@@ -309,8 +309,8 @@ namespace Dash
 
         void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            e.Handled = false;
             this.RegionSelected(null, e.GetPosition(MainPage.Instance), null);
-            e.Handled = true;
 
             //        else if (target.StartsWith("http"))
             //        {
