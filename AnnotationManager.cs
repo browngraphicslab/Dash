@@ -12,15 +12,12 @@ namespace Dash
 {
 	public class AnnotationManager
 	{
-		private UIElement _element = null;
-		private DocumentView _docview;
-		private MenuFlyout _linkFlyout;
-		public bool _isLinkMenuOpen = false;
+		private UIElement    _element = null;
+		private MenuFlyout   _linkFlyout;
 
-		public AnnotationManager(UIElement uiElement, DocumentView docView)
+		public AnnotationManager(UIElement uiElement)
 		{
 			_element = uiElement;
-			_docview = docView;
 			this.FormatLinkMenu();
 		}
 
@@ -81,8 +78,8 @@ namespace Dash
 			var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
 			var nearestOnScreen = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), true);
 			var nearestOnCollection = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), false);
-			if (_docview == null) _docview = _element.GetFirstAncestorOfType<DocumentView>();
-			var pt = new Point(_docview.ViewModel.XPos + _docview.ActualWidth, _docview.ViewModel.YPos);
+			var docview = _element.GetFirstAncestorOfType<DocumentView>();
+			var pt = new Point(docview.ViewModel.XPos + docview.ActualWidth, docview.ViewModel.YPos);
 
 			if (nearestOnCollection != null && !nearestOnCollection.Equals(_element.GetFirstAncestorOfType<DocumentView>()))
 			{
@@ -127,9 +124,7 @@ namespace Dash
 				{
 					if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
 					{
-
 						Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
-
 					}
 
 				} //if working with RichTextView, check web context as well
@@ -150,7 +145,7 @@ namespace Dash
 					.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
 				{
 					var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-					if (dvm.ViewModel.DataDocument.Id == targetData?.Id)
+					if (dvm?.ViewModel.DataDocument.Id == targetData?.Id)
 					{
 						var mprect = dvm.GetBoundingRect(MainPage.Instance);
 						var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
@@ -175,43 +170,27 @@ namespace Dash
 		{
 			_linkFlyout = new MenuFlyout();
 
-			_linkFlyout.Closed += (s, e) =>
-			{
-				_isLinkMenuOpen = false;
-				_linkFlyout.Items.Clear();
-			};
-
-			_linkFlyout.Opening += (s, e) =>
-			{
-				_isLinkMenuOpen = true;
-			};
+			_linkFlyout.Closed += (s, e) => _linkFlyout.Items.Clear();
 		}
 
 		//opens a flyout menu of all the links associated to the region
 		//clicking a link will then choose the desired link to pursue
 		private void OpenLinkMenu(List<DocumentController> linksList, KeyController directionKey, Point point, DocumentController theDoc)
 		{
-			if (_isLinkMenuOpen == false)
+			if (_linkFlyout.Items.Count == 0)
 			{
 				//add all links as menu items
-				foreach (DocumentController linkedDoc in linksList)
-				{
-					//format new item
-					var linkItem = new MenuFlyoutItem();
-					var dc = linkedDoc.GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
-					linkItem.Text = dc.Title;
-					linkItem.Click += (s, e) =>
-					{
-						this.RegionPressed(theDoc, point, dc);
-					};
+				foreach (var linkedDoc in linksList.Select((ldoc) => ldoc.GetDataDocument()))
+                {
+                    var dc = linkedDoc.GetDereferencedField<ListController<DocumentController>>(directionKey, null).TypedData.First();
+                    //format new item
+                    var linkItem = new MenuFlyoutItem() { Text = dc.Title };
+					linkItem.Click += (s, e) => this.RegionPressed(theDoc, point, dc);
 
 					// Add the item to the menu.
 					_linkFlyout.Items.Add(linkItem);
-
 				}
-
-				//var selectedText = (FrameworkElement) xRichEditBox.Document.Selection;
+                
 				_linkFlyout.ShowAt((FrameworkElement)_element);
 			}
 

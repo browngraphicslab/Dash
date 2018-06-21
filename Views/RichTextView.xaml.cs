@@ -112,7 +112,7 @@ namespace Dash
             };
             xRichEditBox.SetBinding(FontSizeProperty, sizeBinding);
 
-	        _annotationManager = new AnnotationManager(this, getDocView());
+	        _annotationManager = new AnnotationManager(this);
 
             this.SizeChanged += (object sender, SizeChangedEventArgs e) =>
             {
@@ -239,32 +239,25 @@ namespace Dash
 		// determines the document controller of the region and calls on annotationManager to handle the linking procedure
 	    public void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
 	    {
-            // bcz: at some point, we may have actual region objects overlaid onto our RichTextBox's, but
-            //      for now we let the control handle the visual highlighting of links, so there's never a
-            //      Region document to click on directly -- we always need to find the target by looking at
-            //      the RTF to determine the hyperlinked document ID
-		    //if (region is RichTextView)
-		    //{
-			   // _annotationManager.RegionPressed(this.DataDocument, pointPressed);
-			   // return;
+            if (region == this)
+            {
+                _annotationManager.RegionPressed(DataDocument, pointPressed);
+            }
+            else
+            {
+                _target = getHyperlinkTargetForSelection();
+                if (_target != null)
+                {
+                    var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
+                    if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
+                    {
+                        _annotationManager.RegionPressed(theDoc, pointPressed);
+                    }
+                }
+            }
+        }
 
-		    //} 
-
-			_target = getHyperlinkTargetForSelection();
-			if (_target != null)
-			{
-				var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
-				if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
-				{
-
-					_annotationManager.RegionPressed(theDoc, pointPressed);
-					
-				}
-			}
-			
-		}
-
-	    public void CheckWebContext(DocumentView nearestOnCollection, Point pt, DocumentController theDoc)
+        public void CheckWebContext(DocumentView nearestOnCollection, Point pt, DocumentController theDoc)
 	    {
 		    if (_target.StartsWith("http"))
 		    {
@@ -316,56 +309,8 @@ namespace Dash
 
 		void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
-			this.RegionSelected(sender, e.GetPosition(MainPage.Instance));
+			this.RegionSelected(null, e.GetPosition(MainPage.Instance), null);
 	        e.Handled = true;
-            
-            //        else if (target.StartsWith("http"))
-            //        {
-            //            if (MainPage.Instance.WebContext != null)
-            //                MainPage.Instance.WebContext.SetUrl(target);
-            //            else
-            //            {
-            //                nearestOnCollection = FindNearestDisplayedBrowser(pt, target);
-            //                if (nearestOnCollection != null)
-            //                {
-            //                    if (this.IsCtrlPressed())
-            //                        nearestOnCollection.DeleteDocument();
-            //                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-            //                }
-            //                else
-            //                {
-            //                    theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
-            //                    Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
-            //{
-            //    double dist = double.MaxValue;
-            //    DocumentView nearest = null;
-            //    foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            //    {
-            //        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-            //        if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
-            //        {
-            //            var mprect = dvm.GetBoundingRect(MainPage.Instance);
-            //            var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-            //            if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
-            //            {
-            //                var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
-            //                if (d < dist)
-            //                {
-            //                    d = dist;
-            //                    nearest = dvm;
-            //                }
-            //            }
-            //        }
-            //    }
-
-            //    return nearest;
-            //}
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)

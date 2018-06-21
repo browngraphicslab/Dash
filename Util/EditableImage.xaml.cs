@@ -184,7 +184,7 @@ namespace Dash
 			_docview = this.GetFirstAncestorOfType<DocumentView>();
 			Focus(FocusState.Keyboard);
 			_cropControl = new StateCropControl(_docCtrl, this);
-			_annotationManager = new AnnotationManager(this, _docview);
+			_annotationManager = new AnnotationManager(this);
 		}
 
 		public async Task Rotate()

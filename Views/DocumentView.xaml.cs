@@ -1082,18 +1082,14 @@ namespace Dash
 		    if (ViewModel.Content is IAnnotationEnabled)
 		    {
 			    var element = (IAnnotationEnabled) ViewModel.Content;
-			    element?.RegionSelected(element, new Point(0, 0));
+			    element?.RegionSelected(element, new Point(0, 0), null);
 
 			}
 		    else
 		    {
-			    AnnotationManager ann = new AnnotationManager(ViewModel.Content, this);
+			    var ann = new AnnotationManager(ViewModel.Content);
 			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
-			
-		   
-
-
 		}
     }
 }
