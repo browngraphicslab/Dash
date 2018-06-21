@@ -154,7 +154,7 @@ namespace Dash
             script = script.EndsWith(';') ? script : script + ";";
             var ast = new TypeScriptAST(script);
             var root = ast.RootNode;
-            return ParseToExpression(root);
+           return ParseToExpression(root);
         }
 
 
@@ -606,7 +606,6 @@ namespace Dash
                                 {LessThanOperatorController.AKey,  leftBinExpr},
                                 {LessThanOperatorController.BKey,  rightBinExpr},
                             });
-                        //TODO: add gt, lt here
                         case SyntaxKind.EqualsToken:
                             if (leftBinExpr is FunctionExpression lefttBinFuncExpr &&
                                 lefttBinFuncExpr.GetOperatorName() == DSL.GetFuncName<GetFieldOperatorController>())
@@ -823,7 +822,11 @@ namespace Dash
                         var exprs = new List<ScriptExpression>();
                         for (int i = 0; i < children.Length - 1; i++)
                         {
-                            exprs.Add(ParseToExpression(node.Children[i]));
+                            var expr = ParseToExpression(node.Children[i]);
+                            if (expr != null)
+                            {
+                                exprs.Add(ParseToExpression(node.Children[i]));
+                            }
                         }
                         return new ExpressionChain(exprs);
                     }
