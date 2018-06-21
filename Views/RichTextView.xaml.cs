@@ -239,19 +239,22 @@ namespace Dash
 		// determines the document controller of the region and calls on annotationManager to handle the linking procedure
 	    public void RegionSelected(object region, Point pointPressed, DocumentController chosenDoc = null)
 	    {
-		    if (region is RichTextView)
-		    {
-			    _annotationManager.RegionPressed(this.DataDocument, pointPressed);
-			    return;
+            // bcz: at some point, we may have actual region objects overlaid onto our RichTextBox's, but
+            //      for now we let the control handle the visual highlighting of links, so there's never a
+            //      Region document to click on directly -- we always need to find the target by looking at
+            //      the RTF to determine the hyperlinked document ID
+		    //if (region is RichTextView)
+		    //{
+			   // _annotationManager.RegionPressed(this.DataDocument, pointPressed);
+			   // return;
 
-		    } 
+		    //} 
 
 			_target = getHyperlinkTargetForSelection();
 			if (_target != null)
 			{
 				var theDoc = ContentController<FieldModel>.GetController<DocumentController>(_target);
-				if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
-					    ?.TypedData.Contains(theDoc) == true)
+				if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
 				{
 
 					_annotationManager.RegionPressed(theDoc, pointPressed);
@@ -313,9 +316,56 @@ namespace Dash
 
 		void xRichEditBox_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = false;
 			this.RegionSelected(sender, e.GetPosition(MainPage.Instance));
 	        e.Handled = true;
+            
+            //        else if (target.StartsWith("http"))
+            //        {
+            //            if (MainPage.Instance.WebContext != null)
+            //                MainPage.Instance.WebContext.SetUrl(target);
+            //            else
+            //            {
+            //                nearestOnCollection = FindNearestDisplayedBrowser(pt, target);
+            //                if (nearestOnCollection != null)
+            //                {
+            //                    if (this.IsCtrlPressed())
+            //                        nearestOnCollection.DeleteDocument();
+            //                    else MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+            //                }
+            //                else
+            //                {
+            //                    theDoc = new HtmlNote(target, target, new Point(), new Size(200, 300)).Document;
+            //                    Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetSameCopy(pt));
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //DocumentView FindNearestDisplayedBrowser(Point where, string uri, bool onlyOnPage = true)
+            //{
+            //    double dist = double.MaxValue;
+            //    DocumentView nearest = null;
+            //    foreach (var presenter in (this.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
+            //    {
+            //        var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+            //        if (dvm.ViewModel.DataDocument.GetDereferencedField<TextController>(KeyStore.DataKey, null)?.Data == uri)
+            //        {
+            //            var mprect = dvm.GetBoundingRect(MainPage.Instance);
+            //            var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+            //            if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+            //            {
+            //                var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) + (where.Y - center.Y) * (where.Y - center.Y));
+            //                if (d < dist)
+            //                {
+            //                    d = dist;
+            //                    nearest = dvm;
+            //                }
+            //            }
+            //        }
+            //    }
+
+            //    return nearest;
+            //}
         }
 
         async void xRichEditBox_Drop(object sender, DragEventArgs e)
@@ -462,10 +512,10 @@ namespace Dash
 
         public DocumentController GetRegionDocument()
         {
-            if (string.IsNullOrEmpty(xRichEditBox.Document.Selection.Text))
+            var selection = xRichEditBox.Document.Selection;
+            if (string.IsNullOrEmpty(selection.Text))
                 return this.DataDocument;
 			
-	        ITextSelection selection = xRichEditBox.Document.Selection;
 
 	        //If link already exists, return the document controller for the existing region
 
@@ -487,19 +537,18 @@ namespace Dash
 			var dc = new RichTextNote(selection.Text).Document;
 		    dc.SetField(KeyStore.RegionDefinitionKey, LayoutDocument, true);
 		    var s1 = selection.StartPosition;
-		        var s2 = selection.EndPosition;
-		        createRTFHyperlink(dc, ref s1, ref s2, false, false);
-		        var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-		        if (regions == null)
-		        {
-			        var dregions = new List<DocumentController>();
-			        dregions.Add(dc);
-			        DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
-		        }
-		        else
-		        {
-			        regions.Add(dc);
-		        }
+		    var s2 = selection.EndPosition;
+		    createRTFHyperlink(dc, ref s1, ref s2, false, false);
+		    var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+		    if (regions == null)
+            {
+                var dregions = new ListController<DocumentController>(dc);
+                DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
+		    }
+		    else
+		    {
+			    regions.Add(dc);
+		    }
 
 			_selectionDocControllers.Add(selection, dc);
 	

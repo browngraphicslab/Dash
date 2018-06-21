@@ -867,10 +867,10 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))
                 return;
-            RemoveHandler(KeyDownEvent, previewTextHandler);
             if (previewTextbox.Visibility != Visibility.Collapsed)
             {
                 e.Handled = true;

@@ -47,11 +47,7 @@ namespace Dash
         static public DocumentView FocusedDocument
         {
             get => _focusedDocument;
-            set
-            {
-                System.Diagnostics.Debug.WriteLine("Focusing on " + value.ViewModel.DocumentController.Tag);
-                _focusedDocument = value;
-            }
+            set => _focusedDocument = value;
         }
 
         /// <summary>

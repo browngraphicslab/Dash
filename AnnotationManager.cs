@@ -28,10 +28,8 @@ namespace Dash
 		public void RegionPressed(DocumentController theDoc, Windows.Foundation.Point pos, DocumentController chosenDC = null)
 		{
 			//get "linked to" docs and "linked from" docs
-			var linkFromDoc = theDoc.GetDataDocument()
-				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
-			var linkToDoc = theDoc.GetDataDocument()
-				.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+			var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+			var linkToDoc   = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
 			if (linkFromDoc != null)
 			{
 				//if there is only 1 link, get that link
