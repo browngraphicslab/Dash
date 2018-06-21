@@ -42,21 +42,27 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            var expBool = (NumberController)inputs[BoolKey];
-            var expBlock = (NumberController)inputs[BlockKey];
+           // var expBool = (NumberController)inputs[BoolKey];
+           // var expBlock = (NumberController)inputs[BlockKey];
 
-            bool Bool = expBool.Data == 1.0;
+           // bool Bool = expBool.Data == 1.0;
 
-            if (Bool)
-            {
-                var b = expBlock.Data;
-            }
+           // if (Bool)
+           // {
+           //     var b = expBlock.Data;
+           // }
 
-            var a = expBlock;
+           // var a = expBlock;
 
-           // if(expBool.)
+           //// if(expBool.)
 
-            outputs[ResultKey] = new NumberController(5);
+           // outputs[ResultKey] = new NumberController(5);
+            var Bool = ((NumberController)inputs[BoolKey]).Data;
+            var Block = inputs[BlockKey];
+
+
+            //Todo: BoolController
+            outputs[ResultKey] = Bool == 1 ? Block : null;
         }
 
         public override FieldControllerBase GetDefaultController()
