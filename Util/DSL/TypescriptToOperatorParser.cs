@@ -594,6 +594,19 @@ namespace Dash
                                 {MultiplyOperatorController.AKey,  leftBinExpr},
                                 {MultiplyOperatorController.BKey,  rightBinExpr},
                             });
+                        case SyntaxKind.GreaterThanToken:
+                            return new FunctionExpression(DSL.GetFuncName<GreaterThanOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {GreaterThanOperatorController.AKey,  leftBinExpr},
+                                {GreaterThanOperatorController.BKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.LessThanToken:
+                            return new FunctionExpression(DSL.GetFuncName<LessThanOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {GreaterThanOperatorController.AKey,  leftBinExpr},
+                                {GreaterThanOperatorController.BKey,  rightBinExpr},
+                            });
+                        //TODO: add gt, lt here
                         case SyntaxKind.EqualsToken:
                             if (leftBinExpr is FunctionExpression lefttBinFuncExpr &&
                                 lefttBinFuncExpr.GetOperatorName() == DSL.GetFuncName<GetFieldOperatorController>())
@@ -651,8 +664,12 @@ namespace Dash
                     return ParseToExpression(exp);
                     break;
                 case SyntaxKind.IfStatement:
-                    var ifs = (node as IfStatement);
-                    var a = ifs;
+                    var ifChild = (node as IfStatement).Children;
+
+                    var ifB = ifChild[0];
+                    var ifBianry = ParseToExpression(ifChild[0]);
+                    var ifBlock = ParseToExpression(ifChild[1]);
+
                     break;
                 case SyntaxKind.DoStatement:
                     break;
