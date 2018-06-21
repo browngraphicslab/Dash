@@ -253,7 +253,7 @@ namespace Dash
             xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
-                MainPage.Instance.xCanvas.Children.Add(new TemplateEditorView(this));
+                ToggleTemplateEditor();
                 e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
             };
             xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
@@ -325,6 +325,23 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+        }
+
+        private void ToggleTemplateEditor()
+        {
+            xTemplateEditor.Document = this;
+            xTemplateEditor.Load();
+            switch (xTemplateEditor.Visibility)
+            {
+                case Visibility.Collapsed:
+                    xTemplateEditor.Visibility = Visibility.Visible;
+                    xTemplateColumn.Width = GridLength.Auto;
+                    break;
+                case Visibility.Visible:
+                    xTemplateEditor.Visibility = Visibility.Collapsed;
+                    xTemplateColumn.Width = new GridLength(0);
+                    break;
+            }
         }
 
         /// <summary>
