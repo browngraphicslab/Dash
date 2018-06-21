@@ -35,6 +35,15 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
+        public static readonly DependencyProperty SortCriterionProperty = DependencyProperty.Register(
+            "SortCriterion", typeof(string), typeof(TreeViewCollectionNode), new PropertyMetadata("YPos"));
+
+        public string SortCriterion
+        {
+            get { return (string)GetValue(SortCriterionProperty); }
+            set { SetValue(SortCriterionProperty, value); }
+        }
+
         private CollectionViewModel _oldViewModel;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
@@ -104,6 +113,8 @@ namespace Dash
                 _needsToLoad = false;
             }
             //ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            if (!string.IsNullOrEmpty(SortCriterion))
+                ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription(SortCriterion, SortDirection.Ascending));
             ViewModel.BindableDocumentViewModels.Filter = Filter;
         }
         private bool Filter(object o)
@@ -127,18 +138,8 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        private void printItems(AdvancedCollectionView view, string message)
-        {
-            Debug.WriteLine(message + "\n");
-            foreach (var item in view)
-            {
-                Debug.WriteLine(item.ToString() + "\n");
-            }
-        }
-
         private void TreeViewNode_Drop(object sender, DragEventArgs e)
         {
-            xLayoutRoot.Background = new SolidColorBrush(Colors.Blue);
             var itemDroppedTo = sender as TreeViewNode;
             if (itemDroppedTo != null && e.DataView.RequestedOperation.Equals(DataPackageOperation.Move) &&
                 e.DataView.Properties.ContainsKey(nameof(TreeViewCollectionNode)))
@@ -185,7 +186,6 @@ namespace Dash
 
         private void TreeViewNode_DragOver(object sender, DragEventArgs e)
         {
-            xLayoutRoot.Background = new SolidColorBrush(Colors.Purple);
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)) || e.DataView.Properties.ContainsKey(nameof(List<DragDocumentModel>)))
             {
                 e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;

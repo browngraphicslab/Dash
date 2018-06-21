@@ -40,15 +40,14 @@ namespace Dash
         }
         public static void HideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
-            docController.SetField<NumberController>(KeyStore.HiddenKey, 1, true);
+            docController.SetHidden(true);
         }
         public static bool UnHideDocument(CollectionViewModel collectionViewModel, DocumentController docController)
         {
             foreach (var vm in collectionViewModel.ContainerDocument.GetDereferencedField<ListController<DocumentController>>(collectionViewModel.CollectionKey,null).TypedData)
-                if (vm.GetDataDocument().Equals(docController.GetDataDocument()) &&
-                    vm.GetDereferencedField<NumberController>(KeyStore.HiddenKey,null)?.Data == 1)
+                if (vm.GetDataDocument().Equals(docController.GetDataDocument()) && vm.GetHidden())
                 {
-                    vm.SetField<NumberController>(KeyStore.HiddenKey, 0, true);
+                    vm.SetHidden(false);
                     return true;
                 }
             return false;

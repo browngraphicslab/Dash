@@ -29,6 +29,8 @@ using Newtonsoft.Json;
 namespace Dash
 {
     // TODO: name this to something more descriptive
+    //If you get an error that Util is already defined, you made a class somewhere that is in the Util namespace.
+    //Change that namespace to just be Dash and it will be fixed
     public static class Util
     {
         public static void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)

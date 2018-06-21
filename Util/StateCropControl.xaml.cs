@@ -35,7 +35,7 @@ namespace Dash
         #endregion
 
         #region variables
-        
+
         private EditableImage _imageBase;
 
         private DocumentView _docView;
@@ -106,7 +106,7 @@ namespace Dash
         }
 
         #region Manipulation Delta for Cropping Guides
-        
+
         private void XLeft_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             // e.handled is required for manipulation delta to work

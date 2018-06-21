@@ -42,13 +42,12 @@ namespace Dash
 
 
             var r = new Random();
-            var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255)).ToString();
+            var hexColor = Color.FromArgb(0x33, (byte)r.Next(255), (byte)r.Next(255), (byte)r.Next(255));
             // set fields based on the parameters
             //TODO This should get set in background box/Why do BackgroundBox and BackgroundNote both need to exist?
-            dataDocument.SetField(KeyStore.BackgroundColorKey, new TextController(hexColor), true);
-            dataDocument.SetField(KeyStore.SideCountKey,
-                new NumberController(GroupGeometryConstants.DefaultCustomPolySideCount), true);
-            dataDocument.SetField(KeyStore.TitleKey, new TextController("Background : " + hexColor), true);
+            dataDocument.SetBackgroundColor(hexColor);
+            dataDocument.SetSideCount(GroupGeometryConstants.DefaultCustomPolySideCount);
+            dataDocument.SetTitle("Background : " + hexColor);
 
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             Document.Tag = "Background Note Layout " + bcount;

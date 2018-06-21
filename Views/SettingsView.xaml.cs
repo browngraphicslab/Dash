@@ -48,6 +48,16 @@ namespace Dash
             }
         }
 
+        private bool _markdownEditOn = false;
+        public bool MarkdownEditOn
+        {
+            get => _markdownEditOn;
+            private set
+            {
+                _markdownEditOn = value;
+            }
+        }
+
         private int _fontSize = 16;
         public int NoteFontSize
         {
@@ -126,6 +136,7 @@ namespace Dash
                 CollectionFreeformView.BackgroundOpacity = value;
             }
         }
+        public bool NoUpperLimit { get; private set; } = false;
         #endregion
 
         public SettingsView()
