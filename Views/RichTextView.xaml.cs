@@ -366,23 +366,15 @@ namespace Dash
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-                if (dragModel.LinkSourceView != null)
+                var dragDoc   = dragModel.DraggedDocument;
+                if (dragModel.LinkSourceView != null && KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                 {
-                    var dragDoc = dragModel.DraggedDocument;
-                    if (KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-                        dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
-
-                    var dropDoc = GetRegionDocument();
-
-                    dragDoc.Link(dropDoc);
-
-                    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
-
-                    e.Handled = true;
-                    //dragModel.DraggedDocument.Link(getDataDoc());
+                    dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                 }
-                else
-                    linkDocumentToSelection(dragModel.DraggedDocument, true);
+                    
+                linkDocumentToSelection(dragModel.DraggedDocument, true);
+
+                e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Link : e.DataView.RequestedOperation;
             }
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -568,8 +560,16 @@ namespace Dash
             var s1 = this.xRichEditBox.Document.Selection.StartPosition;
             var s2 = this.xRichEditBox.Document.Selection.EndPosition;
 
-            if (theDoc != null)
-                createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
+            if (string.IsNullOrEmpty(this.getSelected()))
+            {
+                this.xRichEditBox.Document.Selection.Text = theDoc.Title;
+            }
+
+            var region = GetRegionDocument();
+            region.Link(theDoc);
+
+            //if (theDoc != null)
+            //    createRTFHyperlink(theDoc, ref s1, ref s2, false, forceLocal);
 
             convertTextFromXamlRTF();
 
