@@ -74,6 +74,7 @@ namespace Dash
 
         private static async Task InitSocket()
         {
+            return;
             if (_initted)
             {
                 return;
@@ -232,6 +233,7 @@ namespace Dash
 
         private static async Task SendToServer(string message)
         {
+            return;
             try
             {
 

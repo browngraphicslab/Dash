@@ -4,6 +4,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using Windows.Foundation;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -16,10 +17,10 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Layout");
         public static KeyController StyleKey = new KeyController("943A801F-A4F4-44AE-8390-31630055D62F", "Style");
         private static readonly string PrototypeId = "1CEB0635-0B57-452A-93F9-F43C66EEF911";
-        
-        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal=false, Point where = new Point(), Size size = new Size())
+
+        public StackLayout(IEnumerable<DocumentController> docs, bool horizontal = false, Point where = new Point(), Size size = new Size())
         {
-            var fields = DefaultLayoutFields(where, size != new Size() ? size : new Size( double.NaN, double.NaN), new ListController<DocumentController>(docs));
+            var fields = DefaultLayoutFields(where, size != new Size() ? size : new Size(double.NaN, double.NaN), new ListController<DocumentController>(docs));
             fields.Add(StyleKey, new TextController(horizontal ? "Horizontal" : "Vertical"));
             SetupDocument(DocumentType, PrototypeId, "StackLayout Prototype Layout", fields);
         }
@@ -37,6 +38,7 @@ namespace Dash
                 docController.GetDereferencedField(KeyStore.DataKey, context)
                     as ListController<DocumentController>;
 
+            SetupBindings(stack, docController, context);
             var styleField = docController.GetDereferencedField(StyleKey, context) as TextController;
             var horizontal = styleField != null && styleField.Data == "Horizontal";
             // create a dynamic gridview that wraps content in borders
@@ -53,7 +55,8 @@ namespace Dash
                         {
                             RelativePanel.SetAlignTopWithPanel(item, true);
                             RelativePanel.SetAlignBottomWithPanel(item, true);
-                        } else
+                        }
+                        else
                         {
                             RelativePanel.SetAlignLeftWithPanel(item, true);
                             RelativePanel.SetAlignRightWithPanel(item, true);
@@ -71,6 +74,10 @@ namespace Dash
                             else RelativePanel.SetAlignTopWithPanel(item, true);
                         }
                         prev = item;
+                        if (horizontal)
+                            BindHeight(item, docController, null);
+                        else
+                            BindWidth(item, docController, null);
                     }
                 }
                 if (prev != null)
@@ -78,34 +85,24 @@ namespace Dash
                         RelativePanel.SetAlignRightWithPanel(prev, true);
                     else RelativePanel.SetAlignBottomWithPanel(prev, true);
             }
-            if (horizontal)
-            {
-                stack.Height = docController.GetHeightField(context)?.Data ?? stack.Height; ;
-            } else
-            {
-                stack.Width = docController.GetWidthField(context)?.Data ?? stack.Width;
-            }
-            stack.SizeChanged += Stack_SizeChanged;
-
-            void Stack_SizeChanged(object sender, SizeChangedEventArgs e)
-            {
-                foreach (var child in stack.Children)
-                    if (child is FrameworkElement fe)
-                        if (fe.DataContext is DocumentViewModel dview)
-                        {
-                            dview.LayoutDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
-                        }
-                        else if (fe.DataContext is CollectionViewModel cview)
-                        {
-
-                            cview.ContainerDocument.SetField<PointController>(KeyStore.ActualSizeKey, new Point(fe.ActualWidth, fe.ActualHeight), true);
-
-                        }
-           
-            }
-            SetupBindings(stack, docController, context);
+            // stack.SizeChanged += (object sender, SizeChangedEventArgs e) =>
+            // {
+                //foreach (var child in stack.Children)
+                //    if (child is FrameworkElement fe)
+                //    {
+                //        if (fe.DataContext is DocumentViewModel dview)
+                //        {
+                //            dview.LayoutDocument.SetActualSize(new Point(fe.ActualWidth, fe.ActualHeight));
+                //        }
+                //        else if (fe.DataContext is CollectionViewModel cview)
+                //        {
+                //            cview.ContainerDocument.SetActualSize(new Point(fe.ActualWidth, fe.ActualHeight));
+                //        }
+                //    }
+            // };
 
             return stack;
         }
+        
     }
 }
