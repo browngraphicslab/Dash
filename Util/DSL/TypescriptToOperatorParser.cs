@@ -651,6 +651,15 @@ namespace Dash
                 case SyntaxKind.SemicolonClassElement:
                     break;
                 case SyntaxKind.Block:
+                    //parse each child
+                    var blocChil = (node as Block).Children;
+                    List<ScriptExpression> expressions = new List<ScriptExpression>();
+                    foreach (var child in blocChil)
+                    {
+                        expressions.Add(ParseToExpression(child));
+                    }
+                    ExpressionChain result = new ExpressionChain(expressions);
+                    return result;
                     break;
                 case SyntaxKind.VariableStatement:
                     var varStatement = node as VariableStatement;
