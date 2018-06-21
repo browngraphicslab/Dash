@@ -743,6 +743,9 @@
     <Compile Include="Views\ContextPreview.xaml.cs">
       <DependentUpon>ContextPreview.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateAddControl.xaml.cs">
+      <DependentUpon>TemplateAddControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
       <DependentUpon>TemplateEditorView.xaml</DependentUpon>
     </Compile>
@@ -1172,6 +1175,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ContextPreview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\TemplateAddControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
