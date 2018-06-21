@@ -253,7 +253,7 @@ namespace Dash
             xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
-                new TemplateEditorView(this);
+                MainPage.Instance.xCanvas.Children.Add(new TemplateEditorView(this));
                 e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
             };
             xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
