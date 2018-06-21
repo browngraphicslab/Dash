@@ -386,7 +386,6 @@ namespace Dash
         public void Link(DocumentController target)
         {
             var linkDocument = new RichTextNote("<link description>").Document;
-            
             target.GetDataDocument().AddToLinkFrom(new List<DocumentController>(new DocumentController[] { linkDocument }));
             GetDataDocument().AddToLinkTo(new List<DocumentController>(new DocumentController[] { linkDocument }));
             linkDocument.GetDataDocument().AddToLinkFrom(new List<DocumentController>(new DocumentController[] { this }));

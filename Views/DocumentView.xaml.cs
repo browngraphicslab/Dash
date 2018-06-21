@@ -82,6 +82,8 @@ namespace Dash
         {
             InitializeComponent();
 
+            
+
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             // set bounds
@@ -119,6 +121,32 @@ namespace Dash
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
                 SetZLayer();
+
+                var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
+
+                switch (type)
+                {
+                    case TypeInfo.Image:
+                        xTitleIcon.Text = Application.Current.Resources["ImageIcon"] as string;
+                        break;
+                    case TypeInfo.Audio:
+                        xTitleIcon.Text = Application.Current.Resources["AudioIcon"] as string;
+                        break;
+                    case TypeInfo.Video:
+                        xTitleIcon.Text = Application.Current.Resources["VideoIcon"] as string;
+                        break;
+                    case TypeInfo.RichText:
+                    case TypeInfo.Text:
+                        xTitleIcon.Text = Application.Current.Resources["TextIcon"] as string;
+                        break;
+                    case TypeInfo.Document:
+                        xTitleIcon.Text = Application.Current.Resources["DocumentPlainIcon"] as string;
+                        break;
+                    default:
+                        xTitleIcon.Text = Application.Current.Resources["DefaultIcon"] as string;
+                        break;
+
+                }
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 

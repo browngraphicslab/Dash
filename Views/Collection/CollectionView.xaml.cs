@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
 using Windows.UI;
+using Dash.FontIcons;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,7 +17,7 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
@@ -152,6 +153,12 @@ namespace Dash
                     }
                 }
 
+                var icon1 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Tags
+                };
+                tagMode.Icon = icon1;
+
                 tagMode.Click += EnterTagMode;
                 contextMenu.Items.Add(tagMode);
                 elementsToBeRemoved.Add(tagMode);
@@ -163,6 +170,12 @@ namespace Dash
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };
+                var icon2 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Eye
+                };
+                viewCollectionAs.Icon = icon2;
+                
                 contextMenu.Items.Add(viewCollectionAs);
                 elementsToBeRemoved.Add(viewCollectionAs);
 
@@ -176,12 +189,25 @@ namespace Dash
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionPreview = new MenuFlyoutItem() { Text = "Preview" };
                 viewCollectionPreview.Click += ParentDocument.MenuFlyoutItemPreview_Click;
+
+                var icon3 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.Search
+                };
+                viewCollectionPreview.Icon = icon3;
+
                 contextMenu.Items.Add(viewCollectionPreview);
                 elementsToBeRemoved.Add(viewCollectionPreview);
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var fitToParent = new MenuFlyoutItem() { Text = "Toggle Fit To Parent" };
                 fitToParent.Click += ParentDocument.MenuFlyoutItemFitToParent_Click;
+
+                var icon4 = new FontAwesome
+                {
+                    Icon = FontAwesomeIcon.WindowMaximize
+                };
+                fitToParent.Icon = icon4;
                 contextMenu.Items.Add(fitToParent);
                 elementsToBeRemoved.Add(fitToParent);
 
@@ -250,6 +276,10 @@ namespace Dash
                 case CollectionViewType.Timeline:
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
+                    break;
+                case CollectionViewType.Graph:
+                    if (CurrentView is CollectionGraphView) return;
+                    CurrentView = new CollectionGraphView();
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");
