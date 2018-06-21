@@ -280,15 +280,6 @@ namespace Dash
             return new ListController<T>();
         }
 
-        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.SaveOnServer(success, error);
-            //foreach (var fmc in TypedData)
-            //{
-            //    fmc.SaveOnServer();
-            //}
-        }
-
         /// <summary>
         /// recurs on all list items
         /// </summary>
