@@ -746,9 +746,6 @@
     <Compile Include="Views\TemplateEditor\TemplateAddControl.xaml.cs">
       <DependentUpon>TemplateAddControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
-      <DependentUpon>TemplateEditorView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
@@ -1179,10 +1176,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TemplateEditor\TemplateAddControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
