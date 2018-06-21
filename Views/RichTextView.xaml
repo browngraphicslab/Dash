@@ -32,13 +32,19 @@
                          >
 
             <!--FORMAT OPTIONS FLYOUT-->
-            <FlyoutBase.AttachedFlyout>
+            <!--<FlyoutBase.AttachedFlyout>
                 <Flyout>
                     <Grid x:Name="xAttachedFlyout">
 
                     </Grid>
                 </Flyout>
+            </FlyoutBase.AttachedFlyout>-->
+            
+            <!--Flyout for attached links-->
+            <FlyoutBase.AttachedFlyout>
+                <MenuFlyout x:Name="xLinkFlyout"/>
             </FlyoutBase.AttachedFlyout>
+
         </RichEditBox>
 
         <StackPanel x:Name="xSearchBoxPanel" Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Right"

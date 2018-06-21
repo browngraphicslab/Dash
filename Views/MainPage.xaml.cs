@@ -447,7 +447,6 @@ namespace Dash
 
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
-            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
 
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
@@ -813,6 +812,7 @@ namespace Dash
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+			Toolbar.EnsureVisible();
         }
 
         public void ToggleSettingsVisibility(bool changeToVisible)

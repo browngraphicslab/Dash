@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -7,6 +8,8 @@ using Syncfusion.Windows.PdfViewer;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Linq;
+using Windows.UI.Xaml.Input;
+using Syncfusion.Pdf.Interactive;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -32,6 +35,7 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 xPdfView.ScrollToVerticalOffset(curOffset ?? 0.0);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
+
             };
 
             xPdfView.ScrollChanged += (sender, e) =>
@@ -82,6 +86,7 @@ namespace Dash
             xPdfView.RenderTransform = null;
             return true;
         }
-    }
+		
+	}
     
 }

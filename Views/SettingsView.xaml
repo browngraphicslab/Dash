@@ -42,6 +42,7 @@
             <!--UI-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
             <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}" >Night Mode</ToggleSwitch>
+            <ToggleSwitch Margin="10" IsOn="{x:Bind MarkdownEditOn, Mode=TwoWay}" >Edit with Markdown</ToggleSwitch>
             <Slider Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" 
                     Value="{x:Bind NoteFontSize, Mode=TwoWay}"  ></Slider>
             <TextBlock Margin="10" Style="{StaticResource ParagraphStyle}">Background</TextBlock>
@@ -67,6 +68,7 @@
             <Button x:Name="Restore" Background="Transparent" Margin="10, 15, 0, 0" Width="60" Height="60" Tapped="Restore_OnTapped">
                 <Image x:Name="xRevert" Source="ms-appx:///Assets/revert.png"/>
             </Button>
+            <ToggleSwitch Margin="10" IsOn="{x:Bind NoUpperLimit, Mode=TwoWay}" >Allow Infinite Upwards Panning</ToggleSwitch>
         </StackPanel>
     </Grid>
 </Page>

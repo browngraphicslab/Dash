@@ -49,11 +49,6 @@ namespace Dash
 
         public Grid TextBackground => xBackground;
 
-        private bool Not(bool b)
-        {
-            return b != true;
-        }
-
         public FieldControllerBase TargetFieldController { get; set; }
         public Context TargetDocContext { get; set; }
 
