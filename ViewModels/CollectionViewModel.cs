@@ -880,18 +880,32 @@ namespace Dash
                 var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 if (dragModel.LinkSourceView != null) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                 {
+                    // bcz:  Needs to support LinksFrom as well as LinksTo...
                     if (MainPage.Instance.IsShiftPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                     {
-                        var links = dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData;
-                        var targets = links.SelectMany((d) => d.GetDataDocument().GetLinkTo().TypedData).ToList();
-                        var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, targets);
-                        AddDocument(cnote.Document);
+                        var regions = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData;
+                        if (regions != null)
+                        {
+                            var links = regions.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                            var targets = links.SelectMany((l) => l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                            var aliases = targets.Select((t) => { var vc = t.GetViewCopy(); vc.SetHidden(false); return vc; });
+                            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, aliases.ToList());
+                            AddDocument(cnote.Document);
+                        } 
                     }
                     else if (MainPage.Instance.IsCtrlPressed()) // if control is pressed during this drag, we want to see a collection of the actual link documents
                     {
-                        var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
-                            dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData);
-                        AddDocument(cnote.Document);
+                        var regions = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData;
+                        var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData;
+                        var regionLinkedTo = regions?.SelectMany((r) => r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
+                        if (regionLinkedTo != null || directlyLinkedTo != null)
+                        {
+                            var links = regionLinkedTo != null ? regionLinkedTo.ToList() : new List<DocumentController>();
+                            if (directlyLinkedTo != null)
+                                links.AddRange(directlyLinkedTo);
+                            var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, links.ToList());
+                            AddDocument(cnote.Document);
+                        }
                     }
                     else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
                     {

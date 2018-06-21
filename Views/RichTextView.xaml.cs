@@ -509,7 +509,7 @@ namespace Dash
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
 
-                var linkedToDocs = theDoc.GetDataDocument().GetLinkTo();
+                var linkedToDocs = theDoc.GetDataDocument().GetLinks(KeyStore.LinkToKey);
                 if (linkedToDocs != null)
                 {
                     return theDoc;

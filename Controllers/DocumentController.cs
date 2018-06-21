@@ -387,10 +387,10 @@ namespace Dash
         {
             var linkDocument = new RichTextNote("<link description>").Document;
             
-            target.GetDataDocument().AddToLinkFrom(new List<DocumentController>(new DocumentController[] { linkDocument }));
-            GetDataDocument().AddToLinkTo(new List<DocumentController>(new DocumentController[] { linkDocument }));
-            linkDocument.GetDataDocument().AddToLinkFrom(new List<DocumentController>(new DocumentController[] { this }));
-            linkDocument.GetDataDocument().AddToLinkTo(new List<DocumentController>(new DocumentController[] { target }));
+            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
+            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { this }));
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { target }));
         }
         
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
