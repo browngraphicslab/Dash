@@ -217,8 +217,10 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (Text != null) // FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
+                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -235,6 +237,8 @@ namespace Dash
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
+                this.xRichEditBox.Document.Selection.StartPosition = s1;
+                this.xRichEditBox.Document.Selection.EndPosition = s2;
             }
         }
 
