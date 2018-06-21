@@ -675,10 +675,9 @@ namespace Dash
                 case SyntaxKind.IfStatement:
                     var ifChild = (node as IfStatement).Children;
 
-                    var ifB = ifChild[0];
-                    var ifBianry = ParseToExpression(ifChild[0]);
+                    var ifBinary = ParseToExpression(ifChild[0]);
                     var ifBlock = ParseToExpression(ifChild[1]);
-                    var a = ifBlock;
+
                     break;
                 case SyntaxKind.DoStatement:
                     break;
