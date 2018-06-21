@@ -49,7 +49,6 @@ namespace Dash
 		private List<ImageRegionBox> _visualRegions;
 		private ListController<DocumentController> _dataRegions;
 		private RegionVisibilityState _regionState;
-		public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
 		private bool _isLinkMenuOpen = false;
 		private AnnotationManager _annotationManager;
 
@@ -533,7 +532,7 @@ namespace Dash
 						new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
 						new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
 					.Document;
-				imNote.SetField(KeyStore.RegionDefinitionKey, _docCtrl, true);
+                imNote.SetRegionDefinition(_docCtrl);
 
 				//add to regions list
 				var regions = _docCtrl.GetDataDocument()

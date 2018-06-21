@@ -27,21 +27,16 @@ namespace Dash
 		//navigation and toggling of linked annotations to the pressed region
 		public void RegionPressed(DocumentController theDoc, Windows.Foundation.Point pos, DocumentController chosenDC = null)
 		{
-			//get "linked to" docs and "linked from" docs
-			var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
-			var linkToDoc   = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
+            //get "linked to" docs and "linked from" docs
+            var linkFromDoc = theDoc.GetDataDocument().GetLinkFrom();
+			var linkToDoc   = theDoc.GetDataDocument().GetLinkTo();
 			if (linkFromDoc != null)
 			{
 				//if there is only 1 link, get that link
 				if (linkFromDoc.Count == 1)
 				{
-					var targetDoc = linkFromDoc.TypedData.First().GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null).TypedData
-						.First();
-					targetDoc =
-						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
-						targetDoc;
-					theDoc = targetDoc;
+                    var targetDoc = linkFromDoc.TypedData.First().GetDataDocument().GetLinkFrom().TypedData.First();
+					theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
 				} 
 				//if there are multiple links & one has not been chosen, open the link menu to let user decide which link to pursue
 				else if (linkFromDoc.Count > 1 && chosenDC == null)
@@ -53,10 +48,7 @@ namespace Dash
 				else if (linkFromDoc.Count > 1 && chosenDC != null)
 				{
 					var targetDoc = chosenDC;
-					targetDoc =
-						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
-						targetDoc;
-					theDoc = targetDoc;
+                    theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
 				}
 
 			} //same procedure for links TO the doc
@@ -64,13 +56,8 @@ namespace Dash
 			{
 				if (linkToDoc.Count == 1)
 				{
-					var targetDoc = linkToDoc.TypedData.First().GetDataDocument()
-						.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData
-						.First();
-					targetDoc =
-						targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null) ??
-						targetDoc;
-					theDoc = targetDoc;
+                    var targetDoc = linkToDoc.TypedData.First().GetDataDocument().GetLinkTo().TypedData.First();
+					theDoc = targetDoc?.GetRegionDefinition()  ?? targetDoc;
 				}
 				else if (linkToDoc.Count > 1 && chosenDC == null)
 				{
@@ -81,9 +68,7 @@ namespace Dash
 				else if (linkToDoc.Count > 1 && chosenDC != null)
 				{
 					var targetDoc = chosenDC;
-					targetDoc = targetDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey,
-									null) ?? targetDoc;
-					theDoc = targetDoc;
+					theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
 				}
 			} 
 			//else, there are no links and nothing should happen
