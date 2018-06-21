@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Dash.Views;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -885,7 +886,7 @@ namespace Dash
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(xMasterStack); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
@@ -1045,11 +1046,7 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
-
-
-
-
-
+		
         public void hideControls()
         {
             ViewModel.DecorationState = false;
@@ -1078,5 +1075,21 @@ namespace Dash
         {
             MainPage.Instance.PinToPresentation(ViewModel);
         }
+
+	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+	    {
+
+		    if (ViewModel.Content is IAnnotationEnabled)
+		    {
+			    var element = (IAnnotationEnabled) ViewModel.Content;
+			    element?.RegionSelected(element, new Point(0, 0), null);
+
+			}
+		    else
+		    {
+			    var ann = new AnnotationManager(ViewModel.Content);
+			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
+		    }
+		}
     }
 }

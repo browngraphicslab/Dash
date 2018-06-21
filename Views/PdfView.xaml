@@ -16,7 +16,9 @@
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                                       ViewMode="FitWidth"
                                       HorizontalScrollBarVisibility="Hidden"
-                                      />
+                                      IsTextSelectionEnabled="True"
+                                 
+                                  />
     <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
         
     </Image>

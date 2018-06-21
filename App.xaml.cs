@@ -94,7 +94,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.CollectionBoxType, CollectionBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.FreeFormDocumentType, FreeFormDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(GridLayout.DocumentType, GridLayout.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(ImageBox.DocumentType, ImageBox.MakeView, ImageBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(InkBox.DocumentType, InkBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(KeyValueDocumentBox.DocumentType, KeyValueDocumentBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView, null);
