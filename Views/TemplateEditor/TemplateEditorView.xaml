@@ -11,7 +11,7 @@
     d:DesignWidth="400">
 
     <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="200" Background="Blue">
+        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="400" Background="Blue">
            
         </StackPanel>
         

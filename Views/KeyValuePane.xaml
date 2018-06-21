@@ -31,7 +31,7 @@
     </UserControl.Resources>
 
     <Grid x:Name="xOuterGrid" Background="{ThemeResource DocumentBackground}" Padding="0,0" BorderThickness="0"
-          BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch">
+          BorderBrush="{ThemeResource WindowsBlue}" HorizontalAlignment="Stretch" x:FieldModifier="public" >
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <!--empty header space-->
@@ -75,9 +75,9 @@
         <!--scrolling fields-->
         <ScrollViewer Name="xFieldsScroller" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <!--key value lists-->
-            <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid Name="xKeyValueGrid" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:FieldModifier="public">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"></ColumnDefinition>
+                    <ColumnDefinition Width="3*" ></ColumnDefinition>
                     <ColumnDefinition Width="5*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <!--key listview-->
