@@ -6,8 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -61,6 +65,68 @@ namespace Dash
             private set { _mouseScroll = value; }
         }
 
+        private bool _isGrid = true;
+
+        public bool IsGrid
+        {
+            get => _isGrid;
+            private set
+            {
+                _isGrid = value; 
+                if (value)
+                    CollectionFreeformView.BackgroundImage = "ms-appx:///Assets/transparent_grid_tilable.png";
+            }
+        }
+
+        private bool _isLine = false;
+
+        public bool IsLine
+        {
+            get => _isLine;
+            private set
+            {
+                _isLine = value; 
+                if (value)
+                    CollectionFreeformView.BackgroundImage = "ms-appx:///Assets/transparent_line_tilable.png";
+            }
+        }
+
+        private bool _isDot = false;
+
+        public bool IsDot
+        {
+            get => _isDot;
+            private set
+            {
+                _isDot = value;
+                if (value)
+                    CollectionFreeformView.BackgroundImage = "ms-appx:///Assets/transparent_dot_tilable.png";
+            }
+        }
+        private bool _isBlank = false;
+
+        public bool IsBlank
+        {
+            get => _isBlank;
+            private set
+            {
+                _isBlank = value;
+                if (value)
+                    CollectionFreeformView.BackgroundImage = "ms-appx:///Assets/transparent_blank_tilable.png";
+            }
+        }
+
+        private float _bgopacity = 1.0f;
+        public float BackgroundOpacity
+        {
+            get => _bgopacity;
+            private set
+            {
+                _bgopacity = value;
+                CollectionFreeformView.BackgroundOpacity = value;
+            }
+        }
+        public bool NoUpperLimit { get; private set; } = false;
         #endregion
 
         public SettingsView()
@@ -69,6 +135,33 @@ namespace Dash
 
             Debug.Assert(Instance == null);
             Instance = this;
+            xCustomizeButton.Tapped += async delegate
+            {
+                var path = await GetPath();
+                if (path != null)
+                    CollectionFreeformView.BackgroundImage = path;
+            };
+        }
+
+        private async Task<IRandomAccessStreamWithContentType> GetPath()
+        {
+            var picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                var stream = await file.OpenReadAsync();
+                return stream;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

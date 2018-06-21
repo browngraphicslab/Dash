@@ -28,7 +28,8 @@ namespace Dash
             //image box is created from imagenote
             return new ImageBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
-        public ImageNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
+
+	    public ImageNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)
         {
             //location is the URI we want

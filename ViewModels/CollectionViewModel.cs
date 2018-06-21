@@ -94,7 +94,7 @@ namespace Dash
             {
                 var trans = ContainerDocument.GetField<PointController>(KeyStore.PanPositionKey)?.Data ?? new Point();
                 var scale = ContainerDocument.GetField<PointController>(KeyStore.PanZoomKey)?.Data ?? new Point(1, 1);
-                if (trans.Y > 0)   // clamp the y offset so that we can only scroll down
+                if (trans.Y > 0 && !SettingsView.Instance.NoUpperLimit)   // clamp the y offset so that we can only scroll down
                 {
                     trans = new Point(trans.X, 0);
                 }
@@ -152,7 +152,7 @@ namespace Dash
         {
             if (FitToParent && ViewType == CollectionView.CollectionViewType.Freeform)
             {
-                var parSize = ContainerDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point();
+                var parSize = ContainerDocument.GetActualSize() ?? new Point();
                 var r = Rect.Empty;
                 foreach (var d in DocumentViewModels)
                 {
@@ -202,7 +202,7 @@ namespace Dash
                     // we only care about changes to the Hidden field of the contained documents.
                     foreach (var d in docs)
                     {
-                        var visible = d.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1;
+                        var visible = !d.GetHidden();
                         var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
                         if (visible && !shown)
                             addViewModels(new List<DocumentController>(new DocumentController[] { d }));
@@ -235,7 +235,7 @@ namespace Dash
                 {
                     foreach (var documentController in documents)
                     {
-                        if (documentController.GetDereferencedField<NumberController>(KeyStore.HiddenKey, null)?.Data != 1)
+                        if (!documentController.GetHidden())
                             DocumentViewModels.Add(new DocumentViewModel(documentController));
                     }
                 }
@@ -341,25 +341,13 @@ namespace Dash
         }
         public bool FitToParent
         {
-            get
-            {
-                return ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
-            }
-            set
-            {
-                ContainerDocument.SetField<TextController>(KeyStore.CollectionFitToParentKey, value ? "true" : "false", true);
-            }
+            get => ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true";
+            set => ContainerDocument.SetFitToParent(value);
         }
         public CollectionView.CollectionViewType ViewType
         {
-            get
-            {
-                return Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
-            }
-            set
-            {
-                ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
-            }
+            get => Enum.Parse<CollectionView.CollectionViewType>(ContainerDocument.GetDereferencedField<TextController>(KeyStore.CollectionViewTypeKey, null)?.Data ?? CollectionView.CollectionViewType.Grid.ToString());
+            set => ContainerDocument.SetField<TextController>(KeyStore.CollectionViewTypeKey, value.ToString(), true);
         }
 
 
@@ -551,8 +539,7 @@ namespace Dash
                 var text = await dvp.GetRtfAsync();
                 if (text != "")
                 {
-                    var postitNote = new RichTextNote(text: "hello", size: new Size(300, double.NaN)).Document;
-                    postitNote.GetDataDocument().SetField(KeyStore.DataKey, new RichTextController(new RichTextModel.RTD(text)), true);
+                    var postitNote = new RichTextNote(text: text, size: new Size(300, double.NaN)).Document;
                     Actions.DisplayDocument(this, postitNote, where);
                 }
             }
@@ -727,7 +714,7 @@ namespace Dash
                     var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                     if (matches.Count != 0)
                     {
-                        htmlNote.GetDataDocument().SetField(KeyStore.SourecUriKey, new TextController(matches[0].Value.Replace("SourceURL:", "")), true);
+                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey, matches[0].Value.Replace("SourceURL:", ""), true);
                         break;
                     }
                 }
@@ -736,15 +723,15 @@ namespace Dash
                 {
                     var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
                     var title = (matches.Count == 1 && matches[0].Value == text) ? new Regex(":").Split(matches[0].Value)[0] : "";
-                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
                     if (title == "")
                         foreach (var match in matches)
                         {
                             var pair = new Regex(":").Split(match.ToString());
-                            htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                            htmlNote.GetDataDocument().SetField<TextController>(new KeyController(pair[0], pair[0]), pair[1].Trim(), true);
                         }
                     else
-                        htmlNote.SetField(KeyStore.TitleKey, new TextController(title), true);
+                        htmlNote.SetTitle(title);
                 }
                 else
                 {
@@ -756,9 +743,9 @@ namespace Dash
                         var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
                         related.Add(i.Document);
                     }
-                    htmlNote.GetDataDocument().SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);//
+                    htmlNote.GetDataDocument().SetField<ListController<DocumentController>>(new KeyController("Html Images", "Html Images"), related, true);//
                     //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
-                    htmlNote.GetDataDocument().SetField(KeyStore.DocumentTextKey, new TextController(text), true);
+                    htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
                     foreach (var str in strings)
                     {
                         var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
@@ -767,7 +754,7 @@ namespace Dash
                             foreach (var match in matches)
                             {
                                 var pair = new Regex(":").Split(match.ToString());
-                                htmlNote.GetDataDocument().SetField(new KeyController(pair[0], pair[0]), new TextController(pair[1].Trim()), true);
+                                htmlNote.GetDataDocument().SetField<TextController>(new KeyController(pair[0], pair[0]), pair[1].Trim(), true);
                             }
                         }
                     }
@@ -789,7 +776,7 @@ namespace Dash
                 foreach (var match in matches)
                 {
                     var pair = new Regex(":").Split(match.ToString());
-                    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0], true), new TextController(pair[1].Trim('\r')), true);
+                    t.Document.GetDataDocument().SetField<TextController>(KeyController.LookupKeyByName(pair[0], true), pair[1].Trim('\r'), true);
                 }
                 AddDocument(t.Document);
             }
@@ -851,9 +838,9 @@ namespace Dash
                         var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
                                      e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
                         if (double.IsNaN(newDoc.GetWidthField().Data))
-                            newDoc.SetField(KeyStore.WidthFieldKey, new NumberController(dragData.Width ?? double.NaN), true);
+                            newDoc.SetWidth(dragData.Width ?? double.NaN);
                         if (double.IsNaN(newDoc.GetHeightField().Data))
-                            newDoc.SetField(KeyStore.HeightFieldKey, new NumberController(dragData.Height ?? double.NaN), true);
+                            newDoc.SetHeight(dragData.Height ?? double.NaN);
                         return newDoc;
                     });
                     AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
@@ -879,15 +866,15 @@ namespace Dash
                 {
                     if (MainPage.Instance.IsShiftPressed()) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
                     {
-                        var links = dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData;
-                        var targets = links.SelectMany((d) => d.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData).ToList();
+                        var links = dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData;
+                        var targets = links.SelectMany((d) => d.GetDataDocument().GetLinkTo().TypedData).ToList();
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300, targets);
                         AddDocument(cnote.Document);
                     }
                     else if (MainPage.Instance.IsCtrlPressed()) // if control is pressed during this drag, we want to see a collection of the actual link documents
                     {
                         var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
-                            dragModel.DraggedDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null).TypedData);
+                            dragModel.DraggedDocument.GetDataDocument().GetLinkTo().TypedData);
                         AddDocument(cnote.Document);
                     }
                     else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)

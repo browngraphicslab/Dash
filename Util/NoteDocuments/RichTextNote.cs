@@ -37,7 +37,6 @@ namespace Dash
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
             Document.Tag = "Rich Text Note Layout " + rcount;
             dataDocument.Tag = "Rich Text Note Data" + rcount++;
-            Document.SetField(KeyStore.TextWrappingKey, new TextController(!double.IsNaN(Document.GetWidthField().Data) ? DashShared.TextWrapping.Wrap.ToString() : DashShared.TextWrapping.NoWrap.ToString()), true);
         }
     }
 }
