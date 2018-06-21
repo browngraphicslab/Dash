@@ -765,5 +765,30 @@ namespace Dash
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
+
+       
+
+        private void XTemplate_OnChecked(object sender, RoutedEventArgs e)
+        {
+            if (MainPage.Instance.GetSelectedDocuments().Count() == 1)
+            {
+
+               var curr = MainPage.Instance.GetSelectedDocuments().First();
+                
+                
+            }
+            
+        }
+
+        private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
+        {
+            if (MainPage.Instance.GetSelectedDocuments().Count() == 1)
+            {
+
+                var curr = MainPage.Instance.GetSelectedDocuments().First();
+
+
+            }
+        }
     }
 }
