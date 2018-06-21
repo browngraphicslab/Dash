@@ -126,7 +126,6 @@ namespace Dash
                     relative.Height = double.NaN;
                 }
             };
-            xRichEditBox.Document.UndoLimit = 0;
         }
 
         public void UpdateDocumentFromXaml()
@@ -217,7 +216,7 @@ namespace Dash
 
         void xRichTextView_TextChangedCallback2(DependencyObject sender, DependencyPropertyChangedEventArgs dp)
         {
-            if (Text != null) // FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
+            if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
                 var s1 = this.xRichEditBox.Document.Selection.StartPosition;
                 var s2 = this.xRichEditBox.Document.Selection.EndPosition;
@@ -405,7 +404,7 @@ namespace Dash
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
             //handles batching for undo typing
-            TypeTimer.typeEvent();
+            //TypeTimer.typeEvent();
 
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
@@ -479,13 +478,6 @@ namespace Dash
                             }
                             e.Handled = true;
                         }
-                        break;
-                    case VirtualKey.Z:
-                        UndoManager.UndoOccured();
-                        xRichEditBox.Document.GetText(Windows.UI.Text.TextGetOptions.AdjustCrlf, out var docText);
-                        int textLength = docText.Length;
-                        xRichEditBox.Document.Selection.SetRange(textLength, textLength);
-                        //e.Handled = true;
                         break;
                 }
             }

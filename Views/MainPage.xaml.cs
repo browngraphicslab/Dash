@@ -54,10 +54,6 @@ namespace Dash
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
 
-        private bool controlDown = false;
-        private bool ZDown = false;
-        private bool YDown = false;
-
         public static int GridSplitterThickness { get; } = 7;
 
         // TODO: change this to Toolbar binding to SelectedDocuments
@@ -420,33 +416,23 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
-            //event is fired when only one is clicked
-            if (e.VirtualKey == VirtualKey.Control)
-            {
-                controlDown = true;
-                e.Handled = true;
-            }
-            else if (e.VirtualKey == VirtualKey.Z)
-            {
-                ZDown = true;
-                e.Handled = true;
-            }
-            else if (e.VirtualKey == VirtualKey.Y)
-            {
-                YDown = true;
-                e.Handled = true;
-            }
-
-            if (controlDown && YDown)
-            {
-                UndoManager.RedoOccured();
-            } else if (controlDown && ZDown)
-            {
-                UndoManager.UndoOccured();
-            }
-
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
+
+            if (!(FocusManager.GetFocusedElement() is RichEditBox))
+            {
+                var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+                if (ctrlDown)
+                {
+                    if (e.VirtualKey == VirtualKey.Z)
+                    {
+                        UndoManager.UndoOccured();
+                    } else if (e.VirtualKey == VirtualKey.Y)
+                    {
+                        UndoManager.RedoOccured();
+                    }
+                }
+            }
 
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
@@ -477,21 +463,6 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
         {
-            if (e.VirtualKey == VirtualKey.Control)
-            {
-                controlDown = false;
-                e.Handled = true;
-            }
-            else if (e.VirtualKey == VirtualKey.Z)
-            {
-                ZDown = false;
-                e.Handled = true;
-            }
-            else if (e.VirtualKey == VirtualKey.Y)
-            {
-                YDown = false;
-                e.Handled = true;
-            }
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
             if (e.VirtualKey == VirtualKey.Tab && !(FocusManager.GetFocusedElement() is RichEditBox))

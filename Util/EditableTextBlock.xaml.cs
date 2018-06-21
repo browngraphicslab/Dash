@@ -112,7 +112,7 @@ namespace Dash
 
         private void SetExpression(string expression)
         {
-            TypeTimer.typeEvent();
+            //TypeTimer.typeEvent();
 
             Text = expression;
             TextBoxLoaded = false;
