@@ -95,6 +95,7 @@ namespace Dash
         private BitmapImage unpinnedIcon;
         private BitmapImage pinnedIcon;
         private bool containsInternalContent;
+        private TemplateEditorView _temp;
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -770,10 +771,26 @@ namespace Dash
 
         private void XTemplate_OnChecked(object sender, RoutedEventArgs e)
         {
+            //CODE FOR IF THERE IS NO DOCUMENT SELECTED (BASICALLY GENERATING TEMPLATE CREATOR)
+            //_temp = new TemplateEditorView();
+            //_docControl = _temp's document controller
+            //MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.RemoveDocument(docControl);
+
+
             if (MainPage.Instance.GetSelectedDocuments().Count() == 1)
             {
 
+               
                var curr = MainPage.Instance.GetSelectedDocuments().First();
+             
+
+                //if (curr DOES NOT HAVE a templateeditorview already)
+                //{
+
+                //    curr.ToggleTemplateEditor();
+                //    make the new templateeditorview
+                //    change curr's boolean to say it does have a current templateeditorview
+                //}
                 
                 
             }
@@ -782,10 +799,23 @@ namespace Dash
 
         private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            //CODE FOR IF THERE IS NO DOCUMENT SELECTED (BASICALLY REMOVING TEMPLATE CREATOR)
+            //var temp = MainPage.Instance.MainDocView.Select(d => d.GetFirstDescendantofType<TemplateEditorView>().DocController = _docControl)
+            //MainPage.Instance.MainDocView.GetFirstDescendantOfType<TemplateEditorView>().ViewModel.RemoveDocument(temp);
+
             if (MainPage.Instance.GetSelectedDocuments().Count() == 1)
             {
 
                 var curr = MainPage.Instance.GetSelectedDocuments().First();
+              
+
+                //if (curr has a templateeditorview already)
+                //{
+
+                //    //curr.ToggleTemplateEditor();
+                //    //delete the current templateeditorview
+                //    //change curr's boolean to say it does not have a current templateeditorview
+                //}
 
 
             }
