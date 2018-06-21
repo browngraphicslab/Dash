@@ -247,6 +247,20 @@ namespace Dash
                 ViewModel.DecorationState = false;
             };
 
+            // setup EditorEllipse
+            TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
+            TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderUnhighlight.Visibility = Visibility.Visible;
+            xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
+            {
+                this.ManipulationMode = ManipulationModes.None;
+                new TemplateEditorView(this);
+                e.Handled = !e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
+            };
+            xTemplateEditorEllipseBorder.PointerReleased += (sender, e) => ManipulationMode = ManipulationModes.All;
+            xTemplateEditorEllipseBorder.DragStarting += (sender, args) =>
+            {
+            };
+
             // setup Title Icon
             xTitleIcon.PointerPressed += (sender, e) =>
             {
