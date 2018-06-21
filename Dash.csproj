@@ -243,6 +243,7 @@
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\MarkdownBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -255,6 +256,9 @@
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
+      <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Export\ExportToTxt.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
     <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
@@ -310,6 +314,7 @@
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
@@ -828,6 +833,10 @@
     <Page Include="Themes\Generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\EditableMarkdownBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\ImageRegionBox.xaml">
       <SubType>Designer</SubType>

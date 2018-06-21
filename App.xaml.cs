@@ -106,6 +106,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
 					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView, null);

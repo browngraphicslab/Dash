@@ -730,10 +730,17 @@ namespace Dash
         /// </summary>
         public TypeInfo GetRootFieldType(KeyController key)
         {
-            var operatorController = GetField<ListController<OperatorController>>(KeyStore.OperatorKey).TypedData.First();
-            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            var operatorControllerStart = GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
+            if (operatorControllerStart != null)
             {
-                return operatorController.Outputs[key];
+                foreach (var controller in operatorControllerStart.TypedData)
+                {
+                    if (controller != null && controller.Outputs.ContainsKey(key))
+                    {
+                        return controller.Outputs[key];
+                    }
+                    
+                }
             }
 
             return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;

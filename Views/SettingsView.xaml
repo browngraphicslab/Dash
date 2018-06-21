@@ -42,6 +42,7 @@
             <!--UI-->
             <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
             <ToggleSwitch Margin="10" IsOn="{x:Bind NightModeOn, Mode=TwoWay}" >Night Mode</ToggleSwitch>
+            <ToggleSwitch Margin="10" IsOn="{x:Bind MarkdownEditOn, Mode=TwoWay}" >Edit with Markdown</ToggleSwitch>
             <Slider Margin="10" Header="Font Size" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" 
                     Value="{x:Bind NoteFontSize, Mode=TwoWay}"  ></Slider>
             <TextBlock Margin="10" Style="{StaticResource ParagraphStyle}">Background</TextBlock>
