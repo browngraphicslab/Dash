@@ -203,16 +203,16 @@ namespace Dash
                 var y2 = 0.0;
                 //get the y points of each doc
                 //check that doc has PostionFieldKey
-                if (doc1.GetField(KeyStore.PositionFieldKey) != null)
+                var pt1 = doc1.GetPosition();
+                if (pt1 != null)
                 {
-                    var pt1 = doc1.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-                    y1 = pt1.Data.Y;
+                    y1 = pt1.Value.Y;
                 }
 
-                if (doc2.GetField(KeyStore.PositionFieldKey) != null)
+                var pt2 = doc2.GetPosition();
+                if (pt2 != null)
                 {
-                    var pt2 = doc2.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-                    y2 = pt2.Data.Y;
+                    y2 = pt2.Value.Y;
                 }
 
                 //return 1 if doc1 first and -1 if doc2 first
@@ -278,14 +278,13 @@ namespace Dash
         {
             var marginLeft = 0.0;
             var marginRight = 0.0;
-            if (doc.GetField(KeyStore.PositionFieldKey) != null)
+            var pt1 = doc.GetPosition();
+            if (pt1 != null)
             {
-                var pt1 = doc.GetField(KeyStore.PositionFieldKey).DereferenceToRoot<PointController>(null);
-
                 var minX = minMax[0];
                 var maxX = minMax[1];
 
-                var x =  pt1.Data.X - minX;
+                var x =  pt1.Value.X - minX;
 
                 var DASHWIDTH = Math.Abs(maxX - minX + 50);
                 marginLeft = (x * PAGEWIDTH) / (DASHWIDTH);
@@ -293,7 +292,7 @@ namespace Dash
                 var minY = minMax[2];
                 var maxY = minMax[3];
 
-                var y = pt1.Data.Y - minY;
+                var y = pt1.Value.Y - minY;
 
                 var DASHHEIGHT = Math.Abs(maxY - minY);
                 marginRight = (y * PAGEHEIGHT) / (DASHHEIGHT);

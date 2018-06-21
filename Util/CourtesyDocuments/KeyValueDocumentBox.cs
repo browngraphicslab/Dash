@@ -19,18 +19,12 @@ namespace Dash
         }
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            // the document field model controller provides us with the DATA
-            // the Document on this courtesty document provides us with the parameters to display the DATA.
-            // X, Y, Width, and Height etc....
-            var documentfieldModelController = docController.GetDataDocument();
-            Debug.Assert(documentfieldModelController != null);
-
             var border = new Border();
 
             var keyValuePane = new KeyValuePane
             {
                 TypeColumnWidth = new GridLength(0),
-                DataContext = documentfieldModelController
+                DataContext = docController.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, null) ?? docController
             };
             border.Child = keyValuePane;
             SetupBindings(border, docController, context);

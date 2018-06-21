@@ -118,12 +118,10 @@ namespace Dash
             // otherwise update the correct backend based on the sender
             if (sender == xNewValueTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorController.ValueName,
-                    new TextController(xNewValueTextBox.Text), true);
+                _operatorDoc.SetField<TextController>(MeltOperatorController.ValueName,xNewValueTextBox.Text, true);
             } else if (sender == xNewVariableTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorController.VariableName,
-                    new TextController(xNewVariableTextBox.Text), true);
+                _operatorDoc.SetField<TextController>(MeltOperatorController.VariableName, xNewVariableTextBox.Text, true);
             }
         }
 

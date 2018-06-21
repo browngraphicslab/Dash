@@ -31,7 +31,6 @@ namespace Dash
         
         int   _prevQueryLength;// The length of the previous search query
         int   _nextMatch = 0;// Index of the next highlighted search result
-        FormattingMenuView xFormattingMenuView = null;
 
         /// <summary>
         /// A dictionary of the original character formats of all of the highlighted search results
@@ -105,8 +104,19 @@ namespace Dash
                 Path = new PropertyPath(nameof(SettingsView.Instance.NoteFontSize)),
                 Mode = BindingMode.OneWay
             };
-            xRichEditBox.SetBinding(FontSizeProperty, sizeBinding); 
-
+            xRichEditBox.SetBinding(FontSizeProperty, sizeBinding);
+            this.SizeChanged += (object sender, SizeChangedEventArgs e) =>
+            {
+                // we always need to make sure that our own Height is NaN
+                // after any kind of resize happens so that we can grow as needed.
+                Height = double.NaN;
+                // if we're inside of a RelativePanel that was resized, we need to 
+                // reset it to have NaN height so that it can grow as we type.
+                if (Parent is RelativePanel relative)
+                {
+                    relative.Height = double.NaN;
+                }
+            };
         }
 
         public void UpdateDocumentFromXaml()
@@ -116,7 +126,6 @@ namespace Dash
             if (DataContext != null && Text != null)
             {
                 convertTextFromXamlRTF();
-                setContainerHeight();
 
                 // auto-generate key/value pairs by scanning the text
                 var reg = new Regex("[a-zA-Z 0-9]*:=[a-zA-Z 0-9'_,;{}+-=()*&!?@#$%<>]*");
@@ -132,11 +141,11 @@ namespace Dash
                     if (containerDoc != null)
                     {
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
-                        containerData.SetField(keycontroller, new RichTextController(new RichTextModel.RTD(value)), true);
+                        containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
                         var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
-                        dbox.SetField(KeyStore.TitleKey, new TextController(keycontroller.Name), true);
+                        dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);
                         //DataDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(containerData.Id, keycontroller), true);
                     }
@@ -187,36 +196,6 @@ namespace Dash
                 Text = new RichTextModel.RTD(xamlRTF);
             _lastXamlRTFText = xamlRTF;
         }
-        void               setContainerHeight()
-        {
-            if (FocusManager.GetFocusedElement() == xRichEditBox)
-            {
-                if (Parent is RelativePanel relative)
-                {
-                    if (xRichEditBox.TextWrapping == TextWrapping.NoWrap)
-                        LayoutDocument.SetField(KeyStore.TextWrappingKey, new TextController(TextWrapping.Wrap.ToString()), true);
-                    xRichEditBox.Measure(new Size(ActualWidth, 1000));
-                    if (relative != null)
-                    {
-                        double pad = 0;
-                        foreach (var child in relative.Children.OfType<FrameworkElement>())
-                            if (child != this)
-                            {
-                                if (child is RichTextView rview)
-                                {
-                                    rview.xRichEditBox.Measure(new Size(rview.ActualWidth, 1000));
-                                    pad += rview.DesiredSize.Height;
-                                }
-                                else
-                                    pad += child.ActualHeight;
-                            }
-                        relative.Height = xRichEditBox.DesiredSize.Height + pad;
-                    }
-                }
-                else
-                    Height = double.NaN;
-            }
-        }
 
         #region eventhandlers
         string _lastXamlRTFText = "";
@@ -254,6 +233,7 @@ namespace Dash
             if (target != null)
             {
                 var theDoc = ContentController<FieldModel>.GetController<DocumentController>(target);
+                var regionParent = theDoc?.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
                 if (DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)?.TypedData.Contains(theDoc) == true)
                 {
                     var linkFromDoc = theDoc.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
@@ -284,12 +264,12 @@ namespace Dash
                         Actions.DisplayDocument(this.GetFirstAncestorOfType<CollectionView>()?.ViewModel, viewCopy);
                         // ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
                         // the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
-                        viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
+                        viewCopy.SetTransient(true);
                     }
                     else if (nearestOnScreen != null)
                     {
                         // remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
-                        if (nearestOnScreen.ViewModel.DocumentController.GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
+                        if (nearestOnScreen.ViewModel.DocumentController.GetTransient())
                             cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
                         else
                             Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
@@ -536,15 +516,14 @@ namespace Dash
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
             if (regions == null)
             {
-                var dregions = new List<DocumentController>();
-                dregions.Add(dc);
-                DataDocument.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+                var dregions = new ListController<DocumentController>(dc);
+                DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
             }
             else
             {
                 regions.Add(dc);
             }
-            return dc;
+           return dc;
         }
 
         string getHyperlinkTargetForSelection()

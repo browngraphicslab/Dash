@@ -136,6 +136,7 @@ namespace Dash
                 CollectionFreeformView.BackgroundOpacity = value;
             }
         }
+        public bool NoUpperLimit { get; private set; } = false;
         #endregion
 
         public SettingsView()

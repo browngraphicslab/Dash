@@ -122,5 +122,27 @@ namespace Dash
                     ? (SolidColorBrush) Application.Current.Resources["InverseTextColor"]
                     : (SolidColorBrush) Application.Current.Resources["MainText"];
         }
+
+        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+            {
+                var snapshot = freeFormView.Snapshot();
+                var freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
+                var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
+                if (snapshots == null)
+                {
+                    var nsnapshots = new List<DocumentController>();
+                    nsnapshots.Add(snapshot);
+                    freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
+                }
+                else
+                    snapshots.Add(snapshot);
+
+                // bcz: hack to get the tree view to refresh
+                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(snapshot);
+                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Remove(snapshot);
+            }
+        }
     }
 }
