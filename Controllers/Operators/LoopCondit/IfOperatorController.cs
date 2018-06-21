@@ -59,12 +59,12 @@ namespace Dash
                 }
             }
 
-            // outputs[SumKey] = new NumberController(sum);
+            outputs[ResultKey] = ;
         }
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new AddOperatorController();
+            return new IfOperatorController();
         }
     }
 }
