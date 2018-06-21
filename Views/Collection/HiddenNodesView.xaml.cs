@@ -115,5 +115,20 @@ namespace Dash
         }
 
         #endregion
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            foreach (var node in HiddenNodes)
+            {
+                node.Visibility = Visibility.Visible;
+            }
+            foreach (var link in ParentGraph.Links)
+            {
+                link.Connection.Visibility = Visibility.Visible;
+                
+            }
+
+            ParentGraph.xInfoPanel.Children.Remove(this);
+        }
     }
 }
