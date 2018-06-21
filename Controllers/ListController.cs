@@ -156,6 +156,16 @@ namespace Dash
             }
         }
 
+        public void Move(T fromElement, T toElement)
+        {
+            if (fromElement != null && toElement != null)
+            {
+                UpdateOnServer();
+
+                OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Move, new List<T> { fromElement, toElement}));
+            }
+        }
+
         public void AddRange(IList<T> elements)
         {
             foreach (var element in elements)
@@ -306,6 +316,7 @@ namespace Dash
                 Replace, //Items in the list were replaced with other items
                 Clear, //The list was cleared
                 Update, //An item in the list was updated
+                Move, // An item in the list was moved
                 Content
             }
 

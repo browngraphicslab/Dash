@@ -9,7 +9,10 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     x:Name="Control"
-    DataContextChanged="TreeViewNode_OnDataContextChanged">
+    DataContextChanged="TreeViewNode_OnDataContextChanged"
+    PointerPressed="TreeViewNode_OnPointerPressed"
+    PointerReleased="TreeViewNode_OnPointerReleased"
+>
 
     <StackPanel>
         <StackPanel.ContextFlyout>
@@ -33,14 +36,14 @@
             <TextBlock x:Name="XTextBlock" Grid.Column="1" FontSize="{StaticResource DataSizing}" 
                     DoubleTapped="XTextBlock_OnDoubleTapped"  Padding="0" Margin="5"
                     PointerEntered="XTextBlock_PointerEntered" PointerExited="XTextBlock_PointerExited" Tapped="XTextBlock_Tapped" 
-                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" Foreground="{x:Bind Foreground, Mode=OneWay}" />
+                    CanDrag="True" DragStarting="XTextBlock_OnDragStarting" DropCompleted="XTextBlock_OnDropCompleted" Foreground="{x:Bind Foreground, Mode=OneWay}" />
             <Border x:Name="xBorder" Grid.Column="2" Visibility="Collapsed">
                 <TextBox x:Name="XTextBox" LostFocus="XTextBox_OnLostFocus" LosingFocus="XTextBox_LosingFocus" KeyDown="XTextBox_OnKeyUp" />
             </Border>
             <TextBlock x:Name="XArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="0" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
             <TextBlock x:Name="XSnapshotArrowBlock" FontSize="{StaticResource DataSizing}" Grid.Column="2" FontFamily="{StaticResource FontAwesome}" Style="{StaticResource xMenuItemExpandRight}" Tapped="XSnapshotBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
         </Grid>
-        <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="YPos" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
+        <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="CollectionTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
         <local:TreeViewCollectionNode Margin="25 0 0 0" x:Name="SnapshotTreeView" Visibility="Collapsed" HorizontalAlignment="Left" DataContext="{x:Null}" SortCriterion="" FilterString="{Binding ElementName=Control, Path=FilterString}" ContainingDocument="{x:Bind ContainingDocument}" Foreground="{x:Bind Foreground, Mode=OneWay}"/>
     </StackPanel>
 </UserControl>

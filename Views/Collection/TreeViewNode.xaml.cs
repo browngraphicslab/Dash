@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -235,8 +236,22 @@ namespace Dash
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
+            _isDragged = true;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel((DataContext as DocumentViewModel).DocumentController, true);
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+            if (_container == null)
+                _container = this.GetFirstAncestorOfType<TreeViewCollectionNode>();
+            args.Data.Properties[nameof(TreeViewCollectionNode)] = _container;
+            args.Data.Properties[nameof(TreeViewNode)] = this;
+            if (_isLongPressed)
+            {
+                args.AllowedOperations = DataPackageOperation.Move;
+                args.Data.RequestedOperation = DataPackageOperation.Move;
+            }
+            else
+            {
+                args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+                args.Data.RequestedOperation = DataPackageOperation.None;
+            }
         }
 
         public void DeleteDocument()
@@ -288,6 +303,34 @@ namespace Dash
         {
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
+        }
+
+        private bool _isLongPressed = false;
+        private bool _isDragged = false;
+        private bool _isReleased = false;
+        private ListView _list;
+        private TreeViewCollectionNode _container;
+        private async void TreeViewNode_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            await Task.Delay(500);
+            if (!_isDragged && !_isReleased)
+            {
+                _isLongPressed = true;
+                _container = (sender as TreeViewNode).GetFirstAncestorOfType<TreeViewCollectionNode>();
+                _list = _container.GetFirstDescendantOfType<ListView>();
+            }
+        }
+
+        private void TreeViewNode_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            _isLongPressed = false;
+            _isReleased = true;
+        }
+
+        private void XTextBlock_OnDropCompleted(UIElement sender, DropCompletedEventArgs args)
+        {
+            _isDragged = false;
+            _isLongPressed = false;                
         }
     }
 }
