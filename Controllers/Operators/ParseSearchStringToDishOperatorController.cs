@@ -21,7 +21,7 @@ namespace Dash
 
         public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-
+            SaveOnServer();
         }
 
         public ParseSearchStringToDishOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

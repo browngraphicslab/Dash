@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -36,9 +37,15 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
-        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
+        public static readonly DependencyProperty SortCriterionProperty = DependencyProperty.Register(
+            "SortCriterion", typeof(string), typeof(TreeViewNode), new PropertyMetadata("YPos"));
 
-        private bool _isCollection = false;
+        public string SortCriterion
+        {
+            get { return (string)GetValue(SortCriterionProperty); }
+            set { SetValue(SortCriterionProperty, value); }
+        }
+        public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 
         public TreeViewNode()
         {
@@ -49,6 +56,20 @@ namespace Dash
         {
             if (Equals(args.NewValue, oldViewModel))
             {
+                var dvm = (DocumentViewModel)args.NewValue;
+                if (dvm != null)
+                {
+                    var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
+                    if (snapshots != null && XSnapshotArrowBlock.Visibility == Visibility.Collapsed)
+                    {
+                        var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
+                        SnapshotTreeView.SortCriterion = null;
+                        SnapshotTreeView.DataContext = snapshotCollectionViewModel;
+                        SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
+                        XSnapshotArrowBlock.Visibility = Visibility.Visible;
+                        XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                    }
+                }
                 return;
             }
             if (args.NewValue != null)
@@ -87,26 +108,40 @@ namespace Dash
                 };
                 
                 var collection = dvm.DocumentController.GetDataDocument().GetField(KeyStore.DataKey) as ListController<DocumentController>;
+                var snapshots = dvm.DocumentController.GetDataDocument().GetField(KeyStore.SnapshotsKey) as ListController<DocumentController>;
 
                 if (collection != null)
                 {
-                    _isCollection = true;
                     var collectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.DataKey);
-                    CollectionTreeView.DataContext =
-                        collectionViewModel;
+                    CollectionTreeView.DataContext = collectionViewModel;
                     CollectionTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
                     XArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-
                     XArrowBlock.Visibility = Visibility.Visible;
                     textBlockBinding.Tag = "TreeViewNodeCol";
                 }
                 else
                 {
-                    _isCollection = false;
                     XArrowBlock.Text = "";
                     XArrowBlock.Visibility = Visibility.Collapsed;
                     CollectionTreeView.DataContext = null;
                     CollectionTreeView.Visibility = Visibility.Collapsed;
+                }
+                if (snapshots != null)
+                {
+                    var snapshotCollectionViewModel = new CollectionViewModel(dvm.DocumentController.GetDataDocument(), KeyStore.SnapshotsKey);
+                    SnapshotTreeView.SortCriterion = null;
+                    SnapshotTreeView.DataContext = snapshotCollectionViewModel;
+                    SnapshotTreeView.ContainingDocument = dvm.DocumentController.GetDataDocument();
+                    XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
+                    XSnapshotArrowBlock.Visibility = Visibility.Visible;
+                    textBlockBinding.Tag = "TreeViewNodeSnapCol";
+                }
+                else
+                {
+                    XSnapshotArrowBlock.Text = "";
+                    XSnapshotArrowBlock.Visibility = Visibility.Collapsed;
+                    SnapshotTreeView.DataContext = null;
+                    SnapshotTreeView.Visibility = Visibility.Collapsed;
                 }
                 XTextBlock.AddFieldBinding(TextBlock.TextProperty, textBlockBinding);
                 XTextBox.AddFieldBinding(TextBox.TextProperty, textBoxBinding);
@@ -139,20 +174,33 @@ namespace Dash
         }
         private void XArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         { 
-            if (_isCollection)
+            e.Handled = true;
+            //Toggle visibility
+            if (CollectionTreeView.Visibility == Visibility.Collapsed)
             {
-                e.Handled = true;
-                //Toggle visibility
-                if (CollectionTreeView.Visibility == Visibility.Collapsed)
-                {
-                    CollectionTreeView.Visibility = Visibility.Visible;
-                    XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
-                }
-                else
-                {
-                    CollectionTreeView.Visibility = Visibility.Collapsed;
-                    XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
-                }
+                CollectionTreeView.Visibility = Visibility.Visible;
+                XArrowBlock.Text = (string) Application.Current.Resources["ContractArrowIcon"];
+            }
+            else
+            {
+                CollectionTreeView.Visibility = Visibility.Collapsed;
+                XArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+            }
+        }
+
+        private void XSnapshotBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            //Toggle visibility
+            if (SnapshotTreeView.Visibility == Visibility.Collapsed)
+            {
+                SnapshotTreeView.Visibility = Visibility.Visible;
+                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ContractArrowIcon"];
+            }
+            else
+            {
+                SnapshotTreeView.Visibility = Visibility.Collapsed;
+                XSnapshotArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
             }
         }
 
@@ -182,49 +230,8 @@ namespace Dash
             MainPage.Instance.ToggleSettingsVisibility(false);
             e.Handled = true;
             var docToFocus = (DataContext as DocumentViewModel).DocumentController;
-            if (_isCollection)
-            {
-                //var docsInGroup = docToFocus.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
-                //if (docsInGroup != null)
-                //{
-                //    docToFocus = docsInGroup.TypedData.FirstOrDefault();
-                //}
-            }
             if (! MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(docToFocus))
                 MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
-            //var col = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.CollectionKey);
-            //var grp = ContainingDocument?.GetField<ListController<DocumentController>>(KeyStore.GroupingKey);
-            //var myDoc = (DataContext as DocumentViewModel).DocumentController;
-            //if (col != null && grp != null)
-            //{
-            //    if (grp.TypedData.Contains(myDoc))
-            //    {
-            //        if (!col.TypedData.Contains(myDoc))
-            //        {
-                        
-            //        }
-            //        else
-            //        {
-            //            Debug.WriteLine("solo");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        if (!col.TypedData.Contains(myDoc))
-            //        {
-            //            Debug.Fail("Error, where are we?");
-            //        }
-            //        else
-            //        {
-            //            Debug.WriteLine("Col but no group");
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    Debug.WriteLine("Not a group");
-            //}
-            //MainPage.Instance.SetCurrentWorkspace((DataContext as DocumentViewModel).DocumentController);
         }
 
         private void XTextBlock_OnDragStarting(UIElement sender, DragStartingEventArgs args)
@@ -250,6 +257,7 @@ namespace Dash
 
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
+            UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
@@ -265,6 +273,7 @@ namespace Dash
         {
             xBorder.Visibility = Visibility.Collapsed;
             XTextBlock.Visibility = Visibility.Visible;
+            UndoManager.EndBatch();
         }
 
 
@@ -283,5 +292,6 @@ namespace Dash
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
         }
+
     }
 }

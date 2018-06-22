@@ -20,6 +20,7 @@ namespace Dash
 
         public IntersectSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public IntersectSearchOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

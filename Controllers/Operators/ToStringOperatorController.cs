@@ -20,6 +20,7 @@ namespace Dash
 
         public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public ToStringOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

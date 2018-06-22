@@ -51,7 +51,7 @@ namespace Dash
             if (listOfCollectedDocs?.Any() == true)
             {
                 Document.SetField(KeyStore.ThumbnailFieldKey, listOfCollectedDocs.FirstOrDefault(), true);
-                Document.SetField(KeyStore.CollectionFitToParentKey, new TextController("true"), true);
+                Document.SetFitToParent(true);
             }
         }
     }

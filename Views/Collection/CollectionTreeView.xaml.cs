@@ -23,7 +23,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
-    public sealed partial class CollectionTreeView : ICollectionView
+   public sealed partial class CollectionTreeView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
@@ -57,10 +57,11 @@ namespace Dash
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            UndoManager.StartBatch();
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-
+            UndoManager.EndBatch();
         }
 
         public void Highlight(DocumentController document, bool? flag)
@@ -121,6 +122,28 @@ namespace Dash
             Textblock.Foreground = Textbox.Foreground = XFilterBox.Foreground = xTreeRoot.Foreground = dark
                     ? (SolidColorBrush) Application.Current.Resources["InverseTextColor"]
                     : (SolidColorBrush) Application.Current.Resources["MainText"];
+        }
+
+        private void Snapshot_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>() is CollectionFreeformView freeFormView)
+            {
+                var snapshot = freeFormView.Snapshot();
+                var freeFormDoc = freeFormView.ViewModel.ContainerDocument.GetDataDocument();
+                var snapshots = freeFormDoc.GetDereferencedField<ListController<DocumentController>>(KeyStore.SnapshotsKey, null);
+                if (snapshots == null)
+                {
+                    var nsnapshots = new List<DocumentController>();
+                    nsnapshots.Add(snapshot);
+                    freeFormDoc.SetField(KeyStore.SnapshotsKey, new ListController<DocumentController>(nsnapshots), true);
+                }
+                else
+                    snapshots.Add(snapshot);
+
+                // bcz: hack to get the tree view to refresh
+                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(snapshot);
+                MainPage.Instance.xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Remove(snapshot);
+            }
         }
     }
 }

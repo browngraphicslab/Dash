@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Dash.Models.DragModels;
+using Dash.Views;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -46,11 +47,7 @@ namespace Dash
         static public DocumentView FocusedDocument
         {
             get => _focusedDocument;
-            set
-            {
-                System.Diagnostics.Debug.WriteLine("Focusing on " + value.ViewModel.DocumentController.Tag);
-                _focusedDocument = value;
-            }
+            set => _focusedDocument = value;
         }
 
         /// <summary>
@@ -143,6 +140,9 @@ namespace Dash
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                UndoManager.StartBatch();
+
+                MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
                     MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
@@ -162,6 +162,8 @@ namespace Dash
                 ResizeHandles_restorePointerTracking();
                 MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
+
+                UndoManager.EndBatch();
             }
             ResizeHandleTopLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
             ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
@@ -243,7 +245,9 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
+
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
                 var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformView cview)
@@ -263,18 +267,23 @@ namespace Dash
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
-                SelectedDocuments().ForEach((d) =>
+                using (UndoManager.GetBatchHandle())
                 {
-                    d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
-                    d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
-                    d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-                });
-                var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
-                if (ViewModel.IsAdornmentGroup && !wasSelected)
-                {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    SelectedDocuments().ForEach((d) =>
                     {
-                        cview.DeselectAll();
+                        d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
+                        d.ViewModel.Position =
+                            d.ViewModel
+                                .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                        d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+                    });
+                    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    if (ViewModel.IsAdornmentGroup && !wasSelected)
+                    {
+                        if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                        {
+                            cview.DeselectAll();
+                        }
                     }
                 }
             };
@@ -286,6 +295,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+            
         }
 
         /// <summary>
@@ -649,10 +659,12 @@ namespace Dash
         /// </summary>
         public void CopyDocument()
         {
+            UndoManager.StartBatch();
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
             var doc = ViewModel.DocumentController.GetCopy(null);
             ParentCollection?.ViewModel.AddDocument(doc);
+            UndoManager.EndBatch();
         }
 
         /// <summary>
@@ -786,7 +798,6 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            Debug.WriteLine("Move");
             var selectedDocs = SelectedDocuments();
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
@@ -803,8 +814,8 @@ namespace Dash
                 var where = nestedCollection.CurrentView is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((nestedCollection.CurrentView as CollectionFreeformView), pos) :
                     new Point();
-                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
                 collection.ViewModel.RemoveDocument(selDoc.ViewModel.DocumentController);
+                nestedCollection.ViewModel.AddDocument(selDoc.ViewModel.DocumentController.GetSameCopy(where));
             }
             return true;
         }
@@ -889,7 +900,7 @@ namespace Dash
         }
         public void MenuFlyoutItemPreview_Click(object sender, RoutedEventArgs e) { ParentCollection.ViewModel.AddDocument(ViewModel.DataDocument.GetPreviewDocument(new Point(ViewModel.LayoutDocument.GetPositionField().Data.X + ActualWidth, ViewModel.LayoutDocument.GetPositionField().Data.Y))); }
         private void MenuFlyoutItemContext_Click(object sender, RoutedEventArgs e) { ShowContext(); }
-        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(LayoutRoot); }
+        private void MenuFlyoutItemScreenCap_Click(object sender, RoutedEventArgs e) { Util.ExportAsImage(xMasterStack); }
         private void MenuFlyoutItemOpen_OnClick(object sender, RoutedEventArgs e) { MainPage.Instance.SetCurrentWorkspace(ViewModel.DocumentController); }
         private void MenuFlyoutItemCopyHistory_Click(object sender, RoutedEventArgs e)
         {
@@ -1017,9 +1028,15 @@ namespace Dash
                 }
                 activeLayout = new StackLayout(new DocumentController[] { footer ? curLayout : newFieldDoc, footer ? newFieldDoc : curLayout }).Document;
                 activeLayout.Tag = "StackLayout";
-                activeLayout.SetPosition(ViewModel.Position);
-                activeLayout.SetWidth(ViewModel.ActualSize.X);
-                activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
+                // we need to move the Height and Width fields from the current layout to the new active layout.
+                // this is because we want any bindings that were made to the current layout to still fire when changes
+                // are made to the new layout.
+                activeLayout.SetField(KeyStore.PositionFieldKey, curLayout.GetField(KeyStore.PositionFieldKey), true);
+                activeLayout.SetField(KeyStore.WidthFieldKey, curLayout.GetField(KeyStore.WidthFieldKey), true);
+                activeLayout.SetField(KeyStore.HeightFieldKey, curLayout.GetField(KeyStore.HeightFieldKey), true);
+                //activeLayout.SetPosition(ViewModel.Position);
+                //activeLayout.SetWidth(ViewModel.ActualSize.X);
+                //activeLayout.SetHeight(ViewModel.ActualSize.Y + 32);
                 activeLayout.SetField(KeyStore.DocumentContextKey, ViewModel.DataDocument, true);
                 ViewModel.DocumentController.SetField(KeyStore.ActiveLayoutKey, activeLayout, true);
             }
@@ -1043,36 +1060,50 @@ namespace Dash
             xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
-
-
-
-
-
+		
         public void hideControls()
         {
-            ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            ResizeHandleTopRight.Visibility = Visibility.Collapsed;
-            xTitleIcon.Visibility = Visibility.Collapsed;
-            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            ViewModel.DecorationState = false;
+            //ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
+            //ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
+            //ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
+            //ResizeHandleTopRight.Visibility = Visibility.Collapsed;
+            //xTitleIcon.Visibility = Visibility.Collapsed;
+            //xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void showControls()
         {
-            ResizeHandleBottomLeft.Visibility = Visibility.Visible;
-            ResizeHandleBottomRight.Visibility = Visibility.Visible;
-            ResizeHandleTopLeft.Visibility = Visibility.Visible;
-            ResizeHandleTopRight.Visibility = Visibility.Visible;
-            xTitleIcon.Visibility = Visibility.Visible;
-            xAnnotateEllipseBorder.Visibility = Visibility.Visible;
-            xOperatorEllipseBorder.Visibility = Visibility.Visible;
+            ViewModel.DecorationState = true;
+            //ResizeHandleBottomLeft.Visibility = Visibility.Visible;
+            //ResizeHandleBottomRight.Visibility = Visibility.Visible;
+            //ResizeHandleTopLeft.Visibility = Visibility.Visible;
+            //ResizeHandleTopRight.Visibility = Visibility.Visible;
+            //xTitleIcon.Visibility = Visibility.Visible;
+            //xAnnotateEllipseBorder.Visibility = Visibility.Visible;
+            //xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.PinToPresentation(ViewModel);
         }
+
+	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+	    {
+
+		    if (ViewModel.Content is IAnnotationEnabled)
+		    {
+			    var element = (IAnnotationEnabled) ViewModel.Content;
+			    element?.RegionSelected(element, new Point(0, 0), null);
+
+			}
+		    else
+		    {
+			    var ann = new AnnotationManager(ViewModel.Content);
+			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
+		    }
+		}
     }
 }

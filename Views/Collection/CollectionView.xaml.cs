@@ -169,7 +169,12 @@ namespace Dash
                 foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
                 {
                     var vtype = new MenuFlyoutItem() { Text = n.ToString() };
-                    vtype.Click += (sender, e) => SetView(n);
+                    vtype.Click += (sender, e) =>
+                    {
+                        UndoManager.StartBatch();
+                        SetView(n);
+                        UndoManager.EndBatch();
+                    };
                     viewCollectionAs.Items.Add(vtype);
                 }
 

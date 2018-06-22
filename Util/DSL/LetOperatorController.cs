@@ -33,6 +33,7 @@ namespace Dash
 
         public LetOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public LetOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

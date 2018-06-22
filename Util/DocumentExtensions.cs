@@ -191,10 +191,9 @@ namespace Dash
         }
         public static DocumentController GetKeyValueAlias(this DocumentController doc, Point? where = null)
         {
-            var docContext = doc.GetDereferencedField<DocumentController>(KeyStore.DocumentContextKey, new Context(doc)) ?? doc;
             var activeLayout =  new KeyValueDocumentBox(null).Document;
             activeLayout.Tag = "KeyValueBox";
-            activeLayout.SetField(KeyStore.DocumentContextKey, docContext, true);
+            activeLayout.SetField(KeyStore.DocumentContextKey, doc, true);
             activeLayout.SetHeight(500);
             if (where != null)
             {
