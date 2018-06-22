@@ -311,6 +311,7 @@ namespace Dash
 
             // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
             _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+            _resourcesLoaded = true;
 
             args.TrackAsyncAction(CreateResourcesAsync(sender).AsAsyncAction());
         }

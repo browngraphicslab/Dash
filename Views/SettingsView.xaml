@@ -41,7 +41,7 @@
             
 
             <!--UI-->
-            <StackPanel x:Name="xCustomizeDisplayContent" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
+            <StackPanel x:Name="xCustomizeDisplayContent" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Night Mode</TextBlock>
                 <ToggleSwitch x:Name="xNightModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
@@ -65,7 +65,7 @@
             </StackPanel>
 
             <!--Controls-->
-            <StackPanel x:Name="xCustomizeControlsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
+            <StackPanel x:Name="xCustomizeControlsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
                 <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Mouse scroll mode</TextBlock>
                 <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
@@ -79,7 +79,7 @@
             </StackPanel>
 
             <!--Backup-->
-                <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
+                <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited" Background="Transparent">
                     <TextBlock Style="{StaticResource SubheaderStyle}">Database and Backups</TextBlock>
                     <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Erase current database</TextBlock>
                     <StackPanel Orientation="Horizontal">
