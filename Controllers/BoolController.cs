@@ -36,12 +36,22 @@ namespace Dash
             get => BoolFieldModel.Data;
             set
             {
-                if (value.Equals(BoolFieldModel.Data)) return;
-                BoolFieldModel.Data = value;
-                UpdateOnServer();
-                OnFieldModelUpdated(null);
+                if (BoolFieldModel.Data != value)
+                {
+                    SetData(value);
+                }
             }
         }
+        private void SetData(bool val, bool withUndo = true)
+        {
+            bool data = BoolFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            BoolFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
         public override TypeInfo TypeInfo => TypeInfo.Bool;
 
         public override string ToString() => Data.ToString();

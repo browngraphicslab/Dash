@@ -204,7 +204,6 @@
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
-    <Compile Include="Controllers\AccessStreamController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
@@ -369,6 +368,9 @@
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
+    <Compile Include="Util\TypeTimer.cs" />
+    <Compile Include="Util\UndoCommand.cs" />
+    <Compile Include="Util\UndoManager.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />

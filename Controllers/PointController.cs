@@ -61,14 +61,26 @@ namespace Dash
             get { return PointFieldModel.Data; }
             set
             {
-                if(PointFieldModel.Data != value)
+                if (PointFieldModel.Data != value)
                 {
-                    PointFieldModel.Data = value;
-                    UpdateOnServer();
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
         }
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(Point val, bool withUndo = true)
+        {
+            Point data = PointFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            PointFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
         public override TypeInfo TypeInfo => TypeInfo.Point;
 
         public override StringSearchModel SearchForString(string searchString)

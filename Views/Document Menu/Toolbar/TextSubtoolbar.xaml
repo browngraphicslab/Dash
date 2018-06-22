@@ -11,6 +11,7 @@
     xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     xmlns:format="Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
     xmlns:textToolbarFormats="using:Microsoft.Toolkit.Uwp.UI.Controls.TextToolbarFormats"
+    xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
     d:DesignWidth="400">

@@ -214,6 +214,7 @@ namespace Dash
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
             settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, 1.0, true);
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsMarkdownModeKey, false, true);
 
             return settingsDoc;
         }
@@ -455,6 +456,21 @@ namespace Dash
             Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
+
+            if (!(FocusManager.GetFocusedElement() is RichEditBox))
+            {
+                var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+                if (ctrlDown)
+                {
+                    if (e.VirtualKey == VirtualKey.Z)
+                    {
+                        UndoManager.UndoOccured();
+                    } else if (e.VirtualKey == VirtualKey.Y)
+                    {
+                        UndoManager.RedoOccured();
+                    }
+                }
+            }
 
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {

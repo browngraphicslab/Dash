@@ -59,6 +59,33 @@ namespace Dash
             set { SetValue(CollapseColorProperty, value); }
         }
 
+
+        public void SetUndoEnabled(bool enabled)
+        {
+            xUndo.IsEnabled = enabled;
+            if (enabled)
+            {
+                xUndo.Opacity = 1.0;
+            }
+            else
+            {
+                xUndo.Opacity = 0.5;
+            }
+        }
+
+        public void SetRedoEnabled(bool enabled)
+        {
+            xRedo.IsEnabled = enabled;
+            if (enabled)
+            {
+                xRedo.Opacity = 1.0;
+            }
+            else
+            {
+                xRedo.Opacity = 0.5;
+            }
+        }
+
         // == STATIC ==
         public static MenuToolbar Instance;
 
@@ -329,16 +356,16 @@ namespace Dash
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
-					//Annnotation controls
-	                var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
-	                if (annot != null)
-	                {
-		                System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
-						
-	                }
+                    //Annnotation controls
+                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+                    if (annot != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
-					//If the user has clicked on valid content (text, image, video, etc)...
-					if (subtoolbarElement != null)
+                    }
+
+                    //If the user has clicked on valid content (text, image, video, etc)...
+                    if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;
@@ -758,12 +785,12 @@ namespace Dash
             EnsureVisible();
         }
 
-	    public void EnsureVisible()
-	    {
-		    //ensure toolbar is visible
-		    xToolbar.IsEnabled = true;
-		    xToolbar.Visibility = Visibility.Visible;
-		}
+        public void EnsureVisible()
+        {
+            //ensure toolbar is visible
+            xToolbar.IsEnabled = true;
+            xToolbar.Visibility = Visibility.Visible;
+        }
 
         /// <summary>
         /// Toggles toolbar locked-state when pin button is clicked.
@@ -780,5 +807,15 @@ namespace Dash
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
+
+        private void xRedo_Click(object sender, RoutedEventArgs e)
+        {
+            UndoManager.RedoOccured();
+        }
+
+        private void xUndo_Click(object sender, RoutedEventArgs e)
+        {
+            UndoManager.UndoOccured();
+        }
     }
 }

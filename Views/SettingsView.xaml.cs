@@ -106,8 +106,6 @@ namespace Dash
             }
         }
 
-        public bool MarkdownEditOn { get; private set; } = false;
-
         public int NoteFontSize
         {
             get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsFontSizeKey).Data; 
@@ -141,7 +139,13 @@ namespace Dash
         public bool NoUpperLimit
         {
             get => _settingsDoc.GetField<BoolController>(KeyStore.SettingsUpwardPanningKey).Data;
-            set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsUpwardPanningKey, value, true);
+            set => _settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, value, true);
+        }
+
+        public bool MarkdownEditOn
+        {
+            get => _settingsDoc.GetField<BoolController>(KeyStore.SettingsMarkdownModeKey).Data;
+            set => _settingsDoc.SetField<BoolController>(KeyStore.SettingsMarkdownModeKey, value, true);
         }
 
         public int NumBackups
@@ -263,6 +267,7 @@ namespace Dash
             AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Scroll));
             AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Zoom));
             AddSettingsBinding<BoolController>(xUpwardPanningToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsUpwardPanningKey);
+            AddSettingsBinding<BoolController>(xTextModeToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsMarkdownModeKey);
 
             AddSettingsBinding<TextController>(xGridRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Grid), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Grid));
             AddSettingsBinding<TextController>(xLineRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Line), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Line));
@@ -340,6 +345,7 @@ namespace Dash
             xNumBackupsSlider.Minimum = DashConstants.MinNumBackups;
             xNumBackupsSlider.Value = DashConstants.DefaultNumBackups;
             xNumBackupsSlider.Maximum = DashConstants.MaxNumBackups;
+
         }
 
         private void SetPromptVisibility(Visibility status)

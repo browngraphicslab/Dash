@@ -80,8 +80,13 @@ namespace Dash
         /// </summary>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public virtual void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
+        public virtual void UpdateOnServer(UndoCommand undoEvent, Action<T> success = null, Action<Exception> error = null)
         {
+            if(undoEvent != null)
+            {
+                UndoManager.EventOccured(undoEvent);
+            }
+
             error = error ?? ((e) => throw e);
             _serverEndpoint.UpdateDocument(Model, success, error);
         }

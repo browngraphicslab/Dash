@@ -44,7 +44,7 @@
             <StackPanel x:Name="xCustomizeDisplayContent" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Night Mode</TextBlock>
-                <ToggleSwitch x:Name="xNightModeToggle" Margin="10, -4, 0, 0" IsOn="{x:Bind NightModeOn, Mode=TwoWay}"></ToggleSwitch>
+                <ToggleSwitch x:Name="xNightModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Font Size</TextBlock>
                 <Slider x:Name="xFontSizeSlider" Margin="10,-4, 0, 0" Maximum="50" Minimum="5" HorizontalAlignment="Left" Width="150" 
                         Value="{x:Bind NoteFontSize, Mode=TwoWay}"  ></Slider>
@@ -72,63 +72,65 @@
                     <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
                     <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
                 </StackPanel>
+                <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Markdown text mode</TextBlock>
+                <ToggleSwitch x:Name="xTextModeToggle" Margin="10, -4, 0, 0"></ToggleSwitch>
                 <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Allow infinite upwards panning</TextBlock>
                 <ToggleSwitch x:Name="xUpwardPanningToggle" Margin="10, 0, 0, 0"/>
             </StackPanel>
 
             <!--Backup-->
-            <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
-                <TextBlock Style="{StaticResource SubheaderStyle}">Database and Backups</TextBlock>
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Erase current database</TextBlock>
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="xEraseDbButton" Background="Transparent" Margin="10, 5, 0, 0" Width="45" Height="60" Tapped="XEraseDbButton_OnTapped">
-                        <Image x:Name="xEraseDbIcon" Source="ms-appx:///Assets/eraser.png"/>
+                <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
+                    <TextBlock Style="{StaticResource SubheaderStyle}">Database and Backups</TextBlock>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Erase current database</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="xEraseDbButton" Background="Transparent" Margin="10, 5, 0, 0" Width="45" Height="60" Tapped="XEraseDbButton_OnTapped">
+                            <Image x:Name="xEraseDbIcon" Source="ms-appx:///Assets/eraser.png"/>
+                        </Button>
+                        <Image x:Name="xEraseReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="10, 7, 0, 0" Tapped="XEraseReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                        <ToggleSwitch x:Name="xEraseSafety" Margin="18,12,0,0" IsOn="True" Toggled="XEraseSafety_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
+                    </StackPanel>
+
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Restore from backup</TextBlock>
+                    <Button x:Name="xRestoreButton" Background="Transparent" Margin="12, 0, 0, 0" Width="41" Height="60" Tapped="Restore_OnTapped">
+                        <Image x:Name="xRestoreIcon" Source="ms-appx:///Assets/revert.png"/>
                     </Button>
-                    <Image x:Name="xEraseReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="10, 7, 0, 0" Tapped="XEraseReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
-                    <ToggleSwitch x:Name="xEraseSafety" Margin="18,12,0,0" IsOn="True" Toggled="XEraseSafety_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
-                </StackPanel>
-
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Restore from backup</TextBlock>
-                <Button x:Name="xRestoreButton" Background="Transparent" Margin="12, 0, 0, 0" Width="41" Height="60" Tapped="Restore_OnTapped">
-                    <Image x:Name="xRestoreIcon" Source="ms-appx:///Assets/revert.png"/>
-                </Button>
 
 
-                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Delete all backups</TextBlock>
-                <StackPanel Orientation="Horizontal">
-                    <Button x:Name="xClearButton" Background="Transparent" Margin="10, 0, 0, 0" Width="45" Height="60" Tapped="XClearButton_OnTapped">
-                        <Image x:Name="xClearIcon" Source="ms-appx:///Assets/delete.png"/>
-                    </Button>
-                    <Image x:Name="xReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="13, 8, 0, 0" Tapped="XReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
-                    <ToggleSwitch x:Name="xSafety" Margin="18,12,0,0" IsOn="True" Toggled="ToggleSwitch_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
-                </StackPanel>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Delete all backups</TextBlock>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="xClearButton" Background="Transparent" Margin="10, 0, 0, 0" Width="45" Height="60" Tapped="XClearButton_OnTapped">
+                            <Image x:Name="xClearIcon" Source="ms-appx:///Assets/delete.png"/>
+                        </Button>
+                        <Image x:Name="xReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="13, 8, 0, 0" Tapped="XReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                        <ToggleSwitch x:Name="xSafety" Margin="18,12,0,0" IsOn="True" Toggled="ToggleSwitch_OnToggled" Visibility="Collapsed">Safety</ToggleSwitch>
+                    </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontWeight="SemiBold" Text="Backup limit - " Style="{StaticResource ParagraphStyle}"></TextBlock>
-                    <TextBlock Margin="5, 10, 0, 0"  FontWeight="SemiLight" x:Name="xNumBackupDisplay" Style="{StaticResource ParagraphStyle}"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <Slider x:Name="xNumBackupsSlider" 
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontWeight="SemiBold" Text="Backup limit - " Style="{StaticResource ParagraphStyle}"></TextBlock>
+                        <TextBlock Margin="5, 10, 0, 0"  FontWeight="SemiLight" x:Name="xNumBackupDisplay" Style="{StaticResource ParagraphStyle}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Slider x:Name="xNumBackupsSlider" 
                         Width="150"  
                         HorizontalAlignment="Left"
                         Margin="10, 0, 0, 0"
                         StepFrequency="1"
                         SnapsTo="StepValues"/>
-                    <TextBlock x:Name="xCorrectionPrompt" Style="{StaticResource SubheaderStyle}" Margin="20, 8, 0, 0" FontSize="15" Visibility="Collapsed">Delete backups _ through _?</TextBlock>
-                    <Image x:Name="xCorrectReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="13, -6, 0, 0" Tapped="XCorrectReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
-                    <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="13, -10, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Backup frequency -</TextBlock>
-                    <TextBlock Margin="5, 10, 0, 0"  FontWeight="SemiLight" x:Name="xIntervalDisplay" Style="{StaticResource ParagraphStyle}"/>
-                </StackPanel>
-                <Slider x:Name="xBackupIntervalSlider" 
+                        <TextBlock x:Name="xCorrectionPrompt" Style="{StaticResource SubheaderStyle}" Margin="20, 8, 0, 0" FontSize="15" Visibility="Collapsed">Delete backups _ through _?</TextBlock>
+                        <Image x:Name="xCorrectReturnToSafetyIcon" Source="ms-appx:///Assets/return.png" Width="20" Margin="13, -6, 0, 0" Tapped="XCorrectReturnToSafetyIcon_OnTapped" Visibility="Collapsed"/>
+                        <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="13, -10, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Backup frequency -</TextBlock>
+                        <TextBlock Margin="5, 10, 0, 0"  FontWeight="SemiLight" x:Name="xIntervalDisplay" Style="{StaticResource ParagraphStyle}"/>
+                    </StackPanel>
+                    <Slider x:Name="xBackupIntervalSlider" 
                     Width="150"  
                     HorizontalAlignment="Left"
                     Margin="10, 0, 0, 0"
                     StepFrequency="30"
                     SnapsTo="StepValues"/>
-            </StackPanel>
+                </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

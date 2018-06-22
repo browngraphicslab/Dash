@@ -40,12 +40,8 @@ namespace Dash
         private Dictionary<KeyController, FieldControllerBase> _fields = new Dictionary<KeyController, FieldControllerBase>();
 
         public DocumentController() : this(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType) { }
-        public DocumentController(DocumentModel model, bool saveOnServer = true) : base(model)
+        public DocumentController(DocumentModel model) : base(model)
         {
-            if (saveOnServer)
-            {
-                SaveOnServer();
-            }
         }
         public DocumentController(IDictionary<KeyController, FieldControllerBase> fields, DocumentType type,
             string id = null, bool saveOnServer = true) : base(new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.Model), type, id))
@@ -627,11 +623,12 @@ namespace Dash
         /// <returns></returns>
         public DocumentController MakeDelegate()
         {
-            var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
-                DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+            //var delegateModel = new DocumentModel(new Dictionary<KeyModel, FieldModel>(),
+            //    DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
 
-            // create a controller for the child
-            var delegateController = new DocumentController(delegateModel);
+            //// create a controller for the child
+            //var delegateController = new DocumentController(delegateModel);
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
             delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
@@ -760,10 +757,14 @@ namespace Dash
         {
             var proto = GetPrototypeWithFieldKey(key);
 
-            if (proto._fields.ContainsKey(key))
+            if (!proto._fields.ContainsKey(key))
                 return false;
 
-            return proto._fields.Remove(key);
+            proto._fields.Remove(key, out var value);
+
+            generateDocumentFieldUpdatedEvents(new DocumentFieldUpdatedEventArgs(value, null, FieldUpdatedAction.Remove, new DocumentFieldReference(Id, key), null, false), new Context(this));
+
+            return true;
         }
 
         /// <summary>
@@ -813,7 +814,9 @@ namespace Dash
         bool SetFieldHelper(KeyController key, FieldControllerBase field, bool forceMask)
         {
             if (field == null)
-                return false;
+            {
+                return RemoveField(key);
+            }
             // get the prototype with the desired key or just get ourself
             var proto = GetPrototypeWithFieldKey(key) ?? this;
             var doc = forceMask ? this : proto;
@@ -869,23 +872,27 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask">add field to this document even if the field already exists on a prototype</param>
-        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true)
+        public bool SetField(KeyController key, FieldControllerBase field, bool forceMask, bool enforceTypeCheck = true, bool withUndo = true)
         {
+            var oldVal = GetField(key);
+            UndoCommand newEvent = new UndoCommand(() => SetField(key, field, forceMask, false), 
+                () => SetField(key, oldVal, forceMask, false));
+
             var fieldChanged = SetFieldHelper(key, field, forceMask);
             if (fieldChanged)
             {
-                UpdateOnServer();
+                UpdateOnServer(withUndo ? newEvent : null);
             }
             return fieldChanged;
         }
-        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) where TDefault : FieldControllerBase, new()
+        public bool SetField<TDefault>(KeyController key, object v, bool forceMask, bool enforceTypeCheck = true) 
+            where TDefault : FieldControllerBase, new()
         {
             var field = GetField<TDefault>(key, forceMask);
             if (field != null)
             {
                 if (field.TrySetValue(v))
                 {
-                    UpdateOnServer();
                     return true;
                 }
             }
@@ -905,9 +912,14 @@ namespace Dash
         ///     otherwise each
         ///     field is written on the first prototype in the hierarchy which contains it
         /// </summary>
-        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask)
+        public void SetFields(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> fields, bool forceMask, bool withUndo = true)
         {
             bool shouldSave = false;
+            var oldFields = new Dictionary<KeyController, FieldControllerBase>();
+            foreach (var kv in fields)
+            {
+                oldFields[kv.Key] = GetField(kv.Key);
+            }
             // update with each of the new fields
             foreach (var field in fields.ToArray().Where((f) => f.Key != null))
             {
@@ -917,7 +929,10 @@ namespace Dash
                 }
             }
             if (shouldSave)
-                UpdateOnServer();
+            {
+                UndoCommand newEvent = new UndoCommand(() => SetFields(fields, forceMask, false), () => SetFields(oldFields, forceMask, false));
+                UpdateOnServer(withUndo ? newEvent : null);
+            }
         }
 
         /// <summary>

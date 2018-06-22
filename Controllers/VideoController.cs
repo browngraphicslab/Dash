@@ -36,18 +36,29 @@ namespace Dash
 		public Uri MediaSource
 		{
 			get => VideoFieldModel.Data;
-			set
-			{
-				if (VideoFieldModel.Data != value)
-				{
-					VideoFieldModel.Data = value;
-				    UpdateOnServer();
-				    OnFieldModelUpdated(null);
-				}
-			}
-		}
+            set
+            {
+                if (VideoFieldModel.Data != value)
+                {
+                    SetData(value);
+                }
+            }
+        }
 
-		public override StringSearchModel SearchForString(string searchString)
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            Uri data = VideoFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            VideoFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
+        public override StringSearchModel SearchForString(string searchString)
 		{
 			var data = (Model as VideoModel)?.Data;
             var reg = new System.Text.RegularExpressions.Regex(searchString);

@@ -213,6 +213,7 @@ namespace DashShared
             public static KeyModel CustomBackgroundImagePathKey = new KeyModel("DA719660-D5CE-40CE-9BDE-D57B764CA6BF", "Custom Path to Background Image");
             public static KeyModel BackgroundImageOpacityKey = new KeyModel("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC", "Background Image Opacity");
             public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
+            public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
         }
 
         public static class TypeStore

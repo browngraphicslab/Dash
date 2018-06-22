@@ -140,6 +140,8 @@ namespace Dash
             // setup ResizeHandles
             void ResizeHandles_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
             {
+                UndoManager.StartBatch();
+
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
@@ -160,6 +162,8 @@ namespace Dash
                 ResizeHandles_restorePointerTracking();
                 MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
+
+                UndoManager.EndBatch();
             }
             ResizeHandleTopLeft.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, true);
             ResizeHandleTopRight.ManipulationDelta += (s, e) => Resize(s as FrameworkElement, e, true, false);
@@ -241,7 +245,9 @@ namespace Dash
             ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
+
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
                 var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformView cview)
@@ -261,18 +267,23 @@ namespace Dash
             };
             ManipulationControls.OnManipulatorCompleted += () =>
             {
-                SelectedDocuments().ForEach((d) =>
+                using (UndoManager.GetBatchHandle())
                 {
-                    d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
-                    d.ViewModel.Position = d.ViewModel.InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
-                    d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
-                });
-                var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
-                if (ViewModel.IsAdornmentGroup && !wasSelected)
-                {
-                    if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                    SelectedDocuments().ForEach((d) =>
                     {
-                        cview.DeselectAll();
+                        d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
+                        d.ViewModel.Position =
+                            d.ViewModel
+                                .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
+                        d.ViewModel.Scale = d.ViewModel.InteractiveManipulationScale;
+                    });
+                    var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
+                    if (ViewModel.IsAdornmentGroup && !wasSelected)
+                    {
+                        if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                        {
+                            cview.DeselectAll();
+                        }
                     }
                 }
             };
@@ -284,6 +295,7 @@ namespace Dash
                 if (this.IsShiftPressed())
                     MenuFlyout.Hide();
             };
+            
         }
 
         /// <summary>
@@ -647,10 +659,12 @@ namespace Dash
         /// </summary>
         public void CopyDocument()
         {
+            UndoManager.StartBatch();
             // will this screw things up?
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), 0);
             var doc = ViewModel.DocumentController.GetCopy(null);
             ParentCollection?.ViewModel.AddDocument(doc);
+            UndoManager.EndBatch();
         }
 
         /// <summary>

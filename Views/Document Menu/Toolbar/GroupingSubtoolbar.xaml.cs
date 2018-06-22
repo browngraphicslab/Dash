@@ -171,7 +171,7 @@ namespace Dash
             if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
             
             var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetSideCount((int)safeSideCount);
+            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
             xSideCounter.Text = safeSideCount.ToString("G");
         }
 
