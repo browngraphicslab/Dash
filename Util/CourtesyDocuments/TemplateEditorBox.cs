@@ -63,6 +63,7 @@ namespace Dash
                 {
                     LayoutDocument = docController.GetActiveLayout() ?? docController,
                     DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument(),
+                    LinkedDocument = docController.GetField<DocumentController>(KeyStore.TemplateDocumentKey),
                     ManipulationMode = ManipulationModes.All
                 };
 	            tev.Load();

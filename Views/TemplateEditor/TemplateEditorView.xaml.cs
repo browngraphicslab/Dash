@@ -20,10 +20,7 @@ namespace Dash
 {
     public sealed partial class TemplateEditorView : UserControl
     {
-        private double xPos;
-        private double yPos;
-
-        public DocumentView Document
+        public DocumentController LinkedDocument
         {
             get;
             set;
@@ -43,11 +40,6 @@ namespace Dash
 
 	    public void Load()
         {
-			if (Document == null) return;
-			xEditorControl.RenderTransform = new TranslateTransform
-            {
-                X = 10
-            };
 	        this.UpdatePanes();
 		}
 
@@ -59,19 +51,15 @@ namespace Dash
 				_keyValuePane = new KeyValueTemplatePane(this);
 			    DataPanel.Children.Add(_keyValuePane);
 			}
-
-			//make central collection/canvas
-		    _workspace = new CollectionFreeformView
-		    {
-			    DataContext = Document.DataContext as CollectionViewModel
-		    };
-		    xWorkspaceOuterGrid.Children.Add(_workspace);
+            //make central collection/canvas
+            _workspace = new CollectionFreeformView();
+            _workspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
+	        _workspace.ViewModel.AddDocument(LinkedDocument);
+            xWorkspaceOuterGrid.Children.Add(_workspace);
 
 			//make edit pane
 		    _optionsPane = new TemplateOptionsPane(this);
 			LayoutPanel.Children.Add(_optionsPane);
-
-
 	    }
     }
 }

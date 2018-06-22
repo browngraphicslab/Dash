@@ -339,7 +339,7 @@ namespace Dash
                 var where = Util.GetCollectionFreeFormPoint(
                     mainPageCollectionView.CurrentView as CollectionFreeformView, new Point((this.RenderTransform as MatrixTransform).Matrix.OffsetX,
                         (this.RenderTransform as MatrixTransform).Matrix.OffsetY));
-				_templateEditor = new TemplateEditorBase(this.ViewModel.DataDocument, where, new Size(900, 500));
+				_templateEditor = new TemplateEditorBase(this, ViewModel.DataDocument, where, new Size(900, 500));
                 //creates a doc controller for the image(s)
                 mainPageCollectionView.ViewModel.AddDocument(_templateEditor.Document);
 	            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);

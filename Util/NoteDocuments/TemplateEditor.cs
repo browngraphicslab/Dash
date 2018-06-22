@@ -22,17 +22,18 @@ namespace Dash
         }
 
         static int rcount = 1;
-        DocumentController CreateLayout(DocumentController dataDoc, Point where, Size size)
+        DocumentController CreateLayout(DocumentController dataDoc, Point @where, Size size)
         {
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
             return new TemplateEditorBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
         }
 
-        public TemplateEditorBase(DocumentController doc, Point where = new Point(), Size size = new Size()) :
+        public TemplateEditorBase(DocumentView linkedToDoc, DocumentController doc, Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
             var dataDocument = makeDataDelegate(doc);
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
+            Document.SetField(KeyStore.TemplateDocumentKey, linkedToDoc.ViewModel.DataDocument, true);
             Document.Tag = "Template Editor Data " + rcount;
             dataDocument.Tag = "Template Editor Data" + rcount++;
         }

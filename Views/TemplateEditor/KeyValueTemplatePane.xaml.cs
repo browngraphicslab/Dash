@@ -36,7 +36,7 @@ namespace Dash
 		{
 			var kvPane = new KeyValuePane()
 			{
-				DataContext = editor.Document,
+				DataContext = editor.LinkedDocument,
 				Width = 300
 			};
 

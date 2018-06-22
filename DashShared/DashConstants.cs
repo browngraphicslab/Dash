@@ -184,6 +184,7 @@ namespace DashShared
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
             public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
             public static KeyModel SideCountKey = new KeyModel("276302FF-0E5F-4009-A308-A4EE8B4224F7", "Side Count");
+            public static KeyModel TemplateDocumentKey = new KeyModel("35624019-4C59-45AD-B44D-77830FD41EA3", "Template Document");
 
         }
 
