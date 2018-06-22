@@ -26,8 +26,8 @@ namespace Dash
         void ConvertToXaml(FrameworkElement element, DependencyProperty property, Context context);
         bool ConvertFromXaml(object xamlData);
 
-        void Add(FieldControllerBase.FieldUpdatedHandler handler);
-        void Remove(FieldControllerBase.FieldUpdatedHandler handler);
+        void Add(DocumentController.DocumentUpdatedHandler handler);
+        void Remove(DocumentController.DocumentUpdatedHandler handler);
     }
 
     public class FieldBinding<TField, TDefault> : IFieldBinding where TField : FieldControllerBase where TDefault : FieldControllerBase, new()
@@ -155,12 +155,12 @@ namespace Dash
             }
         }
 
-        public void Add(FieldControllerBase.FieldUpdatedHandler handler)
+        public void Add(DocumentController.DocumentUpdatedHandler handler)
         {
             Document.AddFieldUpdatedListener(Key, handler);
         }
 
-        public void Remove(FieldControllerBase.FieldUpdatedHandler handler)
+        public void Remove(DocumentController.DocumentUpdatedHandler handler)
         {
             Document.RemoveFieldUpdatedListener(Key, handler);
         }
@@ -233,7 +233,7 @@ namespace Dash
 
         private static void AddOneWayBinding<T>(T element, DependencyProperty property, IFieldBinding binding) where T : FrameworkElement
         {
-            FieldControllerBase.FieldUpdatedHandler handler =
+            DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
                 {
                     if (binding.Context == null)
@@ -296,7 +296,7 @@ namespace Dash
             where T : FrameworkElement
         {
             bool updateUI = true;
-            FieldControllerBase.FieldUpdatedHandler handler =
+            DocumentController.DocumentUpdatedHandler handler =
                 (sender, args, context) =>
                 {
                     updateUI = false;

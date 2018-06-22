@@ -49,7 +49,7 @@ namespace Dash
 
                 SetupBindings(view, docController, context);
 
-                void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                void docContextChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
                 {
                     collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
                 }

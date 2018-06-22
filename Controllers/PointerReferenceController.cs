@@ -9,7 +9,7 @@ namespace Dash.Controllers
         public ReferenceController DocumentReference { get; private set; }
 
         DocumentController _lastDoc = null;
-        void fieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        void fieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             DisposeField();
             Init();

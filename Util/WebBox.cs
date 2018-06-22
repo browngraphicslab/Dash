@@ -30,10 +30,10 @@ namespace Dash
                 var reference = data as ReferenceController;
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
                     {
-                        DocumentController doc = (DocumentController) sender;
-                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        DocumentController doc = sender;
+                        var dargs = args;
                         if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
                         {
                             return;
