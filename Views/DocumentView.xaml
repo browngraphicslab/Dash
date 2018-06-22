@@ -29,7 +29,7 @@
             <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
 
-        <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
+        <Grid x:Name="LayoutRoot" BorderThickness="0" Grid.Column="0">
 
             <!-- Main document view -->
 
