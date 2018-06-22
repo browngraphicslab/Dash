@@ -169,6 +169,7 @@
     <Compile Include="Controllers\Operators\Arithmetic\LessThanOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
