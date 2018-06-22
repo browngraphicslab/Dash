@@ -55,10 +55,14 @@ namespace Dash
             _workspace = new CollectionFreeformView();
             _workspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
 	        _workspace.ViewModel.AddDocument(LinkedDocument);
-            xWorkspaceOuterGrid.Children.Add(_workspace);
+            //xWorkspaceOuterGrid.Children.Add(_workspace);
+
+			//template - MAY HAVE TO MOVE OUTSIDE THIS EDITOR & PASS IN INSTEAD
+		    var template = new TemplateNote(new Point(), new Size(xWorkspaceOuterGrid.ActualWidth, xWorkspaceOuterGrid.ActualHeight)).Document;
+		   //xWorkspaceOuterGrid.Children.Add(template);
 
 			//make edit pane
-		    _optionsPane = new TemplateOptionsPane(this);
+			_optionsPane = new TemplateOptionsPane(this);
 			LayoutPanel.Children.Add(_optionsPane);
 	    }
     }
