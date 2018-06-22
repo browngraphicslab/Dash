@@ -16,7 +16,9 @@ namespace Dash
 
         public PutSearchResultsIntoDictionaryOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
+
         public PutSearchResultsIntoDictionaryOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }

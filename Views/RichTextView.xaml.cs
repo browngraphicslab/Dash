@@ -87,7 +87,7 @@ namespace Dash
             //PointerWheelChanged += (s, e) => e.Handled = true;
             xRichEditBox.GotFocus += (s, e) => FlyoutBase.GetAttachedFlyout(xRichEditBox)?.Hide(); // close format options
 
-            xRichEditBox.TextChanged += (s, e) => UpdateDocumentFromXaml();
+            xRichEditBox.TextChanged += (s, e) =>  UpdateDocumentFromXaml();
 
             xRichEditBox.KeyUp += (s, e) =>
             {
@@ -130,6 +130,7 @@ namespace Dash
 
         public void UpdateDocumentFromXaml()
         {
+            
             if ((FocusManager.GetFocusedElement() as FrameworkElement)?.GetFirstAncestorOfType<SearchBox>() != null)
                 return; // don't bother updating the Xaml if the change is caused by highlight the results of search within a RichTextBox
             if (DataContext != null && Text != null)
@@ -217,6 +218,8 @@ namespace Dash
         {
             if (FocusManager.GetFocusedElement() != xRichEditBox && Text != null)
             {
+                var s1 = this.xRichEditBox.Document.Selection.StartPosition;
+                var s2 = this.xRichEditBox.Document.Selection.EndPosition;
                 if (Text.RtfFormatString != _lastXamlRTFText)
                 {
                     xRichEditBox.Document.SetText(TextSetOptions.FormatRtf, Text.RtfFormatString); // setting the RTF text does not mean that the Xaml view will literally store an identical RTF string to what we passed
@@ -233,6 +236,8 @@ namespace Dash
                     this.xRichEditBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.Yellow;
                     this.xRichEditBox.Document.Selection.CharacterFormat.Bold = FormatEffect.On;
                 }
+                //this.xRichEditBox.Document.Selection.StartPosition = s1;
+                //this.xRichEditBox.Document.Selection.EndPosition = s2;
             }
         }
 
@@ -390,6 +395,9 @@ namespace Dash
         /// <param name="e"></param>
         void XRichEditBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
+            //handles batching for undo typing
+            //TypeTimer.typeEvent();
+
             if (!this.IsCtrlPressed() && !this.IsAltPressed() && !this.IsShiftPressed())
             {
                 getDataDoc().CaptureNeighboringContext();
@@ -439,10 +447,6 @@ namespace Dash
             {
                 switch (e.Key)
                 {
-                    case VirtualKey.N:
-                        xRichEditBox.Document.Redo();
-                        e.Handled = true;
-                        break;
                     case VirtualKey.H:
                         this.Highlight(Colors.Yellow, true); // using RIchTextFormattingHelper extenions
                         e.Handled = true;

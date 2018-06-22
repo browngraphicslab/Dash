@@ -12,6 +12,7 @@ namespace Dash
 
         public ToLowerOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
 
         }
 

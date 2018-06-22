@@ -1,5 +1,5 @@
-﻿using System;
-using DashShared;
+﻿using DashShared;
+using System;
 
 namespace Dash.Controllers
 {
@@ -21,7 +21,6 @@ namespace Dash.Controllers
          */
         public DateTimeController() : this(DateTime.Now.Date)
         {
-            
         }
 
         /*
@@ -29,7 +28,8 @@ namespace Dash.Controllers
          */
         public DateTimeController(DateTime data = new DateTime()) : base(new DateTimeModel(data))
         {
-            
+            SaveOnServer();
+
         }
 
         /*
@@ -106,13 +106,27 @@ namespace Dash.Controllers
             //DateTimeController.Set less commonly referenced. More of an overloaded setter. Instead, see DateTimeController.TrySetValue(object value)
             set
             {
-                if (!value.Equals(DateTimeFieldModel.Data))
+                if (DateTimeFieldModel.Data != value)
                 {
-                    DateTimeFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
         }
+
+        /*
+         * Sets the data property and gives UpdateOnServer an UndoCommand 
+         */
+        private void SetData(DateTime val, bool withUndo = true)
+        {
+            DateTime data = DateTimeFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            DateTimeFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
+
 
         /*
          * Returns a StringSearchModel based on the text query submitted and the contents of this instance's Data (DateTime)

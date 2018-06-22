@@ -36,21 +36,30 @@ namespace Dash
 
             // get a collection and collection view model from the data
             var data = docController.GetField(KeyStore.DataKey);
-            var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
-            Debug.Assert(collectionController != null);
-            var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey) { InkController = docController.GetField(KeyStore.InkDataKey) as InkController};
-            
-            var view  = new CollectionView(collectionViewModel);
-
-            SetupBindings(view, docController, context);
-
-            void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+            if (data != null)
             {
-                collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
+                var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
+                Debug.Assert(collectionController != null);
+                var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
+                {
+                    InkController = docController.GetField(KeyStore.InkDataKey) as InkController
+                };
+
+                var view = new CollectionView(collectionViewModel);
+
+                SetupBindings(view, docController, context);
+
+                void docContextChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                {
+                    collectionViewModel.SetCollectionRef(docController, KeyStore.DataKey);
+                }
+
+                docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
+
+                return view;
             }
-            docController.AddFieldUpdatedListener(KeyStore.DocumentContextKey, docContextChanged);
-            
-            return view;
+
+            return null;
         }
     }
 }

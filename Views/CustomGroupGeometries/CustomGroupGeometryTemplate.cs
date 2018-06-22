@@ -43,7 +43,7 @@ namespace Dash
 
         public static PathGeometry LinearPolygon(int numSides)
         {
-            var points = CalculateVertices(numSides, 100, new Point(100, 100));
+            var points = CalculatePolygonVertices(numSides, 100, new Point(100, 100));
             var smallestX = float.PositiveInfinity;
 
             var polyPathSegs = new PathSegmentCollection();
@@ -64,7 +64,7 @@ namespace Dash
             return new PathGeometry { Figures = new PathFigureCollection { polygon } };
         }
 
-        private static List<Point> CalculateVertices(int sides, int radius, Point center)
+        private static List<Point> CalculatePolygonVertices(int sides, int radius, Point center)
         {
             var points = new List<Point>();
             var step = 360.0f / sides;
@@ -73,6 +73,48 @@ namespace Dash
             for (double i = GroupGeometryConstants.StartingAngleDegrees; i < GroupGeometryConstants.StartingAngleDegrees + 360.0; i += step) //go in a full circle
             {
                 points.Add(DegreesToPoint(angle, radius, center)); //code snippet from above
+                angle += step;
+            }
+
+            return points;
+        }
+
+        public static PathGeometry Star(int numSides)
+        {
+            var points = CalculateStarVertices(numSides, 100, new Point(100, 100));
+            var smallestX = float.PositiveInfinity;
+
+            var polyPathSegs = new PathSegmentCollection();
+            var polygon = new PathFigure { Segments = polyPathSegs };
+
+            foreach (var pt in points) if (pt.X < smallestX) smallestX = (float)pt.X;
+            for (var i = 0; i < points.Count; i++)
+            {
+                var thisPoint = points[i];
+                points[i] = new Point(thisPoint.X - smallestX, thisPoint.Y);
+            }
+
+            polygon.StartPoint = points.First();
+            points.RemoveAt(0);
+
+            foreach (var pt in points) polyPathSegs.Add(new LineSegment { Point = pt });
+
+            return new PathGeometry { Figures = new PathFigureCollection { polygon } };
+        }
+
+        private static List<Point> CalculateStarVertices(int sides, int radius, Point center)
+        {
+            var points = new List<Point>();
+            var step = 360.0f / (sides * 2);
+
+            var counter = 0;
+
+            float angle = GroupGeometryConstants.StartingAngleDegrees; //starting angle
+            for (double i = GroupGeometryConstants.StartingAngleDegrees; i < GroupGeometryConstants.StartingAngleDegrees + 360.0; i += step) //go in a full circle
+            {
+                counter++;
+                var thisRadius = counter % 2 != 0 ? radius : radius * GroupGeometryConstants.StarPointRatio; 
+                points.Add(DegreesToPoint(angle, (float)thisRadius, center)); //code snippet from above
                 angle += step;
             }
 

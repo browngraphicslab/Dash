@@ -43,6 +43,12 @@
                 <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy"/>
                 <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete"/>
 
+                <AppBarSeparator x:Name="xSepFour"/>
+
+                <!-- Bind is enabled-->
+                <AppBarButton x:Name="xUndo" Icon="Undo" Label="Undo" IsEnabled="False" Opacity="0.5" Click="xUndo_Click"/>
+                <AppBarButton x:Name="xRedo" Icon="Redo" Label="Redo" IsEnabled="False" Opacity="0.5" Click="xRedo_Click"/>
+
             </ctrl:CommandBar>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">

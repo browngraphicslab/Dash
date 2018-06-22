@@ -20,6 +20,7 @@ namespace Dash
 
         public UnionSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public UnionSearchOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

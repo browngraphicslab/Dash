@@ -20,16 +20,16 @@ namespace Dash
         {
 
             return ContentController<FieldModel>.GetController<DocumentController>(prototypeId) ??
-                   InstantiatePrototypeLayout(documentType, abstractInterface);
+                   InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
         }
 
         public virtual DocumentController Document { get; set; }
 
-        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface)
+        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface, string prototypeId)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
             fields.Add(KeyStore.AbstractInterfaceKey, new TextController(abstractInterface));
-            return new DocumentController(fields, documentType);
+            return new DocumentController(fields, documentType, prototypeId);
         }
 
     /// <summary>

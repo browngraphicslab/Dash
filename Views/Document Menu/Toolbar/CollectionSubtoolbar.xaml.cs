@@ -115,6 +115,7 @@ namespace Dash
         {
             if (_collection != null)
             {
+                UndoManager.StartBatch();
                 switch (xViewModesDropdown.SelectedIndex)
                 {
                     case 0:
@@ -145,7 +146,7 @@ namespace Dash
                         _collection.SetView(CollectionView.CollectionViewType.Timeline);
                         break;
                 }
-
+                UndoManager.EndBatch();
             }
         }
 

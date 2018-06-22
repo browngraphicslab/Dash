@@ -10,8 +10,11 @@ namespace Dash
         {
             var type = (string) data[0];
             if (!Enum.TryParse(type, out BackgroundShape.AdornmentShape shapeType)) return new RectangleGeometry();
-            var selectedShape = shapeType == BackgroundShape.AdornmentShape.CustomPolygon ? CustomGroupGeometryTemplate.LinearPolygon((int)(double)data[1]) : EnumToGeometry.GetDict[shapeType]();
-            return selectedShape;
+
+            var numSides = (int) (double) data[1];
+            if (shapeType == BackgroundShape.AdornmentShape.CustomPolygon) return CustomGroupGeometryTemplate.LinearPolygon(numSides);
+            if (shapeType == BackgroundShape.AdornmentShape.CustomStar) return CustomGroupGeometryTemplate.Star(numSides);
+            return EnumToGeometry.GetDict[shapeType]();
         }
 
         public override List<object> ConvertXamlToData(Geometry xaml, object parameter = null)
