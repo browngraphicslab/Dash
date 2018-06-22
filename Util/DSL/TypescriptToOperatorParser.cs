@@ -159,6 +159,8 @@ namespace Dash
 
         private static ScriptExpression ParseToExpression(INode node)
         {
+           Dictionary<string, FieldControllerBase> _variables = new Dictionary<string, FieldControllerBase>();
+
             //this converts node to ScriptExpression - most cases call ParseToExpression
             //on individual inner pieces of node
             switch (node.Kind)
@@ -727,7 +729,8 @@ namespace Dash
                     break;
                 case SyntaxKind.VariableDeclaration:
                     var variableDeclaration = node as VariableDeclaration;
-                    return new ModifyStateExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]));
+                   
+                    return new ModifyStateExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]), _variables);
                     break;
                 case SyntaxKind.VariableDeclarationList:
                     var varDeclList = node as VariableDeclarationList;
@@ -945,18 +948,22 @@ namespace Dash
         {
             private string _variableName;
             private ScriptExpression _value;
+            private Dictionary<String, FieldControllerBase> _variables;
 
-            public ModifyStateExpression(string variableName, ScriptExpression value)
+            public ModifyStateExpression(string variableName, ScriptExpression value, Dictionary<string, FieldControllerBase> variables)
             {
                 Debug.Assert(variableName != null);
                 _variableName = variableName;
                 _value = value;
+                _variables = variables;
             }
 
             public override FieldControllerBase Execute(ScriptState state)
             {
                 var val = _value.Execute(state);
                 state.ModifyStateDirectly(_variableName, val);
+                _variables[_variableName] = val;
+
                 return val;
             }
 

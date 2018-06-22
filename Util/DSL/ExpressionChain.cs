@@ -18,13 +18,15 @@ namespace Dash
 
         public override FieldControllerBase Execute(ScriptState state)
         {
+            ScriptState newState = new ScriptState(state);
+
             var exps = _expressions.ToArray();
             var length = exps.Count();
             for(int i = 0; i < length; i++)
             {
-                exps[i].Execute(state);
+                exps[i].Execute(newState);
             }
-            return exps[exps.Length - 1].Execute(state);
+            return exps[exps.Length - 1].Execute(newState);
         }
 
         public override FieldControllerBase CreateReference(ScriptState state)
