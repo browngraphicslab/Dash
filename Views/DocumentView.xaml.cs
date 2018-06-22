@@ -251,7 +251,7 @@ namespace Dash
 
             // setup EditorEllipse
             TemplateEditorEllipseBorderHighlight.PointerExited += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Collapsed;
-            TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderUnhighlight.Visibility = Visibility.Visible;
+            TemplateEditorEllipseBorderUnhighlight.PointerEntered += (sender, e) => TemplateEditorEllipseBorderHighlight.Visibility = Visibility.Visible;
             xTemplateEditorEllipseBorder.PointerPressed += (sender, e) =>
             {
                 this.ManipulationMode = ManipulationModes.None;
@@ -342,7 +342,7 @@ namespace Dash
 				_templateEditor = new TemplateEditorBase(this.ViewModel.DataDocument, where, new Size(900, 500));
                 //creates a doc controller for the image(s)
                 mainPageCollectionView.ViewModel.AddDocument(_templateEditor.Document);
-                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);
+	            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);
             }
             else
             {

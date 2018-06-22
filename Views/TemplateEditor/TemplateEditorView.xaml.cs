@@ -32,14 +32,18 @@ namespace Dash
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }
 
-	    public TemplateEditorView()
+	    private TemplateOptionsPane _optionsPane;
+	    private KeyValueTemplatePane _keyValuePane;
+	    private CollectionFreeformView _workspace;
+
+		public TemplateEditorView()
 	    {
 		    this.InitializeComponent();
 	    }
 
 	    public void Load()
         {
-	        if (Document == null) return;
+			if (Document == null) return;
 			xEditorControl.RenderTransform = new TranslateTransform
             {
                 X = 10
@@ -49,11 +53,25 @@ namespace Dash
 
 	    public void UpdatePanes()
 	    {
-		    if (Document != null && DataPanel.Children.Count == 0)
+			//make key value pane
+		    if (DataPanel.Children.Count == 0)
 		    {
-			    DataPanel.Children.Add(new KeyValueTemplatePane(this));
+				_keyValuePane = new KeyValueTemplatePane(this);
+			    DataPanel.Children.Add(_keyValuePane);
 			}
-			   
-		}
+
+			//make central collection/canvas
+		    _workspace = new CollectionFreeformView
+		    {
+			    DataContext = Document.DataContext as CollectionViewModel
+		    };
+		    xWorkspaceOuterGrid.Children.Add(_workspace);
+
+			//make edit pane
+		    _optionsPane = new TemplateOptionsPane(this);
+			LayoutPanel.Children.Add(_optionsPane);
+
+
+	    }
     }
 }

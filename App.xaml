@@ -1477,6 +1477,23 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
 
+            <Style TargetType="Ellipse" x:Key="xFieldTemplateHandle">
+                <Setter Property="Fill" Value="SteelBlue" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+            <Style TargetType="Ellipse" x:Key="xFieldTemplateHandleHighlighted">
+                <Setter Property="Fill" Value="SkyBlue" />
+                <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
+                <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
+                <Setter Property="ManipulationMode" Value="All"></Setter>
+                <Setter Property="Stroke" Value="Transparent"></Setter>
+                <Setter Property="AllowDrop" Value="True"/>
+            </Style>
+
             <Style TargetType="Ellipse" x:Key="xInputLinkHandle">
                 <Setter Property="Fill" Value="{StaticResource InputHandleColor}" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>

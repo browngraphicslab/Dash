@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -13,34 +12,19 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
-using DashShared;
-using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-	public sealed partial class KeyValueTemplatePane : UserControl
+	public sealed partial class TemplateOptionsPane : UserControl
 	{
-		private KeyValuePane _kvPane;
+		private TemplateEditorView _editor;
 
-		public KeyValueTemplatePane(TemplateEditorView editor)
+		public TemplateOptionsPane(TemplateEditorView editor)
 		{
 			this.InitializeComponent();
-
-			this.FormatPane(editor);
-			
-		}
-
-		private void FormatPane(TemplateEditorView editor)
-		{
-			var kvPane = new KeyValuePane()
-			{
-				DataContext = editor.Document,
-				Width = 300
-			};
-
-			xGrid.Children.Add(kvPane);
+			_editor = editor;
 		}
 	}
 }

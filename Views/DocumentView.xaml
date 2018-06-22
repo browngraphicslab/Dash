@@ -91,8 +91,8 @@
             </Border>
             <Border x:Name="xTemplateEditorEllipseBorder" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 60, -30, 0">
                 <Grid  >
-                    <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
-                    <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
+                    <Ellipse x:Name="TemplateEditorEllipseBorderUnhighlight"  Style="{StaticResource xFieldTemplateHandle}"/>
+                    <Ellipse x:Name="TemplateEditorEllipseBorderHighlight"  Style="{StaticResource xFieldTemplateHandleHighlighted}"
                          Visibility="Collapsed"/>
                 </Grid>
             </Border>

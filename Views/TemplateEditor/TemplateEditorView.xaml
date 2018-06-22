@@ -16,7 +16,7 @@
         </StackPanel>
         
         <Grid x:Name="xWorkspaceOuterGrid" Width="400" Background="Green">
-
+            
         </Grid>
 
         <StackPanel Orientation="Vertical" x:Name="LayoutPanel" Width="200" Background="DodgerBlue">
