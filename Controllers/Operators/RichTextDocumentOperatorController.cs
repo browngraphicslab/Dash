@@ -38,7 +38,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("A0BB0580-31E8-441E-907A-8A9C74224964", "Doc Text");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             var richTextController = inputs[KeyStore.DataKey] as RichTextController;
             if (richTextController != null)

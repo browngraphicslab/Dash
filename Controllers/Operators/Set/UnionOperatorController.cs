@@ -39,7 +39,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("CAEA115E-BE19-4796-B225-51AC4122C168", "Union");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             ListController<DocumentController> setA = (ListController<DocumentController>) inputs[AKey];
             ListController<DocumentController> setB = (ListController<DocumentController>)inputs[BKey];

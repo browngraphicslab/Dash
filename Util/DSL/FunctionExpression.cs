@@ -15,17 +15,17 @@ namespace Dash
             this._parameters = parameters;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public override FieldControllerBase Execute(Scope scope)
         {
             var inputs = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var parameter in _parameters)
             {
-                inputs.Add(parameter.Key, parameter.Value?.Execute(state));
+                inputs.Add(parameter.Key, parameter.Value?.Execute(scope));
             }
 
             try
             {
-                var output = OperatorScript.Run(_opName, inputs, state);
+                var output = OperatorScript.Run(_opName, inputs, scope);
                 return output;
             }
             catch (Exception e)
@@ -46,12 +46,12 @@ namespace Dash
         }
 
 
-        public override FieldControllerBase CreateReference(ScriptState state)
+        public override FieldControllerBase CreateReference(Scope scope)
         {
             return OperatorScript.CreateDocumentForOperator(
                 _parameters.Select(
                     kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key,
-                        kvp.Value.CreateReference(state))), _opName); //recursive linq
+                        kvp.Value.CreateReference(scope))), _opName); //recursive linq
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);

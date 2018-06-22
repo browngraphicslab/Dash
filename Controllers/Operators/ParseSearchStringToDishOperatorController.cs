@@ -255,7 +255,7 @@ namespace Dash
         /// <summary>
         /// Right now, we can join with intersections and unions, and negate searches
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
             outputs[ScriptKey] = new TextController(Parse(inputString));

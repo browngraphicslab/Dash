@@ -13,33 +13,15 @@ namespace Dash
     /// </summary>
     public class DSL
     {
-        ~DSL()
-        {
-            if (_state.IsTracked)
-            {
-                State<string>.RemoveTrackedState(_state.TrackingId);
-            }
-        }
+        private readonly Scope _scope;
 
-        private ScriptState _state;
-        private bool _updateState;
-        public DSL(ScriptState state = null, bool updateStatePerScript = false)
-        {
-            _updateState = updateStatePerScript;
-
-            _state = updateStatePerScript ? new ScriptState(state, DashShared.UtilShared.GenerateNewId()) : new ScriptState(state);
-        }
+        public DSL(Scope scope = null) => _scope = new Scope(scope);
 
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try
             {
-                var interpreted = TypescriptToOperatorParser.Interpret(script, _state);
-                if (_updateState)
-                {
-                    _state = (State<string>.GetTrackedState(_state.TrackingId) as ScriptState) ?? _state;
-                }
-
+                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope);
                 return interpreted;
             }
             catch (DSLException e)
@@ -56,7 +38,7 @@ namespace Dash
         {
             try
             {
-                var controller = TypescriptToOperatorParser.GetOperatorControllerForScript(script, _state);
+                var controller = TypescriptToOperatorParser.GetOperatorControllerForScript(script, _scope);
                 return controller;
             }
             catch (DSLException e)
@@ -72,8 +54,8 @@ namespace Dash
 
         public FieldControllerBase this[string variableName]
         {
-            get { return _state[variableName]; }
-            set { _state = _state.AddOrUpdateValue(variableName, value) as ScriptState; }
+            get => _scope[variableName];
+            set => _scope.SetVariable(variableName, value);
         }
 
         /// <summary>
@@ -170,20 +152,20 @@ namespace Dash
         /// <param name="input"></param>
         /// <param name="catchErrors"></param>
         /// <returns></returns>
-        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, ScriptState state = null)
+        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
         {
             var newInput = input?.Trim() ?? "";
 
 
             if (newInput.StartsWith("=="))
             {
-                var dsl = new DSL(state);
+                var dsl = new DSL(scope);
                 return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);
             }
 
             if (newInput.StartsWith("="))
             {
-                var dsl = new DSL(state);
+                var dsl = new DSL(scope);
                 return dsl.Run(newInput.Remove(0, 1), catchErrors);
             }
 
