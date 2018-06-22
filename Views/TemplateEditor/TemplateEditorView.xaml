@@ -8,18 +8,18 @@
     mc:Ignorable="d"
     x:Name="xEditorControl"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="1000">
 
     <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="400" Background="Blue">
+        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="300" Background="White">
            
         </StackPanel>
         
-        <Grid x:Name="xWorkspaceOuterGrid" Width="500" Background="Green">
+        <Grid x:Name="xWorkspaceOuterGrid" Width="400" Background="Green">
 
         </Grid>
 
-        <StackPanel Orientation="Vertical" x:Name="LayoutPanel" Width="200" Background="Red">
+        <StackPanel Orientation="Vertical" x:Name="LayoutPanel" Width="200" Background="DodgerBlue">
 
         </StackPanel>
     </StackPanel>

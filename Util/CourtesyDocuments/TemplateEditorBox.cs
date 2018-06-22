@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Dash.Converters;
 using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -47,6 +48,11 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
+	        if (docController == null)
+	        {
+		        Debug.WriteLine("DOC CONTROLLER IS NULL");
+	        }
+
             TemplateEditorView tev = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
@@ -59,6 +65,7 @@ namespace Dash
                     DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument(),
                     ManipulationMode = ManipulationModes.All
                 };
+	            tev.Load();
                 tev.PointerEntered += (sender, args) => tev.ManipulationMode = ManipulationModes.None;
                 tev.GotFocus += (sender, args) => tev.ManipulationMode = ManipulationModes.None;
                 tev.LostFocus += (sender, args) => tev.ManipulationMode = ManipulationModes.All;

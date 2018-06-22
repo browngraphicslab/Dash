@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -31,15 +32,15 @@ namespace Dash
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }
 
-        public TemplateEditorView()
-        {
-            this.InitializeComponent();
-        }
+	    public TemplateEditorView()
+	    {
+		    this.InitializeComponent();
+	    }
 
-        public void Load()
+	    public void Load()
         {
-            if (Document == null) return;
-            xEditorControl.RenderTransform = new TranslateTransform
+	        if (Document == null) return;
+			xEditorControl.RenderTransform = new TranslateTransform
             {
                 X = 10
             };
