@@ -11,6 +11,7 @@ namespace Dash
 
         public NumberController(double data = 0) : base(new NumberModel(data))
         {
+            SaveOnServer();
         }
 
         public NumberController(NumberModel numberFieldModel) : base(numberFieldModel)
@@ -64,15 +65,26 @@ namespace Dash
         public double Data
         {
             get => NumberFieldModel.Data;
-            set
-            {
-                if (!value.Equals(NumberFieldModel.Data))
-                {
-                    NumberFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+            set {
+                if (NumberFieldModel.Data != value) {
+                    SetData(value);
                 }
             }
         }
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(double val, bool withUndo = true)
+        {
+            double data = NumberFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            NumberFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
         public override TypeInfo TypeInfo => TypeInfo.Number;
 
         public override string ToString()

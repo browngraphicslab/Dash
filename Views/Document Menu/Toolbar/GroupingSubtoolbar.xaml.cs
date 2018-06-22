@@ -158,6 +158,7 @@ namespace Dash
                 BackgroundShape.AdornmentShape.Hexagonal.ToString(),
                 BackgroundShape.AdornmentShape.Octagonal.ToString(),
                 BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                BackgroundShape.AdornmentShape.CustomStar.ToString(),
                 BackgroundShape.AdornmentShape.Clover.ToString(),
             };
 
@@ -167,16 +168,16 @@ namespace Dash
             var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
 
-            if (index != GroupGeometryConstants.CustomPolyDropdownIndex) return;
+            if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
             
             var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetSideCount((int)safeSideCount);
+            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
             xSideCounter.Text = safeSideCount.ToString("G");
         }
 
         private void CheckForCustom()
         {
-            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
+            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex || xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
             {
                 if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
                 xRadialCol.Width = new GridLength(50);
@@ -244,7 +245,8 @@ namespace Dash
                 [BackgroundShape.AdornmentShape.Hexagonal.ToString()] = 5,
                 [BackgroundShape.AdornmentShape.Octagonal.ToString()] = 6,
                 [BackgroundShape.AdornmentShape.CustomPolygon.ToString()] = 7,
-                [BackgroundShape.AdornmentShape.Clover.ToString()] = 8,
+                [BackgroundShape.AdornmentShape.CustomStar.ToString()] = 8,
+                [BackgroundShape.AdornmentShape.Clover.ToString()] = 9,
             };
 
             xShapeOptionsDropdown.SelectedIndex = switchDictionary.ContainsKey(shape) ? switchDictionary[shape] : 0;
@@ -298,7 +300,12 @@ namespace Dash
         private void IncrementCounterByStep(int step)
         {
             int.TryParse(xSideCounter.Text, out var numSides);
-            if (numSides + step < 3 || numSides + step > 99) return;
+
+            var isStar = xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex;
+            var lowerBound = isStar ? 5 : 3;
+            var upperBound = isStar ? float.PositiveInfinity : 99;
+
+            if (numSides + step < lowerBound || numSides + step > upperBound) return;
             numSides += step;
             xSideCounter.Text = numSides.ToString();
             _currentDocController?.GetDataDocument().SetSideCount(numSides);

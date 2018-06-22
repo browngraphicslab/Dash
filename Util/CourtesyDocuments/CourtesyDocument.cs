@@ -20,16 +20,16 @@ namespace Dash
         {
 
             return ContentController<FieldModel>.GetController<DocumentController>(prototypeId) ??
-                   InstantiatePrototypeLayout(documentType, abstractInterface);
+                   InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
         }
 
         public virtual DocumentController Document { get; set; }
 
-        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface)
+        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface, string prototypeId)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
             fields.Add(KeyStore.AbstractInterfaceKey, new TextController(abstractInterface));
-            return new DocumentController(fields, documentType);
+            return new DocumentController(fields, documentType, prototypeId);
         }
 
     /// <summary>
@@ -320,29 +320,16 @@ namespace Dash
             document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
         }
 
-        public static ListController<DocumentController> GetLinkFrom(this DocumentController document)
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
         {
-            return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
         }
-        public static void   AddToLinkFrom(this DocumentController document, List<DocumentController> docs)
+        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
-            var fromdocs = document.GetLinkFrom();
-            if (fromdocs == null)
-            {
-                document.SetField(KeyStore.LinkFromKey, new ListController<DocumentController>(docs), true);
-            } else
-                fromdocs.AddRange(docs);
-        }
-        public static ListController<DocumentController> GetLinkTo(this DocumentController document)
-        {
-            return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
-        }
-        public static void    AddToLinkTo(this DocumentController document, List<DocumentController> docs)
-        {
-            var todocs = document.GetLinkTo();
+            var todocs = document.GetLinks(LinkFromOrToKey);
             if (todocs == null)
             {
-                document.SetField(KeyStore.LinkToKey, new ListController<DocumentController>(docs), true);
+                document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);
             }
             else
                 todocs.AddRange(docs);

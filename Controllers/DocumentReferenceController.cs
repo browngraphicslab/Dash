@@ -17,6 +17,7 @@ namespace Dash
             Debug.Assert(docId != null);
             Debug.Assert(key != null);
             //DocumentId = docId;
+            SaveOnServer();
             Init();
         }
 
@@ -26,14 +27,20 @@ namespace Dash
             Debug.Assert(DocumentId != null);
         }
 
-        public void ChangeFieldDoc(string docId)
+        public void ChangeFieldDoc(string docId, bool withUndo = true)
         {
+            string oldId = DocumentId;
+            UndoCommand newEvent = new UndoCommand(() => ChangeFieldDoc(docId, false), () => ChangeFieldDoc(oldId, false));
+
+            //docController for old DocumentId
             var docController = GetDocumentController(null);
             docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
                 DocumentId = docId;
+            //docController for given DocumentId
             var docController2 = GetDocumentController(null);
             docController2.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
-            UpdateOnServer();
+
+            UpdateOnServer(withUndo ? newEvent : null);
         }
 
         public override FieldControllerBase Copy()

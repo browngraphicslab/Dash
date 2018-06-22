@@ -64,6 +64,7 @@ namespace Dash
             var textController = docController.GetField(KeyStore.DataKey);
             var text = textController.GetValue(null);
             // create the textblock
+            //TODO Make TargetFieldController be a FieldReference to the field instead of just the field
             var tb = new EditableTextBlock
             {
                 TargetFieldController = textController,

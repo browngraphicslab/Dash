@@ -2,6 +2,11 @@
 {
     public static class ToolbarConstants
     {
+        //DEFAULT LAYOUT
+
+        public const int DefaultXOnLoaded = 316;
+        public const int DefaultYOnLoaded = 10;
+
         //COMBO BOX DIMENSIONS
         public const int ComboBoxWidth = 200;
         public const int ComboBoxHeight = 35;

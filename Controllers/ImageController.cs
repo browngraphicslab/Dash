@@ -10,9 +10,15 @@ namespace Dash
     public class ImageController : FieldModelController<ImageModel>
     {
         // == CONSTRUCTORS ==
-        public ImageController() : base(new ImageModel()) { }
+        public ImageController() : base(new ImageModel())
+        {
+            SaveOnServer();
+        }
 
-        public ImageController(Uri path, string data = null) : base(new ImageModel(path, data)) { }
+        public ImageController(Uri path, string data = null) : base(new ImageModel(path, data))
+        {
+            SaveOnServer();
+        }
 
         public ImageController(ImageModel imageFieldModel) : base(imageFieldModel)
         {
@@ -41,10 +47,22 @@ namespace Dash
             {
                 if (ImageFieldModel.Data != value)
                 {
-                    ImageFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            Uri data = ImageFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            ImageFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public Uri Data

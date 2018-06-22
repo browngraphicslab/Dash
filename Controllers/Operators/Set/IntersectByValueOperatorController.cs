@@ -16,6 +16,7 @@ namespace Dash
 
         public IntersectByValueOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public IntersectByValueOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -44,10 +45,10 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>(new ListModel(){SubTypeInfo = TypeInfo.Any})).Data;
-            var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>(new ListModel() { SubTypeInfo = TypeInfo.Any })).Data;
+            var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
+            var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
 
-            var returnSet = new ListController<FieldControllerBase>(new ListModel() { SubTypeInfo = TypeInfo.Any });
+            var returnSet = new ListController<FieldControllerBase>();
 
             //TODO actually optimize this, right now it's just a prood of concept.  
             //optimizing this will be VERY important as we can definitly go from O(n*n) to O(n) 

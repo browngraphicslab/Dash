@@ -10,9 +10,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Text;
@@ -47,17 +49,21 @@ namespace Dash
         public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         public DocumentView ParentDocument => this.GetFirstAncestorOfType<DocumentView>();
+        private Mutex _mutex = new Mutex();
+
+        //SET BACKGROUND IMAGE SOURCE
         public delegate void SetBackground(object backgroundImagePath);
         private static event SetBackground setBackground;
 
+        //SET BACKGROUND IMAGE OPACITY
         public delegate void SetBackgroundOpacity(float opacity);
-
         private static event SetBackgroundOpacity setBackgroundOpacity;
+
         public CollectionFreeformView()
         {
             InitializeComponent();
             DataContextChanged += (s, args) => _lastViewModel = ViewModel;
-            Loaded += (sender, e) =>
+            Loaded += async (sender, e) =>
             {
                 MakePreviewTextbox();
 
@@ -73,9 +79,23 @@ namespace Dash
                 }
                 UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
                 ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-                setBackground += Redraw;
+                setBackground += ChangeBackground;
                 setBackgroundOpacity += ChangeOpacity;
+
+                var settingsView = MainPage.Instance.GetSettingsView;
+                if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
+                {
+                    var storedPath = settingsView.CustomImagePath;
+                    if (storedPath != null) _background = storedPath;
+                }
+                else
+                {
+                    _background = settingsView.EnumToPathDict[settingsView.ImageState];
+                }
+
+                BackgroundOpacity = settingsView.BackgroundImageOpacity;
             };
+
             Unloaded += (sender, e) =>
             {
                 if (_lastViewModel != null)
@@ -84,7 +104,7 @@ namespace Dash
                 }
 
                 _lastViewModel = null;
-                setBackground -= Redraw;
+                setBackground -= ChangeBackground;
                 setBackgroundOpacity -= ChangeOpacity;
             };
             xOuterGrid.PointerEntered += (sender, e) => Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 1);
@@ -252,60 +272,19 @@ namespace Dash
         bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
         const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private float _backgroundOpacity = 1.0f;
+        private float _bgOpacity = 1.0f;
 
         /// <summary>
         /// Collection background tiling image opacity
         /// </summary>
-        public static float BackgroundOpacity
-        {
-            set
-            {
-                setBackgroundOpacity?.Invoke(value);
-            }
-        }
+        public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
         private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
         private CanvasBitmap _bgImage;
 
         /// <summary>
         /// Collection background tiling image
         /// </summary>
-        public static object BackgroundImage
-        {
-            set
-            {
-                setBackground?.Invoke(value);
-            }
-        }
-
-        /// <summary>
-        /// Called when background image changes
-        /// </summary>
-        /// <param name="backgroundImagePath"></param>
-        private void Redraw(object backgroundImagePath)
-        {
-            _background = backgroundImagePath;
-            _resourcesLoaded = false;
-            var task = Task.Run(async () =>
-            {
-
-                // Load the background image and create an image brush from it
-                if (_background is string s)
-                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri(s));
-                else
-                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream)_background);
-                _bgBrush = new CanvasImageBrush(xBackgroundCanvas, _bgImage)
-                {
-                    Opacity = _backgroundOpacity
-                };
-
-                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-
-                _resourcesLoaded = true;
-                xBackgroundCanvas.Invalidate();
-            });
-        }
+        public static object BackgroundImage { set => setBackground?.Invoke(value); }
 
         /// <summary>
         /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
@@ -313,41 +292,124 @@ namespace Dash
         /// <param name="opacity"></param>
         private void ChangeOpacity(float opacity)
         {
-            _backgroundOpacity = opacity;
-            _bgBrush.Opacity = opacity;
+            _bgOpacity = opacity;
             xBackgroundCanvas.Invalidate();
         }
 
-        void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
-        {
-            var task = Task.Run(async () =>
-            {
-                // Load the background image and create an image brush from it
-                if (_background is string)
-                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, new Uri((string)_background));
-                else
-                    _bgImage = await CanvasBitmap.LoadAsync(xBackgroundCanvas, (IRandomAccessStream)_background);
-                _bgBrush = new CanvasImageBrush(sender, _bgImage)
-                {
-                    Opacity = _backgroundOpacity
-                };
 
-                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
-                _resourcesLoaded = true;
-            });
-            args.TrackAsyncAction(task.AsAsyncAction());
+        /// <summary>
+        /// All of the following background image updating logic was sourced from this article --> https://microsoft.github.io/Win2D/html/LoadingResourcesOutsideCreateResources.htm
+        /// </summary>
+        #region LOADING AND REDRAWING BACKUP ASYNC
+
+        private Task _backgroundTask;
+
+        // 1
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            _bgBrush = new CanvasImageBrush(sender);
+
+            // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+            _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+            _resourcesLoaded = true;
+
+            args.TrackAsyncAction(CreateResourcesAsync(sender).AsAsyncAction());
         }
 
-        void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        // 2
+        private async Task CreateResourcesAsync(CanvasControl sender)
         {
-            if (_resourcesLoaded)
+            if (_backgroundTask != null)
             {
-                // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+                _backgroundTask.AsAsyncAction().Cancel();
+                try { await _backgroundTask; } catch (Exception e) { Debug.WriteLine(e); } 
+                _backgroundTask = null;
+            }
+
+            //Internally null checks _background
+            //NOTE *** Invalid or null input will end the entire update chain and, to the user, nothing will visibily change. ***
+            ChangeBackground(_background);
+        }
+
+        // 3
+        private async void ChangeBackground(object backgroundImagePath)
+        {
+            // Null-checking. WARNING - if null, Dash throws an Unhandled Exception
+            if (backgroundImagePath == null) return;
+
+            // Now, backgroundImagePath is either <string> or <IRandomAccessStream> - while local ms-appx (assets folder) paths <string> don't need conversion, 
+            // external file system paths <string> need to be converted into <IRandomAccessStream>
+            if (backgroundImagePath is string path && !path.Contains("ms-appx:"))
+            {
+                backgroundImagePath = await FileRandomAccessStream.OpenAsync(path, FileAccessMode.Read);
+            }
+            // Update the path/stream instance var to be used next in LoadBackgroundAsync
+            _background = backgroundImagePath;
+            // Now, register and perform the new loading
+            _backgroundTask = LoadBackgroundAsync(xBackgroundCanvas);
+        }
+
+        // 4
+        private async Task LoadBackgroundAsync(CanvasControl canvas)
+        {
+            // Convert the <IRandomAccessStream> and update the <CanvasBitmap> instance var to be used later by the <CanvasImageBrush> in CanvasControl_OnDraw
+            if (_background is string s) // i.e. A rightfully unconverted ms-appx path
+                _bgImage = await CanvasBitmap.LoadAsync(canvas, new Uri(s));
+            else
+                _bgImage = await CanvasBitmap.LoadAsync(canvas, (IRandomAccessStream)_background);
+            // NOTE *** At this point, _backgroundTask will be marked completed. This has bearing on the IsLoadInProgress bool and how that dictates the rendered drawing (see immediately below).
+            // Indicates that the contents of the CanvasControl need to be redrawn. Calling Invalidate results in the Draw event being raised shortly afterward (see immediately below).
+            canvas.Invalidate();
+        }
+
+        // 5
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (IsLoadInProgress())
+            {
+                // If the image failed to load in time, simply display a blank white background
+                args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
+            }
+            else
+            {
+                // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
+                _bgBrush.Image = _bgImage;
+                _bgBrush.Opacity = _bgOpacity;
+
+                // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
                 var session = args.DrawingSession;
                 session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
         }
+
+        private bool IsLoadInProgress()
+        {
+            // Not gonna happen, see above sequence of events
+            if (_backgroundTask == null) return false;
+
+            // Unless the draw event from Invalidate() outpaces the actual async loading, this won't ever get hit as the LoadBackgroundAsync should have already returned a Task.Completed
+            if (!_backgroundTask.IsCompleted) return true;
+
+            try
+            {
+                // As _background task was set to LoadBackgroundAsync, should have already completed. Wait will be moot. 
+                _backgroundTask.Wait();
+            }
+            catch (AggregateException ae)
+            {
+                // Catch any task-related errors along the way
+                ae.Handle(ex => throw ex);
+            }
+            finally
+            {
+                // _backgroundTask will be set to null, so that CreateResourcesAsync won't be concerned with phantom existing tasks
+                _backgroundTask = null;
+            }
+            // Permits the <CanvasControl> to render the safely loaded image 
+            return false;
+        }
+
+        #endregion
 
         /// <summary>
         /// When the ViewModel's TransformGroup changes, this needs to update its background canvas
@@ -707,37 +769,44 @@ namespace Dash
             var toSelectFrom = viewsToSelectFrom.ToList();
 
             bool deselect = false;
-            switch (modifier)
+            using (UndoManager.GetBatchHandle())
             {
-                //create a viewcopy of everything selected
-                case VirtualKey.A:
-                    var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                    ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs).Document);
-                    deselect = true;
-                    break;
-                case VirtualKey.T:
-                    type = CollectionView.CollectionViewType.Schema;
-                    goto case VirtualKey.C;
-                case VirtualKey.C:
-                    var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                    ViewModel.AddDocument(
-                        new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
-                    goto case VirtualKey.Delete;
-                case VirtualKey.Back:
-                case VirtualKey.Delete:
-                    foreach (var v in toSelectFrom)
-                    {
-                        v.DeleteDocument();
-                    }
-                    deselect = true;
-                    break;
-                case VirtualKey.G:
-                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, marquee.Width, marquee.Height));
-                    deselect = true;
-                    break;
+                switch (modifier)
+                {
+                    //create a viewcopy of everything selected
+                    case VirtualKey.A:
+                        var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                        ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs)
+                            .Document);
+                        deselect = true;
+                        break;
+                    case VirtualKey.T:
+                        type = CollectionView.CollectionViewType.Schema;
+                        goto case VirtualKey.C;
+                    case VirtualKey.C:
+                        var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
+                        goto case VirtualKey.Delete;
+                    case VirtualKey.Back:
+                    case VirtualKey.Delete:
+                        foreach (var v in toSelectFrom)
+                        {
+                            v.DeleteDocument();
+                        }
+
+                        deselect = true;
+                        break;
+                    case VirtualKey.G:
+                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                            where, marquee.Width, marquee.Height));
+                        deselect = true;
+                        break;
+                }
             }
 
             if (deselect) DeselectAll();
+            
         }
 
         #endregion
@@ -852,6 +921,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
+            previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
@@ -863,6 +933,15 @@ namespace Dash
             RemoveHandler(KeyDownEvent, previewTextHandler);
             previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+        }
+
+        private void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
+        {
+            var text = previewTextbox.Text;
+            if (previewTextbox.Visibility != Visibility.Collapsed)
+            {
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            }
         }
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -896,8 +975,16 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text).Document;
-                Actions.DisplayDocument(ViewModel, postitNote, where);
+                if (SettingsView.Instance.MarkdownEditOn)
+                {
+                    var postitNote = new MarkdownNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
+                else
+                {
+                    var postitNote = new RichTextNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
@@ -1034,6 +1121,13 @@ namespace Dash
                         editableScriptBox.Loaded -= EditableScriptView_Loaded;
                         editableScriptBox.Loaded += EditableScriptView_Loaded;
                     }
+                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
+                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
+                    if (editableMarkdownBox != null)
+                    {
+                        editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
+                        editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
+                    }
                 }
             }
 
@@ -1058,6 +1152,15 @@ namespace Dash
             textBox.XTextBox.GotFocus += TextBox_GotFocus;
             textBox.XTextBox.Focus(FocusState.Programmatic);
         }
+        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableMarkdownBlock;
+            textBox.Loaded -= EditableMarkdownBlock_Loaded;
+            textBox.MakeEditable();
+            textBox.XMarkdownBox.GotFocus -= TextBox_GotFocus;
+            textBox.XMarkdownBox.GotFocus += TextBox_GotFocus;
+            textBox.XMarkdownBox.Focus(FocusState.Programmatic);
+        }
 
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -1072,6 +1175,7 @@ namespace Dash
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
+
         void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;

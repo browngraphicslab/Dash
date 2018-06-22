@@ -23,6 +23,7 @@ namespace Dash
 
         public GetAllDocsAfterTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public GetAllDocsAfterTime(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

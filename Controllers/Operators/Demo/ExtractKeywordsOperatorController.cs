@@ -43,6 +43,7 @@ namespace Dash
 
         public ExtractKeywordsOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

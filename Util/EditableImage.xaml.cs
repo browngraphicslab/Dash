@@ -120,16 +120,18 @@ namespace Dash
 		{
 			_imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
-			var file = await GetImageFile();
+            // get the file from the current image controller
+            var file = await GetImageFile();
+            var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
-			var fileProperties = await file.Properties.GetImagePropertiesAsync();
+            // set image source to the new file path and fix the width
+            Image.Source = new BitmapImage(new Uri(file.Path));
+            Image.Width = fileProperties.Width;
 
-			Image.Width = fileProperties.Width;
-			Image.Source = new BitmapImage(new Uri(file.Path));
-
-			var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-			_docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
-		}
+            // on replace image, change the original image value for revert
+            var origImgCtrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+            _docCtrl.SetField(KeyStore.OriginalImageKey, origImgCtrl, true);
+        }
 
 		private async Task<StorageFile> GetImageFile(bool originalImage = false)
 		{
@@ -164,19 +166,24 @@ namespace Dash
 			return file;
 		}
 
-		public async void Revert()
-		{
-			if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
-			{
-				var file = await GetImageFile(true);
-				var fileProperties = await file.Properties.GetImagePropertiesAsync();
-				Image.Width = fileProperties.Width;
+        public async void Revert()
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                // make sure if we have an original image stored (which we always should)
+                if (_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey) != null)
+                {
+                    // get the storagefile of the original image so we can revert
+                    var file = await GetImageFile(true);
+                    var fileProperties = await file.Properties.GetImagePropertiesAsync();
+                    Image.Width = fileProperties.Width;
 
-				_docCtrl.SetField<ImageController>(KeyStore.DataKey,
-					_docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
-				_imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
-			}
-		}
+                    _docCtrl.SetField<ImageController>(KeyStore.DataKey,
+                        _docCtrl.GetField<ImageController>(KeyStore.OriginalImageKey).ImageSource, true);
+                    _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
+                }
+            }
+        }
 
 		private void Image_Loaded(object sender, RoutedEventArgs e)
 		{
@@ -222,27 +229,34 @@ namespace Dash
 			await Crop(rect, BitmapRotation.None, flip);
 		}
 
-		// called when the cropclick action is invoked in the image subtoolbar
-		public void StartCrop()
-		{
-			// make sure that we aren't already cropping
-			if (xGrid.Children.Contains(_cropControl)) return;
-			Focus(FocusState.Programmatic);
-			xGrid.Children.Add(_cropControl);
-			_docview.hideControls();
-			IsCropping = true;
-		}
+        // called when the cropclick action is invoked in the image subtoolbar
+        public void StartCrop()
+        {
+            // make sure that we aren't already cropping
+            if (xGrid.Children.Contains(_cropControl)) return;
+            Focus(FocusState.Programmatic);
+            xGrid.Children.Add(_cropControl);
+            _docview.ViewModel.DisableDecorations = true;
+            _docview.hideControls();
+            IsCropping = true;
+        }
 
-		/// <summary>
-		///     crops the image with respect to the values of the rectangle passed in
-		/// </summary>
-		/// <param name="rectangleGeometry">
-		///     rectangle geometry that determines the size and starting point of the crop
-		/// </param>
-		public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None,
-			BitmapFlip flip = BitmapFlip.None)
-		{
-			var file = await GetImageFile();
+        private void StopImageFromMoving(object sender, PointerRoutedEventArgs e)
+        {
+            // prevent the image from being moved while being cropped
+            if (IsCropping) e.Handled = true;
+        }
+
+        /// <summary>
+        ///     crops the image with respect to the values of the rectangle passed in
+        /// </summary>
+        /// <param name="rectangleGeometry">
+        ///     rectangle geometry that determines the size and starting point of the crop
+        /// </param>
+        public async Task Crop(Rect rectangleGeometry, BitmapRotation rot = BitmapRotation.None,
+            BitmapFlip flip = BitmapFlip.None)
+        {
+            var file = await GetImageFile();
 
 			var fileProperties = await file.Properties.GetImagePropertiesAsync();
 
@@ -324,57 +338,61 @@ namespace Dash
 			}
 		}
 
-		private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
-			byte[] pixels)
-		{
-			var width = (uint) rectgeo.Width;
-			var height = (uint) rectgeo.Height;
+        private async void SaveCroppedImageAsync(WriteableBitmap cropBmp, BitmapDecoder decoder, Rect rectgeo,
+            byte[] pixels)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
 
-			// randomly generate a new guid for the filename
-			var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
-			var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
-			// create the file
-			var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
-				CreationCollisionOption.ReplaceExisting);
+                var width = (uint) rectgeo.Width;
+                var height = (uint) rectgeo.Height;
 
-			// load the file with the iamge information
-			using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
-			{
-				var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
+                // randomly generate a new guid for the filename
+                var fileName = UtilShared.GenerateNewId() + ".jpg"; // .jpg works for all images
+                var bitmapEncoderGuid = BitmapEncoder.JpegEncoderId;
+                // create the file
+                var newFile = await ApplicationData.Current.LocalFolder.CreateFileAsync(fileName,
+                    CreationCollisionOption.ReplaceExisting);
 
-				encoder.SetPixelData(
-					BitmapPixelFormat.Bgra8,
-					BitmapAlphaMode.Straight,
-					width,
-					height,
-					decoder.DpiX,
-					decoder.DpiY,
-					pixels);
-				await encoder.FlushAsync();
-			}
+                // load the file with the iamge information
+                using (var newStream = await newFile.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(bitmapEncoderGuid, newStream);
 
-			// retrieve the uri from the file to update the image controller
-			var path = "ms-appdata:///local/" + newFile.Name;
-			var uri = new Uri(path);
-			_docCtrl.SetField(KeyStore.DataKey, new ImageController(uri), true);
+                    encoder.SetPixelData(
+                        BitmapPixelFormat.Bgra8,
+                        BitmapAlphaMode.Straight,
+                        width,
+                        height,
+                        decoder.DpiX,
+                        decoder.DpiY,
+                        pixels);
+                    await encoder.FlushAsync();
+                }
 
-			// update the image source, width, and positions
-			Image.Source = cropBmp;
-			Image.Width = width;
+                // retrieve the uri from the file to update the image controller
+                var path = "ms-appdata:///local/" + newFile.Name;
+                var uri = new Uri(path);
+                _docCtrl.SetField<ImageController>(KeyStore.DataKey, uri, true);
 
-			// store new image information so that multiple crops can be made
-			_imgctrl = _docCtrl.GetDereferencedField(KeyStore.DataKey, _context) as ImageController;
+                // update the image source, width, and positions
+                Image.Source = cropBmp;
+                Image.Width = width;
 
-			var oldpoint = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-			var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
-			Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
-				oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
+                // store new image information so that multiple crops can be made
+                _imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, _context);
 
-			_docCtrl.SetField<PointController>(KeyStore.PositionFieldKey, point, true);
-			_cropControl = new StateCropControl(_docCtrl, this);
+                var oldpoint = _docCtrl.GetPosition() ?? new Point();
+                var scale = _docCtrl.GetField<PointController>(KeyStore.ScaleAmountFieldKey).Data;
+                Point point = new Point(oldpoint.X + _cropControl.GetBounds().X * scale.X,
+                    oldpoint.Y + _cropControl.GetBounds().Y * scale.Y);
 
-			// TODO: Test that replace button works with cropping when merged with master
-		}
+                _docCtrl.SetPosition(point);
+                _cropControl = new StateCropControl(_docCtrl, this);
+
+                // TODO: Test that replace button works with cropping when merged with master
+            }
+        }
 
 		[NotifyPropertyChangedInvocator]
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -382,29 +400,31 @@ namespace Dash
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		// functionality for saving a crop and for moving the cropping boxes with directional keys
-		private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
-		{
-			if (IsCropping)
-				switch (e.Key)
-				{
-					case VirtualKey.Enter:
-						// crop the image!
-						IsCropping = false;
-						xGrid.Children.Remove(_cropControl);
-						await Crop(_cropControl.GetBounds());
-						_docview.showControls();
-						break;
-					case VirtualKey.Left:
-					case VirtualKey.Right:
-					case VirtualKey.Up:
-					case VirtualKey.Down:
-						// moves the bounding box in the key's direction
-						_cropControl.OnKeyDown(e);
-						break;
-				}
-			e.Handled = true;
-		}
+        // functionality for saving a crop and for moving the cropping boxes with directional keys
+        private async void XGrid_OnKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (IsCropping)
+                switch (e.Key)
+                {
+                    case VirtualKey.Enter:
+                        // crop the image!
+                        IsCropping = false;
+                        xGrid.Children.Remove(_cropControl);
+                        await Crop(_cropControl.GetBounds());
+                        _docview.ViewModel.DisableDecorations = false;
+                        _docview.hideControls();
+
+                        break;
+                    case VirtualKey.Left:
+                    case VirtualKey.Right:
+                    case VirtualKey.Up:
+                    case VirtualKey.Down:
+                        // moves the bounding box in the key's direction
+                        _cropControl.OnKeyDown(e);
+                        break;
+                }
+            e.Handled = true;
+        }
 
 		// removes the cropping controls and allows image to be moved and used when focus is lost
 		private void EditableImage_OnLostFocus(object sender, RoutedEventArgs e)
