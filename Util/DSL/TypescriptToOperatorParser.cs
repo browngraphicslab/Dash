@@ -154,7 +154,7 @@ namespace Dash
             script = script.EndsWith(';') ? script : script + ";";
             var ast = new TypeScriptAST(script);
             var root = ast.RootNode;
-           return ParseToExpression(root);
+            return ParseToExpression(root);
         }
 
         private static ScriptExpression ParseToExpression(INode node)
@@ -619,8 +619,13 @@ namespace Dash
                                 });
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
-
-
+                        case SyntaxKind.EqualsEqualsToken:
+                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {EqualityOperatorController.AKey,  leftBinExpr},
+                                {EqualityOperatorController.BKey,  rightBinExpr},
+                            });
+                            break;
                         default:
                             throw new Exception("Unkown binary expression type");
                     }

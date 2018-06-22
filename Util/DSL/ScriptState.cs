@@ -11,9 +11,19 @@ namespace Dash
     {
         public static string THIS_NAME = "this";
 
+        public ScriptState parent;
+
         public ScriptState(IEnumerable<KeyValuePair<string, FieldControllerBase>> existingState = null, string trackingId = null) : base(existingState, trackingId) {}
 
-        public ScriptState(ScriptState existingState, string trackingId = null) : base(existingState?._dictionary?.ToArray(), trackingId){}
+        //TODO: constructor adds parent
+        public ScriptState(ScriptState existingState, string trackingId = null) {
+            ScriptState state = new ScriptState();
+            state.parent = existingState;
+            return state;
+
+         //   base(existingState?._dictionary?.ToArray(), trackingId){ }
+
+        }
 
         /// <summary>
         /// To create a state object from a document controller.  
@@ -59,7 +69,21 @@ namespace Dash
         /// <param name="value"></param>
         public void ModifyStateDirectly(string variableName, FieldControllerBase value)
         {
+            //TODO: if dictionary dowesn't contain, call on parent
+            if (_dictionary.ContainsKey(variableName))
+            {
+                //varible already defiend in this state
+                _dictionary[variableName] = value;
+            }
+            //now check if varible is defined in any parent states
+
+
+            else if(parent == null)
+            {
+                //varible not defined in 
+            }
             _dictionary[variableName] = value;
+
         }
 
         public static ScriptState ContentAware()

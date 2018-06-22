@@ -170,6 +170,7 @@
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\EqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\GreaterThanOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\LessThanOperatorController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />

@@ -33,7 +33,7 @@ namespace Dash
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(BoolKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BoolKey, new IOInfo(TypeInfo.Bool, true)),
             new KeyValuePair<KeyController, IOInfo>(IfBlockKey, new IOInfo(TypeInfo.Any, true)),
             new KeyValuePair<KeyController, IOInfo>(ElseBlockKey, new IOInfo(TypeInfo.Any, true))
         };
@@ -44,13 +44,11 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
         {
-            var Bool = ((NumberController)inputs[BoolKey]).Data;
+            var Bool = ((BoolController)inputs[BoolKey]).Data;
             var BlockIf = inputs[IfBlockKey];
             var BlockElse = inputs[ElseBlockKey];
 
-
-            //Todo: BoolController
-            outputs[ResultKey] = Bool == 1 ? BlockIf : BlockElse;
+            outputs[ResultKey] = Bool ? BlockIf : BlockElse;
         }
 
         public override FieldControllerBase GetDefaultController()

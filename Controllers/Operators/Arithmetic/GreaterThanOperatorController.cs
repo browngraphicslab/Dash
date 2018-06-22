@@ -38,7 +38,7 @@ namespace Dash
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             //TODO: change to bool controller, BoolController
-              [GreaterKey] = TypeInfo.Number,
+              [GreaterKey] = TypeInfo.Bool,
         };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
@@ -50,7 +50,7 @@ namespace Dash
             var b = numberB.Data;
 
             //TODO: BoolController
-             outputs[GreaterKey] = new NumberController(a > b ? 1 : 0);
+             outputs[GreaterKey] = new BoolController(a > b);
         }
 
         public override FieldControllerBase GetDefaultController()
