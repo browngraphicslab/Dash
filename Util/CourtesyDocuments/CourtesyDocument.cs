@@ -5,6 +5,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI;
 using Dash.Converters;
 using DashShared;
 
@@ -15,25 +16,20 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
-        public static readonly KeyController GridRowKey = new KeyController("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
-        public static readonly KeyController GridColumnKey = new KeyController("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
-        public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
-        public static readonly KeyController GridColumnSpanKey = new KeyController("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
-
         protected DocumentController GetLayoutPrototype(DocumentType documentType, string prototypeId, string abstractInterface)
         {
 
             return ContentController<FieldModel>.GetController<DocumentController>(prototypeId) ??
-                   InstantiatePrototypeLayout(documentType, abstractInterface);
+                   InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
         }
 
         public virtual DocumentController Document { get; set; }
 
-        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface)
+        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface, string prototypeId)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
             fields.Add(KeyStore.AbstractInterfaceKey, new TextController(abstractInterface));
-            return new DocumentController(fields, documentType);
+            return new DocumentController(fields, documentType, prototypeId);
         }
 
     /// <summary>
@@ -172,62 +168,6 @@ namespace Dash
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
-        protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = GridRowKey,
-                FallbackValue = 0,
-                Context = context
-            };
-
-            element.AddFieldBinding(Grid.RowProperty, binding);
-        }
-
-        protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = GridColumnKey,
-                FallbackValue = 0,
-                Context = context
-            };
-
-            element.AddFieldBinding(Grid.ColumnProperty, binding);
-        }
-
-        protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = GridRowSpanKey,
-                FallbackValue = 1,
-                Context = context
-            };
-
-            element.AddFieldBinding(Grid.RowSpanProperty, binding);
-        }
-
-        protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<NumberController> binding = new FieldBinding<NumberController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = GridColumnSpanKey,
-                FallbackValue = 1,
-                Context = context
-            };
-
-            element.AddFieldBinding(Grid.ColumnSpanProperty, binding);
-        }
-
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
@@ -237,12 +177,6 @@ namespace Dash
             //Set alignments
             BindHorizontalAlignment(element, docController, context);
             BindVerticalAlignment(element, docController, context);
-
-            //Set column, row, and span
-            BindGridRow(element, docController, context);
-            BindGridColumn(element, docController, context);
-            BindGridRowSpan(element, docController, context);
-            BindGridColumnSpan(element, docController, context);
         }
 
         /// <summary>
@@ -296,7 +230,7 @@ namespace Dash
                 .DereferenceToRoot<NumberController>(context);
         }
 
-        protected static PointController GetPositionField(DocumentController docController, Context context)
+        protected static PointController  GetPositionField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.PositionFieldKey)
@@ -310,67 +244,134 @@ namespace Dash
     {
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(KeyStore.HorizontalAlignmentKey, new TextController(alignment.ToString()), true);
+            document.SetField<TextController>(KeyStore.HorizontalAlignmentKey, alignment.ToString(), true);
         }
-
-
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
-            var horizontalAlignmentController =
-                document.GetField(KeyStore.HorizontalAlignmentKey) as TextController;
-            if (horizontalAlignmentController == null)
-            {
-                return HorizontalAlignment.Stretch;
-            }
-            return (HorizontalAlignment)Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+            var data = document.GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data;
+            return data == null ? HorizontalAlignment.Stretch : Enum.Parse<HorizontalAlignment>(data);
         }
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
-            var currentHeight = document.GetHeightField().Data;
-            document.SetField(KeyStore.VerticalAlignmentKey, new TextController(alignment.ToString()), true);
-            document.SetHeight(currentHeight);
+            document.SetField<TextController>(KeyStore.VerticalAlignmentKey, alignment.ToString(), true);
         }
-
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
         {
-            var verticalAlignmentController =
-                document.GetField(KeyStore.VerticalAlignmentKey) as TextController;
-            if (verticalAlignmentController == null)
+            var data =  document.GetField<TextController>(KeyStore.VerticalAlignmentKey)?.Data ; 
+            return data == null ? VerticalAlignment.Stretch : Enum.Parse<VerticalAlignment>(data);
+        }
+
+        public static void    SetFitToParent(this DocumentController document, bool fit)
+        {
+            document.SetField<TextController>(KeyStore.CollectionFitToParentKey, fit ? "true": "false", true);
+        }
+        public static void    SetTitle(this DocumentController document, string title)
+        {
+            document.SetField<TextController>(KeyStore.TitleKey, title, true);
+        }
+
+        public static bool    GetIsAdornment(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<TextController>(KeyStore.IsAdornmentKey, null);
+            return data?.Data == "true";
+        }
+        public static void    SetIsAdornment(this DocumentController document,bool adornment)
+        {
+            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
+        }
+
+        public static  Color? GetBackgroundColor(this DocumentController document)
+        {
+            var col = document.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null);
+
+            return col != null ? (new StringToBrushConverter().ConvertDataToXaml(col.Data) as Windows.UI.Xaml.Media.SolidColorBrush).Color : (Color ?) null;
+        }
+        public static void    SetBackgroundColor(this DocumentController document, Color color)
+        {
+            document.SetField<TextController>(KeyStore.BackgroundColorKey, color.ToString(), true);
+        }
+
+        public static Point?  GetPosition(this DocumentController document)
+        {
+            return document.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data;
+        }
+        public static void    SetPosition(this DocumentController document, Point pos)
+        {
+            document.SetField<PointController>(KeyStore.PositionFieldKey, pos, true);
+        }
+
+        public static void    SetActualSize(this DocumentController document, Point pos)
+        {
+            document.SetField<PointController>(KeyStore.ActualSizeKey, pos, true);
+        }
+        public static Point?  GetActualSize(this DocumentController document)
+        {
+            return document.GetField<PointController>(KeyStore.ActualSizeKey)?.Data;
+        }
+
+        public static bool    GetHidden(this DocumentController document)
+        {
+            var data = document.GetDereferencedField<TextController>(KeyStore.HiddenKey, null);
+            return data?.Data == "true";
+        }
+        public static void    SetHidden(this DocumentController document, bool hidden)
+        {
+            document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
+        }
+
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
+        }
+        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        {
+            var todocs = document.GetLinks(LinkFromOrToKey);
+            if (todocs == null)
             {
-                return VerticalAlignment.Stretch;
+                document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);
             }
-            return (VerticalAlignment)Enum.Parse(typeof(VerticalAlignment), verticalAlignmentController?.Data);
+            else
+                todocs.AddRange(docs);
         }
 
-        public static void SetWidth(this DocumentController document, double width)
+        public static DocumentController GetRegionDefinition(this DocumentController document)
         {
-            document.SetField(KeyStore.WidthFieldKey, new NumberController(width), true);
+            return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
+        }
+        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        {
+            document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
         }
 
-        public static void SetHeight(this DocumentController document, double height)
+        public static bool    GetTransient(this DocumentController document)
         {
-            document.SetField(KeyStore.HeightFieldKey, new NumberController(height), true);
+            var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
+            return data?.Data == "true";
+        }
+        public static void    SetTransient(this DocumentController document, bool hidden)
+        {
+            document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
         }
 
-        public static void SetGridRow(this DocumentController document, int row)
+        public static int ?   GetSideCount(this DocumentController document)
         {
-            document.SetField(CourtesyDocument.GridRowKey, new NumberController(row), true);
+            return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
+        }
+        public static void    SetSideCount(this DocumentController document, int count)
+        {
+            document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
 
-        public static void SetGridColumn(this DocumentController document, int column)
+        public static void    SetWidth(this DocumentController document, double width)
         {
-            document.SetField(CourtesyDocument.GridColumnKey, new NumberController(column), true);
+            document.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
         }
 
-        public static void SetGridRowSpan(this DocumentController document, int rowSpan)
+        public static void    SetHeight(this DocumentController document, double height)
         {
-            document.SetField(CourtesyDocument.GridRowSpanKey, new NumberController(rowSpan), true);
+            document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
         }
-
-        public static void SetGridColumnSpan(this DocumentController document, int columnSpan)
-        {
-            document.SetField(CourtesyDocument.GridColumnSpanKey, new NumberController(columnSpan), true);
-        }
+        
     }
 }

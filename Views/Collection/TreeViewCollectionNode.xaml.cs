@@ -34,6 +34,15 @@ namespace Dash
             set { SetValue(ContainingDocumentProperty, value); }
         }
 
+        public static readonly DependencyProperty SortCriterionProperty = DependencyProperty.Register(
+            "SortCriterion", typeof(string), typeof(TreeViewCollectionNode), new PropertyMetadata("YPos"));
+
+        public string SortCriterion
+        {
+            get { return (string)GetValue(SortCriterionProperty); }
+            set { SetValue(SortCriterionProperty, value); }
+        }
+
         private CollectionViewModel _oldViewModel;
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
@@ -102,7 +111,8 @@ namespace Dash
                 ViewModel.Loaded(true);
                 _needsToLoad = false;
             }
-            ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription("YPos", SortDirection.Ascending));
+            if (!string.IsNullOrEmpty(SortCriterion))
+                ViewModel.BindableDocumentViewModels.SortDescriptions.Add(new SortDescription(SortCriterion, SortDirection.Ascending));
             ViewModel.BindableDocumentViewModels.Filter = Filter;
         }
         private bool Filter(object o)

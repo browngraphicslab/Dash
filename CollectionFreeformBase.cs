@@ -28,7 +28,9 @@ using Rectangle = Windows.UI.Xaml.Shapes.Rectangle;
 using Task = System.Threading.Tasks.Task;
 using Window = Windows.UI.Xaml.Window;
 using DashShared;
-
+using System.Threading;
+using Windows.Storage.Streams;
+using Windows.Storage;
 
 namespace Dash
 {
@@ -46,7 +48,16 @@ namespace Dash
         public abstract CollectionViewModel ViewModel { get; }
         public abstract CollectionView.CollectionViewType Type { get; }
         public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
+        private Mutex _mutex = new Mutex();
 
+        //SET BACKGROUND IMAGE SOURCE
+        public delegate void SetBackground(object backgroundImagePath);
+        private static event SetBackground setBackground;
+
+        //SET BACKGROUND IMAGE OPACITY
+        public delegate void SetBackgroundOpacity(float opacity);
+        private static event SetBackgroundOpacity setBackgroundOpacity;
+    
         // TODO: get canvas in derived class
         public abstract Canvas GetCanvas();
         // TODO: get itemscontrol of derived class
@@ -80,6 +91,21 @@ namespace Dash
             }
             UpdateLayout(); // bcz: unfortunately, we need this because contained views may not be loaded yet which will mess up FitContents
             ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            setBackground += ChangeBackground;
+            setBackgroundOpacity += ChangeOpacity;
+
+            var settingsView = MainPage.Instance.GetSettingsView;
+            if (settingsView.ImageState == SettingsView.BackgroundImageState.Custom)
+            {
+                var storedPath = settingsView.CustomImagePath;
+                if (storedPath != null) _background = storedPath;
+            }
+            else
+            {
+                _background = settingsView.EnumToPathDict[settingsView.ImageState];
+            }
+
+            BackgroundOpacity = settingsView.BackgroundImageOpacity;
         }
 
         protected void OnDataContextChanged(object sender, DataContextChangedEventArgs e)
@@ -95,6 +121,8 @@ namespace Dash
             }
 
             _lastViewModel = null;
+            setBackground -= ChangeBackground;
+            setBackgroundOpacity -= ChangeOpacity;
         }
 
         protected void OnPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -122,9 +150,8 @@ namespace Dash
             var controllers = new List<DocumentController>();
             foreach (var dvm in ViewModel.DocumentViewModels)
                 controllers.Add(copyData ? dvm.DocumentController.GetDataCopy() : dvm.DocumentController.GetViewCopy());
-            // TODO: should it work for standard view?
-            var snap = new CollectionNote(new Point(), Type, double.NaN, double.NaN, controllers).Document;
-            snap.SetField(KeyStore.CollectionFitToParentKey, new TextController("false"), true);
+            var snap = new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN, controllers).Document;
+            snap.SetFitToParent(true);
             return snap;
         }
 
@@ -262,7 +289,6 @@ namespace Dash
                 composite.Children.Add(_itemsPanelCanvas.RenderTransform); // get the current transform
             composite.Children.Add(scaleDelta); // add the new scaling
             composite.Children.Add(translateDelta); // add the new translate
-
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
@@ -270,39 +296,144 @@ namespace Dash
         #endregion
 
         #region BackgroundTiling
-
         bool _resourcesLoaded;
         CanvasImageBrush _bgBrush;
         const double NumberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        const float BackgroundOpacity = 1.0f;
+        private float _bgOpacity = 1.0f;
 
+        /// <summary>
+        /// Collection background tiling image opacity
+        /// </summary>
+        public static float BackgroundOpacity { set => setBackgroundOpacity?.Invoke(value); }
+        private static object _background = "ms-appx:///Assets/transparent_grid_tilable.png";
+        private CanvasBitmap _bgImage;
+
+        /// <summary>
+        /// Collection background tiling image
+        /// </summary>
+        public static object BackgroundImage { set => setBackground?.Invoke(value); }
+
+        /// <summary>
+        /// Called when background opacity is set and the background tiling must be redrawn to reflect the change
+        /// </summary>
+        /// <param name="opacity"></param>
+        private void ChangeOpacity(float opacity)
+        {
+            _bgOpacity = opacity;
+            GetBackgroundCanvas().Invalidate();
+        }
+        #endregion
+
+        /// <summary>
+        /// All of the following background image updating logic was sourced from this article --> https://microsoft.github.io/Win2D/html/LoadingResourcesOutsideCreateResources.htm
+        /// </summary>
+        #region LOADING AND REDRAWING BACKUP ASYNC
+
+        private Task _backgroundTask;
+
+        // 1
         protected void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
-            var task = Task.Run(async () =>
-            {
-                // Load the background image and create an image brush from it
-                var bgImage = await CanvasBitmap.LoadAsync(sender, new Uri("ms-appx:///Assets/transparent_grid_tilable.png"));
-                _bgBrush = new CanvasImageBrush(sender, bgImage)
-                {
-                    Opacity = BackgroundOpacity
-                };
+            _bgBrush = new CanvasImageBrush(sender);
 
-                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
-                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+            // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+            _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+            _resourcesLoaded = true;
 
-                _resourcesLoaded = true;
-            });
-            args.TrackAsyncAction(task.AsAsyncAction());
+            args.TrackAsyncAction(CreateResourcesAsync(sender).AsAsyncAction());
         }
 
+        // 2
+        protected async Task CreateResourcesAsync(CanvasControl sender)
+        {
+            if (_backgroundTask != null)
+            {
+                _backgroundTask.AsAsyncAction().Cancel();
+                try { await _backgroundTask; } catch (Exception e) { Debug.WriteLine(e); }
+                _backgroundTask = null;
+            }
+
+            //Internally null checks _background
+            //NOTE *** Invalid or null input will end the entire update chain and, to the user, nothing will visibily change. ***
+            ChangeBackground(_background);
+        }
+
+        // 3
+        protected async void ChangeBackground(object backgroundImagePath)
+        {
+            // Null-checking. WARNING - if null, Dash throws an Unhandled Exception
+            if (backgroundImagePath == null) return;
+
+            // Now, backgroundImagePath is either <string> or <IRandomAccessStream> - while local ms-appx (assets folder) paths <string> don't need conversion, 
+            // external file system paths <string> need to be converted into <IRandomAccessStream>
+            if (backgroundImagePath is string path && !path.Contains("ms-appx:"))
+            {
+                backgroundImagePath = await FileRandomAccessStream.OpenAsync(path, FileAccessMode.Read);
+            }
+            // Update the path/stream instance var to be used next in LoadBackgroundAsync
+            _background = backgroundImagePath;
+            // Now, register and perform the new loading
+            _backgroundTask = LoadBackgroundAsync(GetBackgroundCanvas());
+        }
+
+        // 4
+        protected async Task LoadBackgroundAsync(CanvasControl canvas)
+        {
+            // Convert the <IRandomAccessStream> and update the <CanvasBitmap> instance var to be used later by the <CanvasImageBrush> in CanvasControl_OnDraw
+            if (_background is string s) // i.e. A rightfully unconverted ms-appx path
+                _bgImage = await CanvasBitmap.LoadAsync(canvas, new Uri(s));
+            else
+                _bgImage = await CanvasBitmap.LoadAsync(canvas, (IRandomAccessStream)_background);
+            // NOTE *** At this point, _backgroundTask will be marked completed. This has bearing on the IsLoadInProgress bool and how that dictates the rendered drawing (see immediately below).
+            // Indicates that the contents of the CanvasControl need to be redrawn. Calling Invalidate results in the Draw event being raised shortly afterward (see immediately below).
+            canvas.Invalidate();
+        }
+
+        // 5
         protected void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
         {
-            if (_resourcesLoaded)
+            if (IsLoadInProgress())
             {
-                // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+                // If the image failed to load in time, simply display a blank white background
+                args.DrawingSession.FillRectangle(0, 0, (float)sender.Width, (float)sender.Height, Colors.White);
+            }
+            else
+            {
+                // If it successfully loaded, set the desired image and the opacity of the <CanvasImageBrush>
+                _bgBrush.Image = _bgImage;
+                _bgBrush.Opacity = _bgOpacity;
+
+                // Lastly, fill a rectangle with the tiling image brush, covering the entire bounds of the canvas control
                 var session = args.DrawingSession;
                 session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
             }
+        }
+
+        protected bool IsLoadInProgress()
+        {
+            // Not gonna happen, see above sequence of events
+            if (_backgroundTask == null) return false;
+
+            // Unless the draw event from Invalidate() outpaces the actual async loading, this won't ever get hit as the LoadBackgroundAsync should have already returned a Task.Completed
+            if (!_backgroundTask.IsCompleted) return true;
+
+            try
+            {
+                // As _background task was set to LoadBackgroundAsync, should have already completed. Wait will be moot. 
+                _backgroundTask.Wait();
+            }
+            catch (AggregateException ae)
+            {
+                // Catch any task-related errors along the way
+                ae.Handle(ex => throw ex);
+            }
+            finally
+            {
+                // _backgroundTask will be set to null, so that CreateResourcesAsync won't be concerned with phantom existing tasks
+                _backgroundTask = null;
+            }
+            // Permits the <CanvasControl> to render the safely loaded image 
+            return false;
         }
 
         /// <summary>
@@ -368,7 +499,6 @@ namespace Dash
                 }
             }
         }
-
         #endregion
 
         #region Tagging
@@ -487,7 +617,7 @@ namespace Dash
         {
             if (_isMarqueeActive)
             {
-                var pos = args.GetCurrentPoint(GetSelectionCanvas()).Position;
+                var pos = args.GetCurrentPoint(SelectionCanvas).Position;
                 var dX = pos.X - _marqueeAnchor.X;
                 var dY = pos.Y - _marqueeAnchor.Y;
 
@@ -515,10 +645,10 @@ namespace Dash
                     _marqueeKeyHandler = new KeyEventHandler(_marquee_KeyDown);
                     MainPage.Instance.AddHandler(KeyDownEvent, _marqueeKeyHandler, false);
                     _marquee.AllowFocusOnInteraction = true;
-                    GetSelectionCanvas().Children.Add(_marquee);
+                    SelectionCanvas.Children.Add(_marquee);
 
                     mInfo = new MarqueeInfo();
-                    GetSelectionCanvas().Children.Add(mInfo);
+                    SelectionCanvas.Children.Add(mInfo);
                 }
 
                 if (_marquee != null) //Adjust the marquee rectangle
@@ -589,7 +719,7 @@ namespace Dash
                 var docs = GetItemsControl().ItemsPanelRoot.Children;
                 foreach (var documentView in docs.Select((d) => d.GetFirstDescendantOfType<DocumentView>()).Where(d => d != null && d.IsHitTestVisible))
                 {
-                    var rect = documentView.TransformToVisual(_itemsPanelCanvas).TransformBounds(
+                    var rect = documentView.TransformToVisual(GetCanvas()).TransformBounds(
                         new Rect(new Point(), new Point(documentView.ActualWidth, documentView.ActualHeight)));
                     if (marquee.IntersectsWith(rect))
                     {
@@ -663,39 +793,45 @@ namespace Dash
             var toSelectFrom = viewsToSelectFrom.ToList();
 
             bool deselect = false;
-            switch (modifier)
+            using (UndoManager.GetBatchHandle())
             {
-                //create a viewcopy of everything selected
-                case VirtualKey.A:
-                    var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                    ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs).Document);
-                    deselect = true;
-                    break;
-                case VirtualKey.T:
-                    type = CollectionView.CollectionViewType.Schema;
-                    goto case VirtualKey.C;
-                case VirtualKey.C:
-                    var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                    ViewModel.AddDocument(
-                        new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
-                    goto case VirtualKey.Delete;
-                case VirtualKey.Back:
-                case VirtualKey.Delete:
-                    foreach (var v in toSelectFrom)
-                    {
-                        v.DeleteDocument();
-                    }
-                    deselect = true;
-                    break;
-                case VirtualKey.G:
-                    ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular, where, marquee.Width, marquee.Height));
-                    deselect = true;
-                    break;
+                switch (modifier)
+                {
+                    //create a viewcopy of everything selected
+                    case VirtualKey.A:
+                        var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
+                        ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs)
+                            .Document);
+                        deselect = true;
+                        break;
+                    case VirtualKey.T:
+                        type = CollectionView.CollectionViewType.Schema;
+                        goto case VirtualKey.C;
+                    case VirtualKey.C:
+                        var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                        ViewModel.AddDocument(
+                            new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
+                        goto case VirtualKey.Delete;
+                    case VirtualKey.Back:
+                    case VirtualKey.Delete:
+                        foreach (var v in toSelectFrom)
+                        {
+                            v.DeleteDocument();
+                        }
+
+                        deselect = true;
+                        break;
+                    case VirtualKey.G:
+                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                            where, marquee.Width, marquee.Height));
+                        deselect = true;
+                        break;
+                }
             }
 
             if (deselect) DeselectAll();
-        }
 
+        }
         #endregion
 
         #region DragAndDrop
@@ -807,8 +943,9 @@ namespace Dash
                 Width = 200,
                 Height = 50,
                 Background = new SolidColorBrush(Colors.Transparent),
-                Visibility = Windows.UI.Xaml.Visibility.Collapsed
+                Visibility = Visibility.Collapsed
             };
+            previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             GetInkHostCanvas().Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
@@ -818,24 +955,33 @@ namespace Dash
         void PreviewTextbox_LostFocus(object sender, RoutedEventArgs e)
         {
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            previewTextbox.Visibility = Visibility.Collapsed;
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
+        }
+
+        protected void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
+        {
+            var text = previewTextbox.Text;
+            if (previewTextbox.Visibility != Visibility.Collapsed)
+            {
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            }
         }
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))
                 return;
-            RemoveHandler(KeyDownEvent, previewTextHandler);
-            if (previewTextbox.Visibility != Windows.UI.Xaml.Visibility.Collapsed)
+            if (previewTextbox.Visibility != Visibility.Collapsed)
             {
                 e.Handled = true;
                 var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
                 if (text == "v" && this.IsCtrlPressed())
                 {
                     ViewModel.Paste(Clipboard.GetContent(), where);
-                    previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                    previewTextbox.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
@@ -853,8 +999,16 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text).Document;
-                Actions.DisplayDocument(ViewModel, postitNote, where);
+                if (SettingsView.Instance.MarkdownEditOn)
+                {
+                    var postitNote = new MarkdownNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
+                else
+                {
+                    var postitNote = new RichTextNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
@@ -935,7 +1089,7 @@ namespace Dash
             if (virtualKeyCode >= 186 && virtualKeyCode <= 222)
             {
                 var shifted = ((shiftState != false || capState != false) &&
-                               (!shiftState || !capState));
+                    (!shiftState || !capState));
                 switch (virtualKeyCode)
                 {
                     case 186: character = shifted ? ":" : ";"; break;
@@ -991,12 +1145,19 @@ namespace Dash
                         editableScriptBox.Loaded -= EditableScriptView_Loaded;
                         editableScriptBox.Loaded += EditableScriptView_Loaded;
                     }
+                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
+                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
+                    if (editableMarkdownBox != null)
+                    {
+                        editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
+                        editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
+                    }
                 }
             }
 
         }
 
-        private void EditableScriptView_Loaded(object sender, RoutedEventArgs e)
+        protected void EditableScriptView_Loaded(object sender, RoutedEventArgs e)
         {
             var textBox = sender as EditableScriptView;
             textBox.Loaded -= EditableScriptView_Loaded;
@@ -1006,7 +1167,7 @@ namespace Dash
             textBox.XTextBox.Focus(FocusState.Programmatic);
         }
 
-        private void TextBox_Loaded(object sender, RoutedEventArgs e)
+        protected void TextBox_Loaded(object sender, RoutedEventArgs e)
         {
             var textBox = sender as EditableTextBlock;
             textBox.Loaded -= TextBox_Loaded;
@@ -1015,11 +1176,20 @@ namespace Dash
             textBox.XTextBox.GotFocus += TextBox_GotFocus;
             textBox.XTextBox.Focus(FocusState.Programmatic);
         }
+        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableMarkdownBlock;
+            textBox.Loaded -= EditableMarkdownBlock_Loaded;
+            textBox.MakeEditable();
+            textBox.XMarkdownBox.GotFocus -= TextBox_GotFocus;
+            textBox.XMarkdownBox.GotFocus += TextBox_GotFocus;
+            textBox.XMarkdownBox.Focus(FocusState.Programmatic);
+        }
 
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             var richEditBox = sender as RichEditBox;
@@ -1029,12 +1199,13 @@ namespace Dash
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
+
         void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;
 
             RemoveHandler(KeyDownEvent, previewTextHandler);
-            previewTextbox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            previewTextbox.Visibility = Visibility.Collapsed;
             loadingPermanentTextbox = false;
             var text = previewTextBuffer;
             textBox.GotFocus -= TextBox_GotFocus;

@@ -1,10 +1,5 @@
 ﻿namespace DashShared
 {
-    public enum Visibility
-    {
-        Visible,
-        Collapsed
-    }
 
     public class FontWeight
     {

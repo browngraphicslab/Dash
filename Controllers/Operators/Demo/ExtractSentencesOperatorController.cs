@@ -41,6 +41,7 @@ namespace Dash
 
         public ExtractSentencesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public ExtractSentencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

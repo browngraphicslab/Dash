@@ -1,8 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -258,6 +261,13 @@ namespace Dash
 
             return succesfulModels;
         }
+
+        public static bool CheckAllModels()
+        {
+            return App.Instance.Container.GetRequiredService<IModelEndpoint<T>>()
+                .CheckAllDocuments(_models.Values);
+        }
+
 
         #endregion
     }

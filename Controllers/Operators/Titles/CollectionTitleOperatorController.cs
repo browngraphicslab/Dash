@@ -13,6 +13,7 @@ namespace Dash
         }
         public CollectionTitleOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
@@ -43,7 +44,7 @@ namespace Dash
             DocumentController firstDoc = null;
             if (inputs[CollectionDocsKey] is ListController<DocumentController> collDocs)
             {
-                firstDoc = collDocs.TypedData.OrderBy(dc => dc.GetPositionField()?.Data.Y)
+                firstDoc = collDocs.TypedData.Where(dc => !dc.GetHidden()).OrderBy(dc => dc.GetPositionField()?.Data.Y)
                     .FirstOrDefault(dc => dc.GetDataDocument().GetField(KeyStore.TitleKey) != null);
 
                 // bcz: this is a hack to avoid infinite recursion when the first document in a collection

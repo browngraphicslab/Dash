@@ -10,9 +10,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -108,6 +111,6 @@ namespace Dash
         public override Canvas GetInkHostCanvas()
         {
             return InkHostCanvas;
-        }
+        }                
     }
 }

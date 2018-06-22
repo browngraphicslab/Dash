@@ -15,6 +15,8 @@ namespace Dash
 
         public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
@@ -47,7 +49,7 @@ namespace Dash
             //var searchResultDocs = (MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection)?.Select(srvm => srvm.ViewDocument) ?? new DocumentController[]{}).ToArray();
             //outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
 
-            var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data?.ToLower() : null;
+            var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
             //search all docs for searchText and get results (list of doc controller)
             var searchResultDocs = (MainSearchBox.SearchHelper.SearchAllDocumentsForSingleTerm(searchText) ?? new DocumentController[] { }).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);

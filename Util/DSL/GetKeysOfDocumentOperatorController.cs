@@ -18,6 +18,7 @@ namespace Dash
 
         public GetKeysOfDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override FieldControllerBase GetDefaultController()

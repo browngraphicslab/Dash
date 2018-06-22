@@ -43,13 +43,10 @@ namespace Dash
 
         public ApiOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public ApiOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
-
-        private ApiOperatorController(ApiOperatorController copy) : this()
         {
         }
 
@@ -58,7 +55,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new ApiOperatorController(this);
+            return new ApiOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

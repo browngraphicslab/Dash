@@ -14,6 +14,7 @@ namespace Dash
 
         public DocumentAppendOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public DocumentAppendOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

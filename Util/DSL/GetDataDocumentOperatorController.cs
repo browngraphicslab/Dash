@@ -19,6 +19,7 @@ namespace Dash
 
         public GetDataDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public GetDataDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

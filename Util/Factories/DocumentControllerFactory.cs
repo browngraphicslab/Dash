@@ -6,7 +6,7 @@ namespace Dash
     {
         public static DocumentController CreateFromModel(DocumentModel model)
         {
-            return new DocumentController(model, false);
+            return new DocumentController(model);
         }
     }
 }

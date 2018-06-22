@@ -20,17 +20,15 @@ using Windows.ApplicationModel.AppService;
 using Windows.UI;
 using Dash.Views.Document_Menu;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Reflection;
 using Microsoft.Toolkit.Uwp.UI;
 using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Timers;
 using Dash.Views;
-using Dash.Views.Document_Menu;
 using Dash.Controllers;
 using Windows.UI.Popups;
 using Windows.Foundation.Collections;
+using Newtonsoft.Json.Linq;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -80,6 +78,8 @@ namespace Dash
             Toolbar.Update(docs);
         }
 
+        public SettingsView GetSettingsView => xSettingsView;
+
     public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()
@@ -119,14 +119,14 @@ namespace Dash
         {
             async Task Success(IEnumerable<DocumentModel> mainPages)
             {
+                Debug.WriteLine(ContentController<FieldModel>.GetControllers<FieldControllerBase>().Count());
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
                 {
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout = new CollectionBox(
-                                new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
+                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -140,6 +140,7 @@ namespace Dash
                     var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
+                LoadSettings();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -163,8 +164,7 @@ namespace Dash
                 MainDocView.ViewModel = new DocumentViewModel(lastWorkspace) {DisableDecorations = true};
 
                 var treeContext = new CollectionViewModel(MainDocument, KeyStore.DataKey);
-                //TODO This might not be necessary and shouldn't be necessary
-                treeContext.Loaded(true);
+                treeContext.Tag = "TreeView VM";
                 xMainTreeView.DataContext = treeContext;
                 xMainTreeView.ChangeTreeViewTitle("My Workspaces");
                 xMainTreeView.ToggleDarkMode(true);
@@ -188,6 +188,39 @@ namespace Dash
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
         }
 
+        #region LOAD AND UPDATE SETTINGS
+
+        private void LoadSettings() => xSettingsView.LoadSettings(GetAppropriateSettingsDoc());
+
+        private DocumentController GetAppropriateSettingsDoc()
+        {
+            var settingsDoc = MainDocument.GetField<DocumentController>(KeyStore.SettingsDocKey);
+            if (settingsDoc != null) return settingsDoc;
+            Debug.WriteLine("GETTING DEFAULT");
+            settingsDoc = GetDefaultSettingsDoc();
+            MainDocument.SetField(KeyStore.SettingsDocKey, settingsDoc, true);
+            return settingsDoc;
+        }
+
+        private static DocumentController GetDefaultSettingsDoc()
+        {
+            var settingsDoc = new DocumentController();
+
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
+            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
+            settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
+            settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
+            settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, 1.0, true);
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsMarkdownModeKey, false, true);
+
+            return settingsDoc;
+        }
+
+        #endregion
+
         /// <summary>
         /// Updates the workspace currently displayed on the canvas.
         /// </summary>
@@ -205,17 +238,18 @@ namespace Dash
             {
                 return true;
             }
-            var workspaceViewCopy = workspace.GetViewCopy();
-            workspaceViewCopy.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-            workspaceViewCopy.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
-            if (workspaceViewCopy.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true") //  !isWorkspace)
+            var workspaceView = workspace;
+            if (!double.IsNaN(workspaceView.GetWidthField().Data) || !double.IsNaN(workspaceView.GetHeightField().Data) ||
+                workspaceView.GetDereferencedField<TextController>(KeyStore.CollectionFitToParentKey, null)?.Data == "true")
             {
-                workspaceViewCopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "false", true);
+                workspaceView.SetWidth(double.NaN);
+                workspaceView.SetHeight(double.NaN);
+                workspaceView.SetFitToParent(false);
             }
-            MainDocView.DataContext = new DocumentViewModel(workspaceViewCopy);
-            setupMapView(workspaceViewCopy);
+            MainDocView.DataContext = new DocumentViewModel(workspaceView);
+            setupMapView(workspaceView);
             MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.WorkspaceHistoryKey).Add(currentWorkspace);
-            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceViewCopy, true);
+            MainDocument.SetField(KeyStore.LastWorkspaceKey, workspaceView, true);
             return true;
         }
 
@@ -420,9 +454,25 @@ namespace Dash
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
+            Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
-            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
+
+            if (!(FocusManager.GetFocusedElement() is RichEditBox))
+            {
+                var ctrlDown = Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+                if (ctrlDown)
+                {
+                    if (e.VirtualKey == VirtualKey.Z)
+                    {
+                        UndoManager.UndoOccured();
+                    } else if (e.VirtualKey == VirtualKey.Y)
+                    {
+                        UndoManager.RedoOccured();
+                    }
+                }
+            }
+
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
                 TabMenu.Instance.HandleKeyDown(sender, e);
@@ -448,6 +498,8 @@ namespace Dash
                     DocumentView.FocusedDocument.ShowSelectedContext();
                 }
             }
+
+            e.Handled = true;
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs e)
@@ -501,6 +553,8 @@ namespace Dash
                 if (!this.IsF1Pressed())
                     DocumentView.FocusedDocument.ShowLocalContext(false);
             }
+
+            e.Handled = true;
         }
 
         private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -589,9 +643,9 @@ namespace Dash
             if (xMapDocumentView == null)
             {
                 var xMap = ContentController<FieldModel>.GetController<DocumentController>("3D6910FE-54B0-496A-87E5-BE33FF5BB59C") ?? new CollectionNote(new Point(), CollectionView.CollectionViewType.Freeform).Document;
-                xMap.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
-                xMap.SetField<NumberController>(KeyStore.WidthFieldKey, double.NaN, true);
-                xMap.SetField<NumberController>(KeyStore.HeightFieldKey, double.NaN, true);
+                xMap.SetFitToParent(true);
+                xMap.SetWidth(double.NaN);
+                xMap.SetHeight(double.NaN);
                 xMapDocumentView = new DocumentView() { DataContext = new DocumentViewModel(xMap), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
                 //xMapDocumentView.IsHitTestVisible = false;
                 Grid.SetColumn(xMapDocumentView, 2);
@@ -603,12 +657,6 @@ namespace Dash
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
             mapTimer.Start();
-        }
-
-        private void snapshotButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>() is CollectionFreeformBase freeFormView)
-                xMainTreeView.ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(freeFormView.Snapshot());
         }
 
         public void Dock(DocumentView toDock, DockDirection dir)
@@ -779,6 +827,7 @@ namespace Dash
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+			Toolbar.EnsureVisible();
         }
 
         public void ToggleSettingsVisibility(bool changeToVisible)

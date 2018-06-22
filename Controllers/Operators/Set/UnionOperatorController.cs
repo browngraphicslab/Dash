@@ -32,6 +32,8 @@ namespace Dash
 
         public UnionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;

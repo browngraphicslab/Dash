@@ -25,27 +25,41 @@ namespace Dash
             get { return _typedData; }
             set
             {
-                if (_typedData != null)
-                {
-                    if (_typedData != value)
-                    {
-                        foreach (var d in _typedData)
-                        {
-                            d.FieldModelUpdated -= ContainedFieldUpdated;
-                        }
-                        foreach (var d in value)
-                        {
-                            d.FieldModelUpdated += ContainedFieldUpdated;
-                        }
-                        _typedData = value;
-                        OnFieldModelUpdated(null);
-
-                        UpdateOnServer();
-                    }
-                }
-                _typedData = value;
+                SetTypedData(value);
             }
         }
+
+        /*
+         * Sets the data property and gives UpdateOnServer an UndoCommand 
+         */
+        private void SetTypedData(List<T> val, bool withUndo = true)
+        {
+            if (_typedData != null)
+            {
+                if (_typedData != val)
+                {
+                    List<T> data = _typedData;
+                    UndoCommand newEvent = new UndoCommand(() => SetTypedData(val, false), () => SetTypedData(data, false));
+
+                    foreach (var d in _typedData)
+                    {
+                        d.FieldModelUpdated -= ContainedFieldUpdated;
+                    }
+                    foreach (var d in val)
+                    {
+                        d.FieldModelUpdated += ContainedFieldUpdated;
+                    }
+                    _typedData = val;
+
+                    UpdateOnServer(withUndo ? newEvent : null);
+                    OnFieldModelUpdated(null);
+
+                }
+            }
+            _typedData = val;
+        }
+
+
         private void ContainedFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
         {
             if (ListContainedFieldFlag.Enabled)
@@ -55,7 +69,7 @@ namespace Dash
                 {
                     Debug.Assert(sender is T);
                     var fieldKey = dargs.Reference.FieldKey;
-                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey))
+                    if (fieldKey.Equals(KeyStore.TitleKey) || fieldKey.Equals(KeyStore.PositionFieldKey) || fieldKey.Equals(KeyStore.HiddenKey))
                     {
                         OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Content, new List<T> { (T)sender }), context);
                     }
@@ -94,16 +108,19 @@ namespace Dash
 
         public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
         public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc?.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
         public ListController(T item) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
+            SaveOnServer();
             Init();
         }
 
@@ -111,9 +128,7 @@ namespace Dash
         {
             //why have a list of none?
             Debug.Assert(!(Model as ListModel).SubTypeInfo.Equals(TypeInfo.None));
-
             TypedData = ContentController<FieldModel>.GetControllers<T>(ListModel.Data).ToList();
-            UpdateOnServer();
             Debug.Assert(TypeInfoHelper.TypeToTypeInfo(typeof(T)) == ListModel.SubTypeInfo);
         }
 
@@ -144,11 +159,13 @@ namespace Dash
             return removed;
         }
 
-        public void Add(T element, int where = -1)
+        public void Add(T element, int where = -1, bool withUndo = true)
         {
             if (AddHelper(element, where))
             {
-                UpdateOnServer();
+                UndoCommand newEvent = new UndoCommand(() => Add(element, where, false), () => Remove(element, false));
+
+                UpdateOnServer(withUndo ? newEvent : null);
 
                 OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
                     ListFieldUpdatedEventArgs.ListChangedAction.Add,
@@ -156,7 +173,7 @@ namespace Dash
             }
         }
 
-        public void AddRange(IList<T> elements)
+        public void AddRange(IList<T> elements, bool withUndo = true)
         {
             foreach (var element in elements)
             {
@@ -164,27 +181,39 @@ namespace Dash
                 //TODO tfs: Remove deleted elements from the list when they are deleted if we can delete fields 
                 // Or just use reference counting if that ever gets implemented
             }
-            UpdateOnServer();
+
+            UndoCommand newEvent = new UndoCommand(() => AddRange(elements, false), () => {
+                foreach (var element in elements) {
+                    Remove(element, false);
+                    } });
+
+            UpdateOnServer(withUndo ? newEvent : null);
 
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add,
                 elements.ToList()));
         }
 
-        public void Remove(T element)
+        public void Remove(T element, bool withUndo = true)
         {
             bool removed = RemoveHelper(element);
             if (removed)
             {
-                UpdateOnServer();
+                UndoCommand newEvent = new UndoCommand(() => Remove(element, false), () => Add(element, -1, false));
+
+                UpdateOnServer(withUndo ? newEvent : null);
 
                 OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
                     ListFieldUpdatedEventArgs.ListChangedAction.Remove,
-                    new List<T> {element}));
+                    new List<T> { element }));
             }
         }
 
-        public void Set(IEnumerable<T> elements)
+        public void Set(IEnumerable<T> elements, bool withUndo = true)
         {
+            //it looks like this function deletes everything in TypedData and replaces it with elements
+            IEnumerable<T> oldElements = TypedData;
+            UndoCommand newEvent = new UndoCommand(() => Set(elements, false), () => Set(oldElements, false));
+
             foreach (var element in TypedData)
             {
                 RemoveHelper(element);
@@ -194,7 +223,7 @@ namespace Dash
             {
                 AddHelper(element);
             }
-            UpdateOnServer();
+            UpdateOnServer(withUndo ? newEvent : null);
 
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(
                 ListFieldUpdatedEventArgs.ListChangedAction.Replace,
@@ -249,38 +278,6 @@ namespace Dash
         public override FieldControllerBase GetDefaultController()
         {
             return new ListController<T>();
-        }
-
-        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.UpdateOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.UpdateOnServer();
-            }
-
-            /*
-            foreach (var fmc in TypedData)
-            {
-                RESTClient.Instance.GetEndpoint<FieldModel>().GetDocument(fmc.Id,
-                    async args =>
-                    {
-                        Debug.Assert(args.ReturnedObjects.Count() > 0);
-                    },
-                    exception =>
-                    {
-
-                    });
-            }*/
-        }
-
-        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.SaveOnServer(success, error);
-            foreach (var fmc in TypedData)
-            {
-                fmc.SaveOnServer();
-            }
         }
 
         /// <summary>
