@@ -41,7 +41,7 @@
             
 
             <!--UI-->
-            <StackPanel x:Name="xCustomizeDisplayContent">
+            <StackPanel x:Name="xCustomizeDisplayContent" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize your display</TextBlock>
                 <TextBlock Margin="10" FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Night Mode</TextBlock>
                 <ToggleSwitch x:Name="xNightModeToggle" Margin="10, -4, 0, 0" IsOn="{x:Bind NightModeOn, Mode=TwoWay}"></ToggleSwitch>
@@ -65,17 +65,19 @@
             </StackPanel>
 
             <!--Controls-->
-            <StackPanel x:Name="xCustomizeControlsContent" Margin="20, 0, 0, 0">
+            <StackPanel x:Name="xCustomizeControlsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Customize controls</TextBlock>
                 <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Mouse scroll mode</TextBlock>
                 <StackPanel Style="{StaticResource RadioButtonStackPanelStyle}">
                     <RadioButton x:Name="xScrollRadio" GroupName="MouseFunc">Scroll</RadioButton>
                     <RadioButton x:Name="xZoomRadio" GroupName="MouseFunc">Zoom</RadioButton>
                 </StackPanel>
+                <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Allow infinite upwards panning</TextBlock>
+                <ToggleSwitch x:Name="xUpwardPanningToggle" Margin="10, 0, 0, 0"/>
             </StackPanel>
 
             <!--Backup-->
-            <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0">
+            <StackPanel x:Name="xManageBackupsContent" Margin="20, 0, 0, 0" PointerEntered="SettingsPanel_OnPointerEntered" PointerExited="SettingsPanel_OnPointerExited">
                 <TextBlock Style="{StaticResource SubheaderStyle}">Database and Backups</TextBlock>
                 <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Erase current database</TextBlock>
                 <StackPanel Orientation="Horizontal">
@@ -117,7 +119,7 @@
                     <Image x:Name="xCorrectDelete" Width="30" Source="ms-appx:///Assets/seriousdelete.png" Margin="13, -10, 0, 0" Tapped="XCorrectDelete_OnTapped" Visibility="Collapsed"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Backup frequency - </TextBlock>
+                    <TextBlock FontWeight="SemiBold" Style="{StaticResource ParagraphStyle}">Backup frequency -</TextBlock>
                     <TextBlock Margin="5, 10, 0, 0"  FontWeight="SemiLight" x:Name="xIntervalDisplay" Style="{StaticResource ParagraphStyle}"/>
                 </StackPanel>
                 <Slider x:Name="xBackupIntervalSlider" 

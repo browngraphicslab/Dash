@@ -65,6 +65,7 @@ namespace Dash
         public static KeyController BackgroundImageStateKey = new KeyController(DashConstants.KeyStore.BackgroundImageStateKey);
         public static KeyController CustomBackgroundImagePathKey = new KeyController(DashConstants.KeyStore.CustomBackgroundImagePathKey);
         public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
+        public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
 
         public static class SearchResultDocumentOutline
         {

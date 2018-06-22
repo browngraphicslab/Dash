@@ -278,7 +278,7 @@ namespace Dash
         }
         public static void    SetIsAdornment(this DocumentController document,bool adornment)
         {
-            document.SetField<TextController>(KeyStore.TitleKey, adornment ? "true":"false", true);
+            document.SetField<TextController>(KeyStore.IsAdornmentKey, adornment ? "true":"false", true);
         }
 
         public static  Color? GetBackgroundColor(this DocumentController document)
@@ -319,21 +319,46 @@ namespace Dash
         {
             document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
         }
-        public static bool GetTransient(this DocumentController document)
+
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
+        }
+        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        {
+            var todocs = document.GetLinks(LinkFromOrToKey);
+            if (todocs == null)
+            {
+                document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);
+            }
+            else
+                todocs.AddRange(docs);
+        }
+
+        public static DocumentController GetRegionDefinition(this DocumentController document)
+        {
+            return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
+        }
+        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        {
+            document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+        }
+
+        public static bool    GetTransient(this DocumentController document)
         {
             var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
             return data?.Data == "true";
         }
-        public static void SetTransient(this DocumentController document, bool hidden)
+        public static void    SetTransient(this DocumentController document, bool hidden)
         {
             document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
         }
 
-        public static int ?GetSideCount(this DocumentController document)
+        public static int ?   GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void SetSideCount(this DocumentController document, int count)
+        public static void    SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }

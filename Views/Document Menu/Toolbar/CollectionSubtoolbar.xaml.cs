@@ -50,12 +50,13 @@ namespace Dash
             xCollectionCommandbar.Loaded += delegate
             {
                 var sp = xCollectionCommandbar.GetFirstDescendantOfType<StackPanel>();
-                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                sp?.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
                     Path = new PropertyPath(nameof(Orientation)),
                     Mode = BindingMode.OneWay
                 });
+
                 Visibility = Visibility.Collapsed;
             };
         }

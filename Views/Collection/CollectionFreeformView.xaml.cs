@@ -913,6 +913,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 Visibility = Visibility.Collapsed
             };
+            previewTextbox.Paste += previewTextbox_Paste;
             previewTextbox.Unloaded += (s, e) => RemoveHandler(KeyDownEvent, previewTextHandler);
             InkHostCanvas.Children.Add(previewTextbox);
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
@@ -926,12 +927,21 @@ namespace Dash
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
         }
 
+        private void previewTextbox_Paste(object sender, TextControlPasteEventArgs e)
+        {
+            var text = previewTextbox.Text;
+            if (previewTextbox.Visibility != Visibility.Collapsed)
+            {
+                var where = new Point(Canvas.GetLeft(previewTextbox), Canvas.GetTop(previewTextbox));
+            }
+        }
+
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))
                 return;
-            RemoveHandler(KeyDownEvent, previewTextHandler);
             if (previewTextbox.Visibility != Visibility.Collapsed)
             {
                 e.Handled = true;
@@ -957,8 +967,16 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
-                var postitNote = new RichTextNote(text: text).Document;
-                Actions.DisplayDocument(ViewModel, postitNote, where);
+                if (SettingsView.Instance.MarkdownEditOn)
+                {
+                    var postitNote = new MarkdownNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
+                else
+                {
+                    var postitNote = new RichTextNote(text: text).Document;
+                    Actions.DisplayDocument(ViewModel, postitNote, where);
+                }
             }
         }
         public void LoadNewDataBox(string keyname, Point where, bool resetBuffer = false)
@@ -1095,6 +1113,13 @@ namespace Dash
                         editableScriptBox.Loaded -= EditableScriptView_Loaded;
                         editableScriptBox.Loaded += EditableScriptView_Loaded;
                     }
+                    var a = documentView.GetDescendantsOfType<EditableMarkdownBlock>();
+                    var editableMarkdownBox = documentView.GetDescendantsOfType<EditableMarkdownBlock>().FirstOrDefault();
+                    if (editableMarkdownBox != null)
+                    {
+                        editableMarkdownBox.Loaded -= EditableMarkdownBlock_Loaded;
+                        editableMarkdownBox.Loaded += EditableMarkdownBlock_Loaded;
+                    }
                 }
             }
 
@@ -1119,6 +1144,15 @@ namespace Dash
             textBox.XTextBox.GotFocus += TextBox_GotFocus;
             textBox.XTextBox.Focus(FocusState.Programmatic);
         }
+        private void EditableMarkdownBlock_Loaded(object sender, RoutedEventArgs e)
+        {
+            var textBox = sender as EditableMarkdownBlock;
+            textBox.Loaded -= EditableMarkdownBlock_Loaded;
+            textBox.MakeEditable();
+            textBox.XMarkdownBox.GotFocus -= TextBox_GotFocus;
+            textBox.XMarkdownBox.GotFocus += TextBox_GotFocus;
+            textBox.XMarkdownBox.Focus(FocusState.Programmatic);
+        }
 
         void RichEditBox_GotFocus(object sender, RoutedEventArgs e)
         {
@@ -1133,6 +1167,7 @@ namespace Dash
             richEditBox.Document.SetText(TextSetOptions.None, text);
             richEditBox.Document.Selection.SetRange(text.Length, text.Length);
         }
+
         void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;

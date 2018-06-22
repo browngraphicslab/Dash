@@ -50,6 +50,8 @@ namespace Dash
         private const string Dot = "ms-appx:///Assets/transparent_dot_tilable.png";
         private const string Blank = "ms-appx:///Assets/transparent_blank_tilable.png";
 
+        private List<StackPanel> _mainPanels;
+
         #region ENUMS
 
         public enum BackupClearSafetyConfidence
@@ -104,6 +106,8 @@ namespace Dash
             }
         }
 
+        public bool MarkdownEditOn { get; private set; } = false;
+
         public int NoteFontSize
         {
             get => (int) _settingsDoc.GetField<NumberController>(KeyStore.SettingsFontSizeKey).Data; 
@@ -132,6 +136,12 @@ namespace Dash
         {
             get => (float) _settingsDoc.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
             set => _settingsDoc.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, value, true);
+        }
+
+        public bool NoUpperLimit
+        {
+            get => _settingsDoc.GetField<BoolController>(KeyStore.SettingsUpwardPanningKey).Data;
+            set => _settingsDoc.SetField<NumberController>(KeyStore.SettingsUpwardPanningKey, value, true);
         }
 
         public int NumBackups
@@ -177,6 +187,13 @@ namespace Dash
             _clearConfidence = BackupClearSafetyConfidence.Unconfident;
             _eraseConfidence = DbEraseSafetyConfidence.Unconfident;
             _endpoint = App.Instance.Container.GetRequiredService<IModelEndpoint<FieldModel>>();
+
+            _mainPanels = new List<StackPanel>
+            {
+                xCustomizeControlsContent,
+                xCustomizeDisplayContent,
+                xManageBackupsContent
+            };
 
             SetupSliderBounds();
         }
@@ -245,6 +262,7 @@ namespace Dash
 
             AddSettingsBinding<TextController>(xScrollRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Scroll));
             AddSettingsBinding<TextController>(xZoomRadio, ToggleButton.IsCheckedProperty, KeyStore.SettingsMouseFuncKey, new RadioEnumToBoolConverter(MouseFuncMode.Zoom));
+            AddSettingsBinding<BoolController>(xUpwardPanningToggle, ToggleSwitch.IsOnProperty, KeyStore.SettingsUpwardPanningKey);
 
             AddSettingsBinding<TextController>(xGridRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Grid), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Grid));
             AddSettingsBinding<TextController>(xLineRadio, ToggleButton.IsCheckedProperty, KeyStore.BackgroundImageStateKey, new RadioEnumToBoolConverter(BackgroundImageState.Line), handler: (sender, dp) => ProcessEnumsAndImage(BackgroundImageState.Line));
@@ -498,5 +516,16 @@ namespace Dash
             if (ImageState != BackgroundImageState.Custom) return;
             await TrySetUserPath();
         }
+
+        private void SettingsPanel_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is StackPanel activePanel)
+            {
+                activePanel.Opacity = 1.0;
+                foreach (var panel in _mainPanels) { if (panel != activePanel) panel.Opacity = 0.7; }
+            }
+        }
+
+        private void SettingsPanel_OnPointerExited(object sender, PointerRoutedEventArgs e) { foreach (var panel in _mainPanels) { panel.Opacity = 1.0; } }
     }
 }

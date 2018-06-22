@@ -207,6 +207,7 @@ namespace Dash
             var settingsDoc = new DocumentController();
 
             settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
+            settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
             settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
@@ -454,7 +455,6 @@ namespace Dash
             Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
                 return;
-            Debug.WriteLine("FOCUSED = " + FocusManager.GetFocusedElement());
 
             if (xCanvas.Children.Contains(TabMenu.Instance))
             {
@@ -809,6 +809,7 @@ namespace Dash
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
+			Toolbar.EnsureVisible();
         }
 
         public void ToggleSettingsVisibility(bool changeToVisible)

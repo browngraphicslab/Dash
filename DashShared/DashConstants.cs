@@ -110,6 +110,7 @@ namespace DashShared
         public const int DefaultFontSize = 16; //pt
         public const int DefaultNumBackups = 3; //backups
         public const int DefaultBackupInterval = 900; //seconds
+        public const bool DefaultInfiniteUpwardPanningStatus = true;
 
         #endregion LocalServer
 
@@ -211,6 +212,7 @@ namespace DashShared
             public static KeyModel BackgroundImageStateKey = new KeyModel("3EAE5AB5-4503-4519-9EF3-0FA5BDDE59E6", "State of Background Image (Radio Buttons)");
             public static KeyModel CustomBackgroundImagePathKey = new KeyModel("DA719660-D5CE-40CE-9BDE-D57B764CA6BF", "Custom Path to Background Image");
             public static KeyModel BackgroundImageOpacityKey = new KeyModel("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC", "Background Image Opacity");
+            public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
         }
 
         public static class TypeStore

@@ -32,7 +32,6 @@ namespace Dash
         {
             return Title;
         }
-        
 
         /// <summary>
         ///     A wrapper for <see cref="" />. Change this to propogate changes
@@ -393,18 +392,11 @@ namespace Dash
         public void Link(DocumentController target)
         {
             var linkDocument = new RichTextNote("<link description>").Document;
-
-            var oldSource = target.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkFromKey, null);
-            var sources = oldSource?.TypedData ?? new List<DocumentController>();
-            sources.Add(linkDocument);
-            target.GetDataDocument().SetField(KeyStore.LinkFromKey, new ListController<DocumentController>(sources), true);
-
-            var oldlinks = GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.LinkToKey, null);
-            var links = oldlinks?.TypedData ?? new List<DocumentController>();
-            links.Add(linkDocument);
-            GetDataDocument().SetField(KeyStore.LinkToKey, new ListController<DocumentController>(links), true);
-            linkDocument.GetDataDocument().SetField(KeyStore.LinkFromKey, new ListController<DocumentController>(this), true);
-            linkDocument.GetDataDocument().SetField(KeyStore.LinkToKey, new ListController<DocumentController>(target), true);
+            
+            target.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
+            GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { linkDocument }));
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkFromKey, new List<DocumentController>(new DocumentController[] { this }));
+            linkDocument.GetDataDocument().AddToLinks(KeyStore.LinkToKey, new List<DocumentController>(new DocumentController[] { target }));
         }
         
         private bool IsTypeCompatible(KeyController key, FieldControllerBase field)
@@ -426,7 +418,7 @@ namespace Dash
         /// </summary>
         /// <param name="key">the key for the list field being modified</param>
         /// <param name="value">the value being removed from the list</param>
-        public void RemoveFromListField<T>(KeyController key, T value) where T: FieldControllerBase
+        public void  RemoveFromListField<T>(KeyController key, T value) where T: FieldControllerBase
         {
             GetDereferencedField<ListController<T>>(key, null)?.Remove(value);
 
@@ -744,10 +736,17 @@ namespace Dash
         /// </summary>
         public TypeInfo GetRootFieldType(KeyController key)
         {
-            var operatorController = GetField<ListController<OperatorController>>(KeyStore.OperatorKey).TypedData.First();
-            if (operatorController != null && operatorController.Outputs.ContainsKey(key))
+            var operatorControllerStart = GetField<ListController<OperatorController>>(KeyStore.OperatorKey);
+            if (operatorControllerStart != null)
             {
-                return operatorController.Outputs[key];
+                foreach (var controller in operatorControllerStart.TypedData)
+                {
+                    if (controller != null && controller.Outputs.ContainsKey(key))
+                    {
+                        return controller.Outputs[key];
+                    }
+                    
+                }
             }
 
             return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
@@ -1413,5 +1412,7 @@ namespace Dash
 
 
         #endregion
+
+		
     }
 }

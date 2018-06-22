@@ -153,6 +153,7 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
@@ -216,6 +217,7 @@
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
+    <Compile Include="IAnnotationEnabled.cs" />
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
@@ -248,6 +250,7 @@
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\MarkdownBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -260,6 +263,9 @@
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
+      <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Export\ExportToTxt.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
     <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
@@ -306,12 +312,16 @@
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
+    <Compile Include="Util\ImageRegionBox.xaml.cs">
+      <DependentUpon>ImageRegionBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
@@ -402,6 +412,9 @@
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml.cs">
+      <DependentUpon>AnnotationSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -829,6 +842,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Util\EditableMarkdownBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Util\ImageRegionBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Util\StateCropControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -870,6 +891,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

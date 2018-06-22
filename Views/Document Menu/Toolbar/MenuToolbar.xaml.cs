@@ -329,8 +329,16 @@ namespace Dash
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
-                    //If the user has clicked on valid content (text, image, video, etc)...
-                    if (subtoolbarElement != null)
+					//Annnotation controls
+	                var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+	                if (annot != null)
+	                {
+		                System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
+						
+	                }
+
+					//If the user has clicked on valid content (text, image, video, etc)...
+					if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;
@@ -747,10 +755,15 @@ namespace Dash
             xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
 
-            //ensure toolbar is visible
-            xToolbar.IsEnabled = true;
-            xToolbar.Visibility = Visibility.Visible;
+            EnsureVisible();
         }
+
+	    public void EnsureVisible()
+	    {
+		    //ensure toolbar is visible
+		    xToolbar.IsEnabled = true;
+		    xToolbar.Visibility = Visibility.Visible;
+		}
 
         /// <summary>
         /// Toggles toolbar locked-state when pin button is clicked.
