@@ -13,6 +13,8 @@ namespace Dash
 
         public QuizletOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
@@ -38,7 +40,9 @@ namespace Dash
         {
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
 
         }

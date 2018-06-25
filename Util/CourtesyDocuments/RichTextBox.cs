@@ -80,7 +80,8 @@ namespace Dash
                 Document = docController,
                 Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,
-                Context = context
+                Context = context,
+                FallbackValue = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
             };
             element.xRichEditBox.AddFieldBinding(RichEditBox.BackgroundProperty, backgroundBinding);
         }

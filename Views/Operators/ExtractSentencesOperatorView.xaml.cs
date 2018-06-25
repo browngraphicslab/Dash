@@ -53,18 +53,16 @@ namespace Dash
             }
         }
 
-        private void OnTextFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void OnTextFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             XTextFieldBox.Text = ContentController<FieldModel>.GetController<KeyController>(tfmc.Data).Name;
 
         }
 
-        private void OnInputCollectionChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void OnInputCollectionChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-            InputCollection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+            InputCollection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             _allHeaders = Util.GetTypedHeaders(InputCollection); // TODO update the headers when a document is added to the input collection!
         }
 

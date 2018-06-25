@@ -1428,8 +1428,8 @@
 
 
             <!-- Operator View (& Links)-->
-            <x:Double x:Key="InputHandleWidth">20</x:Double>
-            <x:Double x:Key="InputHandleHeight">20</x:Double>
+            <x:Double x:Key="InputHandleWidth">25</x:Double>
+            <x:Double x:Key="InputHandleHeight">25</x:Double>
             <x:Double x:Key="InputHandleWidthHighlighted">25</x:Double>
             <x:Double x:Key="InputHandleHeightHighlighted">25</x:Double>
             <Style TargetType="Ellipse" x:Key="xOutputLinkHandle">

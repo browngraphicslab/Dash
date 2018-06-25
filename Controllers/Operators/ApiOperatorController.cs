@@ -43,13 +43,10 @@ namespace Dash
 
         public ApiOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public ApiOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
-
-        private ApiOperatorController(ApiOperatorController copy) : this()
         {
         }
 
@@ -58,7 +55,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new ApiOperatorController(this);
+            return new ApiOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
@@ -178,7 +175,9 @@ namespace Dash
             return true;
         }
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var url = (inputs[UrlKey] as TextController).Data;
             var method = (inputs[MethodKey] as TextController).Data;

@@ -100,6 +100,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\Icons\api-icon.png" />
     <Content Include="Assets\AppList\AppList.scale-100.png" />
     <Content Include="Assets\AppList\AppList.scale-125.png" />
     <Content Include="Assets\AppList\AppList.scale-150.png" />
@@ -133,12 +134,22 @@
     <Content Include="Assets\AppList\AppList.targetsize-80_altform-unplated.png" />
     <Content Include="Assets\AppList\AppList.targetsize-96.png" />
     <Content Include="Assets\AppList\AppList.targetsize-96_altform-unplated.png" />
+    <Content Include="Assets\Icons\aud-icon.png" />
     <Content Include="Assets\Badge\Badge.scale-100.png" />
     <Content Include="Assets\Badge\Badge.scale-125.png" />
     <Content Include="Assets\Badge\Badge.scale-150.png" />
     <Content Include="Assets\Badge\Badge.scale-200.png" />
     <Content Include="Assets\Badge\Badge.scale-400.png" />
+    <Content Include="Assets\Icons\col-icon.png" />
     <Content Include="Assets\dashicon.png" />
+    <Content Include="Assets\Icons\data-icon.png" />
+    <Content Include="Assets\Icons\doc-icon.png" />
+    <Content Include="Assets\Fonts\FontAwesome.otf" />
+    <Content Include="Assets\Icons\Unavailable.png" />
+    <Content Include="Assets\delete.png" />
+    <Content Include="Assets\eraser.png" />
+    <Content Include="Assets\changeImage.png" />
+    <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="win32\Office.Interop.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -149,6 +160,7 @@
     <None Include="Dash_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
@@ -157,7 +169,9 @@
     <Compile Include="Browser\SetUrlRequest.cs" />
     <Compile Include="Browser\SetScrollRequest.cs" />
     <Compile Include="Browser\UpdateTabBrowserRequest.cs" />
+    <Compile Include="CollectionFreeformBase.cs" />
     <Compile Include="Controllers\AudioController.cs" />
+    <Compile Include="Controllers\BoolController.cs" />
     <Compile Include="Controllers\DateTimeController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\FieldControllerBase.cs" />
@@ -183,6 +197,7 @@
     <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
+    <Compile Include="Controllers\Operators\search\GetAllDocsByAlias.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocumentsWithKeyFieldValuesOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetDocumentsInCollectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\IntersectSearchOperator.cs" />
@@ -199,22 +214,25 @@
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
+    <Compile Include="Converters\BoolInverter.cs" />
     <Compile Include="Converters\BoolToBrushConverter.cs" />
-    <Compile Include="Controllers\KeyControllerGeneric.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
+    <Compile Include="Converters\RadioEnumToBoolConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
     <Compile Include="Converters\ShapeInformationToGeometryConverter.cs" />
-    <Compile Include="Converters\ShapeNameToShapeConverter.cs" />
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
+    <Compile Include="IAnnotationEnabled.cs" />
     <Compile Include="Models\AudioModel.cs" />
+    <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\AccessStreamModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
@@ -230,9 +248,8 @@
     <Compile Include="Rest\Endpoints\IQuery.cs" />
     <Compile Include="Rest\Endpoints\DocumentTypeLinqQuery.cs" />
     <Compile Include="Rest\Endpoints\LocalEverythingEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalFieldEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\LocalKeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\LocalModelEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\LocalSqliteEndpoint.cs" />
     <Compile Include="Rest\Endpoints\SearchQuery.cs" />
     <Compile Include="Util\ComputerVision.cs" />
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
@@ -241,6 +258,7 @@
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\MarkdownBox.cs" />
     <Compile Include="Util\CourtesyDocuments\MeltOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PdfBox.cs" />
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
@@ -255,6 +273,9 @@
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
+      <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Export\ExportToTxt.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
     <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
@@ -301,6 +322,9 @@
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
+    <Compile Include="Util\ImageRegionBox.xaml.cs">
+      <DependentUpon>ImageRegionBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />
@@ -308,6 +332,7 @@
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
     <Compile Include="Util\NoteDocuments\NoteDocument.cs" />
+    <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\TemplateEditor.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
@@ -359,6 +384,9 @@
     <Compile Include="Util\TemplateView.xaml.cs">
       <DependentUpon>TemplateView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\TypeTimer.cs" />
+    <Compile Include="Util\UndoCommand.cs" />
+    <Compile Include="Util\UndoManager.cs" />
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
@@ -371,6 +399,9 @@
     <Compile Include="ViewModels\TabItemViewModel.cs" />
     <Compile Include="Views\Collection\CollectionGraphView.xaml.cs">
       <DependentUpon>CollectionGraphView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
+      <DependentUpon>CollectionStandardView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Collection\CollectionTimelineView.xaml.cs">
       <DependentUpon>CollectionTimelineView.xaml</DependentUpon>
@@ -421,6 +452,9 @@
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml.cs">
       <DependentUpon>GroupingSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml.cs">
+      <DependentUpon>AnnotationSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ImageSubtoolbar.xaml.cs">
       <DependentUpon>ImageSubtoolbar.xaml</DependentUpon>
@@ -657,7 +691,6 @@
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
-    <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
@@ -761,6 +794,9 @@
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
+    <Compile Include="WebBoxView.xaml.cs">
+      <DependentUpon>WebBoxView.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -768,14 +804,13 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\api-icon.png" />
     <Content Include="Assets\Centerlg.png" />
-    <Content Include="Assets\col-icon.png" />
     <Content Include="Assets\DefaultImage.png" />
-    <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.jpg" />
+    <Content Include="Assets\Icons\html-icon.png" />
+    <Content Include="Assets\Icons\img-icon.png" />
+    <Content Include="Assets\Icons\rtf-icon.png" />
     <Content Include="Assets\GroupColorIcon.png" />
-    <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\jan_2018_dash_logo.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-100.png" />
     <Content Include="Assets\Large\Large310x310Logo.scale-125.png" />
@@ -790,6 +825,10 @@
     <Content Include="Assets\Medium\Medium150x150Logo.scale-150.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-200.png" />
     <Content Include="Assets\Medium\Medium150x150Logo.scale-400.png" />
+    <Content Include="Assets\Icons\opr-icon.png" />
+    <Content Include="Assets\Icons\pdf-icon.png" />
+    <Content Include="Assets\revert.png" />
+    <Content Include="Assets\seriousdelete.png" />
     <Content Include="Assets\transparent_blank_tilable.png" />
     <Content Include="Assets\transparent_dot_tilable.png" />
     <Content Include="Assets\transparent_line_tilable.png" />
@@ -813,6 +852,7 @@
     <Content Include="Assets\Store\StoreLogo.scale-400.png" />
     <Content Include="Assets\transparent_grid_tilable.png" />
     <Content Include="Assets\DefaultVideo.mp4" />
+    <Content Include="Assets\Icons\vid-icon.png" />
     <Content Include="Assets\unlocked.png" />
     <Content Include="Assets\pinned.png" />
     <Content Include="Assets\Wide\Wide310x150Logo.scale-100.png" />
@@ -861,6 +901,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Collection\CollectionGraphView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Collection\CollectionStandardView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\EditableMarkdownBlock.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Util\ImageRegionBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -925,6 +977,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\GroupingSubtoolbar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\AnnotationSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1204,6 +1260,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="WebBoxView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DashShared\DashShared.csproj">
@@ -1234,6 +1294,12 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.6</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite">
+      <Version>2.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.Sqlite.Core">
+      <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
       <Version>2.1.0</Version>

@@ -36,6 +36,7 @@ namespace Dash
         {
             InitializeComponent();
             FormatDropdownMenu();
+	        xToggleAnnotations.IsChecked = false;
 
             //binds orientation of the subtoolbar to the current orientation of the main toolbar (inactive functionality)
             xImageCommandbar.Loaded += delegate
@@ -123,11 +124,14 @@ namespace Dash
             var replacement = await imagePicker.PickSingleFileAsync();
             if (replacement != null)
             {
+                UndoManager.StartBatch();
                 _currentDocController.SetField<ImageController>(KeyStore.DataKey,
                     await ImageToDashUtil.GetLocalURI(replacement), true);
                 await _currentImage.ReplaceImage();
+                UndoManager.EndBatch();
             }
         }
+
 
         /// <summary>
         /// Enables the subtoolbar access to the Document View of the image that was selected on tap.
@@ -159,5 +163,22 @@ namespace Dash
             if (_currentImage.IsCropping) return;
             await _currentImage.MirrorHorizontal();
         }
-    }
+
+
+	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
+	    {
+		    xImageCommandbar.IsOpen = true;
+			_currentImage?.ShowRegions();
+		    xToggleAnnotations.Label = "Hide";
+	
+	    }
+
+	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
+	    {
+		    xImageCommandbar.IsOpen = true;
+			_currentImage?.HideRegions();
+		    xToggleAnnotations.Label = "Show";
+	    }
+
+	}
 }

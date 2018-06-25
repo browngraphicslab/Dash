@@ -9,7 +9,7 @@ namespace Dash.Controllers
         public ReferenceController DocumentReference { get; private set; }
 
         DocumentController _lastDoc = null;
-        void fieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        void fieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             DisposeField();
             Init();
@@ -17,6 +17,7 @@ namespace Dash.Controllers
 
         public PointerReferenceController(ReferenceController documentReference, KeyController key) : base(new PointerReferenceModel(documentReference.Id, key.Id))
         {
+            SaveOnServer();
             Init();
         }
         public PointerReferenceController(PointerReferenceModel pointerReferenceFieldModel) : base(pointerReferenceFieldModel)
@@ -58,17 +59,6 @@ namespace Dash.Controllers
         public override string GetDocumentId(Context context)
         {
             return GetDocumentController(context).Id;
-        }
-
-        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            DocumentReference.SaveOnServer(success, error);
-            base.SaveOnServer(success, error);
-        }
-        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            DocumentReference.UpdateOnServer(success, error);
-            base.UpdateOnServer(success, error);
         }
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)

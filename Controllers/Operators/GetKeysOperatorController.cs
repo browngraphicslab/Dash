@@ -16,6 +16,7 @@ namespace Dash
 
         public GetKeysOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public GetKeysOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -39,7 +40,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("0FE2858F-CB94-4163-B4CD-CA84F99438E4", "Get Keys");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var inputCollection = inputs[CollectionKey] as BaseListController;
 

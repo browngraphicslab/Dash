@@ -21,10 +21,16 @@ namespace Dash
         /// </summary>
         public bool IsRequired { get; set; }
 
-        public IOInfo(TypeInfo type, bool isRequired)
+        /// <summary>
+        /// True if an update of this field should trigger the operator to re-execute
+        /// </summary>
+        public bool TriggerUpdate { get; set; }
+
+        public IOInfo(TypeInfo type, bool isRequired, bool triggerUpdate = true)
         {
             Type = type;
             IsRequired = isRequired;
+            TriggerUpdate = triggerUpdate;
         }
     }
 
@@ -118,7 +124,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null);
 
         /// <summary>
         /// Create a new <see cref="OperatorController"/> associated with the passed in <see cref="OperatorFieldModel" />

@@ -20,6 +20,7 @@ namespace Dash
 
         public UnionSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public UnionSearchOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -37,7 +38,9 @@ namespace Dash
         {
             [ResultsKey] = TypeInfo.Document
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var d1 = inputs[Dict1Key] as DocumentController;
             var d2 = inputs[Dict2Key] as DocumentController;

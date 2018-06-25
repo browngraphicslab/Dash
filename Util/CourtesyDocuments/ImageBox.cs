@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,19 +26,16 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
-        
-       
 
-       
-        
-
-        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200, ImageRegionBox region = null)
         {
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
             (fields[KeyStore.VerticalAlignmentKey] as TextController).Data = VerticalAlignment.Top.ToString();
             SetupDocument(DocumentType, PrototypeId, "ImageBox Prototype Layout", fields);
+
         }
+
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the image
@@ -54,9 +52,28 @@ namespace Dash
             return editableImage;
         }
 
-        
+	    public static FrameworkElement MakeView(DocumentController docController, Context context, ImageRegionBox region)
+	    {
+		    // create the image
 
-        protected static void SetupImageBinding(Image image, DocumentController controller,
+		    var editableImage = new EditableImage(docController, context);
+
+		    var image = editableImage.Image;
+
+		    // setup bindings on the image
+		    SetupBindings(image, docController, context);
+		    SetupImageBinding(image, docController, context);
+
+			//add existing regions
+		    if (region != null)
+		    {
+				editableImage.xRegionsGrid.Children.Add(region);
+		    }
+		    return editableImage;
+	    }
+
+
+		protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)
         {
             BindImageSource(image, controller, context);
@@ -74,5 +91,13 @@ namespace Dash
             };
             image.AddFieldBinding(Image.SourceProperty, binding);
         }
-    }
+
+	    public static DocumentController MakeRegionDocument(DocumentView image)
+	    {
+		    var im = image.GetFirstDescendantOfType<EditableImage>();
+		    return im.GetRegionDocument();
+	    }
+
+		
+	}
 }
