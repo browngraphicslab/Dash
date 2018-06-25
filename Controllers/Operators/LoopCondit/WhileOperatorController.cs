@@ -43,21 +43,13 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, 
             Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var Bool = ((BoolController)inputs[BoolKey]).Data;
-            var BlockIf = inputs[BlockKey];
-
-            if (Bool)
-            {
-            }
-
-
-            //Todo: BoolController
-            outputs[ResultKey] = Bool ? BlockIf : null;
+            //TODO: get rid of output necesary
+            outputs[ResultKey] = new NumberController(0);
         }
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new IfOperatorController();
+            return new WhileOperatorController();
         }
     }
 }

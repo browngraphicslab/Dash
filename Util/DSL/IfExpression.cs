@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class IfExpression : ScriptExpression
+    public class IfExpression : ScriptExpression
     {
         private string _opName;
         private Dictionary<KeyController, ScriptExpression> _parameters;

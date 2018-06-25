@@ -268,6 +268,8 @@
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\DSL\ForExpression.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />

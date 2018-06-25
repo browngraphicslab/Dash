@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using DashShared;
 using Zu.TypeScript;
 using Zu.TypeScript.TsTypes;
@@ -196,7 +197,6 @@ namespace Dash
                     var identifierExpression = node as Identifier;
 
                     return new VariableExpression(identifierExpression.Text);
-                    break;
                 case SyntaxKind.BreakKeyword:
                     break;
                 case SyntaxKind.CaseKeyword:
@@ -253,7 +253,6 @@ namespace Dash
                     break;
                 case SyntaxKind.ThisKeyword:
                     return new VariableExpression("this");
-                    break;
                 case SyntaxKind.ThrowKeyword:
                     break;
                 case SyntaxKind.TrueKeyword:
@@ -452,7 +451,17 @@ namespace Dash
                 case SyntaxKind.PrefixUnaryExpression:
                     break;
                 case SyntaxKind.PostfixUnaryExpression:
-                    break;
+                    var varToIncrement = (PostfixUnaryExpression) node;
+                    var res = varToIncrement.Children[0].GetText();
+                    switch (varToIncrement.Operator)
+                    {
+                        case SyntaxKind.PlusPlusToken:
+                            return ParseToExpression(res + " = " + res + " + 1");
+                        case SyntaxKind.MinusMinusToken:
+                            return ParseToExpression(res + " = " + res + " - 1");
+                        default:
+                            return null;
+                    }
                 case SyntaxKind.BinaryExpression:
                     var binaryExpr = node as BinaryExpression;
 
@@ -507,12 +516,11 @@ namespace Dash
                                     {SetFieldOperatorController.KeyNameKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey]},
                                     {SetFieldOperatorController.FieldValueKey, rightBinExpr},
                                 });
-                            } else if (leftBinExpr is VariableExpression)
+                            } else if (leftBinExpr is VariableExpression safeBinExpr)
                             {
-                                string varName = (leftBinExpr as VariableExpression).GetVariableName();
                                 return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                                 {
-                                    {VariableAssignOperatorController.VariableKey, new LiteralExpression(new TextController(varName))},
+                                    {VariableAssignOperatorController.VariableKey, new LiteralExpression(new TextController(safeBinExpr.GetVariableName()))},
                                     {VariableAssignOperatorController.AssignmentKey, rightBinExpr},
                                 });
                             }
@@ -523,11 +531,25 @@ namespace Dash
                                 {EqualityOperatorController.AKey,  leftBinExpr},
                                 {EqualityOperatorController.BKey,  rightBinExpr},
                             });
+                        case SyntaxKind.PlusEqualsToken:
+                            var varName = ((VariableExpression) leftBinExpr).GetVariableName();
+                            var incVal = ((LiteralExpression) rightBinExpr).GetField();
+                            return ParseToExpression(varName + " = " + varName + " + " + incVal);
+                        case SyntaxKind.MinusEqualsToken:
+                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
+                            incVal = ((LiteralExpression)rightBinExpr).GetField();
+                            return ParseToExpression(varName + " = " + varName + " - " + incVal);
+                        case SyntaxKind.AsteriskEqualsToken:
+                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
+                            incVal = ((LiteralExpression)rightBinExpr).GetField();
+                            return ParseToExpression(varName + " = " + varName + " * " + incVal);
+                        case SyntaxKind.SlashEqualsToken:
+                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
+                            incVal = ((LiteralExpression)rightBinExpr).GetField();
+                            return ParseToExpression(varName + " = " + varName + " / " + incVal);
                         default:
                             throw new Exception("Unkown binary expression type");
                     }
-
-                    break;
                 case SyntaxKind.ConditionalExpression:
                     break;
                 case SyntaxKind.TemplateExpression:
@@ -555,13 +577,12 @@ namespace Dash
                 case SyntaxKind.Block:
                     //parse each child
                     var blocChil = (node as Block).Children;
-                    List<ScriptExpression> expressions = new List<ScriptExpression>();
+                    var expressions = new List<ScriptExpression>();
                     foreach (var child in blocChil)
                     {
                         expressions.Add(ParseToExpression(child));
                     }
-                    ScriptExpression result = new ExpressionChain(expressions);
-                    return result;
+                    return new ExpressionChain(expressions);
                 case SyntaxKind.VariableStatement:
                     var varStatement = node as VariableStatement;
 
@@ -600,10 +621,20 @@ namespace Dash
                         {WhileOperatorController.BoolKey,  whilBinary},
                         {WhileOperatorController.BlockKey,  whilBlock},
                     });
-
-                    break;
                 case SyntaxKind.ForStatement:
-                    break;
+                    var forChild = (node as ForStatement)?.Children;
+                    var countDeclaration = ParseToExpression(forChild?[0]);
+                    var forBinary = ParseToExpression(forChild?[1]);
+                    var forIncrement = ParseToExpression(forChild?[2]);
+                    var forBody = ParseToExpression(forChild?[3]);
+
+                    return new ForExpression(DSL.GetFuncName<ForOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    {
+                        [ForOperatorController.CounterDeclarationKey] = countDeclaration,
+                        [ForOperatorController.BoolKey] = forBinary,
+                        [ForOperatorController.IncrementKey] = forIncrement,
+                        [ForOperatorController.ForBlockKey] = forBody
+                    });
                 case SyntaxKind.ForInStatement:
                     break;
                 case SyntaxKind.ForOfStatement:
@@ -630,7 +661,6 @@ namespace Dash
                     var variableDeclaration = node as VariableDeclaration;
                    
                     return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]));
-                    break;
                 case SyntaxKind.VariableDeclarationList:
                     var varDeclList = node as VariableDeclarationList;
 
@@ -642,8 +672,6 @@ namespace Dash
                     //Debug.Assert(varDeclList.Declarations.Any());
 
                     return ParseToExpression(varDeclList.Declarations[0]);
-
-                    break;
                 case SyntaxKind.FunctionDeclaration:
                     break;
                 case SyntaxKind.ClassDeclaration:
@@ -816,7 +844,6 @@ namespace Dash
                     }
 
                     return new LiteralExpression(new NumberController(parsedNumber));
-                    break;
                 case SyntaxKind.StringLiteral:
                     var stringLiteral = node as StringLiteral;
                     var parsedString = stringLiteral.Text;
