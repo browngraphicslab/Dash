@@ -40,9 +40,9 @@ namespace Dash
 
             xPdfView.ScrollChanged += (sender, e) =>
             {
-                System.Diagnostics.Debug.WriteLine("Scroll to " + xPdfView.VerticalOffset);
-                if (_scrollTarget != -1)
-                    xPdfView.ScrollToVerticalOffset(_scrollTarget);
+                //System.Diagnostics.Debug.WriteLine("Scroll to " + xPdfView.VerticalOffset);
+                //if (_scrollTarget != -1)
+                //    xPdfView.ScrollToVerticalOffset(_scrollTarget);
             };
 
 
@@ -58,7 +58,7 @@ namespace Dash
                     if (regions != null)
                     {
                         _scrollTarget = regions.Last().GetDataDocument().GetDereferencedField<NumberController>(KeyStore.BackgroundImageOpacityKey, null).Data;
-                        xPdfView.ScrollToVerticalOffset(_scrollTarget);
+                        xPdfView.ScrollToVerticalOffset((xPdfView.VerticalOffset + _scrollTarget)/2);
                     }
                 }
                 e.Handled = true;
