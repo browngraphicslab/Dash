@@ -335,7 +335,7 @@ namespace Dash
             WebBoxView web = null;
             xSmallIconImage.Visibility = Visibility.Visible;
             xSmallIconImage.Source = GetTypeIcon();
-            if (DocPreview != null && _prevLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+            if (DocPreview == null)
                 DocPreview = await this.GetPreview();
             xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
             OpenIcon();
@@ -362,11 +362,7 @@ namespace Dash
         private static void StandardViewLevelChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
             var view = obj as DocumentView;
-            if (view != null)
-            {
-                view._prevLevel = (CollectionViewModel.StandardViewLevel)e.OldValue;
-                view.UpdateView();
-            }
+            view?.UpdateView();
         }
 
         private void OpenIcon()
@@ -426,7 +422,6 @@ namespace Dash
             }
         }
 
-        private CollectionViewModel.StandardViewLevel _prevLevel;
         private async void UpdateView()
         {
             switch (StandardViewLevel)
