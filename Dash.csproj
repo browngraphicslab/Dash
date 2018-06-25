@@ -325,6 +325,9 @@
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
+    <Compile Include="Util\PDFRegionMarker.xaml.cs">
+      <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
@@ -849,6 +852,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Util\ImageRegionBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\PDFRegionMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

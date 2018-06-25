@@ -12,19 +12,18 @@
     d:DesignWidth="400" MinWidth="5" MinHeight="5" Padding="0,0,0,0">
         <!--clipping used since the pdf overflows the bounds by default-->
         <!--the pdf view from sync fusion-->
-    <Grid x:Name="xZoom">
-        <Canvas>
-    <PdfViewer:SfPdfViewerControl x:Name="xPdfView" 
-                                      HorizontalAlignment="Left" VerticalAlignment="Top" 
-                                      ViewMode="FitWidth" HorizontalContentAlignment="Left"
-                                      HorizontalScrollBarVisibility="Hidden"
-                                  VerticalScrollBarVisibility="Hidden"
-                                      IsTextSelectionEnabled="True"
-                                 
-                                  />
-        </Canvas>
-    </Grid>
-    <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed" >
-        
-    </Image>
+    <StackPanel Orientation="Horizontal">
+        <Grid x:Name="xZoom">
+            <Canvas>
+                <PdfViewer:SfPdfViewerControl x:Name="xPdfView" 
+                                                  HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                                  ViewMode="FitWidth" HorizontalContentAlignment="Left"
+                                                  HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden"
+                                                  IsTextSelectionEnabled="True"/>
+            </Canvas>
+        </Grid>
+        <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed"/>
+        <Grid x:Name="xAnnotationMarkers" Margin="-20, 0, 0, 0"/>
+    </StackPanel>
 </Grid>
