@@ -78,7 +78,7 @@ namespace Dash
                     }
                 }
                 //Width meant to be 67 to match actual rendered width of main toolbar collapse button
-            }, 67);
+            }, 67, 100);
 
             //binds orientation of toolbar to the orientation of the main toolbar
             xDashTextSubtoolbar.Loaded += delegate
@@ -105,7 +105,7 @@ namespace Dash
         /**
 		 * Helper method for adding custom buttons.
 		 */
-        public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 70, bool includeSeparator = false)
+        public Button AddButton(string name, Symbol icon, int position, TappedEventHandler onTapped, int width = 70, int height = 60, bool includeSeparator = false)
         {
             //instantiate ToolbarButton & set properties
             var button = new ToolbarButton
@@ -115,6 +115,7 @@ namespace Dash
                 Position = position,
                 Background = new SolidColorBrush(Colors.LightSlateGray),
                 Width = width,
+                Height = height,
             }; //add to toolbar
             xDashTextSubtoolbar.CustomButtons.Add(button);
             //assign event handler to button on tapped

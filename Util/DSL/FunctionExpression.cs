@@ -6,8 +6,8 @@ namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
-        private string _opName;
-        private Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly string _opName;
+        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
 
         public FunctionExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
@@ -28,7 +28,7 @@ namespace Dash
                 var output = OperatorScript.Run(_opName, inputs, scope);
                 return output;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
             }
