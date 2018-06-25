@@ -21,10 +21,16 @@ namespace Dash
         /// </summary>
         public bool IsRequired { get; set; }
 
-        public IOInfo(TypeInfo type, bool isRequired)
+        /// <summary>
+        /// True if an update of this field should trigger the operator to re-execute
+        /// </summary>
+        public bool TriggerUpdate { get; set; }
+
+        public IOInfo(TypeInfo type, bool isRequired, bool triggerUpdate = true)
         {
             Type = type;
             IsRequired = isRequired;
+            TriggerUpdate = triggerUpdate;
         }
     }
 

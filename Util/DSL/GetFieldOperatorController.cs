@@ -77,7 +77,7 @@ namespace Dash
                 if (key.Key.Name.Replace(" ", "").Equals(keyName))
                 {
 
-                    return key.Value.DereferenceToRoot(new Context(doc));
+                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
                 }
             }
 
@@ -85,7 +85,7 @@ namespace Dash
             {
                 if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
                 {
-                    return key.Value.DereferenceToRoot(new Context(doc));
+                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
                 }
             }
 
