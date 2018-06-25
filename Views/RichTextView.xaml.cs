@@ -480,7 +480,7 @@ namespace Dash
         #endregion
 
         #region load/unload
-        void selectedFieldUpdatedHdlr(object sender, FieldUpdatedEventArgs e, Context c)
+        void selectedFieldUpdatedHdlr(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs e, Context c)
         {
             MatchQuery(getSelected());
         }

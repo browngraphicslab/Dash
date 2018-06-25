@@ -46,7 +46,9 @@ namespace Dash.Controllers.Operators
         /// <param name="outputs"></param>
         /// <param name="args"></param>
         /// <param name="state"></param>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var tags = "";
             var value = inputs.ElementAt(0).Value;

@@ -36,7 +36,10 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             // create the pdf view
-            var pdfView = new PdfView() { DataContext = docController };
+            var pdfView = new PdfView() { DataContext = docController,
+                LayoutDocument = docController.GetActiveLayout() ?? docController,
+                DataDocument = docController.GetDataDocument()
+            };
             var pdf = pdfView.Pdf;
 
             // make the pdf respond to resizing, interactions etc...
@@ -51,6 +54,11 @@ namespace Dash
             return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
 
+        public static DocumentController MakeRegionDocument(DocumentView richTextBox)
+        {
+            var pdf = richTextBox.GetFirstDescendantOfType<PdfView>();
+            return pdf.GetRegionDocument();
+        }
         protected static void SetupPdfBinding(SfPdfViewerControl pdf, DocumentController controller,
             Context context)
         {

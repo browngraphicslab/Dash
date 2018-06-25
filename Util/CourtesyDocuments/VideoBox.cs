@@ -66,11 +66,10 @@ namespace Dash
 				//add fieldUpdatedListener to the doc controller of the reference
 				var dataDoc = reference.GetDocumentController(context);
 				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-					delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
 					{
-						var doc = (DocumentController)sender;
-						var dargs =
-							(DocumentController.DocumentFieldUpdatedEventArgs)args;
+						var doc = sender;
+						var dargs = args;
 						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
 							return;
 						//bind the MediaPlayerElement source to the new video

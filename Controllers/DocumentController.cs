@@ -19,12 +19,13 @@ namespace Dash
 	[DebuggerDisplay("DocumentController: {Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
+        public delegate void DocumentUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args,
+            Context context);
         /// <summary>
         /// Dictionary mapping Key's to field updated event handlers. 
-        /// TODO: what if there is more than one DocumentFieldUpdatedEventHandler associated with a single key
         /// </summary>
-        private readonly Dictionary<KeyController, FieldUpdatedHandler> _fieldUpdatedDictionary
-            = new Dictionary<KeyController, FieldUpdatedHandler>();
+        private readonly Dictionary<KeyController, DocumentUpdatedHandler> _fieldUpdatedDictionary
+            = new Dictionary<KeyController, DocumentUpdatedHandler>();
 
         public event EventHandler DocumentDeleted;
 
@@ -745,7 +746,6 @@ namespace Dash
                     
                 }
             }
-
             return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
         }
         /// <summary>
@@ -1041,7 +1041,7 @@ namespace Dash
             return context;
         }
 
-        public Context Execute(OperatorController opField, Context oldContext, bool update, FieldUpdatedEventArgs updatedArgs = null)
+        public Context Execute(OperatorController opField, Context oldContext, bool update, DocumentFieldUpdatedEventArgs updatedArgs = null)
         {
             // add this document to the context
             var context = new Context(oldContext);
@@ -1297,7 +1297,7 @@ namespace Dash
         /// Adds a field updated listener which is only fired when the field associated with the passed in key
         /// has changed
         /// </summary>
-        public void AddFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
+        public void AddFieldUpdatedListener(KeyController key, DocumentUpdatedHandler handler)
         {
             if (_fieldUpdatedDictionary.ContainsKey(key))
                 _fieldUpdatedDictionary[key] += handler;
@@ -1308,7 +1308,7 @@ namespace Dash
         /// <summary>
         /// Removes a field listener associated with the given key's update event.
         /// </summary>
-        public void RemoveFieldUpdatedListener(KeyController key, FieldUpdatedHandler handler)
+        public void RemoveFieldUpdatedListener(KeyController key, DocumentUpdatedHandler handler)
         {
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {

@@ -102,7 +102,7 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, PdfBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
@@ -177,7 +177,8 @@ namespace Dash
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
 
-            // close the connection to the database
+            // close the connection to the 
+
             Task.Run(async () =>
             {
                 await Container.GetRequiredService<IModelEndpoint<FieldModel>>().Close();

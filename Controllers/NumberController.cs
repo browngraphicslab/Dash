@@ -54,6 +54,11 @@ namespace Dash
                 Data = dub;
                 return true;
             }
+            if (value is float flt)
+            {
+                Data = flt;
+                return true;
+            }
             if (value is int intn)
             {
                 Data = intn;
