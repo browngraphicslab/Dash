@@ -40,23 +40,23 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 xPdfView.ScrollToVerticalOffset(curOffset ?? 0.0);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
-                _dataRegions = DataDocument.GetDataDocument()
-                    .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-                if (_dataRegions != null)
-                {
-                    foreach (var region in _dataRegions.TypedData)
-                    {
-                        var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
-                        var newBox = new PDFRegionMarker { LinkTo = region, Offset = offset };
+                //_dataRegions = DataDocument.GetDataDocument()
+                //    .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+                //if (_dataRegions != null)
+                //{
+                //    foreach (var region in _dataRegions.TypedData)
+                //    {
+                //        var offset = region.GetDataDocument().GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+                //        var newBox = new PDFRegionMarker { LinkTo = region, Offset = offset };
 
-                        var offsetCollection = xPdfView.PageOffsetCollection;
-                        offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
-                        newBox.SetPosition(offset, endOffset);
-                        xAnnotationMarkers.Children.Add(newBox);
-                        newBox.PointerPressed += xMarker_OnPointerPressed;
+                //        var offsetCollection = xPdfView.PageOffsetCollection;
+                //        offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
+                //        newBox.SetPosition(offset, endOffset);
+                //        xAnnotationMarkers.Children.Add(newBox);
+                //        newBox.PointerPressed += xMarker_OnPointerPressed;
 
-                    }
-                }
+                //    }
+                //}
             };
             SizeChanged += PdfView_SizeChanged;
 
