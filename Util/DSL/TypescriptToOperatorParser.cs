@@ -562,18 +562,15 @@ namespace Dash
                     }
                     ScriptExpression result = new ExpressionChain(expressions);
                     return result;
-                    break;
                 case SyntaxKind.VariableStatement:
                     var varStatement = node as VariableStatement;
 
                     return ParseToExpression(varStatement.DeclarationList);
-                    break;
                 case SyntaxKind.EmptyStatement:
                     break;
                 case SyntaxKind.ExpressionStatement:
                     var exp = (node as ExpressionStatement).Expression;
                     return ParseToExpression(exp);
-                    break;
                 case SyntaxKind.IfStatement:
                     var ifChild = (node as IfStatement).Children;
 
@@ -587,7 +584,7 @@ namespace Dash
                                 {IfOperatorController.IfBlockKey,  ifBlock},
                                 {IfOperatorController.ElseBlockKey,  elseBlock},
                             });
-                    break;
+                    
                 case SyntaxKind.DoStatement:
                     break;
                 case SyntaxKind.WhileStatement:
