@@ -44,8 +44,27 @@
             </ItemsControl>
         </Canvas>
 
-        <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="DodgerBlue">
-
+        <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="DodgerBlue" Padding="10 10 10 10">
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Add Item</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <AppBarButton Icon="Rename" Height="50" Width="50" Click="TextButton_OnClick"></AppBarButton>
+                <AppBarButton Icon="Pictures" Height="50" Width="50" Click="ImageButton_OnClick"></AppBarButton>
+                <AppBarButton Icon="Video" Height="50" Width="50" Click="VideoButton_OnClick"></AppBarButton>
+                <AppBarButton Icon="Audio" Height="50" Width="50" Click="AudioButton_OnClick"></AppBarButton>
+            </StackPanel>
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Horizontal Alignment</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <AppBarToggleButton Icon="AlignLeft" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="AlignCenter" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="AlignRight" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
+            </StackPanel>
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Border</TextBlock>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <AppBarToggleButton Icon="Import" Height="50" Width="50" Checked="LeftBorder_OnChecked" Unchecked="LeftBorder_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Up" Height="50" Width="50" Checked="TopBorder_OnChecked" Unchecked="TopBorder_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Forward" Height="50" Width="50" Checked="RightBorder_OnChecked" Unchecked="RightBorder_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Download" Height="50" Width="50" Checked="BottomBorder_OnChecked" Unchecked="BottomBorder_OnUnchecked"></AppBarToggleButton>
+            </StackPanel>
         </StackPanel>
     </StackPanel>
 </UserControl>

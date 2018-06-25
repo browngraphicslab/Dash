@@ -789,9 +789,6 @@
     <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
       <DependentUpon>TemplateEditorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TemplateEditor\TemplateOptionsPane.xaml.cs">
-      <DependentUpon>TemplateOptionsPane.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
     <Compile Include="WebBoxView.xaml.cs">
@@ -1253,10 +1250,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TemplateEditor\TemplateEditorView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemplateEditor\TemplateOptionsPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

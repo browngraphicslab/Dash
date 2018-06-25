@@ -41,6 +41,9 @@ namespace Dash
         }
 
         public MenuFlyout MenuFlyout { get; set; }
+
+        public TemplateEditorView Editor => ViewModel?.Editor;
+
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
 
@@ -940,6 +943,10 @@ namespace Dash
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             FocusedDocument = this;
+            if (Editor != null)
+            {
+                Editor.SelectedDocument = this;
+            }
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {

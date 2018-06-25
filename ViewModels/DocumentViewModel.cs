@@ -152,6 +152,7 @@ namespace Dash
             set => SetProperty(ref _standardViewLevel, value);
         }
         public bool DisableDecorations { get; set; } = false;
+        public TemplateEditorView Editor { get; set; }
 
 
         // == FIELD UPDATED EVENT HANDLERS == 
