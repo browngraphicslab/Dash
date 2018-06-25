@@ -62,6 +62,9 @@ namespace Dash
             return new ScriptState(existingState, trackingId);
         }
 
+
+        // TODO: below is a setter, also add a getter and new varible creation
+ 
         /// <summary>
         /// HACK
         /// </summary>
