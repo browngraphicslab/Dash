@@ -22,11 +22,12 @@ namespace Dash
 
             var exps = _expressions.ToArray();
             var length = exps.Count();
+            FieldControllerBase retVal = null;
             for(var i = 0; i < length; i++)
             {
-                exps[i].Execute(newScope);
+                retVal = exps[i].Execute(newScope);
             }
-            return exps[exps.Length - 1].Execute(newScope);
+            return retVal;
         }
 
         public override FieldControllerBase CreateReference(Scope scope)
