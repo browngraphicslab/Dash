@@ -53,11 +53,11 @@ namespace Dash
         DataPackage dataPackage = new DataPackage();
 
 
-        void PanZoomFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
-        void ActualSizeFieldChanged(object sender, FieldUpdatedEventArgs args, Context context)
+        void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
                 FitContents();   // pan/zoom collection so all of its contents are visible
@@ -173,20 +173,18 @@ namespace Dash
             }
         }
 
-        void collectionFieldChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+        void collectionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
         {
-            var docFieldArgs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            var docListFieldArgs = docFieldArgs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-            if (docListFieldArgs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
+            if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
                 updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
             }
             else
             {
-                if (docFieldArgs.NewValue != null)
+                if (args.NewValue != null)
                 {
                     var collectionFieldModelController =
-                        docFieldArgs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+                        args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
                     if (collectionFieldModelController != null)
                     {
                         updateViewModels(

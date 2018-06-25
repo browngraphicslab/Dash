@@ -46,7 +46,9 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("C35B553E-F12A-483A-AED9-30927606B897", "Simple Single Search");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //TODO not have the function calls hardcoded here as strings.  We should find a dynamic way to reference Dish script function string names
             var searchQuery = (inputs[QueryKey] as TextController)?.Data ?? "";

@@ -75,17 +75,17 @@ namespace Dash
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
-            FieldControllerBase.FieldUpdatedHandler handler = (sender, args, c) =>
+            DocumentController.DocumentUpdatedHandler handler = (sender, args, c) =>
             {
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                bindingDelegate(element, (DocumentController)sender, c); //TODO Should be context or args.Context?
+                bindingDelegate(element, sender, c); //TODO Should be context or args.Context?
             };
 
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
         protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate, FieldControllerBase.FieldUpdatedHandler handler) where T : FrameworkElement
+            BindingDelegate<T> bindingDelegate, DocumentController.DocumentUpdatedHandler handler) where T : FrameworkElement
         {
             element.Loaded += delegate
             {

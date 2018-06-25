@@ -43,10 +43,9 @@ namespace Dash
 
         }
 
-        private void OnTitleFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        private void OnTitleFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
-            var tfmc = dargs.NewValue.DereferenceToRoot<TextController>(null);
+            var tfmc = args.NewValue.DereferenceToRoot<TextController>(null);
             if (xTitleInput.Text != tfmc.Data)
             {
                 xTitleInput.Text = tfmc.Data;

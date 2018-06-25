@@ -43,7 +43,10 @@ namespace Dash
         {
             [ResultKeysKey] = TypeInfo.List,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (doc != null)

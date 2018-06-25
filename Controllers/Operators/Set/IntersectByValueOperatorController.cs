@@ -43,7 +43,9 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("9B073C2B-8B11-4939-818F-903A067D412E", "Intersect by value");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var set1 = ((inputs[SetAKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;
             var set2 = ((inputs[SetBKey] as BaseListController) ?? new ListController<FieldControllerBase>()).Data;

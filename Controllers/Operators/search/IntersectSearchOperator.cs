@@ -44,7 +44,9 @@ namespace Dash
         /// PutSearchResultsIntoDictionaryOperator. Once that is done, both dictionaries are compares for similiarities,
         /// which are put into a new dictionary.
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var d1 = inputs[Dict1Key] as DocumentController;
             var d2 = inputs[Dict2Key] as DocumentController;
