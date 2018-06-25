@@ -60,10 +60,9 @@ namespace Dash
 		    //template - MAY HAVE TO MOVE OUTSIDE THIS EDITOR & PASS IN INSTEAD
 			var template = new TemplateNote(new Point(), new Size(xWorkspaceOuterGrid.ActualWidth, xWorkspaceOuterGrid.ActualHeight)).Document;
 			_workspace.ViewModel.AddDocument(template);
-			//_workspace.ViewModel.
+		    Debug.WriteLine("DOC VIEW MODELS: " + _workspace.ViewModel.DocumentViewModels);
 
 		    //_workspace.ViewModel.SetCollectionRef(DataDocument, KeyStore.DataKey);
-
 			//LayoutPanel.Children.Add(template);
 
 			//make edit pane
