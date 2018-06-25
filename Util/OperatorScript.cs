@@ -143,77 +143,60 @@ namespace Dash
         /// <returns></returns>
         public static List<KeyController> GetOrderedKeyControllersForFunction(string funcName)
         {
-            if (_functionMap.ContainsKey(funcName))
-            {
-                var t = _functionMap[funcName];
-                var op = (OperatorController)Activator.CreateInstance(t);
-                return op.Inputs.ToList().Select(i => i.Key).ToList();
-            }
-            return null;
+            if (!_functionMap.ContainsKey(funcName)) return null;
+
+            var t = _functionMap[funcName];
+            var op = (OperatorController)Activator.CreateInstance(t);
+            return op.Inputs.ToList().Select(i => i.Key).ToList();
         }
 
 
         public static Dictionary<KeyController, IOInfo> GetKeyControllerDictionaryForFunction(string funcName)
         {
-            if (_functionMap.ContainsKey(funcName))
-            {
-                var t = _functionMap[funcName];
-                var op = (OperatorController)Activator.CreateInstance(t);
-                return op.Inputs.ToDictionary(k => k.Key, v => v.Value);
-            }
-            return null;
+            if (!_functionMap.ContainsKey(funcName)) return null;
+
+            var t = _functionMap[funcName];
+            var op = (OperatorController)Activator.CreateInstance(t);
+            return op.Inputs.ToDictionary(k => k.Key, v => v.Value);
         }
 
         private static IEnumerable<Type> GetTypesWithOperatorAttribute(Assembly assembly)
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
-                if (type.GetCustomAttributes(typeof(OperatorTypeAttribute), true).Length > 0)
-                {
-                    Activator.CreateInstance(type);
-                    yield return type;
-                }
+                if (type.GetCustomAttributes(typeof(OperatorTypeAttribute), true).Length == 0) continue;
+                Activator.CreateInstance(type);
+                yield return type;
             }
         }
 
-        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args, ScriptState state = null)
+        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args, Scope scope = null)
         {
-            if (_functionMap.ContainsKey(funcName))
-            {
-                var t = _functionMap[funcName];
-                var op = (OperatorController) Activator.CreateInstance(t);
-                var outDict = new Dictionary<KeyController, FieldControllerBase>();
-                op.Execute(args,outDict, null, state);
-                if (outDict.Count == 0)
-                {
-                    return null;
-                }
-                return outDict.First().Value;
-            }
-            return null;
+            if (!_functionMap.ContainsKey(funcName)) return null;
+            var t = _functionMap[funcName];
+            var op = (OperatorController) Activator.CreateInstance(t);
+            var outDict = new Dictionary<KeyController, FieldControllerBase>();
+            op.Execute(args,outDict, null, scope);
+            return outDict.Count == 0 ? null : outDict.First().Value;
         }
 
 
         public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, string funcName)
         {
-            if (_functionMap.ContainsKey(funcName))
+            if (!_functionMap.ContainsKey(funcName)) return null;
+            var t = _functionMap[funcName];
+            var op = (OperatorController) Activator.CreateInstance(t);
+
+            var doc = new DocumentController();
+
+            foreach (var parameter in parameters)
             {
-                var t = _functionMap[funcName];
-                var op = (OperatorController) Activator.CreateInstance(t);
-
-                var doc = new DocumentController();
-
-                foreach (var parameter in parameters)
-                {
-                    doc.SetField(parameter.Key, parameter.Value, true);
-                }
-                doc.SetField(KeyStore.OperatorKey, new ListController<OperatorController>(new OperatorController[] { op }), true);
-
-                return new DocumentReferenceController(doc.Id, op.Outputs.FirstOrDefault().Key);
-                
+                doc.SetField(parameter.Key, parameter.Value, true);
             }
+            doc.SetField(KeyStore.OperatorKey, new ListController<OperatorController>(new OperatorController[] { op }), true);
 
-            return null;
+            return new DocumentReferenceController(doc.Id, op.Outputs.FirstOrDefault().Key);
+
         }
     }
 }

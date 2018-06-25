@@ -42,13 +42,13 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("99E9328B-7341-403F-819B-26CDAB2F9A51", "Exec to string");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             string result;
             try
             {
                 var script = inputs[ScriptKey] as TextController;
-                var dsl = new DSL(ScriptState.ContentAware());
+                var dsl = new DSL(new Scope());
                 var scriptToRun = (script)?.Data ?? "";
                 var controller = dsl.Run(scriptToRun, true);
                 if (controller != null)

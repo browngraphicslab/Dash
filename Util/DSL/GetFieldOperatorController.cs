@@ -42,7 +42,7 @@ namespace Dash
         {
             [ResultFieldKey] = TypeInfo.Any,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
             //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;

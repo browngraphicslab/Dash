@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class DishReplView : UserControl
     {
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
-        private DSL _dsl;
+        private readonly DSL _dsl;
 
         private int _currentHistoryIndex = 0;
 
@@ -30,7 +30,7 @@ namespace Dash
         {
             this.InitializeComponent();
             this.DataContext = new DishReplViewModel();
-            _dsl = new DSL(ScriptState.ContentAware(), true);
+            _dsl = new DSL(new Scope());
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
         }

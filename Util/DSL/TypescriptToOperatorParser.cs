@@ -102,7 +102,7 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase Interpret(string script, ScriptState state = null)
+        public static FieldControllerBase Interpret(string script, Scope scope = null)
         {
             var hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
 
@@ -116,7 +116,7 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                var exec = se?.Execute(state ?? new ScriptState());
+                var exec = se?.Execute(scope ?? new Scope());
                 return exec;
             }
             catch (ScriptException scriptException)
@@ -134,12 +134,12 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase GetOperatorControllerForScript(string script, ScriptState state = null)
+        public static FieldControllerBase GetOperatorControllerForScript(string script, Scope scope = null)
         {
             try
             {
                 var se = ParseToExpression(script);
-                return se?.CreateReference(state ?? new ScriptState());
+                return se?.CreateReference(scope ?? new Scope());
 
             }
             catch (ScriptException scriptException)
@@ -154,13 +154,12 @@ namespace Dash
             script = script.EndsWith(';') ? script : script + ";";
             var ast = new TypeScriptAST(script);
             var root = ast.RootNode;
+
             return ParseToExpression(root);
         }
 
         private static ScriptExpression ParseToExpression(INode node)
         {
-           Dictionary<string, FieldControllerBase> _variables = new Dictionary<string, FieldControllerBase>();
-
             //this converts node to ScriptExpression - most cases call ParseToExpression
             //on individual inner pieces of node
             switch (node.Kind)
@@ -192,114 +191,6 @@ namespace Dash
                 case SyntaxKind.TemplateMiddle:
                     break;
                 case SyntaxKind.TemplateTail:
-                    break;
-                case SyntaxKind.OpenBraceToken:
-                    break;
-                case SyntaxKind.CloseBraceToken:
-                    break;
-                case SyntaxKind.OpenParenToken:
-                    break;
-                case SyntaxKind.CloseParenToken:
-                    break;
-                case SyntaxKind.OpenBracketToken:
-                    break;
-                case SyntaxKind.CloseBracketToken:
-                    break;
-                case SyntaxKind.DotToken:
-                    break;
-                case SyntaxKind.DotDotDotToken:
-                    break;
-                case SyntaxKind.SemicolonToken:
-                    break;
-                case SyntaxKind.CommaToken:
-                    break;
-                case SyntaxKind.LessThanToken:
-                    break;
-                case SyntaxKind.LessThanSlashToken:
-                    break;
-                case SyntaxKind.GreaterThanToken:
-                    break;
-                case SyntaxKind.LessThanEqualsToken:
-                    break;
-                case SyntaxKind.GreaterThanEqualsToken:
-                    break;
-                case SyntaxKind.EqualsEqualsToken:
-                    break;
-                case SyntaxKind.ExclamationEqualsToken:
-                    break;
-                case SyntaxKind.EqualsEqualsEqualsToken:
-                    break;
-                case SyntaxKind.ExclamationEqualsEqualsToken:
-                    break;
-                case SyntaxKind.EqualsGreaterThanToken:
-                    break;
-                case SyntaxKind.PlusToken:
-                    break;
-                case SyntaxKind.MinusToken:
-                    break;
-                case SyntaxKind.AsteriskToken:
-                    break;
-                case SyntaxKind.AsteriskAsteriskToken:
-                    break;
-                case SyntaxKind.SlashToken:
-                    break;
-                case SyntaxKind.PercentToken:
-                    break;
-                case SyntaxKind.PlusPlusToken:
-                    break;
-                case SyntaxKind.MinusMinusToken:
-                    break;
-                case SyntaxKind.LessThanLessThanToken:
-                    break;
-                case SyntaxKind.GreaterThanGreaterThanToken:
-                    break;
-                case SyntaxKind.GreaterThanGreaterThanGreaterThanToken:
-                    break;
-                case SyntaxKind.AmpersandToken:
-                    break;
-                case SyntaxKind.BarToken:
-                    break;
-                case SyntaxKind.CaretToken:
-                    break;
-                case SyntaxKind.ExclamationToken:
-                    break;
-                case SyntaxKind.TildeToken:
-                    break;
-                case SyntaxKind.AmpersandAmpersandToken:
-                    break;
-                case SyntaxKind.BarBarToken:
-                    break;
-                case SyntaxKind.QuestionToken:
-                    break;
-                case SyntaxKind.ColonToken:
-                    break;
-                case SyntaxKind.AtToken:
-                    break;
-                case SyntaxKind.EqualsToken:
-                    break;
-                case SyntaxKind.PlusEqualsToken:
-                    break;
-                case SyntaxKind.MinusEqualsToken:
-                    break;
-                case SyntaxKind.AsteriskEqualsToken:
-                    break;
-                case SyntaxKind.AsteriskAsteriskEqualsToken:
-                    break;
-                case SyntaxKind.SlashEqualsToken:
-                    break;
-                case SyntaxKind.PercentEqualsToken:
-                    break;
-                case SyntaxKind.LessThanLessThanEqualsToken:
-                    break;
-                case SyntaxKind.GreaterThanGreaterThanEqualsToken:
-                    break;
-                case SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
-                    break;
-                case SyntaxKind.AmpersandEqualsToken:
-                    break;
-                case SyntaxKind.BarEqualsToken:
-                    break;
-                case SyntaxKind.CaretEqualsToken:
                     break;
                 case SyntaxKind.Identifier:
                     var identifierExpression = node as Identifier;
@@ -546,7 +437,6 @@ namespace Dash
                     var parenthesizedExpr = node as ParenthesizedExpression;
                     Debug.Assert(parenthesizedExpr.Children.Count == 1);
                     return ParseToExpression(parenthesizedExpr.Children[0]);
-                    break;
                 case SyntaxKind.FunctionExpression:
                     break;
                 case SyntaxKind.ArrowFunction:
@@ -617,6 +507,14 @@ namespace Dash
                                     {SetFieldOperatorController.KeyNameKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey]},
                                     {SetFieldOperatorController.FieldValueKey, rightBinExpr},
                                 });
+                            } else if (leftBinExpr is VariableExpression)
+                            {
+                                string varName = (leftBinExpr as VariableExpression).GetVariableName();
+                                return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                {
+                                    {VariableAssignOperatorController.VariableKey, new LiteralExpression(new TextController(varName))},
+                                    {VariableAssignOperatorController.AssignmentKey, rightBinExpr},
+                                });
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.EqualsEqualsToken:
@@ -625,7 +523,6 @@ namespace Dash
                                 {EqualityOperatorController.AKey,  leftBinExpr},
                                 {EqualityOperatorController.BKey,  rightBinExpr},
                             });
-                            break;
                         default:
                             throw new Exception("Unkown binary expression type");
                     }
@@ -735,7 +632,7 @@ namespace Dash
                 case SyntaxKind.VariableDeclaration:
                     var variableDeclaration = node as VariableDeclaration;
                    
-                    return new ModifyStateExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]), _variables);
+                    return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]));
                     break;
                 case SyntaxKind.VariableDeclarationList:
                     var varDeclList = node as VariableDeclarationList;
@@ -949,30 +846,27 @@ namespace Dash
             return null;
         }
 
-        private class ModifyStateExpression : ScriptExpression
+        private class VariableDeclarationExpression : ScriptExpression
         {
             private string _variableName;
             private ScriptExpression _value;
-            private Dictionary<String, FieldControllerBase> _variables;
 
-            public ModifyStateExpression(string variableName, ScriptExpression value, Dictionary<string, FieldControllerBase> variables)
+            public VariableDeclarationExpression(string variableName, ScriptExpression value)
             {
                 Debug.Assert(variableName != null);
                 _variableName = variableName;
                 _value = value;
-                _variables = variables;
             }
 
-            public override FieldControllerBase Execute(ScriptState state)
+            public override FieldControllerBase Execute(Scope scope)
             {
-                var val = _value.Execute(state);
-                state.ModifyStateDirectly(_variableName, val);
-                _variables[_variableName] = val;
+                var val = _value.Execute(scope);
+                scope.DeclareVariable(_variableName, val);
 
                 return val;
             }
 
-            public override FieldControllerBase CreateReference(ScriptState state)
+            public override FieldControllerBase CreateReference(Scope scope)
             {
                 throw new NotImplementedException();
                 //TODO tfs help with operator/doc stuff

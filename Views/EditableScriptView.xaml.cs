@@ -87,7 +87,7 @@ namespace Dash
             TextBoxLoaded = false;
             try
             {
-                FieldControllerBase field = DSL.InterpretUserInput(text, state:  ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                var field = DSL.InterpretUserInput(text, scope: Scope.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)

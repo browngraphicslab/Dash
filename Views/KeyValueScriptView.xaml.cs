@@ -75,7 +75,7 @@ namespace Dash
             {
                 UndoManager.StartBatch();
                 var field = DSL.InterpretUserInput(text,
-                    state: ScriptState.CreateStateWithThisDocument(
+                    scope: Scope.CreateStateWithThisDocument(
                         ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }

@@ -208,6 +208,7 @@
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\VariableAssignOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
@@ -267,6 +268,7 @@
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
     </Compile>
@@ -298,9 +300,7 @@
     <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptExecutionException.cs" />
     <Compile Include="Util\DSL\ScriptExpression.cs" />
-    <Compile Include="Util\DSL\ScriptState.cs" />
     <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
-    <Compile Include="Util\DSL\State.cs" />
     <Compile Include="Util\DSL\TypescriptToOperatorParser.cs" />
     <Compile Include="Util\DSL\VariableExpression.cs" />
     <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />

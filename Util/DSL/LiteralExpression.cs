@@ -3,34 +3,29 @@
 
     public class LiteralExpression : ScriptExpression
     {
-        private FieldControllerBase field;
+        private readonly FieldControllerBase _field;
 
         public LiteralExpression(FieldControllerBase field)
         {
-            this.field = field;
+            this._field = field;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public override FieldControllerBase Execute(Scope scope)
         {
-            return field;
+            return _field;
         }
 
         public FieldControllerBase GetField()
         {
-            return field;
+            return _field;
         }
 
-        public override FieldControllerBase CreateReference(ScriptState state)
+        public override FieldControllerBase CreateReference(Scope scope)
         {
-            if (field is TextController && false)
-            {
-                return new TextController('"' + ((TextController) field).Data +
-                                         '"');
-            }
-            return field;
+            return _field;
         }
 
-        public override DashShared.TypeInfo Type => field.TypeInfo;
+        public override DashShared.TypeInfo Type => _field.TypeInfo;
 
     }
 }

@@ -16,28 +16,25 @@ namespace Dash
             _expressions = expressions;
         }
 
-        public override FieldControllerBase Execute(ScriptState state)
+        public override FieldControllerBase Execute(Scope scope)
         {
-            ScriptState newState = new ScriptState(state);
+            var newScope = new Scope(scope);
 
             var exps = _expressions.ToArray();
             var length = exps.Count();
-            for(int i = 0; i < length; i++)
+            for(var i = 0; i < length; i++)
             {
-                exps[i].Execute(newState);
+                exps[i].Execute(newScope);
             }
-            return exps[exps.Length - 1].Execute(newState);
+            return exps[exps.Length - 1].Execute(newScope);
         }
 
-        public override FieldControllerBase CreateReference(ScriptState state)
+        public override FieldControllerBase CreateReference(Scope scope)
         {
             throw new NotImplementedException();
             //TODO tfs help with operator/doc stuff
         }
 
-        public override DashShared.TypeInfo Type
-        {
-            get { return _expressions.Last().Type; }
-        } 
+        public override DashShared.TypeInfo Type => _expressions.Last().Type;
     }
 }

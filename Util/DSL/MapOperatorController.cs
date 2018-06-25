@@ -51,7 +51,7 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("E119C98C-6A29-4D10-978C-8E8049330D92", "Map");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputList = inputs[ListKey] as BaseListController;
             var lambdaString = inputs[LambdaFuncKey] as TextController;
@@ -63,7 +63,9 @@ namespace Dash
 
                 foreach (var obj in inputList.Data.ToArray())
                 {
-                    var dsl = new DSL(ScriptState.ContentAware().AddOrUpdateValue(variableName.Data, obj) as ScriptState);
+                    var newScope = new Scope();
+                    newScope.SetVariable(variableName.Data, obj);
+                    var dsl = new DSL(newScope);
                     var executed = dsl.Run(lambdaString.Data, false);
                     outputList.Add(executed);
                 }
