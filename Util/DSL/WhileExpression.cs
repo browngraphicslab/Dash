@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Dash
@@ -10,6 +11,9 @@ namespace Dash
     {
         private string _opName;
         private Dictionary<KeyController, ScriptExpression> _parameters;
+
+        private FieldControllerBase recursiveError = new TextController("ERROR - an infinite loop was created.");
+        FieldControllerBase output = null;
 
         public WhileExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
@@ -23,13 +27,18 @@ namespace Dash
             inputs.Add(WhileOperatorController.BoolKey, _parameters[WhileOperatorController.BoolKey].Execute(scope));
 
             var BlockKey = WhileOperatorController.BlockKey;
-            FieldControllerBase output = null ;
+            
+            //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
+            Timer whileTimer = new Timer(whileTimeut, null, 5000, Timeout.Infinite);            
 
-            while (true)
+            //if there hasn't been an infinite loop timeout, keep looping
+            while (output != recursiveError)
             {
+                //see if boolean is true or false
                 bool boolRes = ((BoolController)_parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
-                if (boolRes)
+                 if (boolRes)
                 {
+                    //boolean is true, so execute block again
                     if (inputs.ContainsKey(BlockKey))
                     {
                         inputs[BlockKey] = _parameters[BlockKey].Execute(scope);
@@ -42,7 +51,10 @@ namespace Dash
 
                     try
                     {
-                        output = OperatorScript.Run(_opName, inputs, scope);
+                        if (output != recursiveError)
+                        {
+                            output = OperatorScript.Run(_opName, inputs, scope);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -51,6 +63,7 @@ namespace Dash
                 }
                 else
                 {
+                    //now that boolean is false, give it a null input and stop looping
                     if (!inputs.ContainsKey(BlockKey))
                     {
                         inputs.Add(BlockKey, null);
@@ -61,6 +74,11 @@ namespace Dash
             }
 
             return output;
+        }
+
+        private void whileTimeut(object status) {
+            //set the output to an infinite recursion error
+            output = recursiveError;
         }
 
         public string GetOperatorName()
