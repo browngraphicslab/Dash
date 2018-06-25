@@ -288,7 +288,7 @@ namespace Dash
                 {
                     SelectedDocuments().ForEach((d) =>
                     {
-                        d.ViewModel.DecorationState = d.IsPointerOver() ? true : false;
+                        d.ViewModel.DecorationState = d.IsPointerOver();
                         d.ViewModel.Position =
                             d.ViewModel
                                 .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
@@ -337,14 +337,7 @@ namespace Dash
             xSmallIconImage.Source = GetTypeIcon();
             if (DocPreview != null && _prevLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
                 DocPreview = await this.GetPreview();
-            if (DocPreview != null)
-            {
-                xIconImage.Source = DocPreview;
-            }
-            else
-            {
-                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
-            }
+            xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
             OpenIcon();
 
         }
