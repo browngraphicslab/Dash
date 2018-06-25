@@ -68,7 +68,6 @@ namespace Dash
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
 
-            ///* 
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
                 new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
 

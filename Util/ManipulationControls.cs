@@ -432,7 +432,7 @@ namespace Dash
 
 			var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
-			var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.GetItemsControl());
+			var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.GetItemsControl().ItemsPanelRoot);
 			var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.GetItemsControl().ItemsPanelRoot);
 
 			return (screenPoint1, screenPoint2);

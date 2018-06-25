@@ -91,11 +91,11 @@ namespace Dash
         }
         #endregion
 
-        void PanZoomFieldChanged(object sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
         }
-        void ActualSizeFieldChanged(object sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
+        void ActualSizeFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             if (!MainPage.Instance.IsShiftPressed())
                 FitContents();   // pan/zoom collection so all of its contents are visible

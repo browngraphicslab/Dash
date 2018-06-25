@@ -352,7 +352,9 @@ namespace Dash
         public async Task<RenderTargetBitmap> GetPreview()
         {
             RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            xContentPresenter.Visibility = Visibility.Visible;
             await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement);
+            xContentPresenter.Visibility = Visibility.Collapsed;
             return bitmap;
         }
 
@@ -376,14 +378,14 @@ namespace Dash
 
         private void OpenIcon()
         {
-            xFreeFormDocViewCol.Width = new GridLength(0);
-            xStandardDocViewCol.Width = new GridLength();
+            xIcon.Visibility = Visibility.Visible;
+            xContentPresenter.Visibility = Visibility.Collapsed;
         }
 
         private void OpenFreeform()
         {
-            xFreeFormDocViewCol.Width = new GridLength();
-            xStandardDocViewCol.Width = new GridLength(0);
+            xContentPresenter.Visibility = Visibility.Visible;
+            xIcon.Visibility = Visibility.Collapsed;
         }
 
         BitmapImage GetTypeIcon()
