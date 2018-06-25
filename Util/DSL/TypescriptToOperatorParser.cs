@@ -614,8 +614,10 @@ namespace Dash
                 case SyntaxKind.ContinueStatement:
                     break;
                 case SyntaxKind.BreakStatement:
+                    return new BreakLoopExpression();
                     break;
                 case SyntaxKind.ReturnStatement:
+                    return new BreakLoopExpression();
                     break;
                 case SyntaxKind.WithStatement:
                     break;
