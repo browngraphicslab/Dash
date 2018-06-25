@@ -594,16 +594,16 @@ namespace Dash
                     var whilChild = (node as WhileStatement).Children;
                     Debug.Assert(whilChild.Count == 2);
 
-                    var whilBinary = whilChild[0];
-                    var whilBlock = whilChild[1];
+                    var whilBinary = ParseToExpression(whilChild[0]);
+                    var whilBlock = ParseToExpression(whilChild[1]);
 
-                    //make a while operator and call it in this function 
-                    //return new FunctionExpression(DSL.GetFuncName<W>(), new Dictionary<KeyController, ScriptExpression>()
-                    //{
-                    //    {AddOperatorController.AKey,  leftBinExpr},
-                    //    {AddOperatorController.BKey,  rightBinExpr},
-                    //});
-                    
+                  //  make a while operator and call it in this function
+                    return new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    {
+                        {WhileOperatorController.BoolKey,  whilBinary},
+                        {WhileOperatorController.BlockKey,  whilBlock},
+                    });
+
                     break;
                 case SyntaxKind.ForStatement:
                     break;
