@@ -38,7 +38,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static KeyController TypeKey = new KeyController("A0BB0580-31E8-441E-907A-8A9C74224964", "Doc Text");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var richTextController = inputs[KeyStore.DataKey] as RichTextController;
             if (richTextController != null)
@@ -46,6 +48,7 @@ namespace Dash
                 var richEditBox = new RichEditBox();
                 richEditBox.Document.SetText(TextSetOptions.FormatRtf, richTextController.RichTextFieldModel.Data.RtfFormatString);
                 richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
+                readableText = readableText.Replace("\r", "\n");
                 outputs[ReadableTextKey] = new TextController(readableText ?? "");
             }
         }

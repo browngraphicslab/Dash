@@ -48,7 +48,8 @@ namespace Dash.Controllers.Operators
             };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var textController = inputs[TextKey] as TextController;
             var uri = textController.Data;

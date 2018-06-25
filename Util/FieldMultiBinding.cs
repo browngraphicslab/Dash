@@ -125,7 +125,7 @@ namespace Dash
             return false;
         }
 
-        public void Add(FieldControllerBase.FieldUpdatedHandler handler)
+        public void Add(DocumentController.DocumentUpdatedHandler handler)
         {
             foreach (var fieldReference in _references)
             {
@@ -133,7 +133,7 @@ namespace Dash
             }
         }
 
-        public void Remove(FieldControllerBase.FieldUpdatedHandler handler)
+        public void Remove(DocumentController.DocumentUpdatedHandler handler)
         {
             foreach (var fieldReference in _references)
             {

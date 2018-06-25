@@ -37,7 +37,9 @@ namespace Dash
             });
 
             // return a new pdf box
-            return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+            var layout =  new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+            layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            return layout;
         }
 
         private async Task<string> GetPdfText(IStorageFile localFile)

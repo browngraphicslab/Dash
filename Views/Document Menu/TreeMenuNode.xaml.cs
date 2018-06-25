@@ -99,11 +99,10 @@ namespace Dash
             //LayoutDoc.RemoveFieldUpdatedListener(_key, TextChangedHandler);
         }
 
-        private void TextChangedHandler(FieldControllerBase sender, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        private void TextChangedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
         {
 
-            var doc = (DocumentController)sender;
-            DocType = doc.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ?? "";
+            DocType = sender.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data ?? "";
         }
 
     }

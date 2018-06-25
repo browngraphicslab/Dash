@@ -471,7 +471,7 @@ namespace Dash
                 xContextTitle.Content = context.Title;
                 xContextTitle.Visibility = Visibility.Visible;
                 PositionContextPreview();
-                void OnSelectedSchemaRowUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+                void OnSelectedSchemaRowUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
                 {
                     ShowSelectedContext(true);
                 }

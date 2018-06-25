@@ -37,7 +37,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("5B93D353-AE02-4E20-9E2D-D38C01BC5F20", "Intersection");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             ListController<DocumentController> setA = (ListController<DocumentController>) inputs[AKey];
             ListController<DocumentController> setB = (ListController<DocumentController>) inputs[BKey];
