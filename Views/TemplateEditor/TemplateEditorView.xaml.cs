@@ -20,18 +20,12 @@ namespace Dash
 {
     public sealed partial class TemplateEditorView : UserControl
     {
-        public DocumentController LinkedDocument
-        {
-            get;
-            set;
-        }
-
+        public DocumentController LinkedDocument { get; set; }
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }
 
 	    private TemplateOptionsPane _optionsPane;
 	    private KeyValueTemplatePane _keyValuePane;
-	    private CollectionFreeformView _workspace;
 
 		public TemplateEditorView()
 	    {
@@ -46,20 +40,19 @@ namespace Dash
 	    public void UpdatePanes()
 	    {
 			//make key value pane
-		    if (DataPanel.Children.Count == 0)
+		    if (xDataPanel.Children.Count == 0)
 		    {
 				_keyValuePane = new KeyValueTemplatePane(this);
-			    DataPanel.Children.Add(_keyValuePane);
+			    xDataPanel.Children.Add(_keyValuePane);
 			}
-            //make central collection/canvas
-            _workspace = new CollectionFreeformView();
-            _workspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
-	        _workspace.ViewModel.AddDocument(LinkedDocument);
-            xWorkspaceOuterGrid.Children.Add(_workspace);
 
-			//make edit pane
-		    _optionsPane = new TemplateOptionsPane(this);
-			LayoutPanel.Children.Add(_optionsPane);
+            //make central collection/canvas
+	        xWorkspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
+            xWorkspace.ViewModel.AddDocument(LinkedDocument);
+
+            //make edit pane
+            _optionsPane = new TemplateOptionsPane(this);
+			xLayoutPanel.Children.Add(_optionsPane);
 	    }
     }
 }

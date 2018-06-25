@@ -7,19 +7,24 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     x:Name="xEditorControl"
+    AllowDrop="True"
     d:DesignHeight="300"
     d:DesignWidth="1000">
 
     <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Vertical" x:Name="DataPanel" Width="300" Background="White">
+        <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White">
            
         </StackPanel>
-        
-        <Grid x:Name="xWorkspaceOuterGrid" Width="400" Background="Green">
-            
+
+        <Grid Width="500" Height="500" x:Name="xWorkspaceOuterGrid" Background="Green">
+            <local:CollectionFreeformView ManipulationMode="All"
+                AllowDrop="True" VerticalAlignment="Stretch"
+                VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch" x:Name="xWorkspace">
+            </local:CollectionFreeformView>
         </Grid>
 
-        <StackPanel Orientation="Vertical" x:Name="LayoutPanel" Width="200" Background="DodgerBlue">
+        <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="DodgerBlue">
 
         </StackPanel>
     </StackPanel>
