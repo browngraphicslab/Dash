@@ -39,7 +39,7 @@ namespace Dash
             var manipTarget = (nestings.Count() < 2 || drillDown) ? _eventElement : nestings[nestings.Count - 2];
             var docAncestors = manipTarget.GetAncestorsOfType<DocumentView>().ToList();
             _manipulationDocumentTarget = docAncestors[docAncestors.Count > 3 ? 1 : 0];// manipTarget.GetFirstAncestorOfType<DocumentView>();
-            freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView)?.xItemsControl.ItemsPanelRoot as Canvas);
+            freeformCanvas = ((manipTarget.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase)?.GetCanvas());
             _ancestorDocs = _eventElement.GetAncestorsOfType<DocumentView>().ToList();
             _ancestorDocs.AddRange(_eventElement.GetDescendantsOfType<DocumentView>());
             foreach (var n in _ancestorDocs)

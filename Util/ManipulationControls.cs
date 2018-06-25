@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash;
 using Dash.Views;
 using Point = Windows.Foundation.Point;
 using DashShared;
@@ -154,9 +155,9 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-            var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
-                return ParentDocument.ViewModel.Bounds;
+			var collectionFreeformView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
+			if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+				return ParentDocument.ViewModel.Bounds;
 
             var parentDocumentBoundsBefore = ParentDocument.ViewModel.Bounds;
             var parentDocumentBoundsAfter = new Rect(parentDocumentBoundsBefore.X + translate.X, parentDocumentBoundsBefore.Y + translate.Y,
@@ -240,11 +241,11 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-            //Don't do any alignment if simply panning the collection
-            var collectionFreeformView =
-                ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
-            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
-                return originalTranslate;
+			//Don't do any alignment if simply panning the collection
+			var collectionFreeformView =
+				ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
+			if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+				return originalTranslate;
 
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
             var parentDocumentLinesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
@@ -307,7 +308,7 @@ namespace Dash
 
                 if (alignedToX || alignedToY)
                 {
-                    var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+                    var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
                     var scale = cfw.ViewModel.TransformGroup.ScaleAmount;
                     double alignmentX = (translateAfterSecondAlignment.X + offsetX - originalTranslate.X) * scale.X;
                     double alignmentY = (translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
@@ -385,16 +386,16 @@ namespace Dash
                 p2.X = Math.Max(parentDocumentAxes[(int)AlignmentLine.XMax], otherDocumentAxes[(int)AlignmentLine.XMax]);
                 line = MainPage.Instance.HorizontalAlignmentLine;
 
-            }
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+			}
+			var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
-            line.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.xItemsControl.ItemsPanelRoot);
-            var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.xItemsControl.ItemsPanelRoot);
-            line.X1 = screenPoint1.X;
-            line.Y1 = screenPoint1.Y;
-            line.X2 = screenPoint2.X;
-            line.Y2 = screenPoint2.Y;
+			line.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			var screenPoint1 = Util.PointTransformFromVisual(p1, currentCollection?.GetItemsControl().ItemsPanelRoot);
+			var screenPoint2 = Util.PointTransformFromVisual(p2, currentCollection?.GetItemsControl().ItemsPanelRoot);
+			line.X1 = screenPoint1.X;
+			line.Y1 = screenPoint1.Y;
+			line.X2 = screenPoint2.X;
+			line.Y2 = screenPoint2.Y;
 
         }
 
@@ -429,10 +430,10 @@ namespace Dash
                     break;
             }
 
-            var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
+			var currentCollection = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
 
-            var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.xItemsControl.ItemsPanelRoot);
-            var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.xItemsControl.ItemsPanelRoot);
+			var screenPoint1 = Util.PointTransformFromVisual(point1, currentCollection?.GetItemsControl().ItemsPanelRoot);
+			var screenPoint2 = Util.PointTransformFromVisual(point2, currentCollection?.GetItemsControl().ItemsPanelRoot);
 
             return (screenPoint1, screenPoint2);
 
