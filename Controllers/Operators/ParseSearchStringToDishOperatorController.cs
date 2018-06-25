@@ -108,7 +108,7 @@ namespace Dash
             }
         }
 
-        private int FindNextDivider(String inputString)
+        private int FindNextDivider(string inputString)
         {
             bool inParen = false;
             int parenCounter = 0;
@@ -157,7 +157,7 @@ namespace Dash
         }
 
         // Assumes that the inputString starts with "(" or "!("
-        private int FindEndParenthesis(String inputString)
+        private int FindEndParenthesis(string inputString)
         {
             int parenCounter = 0;
             bool inQuote = false;
@@ -193,15 +193,74 @@ namespace Dash
             return -1;
         }
 
-        private String Parse(String inputString)
+        private string SelectivelyReplace(string inputString, string toReplace, string toIgnore, string replaceWith)
+        {
+            int len = inputString.Length;
+            int rep1 = toReplace.Length;
+            int rep2 = toIgnore.Length;
+            int repW1 = replaceWith.Length;
+
+            for (int i = 0; i < len - (rep1 - 1); i++)
+            {   
+                if (len - i > rep2 - 1 && inputString.Substring(i, rep2).Equals(toIgnore)) {
+                    i += rep2 - 1;
+                }
+                else if (inputString.Substring(i, rep1).Equals(toReplace))
+                {
+                    inputString = inputString.Remove(i, rep1).Insert(i, replaceWith);
+                    i += repW1 - 1;
+
+                }
+            }
+            return inputString;
+        }
+
+        /// <summary>
+        /// Re-adds escaped quotes so that they don't interfere with operator call
+        /// </summary>
+        private string EscapeQuotes(string functionString)
+        {
+            int len = functionString.Length;
+            if (len < 3)
+            {
+                return functionString;
+            }
+            else
+            {
+                for (int i = 1; i < len - 1; i++)
+                {
+                    if (functionString.Substring(i, 1).Equals("\""))
+                    {
+                        if (!(functionString.Substring(i - 1, 2).Equals("(\"") || functionString.Substring(i, 2).Equals("\")")))
+                        {
+                            functionString = functionString.Insert(i, "\\");
+                            i += 1;
+                            len += 1;
+                        }
+                    }
+                }
+                return functionString;
+            }
+        }
+
+        private string Parse(string inputString)
         {
             int dividerIndex = FindNextDivider(inputString);
-            String searchTerm = inputString.Substring(0, dividerIndex);
+            string searchTerm = inputString.Substring(0, dividerIndex);
             bool isNegated = searchTerm.StartsWith("!") ? true : false;
-            String modifiedSearchTerm = searchTerm.TrimStart('!');
-            String finalSearchTerm = modifiedSearchTerm.Replace("\"", "");
+            string modifiedSearchTerm = searchTerm.TrimStart('!');
 
-            String modInput = inputString.TrimStart('!');
+            if (modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
+            {
+                modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
+            }
+
+            String finalSearchTerm = SelectivelyReplace(modifiedSearchTerm, "\"", "\\\"", "");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\n", "\\\\n", "\n");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\t", "\\\\t", "\t");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\r", "\\\\r", "\r");
+
+            string modInput = inputString.TrimStart('!');
 
             int endParenthesis = -2;
 
@@ -213,10 +272,10 @@ namespace Dash
             }
 
             
-            String searchDict;
+            string searchDict;
             if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
-                String newInput = modInput.Substring(1, modInput.Length - 2);
+                string newInput = modInput.Substring(1, modInput.Length - 2);
                 searchDict = Parse(newInput);
             } else {
                 searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
@@ -236,7 +295,7 @@ namespace Dash
             } else
             {
                 char divider = inputString[dividerIndex];
-                String rest = inputString.Substring(dividerIndex + 1);
+                string rest = inputString.Substring(dividerIndex + 1);
 
                 if (divider == ' ')
                 {
@@ -260,7 +319,9 @@ namespace Dash
             DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            outputs[ScriptKey] = new TextController(Parse(inputString));
+            string functionString = Parse(inputString);
+            functionString = EscapeQuotes(functionString).Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r"); ;
+            outputs[ScriptKey] = new TextController(functionString);
         }
     }
 }
