@@ -9,6 +9,6 @@
     d:DesignWidth="400">
 
     <Grid>
-
+    <Rectangle Fill="Black" Width ="200" Height="200"></Rectangle>
     </Grid>
 </UserControl>

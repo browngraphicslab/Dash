@@ -47,8 +47,18 @@ namespace Dash
 			}
 
             //make central collection/canvas
-	        xWorkspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
-            xWorkspace.ViewModel.AddDocument(LinkedDocument);
+            xWorkspace.DataContext = new CollectionViewModel(DataDocument, KeyStore.DataKey);
+			xWorkspace.ViewModel.AddDocument(LinkedDocument);
+            xWorkspaceOuterGrid.Children.Add(xWorkspace);
+
+		    //template - MAY HAVE TO MOVE OUTSIDE THIS EDITOR & PASS IN INSTEAD
+			var template = new TemplateNote(new Point(), new Size(xWorkspaceOuterGrid.ActualWidth, xWorkspaceOuterGrid.ActualHeight)).Document;
+			xWorkspace.ViewModel.AddDocument(template);
+			//_workspace.ViewModel.
+
+		    //_workspace.ViewModel.SetCollectionRef(DataDocument, KeyStore.DataKey);
+
+			//LayoutPanel.Children.Add(template);
 
             //make edit pane
             _optionsPane = new TemplateOptionsPane(this);
