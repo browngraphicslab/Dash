@@ -205,7 +205,16 @@ namespace Dash
             UpdateContextMenu();
 
             // set the top-level viewtype to be freeform by default
-            SetView(ParentDocument == MainPage.Instance.MainDocView ? CollectionViewType.Freeform : _viewType);
+            if (ParentDocument != MainPage.Instance.MainDocView || _viewType == CollectionViewType.Freeform ||
+                _viewType == CollectionViewType.Standard)
+            {
+                SetView(_viewType);
+            }
+            else //If we are trying to view the main collection not in a freeform-ish view, force a freeform view
+            //TODO This might not be what we want
+            {
+                SetView(CollectionViewType.Freeform);
+            }
         }
         
         #endregion
