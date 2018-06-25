@@ -309,13 +309,17 @@ namespace Dash
 				{
 					var cfw = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformView;
 					var scale = cfw.ViewModel.TransformGroup.ScaleAmount;
-					double alignmentX = -(translateAfterSecondAlignment.X + offsetX - originalTranslate.X) * scale.X;
-					double alignmentY = -(translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
-					//Move mouse by the alignment offset
-					var old = Window.Current.CoreWindow.PointerPosition;
-					Window.Current.CoreWindow.PointerPosition = new Point(old.X + alignmentX, old.Y + alignmentY);
-
-					return new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
+                    Debug.WriteLine("TranslateX: " + translateAfterSecondAlignment.X);
+                    Debug.WriteLine("TranslateY: " + translateAfterSecondAlignment.Y);
+                    Debug.WriteLine("OffsetX: " + offsetX);
+                    Debug.WriteLine("OffsetY: " + offsetY);
+                    double alignmentX = (translateAfterSecondAlignment.X + offsetX - originalTranslate.X) * scale.X;
+					double alignmentY = (translateAfterSecondAlignment.Y + offsetY - originalTranslate.Y) * scale.Y;
+                    //Move mouse by the alignment offset
+                    var old = Window.Current.CoreWindow.PointerPosition;
+                    Window.Current.CoreWindow.PointerPosition = new Point(old.X + alignmentX, old.Y + alignmentY);
+                    //Window.Current.CoreWindow.PointerPosition = new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
+                    return new Point(translateAfterSecondAlignment.X + offsetX, translateAfterSecondAlignment.Y + offsetY);
 				}
 
 			}
@@ -337,7 +341,8 @@ namespace Dash
 				if (Math.Abs(parentLineAfter + acc - targetLine) > accumulatedDistanceThreshold) //Break away from alignment
 				{
 					mouseOffset += acc;
-					return false;
+                    acc = 0;
+                    return false;
 				}
 				acc += delta;
 				return true; //Snap and accumulate
