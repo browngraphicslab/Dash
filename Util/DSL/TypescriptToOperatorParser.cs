@@ -578,7 +578,7 @@ namespace Dash
                     var ifBlock = ParseToExpression(ifChild[1]);
                     var elseBlock = ifChild.Count > 2 ? ParseToExpression(ifChild[2]) : null;
 
-                    return new FunctionExpression(DSL.GetFuncName<IfOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    return new IfExpression(DSL.GetFuncName<IfOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                             {
                                 {IfOperatorController.BoolKey,  ifBinary},
                                 {IfOperatorController.IfBlockKey,  ifBlock},
