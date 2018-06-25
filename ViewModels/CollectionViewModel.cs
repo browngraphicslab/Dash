@@ -41,10 +41,10 @@ namespace Dash
         static UserControl _previousDragEntered;
         bool _canDragItems = true;
         double _cellSize;
-        bool _isLoaded = false;
+        private bool _isLoaded;
+
         ListViewSelectionMode _itemSelectionMode;
         public ListController<DocumentController> CollectionController => ContainerDocument.GetDereferencedField<ListController<DocumentController>>(CollectionKey, null);
-
         private Point _pasteWhereHack;
 
         //this table saves requests to appData for htmlImport
@@ -52,7 +52,44 @@ namespace Dash
         //this is for copy and paste
         DataPackage dataPackage = new DataPackage();
 
+        #region StandardView
+        public enum StandardViewLevel
+        {
+            None = 0,
+            Overview = 1,
+            Region = 2,
+            Detail = 3
+        }
 
+        private StandardViewLevel _viewLevel = StandardViewLevel.None;
+
+        private double _prevScale = 1;
+
+        public StandardViewLevel ViewLevel
+        {
+            get => _viewLevel;
+            set
+            {
+                SetProperty(ref _viewLevel, value);
+                UpdateViewLevel();
+            }
+        }
+
+        public double PrevScale
+        {
+            get => _prevScale;
+            set => SetProperty(ref _prevScale, value);
+        }
+        private void UpdateViewLevel()
+        {
+            foreach (var dvm in DocumentViewModels)
+            {
+                var name = dvm.ToString();
+                dvm.ViewLevel = ViewLevel;
+            }
+        }
+        #endregion
+        
         void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
@@ -146,11 +183,11 @@ namespace Dash
         }
         /// <summary>
         /// pan/zooms the document so that all of its contents are visible.  
-        /// This only applies of the CollectionViewType is Freeform, and the CollectionFitToParent field is true
+        /// This only applies of the CollectionViewType is Freeform/Standard, and the CollectionFitToParent field is true
         /// </summary>
         public void FitContents()
         {
-            if (FitToParent && ViewType == CollectionView.CollectionViewType.Freeform)
+            if (FitToParent && (ViewType == CollectionView.CollectionViewType.Freeform || ViewType == CollectionView.CollectionViewType.Standard))
             {
                 var parSize = ContainerDocument.GetActualSize() ?? new Point();
                 var r = Rect.Empty;
@@ -628,11 +665,11 @@ namespace Dash
                 byte[] pixels = new byte[pixelStream.Length];
                 await pixelStream.ReadAsync(pixels, 0, pixels.Length);
                 // Save the image file with jpg extension 
-                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint) writeableBitmap.PixelWidth,
-                    (uint) writeableBitmap.PixelHeight, 96.0, 96.0, pixels);
+                encoder.SetPixelData(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Ignore, (uint)writeableBitmap.PixelWidth,
+                    (uint)writeableBitmap.PixelHeight, 96.0, 96.0, pixels);
                 await encoder.FlushAsync();
                 var dp = new DataPackage();
-                dp.SetStorageItems(new IStorageItem[] {savefile});
+                dp.SetStorageItems(new IStorageItem[] { savefile });
                 var droppedDoc = await FileDropHelper.HandleDrop(where, dp.GetView(), this);
                 AddDocument(droppedDoc);
             }
@@ -724,7 +761,7 @@ namespace Dash
 
                     //to import from html
                     // create a ValueSet from the datacontext, used to create word doc to copy html to
-                    var table = new ValueSet {{"REQUEST", "HTML to RTF"}};
+                    var table = new ValueSet { { "REQUEST", "HTML to RTF" } };
 
                     await DotNetRPC.CallRPCAsync(table);
 
@@ -754,8 +791,8 @@ namespace Dash
                     AddDocument(t.Document);
                     */
 
-                    var strings = text.Split(new char[] {'\r'});
-                    foreach (var str in html.Split(new char[] {'\r'}))
+                    var strings = text.Split(new char[] { '\r' });
+                    foreach (var str in html.Split(new char[] { '\r' }))
                     {
                         var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
                         if (matches.Count != 0)
@@ -846,7 +883,7 @@ namespace Dash
                     byte[] buffer = new byte[streamWithContent.Size];
                     using (DataReader reader = new DataReader(streamWithContent))
                     {
-                        await reader.LoadAsync((uint) streamWithContent.Size);
+                        await reader.LoadAsync((uint)streamWithContent.Size);
                         reader.ReadBytes(buffer);
                     }
 
@@ -865,7 +902,7 @@ namespace Dash
                 }
                 else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
                 {
-                    var dragData = (DragCollectionFieldModel) e.DataView.Properties[nameof(DragCollectionFieldModel)];
+                    var dragData = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
                     var showField = dragData.FieldKey;
 
                     if (showField != null && dragData.CollectionReference != null)
@@ -903,37 +940,37 @@ namespace Dash
                             !parentDocs.Contains(d.GetDataDocument()) &&
                             d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
 
-                    var payloadLayoutDelegates = filteredDocs.Select((p) =>
+                        var payloadLayoutDelegates = filteredDocs.Select((p) =>
+                        {
+                            if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
+                                p.SetActiveLayout(new DefaultLayout().Document, true, true);
+                            var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
+                                         e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
+                            if (double.IsNaN(newDoc.GetWidthField().Data))
+                                newDoc.SetWidth(dragData.Width ?? double.NaN);
+                            if (double.IsNaN(newDoc.GetHeightField().Data))
+                                newDoc.SetHeight(dragData.Height ?? double.NaN);
+                            return newDoc;
+                        });
+                        AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
+                    }
+                }
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
+                {
+                    var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
+                    foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
                     {
-                        if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
-                            p.SetActiveLayout(new DefaultLayout().Document, true, true);
-                        var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-                                     e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
-                        if (double.IsNaN(newDoc.GetWidthField().Data))
-                            newDoc.SetWidth(dragData.Width ?? double.NaN);
-                        if (double.IsNaN(newDoc.GetHeightField().Data))
-                            newDoc.SetHeight(dragData.Height ?? double.NaN);
-                        return newDoc;
-                    });
-                    AddDocument(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
+                        var start = dragModel.First().DraggedDocument.GetPositionField().Data;
+                        AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).
+                                           Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
+                                                                                       dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList());
+                    }
                 }
-            }
-            // if the user drags a data document
-            else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
-            {
-                var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
-                foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
                 {
-                    var start = dragModel.First().DraggedDocument.GetPositionField().Data;
-                    AddDocuments(dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).
-                                       Select((dm) => dm.GetDropDocument(new Point(dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
-                                                                                   dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList());
-                }
-            }
-            // if the user drags a data document
-            else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-                {
-                    var dragModel = (DragDocumentModel) e.DataView.Properties[nameof(DragDocumentModel)];
+                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                     if (dragModel.LinkSourceView != null
                     ) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
                     {
@@ -1148,7 +1185,7 @@ namespace Dash
 
         public void ChangeIndicationColor(UserControl element, Color fill)
         {
-            (element as CollectionFreeformView)?.SetDropIndicationFill(new SolidColorBrush(fill));
+            (element as CollectionFreeformBase)?.SetDropIndicationFill(new SolidColorBrush(fill));
             (element as CollectionGridView)?.SetDropIndicationFill(new SolidColorBrush(fill));
         }
 
