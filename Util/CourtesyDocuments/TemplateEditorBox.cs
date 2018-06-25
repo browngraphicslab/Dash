@@ -16,9 +16,10 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("931C41F4-EA4C-4911-A2EE-0D0B6C7BB089", "Template Editor Box");
         private static readonly string PrototypeId = "92230B6B-CE44-495E-A278-EE991A58B91D";
 
-        public TemplateEditorBox(FieldControllerBase refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
+        public TemplateEditorBox(FieldControllerBase refToWorkingDoc = null, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToRichText);
+            // template editor box data key = working doc
+            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToWorkingDoc);
             SetupDocument(DocumentType, PrototypeId, "TemplateEditorBox Prototype Layout", fields);
         }
         public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<List<object>, Windows.UI.Xaml.TextWrapping>
@@ -46,24 +47,23 @@ namespace Dash
             }
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController layoutDocController, Context context)
         {
-	        if (docController == null)
+	        if (layoutDocController == null)
 	        {
 		        Debug.WriteLine("DOC CONTROLLER IS NULL");
 	        }
 
             TemplateEditorView tev = null;
-            var dataField = docController.GetField(KeyStore.DataKey);
-            var refToRichText = dataField as ReferenceController;
-            var fieldModelController = (refToRichText?.DereferenceToRoot(context) ?? dataField) as DocumentController;
-            if (fieldModelController != null)
+            var dataField = layoutDocController.GetDereferencedField(KeyStore.DataKey, context);
+            var dataDocument = dataField as DocumentController;
+            if (dataDocument != null)
             {
                 tev = new TemplateEditorView
                 {
-                    LayoutDocument = docController.GetActiveLayout() ?? docController,
-                    DataDocument = refToRichText?.GetDocumentController(context) ?? docController.GetDataDocument(),
-                    LinkedDocument = docController.GetField<DocumentController>(KeyStore.TemplateDocumentKey),
+                    LayoutDocument = layoutDocController,
+                    DataDocument = layoutDocController.GetDataDocument(),
+                    //LinkedDocument = docController.GetField<DocumentController>(KeyStore.DataKey),
                     ManipulationMode = ManipulationModes.All
                 };
 	            tev.Load();
@@ -73,7 +73,7 @@ namespace Dash
                 //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
                 tev.HorizontalAlignment = HorizontalAlignment.Stretch;
                 tev.VerticalAlignment = VerticalAlignment.Stretch;
-                SetupBindings(tev, docController, context);
+                SetupBindings(tev, layoutDocController, context);
             }
 
             return tev;

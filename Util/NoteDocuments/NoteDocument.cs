@@ -12,8 +12,8 @@ namespace Dash
 {
     class TemplateNote : NoteDocument
     {
-        public static DocumentType DocumentType = new DocumentType("0BD8E9E2-D414-4AD3-9D33-98BA185510A2", "Template Note");
-        static string _prototypeID = "004CB4BF-AB4D-4600-AD92-3AF31AFFD10B";
+        public static DocumentType DocumentType = new DocumentType("138AE495-4B1B-43EC-978D-6F91FBF3FCC7", "Template Note");
+        static string _prototypeID = "24CE5031-7F29-4B12-9273-50D79B51CADB";
 
         protected override DocumentController createPrototype(string prototypeID)
         {
@@ -23,28 +23,25 @@ namespace Dash
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Template Editor Data Prototype" };
 
-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, RichTextDocumentOperatorController.ReadableTextKey), true);
-            protoDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(protoDoc.Id, RichTextTitleOperatorController.ComputedTitle), true);
             return protoDoc;
         }
 
         static int rcount = 1;
-        DocumentController CreateLayout(DocumentController dataDoc, Point @where, Size size)
+        DocumentController CreateLayout(DocumentController workingDoc, Point @where, Size size)
         {
             size = new Size(size.Width == 0 ? double.NaN : size.Width, size.Height == 0 ? double.NaN : size.Height);
-            return new TemplateBox(getDataReference(dataDoc), where.X, where.Y, size.Width, size.Height).Document;
+            return new TemplateEditorBox(workingDoc, where.X, where.Y, size.Width, size.Height).Document;
         }
 
-        public TemplateNote(Point where = new Point(), Size size = new Size()) :
+        public TemplateNote(DocumentController workingDoc, Point where = new Point(), Size size = new Size()) :
             base(_prototypeID)
         {
-            var dictionary = new Dictionary<KeyController, FieldControllerBase>
-            {
-                [KeyStore.DataKey] = new ListController<DocumentController>()
-            };
-            var controller = new DocumentController(dictionary, DocumentType);
-            var dataDocument = makeDataDelegate(controller);
-            Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument);
+            // data document's data key = list of layout documents
+            var dataDocument =
+                makeDataDelegate(new ListController<DocumentController>(workingDoc));
+            Document = initSharedLayout(CreateLayout(workingDoc, where, size), dataDocument);
+            // initSharedLayout sets data key to data document, we need to override it here
+            Document.SetField(KeyStore.DataKey, workingDoc, true);
             //Document.SetField(KeyStore.TemplateDocumentKey, linkedToDoc.ViewModel.DataDocument, true);
             Document.Tag = "Template Data " + rcount;
             dataDocument.Tag = "Template Data" + rcount++;

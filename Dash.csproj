@@ -246,6 +246,7 @@
     <Compile Include="Util\CourtesyDocuments\PreviewDocument.cs" />
     <Compile Include="Converters\UriToStreamConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\QuizletOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\TemplateBox.cs" />
     <Compile Include="Util\CourtesyDocuments\TemplateEditorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
@@ -306,6 +307,7 @@
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
+    <Compile Include="Util\NoteDocuments\NoteDocument.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\TemplateEditor.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
@@ -354,6 +356,9 @@
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
+    <Compile Include="Util\TemplateView.xaml.cs">
+      <DependentUpon>TemplateView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\ViewManipulationControls.cs" />
     <Compile Include="Util\WordCount.cs" />
     <Compile Include="ViewModels\CreateOpTabItemViewModel.cs" />
@@ -848,6 +853,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Util\TemplateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

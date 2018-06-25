@@ -65,7 +65,7 @@ namespace Dash
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
 
-        private TemplateEditorBase _templateEditor;
+        private TemplateNote _templateEditor;
 
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
@@ -335,11 +335,10 @@ namespace Dash
 		        MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
 
 			if (_templateEditor == null)
-            {
-                var where = Util.GetCollectionFreeFormPoint(
-                    mainPageCollectionView.CurrentView as CollectionFreeformView, new Point((this.RenderTransform as MatrixTransform).Matrix.OffsetX,
-                        (this.RenderTransform as MatrixTransform).Matrix.OffsetY));
-				_templateEditor = new TemplateEditorBase(this, ViewModel.DataDocument, where, new Size(900, 500));
+			{
+			    var where = new Point((this.RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 50,
+			        (this.RenderTransform as MatrixTransform).Matrix.OffsetY);
+				_templateEditor = new TemplateNote(ViewModel.LayoutDocument, where, new Size(1000, 500));
                 //creates a doc controller for the image(s)
                 mainPageCollectionView.ViewModel.AddDocument(_templateEditor.Document);
 	            Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);

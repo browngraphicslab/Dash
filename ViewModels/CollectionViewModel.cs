@@ -76,6 +76,10 @@ namespace Dash
                 // TransformGroup to be re-read by thew View and will force FitToContents if necessary.
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
                 ActualSizeFieldChanged(null, null, null);
+                //Stuff may have changed in the collection while we weren't listening, so remake the list
+                //TODO Not sure if this should happen - tfs
+                DocumentViewModels.Clear();
+                addViewModels(CollectionController.TypedData);
                 _lastDoc = ContainerDocument;
             }
             else
