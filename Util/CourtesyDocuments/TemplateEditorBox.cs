@@ -48,6 +48,11 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
+	        if (docController == null)
+	        {
+		        Debug.WriteLine("DOC CONTROLLER IS NULL");
+	        }
+
             TemplateEditorView tev = null;
             var dataField = docController.GetField(KeyStore.DataKey);
             var refToRichText = dataField as ReferenceController;
