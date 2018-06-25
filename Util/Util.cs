@@ -113,12 +113,12 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformBase freeForm, Point absolutePosition)
         {
             //Debug.Assert(freeForm != null);
             if (freeForm != null)
             {
-                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.GetItemsControl().ItemsPanelRoot);
                 Debug.Assert(r != null);
                 return r.TransformPoint(absolutePosition);
             }

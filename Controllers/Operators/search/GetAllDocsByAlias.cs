@@ -46,7 +46,7 @@ namespace Dash
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var toReturn = new ListController<DocumentController>();
 

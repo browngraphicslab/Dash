@@ -516,12 +516,8 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
-                        //creates a doc controller for the image(s)
-                        var mainPageCollectionView =
-                            MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        //TODO: change the point used to position the image to the center of the screen, despite any ScrollViewer offset.
-                        var where = Util.GetCollectionFreeFormPoint(
-                            mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController);
                     }
@@ -570,7 +566,7 @@ namespace Dash
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
