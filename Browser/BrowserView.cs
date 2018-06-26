@@ -20,21 +20,7 @@ namespace Dash
     {
         private static bool _initted = false;
         private static bool _ready = false;
-        private static MessageWebSocket _socket;
-        public static MessageWebSocket Socket
-        {
-            get
-            {
-                if (_socket == null)
-                {
-                    InitSocket();
-                }
-                return _socket;
-            }
-            set => _socket = value;
-        }
 
-        private static DataWriter _dataMessageWriter;
         public static event EventHandler<BrowserView> CurrentTabChanged;
         public static event EventHandler<BrowserView> NewTabCreated;
         private static readonly Dictionary<int, BrowserView> _browserViews = new Dictionary<int, BrowserView>();
@@ -56,10 +42,7 @@ namespace Dash
         /// <param name="browserId"></param>
         public static void UpdateCurrentFromServer(int browserId)
         {
-            if (Current != null)
-            {
-                Current.SetIsCurrent(false);
-            }
+            Current?.SetIsCurrent(false);
 
             Debug.Assert(_browserViews.ContainsKey(browserId));
             _browserViews[browserId].SetIsCurrent(true);
@@ -71,95 +54,6 @@ namespace Dash
         {
             return _browserViews.ContainsKey(browserId) ? _browserViews[browserId] : null;
         }
-
-        private static async Task InitSocket()
-        {
-            return;
-            if (_initted)
-            {
-                return;
-            }
-            _initted = true;
-            _socket = new MessageWebSocket();
-
-            _socket.Control.MessageType = SocketMessageType.Utf8;
-            _socket.Control.MaxMessageSize = UInt32.MaxValue;
-            _socket.MessageReceived += MessageRecieved;
-            _socket.Closed += SocketClosed;
-
-            _dataMessageWriter = new DataWriter(_socket.OutputStream);
-
-            //await _socket.ConnectAsync(new Uri("ws://dashchromewebapp.azurewebsites.net/api/values"));
-        }
-
-        private static void SocketClosed(IWebSocket sender, WebSocketClosedEventArgs args)
-        {
-            _initted = false;
-            _socket = null;
-            _dataMessageWriter = null;
-        }
-
-        private static string MessageString = "";
-        private static async void MessageRecieved(MessageWebSocket sender, MessageWebSocketMessageReceivedEventArgs args)
-        {
-            try
-            {
-                using (DataReader reader = args.GetDataReader())
-                {
-                    reader.UnicodeEncoding = Windows.Storage.Streams.UnicodeEncoding.Utf8;
-                    var bytes = new byte[reader.UnconsumedBufferLength];
-                    reader.ReadBytes(bytes);
-                    string read = Encoding.UTF8.GetString(bytes);
-                    MessageString += read;
-                    if (args.IsMessageComplete)
-                    {
-                        await HandleIncomingMessage(MessageString);
-                        MessageString = "";
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                _initted = false;
-                _socket = null;
-                _dataMessageWriter = null;
-                _ready = false;
-                Debug.WriteLine("connection to server failed");
-                Debug.WriteLine("communication will be cut until connection resumes");
-                //throw new Exception("connection to server failed");
-            }
-        }
-
-
-        /*
-        private static async Task<Size> GetCurrentDisplaySize()
-        {
-            Size s = new Size();
-            await UITask.RunTask(async () =>
-            {
-                var displayInformation = DisplayInformation.GetForCurrentView();
-                System.Reflection.TypeInfo t = typeof(DisplayInformation).GetTypeInfo();
-                var props = t.DeclaredProperties
-                    .Where(x => x.Name.StartsWith("Screen") && x.Name.EndsWith("InRawPixels")).ToArray();
-                var w = props.Where(x => x.Name.Contains("Width")).First().GetValue(displayInformation);
-                var h = props.Where(x => x.Name.Contains("Height")).First().GetValue(displayInformation);
-                var size = new Size(System.Convert.ToDouble(w), System.Convert.ToDouble(h));
-                switch (displayInformation.CurrentOrientation)
-                {
-                    case DisplayOrientations.Landscape:
-                    case DisplayOrientations.LandscapeFlipped:
-                        size = new Size(Math.Max(size.Width, size.Height), Math.Min(size.Width, size.Height));
-                        break;
-                    case DisplayOrientations.Portrait:
-                    case DisplayOrientations.PortraitFlipped:
-                        size = new Size(Math.Min(size.Width, size.Height), Math.Max(size.Width, size.Height));
-                        break;
-                }
-                s = size;
-            });
-            return s;
-        }
-        */
 
         public static async Task HandleIncomingMessage(string read)
         {
@@ -200,75 +94,25 @@ namespace Dash
             await SendToServer(req.Serialize());
         }
 
-        private static string GetLocalIPAddress()
-        {
-            try
-            {
-                var host = Dns.GetHostEntry(Dns.GetHostName());
-                foreach (var ip in host.AddressList)
-                {
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return ip.ToString();
-                    }
-                }
-                throw new Exception("No network adapters with an IPv4 address in the system!");
-            }
-            catch (Exception e)
-            {
-                return "123";
-            }
-        }
-
         private static async Task SendToServer(string message)
         {
-            return;
             try
             {
 
-                if (_socket == null)
-                {
-                    await InitSocket();
-                    var ip = "123";
-                    //_dataMessageWriter.WriteString("dash:" + ip);
-                    //await _dataMessageWriter.StoreAsync();
-                    _ready = true;
-                }
-
-                while (!_ready)
-                {
-                    Debug.WriteLine("Awaiting connection to web server");
-                    await Task.Delay(50);
-                }
-
-
-
-                //_dataMessageWriter.WriteString(message);
-                //await _dataMessageWriter.StoreAsync();
                 await DotNetRPC.ChromeRequest(message);
             }
             catch (Exception e)
             {
                 _initted = false;
-                _socket = null;
-                _dataMessageWriter = null;
                 _ready = false;
 
                 throw new Exception("Exception caught during writing to server data writer.  Reason: " + e.Message);
             }
         }
 
-        public static void ForceInit()
-        {
-            var r = new PingBrowserRequest();
-            SendToServer(r.Serialize());
-        }
-
-
         public static void OpenTab(string url = "https://en.wikipedia.org/wiki/Special:RandomInCategory/Good_articles")
         {
-            var r = new NewTabBrowserRequest();
-            r.url = url;
+            var r = new NewTabBrowserRequest {url = url};
             SendToServer(r.Serialize());
         }
 

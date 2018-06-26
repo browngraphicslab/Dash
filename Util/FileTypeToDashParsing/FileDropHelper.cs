@@ -175,7 +175,7 @@ namespace Dash
         /// <param name="storageItem"></param>
         /// <param name="e"></param>
         /// <returns></returns>
-        public static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
+        private static async Task<FileData> GetFileData(IStorageFile storageItem, DataPackageView dataView)
         {
             // if the file is a url then check the link filetype
             if (storageItem.FileType.EndsWith(".url"))

@@ -195,7 +195,6 @@ namespace Dash
         /// <param name="o"></param>
         private void OnResuming(object sender, object o)
         {
-            BrowserView.ForceInit();
         }
 
     }

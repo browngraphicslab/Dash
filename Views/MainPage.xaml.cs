@@ -169,8 +169,6 @@ namespace Dash
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
-            BrowserView.ForceInit();
-
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
