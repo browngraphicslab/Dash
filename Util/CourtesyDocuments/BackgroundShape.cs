@@ -27,6 +27,7 @@ namespace Dash
             Hexagonal,
             Octagonal,
             CustomPolygon,
+            CustomStar,
             Clover,
         }
 
@@ -38,7 +39,7 @@ namespace Dash
         public BackgroundShape(FieldControllerBase refToBackground, FieldControllerBase refToSides, FieldControllerBase refToFill, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToBackground);
-            fields.Add(KeyStore.AdornmentKey, new TextController("true"));
+            fields.Add(KeyStore.IsAdornmentKey, new TextController("true"));
             fields.Add(KeyStore.SideCountKey, refToSides);
             fields.Add(KeyStore.BackgroundColorKey, refToFill);
             SetupDocument(DocumentType, PrototypeId, "Background Box Prototype Layout", fields);

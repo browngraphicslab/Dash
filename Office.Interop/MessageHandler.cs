@@ -11,13 +11,18 @@ namespace OfficeInterop
 {
     class MessageHandler
     {
-        private readonly Word.Application _word;
+        private Word.Application _word;
         private readonly Word.Document _doc;
 
         private ChromeApp _chrome;
 
         public MessageHandler()
         {
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
+            {
+                _word?.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
+                _word = null;
+            };
             _word = new Word.Application();
             _doc = _word.Documents.Add();
             _chrome = new ChromeApp();
@@ -31,6 +36,12 @@ namespace OfficeInterop
                 });
             };
             _chrome.Start();
+        }
+
+        public void Close()
+        {
+            _word.Quit(Word.WdSaveOptions.wdDoNotSaveChanges);
+            _word = null;
         }
 
         //Event that is triggered when we want to send a message through the interop to Dash

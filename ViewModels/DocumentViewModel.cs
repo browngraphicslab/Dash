@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
         Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
         
@@ -32,7 +33,7 @@ namespace Dash
             
             if (IconTypeController == null)
             {
-                LayoutDocument.SetField(KeyStore.IconTypeFieldKey, new NumberController((int)(IconTypeEnum.Document)), true);
+                LayoutDocument.SetField<NumberController>(KeyStore.IconTypeFieldKey, (int)(IconTypeEnum.Document), true);
             }
         }
 
@@ -60,40 +61,16 @@ namespace Dash
 
         public bool IsAdornmentGroup
         {
-            get
-            {
-                return DocumentController.GetDereferencedField<TextController>(KeyStore.AdornmentKey, null)?.Data == "true";
-            }
-            set
-            {
-                DocumentController.SetField<TextController>(KeyStore.AdornmentKey, IsAdornmentGroup ? "false" : "true", true);
-            }
-        }
-        public Brush BackgroundBrush
-        {
-            get
-            {
-                //var backgroundStr = LayoutDocument.GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
-
-                //if (!string.IsNullOrEmpty(backgroundStr) && backgroundStr.Length == 9)
-                //{
-                //    byte a = byte.Parse(backgroundStr.Substring(1, 2), NumberStyles.HexNumber);
-                //    byte r = byte.Parse(backgroundStr.Substring(3, 2), NumberStyles.HexNumber);
-                //    byte g = byte.Parse(backgroundStr.Substring(5, 2), NumberStyles.HexNumber);
-                //    byte b = byte.Parse(backgroundStr.Substring(7, 2), NumberStyles.HexNumber);
-                //    return new SolidColorBrush(Color.FromArgb(a, r, g, b));
-                //}
-                return new SolidColorBrush(Colors.Transparent);
-            }
-            set => LayoutDocument.SetField<TextController>(KeyStore.BackgroundColorKey, ((value as SolidColorBrush)?.Color ?? Colors.Transparent).ToString(), true);
+            get => DocumentController.GetIsAdornment();
+            set => DocumentController.SetIsAdornment(value);
         }
         /// <summary>
         /// The actual position of the document as written to the LayoutDocument  model
         /// </summary>
         public Point Position
         {
-            get => LayoutDocument.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null)?.Data ?? new Point();
-            set => LayoutDocument.SetField<PointController>(KeyStore.PositionFieldKey, InteractiveManipulationPosition = value, true);
+            get => LayoutDocument.GetPosition() ?? new Point();
+            set => LayoutDocument.SetPosition(InteractiveManipulationPosition = value);
         }
         public double XPos
         {
@@ -108,17 +85,12 @@ namespace Dash
         public double Width
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.WidthFieldKey, null).Data;
-            set
-            {
-                LayoutDocument.SetField<NumberController>(KeyStore.WidthFieldKey, value, true);
-                if (LayoutDocument.GetDereferencedField<TextController>(KeyStore.TextWrappingKey, null) is TextController)
-                    LayoutDocument.SetField<TextController>(KeyStore.TextWrappingKey, DashShared.TextWrapping.Wrap.ToString(), true);
-            }
+            set => LayoutDocument.SetWidth(value);
         }
         public double Height
         {
             get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.HeightFieldKey, null).Data;
-            set => LayoutDocument.SetField<NumberController>(KeyStore.HeightFieldKey, value, true);
+            set => LayoutDocument.SetHeight(value);
         }
         public Point Scale
         {
@@ -126,7 +98,7 @@ namespace Dash
             set => LayoutDocument.SetField<PointController>(KeyStore.ScaleAmountFieldKey, InteractiveManipulationScale = value, true);
         }
         public Rect Bounds => new TranslateTransform { X = XPos, Y = YPos}.TransformBounds(new Rect(0, 0, ActualSize.X * Scale.X, ActualSize.Y * Scale.Y));
-        public Point ActualSize { get => LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey)?.Data ?? new Point(0,0);}
+        public Point ActualSize { get => LayoutDocument.GetActualSize() ?? new Point(); }
 
         protected bool Equals(DocumentViewModel other)
         {
@@ -174,6 +146,11 @@ namespace Dash
             set { SetProperty(ref _searchHighlightState, value); }
         }
 
+        public CollectionViewModel.StandardViewLevel ViewLevel
+        {
+            get => _standardViewLevel;
+            set => SetProperty(ref _standardViewLevel, value);
+        }
         public bool DisableDecorations { get; set; } = false;
 
 
@@ -186,18 +163,31 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            // if (new Context(LayoutDocument).IsCompatibleWith(context)) // filter out callbacks on prototype from delegate
+            // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
-                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs && largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+            {
+                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
                     ;
                 else
                     Content = null; // forces layout to be recomputed by listeners who will access Content
+            }
+            else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
+            {
+                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                   (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
+                     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
+                     largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
+                    ;
+                else
+                    Content = null; // forces layout to be recomputed by listeners who will access Content
+            }
         }
         /// <summary>
         /// Called when the ActiveLayout field of the Layout document has changed (or a field on the ActiveLayout).
@@ -206,13 +196,12 @@ namespace Dash
         /// a delegate of the prototype's activeLayout field. Otherwise, the instance would share the position, 
         /// size, etc of the prototype and changes to the instance would affect the prototype.
         /// </summary>
-        /// <param name="fieldControllerBase"></param>
-        /// <param name="fieldUpdatedEventArgs"></param>
+        /// <param name="doc"></param>
+        /// <param name="args"></param>
         /// <param name="context"></param>
-        void DocumentController_ActiveLayoutChanged(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = fieldUpdatedEventArgs as DocumentFieldUpdatedEventArgs;
-            var fargs = (dargs?.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
             // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
             // if a field of the activelayout changed, we ignore that here since it should update the layout directly
             // through bindings.
@@ -221,7 +210,7 @@ namespace Dash
                 var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
                 if (curActive == null)
                 {
-                    curActive = LayoutDocument.GetViewInstance(_lastLayout.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, new Context(DocumentController)).Data);
+                    curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
                     curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
                     DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
                 }

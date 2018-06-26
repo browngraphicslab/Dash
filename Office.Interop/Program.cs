@@ -17,6 +17,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.AppService;
 using Windows.Foundation.Collections;
+using Microsoft.Office.Interop.Word;
+using Excel = Microsoft.Office.Interop.Excel;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace OfficeInterop
 {
@@ -33,6 +36,7 @@ namespace OfficeInterop
             _appServiceExit = new AutoResetEvent(false);
             InitializeAppServiceConnection();
             _appServiceExit.WaitOne();
+            Handler.Close();
         }
 
         private static async void InitializeAppServiceConnection()

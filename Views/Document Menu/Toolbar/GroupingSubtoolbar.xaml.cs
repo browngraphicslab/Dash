@@ -20,7 +20,7 @@ namespace Dash
     {
         //INSTANCE VARIABLES
         private DocumentController _currentDocController;
-        private string _currentColorString;
+        private Windows.UI.Color _currentColor;
 
         //ORIENTATION property registration and declaration
         public static readonly DependencyProperty OrientationProperty = DependencyProperty.Register(
@@ -39,7 +39,7 @@ namespace Dash
 
             //Initial values
             xOpacitySlider.Value = 128; //Effectively an opacity of 0.5
-            _currentColorString = "80FF0000"; //Red with an opacity of 0.5
+            _currentColor = Windows.UI.Color.FromArgb(0x80, 0xff, 0x00, 0x00); //Red with an opacity of 0.5
 
             FormatDropdownMenu();
 
@@ -77,10 +77,10 @@ namespace Dash
          */
         private void UpdateColor()
         {
-            _currentColorString = GetColorWithUpdatedOpacity();
+            _currentColor = GetColorWithUpdatedOpacity();
             //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
             //...shape's background color
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.BackgroundColorKey, _currentColorString, true);
+            _currentDocController?.GetDataDocument().SetBackgroundColor(_currentColor);
             //...indirectly, the shape's opacity
             _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.OpacitySliderValueKey, xOpacitySlider.Value, true);
         }
@@ -88,12 +88,12 @@ namespace Dash
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
          */
-        private string GetColorWithUpdatedOpacity()
+        private Windows.UI.Color GetColorWithUpdatedOpacity()
         {
-            if (_currentColorString == null) return "#80000000"; //A fallback during startup (edge case) where current color string is null
+            if (_currentColor == null)
+                return Windows.UI.Color.FromArgb(0x80, 0x00, 0x00, 0x00); //A fallback during startup (edge case) where current color string is null
             var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
-            var rgb = _currentColorString.Substring(3); //Hex component of color
-            return "#" + alpha.ToString("X2") + rgb; //Concatenation of new alpha and old hex value
+            return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
         }
 
     //ACCESSORS AND MUTATORS
@@ -136,7 +136,7 @@ namespace Dash
         */
         public void TryMakeGroupEditable(bool makeAdornmentGroup)
         {
-            _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.AdornmentKey, makeAdornmentGroup ? "false" : "true", true);
+            _currentDocController?.GetDataDocument().SetIsAdornment(makeAdornmentGroup);
         }
 
         
@@ -158,6 +158,7 @@ namespace Dash
                 BackgroundShape.AdornmentShape.Hexagonal.ToString(),
                 BackgroundShape.AdornmentShape.Octagonal.ToString(),
                 BackgroundShape.AdornmentShape.CustomPolygon.ToString(),
+                BackgroundShape.AdornmentShape.CustomStar.ToString(),
                 BackgroundShape.AdornmentShape.Clover.ToString(),
             };
 
@@ -167,17 +168,16 @@ namespace Dash
             var selectedLabel = index < switchList.Count ? switchList[index] : BackgroundShape.AdornmentShape.Rectangular.ToString();
             _currentDocController?.GetDataDocument().SetField<TextController>(KeyStore.DataKey, selectedLabel, true);
 
-            if (index != GroupGeometryConstants.CustomPolyDropdownIndex) return;
-
-            var storedSideNum = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
-            var safeSideCount = storedSideNum ?? GroupGeometryConstants.DefaultCustomPolySideCount;
-            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.SideCountKey, safeSideCount, true);
+            if (index != GroupGeometryConstants.CustomPolyDropdownIndex || index != GroupGeometryConstants.CustomStarDropdownIndex) return;
+            
+            var safeSideCount = _currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount;
+            _currentDocController?.GetDataDocument().SetSideCount(safeSideCount);
             xSideCounter.Text = safeSideCount.ToString("G");
         }
 
         private void CheckForCustom()
         {
-            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
+            if (xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex || xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomPolyDropdownIndex)
             {
                 if (xSideToggleButtonGrid != null) xSideToggleButtonGrid.Visibility = Visibility.Visible;
                 xRadialCol.Width = new GridLength(50);
@@ -245,30 +245,30 @@ namespace Dash
                 [BackgroundShape.AdornmentShape.Hexagonal.ToString()] = 5,
                 [BackgroundShape.AdornmentShape.Octagonal.ToString()] = 6,
                 [BackgroundShape.AdornmentShape.CustomPolygon.ToString()] = 7,
-                [BackgroundShape.AdornmentShape.Clover.ToString()] = 8,
+                [BackgroundShape.AdornmentShape.CustomStar.ToString()] = 8,
+                [BackgroundShape.AdornmentShape.Clover.ToString()] = 9,
             };
 
             xShapeOptionsDropdown.SelectedIndex = switchDictionary.ContainsKey(shape) ? switchDictionary[shape] : 0;
 
             //COLOR: If it's present, retrieves the stored color associated with this group and assigns it to the current color... 
             //...doesn't interact with color picker, but changing opacity will do so in the context of the proper color
-            _currentColorString = _currentDocController?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.BackgroundColorKey, null)?.Data;
+            _currentColor = _currentDocController?.GetDataDocument().GetBackgroundColor() ?? Windows.UI.Colors.Red;
             UpdateToolbarAccentColors();
 
             //OPACITY: If it's present, retrieves the stored slider value (double stored as a string) associated with this group and...
             xOpacitySlider.Value = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.OpacitySliderValueKey, null)?.Data ?? 128;
 
             //NUM SIDES
-            xSideCounter.Text = _currentDocController?.GetDataDocument().GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data.ToString("G") ?? GroupGeometryConstants.DefaultCustomPolySideCount.ToString();
+            xSideCounter.Text = (_currentDocController?.GetDataDocument().GetSideCount() ?? GroupGeometryConstants.DefaultCustomPolySideCount).ToString("G");
             
         }
 
         private void UpdateToolbarAccentColors()
         {
-            var asBrush = new StringToBrushConverter().ConvertDataToXaml(_currentColorString);
-            xOpacitySlider.Background = asBrush;
-            xSideGauge.NeedleBrush = (SolidColorBrush)asBrush;
-            xSideGauge.TrailBrush = (SolidColorBrush)asBrush;
+            xOpacitySlider.Background = new SolidColorBrush(_currentColor);
+            xSideGauge.NeedleBrush = new SolidColorBrush(_currentColor);
+            xSideGauge.TrailBrush = new SolidColorBrush(_currentColor);
         }
 
         /*
@@ -276,7 +276,7 @@ namespace Dash
          */
         private void XGroupForegroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            _currentColorString = xGroupForegroundColorPicker.SelectedColor.ToString();
+            _currentColor = xGroupForegroundColorPicker.SelectedColor;
             UpdateToolbarAccentColors();
             UpdateColor();
         }
@@ -300,10 +300,15 @@ namespace Dash
         private void IncrementCounterByStep(int step)
         {
             int.TryParse(xSideCounter.Text, out var numSides);
-            if (numSides + step < 3 || numSides + step > 99) return;
+
+            var isStar = xShapeOptionsDropdown.SelectedIndex == GroupGeometryConstants.CustomStarDropdownIndex;
+            var lowerBound = isStar ? 5 : 3;
+            var upperBound = isStar ? float.PositiveInfinity : 99;
+
+            if (numSides + step < lowerBound || numSides + step > upperBound) return;
             numSides += step;
             xSideCounter.Text = numSides.ToString();
-            _currentDocController?.GetDataDocument().SetField<NumberController>(KeyStore.SideCountKey, numSides, true);
+            _currentDocController?.GetDataDocument().SetSideCount(numSides);
         }
     }
 }

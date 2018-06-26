@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
 using DashShared;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -17,7 +18,6 @@ namespace Dash
         public static KeyController FontWeightKey = new KeyController("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
         public static KeyController FontSizeKey = new KeyController("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
         public static KeyController TextAlignmentKey = new KeyController("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
-        public static KeyController BackgroundColorKey = new KeyController("CBD8E5E1-6E5A-48C5-AFEA-8A4515FC3DFE", "Background Color");
         public static DocumentType  DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
         public static string DefaultText = "Default Text";
@@ -31,9 +31,9 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             fields.Add(FontWeightKey, new TextController(weight == null ? DefaultFontWeight : weight.ToString()));
             fields.Add(FontSizeKey, new NumberController(DefaultFontSize));
-            fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
+          //  fields.Add(TextAlignmentKey, new NumberController((int)(refToText.RootTypeInfo == TypeInfo.Text ? TextAlignment.Left : TextAlignment.Right)));
             if (backgroundColor != null)
-                fields.Add(BackgroundColorKey, new TextController(backgroundColor.ToString()));
+                fields.Add(KeyStore.BackgroundColorKey, new TextController(backgroundColor.ToString()));
             if (w != 0 && !double.IsNaN(w))
                 (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
             if (h != 0 && !double.IsNaN(h))
@@ -62,7 +62,9 @@ namespace Dash
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
             var textController = docController.GetField(KeyStore.DataKey);
+            var text = textController.GetValue(null);
             // create the textblock
+            //TODO Make TargetFieldController be a FieldReference to the field instead of just the field
             var tb = new EditableTextBlock
             {
                 TargetFieldController = textController,
@@ -90,15 +92,44 @@ namespace Dash
             element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
+        public class TypedTextAlignmentBinding : SafeDataToXamlConverter<List<object>, TextAlignment>
+        {
+            public override TextAlignment ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                bool isNumber = data[1] is double;
+                if (data[0] != null && data[0] is double) 
+                {
+                    switch ((int)(double)data[0]) {
+                        case (int)TextAlignment.Left:
+                            return TextAlignment.Left;
+                        case (int)TextAlignment.Right:
+                            return TextAlignment.Right;
+                        case (int)TextAlignment.Center:
+                            return TextAlignment.Center;
+                        case (int)TextAlignment.Justify:
+                            return TextAlignment.Justify;
+                    }
+                    
+                }
+                return isNumber ? TextAlignment.Right : TextAlignment.Center;
+            }
+
+            public override List<object> ConvertXamlToData(TextAlignment xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var alignmentBinding = new FieldBinding<NumberController>()
+            var dataRef = new DocumentFieldReference(docController.Id, TextAlignmentKey);
+            var sideCountRef = new DocumentFieldReference(docController.Id, KeyStore.DataKey);
+
+            var alignmentBinding = new FieldMultiBinding<TextAlignment>(dataRef, sideCountRef)
             {
-                Key = TextAlignmentKey,
-                Document = docController,
-                Converter = new IntToTextAlignmentConverter(),
-                Mode = BindingMode.TwoWay,
-                Context = context
+                Converter = new TypedTextAlignmentBinding(),
+                Mode = BindingMode.OneWay,
+                Context = context,
+                CanBeNull = true
             };
             element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
         }
@@ -107,7 +138,7 @@ namespace Dash
         {
             var backgroundBinding = new FieldBinding<TextController>()
             {
-                Key = BackgroundColorKey,
+                Key = KeyStore.BackgroundColorKey,
                 Document = docController,
                 Converter = new StringToBrushConverter(),
                 Mode = BindingMode.TwoWay,

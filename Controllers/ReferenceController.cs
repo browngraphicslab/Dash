@@ -24,11 +24,10 @@ namespace Dash
             _lastDoc?.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        protected void DocFieldUpdated(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+        protected void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs)args;
             //OnFieldModelUpdated(dargs, c);
-            OnFieldModelUpdated(dargs.FieldArgs, c);
+            OnFieldModelUpdated(args.FieldArgs, c);
         }
 
         public override void DisposeField()
@@ -123,20 +122,6 @@ namespace Dash
         public override StringSearchModel SearchForString(string searchString)
         {
             return StringSearchModel.False;
-        }
-
-        public override void SaveOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.SaveOnServer(success, error);
-            var controller = GetDocumentController(null);
-            controller?.SaveOnServer();
-        }
-
-        public override void UpdateOnServer(Action<FieldModel> success = null, Action<Exception> error = null)
-        {
-            base.UpdateOnServer(success, error);
-            var controller = GetDocumentController(null);
-            controller?.UpdateOnServer();
         }
     }
 }

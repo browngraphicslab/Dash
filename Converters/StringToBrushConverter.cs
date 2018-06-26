@@ -26,17 +26,4 @@ namespace Dash.Converters
             return (string)XamlBindingHelper.ConvertValue(typeof(string), (data as SolidColorBrush)?.Color ?? Colors.White);
         }
     }
-
-    internal class StringToNamedColorConverter : SafeDataToXamlConverter<string, NamedColor>
-    {
-        public override NamedColor ConvertDataToXaml(string data, object parameter = null)
-        {
-            return new NamedColor() { Name = data, Color = (Color)XamlBindingHelper.ConvertValue(typeof(Color), data) };
-        }
-
-        public override string ConvertXamlToData(NamedColor data, object parameter = null)
-        {
-            return data.Name;
-        }
-    }
 }

@@ -30,10 +30,10 @@ namespace Dash
                 var reference = data as ReferenceController;
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context context1)
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context1)
                     {
-                        DocumentController doc = (DocumentController) sender;
-                        var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
+                        DocumentController doc = sender;
+                        var dargs = args;
                         if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
                         {
                             return;
@@ -68,14 +68,14 @@ namespace Dash
             // the Document on this courtesty document provides us with the parameters to display the DATA.
             // X, Y, Width, and Height etc....
 
-            ///* 
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, 
                 new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), TextingBox.DocumentType), out ReferenceController refToData);
 
             var textfieldModelController = fieldModelController as TextController;
             Debug.Assert(textfieldModelController != null);
 
-            var web = new WebView();
+            var webView = new WebBoxView();
+            var web = webView.GetView();
             var html = docController.GetDereferencedField<TextController>(KeyStore.DataKey, context)?.Data;
             if (html != null)
                 if (html.StartsWith("http"))
@@ -96,7 +96,7 @@ namespace Dash
             if (html == null)
                 SetupTextBinding(web, docController, context);
             
-            return web;
+            return webView;
         }
 
         private static async void Web_LoadCompleted(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)

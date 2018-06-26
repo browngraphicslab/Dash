@@ -16,7 +16,9 @@ namespace Dash
 
         public PutSearchResultsIntoDictionaryOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
+
         public PutSearchResultsIntoDictionaryOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
@@ -33,7 +35,9 @@ namespace Dash
         {
             [DictionaryResultsKey] = TypeInfo.Document
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var list = (inputs[ListKey] as BaseListController).Data;
             var output = new DocumentController();

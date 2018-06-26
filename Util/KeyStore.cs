@@ -10,6 +10,7 @@ namespace Dash
         public static KeyController AbstractInterfaceKey = new KeyController(DashConstants.KeyStore.AbstractInterfaceKey);
         public static KeyController LayoutListKey = new KeyController(DashConstants.KeyStore.LayoutListKey);
         public static KeyController RegionsKey = new KeyController("1B958E26-624B-4E9A-82C9-2E18609D6A39", "Regions");
+        public static KeyController RegionDefinitionKey = new KeyController("6EEDCB86-76F4-4937-AE0D-9C4BC6744310", "Region Definition");
         public static KeyController ActiveLayoutKey = new KeyController(DashConstants.KeyStore.ActiveLayoutKey);
         public static KeyController TitleKey = new KeyController(DashConstants.KeyStore.TitleKey);
         public static KeyController CaptionKey = new KeyController(DashConstants.KeyStore.CaptionKey);
@@ -18,9 +19,12 @@ namespace Dash
         public static KeyController UserSetWidthKey = new KeyController(DashConstants.KeyStore.UserSetWidthKey);
         public static KeyController WidthFieldKey = new KeyController(DashConstants.KeyStore.WidthFieldKey);
         public static KeyController HeightFieldKey = new KeyController(DashConstants.KeyStore.HeightFieldKey);
+        public static KeyController TransientKey = new KeyController("7553FBFA-B4C4-46D7-AEA6-76B22C5A3425", "Transient");
+        public static KeyController HiddenKey = new KeyController("A99659B8-F34A-4F0D-8BA7-0030DA8B4EA6", "Hidden");
         public static KeyController DataKey = new KeyController(DashConstants.KeyStore.DataKey);
+        public static KeyController SnapshotsKey = new KeyController("94358B4F-83DD-41A6-8440-BA5973DC9E97", "Snaphshots");
         public static KeyController SourecUriKey = new KeyController(DashConstants.KeyStore.SourceUriKey);
-        public static KeyController AdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
+        public static KeyController IsAdornmentKey = new KeyController(DashConstants.KeyStore.AdornmentKey);
         public static KeyController DocumentTextKey = new KeyController(DashConstants.KeyStore.DocumentTextKey);
         public static KeyController TextWrappingKey = new KeyController(DashConstants.KeyStore.TextWrappingKey);
         public static KeyController BackgroundColorKey = new KeyController(DashConstants.KeyStore.BackgroundColorKey);
@@ -36,7 +40,7 @@ namespace Dash
         public static KeyController ThumbnailFieldKey = new KeyController(DashConstants.KeyStore.ThumbnailFieldKey);
         public static KeyController HeaderKey = new KeyController(DashConstants.KeyStore.HeaderKey);
         public static KeyController CollectionOutputKey = new KeyController(DashConstants.KeyStore.CollectionOutputKey);
-        public static KeyController OperatorKey = new KeyController("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "_Operator");
+        public static KeyController OperatorKey = new KeyController(DashConstants.KeyStore.OperatorKey);
         public static KeyController OperatorCacheKey = new KeyController(DashConstants.KeyStore.OperatorCacheKey);
         public static KeyController CollectionViewTypeKey = new KeyController("EFC44F1C-3EB0-4111-8840-E694AB9DCB80", "Collection View Type");
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "_InkData");
@@ -52,7 +56,17 @@ namespace Dash
         public static KeyController SelectedKey = new KeyController(DashConstants.KeyStore.SelectedKey);
         public static KeyController OriginalImageKey = new KeyController(DashConstants.KeyStore.OriginalImageKey);
         public static KeyController SideCountKey = new KeyController(DashConstants.KeyStore.SideCountKey);
-
+        public static KeyController SettingsDocKey = new KeyController(DashConstants.KeyStore.SettingsDocKey);
+        public static KeyController SettingsNightModeKey = new KeyController(DashConstants.KeyStore.SettingsNightModeKey);
+        public static KeyController SettingsFontSizeKey = new KeyController(DashConstants.KeyStore.SettingsFontSizeKey);
+        public static KeyController SettingsMouseFuncKey = new KeyController(DashConstants.KeyStore.SettingsMouseFuncKey);
+        public static KeyController SettingsNumBackupsKey = new KeyController(DashConstants.KeyStore.SettingsNumBackupsKey);
+        public static KeyController SettingsBackupIntervalKey = new KeyController(DashConstants.KeyStore.SettingsBackupIntervalKey);
+        public static KeyController BackgroundImageStateKey = new KeyController(DashConstants.KeyStore.BackgroundImageStateKey);
+        public static KeyController CustomBackgroundImagePathKey = new KeyController(DashConstants.KeyStore.CustomBackgroundImagePathKey);
+        public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
+        public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
+        public static KeyController SettingsMarkdownModeKey = new KeyController(DashConstants.KeyStore.SettingsMarkdownModeKey);
 
         public static class SearchResultDocumentOutline
         {

@@ -21,7 +21,7 @@ namespace Dash
 
         public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-
+            SaveOnServer();
         }
 
         public ParseSearchStringToDishOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -47,6 +47,7 @@ namespace Dash
 
         private string WrapSearchTermInFunction(string searchTerm)
         {
+            searchTerm = searchTerm.Replace(@"\", @"\\");
             return OperatorScript.GetDishOperatorName<SearchOperatorController>()+ "(\"" + searchTerm + "\")";
         }
 
@@ -90,7 +91,7 @@ namespace Dash
 
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
         {
-            searchPart = searchPart?.ToLower() ?? " ";
+            searchPart = searchPart ?? " ";
             //if the part is a quote, it ignores the colon
             if (searchPart.Contains(":") && searchPart[0] != '"')
             {
@@ -107,18 +108,47 @@ namespace Dash
             }
         }
 
-        private int FindNextDivider(String inputString)
+        private int FindNextDivider(string inputString)
         {
+            bool inParen = false;
+            int parenCounter = 0;
+            if (inputString.TrimStart('!').StartsWith("("))
+            {
+                inParen = true;
+            }
+
             bool inQuote = false;
             int len = inputString.Length;
             for (int i = 0; i < len; i++)
             {
+                // if it starts with quotes, ignore parenthesis, if it starts with parenthesis, ignore quotes
                 char curChar = inputString[i];
                 if (curChar == '"')
                 {
-                    inQuote = !inQuote;
+                    if (inQuote && !inParen)
+                    {
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                    }
+
                 }
-                else if (!inQuote && (curChar == ' ' || curChar == ','))
+                else if (!inQuote && curChar == '(')
+                {
+                    inParen = true;
+                    parenCounter += 1;
+                }
+                else if (!inQuote && inParen && curChar == ')')
+                {
+                    parenCounter -= 1;
+                    if (parenCounter == 0)
+                    {
+                        inParen = false;
+                    }
+                }
+                else if (!inQuote && !inParen && (curChar == ' ' || curChar == '|'))
                 {
                     return i;
                 }
@@ -126,31 +156,151 @@ namespace Dash
             return len;
         }
 
-        private String Parse(String inputString)
+        // Assumes that the inputString starts with "(" or "!("
+        private int FindEndParenthesis(string inputString)
+        {
+            int parenCounter = 0;
+            bool inQuote = false;
+            int len = inputString.Length;
+            for (int i = 0; i < len; i++)
+            {
+                char curChar = inputString[i];
+                if (curChar == '"')
+                {
+                    if (inQuote)
+                    {
+                        inQuote = false;
+                    }
+                    else
+                    {
+                        inQuote = true;
+                    }
+
+                }
+                else if (!inQuote && curChar == '(')
+                {
+                    parenCounter += 1;
+                }
+                else if (!inQuote && curChar == ')')
+                {
+                    parenCounter -= 1;
+                    if (parenCounter == 0)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        private string SelectivelyReplace(string inputString, string toReplace, string toIgnore, string replaceWith)
+        {
+            int len = inputString.Length;
+            int rep1 = toReplace.Length;
+            int rep2 = toIgnore.Length;
+            int repW1 = replaceWith.Length;
+
+            for (int i = 0; i < len - (rep1 - 1); i++)
+            {   
+                if (len - i > rep2 - 1 && inputString.Substring(i, rep2).Equals(toIgnore)) {
+                    i += rep2 - 1;
+                }
+                else if (inputString.Substring(i, rep1).Equals(toReplace))
+                {
+                    inputString = inputString.Remove(i, rep1).Insert(i, replaceWith);
+                    i += repW1 - 1;
+
+                }
+            }
+            return inputString;
+        }
+
+        /// <summary>
+        /// Re-adds escaped quotes so that they don't interfere with operator call
+        /// </summary>
+        private string EscapeQuotes(string functionString)
+        {
+            int len = functionString.Length;
+            if (len < 3)
+            {
+                return functionString;
+            }
+            else
+            {
+                for (int i = 1; i < len - 1; i++)
+                {
+                    if (functionString.Substring(i, 1).Equals("\""))
+                    {
+                        if (!(functionString.Substring(i - 1, 2).Equals("(\"") || functionString.Substring(i, 2).Equals("\")")))
+                        {
+                            functionString = functionString.Insert(i, "\\");
+                            i += 1;
+                            len += 1;
+                        }
+                    }
+                }
+                return functionString;
+            }
+        }
+
+        private string Parse(string inputString)
         {
             int dividerIndex = FindNextDivider(inputString);
-            String searchTerm = inputString.Substring(0, dividerIndex);
-            var modifiedSearchTerm = searchTerm.Replace("\"", "");
-            bool isNegated = searchTerm.StartsWith("!");
-            String finalSearchTerm = isNegated ? modifiedSearchTerm.Substring(1) : modifiedSearchTerm;
-            String searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+            string searchTerm = inputString.Substring(0, dividerIndex);
+            bool isNegated = searchTerm.StartsWith("!") ? true : false;
+            string modifiedSearchTerm = searchTerm.TrimStart('!');
+
+            if (modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
+            {
+                modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
+            }
+
+            String finalSearchTerm = SelectivelyReplace(modifiedSearchTerm, "\"", "\\\"", "");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\n", "\\\\n", "\n");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\t", "\\\\t", "\t");
+            finalSearchTerm = SelectivelyReplace(finalSearchTerm, "\\r", "\\\\r", "\r");
+
+            string modInput = inputString.TrimStart('!');
+
+            int endParenthesis = -2;
+
+            // Making sure parenthesis doesn't clash with regex
+            if ((modifiedSearchTerm.StartsWith("(") && !modifiedSearchTerm.EndsWith(")")) || 
+                (isNegated && modifiedSearchTerm.StartsWith("(") && modifiedSearchTerm.EndsWith(")")))
+            {
+                endParenthesis = FindEndParenthesis(inputString);
+            }
+
+            
+            string searchDict;
+            if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
+            {
+                string newInput = modInput.Substring(1, modInput.Length - 2);
+                searchDict = Parse(newInput);
+            } else {
+                searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+            }
 
             if (isNegated)
                 searchDict = NegateSearch(searchDict);
 
 
-            if (dividerIndex == inputString.Length)
+            int len = inputString.Length;
+
+            // Debugging check - make sure that Dash doesn't crash with open parenthesis input - if user types in something like "(fafe afeef",
+            // it doesn't necessarily have to show anything unless its in quotes, but it should at least not crash
+            if (dividerIndex == len)
             {
                 return searchDict;
             } else
             {
                 char divider = inputString[dividerIndex];
-                String rest = inputString.Substring(dividerIndex + 1);
+                string rest = inputString.Substring(dividerIndex + 1);
 
                 if (divider == ' ')
                 {
                     return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
-                } else if (divider == ',')
+                } else if (divider == '|')
                 {
                     return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
                 } else
@@ -164,10 +314,14 @@ namespace Dash
         /// <summary>
         /// Right now, we can join with intersections and unions, and negate searches
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
-            outputs[ScriptKey] = new TextController(Parse(inputString));
+            string functionString = Parse(inputString);
+            functionString = EscapeQuotes(functionString).Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r"); ;
+            outputs[ScriptKey] = new TextController(functionString);
         }
     }
 }

@@ -6,13 +6,6 @@ namespace Dash
     public abstract class FieldModelController<T> : FieldControllerBase where T : FieldModel
     {
 
-        /// <summary>
-        ///     A wrapper for <see cref="DashShared.Models.FieldModel.OutputReferences" />. Change this to propogate changes
-        ///     to the server and across the client
-        /// </summary>
-        public ObservableCollection<ReferenceController> OutputReferences;
-
-
         protected FieldModelController(T fieldModel) : base(fieldModel)
         {
             

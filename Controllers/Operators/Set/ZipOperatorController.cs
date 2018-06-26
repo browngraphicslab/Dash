@@ -14,6 +14,8 @@ namespace Dash
 
         public ZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
+
         }
 
         public ZipOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -35,7 +37,9 @@ namespace Dash
 
         private static readonly List<KeyController> ExcludedKeys = new List<KeyController> {KeyStore.ActiveLayoutKey};
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
             var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();

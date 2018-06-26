@@ -50,13 +50,15 @@ namespace Dash
             xCollectionCommandbar.Loaded += delegate
             {
                 var sp = xCollectionCommandbar.GetFirstDescendantOfType<StackPanel>();
-                sp.SetBinding(StackPanel.OrientationProperty, new Binding
+                sp?.SetBinding(StackPanel.OrientationProperty, new Binding
                 {
                     Source = this,
                     Path = new PropertyPath(nameof(Orientation)),
                     Mode = BindingMode.OneWay
                 });
+
                 Visibility = Visibility.Collapsed;
+                xViewModesDropdown.ItemsSource = Enum.GetValues(typeof(CollectionView.CollectionViewType));
             };
         }
 
@@ -104,47 +106,12 @@ namespace Dash
         /// </summary>
         private void ViewModesDropdown_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdateView();
-        }
-
-        /// <summary>
-        /// Updates the view of the selected collection. 
-        /// </summary>
-        private void UpdateView()
-        {
-            if (_collection != null)
+            if (xViewModesDropdown.SelectedItem != null &&  _collection != null)
             {
-                switch (xViewModesDropdown.SelectedIndex)
+                using (UndoManager.GetBatchHandle())
                 {
-                    case 0:
-                        _collection.SetView(CollectionView.CollectionViewType.Freeform);
-                        break;
-
-                    case 1:
-                        _collection.SetView(CollectionView.CollectionViewType.Grid);
-                        break;
-
-                    case 2:
-                        _collection.SetView(CollectionView.CollectionViewType.Page);
-                        break;
-
-                    case 3:
-                        _collection.SetView(CollectionView.CollectionViewType.DB);
-                        break;
-
-                    case 4:
-                        _collection.SetView(CollectionView.CollectionViewType.Schema);
-                        break;
-
-                    case 5:
-                        _collection.SetView(CollectionView.CollectionViewType.TreeView);
-                        break;
-
-                    case 6:
-                        _collection.SetView(CollectionView.CollectionViewType.Timeline);
-                        break;
+                    _collection.SetView((CollectionView.CollectionViewType) xViewModesDropdown.SelectedItem);
                 }
-
             }
         }
 
@@ -162,6 +129,7 @@ namespace Dash
         public void SetCollectionBinding(CollectionView thisCollection)
         {
             _collection = thisCollection;
+            xViewModesDropdown.SelectedIndex = Array.IndexOf(Enum.GetValues(typeof(CollectionView.CollectionViewType)), _collection.ViewModel.ViewType);
         }
     }
 }

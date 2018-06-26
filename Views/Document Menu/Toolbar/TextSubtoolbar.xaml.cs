@@ -42,6 +42,8 @@ namespace Dash
         private FormattingMenuView _menuView = null;
         private DocumentView _docs;
         private Dictionary<string, Button> _buttons;
+        private DocumentController _currentDocController;
+        private Windows.UI.Color _currentColor;
 
         public TextSubtoolbar()
         {
@@ -138,7 +140,12 @@ namespace Dash
         public void SetDocs(DocumentView docs)
         {
             _docs = docs;
+            _currentDocController = docs.ViewModel.DocumentController;
+            var ccol = _currentDocController.GetBackgroundColor() ?? Colors.Transparent;
+            xOpacitySlider.Value = ccol.A / 255.0 * xOpacitySlider.Maximum;
+            xBackgroundColorPicker.SelectedColor = ccol;
         }
+
 
         /**
 		 * Used to toggle between text sub-menus
@@ -152,5 +159,39 @@ namespace Dash
 
         }
 
+        /*
+         * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
+         */
+        private Windows.UI.Color GetColorWithUpdatedOpacity()
+        {
+            if (_currentColor == null)
+                return Windows.UI.Color.FromArgb(0x80, 0x00, 0x00, 0x00); //A fallback during startup (edge case) where current color string is null
+            var alpha = (byte)(xOpacitySlider.Value / xOpacitySlider.Maximum * 255); //Ratio of current value to maximum determines the relative desired opacity
+            return Windows.UI.Color.FromArgb(alpha, _currentColor.R, _currentColor.G, _currentColor.B);
+        }
+
+        private void XBackgroundColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            _currentColor = xBackgroundColorPicker.SelectedColor;
+            UpdateColor();
+        }
+        /*
+         * Ensures current color reflects desired opacity and then updates the appropriate bindings for...
+         */
+        private void UpdateColor()
+        {
+            _currentColor = GetColorWithUpdatedOpacity();
+            //TODO we don't actually need to store the opacity slider value as it is stored in the color as well
+            //...shape's background color
+            _currentDocController?.SetBackgroundColor(_currentColor);
+        }
+
+        private void XOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e) => UpdateColor();
+
+        private void XOpacitySlider_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            xOpacitySlider.Value = 128;
+            UpdateColor();
+        }
     }
 }

@@ -9,13 +9,19 @@ namespace Dash
     public class AudioController : FieldModelController<AudioModel>
     {
 
-        public AudioController() : base(new AudioModel()) { }
+        public AudioController() : base(new AudioModel())
+        {
+            SaveOnServer();
+        }
 
-        public AudioController(Uri path) : base(new AudioModel(path)) { }
+        public AudioController(Uri path) : base(new AudioModel(path))
+        {
+            SaveOnServer();
+        }
 
         public AudioController(AudioModel audFieldModel) : base(audFieldModel)
         {
-
+            SaveOnServer();
         }
 
         public override void Init()
@@ -34,17 +40,26 @@ namespace Dash
             {
                 if (AudioFieldModel.Data != value)
                 {
-                    AudioFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            System.Uri data = AudioFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            AudioFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public override StringSearchModel SearchForString(string searchString)
         {
             var data = (Model as AudioModel)?.Data;
             var reg = new System.Text.RegularExpressions.Regex(searchString);
-            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString) || reg.IsMatch(data.AbsoluteUri)))
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
             {
                 return new StringSearchModel(data.AbsoluteUri);
             }

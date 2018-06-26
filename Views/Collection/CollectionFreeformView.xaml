@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<local:CollectionFreeformBase
     x:Class="Dash.CollectionFreeformView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -24,7 +24,7 @@
         <!--<InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
         <Canvas x:Name="SelectionCanvas" Opacity=".3" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>-->
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" 
                    Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
         <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"
@@ -51,7 +51,8 @@
                 <DataTemplate>
                     <dash:DocumentView
                         BindRenderTransform="True"
-                                       Loaded="DocumentViewOnLoaded"/>
+                        Loaded="DocumentViewOnLoaded"
+                        />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
@@ -59,4 +60,4 @@
         <AutoSuggestBox x:Name="TagKeyBox" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="TagKeyBox_OnTextChanged" SuggestionChosen="TagKeyBox_OnSuggestionChosen" QuerySubmitted="TagKeyBox_OnQuerySubmitted" Width="200"></AutoSuggestBox>
 
     </Grid>
-</UserControl>
+</local:CollectionFreeformBase>

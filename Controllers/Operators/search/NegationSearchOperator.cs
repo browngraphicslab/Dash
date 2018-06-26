@@ -19,6 +19,7 @@ namespace Dash
 
         public NegationSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public NegationSearchOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -39,7 +40,9 @@ namespace Dash
         /// <summary>
         /// Gets a dictionary of all existing DocumentControllers, and creates a new dictionary that is the complement of the input dict 
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
             var dictOp = new PutSearchResultsIntoDictionaryOperatorController();

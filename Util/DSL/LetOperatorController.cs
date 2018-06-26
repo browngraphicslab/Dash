@@ -33,6 +33,7 @@ namespace Dash
 
         public LetOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public LetOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -60,7 +61,8 @@ namespace Dash
             };
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args,
             ScriptState state = null)
         {
             throw new NotImplementedException();

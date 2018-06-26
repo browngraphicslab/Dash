@@ -15,6 +15,8 @@ namespace Dash
     /// </summary>
     public enum FileType
     {
+        None,
+        Text,
         Ppt,
         Web,
         Image,
@@ -22,7 +24,6 @@ namespace Dash
         Json,
         Csv,
         Pdf,
-        Text,
         Audio
     }
 
@@ -141,6 +142,8 @@ namespace Dash
         {
             switch (fileData.Filetype)
             {
+                case FileType.None:
+                    return null;
                 case FileType.Ppt:
                     return await new PptToDashUtil().ParseFileAsync(fileData, dataView);
                 case FileType.Json:
@@ -179,19 +182,20 @@ namespace Dash
             {
                 var link = await dataView.GetWebLinkAsync();
                 // if the link does not have a filetype assume its a web link
+                var ftypeUri = GetFileType(link.AbsoluteUri);
                 return new FileData()
                 {
                     File = storageItem,
-                    Filetype = GetFileType(link.AbsoluteUri) ?? FileType.Web,
+                    Filetype = ftypeUri == FileType.None ? FileType.Web : ftypeUri,
                     FileUri = link
                 };
             }
 
             // otherwise the file is a local file so check the storage file path and file type 
-            var fileType = GetFileType(storageItem.Path) ??
-                           GetFileType(storageItem.FileType);
+            var ftypePath = GetFileType(storageItem.Path);
+            var fileType = ftypePath == FileType.None ? GetFileType(storageItem.FileType) : ftypePath;
 
-            if (fileType == null)
+            if (fileType == FileType.None)
             {
 
                 Debug.WriteLine(
@@ -208,7 +212,7 @@ namespace Dash
         }
 
 
-        public static FileType? GetFileType(string filepath)
+        public static FileType  GetFileType(string filepath)
         {
             filepath = filepath.ToLower();
             if (filepath.EndsWith(".pdf"))
@@ -237,7 +241,7 @@ namespace Dash
             if (filepath.EndsWith(".txt"))
                 return FileType.Text;
 
-            return null;
+            return FileType.None;
 
         }
     }
