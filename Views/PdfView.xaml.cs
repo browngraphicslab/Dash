@@ -40,8 +40,18 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 xPdfView.ScrollToVerticalOffset(curOffset ?? 0.0);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
-                //_dataRegions = DataDocument.GetDataDocument()
-                //    .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+                _dataRegions = DataDocument.GetDataDocument()
+                    .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+                if (_dataRegions != null)
+                {
+                    var totalOffset = DataDocument.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+                    foreach (var region in _dataRegions.TypedData)
+                    {
+                        var offset = region.GetDataDocument()
+                            .GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+                        MakeRegionMarker(offset, totalOffset, region);
+                    }
+                }
                 //if (_dataRegions != null)
                 //{
                 //    foreach (var region in _dataRegions.TypedData)
@@ -98,7 +108,8 @@ namespace Dash
 
             if (pos.X == 0 && pos.Y == 0) pos = DataDocument.GetField<PointController>(KeyStore.PositionFieldKey).Data;
 
-            _annotationManager.RegionPressed(theDoc, pos);
+            // This should only happen when the highlight itself is pressed.
+            //_annotationManager.RegionPressed(theDoc, pos);
         }
 
         private void PdfView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -143,26 +154,33 @@ namespace Dash
             dc.GetDataDocument().SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, xPdfView.VerticalOffset, true);
             dc.SetRegionDefinition(this.LayoutDocument);
             var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+            var offsetCollection = xPdfView.PageOffsetCollection;
+            offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
+
             if (regions == null)
             {
                 var dregions = new ListController<DocumentController>(dc);
                 DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
+                DataDocument.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, endOffset, true);
             }
             else
             {
                 regions.Add(dc);
-                var offsetCollection = xPdfView.PageOffsetCollection;
-                offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
-
-                PDFRegionMarker newMarker = new PDFRegionMarker();
-                newMarker.SetPosition(xPdfView.VerticalOffset, endOffset);
-                newMarker.LinkTo = dc;
-                newMarker.Offset = xPdfView.VerticalOffset;
-                newMarker.PointerPressed += xMarker_OnPointerPressed;
-                xAnnotationMarkers.Children.Add(newMarker);
             }
+            
+            MakeRegionMarker(xPdfView.VerticalOffset, endOffset, dc);
 
             return dc;
+        }
+
+        private void MakeRegionMarker(double offset, double endOffset, DocumentController dc)
+        {
+            PDFRegionMarker newMarker = new PDFRegionMarker();
+            newMarker.SetPosition(offset, endOffset);
+            newMarker.LinkTo = dc;
+            newMarker.Offset = offset;
+            newMarker.PointerPressed += xMarker_OnPointerPressed;
+            xAnnotationMarkers.Children.Add(newMarker);
         }
 
         public bool Freeze()
