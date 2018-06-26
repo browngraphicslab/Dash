@@ -455,7 +455,7 @@ namespace Dash
 
             private static IEnumerable<SearchResultViewModel> CleanByType(IEnumerable<SearchResultViewModel> vms)
             {
-                Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
+               Func<SearchResultViewModel, SearchResultViewModel> convert = (vm) =>
                 {
                     var type = vm.ViewDocument.GetDataDocument().DocumentType?.Type?.ToLower();
                     if (vm.IsLikelyUsefulContextText|| type == null)

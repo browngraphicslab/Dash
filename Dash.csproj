@@ -181,8 +181,10 @@
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\InverseEqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\LessThanEqualsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\LessThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
@@ -278,6 +280,7 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
@@ -286,6 +289,8 @@
     <Compile Include="Util\DSL\ForExpression.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
+    <Compile Include="Util\DSL\ReturnException.cs" />
+    <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">

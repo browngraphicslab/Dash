@@ -117,8 +117,16 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                var exec = se?.Execute(scope ?? new Scope());
-                return exec;
+                try
+                {
+                    var exec = se?.Execute(scope ?? new Scope());
+                    return new TextController("");
+                }
+                catch (ReturnException re)
+                {
+                    var ret = scope?.GetFirstAncestor().GetReturn;
+                    return ret;
+                }
             }
             catch (ScriptException scriptException)
             {
@@ -521,12 +529,6 @@ namespace Dash
                                 {LessThanOperatorController.LeftKey,  leftBinExpr},
                                 {LessThanOperatorController.RightKey,  rightBinExpr},
                             });
-                        case SyntaxKind.EqualsEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
-                            {
-                                {EqualityOperatorController.LeftKey,  leftBinExpr},
-                                {EqualityOperatorController.RightKey,  rightBinExpr},
-                            });
                         case SyntaxKind.GreaterThanEqualsToken:
                             return new FunctionExpression(DSL.GetFuncName<GreaterThanEqualsOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                             {
@@ -538,6 +540,24 @@ namespace Dash
                             {
                                 {LessThanEqualsOperatorController.LeftKey,  leftBinExpr},
                                 {LessThanEqualsOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.EqualsEqualsToken:
+                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {EqualityOperatorController.LeftKey,  leftBinExpr},
+                                {EqualityOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.ExclamationEqualsToken:
+                            return new FunctionExpression(DSL.GetFuncName<InverseEqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {InverseEqualityOperatorController.LeftKey,  leftBinExpr},
+                                {InverseEqualityOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.PercentToken:
+                            return new FunctionExpression(DSL.GetFuncName<ModuloOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {ModuloOperatorController.LeftKey,  leftBinExpr},
+                                {ModuloOperatorController.RightKey,  rightBinExpr},
                             });
                         case SyntaxKind.EqualsToken:
                             if (leftBinExpr is FunctionExpression lefttBinFuncExpr && lefttBinFuncExpr.GetOperatorName() == DSL.GetFuncName<GetFieldOperatorController>())
@@ -619,6 +639,19 @@ namespace Dash
                             else if (rightBinExpr is LiteralExpression numToDiv)
                             {
                                 return ParseToExpression(varName + " = " + varName + " / " + numToDiv.GetField());
+                            }
+                            break;
+                        case SyntaxKind.PercentEqualsToken:
+                            if (leftBinExpr is LiteralExpression) break;
+                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
+
+                            if (rightBinExpr is VariableExpression varToMod)
+                            {
+                                return ParseToExpression(varName + " = " + varName + " % " + varToMod.GetVariableName());
+                            }
+                            else if (rightBinExpr is LiteralExpression numToMod)
+                            {
+                                return ParseToExpression(varName + " = " + varName + " % " + numToMod.GetField());
                             }
                             break;
                         default:
@@ -723,14 +756,25 @@ namespace Dash
                         [ForOperatorController.ForBlockKey] = forBody
                     });
                 case SyntaxKind.ForInStatement:
+                    var forInChild = (node as ForInStatement)?.Children;
                     break;
                 case SyntaxKind.ForOfStatement:
                     break;
                 case SyntaxKind.ContinueStatement:
                     break;
                 case SyntaxKind.BreakStatement:
+                    // Break doesn't currently work properly, all it does is terminate one expression chain,
+                    // needs to terminate enclosing loop/end statement
+                    return new BreakLoopExpression();
                     break;
                 case SyntaxKind.ReturnStatement:
+                    //as it is right now, return is kind of hacky, if this line is still here, it means that
+                    //return still works by outputting an empty text controller if it isn't called, and is storing
+                    //itself as a variable- if we could find a way to break out of the recursive loop that would 
+                    // be a lot more elegant
+                    var returnStatement = node as ReturnStatement;
+                    var c1 = node.Children;
+                   return new ReturnExpression(ParseToExpression(node.Children[0]));
                     break;
                 case SyntaxKind.WithStatement:
                     break;
