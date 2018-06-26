@@ -22,7 +22,9 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
+    
 
+    
     <Grid x:Name="LayoutRoot" Grid.Column="0" Background="{Binding BackgroundBrush}" BorderThickness="0">
         <!-- Main document view -->
 
@@ -71,6 +73,7 @@
 
         <!-- border to highlight search results-->
             <Border Name="DocHighlight" x:FieldModifier="public" BorderBrush="#fffc84" BorderThickness="{Binding SearchHighlightState}" >
+            <Border x:Name="xTemplateBorder">
                 <!-- border to allow document to be highlighted when selected-->
                 <Border Name="xTargetBorder">
                     <!-- Container for document fields view -->
@@ -95,6 +98,7 @@
                     </Grid>
                 </Border>
             </Border>
+        </Border>
 
             <Canvas x:Name="xContextCanvas" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <HyperlinkButton   

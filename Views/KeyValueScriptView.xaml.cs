@@ -184,6 +184,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
+            // TODO: might have to add switch statement to make boxes according to doc type 
             _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document.Id, _oldBinding.Key)).Document;
             xFieldValue.DataContext = new DocumentViewModel(_oldDataBox);
             _oldBinding.Document.AddFieldUpdatedListener(_oldBinding.Key, fieldChanged);

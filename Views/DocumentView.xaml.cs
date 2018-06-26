@@ -31,6 +31,13 @@ namespace Dash
         public event DocumentViewSelectedHandler DocumentSelected;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
+        public Border _templateBorder;
+        public Border TemplateBorder
+        {
+            get => _templateBorder;
+            set => _templateBorder = value;
+        } 
+
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
         /// </summary>
@@ -102,7 +109,7 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-
+            
             
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
@@ -110,6 +117,8 @@ namespace Dash
             // set bounds
             MinWidth = 35;
             MinHeight = 35;
+
+            _templateBorder = xTemplateBorder;
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 

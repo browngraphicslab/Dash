@@ -5,6 +5,7 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
@@ -65,6 +66,15 @@
                 <AppBarToggleButton Icon="Forward" Height="50" Width="50" Checked="RightBorder_OnChecked" Unchecked="RightBorder_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Download" Height="50" Width="50" Checked="BottomBorder_OnChecked" Unchecked="BottomBorder_OnUnchecked"></AppBarToggleButton>
             </StackPanel>
+            <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200"
+                    ValueChanged="XThicknessSlider_OnValueChanged"/>
+
+            
+            <media:SfColorPicker  x:Name="xColorPicker"  PointerReleased="XColorPicker_OnPointerReleased"/>
+                    
+            
+          
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Height="50" Width="180" Background="DodgerBlue" Click="ApplyChanges_OnClicked">
                     <StackPanel Orientation="Horizontal">

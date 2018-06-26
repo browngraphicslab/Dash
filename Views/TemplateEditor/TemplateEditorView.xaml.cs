@@ -29,6 +29,8 @@ using Dash.Converters;
 using Dash.Models.DragModels;
 using DashShared;
 using Microsoft.Office.Interop.Word;
+using Syncfusion.Pdf.Graphics;
+using Border = Windows.UI.Xaml.Controls.Border;
 using Point = Windows.Foundation.Point;
 using Task = System.Threading.Tasks.Task;
 
@@ -50,7 +52,11 @@ namespace Dash
         private KeyValueTemplatePane _keyValuePane;
         private DocumentView _selectedDocument;
         private Point _pasteWhereHack;
+        public double _thickness;
+        private Windows.UI.Color _color;
         DataPackage dataPackage = new DataPackage();
+
+       
 
         public TemplateEditorView()
 	    {
@@ -61,7 +67,9 @@ namespace Dash
             DocumentControllers = new ObservableCollection<DocumentController>();
 	        DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 	        DocumentViews = new Collection<DocumentView>();
-	    }
+
+	      
+        }
 
         private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -284,44 +292,98 @@ namespace Dash
             }
         }
 
+        
+
         private void LeftBorder_OnChecked(object sender, RoutedEventArgs e)
         {
+
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var top = docView.TemplateBorder.BorderThickness.Top;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+
             
+
+            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(_thickness, top, right, bottom);
         }
+
+      
 
         private void TopBorder_OnChecked(object sender, RoutedEventArgs e)
         {
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
 
+            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, _thickness, right, bottom);
         }
 
         private void RightBorder_OnChecked(object sender, RoutedEventArgs e)
         {
 
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+            var top = docView.TemplateBorder.BorderThickness.Top;
+
+            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, _thickness, bottom);
         }
 
         private void BottomBorder_OnChecked(object sender, RoutedEventArgs e)
         {
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var top = docView.TemplateBorder.BorderThickness.Top;
 
+            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, right, _thickness);
         }
 
         private void LeftBorder_OnUnchecked(object sender, RoutedEventArgs e)
         {
 
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var top = docView.TemplateBorder.BorderThickness.Top;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(0, top, right, bottom);
+
         }
 
         private void TopBorder_OnUnchecked(object sender, RoutedEventArgs e)
         {
-
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+            
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, 0, right, bottom);
         }
 
         private void RightBorder_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+            var top = docView.TemplateBorder.BorderThickness.Top;
 
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, 0, bottom);
         }
 
         private void BottomBorder_OnUnchecked(object sender, RoutedEventArgs e)
         {
+            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
+            var left = docView.TemplateBorder.BorderThickness.Left;
+            var right = docView.TemplateBorder.BorderThickness.Right;
+            var top = docView.TemplateBorder.BorderThickness.Top;
 
+            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, right, 0);
         }
 
         private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
@@ -886,6 +948,20 @@ namespace Dash
                 return dictionary[obj];
             }
             return null;
+        }
+
+        private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            Slider slider = sender as Slider;
+            if (slider != null)
+            {
+                _thickness = slider.Value;
+            }
+        }
+
+        private void XColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+             _color = xColorPicker.SelectedColor;    
         }
     }
 }
