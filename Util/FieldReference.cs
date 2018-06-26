@@ -6,7 +6,7 @@ namespace Dash
     /// Abstract class which contains the utilities for referencing fields on documents
     /// in different ways
     /// </summary>
-    public abstract class FieldReference
+    public abstract class FieldReference : IReference
     {
         /// <summary>
         /// The key for the field that is being referenced
@@ -38,7 +38,12 @@ namespace Dash
 
         public void SetField(FieldControllerBase field, Context c)
         {
-            GetDocumentController(c).SetField(FieldKey, field, true);
+            ReferenceHelper.SetField(this, field, c);
+        }
+
+        public void SetField<T>(object value, Context c) where T : FieldControllerBase, new()
+        {
+            ReferenceHelper.SetField<T>(this, value, c);
         }
 
         /// <summary>
@@ -46,26 +51,16 @@ namespace Dash
         /// </summary>
         /// <param name="context">Context to look for delegates in</param>
         /// <returns>A new FieldModelController that points to the same field in the lowest delegate of the pointed to document</returns>
-        public abstract FieldReference Resolve(Context context);
+        public abstract IReference Resolve(Context context);
 
 
-        public FieldControllerBase Dereference(Context context)
+        public FieldControllerBase Dereference(Context c)
         {
-            context = null;
-            FieldControllerBase controller;
-            if (context != null)
-            {
-                if (context.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-            }
-            var doc = GetDocumentController(context);
+            var doc = GetDocumentController(c);
             if (doc != null)
             {
-                context = new Context(context);
-                var newContext = doc.ShouldExecute(context, FieldKey, null, false);
-                if (newContext.TryDereferenceToRoot(this, out controller))
+                var newContext = doc.ShouldExecute(c, FieldKey, null, false);
+                if (newContext.TryDereferenceToRoot(this, out var controller))
                 {
                     return controller;
                 }
@@ -77,19 +72,14 @@ namespace Dash
             return null;
         }
 
+        public T Dereference<T>(Context c) where T : FieldControllerBase
+        {
+            return Dereference(c) as T;
+        }
+
         public FieldControllerBase DereferenceToRoot(Context context)
         {
-            context = new Context(context);
-            context.AddDocumentContext(GetDocumentController(context));
-            context = null;
-            FieldControllerBase reference = Dereference(context);
-            while (reference is ReferenceController)
-            {
-                context?.AddDocumentContext(((ReferenceController)reference).GetDocumentController(context));
-                reference = reference.Dereference(context);
-            }
-
-            return reference;
+            return ReferenceHelper.DereferenceToRoot(this, context);
         }
 
         public T DereferenceToRoot<T>(Context context) where T : FieldControllerBase
@@ -123,6 +113,6 @@ namespace Dash
             return FieldKey.GetHashCode();
         }
 
-        public abstract ReferenceController GetReferenceController();
+        public abstract ReferenceController ToReferenceController();
     }
 }

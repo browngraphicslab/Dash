@@ -92,16 +92,6 @@ namespace Dash
         //    return true;
         //}
 
-        public FieldControllerBase Dereference(ReferenceController reference)
-        {
-            return reference.GetFieldReference().Dereference(this);
-        }
-
-        public FieldControllerBase DereferenceToRoot(ReferenceController reference)
-        {
-            return reference.GetFieldReference().DereferenceToRoot(this);
-        }
-
         public void AddDocumentContext(DocumentController document)
         {
             _documentContextList.AddFirst(document);

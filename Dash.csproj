@@ -324,6 +324,7 @@
     <Compile Include="Util\ImageRegionBox.xaml.cs">
       <DependentUpon>ImageRegionBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\IReference.cs" />
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
     <Compile Include="Util\NoteDocuments\BackgroundNote.cs" />

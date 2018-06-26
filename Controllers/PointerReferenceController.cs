@@ -51,9 +51,15 @@ namespace Dash.Controllers
             return DocumentReference?.DereferenceToRoot<DocumentController>(context);
         }
 
-        public override FieldReference GetFieldReference()
+        public override ReferenceController Resolve(Context c)
         {
-            return new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
+            var doc = DocumentReference.Resolve(c);
+            if (doc != DocumentReference)
+            {
+                return new PointerReferenceController(doc, FieldKey);
+            }
+
+            return this;
         }
 
         public override string GetDocumentId(Context context)

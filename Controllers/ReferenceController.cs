@@ -5,7 +5,7 @@ using Dash.Converters;
 
 namespace Dash
 {
-    public abstract class ReferenceController : FieldModelController<ReferenceModel>
+    public abstract class ReferenceController : FieldModelController<ReferenceModel>, IReference
     {
         public ReferenceController(ReferenceModel model) : base(model)
         {
@@ -46,21 +46,36 @@ namespace Dash
 
         public override FieldControllerBase Dereference(Context context)
         {
-            return GetFieldReference().Dereference(context);
+            return ReferenceHelper.Dereference(this, context);
+        }
+
+        public T Dereference<T>(Context context) where T : FieldControllerBase
+        {
+            return Dereference(context) as T;
         }
 
         public override FieldControllerBase DereferenceToRoot(Context context)
         {
-            return GetFieldReference().DereferenceToRoot(context);
+            return ReferenceHelper.DereferenceToRoot(this, context);
         }
 
-        public abstract FieldReference GetFieldReference();
+        public void SetField(FieldControllerBase field, Context context)
+        {
+            ReferenceHelper.SetField(this, field, context);
+        }
+
+        public void SetField<T>(object value, Context context) where T : FieldControllerBase, new()
+        {
+            ReferenceHelper.SetField<T>(this, value, context);
+        }
+
+        public abstract ReferenceController Resolve(Context context);
 
         public abstract string GetDocumentId(Context context);
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
-        public override TypeInfo RootTypeInfo => GetFieldReference().GetRootFieldType();
+        public override TypeInfo RootTypeInfo => ReferenceHelper.GetRootFieldType(this);
 
         /// <summary>
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceController" />,
@@ -71,6 +86,11 @@ namespace Dash
         public override FieldControllerBase GetDefaultController()
         {
             throw new NotImplementedException();
+        }
+
+        public ReferenceController ToReferenceController()
+        {
+            return this;
         }
 
 

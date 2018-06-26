@@ -17,7 +17,7 @@ namespace Dash
             return DocumentReference.DereferenceToRoot<DocumentController>(context);
         }
 
-        public override FieldReference Resolve(Context context)
+        public override IReference Resolve(Context context)
         {
             var docController = GetDocumentController(context)?.GetId();
             Debug.Assert(docController != null);
@@ -30,13 +30,13 @@ namespace Dash
         }
         public override bool Equals(object obj)
         {
-            DocumentPointerFieldReference reference = obj as DocumentPointerFieldReference;
-            if (reference == null)
+            if (obj is DocumentPointerFieldReference reference)
             {
-                return false;
+                return base.Equals(reference) && reference.DocumentReference.Equals(DocumentReference);
             }
 
-            return base.Equals(reference) && reference.DocumentReference.Equals(DocumentReference);
+            return false;
+
         }
 
         public override int GetHashCode()
@@ -44,9 +44,9 @@ namespace Dash
             return base.GetHashCode() ^ DocumentReference.GetHashCode();
         }
 
-        public override ReferenceController GetReferenceController()
+        public override ReferenceController ToReferenceController()
         {
-            return new PointerReferenceController(DocumentReference.GetReferenceController(), FieldKey);
+            return new PointerReferenceController(DocumentReference.ToReferenceController(), FieldKey);
         }
     }
 }

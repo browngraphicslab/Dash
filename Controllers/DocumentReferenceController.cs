@@ -54,11 +54,15 @@ namespace Dash
             return ContentController<FieldModel>.GetController<DocumentController>(deepestDelegateID);
         }
 
-        public override FieldReference GetFieldReference()
+        public override ReferenceController Resolve(Context c)
         {
-            return new DocumentFieldReference(DocumentId, FieldKey);
+            var del = c.GetDeepestDelegateOf(DocumentId);
+            if (del == DocumentId)
+            {
+                return this;
+            }
+            return new DocumentReferenceController(del, FieldKey);
         }
-
 
         // todo: more meaningful tostring here
         public override string ToString()

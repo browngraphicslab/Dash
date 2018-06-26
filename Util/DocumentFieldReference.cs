@@ -51,7 +51,7 @@ namespace Dash
             return new DocumentFieldReference(DocumentId, FieldKey);
         }
 
-        public override FieldReference Resolve(Context context)
+        public override IReference Resolve(Context context)
         {
             string docId = context.GetDeepestDelegateOf(DocumentId) ?? DocumentId;
             return new DocumentFieldReference(docId, FieldKey);
@@ -73,7 +73,7 @@ namespace Dash
             return base.GetHashCode() ^ DocumentId.GetHashCode();
         }
 
-        public override ReferenceController GetReferenceController()
+        public override ReferenceController ToReferenceController()
         {
             return new DocumentReferenceController(DocumentId, FieldKey);
         }

@@ -498,7 +498,7 @@ namespace Dash
             {
                 return false;
             }
-            var visitedFields = new HashSet<FieldReference>();
+            var visitedFields = new HashSet<IReference>();
             visitedFields.Add(new DocumentFieldReference(GetId(), key));
             var rfms = new Queue<Tuple<FieldControllerBase, Context>>();
 
@@ -512,7 +512,7 @@ namespace Dash
                 var c = t.Item2;
                 if (!(fm is ReferenceController)) continue;
                 var rfm = (ReferenceController)fm;
-                var fieldRef = rfm.GetFieldReference().Resolve(c);
+                var fieldRef = rfm.Resolve(c);
                 var doc = rfm.GetDocumentController(c);
                 Context c2;
                 if (c.DocContextList.Contains(doc))
