@@ -40,15 +40,12 @@ namespace Dash
             [ResultKey] = TypeInfo.Any,
         };
 
+        //TODO: remove requirement that output exists
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            //TODO: get rid of output necesary
             outputs[ResultKey] = new NumberController(0);
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new ForOperatorController();
-        }
+        public override FieldControllerBase GetDefaultController() => new ForOperatorController();
     }
 }

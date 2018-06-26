@@ -416,7 +416,7 @@ namespace Dash
                 case SyntaxKind.BindingElement:
                     break;
                 case SyntaxKind.ArrayLiteralExpression:
-                    var arrayChildren = (node as ArrayLiteralExpression).Children;
+                    var arrayChildren = (node as ArrayLiteralExpression)?.Children;
                     var parsedList = new List<ScriptExpression>();
                     foreach (var element in arrayChildren)
                     {
@@ -757,7 +757,30 @@ namespace Dash
                     });
                 case SyntaxKind.ForInStatement:
                     var forInChild = (node as ForInStatement)?.Children;
-                    break;
+
+                    var subVarName = forInChild?[0].First.IdentifierStr;
+                    var subVarNameExpr = ParseToExpression(subVarName) as VariableExpression; //"cookie" ==> 0, eventually "Chocolate"
+                    var subVarDeclaration = ParseToExpression($"var {subVarName} = 0"); //"cookie"
+
+                    var listNameExpr = ParseToExpression(forInChild?[1]) as VariableExpression; //"cookies" ==> {}
+                    var listName = listNameExpr?.GetVariableName();
+
+                    var forInBody = ParseToExpression(forInChild?[2]); //"cookies += ""message""
+
+                    var phantomCountDeclaration = ParseToExpression($"var {DashConstants.ForInPhantomCounterName} = 0");
+                    var incrementAndAssignment = ParseToExpression($"{subVarName} = {listName}[{DashConstants.ForInPhantomCounterName}++]");
+                    var writeToList = ParseToExpression($"{listName}[{DashConstants.ForInPhantomCounterName} = {subVarName}");
+
+                    return new ForInExpression(DSL.GetFuncName<ForInOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    {
+                        [ForInOperatorController.CounterDeclarationKey] = phantomCountDeclaration,
+                        [ForInOperatorController.IncrementAndAssignmentKey] = incrementAndAssignment,
+                        [ForInOperatorController.SubVarNameKey] = subVarNameExpr,
+                        [ForInOperatorController.SubVarDeclarationKey] = subVarDeclaration,
+                        [ForInOperatorController.ListNameKey] = listNameExpr,
+                        [ForInOperatorController.ForInBlockKey] = forInBody,
+                        [ForInOperatorController.WriteToListKey] = writeToList
+                    });
                 case SyntaxKind.ForOfStatement:
                     break;
                 case SyntaxKind.ContinueStatement:

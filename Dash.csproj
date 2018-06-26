@@ -189,6 +189,7 @@
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
@@ -289,6 +290,7 @@
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\DSL\ForExpression.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
+    <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
