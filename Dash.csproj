@@ -185,6 +185,7 @@
     <Compile Include="Controllers\Operators\Binary\LessThanOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
@@ -276,6 +277,7 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\ArrayExpression.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
