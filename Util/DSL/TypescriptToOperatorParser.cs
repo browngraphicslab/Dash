@@ -506,12 +506,6 @@ namespace Dash
                                 {LessThanOperatorController.LeftKey,  leftBinExpr},
                                 {LessThanOperatorController.RightKey,  rightBinExpr},
                             });
-                        case SyntaxKind.EqualsEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
-                            {
-                                {EqualityOperatorController.LeftKey,  leftBinExpr},
-                                {EqualityOperatorController.RightKey,  rightBinExpr},
-                            });
                         case SyntaxKind.GreaterThanEqualsToken:
                             return new FunctionExpression(DSL.GetFuncName<GreaterThanEqualsOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                             {
@@ -523,6 +517,24 @@ namespace Dash
                             {
                                 {LessThanEqualsOperatorController.LeftKey,  leftBinExpr},
                                 {LessThanEqualsOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.EqualsEqualsToken:
+                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {EqualityOperatorController.LeftKey,  leftBinExpr},
+                                {EqualityOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.ExclamationEqualsToken:
+                            return new FunctionExpression(DSL.GetFuncName<InverseEqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {InverseEqualityOperatorController.LeftKey,  leftBinExpr},
+                                {InverseEqualityOperatorController.RightKey,  rightBinExpr},
+                            });
+                        case SyntaxKind.PercentToken:
+                            return new FunctionExpression(DSL.GetFuncName<ModuloOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {ModuloOperatorController.LeftKey,  leftBinExpr},
+                                {ModuloOperatorController.RightKey,  rightBinExpr},
                             });
                         case SyntaxKind.EqualsToken:
                             if (leftBinExpr is FunctionExpression lefttBinFuncExpr && lefttBinFuncExpr.GetOperatorName() == DSL.GetFuncName<GetFieldOperatorController>())
@@ -592,6 +604,19 @@ namespace Dash
                             else if (rightBinExpr is LiteralExpression numToDiv)
                             {
                                 return ParseToExpression(varName + " = " + varName + " / " + numToDiv.GetField());
+                            }
+                            break;
+                        case SyntaxKind.PercentEqualsToken:
+                            if (leftBinExpr is LiteralExpression) break;
+                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
+
+                            if (rightBinExpr is VariableExpression varToMod)
+                            {
+                                return ParseToExpression(varName + " = " + varName + " % " + varToMod.GetVariableName());
+                            }
+                            else if (rightBinExpr is LiteralExpression numToMod)
+                            {
+                                return ParseToExpression(varName + " = " + varName + " % " + numToMod.GetField());
                             }
                             break;
                         default:
@@ -696,6 +721,7 @@ namespace Dash
                         [ForOperatorController.ForBlockKey] = forBody
                     });
                 case SyntaxKind.ForInStatement:
+                    var forInChild = (node as ForInStatement)?.Children;
                     break;
                 case SyntaxKind.ForOfStatement:
                     break;

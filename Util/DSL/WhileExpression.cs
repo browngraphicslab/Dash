@@ -7,35 +7,37 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class WhileExpression : ScriptExpression
+    public class WhileExpression : ScriptExpression
     {
-        private string _opName;
-        private Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly string _opName;
+        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
 
-        private FieldControllerBase recursiveError = new TextController("ERROR - an infinite loop was created.");
-        FieldControllerBase output = null;
+        private readonly FieldControllerBase _recursiveError = new TextController("ERROR - an infinite loop was created.");
+        private FieldControllerBase _output;
 
         public WhileExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _opName = opName;
+            _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            inputs.Add(WhileOperatorController.BoolKey, _parameters[WhileOperatorController.BoolKey].Execute(scope));
+            var inputs = new Dictionary<KeyController, FieldControllerBase>
+            {
+                { WhileOperatorController.BoolKey, _parameters[WhileOperatorController.BoolKey].Execute(scope) }
+            };
 
             var BlockKey = WhileOperatorController.BlockKey;
             
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
-            Timer whileTimer = new Timer(whileTimeut, null, 5000, Timeout.Infinite);            
+            var whileTimer = new Timer(WhileTimeout, null, 5000, Timeout.Infinite);
 
             //if there hasn't been an infinite loop timeout, keep looping
-            while (output != recursiveError)
+            while (_output != _recursiveError)
             {
                 //see if boolean is true or false
-                bool boolRes = ((BoolController)_parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
+                var boolRes = ((BoolController)_parameters[WhileOperatorController.BoolKey].Execute(scope)).Data;
                  if (boolRes)
                 {
                     //boolean is true, so execute block again
@@ -51,12 +53,12 @@ namespace Dash
 
                     try
                     {
-                        if (output != recursiveError)
+                        if (_output != _recursiveError)
                         {
-                            output = OperatorScript.Run(_opName, inputs, scope);
+                            _output = OperatorScript.Run(_opName, inputs, scope);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
                     }
@@ -73,24 +75,15 @@ namespace Dash
                 }
             }
 
-            return output;
+            return _output;
         }
 
-        private void whileTimeut(object status) {
-            //set the output to an infinite recursion error
-            output = recursiveError;
-        }
+        //set the output to an infinite recursion error
+        private void WhileTimeout(object status) => _output = _recursiveError;
 
-        public string GetOperatorName()
-        {
-            return _opName;
-        }
+        public string GetOperatorName() => _opName;
 
-
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
-        {
-            return _parameters;
-        }
+        public Dictionary<KeyController, ScriptExpression> GetFuncParams() => _parameters;
 
 
         public override FieldControllerBase CreateReference(Scope scope)

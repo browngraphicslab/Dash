@@ -181,8 +181,10 @@
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\InverseEqualityOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\LessThanEqualsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\LessThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
