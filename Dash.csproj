@@ -162,6 +162,7 @@
   <ItemGroup>
     <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\PingBrowserRequest.cs" />
@@ -831,6 +832,7 @@
     <Content Include="ChromeExt\close-icon.svg" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jan_2018_dash_logo.png" />
     <Content Include="ChromeExt\jquery.js" />
     <Content Include="ChromeExt\keylistener.js" />
     <Content Include="ChromeExt\logo.png" />

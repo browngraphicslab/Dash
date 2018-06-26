@@ -739,13 +739,11 @@ namespace Dash
                         opacity: 1.0 !important
                       }
                     </style>"
-                    );
+                        );
 
                     var splits = new Regex("<").Split(html);
                     var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
-                    var text = e.DataView.Contains(StandardDataFormats.Text)
-                        ? (await e.DataView.GetTextAsync()).Trim()
-                        : "";
+                    var text = e.DataView.Contains(StandardDataFormats.Text) ? (await e.DataView.GetTextAsync()).Trim() : "";
                     if (string.IsNullOrEmpty(text) && imgs.Count == 1)
                     {
                         var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
