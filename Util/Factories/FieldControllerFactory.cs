@@ -171,7 +171,7 @@ namespace Dash
         }
 
         private static IEnumerable<Type> OperatorTypes { get; } = typeof(OperatorController).Assembly.GetTypes()
-            .Where(type => type.IsSubclassOf(typeof(OperatorController)));
+            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {

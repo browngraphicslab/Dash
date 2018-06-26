@@ -19,8 +19,9 @@ namespace Dash
         public override FieldControllerBase Execute(Scope scope)
         {
             var val = _value.Execute(scope);
-            scope.GetFirstAncestor().DeclareVariable("Return-F47F41F2-6DAF-4EC2-AF3E-494FDC112A64", val);
-            return val;
+            scope.GetFirstAncestor().SetReturn(val);
+            throw new ReturnException();
+            //return val;
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

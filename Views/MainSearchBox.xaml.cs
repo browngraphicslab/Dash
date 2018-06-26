@@ -910,12 +910,15 @@ namespace Dash
             }
         }
 
+        // Changed AutoSuggestBox so that dragging in the document shows the id, rather than the typeinfo
         private void XAutoSuggestBox_OnDrop(object sender, DragEventArgs e)
         {
             if (e.DataView.Properties.ContainsKey(nameof(DragDocumentModel)))
             {
                 var dragData = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
                 var doc = dragData.DraggedDocument;
+                xAutoSuggestBox.Text = xAutoSuggestBox.Text + doc.Id;
+                /*
                 var listKeys = doc.EnumDisplayableFields()
                     .Where(kv => doc.GetRootFieldType(kv.Key).HasFlag(TypeInfo.List)).Select(kv => kv.Key).ToList();
                 if (listKeys.Count == 1)
@@ -927,6 +930,7 @@ namespace Dash
                         xAutoSuggestBox.Text = xAutoSuggestBox.Text + "  " + currText;
                     }
                 }
+                */
             }
 
             e.Handled = true;

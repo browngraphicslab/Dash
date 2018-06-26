@@ -8,6 +8,8 @@ namespace Dash
     {
         public static string THIS_NAME = "this";
 
+        private FieldControllerBase _returnValue;
+
         private readonly Dictionary<string, FieldControllerBase> _dictionary;
         public Scope Parent;
 
@@ -51,5 +53,7 @@ namespace Dash
         }
 
         public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
+        public void SetReturn(FieldControllerBase ret) { _returnValue = ret; }
+        public FieldControllerBase GetReturn => _returnValue;
     }
 }
