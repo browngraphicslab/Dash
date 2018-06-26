@@ -25,7 +25,20 @@ namespace Dash
             FieldControllerBase retVal = null;
             for(var i = 0; i < length; i++)
             {
-                retVal = exps[i].Execute(newScope);
+                var ret = exps[i].Execute(newScope);
+                if (ret != null)
+                {
+                    retVal = ret;
+                } else
+                {
+                    break;
+                }
+                if (exps[i] is BreakLoopExpression)
+                {
+                    break;
+                }
+                
+
             }
             return retVal;
         }

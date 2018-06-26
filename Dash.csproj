@@ -216,6 +216,7 @@
     <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
     <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
@@ -280,6 +281,7 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
@@ -289,6 +291,8 @@
     <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
+    <Compile Include="Util\DSL\ReturnException.cs" />
+    <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">

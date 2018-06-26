@@ -45,11 +45,14 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var varKey = inputs[VariableKey];
-            var varList = (varKey as BaseListController).Data;
-            var varIndex = (inputs[IndexKey] as NumberController).Data;
+            var varList = (inputs[VariableKey] as BaseListController)?.Data;
+            var varIndex = (inputs[IndexKey] as NumberController)?.Data;
 
-            var output = varList[(int)varIndex];
+            FieldControllerBase output = null;
+            if (varList != null && varIndex != null)
+            {
+                output = varList[(int)varIndex];
+            }
             outputs[ResultsKey] = output;
         }
 

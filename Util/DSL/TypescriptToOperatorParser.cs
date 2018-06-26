@@ -117,8 +117,16 @@ namespace Dash
             {
                 //turn script string into function expression
                 var se = ParseToExpression(script);
-                var exec = se?.Execute(scope ?? new Scope());
-                return exec;
+                try
+                {
+                    var exec = se?.Execute(scope ?? new Scope());
+                    return new TextController("");
+                }
+                catch (ReturnException re)
+                {
+                    var ret = scope?.GetFirstAncestor().GetReturn;
+                    return ret;
+                }
             }
             catch (ScriptException scriptException)
             {
@@ -560,7 +568,19 @@ namespace Dash
                                     {SetFieldOperatorController.KeyNameKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey]},
                                     {SetFieldOperatorController.FieldValueKey, rightBinExpr},
                                 });
-                            } else if (leftBinExpr is VariableExpression safeBinExpr)
+                            }
+                           else if (leftBinExpr is FunctionExpression lefttBinFuncExpr2 && lefttBinFuncExpr2.GetOperatorName() == DSL.GetFuncName<ElementAccessOperatorController>())
+                            {
+                                return new FunctionExpression(DSL.GetFuncName<SetListFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                {
+                                    {SetListFieldOperatorController.VariableNameKey, new LiteralExpression(new TextController(
+                                        (lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey] as VariableExpression).GetVariableName() ))},
+                                    {SetListFieldOperatorController.VariableKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey]},
+                                    {SetListFieldOperatorController.IndexKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.IndexKey]},
+                                    {SetListFieldOperatorController.ValueKey, rightBinExpr},
+                                });
+                            }
+                            else if (leftBinExpr is VariableExpression safeBinExpr)
                             {
                                 return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                                 {
@@ -766,8 +786,18 @@ namespace Dash
                 case SyntaxKind.ContinueStatement:
                     break;
                 case SyntaxKind.BreakStatement:
+                    // Break doesn't currently work properly, all it does is terminate one expression chain,
+                    // needs to terminate enclosing loop/end statement
+                    return new BreakLoopExpression();
                     break;
                 case SyntaxKind.ReturnStatement:
+                    //as it is right now, return is kind of hacky, if this line is still here, it means that
+                    //return still works by outputting an empty text controller if it isn't called, and is storing
+                    //itself as a variable- if we could find a way to break out of the recursive loop that would 
+                    // be a lot more elegant
+                    var returnStatement = node as ReturnStatement;
+                    var c1 = node.Children;
+                   return new ReturnExpression(ParseToExpression(node.Children[0]));
                     break;
                 case SyntaxKind.WithStatement:
                     break;
