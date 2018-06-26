@@ -117,7 +117,8 @@ namespace Dash
                 //turn script string into function expression
                 var se = ParseToExpression(script);
                 var exec = se?.Execute(scope ?? new Scope());
-                return exec;
+                var ret = scope?.GetFirstAncestor().GetVariable("Return-F47F41F2-6DAF-4EC2-AF3E-494FDC112A64");
+                return ret ?? new TextController("");
             }
             catch (ScriptException scriptException)
             {
@@ -611,10 +612,14 @@ namespace Dash
                 case SyntaxKind.ContinueStatement:
                     break;
                 case SyntaxKind.BreakStatement:
+                    // Break doesn't currently work properly, all it does is terminate one expression chain,
+                    // needs to terminate enclosing loop/end statement
                     return new BreakLoopExpression();
                     break;
                 case SyntaxKind.ReturnStatement:
-                    return new BreakLoopExpression();
+                    var returnStatement = node as ReturnStatement;
+                    var c1 = node.Children;
+                   return new ReturnExpression(ParseToExpression(node.Children[0]));
                     break;
                 case SyntaxKind.WithStatement:
                     break;

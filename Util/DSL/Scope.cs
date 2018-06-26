@@ -49,5 +49,7 @@ namespace Dash
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }
             return child?._dictionary[variableName];
         }
+
+        public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
     }
 }

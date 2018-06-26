@@ -9,6 +9,7 @@ namespace Dash
     class BreakLoopExpression : ScriptExpression
     {
         private Dictionary<KeyController, ScriptExpression> _parameters;
+        private string _opName;
 
         public BreakLoopExpression(Dictionary<KeyController, ScriptExpression> parameters = null)
         {
@@ -17,6 +18,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            if (_parameters == null) { return null; }
             var inputs = new Dictionary<KeyController, FieldControllerBase>();
             foreach (var parameter in _parameters)
             {
