@@ -91,7 +91,6 @@ namespace DashShared
         public static string LocalServerDocumentFilepath = "dash.documents"; //
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
-
         public const int MillisecondBetweenLocalSave = 1000; //1 second
 
         //BACKUP CONSTANTS
@@ -156,6 +155,11 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
+
+        //SCRIPTING LANGUAGE
+
+        public const int ScriptingInfiniteLoopTimeout = 5000; //milliseconds
+        public const string ForInPhantomCounterName = "c";
 
         public static class KeyStore
         {

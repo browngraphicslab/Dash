@@ -6,12 +6,9 @@ namespace Dash
 {
     internal class ArrayExpression : ScriptExpression
     {
-        private List<ScriptExpression> list;
+        private readonly List<ScriptExpression> list;
 
-        public ArrayExpression(List<ScriptExpression> list)
-        {
-            this.list = list;
-        }
+        public ArrayExpression(List<ScriptExpression> list) => this.list = list;
 
         public override TypeInfo Type => list.Last().Type;
 
