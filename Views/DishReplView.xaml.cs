@@ -80,7 +80,9 @@ namespace Dash
                 }
 
                 ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
-                xScrollViewer.ScrollToVerticalOffset(int.MaxValue);
+
+                xScrollViewer.UpdateLayout();
+                xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
             }
         }
 
