@@ -76,11 +76,12 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
-                    returnValue = new TextController("There was an error: "+ex.StackTrace);
+                    returnValue = new TextController("There was an error: " + ex.StackTrace);
                 }
 
                 ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
+                //scroll to bottom
                 xScrollViewer.UpdateLayout();
                 xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
             }

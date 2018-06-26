@@ -19,10 +19,10 @@
             <!--<Border BorderBrush="Black" BorderThickness="1">-->
                 <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  >
-                    <ScrollViewer.Background>
-                        <SolidColorBrush Color="White" Opacity="0.5" />
-                    </ScrollViewer.Background>
-                    <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
+                <ScrollViewer.Background>
+                    <SolidColorBrush Color="White" Opacity="0.6" />
+                </ScrollViewer.Background>
+                <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True">
@@ -39,8 +39,8 @@
                     </ItemsControl>
                 </ScrollViewer>
             <!--</Border>-->
-            <TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50">
-
+            <TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50" Background="Gray">
+ 
             </TextBox>
         </Grid>
     </Border>
