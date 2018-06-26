@@ -548,7 +548,19 @@ namespace Dash
                                     {SetFieldOperatorController.KeyNameKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey]},
                                     {SetFieldOperatorController.FieldValueKey, rightBinExpr},
                                 });
-                            } else if (leftBinExpr is VariableExpression safeBinExpr)
+                            }
+                           else if (leftBinExpr is FunctionExpression lefttBinFuncExpr2 && lefttBinFuncExpr2.GetOperatorName() == DSL.GetFuncName<ElementAccessOperatorController>())
+                            {
+                                return new FunctionExpression(DSL.GetFuncName<SetListFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                {
+                                    {SetListFieldOperatorController.VariableNameKey, new LiteralExpression(new TextController(
+                                        (lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey] as VariableExpression).GetVariableName() ))},
+                                    {SetListFieldOperatorController.VariableKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey]},
+                                    {SetListFieldOperatorController.IndexKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.IndexKey]},
+                                    {SetListFieldOperatorController.ValueKey, rightBinExpr},
+                                });
+                            }
+                            else if (leftBinExpr is VariableExpression safeBinExpr)
                             {
                                 return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                                 {

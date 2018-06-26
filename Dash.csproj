@@ -213,6 +213,7 @@
     <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
     <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />

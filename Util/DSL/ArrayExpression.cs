@@ -22,7 +22,24 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            return new ListController<FieldControllerBase>(list.Select(se => se.Execute(scope)));
+            //execute each element in list if it isn't null
+            var outputList = new ListController<FieldControllerBase>();
+            foreach(var elem in list)
+            {
+                if (elem != null)
+                {
+                    outputList.Add(elem.Execute(scope));
+                }
+                else
+                {
+                    outputList.Add(new TextController(""));
+                }
+            }
+
+            return outputList;
+
+            //return new ListController<FieldControllerBase>(
+            //    list.Select(se => { (se != null) ? se.Execute(scope); }));
         }
     }
 }
