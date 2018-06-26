@@ -408,7 +408,13 @@ namespace Dash
                 case SyntaxKind.BindingElement:
                     break;
                 case SyntaxKind.ArrayLiteralExpression:
-                    break;
+                    var arrayChildren = (node as ArrayLiteralExpression).Children;
+                    var parsedList = new List<ScriptExpression>();
+                    foreach (var element in arrayChildren)
+                    {
+                        parsedList.Add(ParseToExpression(element));
+                    }
+                    return new ArrayExpression(new List<ScriptExpression>(parsedList));
                 case SyntaxKind.ObjectLiteralExpression:
                     break;
                 case SyntaxKind.PropertyAccessExpression:
@@ -423,8 +429,17 @@ namespace Dash
                         {GetFieldOperatorController.InputDocumentKey , inpDoc},
                         {GetFieldOperatorController.KeyNameKey , new LiteralExpression(new TextController((fieldName as VariableExpression).GetVariableName()))},
                     });
-                    break;
                 case SyntaxKind.ElementAccessExpression:
+                    var elemAcessChildren = (node as ElementAccessExpression).Children;
+                    var elemVar = ParseToExpression(elemAcessChildren[0]);
+                    var elemIndex = ParseToExpression(elemAcessChildren[1]);
+
+                    return new FunctionExpression(DSL.GetFuncName<ElementAccessOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    {
+                        {ElementAccessOperatorController.VariableKey, elemVar},
+                        {ElementAccessOperatorController.IndexKey, elemIndex},
+                    });
+
                     break;
                 case SyntaxKind.NewExpression:
                     break;
