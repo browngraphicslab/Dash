@@ -42,7 +42,6 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("DB543B75-15D3-467A-A9DE-9F262F496C25", "Alias");
 
-
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>

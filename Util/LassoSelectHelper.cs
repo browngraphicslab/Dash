@@ -13,13 +13,13 @@ namespace Dash
         private Point _rootPoint;
         private SortedDictionary<double, Point> _sortedPoints;
         private Stack<Point> _hullPoints;
-        private CollectionFreeformView _view;
+        private CollectionFreeformBase _view;
         private Polygon _hull;
         private Polygon _visualHull;
         private MenuFlyout _menu = new MenuFlyout();
         private Grid _flyoutBase;
 
-        public LassoSelectHelper(CollectionFreeformView view)
+        public LassoSelectHelper(CollectionFreeformBase view)
         {
             _view = view;
             //var delete = new MenuFlyoutItem {Text = "Delete"};
@@ -34,8 +34,8 @@ namespace Dash
         /// </summary>
         public List<DocumentView> GetSelectedDocuments(List<Point> points)
         {
-            if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
-                _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
+            if (_view.GetItemsControl().ItemsPanelRoot.Children.Contains(_visualHull))
+                _view.GetItemsControl()?.ItemsPanelRoot.Children.Remove(_visualHull);
             _points = points;
             FindBottomLeftMostPoint();
             PlaceBottomLeftMostPointAtFirstPosition();
@@ -215,10 +215,10 @@ namespace Dash
         private List<DocumentView> SelectContainedNodes()
         {
             var selectedDocs = new List<DocumentView>();
-            if (_view.xItemsControl.ItemsPanelRoot != null)
+            if (_view.GetItemsControl().ItemsPanelRoot != null)
             {
                 IEnumerable<DocumentViewModel> parameters =
-                    _view.xItemsControl.Items.OfType<DocumentViewModel>();
+                    _view.GetItemsControl().Items.OfType<DocumentViewModel>();
                 foreach (var param in parameters)
                 {
                     var doc = param.LayoutDocument;
@@ -247,7 +247,7 @@ namespace Dash
                     inHull = containedCount >= 3;
                     if (inHull)
                     {
-                        if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl
+                        if (_view.GetItemsControl().ItemContainerGenerator != null && _view.GetItemsControl()
                                 .ContainerFromItem(param) is ContentPresenter contentPresenter)
                         {
                             var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();

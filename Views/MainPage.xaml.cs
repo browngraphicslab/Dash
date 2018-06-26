@@ -209,7 +209,7 @@ namespace Dash
             settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
             settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
-            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
+            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Zoom.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
             settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);
@@ -283,7 +283,7 @@ namespace Dash
 
 
                     var dvm = MainDocView.DataContext as DocumentViewModel;
-                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+                    var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
                     if (coll?.ViewModel?.DocumentViewModels != null)
                     {
                         foreach (var vm in coll.ViewModel.DocumentViewModels)
@@ -352,7 +352,7 @@ namespace Dash
         public bool NavigateToDocumentInWorkspace(DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null)
             {
                 return NavigateToDocument(coll, null, coll, document, animated, compareDataDocuments);
@@ -368,15 +368,16 @@ namespace Dash
         public void HighlightDoc(DocumentController document, bool? flag, int search=0)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var collection = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (collection != null && document != null)
             {
                 highlightDoc(collection, document, flag, search);
             }
         }
 
-        private void highlightDoc(CollectionFreeformView collection, DocumentController document, bool? flag, int search)
+        private void highlightDoc(CollectionFreeformBase collection, DocumentController document, bool? flag, int search)
         {
+            if (xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || xMainTreeView.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Region)) return;
             foreach (var dm in collection.ViewModel.DocumentViewModels)
                 if (dm.DocumentController.Equals(document))
                 {
@@ -401,7 +402,7 @@ namespace Dash
                         dm.SearchHighlightState = new Thickness(0);
                     }
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView freeformView)
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase freeformView)
                 {
                     highlightDoc(freeformView, document, flag, search);
                 }
@@ -410,7 +411,7 @@ namespace Dash
         public bool NavigateToDocumentInWorkspaceAnimated(DocumentController document)
         {
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             if (coll != null && document != null)
             {
                 return NavigateToDocument(coll, null, coll, document, true, true);
@@ -418,7 +419,7 @@ namespace Dash
             return false;
         }
 
-        public bool NavigateToDocument(CollectionFreeformView root, DocumentViewModel rootViewModel, CollectionFreeformView collection, DocumentController document, bool animated, bool compareDataDocuments=false)
+        public bool NavigateToDocument(CollectionFreeformBase root, DocumentViewModel rootViewModel, CollectionFreeformBase collection, DocumentController document, bool animated, bool compareDataDocuments=false)
         {
             if (collection?.ViewModel?.DocumentViewModels == null || !root.IsInVisualTree())
             {
@@ -431,7 +432,7 @@ namespace Dash
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.xItemsControl.ItemsPanelRoot as Canvas;
+                    var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
                     var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
@@ -442,9 +443,9 @@ namespace Dash
                     else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
-                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformView)
+                else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
                 {
-                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformView, document, animated, compareDataDocuments))
+                    if (NavigateToDocument(root, rootViewModel ?? dm, (dm.Content as CollectionView)?.CurrentView as CollectionFreeformBase, document, animated, compareDataDocuments))
                         return true;
                 }
             }
@@ -528,7 +529,7 @@ namespace Dash
                 {
                     var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
                         .OfType<CollectionView>().ToList();
-                    foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformView>())
+                    foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformBase>())
                         if (c.SelectedDocs.Count() > 0)
                         {
                             foreach (var d in c.SelectedDocs)
@@ -539,7 +540,7 @@ namespace Dash
             }
 
             var dvm = MainDocView.DataContext as DocumentViewModel;
-            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformView;
+            var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
             if (!coll.IsMarqueeActive() && !(FocusManager.GetFocusedElement() is TextBox))
@@ -560,11 +561,11 @@ namespace Dash
         {
             var pos = this.RootPointerPos();
             var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(pos, this).OfType<CollectionView>().ToList();
-            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformView freeformView)
+            if (topCollection.FirstOrDefault()?.CurrentView is CollectionFreeformBase freeformView)
             {
                 if (e != null)
                 {
-                    foreach (var d in freeformView.xItemsControl.ItemsPanelRoot.Children)
+                    foreach (var d in freeformView?.GetItemsControl().ItemsPanelRoot.Children)
                     {
                         if (d is ContentPresenter presenter)
                         {
@@ -600,7 +601,7 @@ namespace Dash
 
         public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
-            TabMenu.ConfigureAndShow(collection as CollectionFreeformView, e.GetPosition(Instance), xCanvas);
+            TabMenu.ConfigureAndShow(collection as CollectionFreeformBase, e.GetPosition(Instance), xCanvas);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -657,6 +658,7 @@ namespace Dash
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
             mapTimer.Start();
         }
+
         public void Dock(DocumentView toDock, DockDirection dir)
         {
             DocumentController context = toDock.ViewModel.DocumentController;
