@@ -34,7 +34,8 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:DocumentView />
+                            <local:DocumentView
+                                BindRenderTransform="True" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -51,9 +52,9 @@
             </StackPanel>
             <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Horizontal Alignment</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <AppBarToggleButton Icon="AlignLeft" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
-                <AppBarToggleButton Icon="AlignCenter" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
-                <AppBarToggleButton Icon="AlignRight" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
+                <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
+                <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
+                <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
             </StackPanel>
             <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

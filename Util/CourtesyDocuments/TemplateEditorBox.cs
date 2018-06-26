@@ -55,13 +55,15 @@ namespace Dash
 	        }
 
             TemplateEditorView tev = null;
-            var dataField = layoutDocController.GetDereferencedField(KeyStore.DataKey, context);
+            var dataField = layoutDocController.GetViewCopy(new Point(0, 0)).GetDereferencedField(KeyStore.DataKey, context);
             var dataDocument = dataField as DocumentController;
             if (dataDocument != null)
             {
                 tev = new TemplateEditorView
                 {
+                    // Layout Document's Data = Working Document
                     LayoutDocument = layoutDocController,
+                    // Data Doc's Data = List of Layout Documents
                     DataDocument = layoutDocController.GetDataDocument(),
                     //LinkedDocument = docController.GetField<DocumentController>(KeyStore.DataKey),
                     ManipulationMode = ManipulationModes.All

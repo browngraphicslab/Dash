@@ -532,6 +532,8 @@ namespace Dash
             }
         }
 
+        public RectangleGeometry Bounds { get; set; }
+
         /// <summary> 
         /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
         /// At the end of the interaction, the caches are copied to the viewModel.
@@ -544,8 +546,14 @@ namespace Dash
 
             var deltaTranslate = delta.Translate;
             var deltaScaleAmount = delta.ScaleAmount;
+
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+
+            if (Bounds != null && !Bounds.Rect.Contains(translate))
+            {
+                return;
+            }
 
             ViewModel.InteractiveManipulationPosition = translate;
             ViewModel.InteractiveManipulationScale = scaleAmount;
@@ -811,6 +819,30 @@ namespace Dash
 
             this.Measure(new Size(newSize.Width, 5000));
             newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
+            // TODO: Make sure that resizing works within boundaries - sy
+            //if (Bounds != null)
+            //{
+            //    if (ViewModel.XPos + newSize.Width > Bounds.Rect.Width || ViewModel.YPos + newSize.Height > Bounds.Rect.Height)
+            //    {
+            //        var maxOffsetX = ViewModel.XPos + newSize.Width - Bounds.Rect.Width;
+            //        var maxOffsetY = ViewModel.YPos + newSize.Height - Bounds.Rect.Height;
+            //        if (maxOffsetX >= maxOffsetY)
+            //        {
+            //            this.Measure(new Size(Bounds.Rect.Width - ViewModel.XPos, 5000));
+            //            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
+            //        }
+            //        else
+            //        {
+            //            var prop = oldSize.Width / oldSize.Height;
+            //            var newSizeSquared = new Size(Bounds.Rect.Width - ViewModel.XPos * prop, Bounds.Rect.Height - ViewModel.YPos);
+            //            this.Measure(newSizeSquared);
+            //        }
+
+            //        this.Measure(oldSize);
+            //        e.Handled = true;
+            //        return;
+            //    }
+            //}
             // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
@@ -929,7 +961,7 @@ namespace Dash
         /// <summary>
         /// Returns the currently selected documents, or just this document if nothing is selected
         /// </summary>
-        List<DocumentView> SelectedDocuments()
+        public List<DocumentView> SelectedDocuments()
         {
             var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformBase)?.SelectedDocs;
             if (marqueeDocs != null && marqueeDocs.Contains(this))
@@ -941,10 +973,6 @@ namespace Dash
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             FocusedDocument = this;
-            if (Editor != null)
-            {
-                Editor.SelectedDocument = this;
-            }
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -979,6 +1007,10 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
+            if (Editor != null)
+            {
+                Editor.SelectedDocument = this;
+            }
             DocumentView_PointerEntered();
         }
 

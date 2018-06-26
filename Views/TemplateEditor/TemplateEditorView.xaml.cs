@@ -19,8 +19,11 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using Dash.Converters;
+using Microsoft.Office.Interop.Word;
+using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -34,13 +37,31 @@ namespace Dash
         public ObservableCollection<DocumentController> DocumentControllers { get; set; }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
-        public DocumentView SelectedDocument { get; set; }
+
+        public DocumentView SelectedDocument
+        {
+            get => _selectedDocument;
+            set
+            {
+                _selectedDocument = value;
+                if (_selectedDocument != null)
+                {
+                    var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - _selectedDocument.ActualWidth,
+                        xWorkspace.Clip.Rect.Height - _selectedDocument.ActualHeight);
+                    _selectedDocument.Bounds = new RectangleGeometry {Rect = bounds};
+                }
+            }
+        }
 
         private KeyValueTemplatePane _keyValuePane;
+        private DocumentView _selectedDocument;
 
 		public TemplateEditorView()
 	    {
 		    this.InitializeComponent();
+	        //this.GetFirstAncestorOfType<DocumentView>().ViewModel.DecorationState = false;
+	        //this.GetFirstAncestorOfType<DocumentView>().hideControls();
+
             DocumentControllers = new ObservableCollection<DocumentController>();
 	        DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 	    }
@@ -67,9 +88,26 @@ namespace Dash
         {
             foreach (var doc in newDocs)
             {
+                // create new viewmodel with a copy of document, set editor to this
                 var dvm =
                     new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc)) {Editor = this};
                 DocumentViewModels.Add(dvm);
+                // check that the layout doc doesn't already exist in data document's list of layout docs
+                var alreadyExistent = false;
+                foreach (var layoutDoc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
+                    .TypedData)
+                {
+                    // if it already exists, change the point to its stored point
+                    if (layoutDoc.GetPrototype().Equals(dvm.LayoutDocument.GetPrototype()))
+                    {
+                        alreadyExistent = true;
+                        dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey,
+                            layoutDoc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null), true);
+                    }
+                }
+                // if it already exists, don't add it again to the data document
+                if (!alreadyExistent)
+                    DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
             }
 
             xItemsControl.ItemsSource = DocumentViewModels;
@@ -107,7 +145,8 @@ namespace Dash
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
-            AddDocs(DocumentControllers);
+            DocumentViewModels.Clear();
+            AddDocs(DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData);
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
 
@@ -146,6 +185,9 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
+                        if (docController.GetWidthField().Data >= xWorkspace.Width)
+                            docController.SetWidth(xWorkspace.Width - 20);
+                        // TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
                         DocumentControllers.Add(docController);
                     }
                 }
@@ -178,6 +220,9 @@ namespace Dash
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
                     if (docController != null)
                     {
+                        if (docController.GetWidthField().Data >= xWorkspace.Width)
+                            docController.SetWidth(xWorkspace.Width - 20);
+                        // TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
                         DocumentControllers.Add(docController);
                     }
                 }
@@ -211,6 +256,8 @@ namespace Dash
                     var docController = await new AudioToDashUtil().ParseFileAsync(file);
                     if (docController != null)
                     {
+                        if (docController.GetWidthField().Data >= xWorkspace.Width)
+                            docController.SetWidth(xWorkspace.Width - 20);
                         DocumentControllers.Add(docController);
                     }
                 }
@@ -218,19 +265,37 @@ namespace Dash
             }
         }
 
-        private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
+        private void AlignmentButton_OnChecked(object sender, RoutedEventArgs e)
         {
+            var button = sender as AppBarButton;
 
-        }
+            //for each document, align according to what button was pressed
+            foreach (var dvm in DocumentViewModels)
+            {
+                var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
+                switch (button.Name)
+                {
+                    case "xAlignLeftButton":
+                        point = new PointController(0, point.Data.Y);
+                        break;
 
-        private void ToggleButton_OnUnchecked(object sender, RoutedEventArgs e)
-        {
+                    case "xAlignCenterButton":
+                        var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
+                        point = new PointController(centerX, point.Data.Y);
+                        break;
 
+                    case "xAlignRightButton":
+                        var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
+                        point = new PointController(rightX, point.Data.Y);
+                        break;
+                }
+                dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
+            }
         }
 
         private void LeftBorder_OnChecked(object sender, RoutedEventArgs e)
         {
-
+            
         }
 
         private void TopBorder_OnChecked(object sender, RoutedEventArgs e)

@@ -38,7 +38,7 @@ namespace Dash
         {
             // data document's data key = list of layout documents
             var dataDocument =
-                makeDataDelegate(new ListController<DocumentController>(workingDoc));
+                makeDataDelegate(new ListController<DocumentController>(workingDoc.GetViewCopy(new Point(0, 0))));
             Document = initSharedLayout(CreateLayout(workingDoc, where, size), dataDocument);
             // initSharedLayout sets data key to data document, we need to override it here
             Document.SetField(KeyStore.DataKey, workingDoc, true);
