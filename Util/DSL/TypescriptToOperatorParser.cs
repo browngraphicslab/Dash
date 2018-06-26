@@ -656,7 +656,18 @@ namespace Dash
                             });
                     
                 case SyntaxKind.DoStatement:
-                    break;
+                    var doStatement = (node as DoStatement).Children;
+                    var doBlock = ParseToExpression(doStatement[0]);
+                    var doBinary = ParseToExpression(doStatement[1]);
+
+                    List<ScriptExpression> outputs = new List<ScriptExpression>();
+                    outputs.Add(doBlock);
+                    outputs.Add(new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    {
+                        {WhileOperatorController.BoolKey,  doBinary},
+                        {WhileOperatorController.BlockKey,  doBlock},
+                    }));
+                    return new ExpressionChain(outputs);
                 case SyntaxKind.WhileStatement:
                     var whilChild = (node as WhileStatement).Children;
                     Debug.Assert(whilChild.Count == 2);

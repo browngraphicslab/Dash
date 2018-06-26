@@ -746,7 +746,6 @@ namespace Dash
                     
                 }
             }
-
             return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
         }
         /// <summary>
