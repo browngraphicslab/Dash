@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage.Pickers;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -16,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Annotations;
 using Dash.Converters;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -27,29 +31,7 @@ namespace Dash
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }
 
-        public ObservableCollection<DocumentController> DocumentControllers {
-            get;
-            set;
-        }
-
-        public TransformGroup VerticalAlignmentRotation
-        {
-            get
-            {
-                var transform = new TransformGroup();
-                var rotation = new RotateTransform
-                {
-                    Angle = 90
-                };
-                var translate = new TranslateTransform
-                {
-                    X = 60
-                };
-                transform.Children.Add(rotation);
-                transform.Children.Add(translate);
-                return transform;
-            }
-        }
+        public ObservableCollection<DocumentController> DocumentControllers { get; set; }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
         public DocumentView SelectedDocument { get; set; }
@@ -63,10 +45,46 @@ namespace Dash
 	        DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 	    }
 
-	    public void Load()
+        private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddDocs(e.NewItems.Cast<DocumentController>());
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+        }
+
+        private void AddDocs(IEnumerable<DocumentController> newDocs)
+        {
+            foreach (var doc in newDocs)
+            {
+                var dvm =
+                    new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc)) {Editor = this};
+                DocumentViewModels.Add(dvm);
+            }
+
+            xItemsControl.ItemsSource = DocumentViewModels;
+
+            //var dvms = xItemsControl.Items.Cast<DocumentViewModel>();
+            //foreach (var dvm in dvms)
+            //{
+            //    // idk what to do from here, we have the viewmodel but we need the view to change manipulations
+            //}
+        }
+
+        public void Load()
         {
 	        this.UpdatePanes();
-            var rect = new Rect(0, 0, 500, 500);
+            var rect = new Rect(0, 0, 300, 400);
             var rectGeo = new RectangleGeometry {Rect = rect};
             xWorkspace.Clip = rectGeo;
         }
@@ -84,53 +102,120 @@ namespace Dash
 	        DocumentControllers =
 	            new ObservableCollection<DocumentController>(DataDocument
 	                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData);
-
-			//_workspace.ViewModel.
-
-		    //_workspace.ViewModel.SetCollectionRef(DataDocument, KeyStore.DataKey);
-
-			//LayoutPanel.Children.Add(template);
-
-            //make edit pane
            
         }
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in DocumentControllers)
-            {
-                var dvm = new DocumentViewModel(doc.GetViewCopy(new Point(0, 0))) {Editor = this};
-                DocumentViewModels.Add(dvm);
-                Canvas.SetLeft(dvm.Content, xWorkspace.Width / 2);
-                Canvas.SetTop(dvm.Content, xWorkspace.Height / 2);
-            }
-
-            xItemsControl.ItemsSource = DocumentViewModels;
+            AddDocs(DocumentControllers);
+            DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
 
         private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
         {
-
+            DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
         }
 
         private void TextButton_OnClick(object sender, RoutedEventArgs e)
         {
-            DocumentViewModels.Add();
+            DocumentControllers.Add(new RichTextNote("New text box").Document);
         }
 
-        private void ImageButton_OnClick(object sender, RoutedEventArgs e)
+        private async void ImageButton_OnClick(object sender, RoutedEventArgs e)
         {
+            //opens file picker and limits search by listed image extensions
+            var imagePicker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary
+            };
+            imagePicker.FileTypeFilter.Add(".jpg");
+            imagePicker.FileTypeFilter.Add(".jpeg");
+            imagePicker.FileTypeFilter.Add(".bmp");
+            imagePicker.FileTypeFilter.Add(".png");
+            imagePicker.FileTypeFilter.Add(".svg");
 
+            //adds each image selected to Dash
+            var imagesToAdd = await imagePicker.PickMultipleFilesAsync();
+            
+            if (imagesToAdd != null)
+            {
+                foreach (var thisImage in imagesToAdd)
+                {
+                    var parser = new ImageToDashUtil();
+                    var docController = await parser.ParseFileAsync(thisImage);
+                    if (docController != null)
+                    {
+                        DocumentControllers.Add(docController);
+                    }
+                }
+            }
         }
 
-        private void VideoButton_OnClick(object sender, RoutedEventArgs e)
+        private async void VideoButton_OnClick(object sender, RoutedEventArgs e)
         {
+            //instantiates a file picker, set to open in user's video library
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.VideosLibrary
+            };
 
+            picker.FileTypeFilter.Add(".avi");
+            picker.FileTypeFilter.Add(".mp4");
+            picker.FileTypeFilter.Add(".wmv");
+
+            //awaits user upload of video 
+            var files = await picker.PickMultipleFilesAsync();
+
+            //TODO just add new images to docs list instead of going through mainPageCollectionView
+            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (files != null)
+            {
+                foreach (var file in files)
+                {
+                    //create a doc controller for the video, set position, and add to canvas
+                    var docController = await new VideoToDashUtil().ParseFileAsync(file);
+                    if (docController != null)
+                    {
+                        DocumentControllers.Add(docController);
+                    }
+                }
+
+                //add error message for null file?
+            }
         }
 
-        private void AudioButton_OnClick(object sender, RoutedEventArgs e)
+        private async void AudioButton_OnClick(object sender, RoutedEventArgs e)
         {
+            //instantiates a file picker, set to open in user's audio library
+            var picker = new FileOpenPicker
+            {
+                ViewMode = PickerViewMode.Thumbnail,
+                SuggestedStartLocation = PickerLocationId.MusicLibrary
+            };
 
+            picker.FileTypeFilter.Add(".mp3");
+
+
+            //awaits user upload of audio 
+            var files = await picker.PickMultipleFilesAsync();
+
+            //TODO just add new images to docs list instead of going through mainPageCollectionView
+            //var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            if (files != null)
+            {
+                foreach (var file in files)
+                {
+                    //create a doc controller for the audio, set position, and add to canvas
+                    var docController = await new AudioToDashUtil().ParseFileAsync(file);
+                    if (docController != null)
+                    {
+                        DocumentControllers.Add(docController);
+                    }
+                }
+                //add error message for null file?
+            }
         }
 
         private void ToggleButton_OnChecked(object sender, RoutedEventArgs e)
@@ -181,6 +266,22 @@ namespace Dash
         private void BottomBorder_OnUnchecked(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
+        {
+            foreach (var doc in DocumentControllers)
+            {
+                if (doc.GetDataDocument().Equals(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)))
+                {
+                    // apply layout doc with abstraction
+                }
+                else
+                {
+                    // apply layout doc statically
+                    
+                }
+            }
         }
     }
 }

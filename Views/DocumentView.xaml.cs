@@ -369,17 +369,15 @@ namespace Dash
 
             if (_templateEditor == null)
             {
-                var where = new Point((this.RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 50,
-                    (this.RenderTransform as MatrixTransform).Matrix.OffsetY);
+                var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
+                    (RenderTransform as MatrixTransform).Matrix.OffsetY);
                 _templateEditor = new TemplateNote(ViewModel.LayoutDocument, where, new Size(1000, 500));
                 //creates a doc controller for the image(s)
-                mainPageCollectionView.ViewModel.AddDocument(_templateEditor.Document);
                 Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);
             }
             else
             {
-                //mainPageCollectionView.ViewModel.RemoveDocument(_templateEditor.Document); or hide doc
-                _templateEditor = null;
+                _templateEditor.Document.SetHidden(!_templateEditor.Document.GetHidden());
             }
         }
 

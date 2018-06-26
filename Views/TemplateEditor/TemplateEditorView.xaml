@@ -12,58 +12,64 @@
     d:DesignWidth="1000">
 
     <StackPanel Orientation="Horizontal">
-        <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White">
-           
-        </StackPanel>
+        <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White" />
 
-        <Canvas VerticalAlignment="Top" Width="500" Height="500" Background="White"  HorizontalAlignment="Left"
-                x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded">
-            <ItemsControl x:Name="xItemsControl"
-                          x:FieldModifier="public"
-                          ItemsSource="{Binding DocumentViewModels}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas x:Name="xCollectionCanvas"
-                                x:FieldModifier="public"
-                                Background="Transparent"
-                                Width="0"
-                                Height="0"
-                                VerticalAlignment="Top"
-                                HorizontalAlignment="Left"
-                                RenderTransform="{Binding TransformGroup, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
-                        >
-                        </Canvas>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:DocumentView
-                                BindRenderTransform="True" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        <Canvas VerticalAlignment="Top" Width="500" Height="500" Background="LightSlateGray"  HorizontalAlignment="Left">
+            <Canvas VerticalAlignment="Top" Width="300" Height="400" Background="White" HorizontalAlignment="Left"
+                    Canvas.Left="100" Canvas.Top="50"
+                    x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded">
+                <ItemsControl x:Name="xItemsControl"
+                              x:FieldModifier="public"
+                              ItemsSource="{Binding DocumentViewModels}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas x:Name="xCollectionCanvas"
+                                    x:FieldModifier="public"
+                                    Background="Transparent"
+                                    Width="0"
+                                    Height="0"
+                                    VerticalAlignment="Top"
+                                    HorizontalAlignment="Left" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:DocumentView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Canvas>
         </Canvas>
 
         <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="DodgerBlue" Padding="10 10 10 10">
-            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Add Item</TextBlock>
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Add Item</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarButton Icon="Rename" Height="50" Width="50" Click="TextButton_OnClick"></AppBarButton>
                 <AppBarButton Icon="Pictures" Height="50" Width="50" Click="ImageButton_OnClick"></AppBarButton>
                 <AppBarButton Icon="Video" Height="50" Width="50" Click="VideoButton_OnClick"></AppBarButton>
                 <AppBarButton Icon="Audio" Height="50" Width="50" Click="AudioButton_OnClick"></AppBarButton>
             </StackPanel>
-            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Horizontal Alignment</TextBlock>
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Horizontal Alignment</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarToggleButton Icon="AlignLeft" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="AlignCenter" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="AlignRight" Height="50" Width="60" Checked="ToggleButton_OnChecked" Unchecked="ToggleButton_OnUnchecked"></AppBarToggleButton>
             </StackPanel>
-            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right">Border</TextBlock>
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarToggleButton Icon="Import" Height="50" Width="50" Checked="LeftBorder_OnChecked" Unchecked="LeftBorder_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Up" Height="50" Width="50" Checked="TopBorder_OnChecked" Unchecked="TopBorder_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Forward" Height="50" Width="50" Checked="RightBorder_OnChecked" Unchecked="RightBorder_OnUnchecked"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Download" Height="50" Width="50" Checked="BottomBorder_OnChecked" Unchecked="BottomBorder_OnUnchecked"></AppBarToggleButton>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Height="50" Width="180" Background="DodgerBlue" Click="ApplyChanges_OnClicked">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontWeight="Bold" FontSize="16" Foreground="Black">Apply Changes</TextBlock>
+                        <TextBlock FontSize="26" Foreground="Black"
+                                   FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SaveIcon}"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </StackPanel>
     </StackPanel>
