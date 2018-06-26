@@ -1336,6 +1336,13 @@ namespace Dash
             //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
+        public void hideEllipses()
+        {
+            xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
+            xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
+            xTemplateEditorEllipseBorder.Visibility = Visibility.Collapsed;
+        }
+
         public void showControls()
         {
             ViewModel.DecorationState = true;

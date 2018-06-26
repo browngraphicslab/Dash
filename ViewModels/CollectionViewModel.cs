@@ -50,7 +50,6 @@ namespace Dash
         //this table saves requests to appData for htmlImport
         private static ValueSet table = null;
         //this is for copy and paste
-        DataPackage dataPackage = new DataPackage();
 
         #region StandardView
         public enum StandardViewLevel
@@ -65,6 +64,7 @@ namespace Dash
 
         private double _prevScale = 1;
 
+        DataPackage dataPackage = new DataPackage();
         public StandardViewLevel ViewLevel
         {
             get => _viewLevel;

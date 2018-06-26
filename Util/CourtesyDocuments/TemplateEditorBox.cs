@@ -69,10 +69,6 @@ namespace Dash
                     ManipulationMode = ManipulationModes.All
                 };
 	            tev.Load();
-                tev.PointerEntered += (sender, args) => tev.ManipulationMode = ManipulationModes.None;
-                tev.GotFocus += (sender, args) => tev.ManipulationMode = ManipulationModes.None;
-                tev.LostFocus += (sender, args) => tev.ManipulationMode = ManipulationModes.All;
-                //TODO: lose focus when you drag the rich text view so that text doesn't select at the same time
                 tev.HorizontalAlignment = HorizontalAlignment.Stretch;
                 tev.VerticalAlignment = VerticalAlignment.Stretch;
                 SetupBindings(tev, layoutDocController, context);

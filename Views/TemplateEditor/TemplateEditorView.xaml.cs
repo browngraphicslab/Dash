@@ -6,10 +6,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
@@ -22,8 +26,11 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using Dash.Converters;
+using Dash.Models.DragModels;
+using DashShared;
 using Microsoft.Office.Interop.Word;
 using Point = Windows.Foundation.Point;
+using Task = System.Threading.Tasks.Task;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -42,8 +49,10 @@ namespace Dash
 
         private KeyValueTemplatePane _keyValuePane;
         private DocumentView _selectedDocument;
+        private Point _pasteWhereHack;
+        DataPackage dataPackage = new DataPackage();
 
-		public TemplateEditorView()
+        public TemplateEditorView()
 	    {
 		    this.InitializeComponent();
 	        //this.GetFirstAncestorOfType<DocumentView>().ViewModel.DecorationState = false;
@@ -120,6 +129,8 @@ namespace Dash
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DisableDecorations = true;
+            this.GetFirstAncestorOfType<DocumentView>().hideControls();
             DocumentViewModels.Clear();
             foreach (var layoutDoc in DataDocument
                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
@@ -335,6 +346,7 @@ namespace Dash
             if (!DocumentViews.Contains(docView))
             {
                 DocumentViews.Add(docView);
+                docView.hideEllipses();
             }
             
             var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
@@ -350,7 +362,530 @@ namespace Dash
 
         private void TemplateEditorView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var focused = this.Focus(FocusState.Programmatic);
+            //var focused = this.Focus(FocusState.Programmatic);
+        }
+
+        private async void XWorkspace_OnDrop(object sender, DragEventArgs e)
+        {
+            using (UndoManager.GetBatchHandle())
+            {
+                e.Handled = true;
+                // accept move, then copy, and finally accept whatever they requested (for now)
+                if (e.AllowedOperations.HasFlag(DataPackageOperation.Move))
+                    e.AcceptedOperation = DataPackageOperation.Move;
+                else if (e.AllowedOperations.HasFlag(DataPackageOperation.Copy))
+                    e.AcceptedOperation = DataPackageOperation.Copy;
+                else e.AcceptedOperation = e.DataView.RequestedOperation;
+
+                //RemoveDragDropIndication(sender as UserControl);
+
+                var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
+                var where = new Point();
+                if (senderView is CollectionFreeformView)
+                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
+                        e.GetPosition(MainPage.Instance));
+                else if (DocumentViewModels.Count > 0)
+                {
+                    var lastPos = DocumentViewModels.Last().Position;
+                    where = e.GetPosition(xWorkspace);
+                }
+
+                // if we drag from the file system
+                if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
+                {
+                    try
+                    {
+                        var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, null);
+                        if (droppedDoc != null)
+                            DocumentControllers.Add(droppedDoc);
+                        return;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.WriteLine(exception);
+                    }
+                }
+
+                if (e.DataView?.Contains(StandardDataFormats.Html) == true)
+                {
+                    _pasteWhereHack = where;
+                    var html = await e.DataView.GetHtmlFormatAsync();
+
+                    //Overrides problematic in-line styling pdf.js generates, such as transparent divs and translucent elements
+                    html = String.Concat(html,
+                        @"<style>
+                      div
+                      {
+                        color: black !important;
+                      }
+
+                      html * {
+                        opacity: 1.0 !important
+                      }
+                    </style>"
+                    );
+
+                    var splits = new Regex("<").Split(html);
+                    var imgs = splits.Where((s) => new Regex("img.*src=\"[^>\"]*").Match(s).Length > 0).ToList();
+                    var text = e.DataView.Contains(StandardDataFormats.Text)
+                        ? (await e.DataView.GetTextAsync()).Trim()
+                        : "";
+                    if (string.IsNullOrEmpty(text) && imgs.Count == 1)
+                    {
+                        var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
+                        var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                        var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
+                        DocumentControllers.Add(imgNote.Document);
+                        return;
+                    }
+
+                    //copy html to clipboard
+                    dataPackage.RequestedOperation = DataPackageOperation.Copy;
+                    dataPackage.SetHtmlFormat(html);
+                    Clipboard.SetContent(dataPackage);
+
+                    //to import from html
+                    // create a ValueSet from the datacontext, used to create word doc to copy html to
+                    var table = new ValueSet { { "REQUEST", "HTML to RTF" } };
+
+                    await DotNetRPC.CallRPCAsync(table);
+
+                    var dataPackageView = Clipboard.GetContent();
+                    var richtext = await dataPackageView.GetRtfAsync();
+                    var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
+
+
+                    //Syncfusion version
+                    /*
+                    WordDocument d = new WordDocument();
+                    d.EnsureMinimal();
+                    d.LastParagraph.AppendHTML(html);
+                    MemoryStream mem = new MemoryStream();
+                    d.Save(mem, FormatType.Rtf);
+                    mem.Position = 0;
+                    byte[] arr = new byte[mem.Length];
+                    arr = mem.ToArray();
+                    string rtf = Encoding.Default.GetString(arr);
+                    var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
+                    //var matches = new Regex(".*:.*").Matches(rtf);
+                    //foreach (var match in matches)
+                    //{
+                    //    var pair = new Regex(":").Split(match.ToString());
+                    //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
+                    //}
+                    AddDocument(t.Document);
+                    */
+
+                    var strings = text.Split(new char[] { '\r' });
+                    foreach (var str in html.Split(new char[] { '\r' }))
+                    {
+                        var matches = new Regex("^SourceURL:.*").Matches(str.Trim());
+                        if (matches.Count != 0)
+                        {
+                            htmlNote.GetDataDocument().SetField<TextController>(KeyStore.SourecUriKey,
+                                matches[0].Value.Replace("SourceURL:", ""), true);
+                            break;
+                        }
+                    }
+
+                    if (imgs.Count() == 0)
+                    {
+                        var matches = new Regex(".{1,100}:.*").Matches(text.Trim());
+                        var title = (matches.Count == 1 && matches[0].Value == text)
+                            ? new Regex(":").Split(matches[0].Value)[0]
+                            : "";
+                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
+                        if (title == "")
+                            foreach (var match in matches)
+                            {
+                                var pair = new Regex(":").Split(match.ToString());
+                                htmlNote.GetDataDocument().SetField<TextController>(new KeyController(pair[0], pair[0]),
+                                    pair[1].Trim(), true);
+                            }
+                        else
+                            htmlNote.SetTitle(title);
+                    }
+                    else
+                    {
+                        var related = new List<DocumentController>();
+                        foreach (var img in imgs)
+                        {
+                            var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(img.ToString()).Value;
+                            var src = srcMatch.Substring(6, srcMatch.Length - 6);
+                            var i = new ImageNote(new Uri(src), new Point(), new Size(), src.ToString());
+                            related.Add(i.Document);
+                        }
+
+                        htmlNote.GetDataDocument()
+                            .SetField<ListController<DocumentController>>(
+                                new KeyController("Html Images", "Html Images"), related, true); //
+                        //htmlNote.GetDataDocument(null).SetField(new KeyController("Html Images", "Html Images"), new ListController<DocumentController>(related), true);
+                        htmlNote.GetDataDocument().SetField<TextController>(KeyStore.DocumentTextKey, text, true);
+                        foreach (var str in strings)
+                        {
+                            var matches = new Regex("^.{1,100}:.*").Matches(str.Trim());
+                            if (matches.Count != 0)
+                            {
+                                foreach (var match in matches)
+                                {
+                                    var pair = new Regex(":").Split(match.ToString());
+                                    htmlNote.GetDataDocument()
+                                        .SetField<TextController>(new KeyController(pair[0], pair[0]), pair[1].Trim(),
+                                            true);
+                                }
+                            }
+                        }
+                    }
+
+                    DocumentControllers.Add(htmlNote);
+                }
+                else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
+                {
+                    var text = await e.DataView.GetRtfAsync();
+
+                    var t = new RichTextNote(text, where, new Size(300, double.NaN));
+                    DocumentControllers.Add(t.Document);
+                }
+                else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
+                {
+                    var text = await e.DataView.GetTextAsync();
+                    var t = new RichTextNote(text, where, new Size(300, double.NaN));
+                    var matches = new Regex(".*:.*").Matches(text);
+                    foreach (var match in matches)
+                    {
+                        var pair = new Regex(":").Split(match.ToString());
+                        t.Document.GetDataDocument()
+                            .SetField<TextController>(KeyController.LookupKeyByName(pair[0], true), pair[1].Trim('\r'),
+                                true);
+                    }
+
+                    DocumentControllers.Add(t.Document);
+                }
+                else if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
+                {
+                    var bmp = await e.DataView.GetBitmapAsync();
+                    IRandomAccessStreamWithContentType streamWithContent = await bmp.OpenReadAsync();
+                    byte[] buffer = new byte[streamWithContent.Size];
+                    using (DataReader reader = new DataReader(streamWithContent))
+                    {
+                        await reader.LoadAsync((uint)streamWithContent.Size);
+                        reader.ReadBytes(buffer);
+                    }
+
+                    var localFolder = ApplicationData.Current.LocalFolder;
+                    var uniqueFilePath =
+                        UtilShared.GenerateNewId() + ".jpg"; // somehow this works for all images... who knew
+                    var localFile =
+                        await localFolder.CreateFileAsync(uniqueFilePath, CreationCollisionOption.ReplaceExisting);
+                    localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
+
+                    var img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
+                    DocumentControllers.Add(img);
+                    var t = new ImageNote(new Uri(localFile.FolderRelativeId));
+                    // var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
+                    DocumentControllers.Add(t.Document);
+                }
+                else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
+                {
+                    var dragData = (DragCollectionFieldModel)e.DataView.Properties[nameof(DragCollectionFieldModel)];
+                    var showField = dragData.FieldKey;
+
+                    if (showField != null && dragData.CollectionReference != null)
+                    {
+                        var subDocs = new List<DocumentController>();
+                        if (dragData.DraggedItems?.Any() == true)
+                        {
+                            var firstDocValue = dragData.DraggedItems.First().GetDataDocument()
+                                .GetDereferencedField(showField, null);
+                            if (firstDocValue is ListController<DocumentController> ||
+                                firstDocValue?.GetValue(null) is List<FieldControllerBase>)
+                                showField = expandCollection(dragData.FieldKey, dragData.DraggedItems, subDocs,
+                                    showField);
+                            else if (firstDocValue is DocumentController)
+                                subDocs = dragData.DraggedItems.Select((d) =>
+                                        d.GetDataDocument().GetDereferencedField<DocumentController>(showField, null))
+                                    .ToList();
+                            else subDocs = pivot(dragData.DraggedItems, showField);
+                        }
+
+                        var cnote = new CollectionNote(where, dragData.ViewType);
+                        if (subDocs != null)
+                            cnote.SetDocuments(new List<DocumentController>(subDocs));
+                        else
+                            cnote.Document.GetDataDocument()
+                                .SetField(KeyStore.DataKey, dragData.CollectionReference, true);
+                        cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
+                        DocumentControllers.Add(cnote.Document);
+                    }
+                    else
+                    {
+                        var parentDocs = (sender as FrameworkElement)?.GetAncestorsOfType<CollectionView>()
+                            .Select((cv) => cv.ParentDocument?.ViewModel?.DataDocument);
+                        var filteredDocs = dragData.DraggedItems.Where((d) =>
+                            !parentDocs.Contains(d.GetDataDocument()) &&
+                            d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
+
+                        var payloadLayoutDelegates = filteredDocs.Select((p) =>
+                        {
+                            if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
+                                p.SetActiveLayout(new DefaultLayout().Document, true, true);
+                            var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
+                                         e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
+                            if (double.IsNaN(newDoc.GetWidthField().Data))
+                                newDoc.SetWidth(dragData.Width ?? double.NaN);
+                            if (double.IsNaN(newDoc.GetHeightField().Data))
+                                newDoc.SetHeight(dragData.Height ?? double.NaN);
+                            return newDoc;
+                        });
+                        DocumentControllers.Add(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
+                    }
+                }
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
+                {
+                    var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
+                    foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                    {
+                        var start = dragModel.First().DraggedDocument.GetPositionField().Data;
+                        foreach (var doc in (dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).Select(
+                            (dm) => dm.GetDropDocument(new Point(
+                                dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
+                                dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList()))
+                        {
+                            DocumentControllers.Add(doc);
+                        }
+                    }
+                }
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                {
+                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                    if (dragModel.LinkSourceView != null
+                    ) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
+                    {
+                        // bcz:  Needs to support LinksFrom as well as LinksTo...
+                        if (MainPage.Instance.IsShiftPressed()
+                        ) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
+                        {
+                            var regions = dragModel.DraggedDocument.GetDataDocument()
+                                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
+                                ?.TypedData;
+                            if (regions != null)
+                            {
+                                var links = regions.SelectMany((r) =>
+                                    r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                                var targets = links.SelectMany((l) =>
+                                    l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                                var aliases = targets.Select((t) =>
+                                {
+                                    var vc = t.GetViewCopy();
+                                    vc.SetHidden(false);
+                                    return vc;
+                                });
+                                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
+                                    aliases.ToList());
+                                DocumentControllers.Add(cnote.Document);
+                            }
+                        }
+                        else if (MainPage.Instance.IsCtrlPressed()
+                        ) // if control is pressed during this drag, we want to see a collection of the actual link documents
+                        {
+                            var regions = dragModel.DraggedDocument.GetDataDocument()
+                                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
+                                ?.TypedData;
+                            var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
+                                .GetLinks(KeyStore.LinkToKey)?.TypedData;
+                            var regionLinkedTo = regions?.SelectMany((r) =>
+                                r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
+                            if (regionLinkedTo != null || directlyLinkedTo != null)
+                            {
+                                var links = regionLinkedTo != null
+                                    ? regionLinkedTo.ToList()
+                                    : new List<DocumentController>();
+                                if (directlyLinkedTo != null)
+                                    links.AddRange(directlyLinkedTo);
+                                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
+                                    links.ToList());
+                                DocumentControllers.Add(cnote.Document);
+                            }
+                        }
+                        else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
+                        {
+                            var dragDoc = dragModel.DraggedDocument;
+                            if (dragModel.LinkSourceView != null &&
+                                KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                                dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                            var note = new RichTextNote("<annotation>", where).Document;
+                            dragDoc.Link(note);
+                            DocumentControllers.Add(note);
+                        }
+                    }
+                    else if (dragModel.CanDrop(sender as FrameworkElement))
+                    {
+                        //var draggedDocument = dragModel.GetDraggedDocument();
+                        //if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
+                        //    (sender as DependencyObject).GetFirstAncestorOfType<DocumentView>()?.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == false &&
+                        //    this.DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(draggedDocument)).Count() == 0)
+                        //{
+                        //    HandleTemplateLayoutDrop(dragModel);
+                        //    e.Handled = true;
+                        //    return;
+                        //}
+                        //else
+                        DocumentControllers.Add(dragModel.GetDropDocument(where));
+                    }
+                }
+            }
+        }
+
+        KeyController expandCollection(KeyController fieldKey, List<DocumentController> getDocs, List<DocumentController> subDocs, KeyController showField)
+        {
+            foreach (var d in getDocs)
+            {
+                var fieldData = d.GetDataDocument().GetDereferencedField(fieldKey, null);
+                if (fieldData is ListController<DocumentController>)
+                    foreach (var dd in (fieldData as ListController<DocumentController>).TypedData)
+                    {
+                        var dataDoc = dd.GetDataDocument();
+
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
+                        expandedDoc.SetField(showField, dataDoc, true);
+                        subDocs.Add(expandedDoc);
+                    }
+                else if (fieldData is ListController<TextController>)
+                    foreach (var dd in (fieldData as ListController<TextController>).Data)
+                    {
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
+                        expandedDoc.SetField(showField, new TextController((dd as TextController).Data), true);
+                        subDocs.Add(expandedDoc);
+                    }
+                else if (fieldData is ListController<NumberController>)
+                    foreach (var dd in (fieldData as ListController<NumberController>).Data)
+                    {
+                        var expandedDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType.DefaultType);
+                        expandedDoc.SetField(KeyStore.HeaderKey, d.GetDataDocument(), true);
+                        expandedDoc.SetField(showField, new NumberController((dd as NumberController).Data), true);
+                        subDocs.Add(expandedDoc);
+                    }
+            }
+
+            return showField;
+        }
+
+        List<DocumentController> pivot(List<DocumentController> docs, KeyController pivotKey)
+        {
+            var dictionary = new Dictionary<object, Dictionary<KeyController, List<object>>>();
+            var pivotDictionary = new Dictionary<object, DocumentController>();
+
+            foreach (var d in docs.Select((dd) => dd.GetDataDocument()))
+            {
+                var fieldDict = setupPivotDoc(pivotKey, dictionary, pivotDictionary, d);
+                if (fieldDict == null)
+                    continue;
+                foreach (var f in d.EnumDisplayableFields())
+                    if (!f.Key.Equals(pivotKey))
+                    {
+                        if (!fieldDict.ContainsKey(f.Key))
+                        {
+                            fieldDict.Add(f.Key, new List<object>());
+                        }
+                        fieldDict[f.Key].Add(f.Value.GetValue(new Context(d)));
+                    }
+            }
+
+            var pivoted = new List<DocumentController>();
+            foreach (var d in dictionary)
+            {
+                var doc = pivotDictionary.ContainsKey(d.Key) ? pivotDictionary[d.Key] : null;
+                if (doc == null)
+                    continue;
+                foreach (var f in d.Value)
+                    if (doc.GetField(f.Key) == null)
+                    {
+                        var items = new List<FieldControllerBase>();
+                        foreach (var i in f.Value)
+                        {
+                            if (i is string)
+                                items.Add(new TextController(i as string));
+                            else if (i is double)
+                                items.Add(new NumberController((double)i));
+                            else if (i is DocumentController)
+                                items.Add((DocumentController)i);
+                        }
+
+                        if (items.Count > 0)
+                        {
+                            FieldControllerBase field = null;
+
+                            //TODO tfs: why are we making copies of all of these fields?
+                            if (items.First() is TextController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new TextController((items.First() as TextController).Data) :
+                                                new ListController<TextController>(items.OfType<TextController>());
+                            else if (items.First() is NumberController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new NumberController((items.First() as NumberController).Data) :
+                                                new ListController<NumberController>(items.OfType<NumberController>());
+                            else if (items.First() is RichTextController)
+                                field = (items.Count == 1) ? (FieldControllerBase)new RichTextController((items.First() as RichTextController).Data) :
+                                                new ListController<RichTextController>(items.OfType<RichTextController>());
+                            else if (items.First() is DocumentController)
+                                field = (items.Count == 1) ? (FieldControllerBase)(items.First() as DocumentController) :
+                                               new ListController<DocumentController>(items.OfType<DocumentController>());
+                            if (field != null)
+                                doc.SetField(f.Key, field, true);
+                        }
+                    }
+                pivoted.Add(doc);
+            }
+            return pivoted;
+        }
+        Dictionary<KeyController, List<object>> setupPivotDoc(KeyController pivotKey, Dictionary<object, Dictionary<KeyController, List<object>>> dictionary, Dictionary<object, DocumentController> pivotDictionary, DocumentController d)
+        {
+            var obj = d.GetDataDocument().GetDereferencedField(pivotKey, null)?.GetValue(null);
+            DocumentController pivotDoc = null;
+            if (obj != null && !dictionary.ContainsKey(obj))
+            {
+                var pivotField = d.GetDataDocument().GetField(pivotKey);
+                pivotDoc = (pivotField as ReferenceController)?.GetDocumentController(null);
+                if (d.GetDataDocument().GetAllPrototypes().Contains(pivotDoc) || pivotDoc == null || pivotDoc.DocumentType.Equals(DashConstants.TypeStore.OperatorType))
+                {
+                    pivotDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>()
+                    {
+                    }, DocumentType.DefaultType);
+                    if (obj is string)
+                    {
+                        pivotDoc.SetField(pivotKey, new TextController(obj as string), true);
+                    }
+                    else if (obj is RichTextModel.RTD)
+                    {
+                        pivotDoc.SetField(pivotKey, new RichTextController(obj as RichTextModel.RTD), true);
+                    }
+                    else if (obj is double)
+                    {
+                        pivotDoc.SetField(pivotKey, new NumberController((double)obj), true);
+                    }
+                    else if (obj is DocumentController)
+                    {
+                        pivotDoc = obj as DocumentController;
+                    }
+                    else if (obj is ListController<DocumentController>)
+                    {
+                        pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
+                    }
+                    //DBTest.DBDoc.AddChild(pivotDoc);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
+                }
+                pivotDictionary.Add(obj, pivotDoc);
+                dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
+            }
+
+            if (obj != null)
+            {
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
+                return dictionary[obj];
+            }
+            return null;
         }
     }
 }
