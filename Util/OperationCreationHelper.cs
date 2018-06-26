@@ -14,7 +14,7 @@ namespace Dash
 
         static OperationCreationHelper()
         {
-            var operatorTypes = typeof(OperatorController).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(OperatorController)));
+            var operatorTypes = typeof(OperatorController).Assembly.GetTypes().Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
             foreach (var operatorType in operatorTypes)
             {
                 var title = ((KeyController) operatorType

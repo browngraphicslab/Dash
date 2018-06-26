@@ -164,7 +164,7 @@ namespace Dash
         {
             foreach (var type in assembly.GetTypes())
             {
-                if (type.GetCustomAttributes(typeof(OperatorTypeAttribute), true).Length == 0) continue;
+                if (type.GetCustomAttributes(typeof(OperatorTypeAttribute), true).Length == 0 || type.IsAbstract) continue;
                 Activator.CreateInstance(type);
                 yield return type;
             }
