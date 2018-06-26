@@ -27,6 +27,8 @@ namespace Dash
 {
     public sealed partial class DocumentView
     {
+        public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
+        public event DocumentViewSelectedHandler DocumentSelected;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
 
         /// <summary>
@@ -41,8 +43,6 @@ namespace Dash
         }
 
         public MenuFlyout MenuFlyout { get; set; }
-
-        public TemplateEditorView Editor => ViewModel?.Editor;
 
         static readonly SolidColorBrush SingleSelectionBorderColor = new SolidColorBrush(Colors.LightGray);
         static readonly SolidColorBrush GroupSelectionBorderColor = new SolidColorBrush(Colors.LightBlue);
@@ -71,7 +71,7 @@ namespace Dash
         private UIElement _localContextPreview;
         private UIElement _selectedContextPreview;
 
-        private TemplateNote _templateEditor;
+        private DocumentController _templateEditor;
 
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
@@ -173,6 +173,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
+                DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
                 var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
@@ -367,17 +368,19 @@ namespace Dash
             var mainPageCollectionView =
                 MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
 
-            if (_templateEditor == null)
+            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey) == null)
             {
                 var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
                     (RenderTransform as MatrixTransform).Matrix.OffsetY);
-                _templateEditor = new TemplateNote(ViewModel.LayoutDocument, where, new Size(1000, 500));
+                _templateEditor = new TemplateNote(ViewModel.LayoutDocument, where, new Size(1000, 500)).Document;
+                ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
                 //creates a doc controller for the image(s)
-                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor.Document, where);
+                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
             }
             else
             {
-                _templateEditor.Document.SetHidden(!_templateEditor.Document.GetHidden());
+                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey);
+                _templateEditor.SetHidden(!_templateEditor.GetHidden());
             }
         }
 
@@ -973,6 +976,7 @@ namespace Dash
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             FocusedDocument = this;
+            DocumentSelected?.Invoke(this, new DocumentViewSelectedEventArgs());
             //TODO Have more standard way of selecting groups/getting selection of groups to the toolbar
             if (!ViewModel.IsAdornmentGroup)
             {
@@ -1007,10 +1011,6 @@ namespace Dash
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            if (Editor != null)
-            {
-                Editor.SelectedDocument = this;
-            }
             DocumentView_PointerEntered();
         }
 
@@ -1020,6 +1020,16 @@ namespace Dash
                 ViewModel.DecorationState = ViewModel?.Undecorated == false;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
+        }
+
+        /// <summary>
+        /// Encompasses the different type of events triggers by changing document data.
+        /// </summary>
+        public class DocumentViewSelectedEventArgs
+        {
+            public DocumentViewSelectedEventArgs()
+            {
+            }
         }
 
         #region UtilityFuncions

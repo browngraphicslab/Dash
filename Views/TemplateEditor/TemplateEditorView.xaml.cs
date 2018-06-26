@@ -38,20 +38,7 @@ namespace Dash
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
-        public DocumentView SelectedDocument
-        {
-            get => _selectedDocument;
-            set
-            {
-                _selectedDocument = value;
-                if (_selectedDocument != null)
-                {
-                    var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - _selectedDocument.ActualWidth,
-                        xWorkspace.Clip.Rect.Height - _selectedDocument.ActualHeight);
-                    _selectedDocument.Bounds = new RectangleGeometry {Rect = bounds};
-                }
-            }
-        }
+        public Collection<DocumentView> DocumentViews { get; set; }
 
         private KeyValueTemplatePane _keyValuePane;
         private DocumentView _selectedDocument;
@@ -64,6 +51,7 @@ namespace Dash
 
             DocumentControllers = new ObservableCollection<DocumentController>();
 	        DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+	        DocumentViews = new Collection<DocumentView>();
 	    }
 
         private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -90,24 +78,11 @@ namespace Dash
             {
                 // create new viewmodel with a copy of document, set editor to this
                 var dvm =
-                    new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc)) {Editor = this};
+                    new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
                 DocumentViewModels.Add(dvm);
                 // check that the layout doc doesn't already exist in data document's list of layout docs
-                var alreadyExistent = false;
-                foreach (var layoutDoc in DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
-                    .TypedData)
-                {
-                    // if it already exists, change the point to its stored point
-                    if (layoutDoc.GetPrototype().Equals(dvm.LayoutDocument.GetPrototype()))
-                    {
-                        alreadyExistent = true;
-                        dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey,
-                            layoutDoc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null), true);
-                    }
-                }
                 // if it already exists, don't add it again to the data document
-                if (!alreadyExistent)
-                    DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
+                DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
             }
 
             xItemsControl.ItemsSource = DocumentViewModels;
@@ -146,7 +121,12 @@ namespace Dash
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
             DocumentViewModels.Clear();
-            AddDocs(DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData);
+            foreach (var layoutDoc in DataDocument
+                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
+            {
+                DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
+            }
+            xItemsControl.ItemsSource = DocumentViewModels;
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
 
@@ -347,6 +327,30 @@ namespace Dash
                     
                 }
             }
+        }
+
+        private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            if (!DocumentViews.Contains(docView))
+            {
+                DocumentViews.Add(docView);
+            }
+            
+            var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
+                xWorkspace.Clip.Rect.Height - docView.ActualHeight);
+            docView.Bounds = new RectangleGeometry { Rect = bounds };
+            docView.DocumentSelected += DocView_DocumentSelected;
+        }
+
+        private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+        {
+            _selectedDocument = sender;
+        }
+
+        private void TemplateEditorView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var focused = this.Focus(FocusState.Programmatic);
         }
     }
 }

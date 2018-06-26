@@ -9,6 +9,8 @@
     x:Name="xEditorControl"
     AllowDrop="True"
     d:DesignHeight="300"
+    IsEnabled="True"
+    PointerPressed="TemplateEditorView_OnPointerPressed"
     d:DesignWidth="1000">
 
     <StackPanel Orientation="Horizontal">
@@ -35,7 +37,8 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <local:DocumentView
-                                BindRenderTransform="True" />
+                                BindRenderTransform="True"
+                                Loaded="DocumentView_OnLoaded"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
