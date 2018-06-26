@@ -162,6 +162,7 @@
   <ItemGroup>
     <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\PingBrowserRequest.cs" />

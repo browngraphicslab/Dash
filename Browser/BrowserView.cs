@@ -187,7 +187,11 @@ namespace Dash
                 {
                     _browserViews.Add(request.tabId, new BrowserView(request.tabId));
                 }
-                Array.ForEach(array, t => t.Handle(_browserViews[t.tabId]));
+
+                foreach (var browserRequest in array)
+                {
+                    await browserRequest.Handle(_browserViews[browserRequest.tabId]);
+                }
             }
         }
 
@@ -268,13 +272,8 @@ namespace Dash
             SendToServer(r.Serialize());
         }
 
-        private string _url;
-        private double _scroll;
-        private bool _isCurrent = false;
         private readonly int Id;
-        private string _title;
         private long _startTimeOfBeingCurrent = 0;
-        private string _imageData = null;
 
         public event EventHandler<string> UrlChanged;
         public event EventHandler<double> ScrollChanged;
@@ -282,11 +281,13 @@ namespace Dash
         public event EventHandler<string> TitleChanged;
         public event EventHandler<string> ImageDataChanged;
 
-        public string ImageData => _imageData;
-        public double Scroll => _scroll;
-        public bool IsCurrent => _isCurrent;
-        public string Url => _url;
-        public string Title => _title;
+        public string ImageData { get; private set; } = null;
+        public double Scroll { get; private set; }
+
+        public bool IsCurrent { get; private set; } = false;
+        public string Url { get; private set; }
+
+        public string Title { get; private set; }
 
         /// <summary>
         /// returns -1 if the tab isn't active
@@ -295,7 +296,7 @@ namespace Dash
         {
             get
             {
-                if (!_isCurrent)
+                if (!IsCurrent)
                 {
                     return -1;
                 }
@@ -311,7 +312,7 @@ namespace Dash
 
         public void FireUrlUpdated(string url)
         {
-            _url = url;
+            Url = url;
             UrlChanged?.Invoke(this, url);
         }
 
@@ -325,12 +326,12 @@ namespace Dash
 
         public void FireImageUpdated(string imageData)
         {
-            Debug.WriteLine("Browser view image changed, with image different: " + imageData != _imageData);
+            Debug.WriteLine("Browser view image changed, with image different: " + imageData != ImageData);
             if (!string.IsNullOrEmpty(imageData))
             {
                 Task.Run(SameImageTask);
             }
-            _imageData = imageData;
+            ImageData = imageData;
             ImageDataChanged?.Invoke(this, imageData);
 
         }
@@ -349,7 +350,7 @@ namespace Dash
         /// <param name="title"></param>
         public void FireTitleUpdated(string title)
         {
-            _title = title;
+            Title = title;
             TitleChanged?.Invoke(this, title);
         }
 
@@ -359,7 +360,7 @@ namespace Dash
         /// <param name="scroll"></param>
         public void FireScrollUpdated(double scroll)
         {
-            _scroll = scroll;
+            Scroll = scroll;
             ScrollChanged?.Invoke(this, scroll);
         }
 
@@ -379,7 +380,7 @@ namespace Dash
 
         private void SetIsCurrent(bool current)
         {
-            _isCurrent = current;
+            IsCurrent = current;
             if (current)
             {
                 _startTimeOfBeingCurrent = DateTime.Now.Ticks;
@@ -389,7 +390,7 @@ namespace Dash
 
         public string GetUrlHash()
         {
-            var hash = UtilShared.GetDeterministicGuid(_url);
+            var hash = UtilShared.GetDeterministicGuid(Url);
             //Debug.WriteLine("Hash: "+hash+ "    url: "+ _url);
             return hash;
         }
