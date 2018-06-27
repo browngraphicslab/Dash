@@ -122,7 +122,7 @@ namespace Dash
                     var exec = se?.Execute(scope ?? new Scope());
                     return new TextController("");
                 }
-                catch (ReturnException re)
+                catch (ReturnException)
                 {
                     var ret = scope?.GetFirstAncestor().GetReturn;
                     return ret;
@@ -447,8 +447,6 @@ namespace Dash
                         {ElementAccessOperatorController.VariableKey, elemVar},
                         {ElementAccessOperatorController.IndexKey, elemIndex},
                     });
-
-                    break;
                 case SyntaxKind.NewExpression:
                     break;
                 case SyntaxKind.TaggedTemplateExpression:
@@ -472,11 +470,22 @@ namespace Dash
                 case SyntaxKind.AwaitExpression:
                     break;
                 case SyntaxKind.PrefixUnaryExpression:
+                    var preUnEx = (PrefixUnaryExpression) node;
+                    if (!double.TryParse(preUnEx.Children[0].GetText(), out var toNegate)) break;
+                    switch (preUnEx.Operator)
+                    {
+                        case SyntaxKind.MinusToken:
+                            return new FunctionExpression(DSL.GetFuncName<NumNegateOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            {
+                                {NumNegateOperatorController.LeftKey,  null},
+                                {NumNegateOperatorController.RightKey, new LiteralExpression(new NumberController(toNegate))},
+                            });
+                    }
                     break;
                 case SyntaxKind.PostfixUnaryExpression:
-                    var varToIncrement = (PostfixUnaryExpression) node;
-                    var res = varToIncrement.Children[0].GetText();
-                    switch (varToIncrement.Operator)
+                    var postUnEx = (PostfixUnaryExpression) node;
+                    var res = postUnEx.Children[0].GetText();
+                    switch (postUnEx.Operator)
                     {
                         case SyntaxKind.PlusPlusToken:
                             return ParseToExpression(res + " = " + res + " + 1");
@@ -759,28 +768,10 @@ namespace Dash
                     var forInChild = (node as ForInStatement)?.Children;
 
                     var subVarName = forInChild?[0].First.IdentifierStr;
-                    var subVarNameExpr = ParseToExpression(subVarName) as VariableExpression; //"cookie" ==> 0, eventually "Chocolate"
-                    var subVarDeclaration = ParseToExpression($"var {subVarName} = 0"); //"cookie"
+                    var listNameExpr = ParseToExpression(forInChild?[1]) as VariableExpression;
+                    var forInBody = ParseToExpression(forInChild?[2]) as ExpressionChain;
 
-                    var listNameExpr = ParseToExpression(forInChild?[1]) as VariableExpression; //"cookies" ==> {}
-                    var listName = listNameExpr?.GetVariableName();
-
-                    var forInBody = ParseToExpression(forInChild?[2]); //"cookies += ""message""
-
-                    var phantomCountDeclaration = ParseToExpression($"var {DashConstants.ForInPhantomCounterName} = 0");
-                    var incrementAndAssignment = ParseToExpression($"{subVarName} = {listName}[{DashConstants.ForInPhantomCounterName}++]");
-                    var writeToList = ParseToExpression($"{listName}[{DashConstants.ForInPhantomCounterName} = {subVarName}");
-
-                    return new ForInExpression(DSL.GetFuncName<ForInOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
-                    {
-                        [ForInOperatorController.CounterDeclarationKey] = phantomCountDeclaration,
-                        [ForInOperatorController.IncrementAndAssignmentKey] = incrementAndAssignment,
-                        [ForInOperatorController.SubVarNameKey] = subVarNameExpr,
-                        [ForInOperatorController.SubVarDeclarationKey] = subVarDeclaration,
-                        [ForInOperatorController.ListNameKey] = listNameExpr,
-                        [ForInOperatorController.ForInBlockKey] = forInBody,
-                        [ForInOperatorController.WriteToListKey] = writeToList
-                    });
+                    return new ForInExpression(DSL.GetFuncName<ForInOperatorController>(), subVarName, listNameExpr, forInBody);
                 case SyntaxKind.ForOfStatement:
                     break;
                 case SyntaxKind.ContinueStatement:
@@ -789,7 +780,6 @@ namespace Dash
                     // Break doesn't currently work properly, all it does is terminate one expression chain,
                     // needs to terminate enclosing loop/end statement
                     return new BreakLoopExpression();
-                    break;
                 case SyntaxKind.ReturnStatement:
                     //as it is right now, return is kind of hacky, if this line is still here, it means that
                     //return still works by outputting an empty text controller if it isn't called, and is storing
@@ -798,7 +788,6 @@ namespace Dash
                     var returnStatement = node as ReturnStatement;
                     var c1 = node.Children;
                    return new ReturnExpression(ParseToExpression(node.Children[0]));
-                    break;
                 case SyntaxKind.WithStatement:
                     break;
                 case SyntaxKind.SwitchStatement:

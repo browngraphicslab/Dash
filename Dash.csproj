@@ -187,6 +187,7 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\Binary\NumNegateOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />

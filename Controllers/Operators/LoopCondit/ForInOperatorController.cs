@@ -23,7 +23,8 @@ namespace Dash
         public static readonly KeyController SubVarDeclarationKey = new KeyController("E8564E98-7707-48BE-BD48-33ED2B2E8F40", "Declaration of dummy variable");
         public static readonly KeyController ListNameKey = new KeyController("25C0265B-4D73-4EA8-BDA4-05B403CEAEBB", "List over which to iterate");
         public static readonly KeyController ForInBlockKey = new KeyController("24ABB93D-A1A2-4B7C-BCE1-502DFF75291C", "The body contained in the for in block");
-        public static readonly KeyController CounterDeclarationKey = new KeyController("67F5C326-CCA7-40AB-9AF2-3E1ED72EB0A3", "The phantom variable counter");
+        public static readonly KeyController CounterKey = new KeyController("11905E2B-63D4-434E-9903-9A0BF1BD28CD", "The phantom variable counter");
+        public static readonly KeyController CounterDeclarationKey = new KeyController("67F5C326-CCA7-40AB-9AF2-3E1ED72EB0A3", "The phantom variable counter declaration");
         public static readonly KeyController IncrementAndAssignmentKey = new KeyController("48C63629-B77B-47F7-9346-759714AE31EB", "The incrementation of the phantom variable counter");
         public static readonly KeyController WriteToListKey = new KeyController("C85785DE-A25E-4638-B3A3-CD6EEBBF63CB", "Takes the output of manipulation and stores it in list");
 
