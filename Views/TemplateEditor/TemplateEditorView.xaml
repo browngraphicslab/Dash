@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
-    d:DesignHeight="300"
+    d:DesignHeight="500"
     PointerPressed="TemplateEditorView_OnPointerPressed"
     d:DesignWidth="1000">
 
@@ -18,7 +18,7 @@
 
         <Canvas VerticalAlignment="Top" Width="500" Height="500" Background="LightSlateGray"  HorizontalAlignment="Left">
             <Canvas VerticalAlignment="Top" Width="300" Height="400" Background="White" HorizontalAlignment="Left"
-                    Canvas.Left="100" Canvas.Top="50"
+                    Canvas.Left="100" Canvas.Top="50" x:FieldModifier="public"
                     x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                 <ItemsControl x:Name="xItemsControl"
                               x:FieldModifier="public"
@@ -53,27 +53,42 @@
                 <AppBarButton Icon="Video" Height="50" Width="50" Click="VideoButton_OnClick"></AppBarButton>
                 <AppBarButton Icon="Audio" Height="50" Width="50" Click="AudioButton_OnClick"></AppBarButton>
             </StackPanel>
+
             <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Horizontal Alignment</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
                 <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
                 <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
             </StackPanel>
+
             <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <AppBarToggleButton Icon="Import" Height="50" Width="50" Checked="LeftBorder_OnChecked" Unchecked="LeftBorder_OnUnchecked"></AppBarToggleButton>
-                <AppBarToggleButton Icon="Up" Height="50" Width="50" Checked="TopBorder_OnChecked" Unchecked="TopBorder_OnUnchecked"></AppBarToggleButton>
-                <AppBarToggleButton Icon="Forward" Height="50" Width="50" Checked="RightBorder_OnChecked" Unchecked="RightBorder_OnUnchecked"></AppBarToggleButton>
-                <AppBarToggleButton Icon="Download" Height="50" Width="50" Checked="BottomBorder_OnChecked" Unchecked="BottomBorder_OnUnchecked"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Import" Height="50" Width="50" x:Name="xLeftBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Up" Height="50" Width="50" x:Name="xTopBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Forward" Height="50" Width="50" x:Name="xRightBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
+                <AppBarToggleButton Icon="Download" Height="50" Width="50" x:Name="xBottomBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
             </StackPanel>
-            <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200"
-                    ValueChanged="XThicknessSlider_OnValueChanged"/>
 
-            
-            <media:SfColorPicker  x:Name="xColorPicker"  PointerReleased="XColorPicker_OnPointerReleased"/>
-                    
-            
-          
+            <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200" Maximum="10"
+                    ValueChanged="XThicknessSlider_OnValueChanged" />
+            <!--<media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick_" ></AppBarButton>
+                <AppBarButton Icon="Redo"  x:Name="xRedoButton" Height="50" Width="50" Click="XRedoButton_OnClick_" ></AppBarButton>
+                <AppBarButton Icon="DisableUpdates"  x:Name="xResetButton" Height="50" Width="50" Click="XResetButton_OnClick_" ></AppBarButton>
+                <AppBarButton Icon="Clear"  x:Name="xClearButton" Height="50" Width="50" Click="XClearButton_OnClick_" ></AppBarButton>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Height="50" Width="180" Background="DodgerBlue" Click="XUploadTemplate_OnClick">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock FontWeight="Bold" FontSize="16" Foreground="Black">Upload Template</TextBlock>
+                        <TextBlock FontSize="26" Foreground="Black"
+                                   FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Height="50" Width="180" Background="DodgerBlue" Click="ApplyChanges_OnClicked">
@@ -84,6 +99,8 @@
                     </StackPanel>
                 </Button>
             </StackPanel>
+            
+
         </StackPanel>
     </StackPanel>
 </UserControl>

@@ -170,9 +170,10 @@ namespace Dash
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
             {
-                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
                     ;
                 else

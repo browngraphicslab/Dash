@@ -25,9 +25,11 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
+using Dash.Controllers;
 using Dash.Converters;
 using Dash.Models.DragModels;
 using DashShared;
+using Flurl.Util;
 using Microsoft.Office.Interop.Word;
 using Syncfusion.Pdf.Graphics;
 using Border = Windows.UI.Xaml.Controls.Border;
@@ -52,7 +54,7 @@ namespace Dash
         private KeyValueTemplatePane _keyValuePane;
         private DocumentView _selectedDocument;
         private Point _pasteWhereHack;
-        public double _thickness;
+        private double _thickness;
         private Windows.UI.Color _color;
         DataPackage dataPackage = new DataPackage();
 
@@ -294,112 +296,77 @@ namespace Dash
 
         
 
-        private void LeftBorder_OnChecked(object sender, RoutedEventArgs e)
+        private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
         {
+            double left = 0;
+            if (xLeftBorderChecker.IsChecked.GetValueOrDefault(false))
+            {
+                left = _thickness;
+            }
 
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var top = docView.TemplateBorder.BorderThickness.Top;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
+            double top = 0;
+            if (xTopBorderChecker.IsChecked.GetValueOrDefault(false))
+            {
+                top = _thickness;
+            }
 
-            
+            double right = 0;
+            if (xRightBorderChecker.IsChecked.GetValueOrDefault(false))
+            {
+                right = _thickness;
+            }
 
-            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(_thickness, top, right, bottom);
-        }
+            double bottom = 0;
+            if (xBottomBorderChecker.IsChecked.GetValueOrDefault(false))
+            {
+                bottom = _thickness;
+            }
 
-      
-
-        private void TopBorder_OnChecked(object sender, RoutedEventArgs e)
-        {
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
-
-            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, _thickness, right, bottom);
-        }
-
-        private void RightBorder_OnChecked(object sender, RoutedEventArgs e)
-        {
-
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
-            var top = docView.TemplateBorder.BorderThickness.Top;
-
-            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, _thickness, bottom);
-        }
-
-        private void BottomBorder_OnChecked(object sender, RoutedEventArgs e)
-        {
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var top = docView.TemplateBorder.BorderThickness.Top;
-
-            docView.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, right, _thickness);
-        }
-
-        private void LeftBorder_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var top = docView.TemplateBorder.BorderThickness.Top;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
-
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(0, top, right, bottom);
-
-        }
-
-        private void TopBorder_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
-            
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, 0, right, bottom);
-        }
-
-        private void RightBorder_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var bottom = docView.TemplateBorder.BorderThickness.Bottom;
-            var top = docView.TemplateBorder.BorderThickness.Top;
-
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, 0, bottom);
-        }
-
-        private void BottomBorder_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-            var docView = xWorkspace.GetFirstAncestorOfType<DocumentView>();
-            var left = docView.TemplateBorder.BorderThickness.Left;
-            var right = docView.TemplateBorder.BorderThickness.Right;
-            var top = docView.TemplateBorder.BorderThickness.Top;
-
-            docView.TemplateBorder.BorderThickness = new Windows.UI.Xaml.Thickness(left, top, right, 0);
+            if (_selectedDocument != null)
+            {
+                _selectedDocument.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+                _selectedDocument.TemplateBorder.BorderThickness = new Thickness(left, top, right, bottom);
+            }
         }
 
         private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
         {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            DataDocument.SetField(KeyStore.DocumentContextKey, workingDoc, true);
             foreach (var doc in DocumentControllers)
             {
-                if (doc.GetDataDocument().Equals(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)))
+                if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
                 {
-                    // apply layout doc with abstraction
+                    doc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey),
+                        true);
+                    var keyValuePairs = DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).GetDataDocument().EnumFields();
+                    KeyController specificKey = null;
+                    specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(doc.Title)).Key;
+
+                    if (specificKey != null)
+                    {
+                        doc.SetField(KeyStore.DataKey,
+                            new PointerReferenceController(
+                                doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
+                    }
+                    else if (doc.Equals(DataDocument))
+                    {
+                        doc.SetField(KeyStore.DataKey,
+                            new DocumentReferenceController(
+                                DataDocument.Id, KeyStore.DataKey), true);
+                    }
+                   
                 }
                 else
                 {
-                    // apply layout doc statically
-                    
                 }
             }
+
+            var layoutCopy = DataDocument.MakeCopy();
+            layoutCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+            layoutCopy.SetField(KeyStore.PositionFieldKey,
+                workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+            workingDoc.SetField(KeyStore.ActiveLayoutKey, layoutCopy, true);
         }
 
         private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -952,8 +919,7 @@ namespace Dash
 
         private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            Slider slider = sender as Slider;
-            if (slider != null)
+            if (sender is Slider slider)
             {
                 _thickness = slider.Value;
             }
@@ -961,7 +927,32 @@ namespace Dash
 
         private void XColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-             _color = xColorPicker.SelectedColor;    
+             //_color = xColorPicker.SelectedColor;    
+        }
+
+        private void XResetButton_OnClick_(object sender, RoutedEventArgs e)
+        {
+            //TODO: reset to original state of template (clear if new, or revert to other if editing)
+        }
+
+        private void XUndoButton_OnClick_(object sender, RoutedEventArgs e)
+        {
+            //TODO: implement undo
+        }
+
+        private void XRedoButton_OnClick_(object sender, RoutedEventArgs e)
+        {
+            //TODO: implement redo
+        }
+
+        private void XClearButton_OnClick_(object sender, RoutedEventArgs e)
+        {
+            //TODO: implement clear
+        }
+
+        private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
+        {
+            //TODO: implement 
         }
     }
 }

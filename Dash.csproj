@@ -331,7 +331,7 @@
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
-    <Compile Include="Util\NoteDocuments\NoteDocument.cs" />
+    <Compile Include="Util\NoteDocuments\TemplateNote.cs" />
     <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
     <Compile Include="Util\NoteDocuments\TemplateEditor.cs" />

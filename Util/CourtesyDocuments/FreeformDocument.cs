@@ -57,7 +57,7 @@ namespace Dash
             {
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
             };
-            
+
             return grid;
         }
 

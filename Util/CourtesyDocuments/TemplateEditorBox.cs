@@ -16,12 +16,19 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("931C41F4-EA4C-4911-A2EE-0D0B6C7BB089", "Template Editor Box");
         private static readonly string PrototypeId = "92230B6B-CE44-495E-A278-EE991A58B91D";
 
-        public TemplateEditorBox(FieldControllerBase refToWorkingDoc = null, double x = 0, double y = 0, double w = 200, double h = 20)
+        public TemplateEditorBox(DocumentController workingDoc = null, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             // template editor box data key = working doc
-            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToWorkingDoc);
+            var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), workingDoc);
+            fields[KeyStore.DocumentContextKey] = new TemplateBox().Document;
             SetupDocument(DocumentType, PrototypeId, "TemplateEditorBox Prototype Layout", fields);
         }
+
+        public TemplateEditorBox(DocumentController workingDoc = null, Point where = default(Point),
+            Size size = default(Size)) : this(workingDoc, where.X, where.Y, size.Width, size.Height)
+        {
+        }
+
         public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<List<object>, Windows.UI.Xaml.TextWrapping>
         {
             public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
@@ -55,24 +62,19 @@ namespace Dash
 	        }
 
             TemplateEditorView tev = null;
-            var dataField = layoutDocController.GetViewCopy(new Point(0, 0)).GetDereferencedField(KeyStore.DataKey, context);
-            var dataDocument = dataField as DocumentController;
-            if (dataDocument != null)
+            tev = new TemplateEditorView
             {
-                tev = new TemplateEditorView
-                {
-                    // Layout Document's Data = Working Document
-                    LayoutDocument = layoutDocController,
-                    // Data Doc's Data = List of Layout Documents
-                    DataDocument = layoutDocController.GetDataDocument(),
-                    //LinkedDocument = docController.GetField<DocumentController>(KeyStore.DataKey),
-                    ManipulationMode = ManipulationModes.All
-                };
-	            tev.Load();
-                tev.HorizontalAlignment = HorizontalAlignment.Stretch;
-                tev.VerticalAlignment = VerticalAlignment.Stretch;
-                SetupBindings(tev, layoutDocController, context);
-            }
+                // Layout Document's Data = Working Document
+                LayoutDocument = layoutDocController,
+                // Data Doc's Data = List of Layout Documents
+                DataDocument = layoutDocController.GetDataDocument(),
+                //LinkedDocument = docController.GetField<DocumentController>(KeyStore.DataKey),
+                ManipulationMode = ManipulationModes.All
+            };
+	        tev.Load();
+            tev.HorizontalAlignment = HorizontalAlignment.Stretch;
+            tev.VerticalAlignment = VerticalAlignment.Stretch;
+            SetupBindings(tev, layoutDocController, context);
 
             return tev;
         }
