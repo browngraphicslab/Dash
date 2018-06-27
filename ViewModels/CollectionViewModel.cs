@@ -214,7 +214,7 @@ namespace Dash
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
-                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
+                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.NewItems);
             }
             else
             {
@@ -263,8 +263,6 @@ namespace Dash
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
                     addViewModels(docs);
-                    break;
-                default:
                     break;
             }
         }

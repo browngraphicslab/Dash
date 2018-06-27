@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using DashShared;
 
 namespace Dash
 {
@@ -27,27 +23,21 @@ namespace Dash
         {
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
-            var list = (_listToExecute.Execute(scope) as BaseListController);
-            var listData = list?.Data;
+            var list = _listToExecute.Execute(scope) as ListController<FieldControllerBase>;
 
             for (var i = 0; i < list?.Count; i++)
             {
-                scope.SetVariable(_subVarName, listData[i]);
+                scope.SetVariable(_subVarName, list[i]);
                 _bodyToExecute.Execute(scope);
-                listData[i] = scope.GetVariable(_subVarName);
-                list.Data = listData;
+                list[i] = scope.GetVariable(_subVarName);
             }
 
-            return new ListController<FieldControllerBase>(list);
+            return list;
         }
 
         public string GetOperatorName() => _opName;
 
-
-        public override FieldControllerBase CreateReference(Scope scope)
-        {
-            throw new NotImplementedException();
-        }
+        public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
     }

@@ -40,9 +40,7 @@ namespace Dash
         {
             //UpdateOnServer();
 
-            FieldModelUpdated?.Invoke(this,
-                args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),
-                context);
+            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update), context);
 
             //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }

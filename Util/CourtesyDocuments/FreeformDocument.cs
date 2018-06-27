@@ -41,7 +41,7 @@ namespace Dash
                 var collFieldArgs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
-                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid);
+                    AddDocuments(collFieldArgs.NewItems, c, grid);
                 }
                 else
                 {

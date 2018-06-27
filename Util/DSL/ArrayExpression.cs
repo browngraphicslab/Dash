@@ -42,7 +42,7 @@ namespace Dash
             var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
             foreach (var item in outputList)
             {
-                lc.Add(item);
+                lc.AddBase(item);
             }
             //lc.AddRange(outputList);
 
