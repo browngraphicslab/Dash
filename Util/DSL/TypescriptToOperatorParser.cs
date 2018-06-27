@@ -784,7 +784,7 @@ namespace Dash
                     //as it is right now, return is kind of hacky, if this line is still here, it means that
                     //return still works by outputting an empty text controller if it isn't called, and is storing
                     //itself as a variable- if we could find a way to break out of the recursive loop that would 
-                    // be a lot more elegant
+                    //be a lot more elegant instead of using an error statement
                     var returnStatement = node as ReturnStatement;
                     var c1 = node.Children;
                    return new ReturnExpression(ParseToExpression(node.Children[0]));
