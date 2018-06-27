@@ -34,9 +34,27 @@ namespace Dash
             }
         }
 
-        private static void AppOnAppServiceConnected(object sender, EventArgs eventArgs)
+        private static async void ConnectionOnRequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        {
+            ValueSet data = args.Request.Message;
+            var type = data["REQUEST"] as string;
+            switch (type)
+            {
+                case "Chrome":
+                    string requestData = data["DATA"] as string;
+                    Debug.WriteLine("Request data: " + requestData);
+                    await BrowserView.HandleIncomingMessage(requestData);
+                    break;
+                default://Unhandled request
+                    throw new NotImplementedException();
+            }
+            Debug.WriteLine("Received Request " + data["DEBUG"]);
+        }
+
+        private static void AppOnAppServiceConnected()
         {
             Connected = true;
+            App.Connection.RequestReceived += ConnectionOnRequestReceived;
         }
 
         public static async Task<ValueSet> CallRPCAsync(ValueSet data)
@@ -50,7 +68,6 @@ namespace Dash
 
             // check the result
             response.Message.TryGetValue("RESPONSE", out var result);
-            Debug.WriteLine(response.Message["DEBUG"] as string);
             if (result.ToString() != "SUCCESS")
             {
                 return null;
@@ -58,6 +75,15 @@ namespace Dash
 
             return response.Message;
 
+        }
+
+        public static async Task ChromeRequest(string data)
+        {
+            await CallRPCAsync(new ValueSet
+            {
+                ["REQUEST"] = "Chrome",
+                ["DATA"] = data
+            });
         }
     }
 }

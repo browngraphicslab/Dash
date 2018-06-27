@@ -1,4 +1,5 @@
-﻿using Dash.Browser;
+﻿using System.Threading.Tasks;
+using Dash.Browser;
 
 namespace Dash
 {
@@ -6,10 +7,10 @@ namespace Dash
     {
         public string data { get; set; }
 
-        public override void Handle(BrowserView browser)
+        public override Task Handle(BrowserView browser)
         {
             browser.FireImageUpdated(data);
-            base.Handle(browser);
+            return base.Handle(browser);
         }
     }
 }

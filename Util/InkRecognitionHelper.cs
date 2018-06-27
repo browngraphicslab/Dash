@@ -304,7 +304,7 @@ namespace Dash
                         {
                             list.Add(field);
                         }
-                        var textBox = new TextingBox(new DocumentReferenceController(doc.GetId(), key),
+                        var textBox = new TextingBox(new DocumentReferenceController(doc.Id, key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);
                         (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberController).Data =
                             containedRect.Height / 1.5;
