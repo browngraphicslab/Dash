@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
- //   [OperatorType("idToDocument")]
+    [OperatorType("idToDocument")]
     class IdToDocumentOperator : OperatorController
     {
         public IdToDocumentOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -22,7 +22,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-    new KeyController("8B10EEF4-9B0A-4015-A8A6-4DE189D9F70B", "Document");
+    new KeyController("8B10EEF4-9B0A-4015-A8A6-4DE189D9F70B", "Id to Document");
 
         //Input keys
         public static readonly KeyController IdKey = new KeyController("5F8A64B9-410F-4543-85B9-C986E47C5DF8", "Text");
@@ -48,15 +48,13 @@ namespace Dash
         {
             var textController = inputs[IdKey] as TextController;
             var id = textController.Data;
-
-            var doc = ContentController<FieldModel>.GetController<DocumentController>(id);
             //var docFromResult = tree.GetNodeFromViewId(
             //    result.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data);
    
             
             try
             {
-                outputs[DocKey] = doc;
+                outputs[DocKey] = ContentController<FieldModel>.GetController<DocumentController>(id);
             }
             catch (Exception e)
             {
