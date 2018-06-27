@@ -903,7 +903,7 @@ namespace Dash
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     //DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
@@ -911,7 +911,7 @@ namespace Dash
 
             if (obj != null)
             {
-                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
                 return dictionary[obj];
             }
             return null;
@@ -953,6 +953,14 @@ namespace Dash
         private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: implement 
+        }
+
+        private void FrameworkElement_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
+                xWorkspace.Clip.Rect.Height - docView.ActualHeight);
+            docView.Bounds = new RectangleGeometry { Rect = bounds };
         }
     }
 }

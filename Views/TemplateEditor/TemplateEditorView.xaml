@@ -38,7 +38,8 @@
                         <DataTemplate>
                             <local:DocumentView
                                 BindRenderTransform="True"
-                                Loaded="DocumentView_OnLoaded"/>
+                                Loaded="DocumentView_OnLoaded"
+                                SizeChanged="FrameworkElement_OnSizeChanged"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
