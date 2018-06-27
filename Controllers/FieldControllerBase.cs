@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -37,10 +38,13 @@ namespace Dash
         /// <param name="context"></param>
         protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            UpdateOnServer();
+            //UpdateOnServer();
+
             FieldModelUpdated?.Invoke(this,
-                args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update),
+                args ?? new FieldUpdatedEventArgs(TypeInfo, DocumentController.FieldUpdatedAction.Update),
                 context);
+
+            //Debug.Assert(ContentController<FieldModel>.CheckAllModels());
         }
 
         public virtual FieldControllerBase Dereference(Context context)
@@ -108,7 +112,7 @@ namespace Dash
         public virtual FrameworkElement GetTableCellView(Context context)
         {
             var tb = new TextingBox(this);
-            tb.Document.SetField(TextingBox.TextAlignmentKey, new NumberController(1), true);
+            tb.Document.SetField<NumberController>(TextingBox.TextAlignmentKey, (int)TextAlignment.Left, true);
             tb.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             tb.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             tb.Document.SetHeight(double.NaN);

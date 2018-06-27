@@ -85,7 +85,7 @@ namespace Dash
                 var key = ((KeyValuePair<KeyController, IOInfo>?)el?.DataContext)?.Key as KeyController;
                 var dragData = e.DataView.Properties[nameof(DragCollectionFieldModel)] as DragCollectionFieldModel;
                 var fieldKey = dragData.FieldKey;
-                opDoc.SetField(key, new TextController(fieldKey.Id), true);
+                opDoc.SetField<TextController>(key, fieldKey.Id, true);
             }
 
 
@@ -220,7 +220,7 @@ namespace Dash
                 else
                 {
                     OperatorFieldReference.GetDocumentController(null)
-                        .SetField(key, new TextController(chosen.FieldKey.Id), true);
+                        .SetField<TextController>(key, chosen.FieldKey.Id, true);
                 }
             }
             else

@@ -1,7 +1,11 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.ObjectModel;
+<<<<<<< HEAD
 using System.Diagnostics;
+=======
+using System.Threading.Tasks;
+>>>>>>> 44fd43c9010f25f7806afae7d05a47dc90f0003b
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -11,6 +15,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -188,7 +193,7 @@ namespace Dash
             // reset the fields to the empty values
             xNewKeyText.Text = "";
             xNewValueText.Text = "";
-            xFieldsScroller.ChangeView(null, xFieldsScroller.MaxHeight, null);
+            xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
 
             return;
         }

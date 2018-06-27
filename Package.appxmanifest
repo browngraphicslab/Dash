@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"  xmlns:rescap=
-"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" IgnorableNamespaces="uap mp rescap">
-  <Identity Name="115b743b-4c3a-45e5-a780-6fbd26aec201" Publisher="CN=Test" Version="0.1.5.0" />
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10" IgnorableNamespaces="uap mp rescap">
+  <Identity Name="115b743b-4c3a-45e5-a780-6fbd26aec201" Publisher="CN=Test" Version="0.1.7.0" />
   <mp:PhoneIdentity PhoneProductId="115b743b-4c3a-45e5-a780-6fbd26aec208" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Dash</DisplayName>
@@ -27,10 +25,10 @@
         </uap:InitialRotationPreference>
       </uap:VisualElements>
       <Extensions>
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="win32\Office.Interop.exe" />
         <uap:Extension Category="windows.appService">
           <uap:AppService Name="OfficeInteropService" />
         </uap:Extension>
-        <desktop:Extension Category="windows.fullTrustProcess" Executable="Office.Interop.exe" />
       </Extensions>
       <uap:ApplicationContentUriRules>
         <uap:Rule Match="http://*" Type="include" WindowsRuntimeAccess="all" />
@@ -46,10 +44,11 @@
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
-    <uap:Capability Name="picturesLibrary" />
+    <!--<uap:Capability Name="picturesLibrary" />
     <uap:Capability Name="documentsLibrary" />
     <uap:Capability Name="musicLibrary" />
-    <uap:Capability Name="videosLibrary" />
+    <uap:Capability Name="videosLibrary" />-->
     <rescap:Capability Name="runFullTrust"/>
+    <rescap:Capability Name="broadFileSystemAccess" />
   </Capabilities>
 </Package>

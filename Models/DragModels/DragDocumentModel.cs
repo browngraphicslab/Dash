@@ -22,20 +22,20 @@ namespace Dash.Models.DragModels
         public bool ShowViewCopy;
 
         /// <summary>
-        /// True if the drag should create a link on the target to the dragged document
+        /// The XAML view that originated the drag operation
         /// </summary>
-        public bool CreateLink;
+        public DocumentView LinkSourceView;
 
         /// <summary>
         ///     Drag the passed in document
         /// </summary>
         /// <param name="doc">the document to be dragged</param>
         /// <param name="showView">true to get a view copy, false to get the key value pane</param>
-        public DragDocumentModel(DocumentController doc, bool showView, bool createLink = false)
+        public DragDocumentModel(DocumentController doc, bool showView, DocumentView sourceView = null)
         {
             DraggedDocument = doc;
             ShowViewCopy = showView;
-            CreateLink = createLink;
+            LinkSourceView = sourceView;
         }
 
         /// <summary>
@@ -75,10 +75,9 @@ namespace Dash.Models.DragModels
                 dbox.SetField(KeyStore.DocumentContextKey, DraggedDocument, true);
                 //dbox.SetField(KeyStore.DataKey,
                 //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
-                dbox.SetField(KeyStore.TitleKey, new TextController(DraggedKey.Name), true);
+                dbox.SetTitle(DraggedKey.Name);
                 return dbox;
             }
-
 
             // create an instance with the same view
             var ctrlState = MainPage.Instance.IsCtrlPressed();
@@ -94,9 +93,9 @@ namespace Dash.Models.DragModels
                 if (double.IsNaN(vcopy.GetWidthField().Data) && double.IsNaN(vcopy.GetHeightField().Data) &&                    
                     vcopy.DocumentType.Equals(DashShared.DashConstants.TypeStore.CollectionBoxType))
                 {
-                    vcopy.SetField<NumberController>(KeyStore.WidthFieldKey, 500, true);
-                    vcopy.SetField<NumberController>(KeyStore.HeightFieldKey,300, true);
-                    vcopy.SetField<TextController>(KeyStore.CollectionFitToParentKey, "true", true);
+                    vcopy.SetWidth(500);
+                    vcopy.SetHeight(300);
+                    vcopy.SetFitToParent(true);
                 }
                 return vcopy;
             }

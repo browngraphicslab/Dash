@@ -19,6 +19,7 @@ namespace Dash
     {
         private ObservableCollection<string> _fontWeights = new ObservableCollection<string>();
         ObservableCollection<NamedColor> colors { get; set; }
+
         public TextSettings()
         {
             this.InitializeComponent();

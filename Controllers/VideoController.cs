@@ -9,11 +9,17 @@ namespace Dash
 	public class VideoController : FieldModelController<VideoModel>
 	{
 
-		public VideoController() : base(new VideoModel()) { }
+	    public VideoController() : base(new VideoModel())
+	    {
+	        SaveOnServer();
+        }
 
-		public VideoController(Uri path) : base(new VideoModel(path)) { }
+	    public VideoController(Uri path) : base(new VideoModel(path))
+	    {
+	        SaveOnServer();
+        }
 
-		public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
+        public VideoController(VideoModel vidFieldModel) : base(vidFieldModel)
 		{
 
 		}
@@ -30,20 +36,33 @@ namespace Dash
 		public Uri MediaSource
 		{
 			get => VideoFieldModel.Data;
-			set
-			{
-				if (VideoFieldModel.Data != value)
-				{
-					VideoFieldModel.Data = value;
-					OnFieldModelUpdated(null);
-				}
-			}
-		}
+            set
+            {
+                if (VideoFieldModel.Data != value)
+                {
+                    SetData(value);
+                }
+            }
+        }
 
-		public override StringSearchModel SearchForString(string searchString)
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(Uri val, bool withUndo = true)
+        {
+            Uri data = VideoFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            VideoFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
+        }
+
+        public override StringSearchModel SearchForString(string searchString)
 		{
 			var data = (Model as VideoModel)?.Data;
-			if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString)))
+            var reg = new System.Text.RegularExpressions.Regex(searchString);
+            if (data != null && (data.AbsoluteUri.ToLower().Contains(searchString.ToLower()) || reg.IsMatch(data.AbsoluteUri)))
 			{
 				return new StringSearchModel(data.AbsoluteUri);
 			}

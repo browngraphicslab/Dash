@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Input;
-using DashShared;
-using Windows.UI.Xaml.Controls;
 using Windows.System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Syncfusion.UI.Xaml.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,19 +28,13 @@ namespace Dash
         #region variables
 
         private DocumentViewModel _documentViewModel;
-        private DocumentViewModel _displayViewModel;
         private DocumentContext _documentContext;
+        private KeyController _sortKey;
 
         public DocumentViewModel DocumentViewModel
         {
             get => _documentViewModel;
             set => SetProperty(ref _documentViewModel, value);
-        }
-
-        public DocumentViewModel DisplayViewModel
-        {
-            get => _displayViewModel;
-            set => SetProperty(ref _displayViewModel, value);
         }
 
         public DocumentContext DocumentContext
@@ -49,63 +43,60 @@ namespace Dash
             set => SetProperty(ref _documentContext, value);
         }
 
+        public KeyController SortKey
+        {
+            get => _sortKey;
+            set => SetProperty(ref _sortKey, value);
+        }
+
         public double TitleY;
         public double PositionX;
 
-
-        public enum DisplayType { Above, Below, Hidden};
+        public enum DisplayType
+        {
+            Above,
+            Below,
+            Hidden
+        }
 
         public DisplayType CurrDisplay;
 
         #endregion
 
         #region constructors
+
         public TimelineElementViewModel()
         {
         }
 
-        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel)
+        public TimelineElementViewModel(DocumentContext documentContext, DocumentViewModel documentViewModel,
+            KeyController sortKey)
         {
             DocumentContext = documentContext;
             DocumentViewModel = documentViewModel;
+            SortKey = sortKey;
         }
+
         #endregion
     }
 
 
     public sealed partial class CollectionTimelineView : ICollectionView
     {
-
-        private readonly Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler> _docViewModelToHandler =
-            new Dictionary<DocumentViewModel, FieldControllerBase.FieldUpdatedHandler>();
-        
-        private readonly List<DocumentViewModel> _trackedViewModels = new List<DocumentViewModel>();
-
-        public TimelineMetadata Metadata { get; }
-        public CollectionViewModel ViewModel { get; set; }
-        public event Action MetadataUpdated;
-
         private readonly ObservableCollection<TimelineElementViewModel> _contextList;
-
-        // timeline element layout
-        public List<double> DisplayedXPositions { get; private set; }
-        private double CurrentXPosition;
-        public static double LastDisplayedPosition = 0;
-
+        private readonly double _maxGap = 300; // the maximum width between timeline elements
+        private readonly double _minGap = 30; // the minimum width between timeline elements
         private double CurrentTopY; // how tall the element is vertically
-
-        private double _minGap = 30; // the minimum width between timeline elements
-        private double _maxGap = 300; // the maximum width between timeline elements
-
-        public double Scale; // the current scale
+        private double CurrentXPosition;
+        public double Scale = 0.9; // the current scale
 
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public CollectionTimelineView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _contextList = new ObservableCollection<TimelineElementViewModel>();
             DisplayedXPositions = new List<double>();
@@ -118,13 +109,26 @@ namespace Dash
                 LeftRightMargin = 160
             };
 
+            //Todo: make sortkey work for other keys
+            SortKey = KeyStore.ModifiedTimestampKey;
+
             Loaded += CollectionTimelineView_Loaded;
             PointerWheelChanged += CollectionTimelineView_PointerWheelChanged;
         }
 
+        public TimelineMetadata Metadata { get; }
+        public KeyController SortKey { get; set; }
+
+        // timeline element layout
+        public List<double> DisplayedXPositions { get; private set; }
+
+        private CollectionViewModel _oldViewModel;
+        public CollectionViewModel ViewModel { get => DataContext as CollectionViewModel; set => DataContext = value; }
+        public event Action MetadataUpdated;
+
 
         /// <summary>
-        /// Changes timeline scale (zooms in and out)
+        ///     Changes timeline scale (zooms in and out)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -138,7 +142,7 @@ namespace Dash
                 if (!(scaleFactor < 1 && Scale * scaleFactor < .85))
                 {
                     // Find scroll offset to maintain the scale center roughly at the position of the cursor
-                    var scrollShift = (e.GetCurrentPoint(this).Position.X) * Scale * (scaleFactor - 1);
+                    var scrollShift = e.GetCurrentPoint(this).Position.X * Scale * (scaleFactor - 1);
 
                     // Change scale of timeline and update view and scroll position
                     Scale *= scaleFactor;
@@ -147,33 +151,40 @@ namespace Dash
                     var scrollTo = xScrollViewer.HorizontalOffset + scrollShift;
                     xScrollViewer.ChangeView(scrollTo, null, null, true);
                 }
+
                 e.Handled = true;
             }
         }
 
         private void CollectionTimelineView_Loaded(object sender, RoutedEventArgs e)
         {
-            Scale = .9;
             SetTimelineFormatting();
         }
 
         private void CollectionTimelineView_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {            
+        {
             SetTimelineFormatting();
         }
 
+        #region Selection
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        #endregion
+
 
         #region Timeline formatting
-        
+
         /// <summary>
-        /// Formats the timeline based on current size
+        ///     Formats the timeline based on current size
         /// </summary>
         private void SetTimelineFormatting()
         {
             // refresh this list
             DisplayedXPositions = new List<double>();
-
-            
 
             // set scrollviewer to be the same dimensions as the screen
             xScrollViewer.Width = ActualWidth;
@@ -181,7 +192,7 @@ namespace Dash
 
             // find new width and layout elements and timeline
             var scaledWidth = Scale * ActualWidth;
-          
+
             LayoutTimelineElements(scaledWidth);
 
             Metadata.ActualHeight = ActualHeight;
@@ -192,30 +203,32 @@ namespace Dash
         }
 
 
-
         #region Timeline Element Positioning
 
         /// <summary>
-        /// Spaces out all the timeline elements
+        ///     Spaces out all the timeline elements
         /// </summary>
-        private void LayoutTimelineElements(double width)
+        public void LayoutTimelineElements(double width)
         {
-            if(_contextList.Count < 1)
-            {
-                return;
-            }
+            if (_contextList.Count < 1) return;
 
             // reset position trackers and position elements
             CurrentXPosition = 0;
             CurrentTopY = 30;
-            foreach (var element in _contextList)
+
+            // gets the value of the sort key (currently modified time) and turns it into ticks to order increasingly by
+            // PositionElement only works when elements are passed in in an increasing order
+            var sortedElements = _contextList.OrderBy(vm =>
+                vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey).GetValue(new Context())
+                    .ToDateTime().Ticks).ToList();
+            foreach (var element in sortedElements)
             {
                 PositionElement(element);
             }
 
             // rescale and reposition elements, and set display type (above or below)
-            var offset = _contextList[0].PositionX - 100;
-            var scaleFactor = width / _contextList[_contextList.Count - 1].PositionX;
+            var offset = sortedElements[0].PositionX - 100;
+            var scaleFactor = width / sortedElements[sortedElements.Count - 1].PositionX;
             foreach (var element in _contextList)
             {
                 element.PositionX -= offset;
@@ -227,12 +240,10 @@ namespace Dash
         private void SetDisplayType(TimelineElementViewModel element)
         {
             // display or hide element based on layout
-            if (DisplayElement(element.PositionX))
+            if (ShouldDisplayElement(element.PositionX))
             {
-                LastDisplayedPosition = element.PositionX;
                 element.CurrDisplay = TimelineElementViewModel.DisplayType.Below;
                 DisplayedXPositions.Add(element.PositionX);
-
             }
             else
             {
@@ -241,7 +252,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Positions a specific element along the timeline
+        ///     Positions a specific element along the timeline
         /// </summary>
         /// <param name="element"></param>
         private void PositionElement(TimelineElementViewModel element)
@@ -262,33 +273,37 @@ namespace Dash
             CurrentXPosition = x;
             element.PositionX = x;
 
-            //stacking vertically
+            // stacking vertically
             element.TitleY = CurrentTopY;
             CurrentTopY += 40;
             if (CurrentTopY > 200) CurrentTopY = 30;
         }
 
         /// <summary>
-        /// Finds the expected x position of the element from the timestamp
+        ///     Finds the expected x position of the element from the modified time of the element
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="tevm"></param>
         /// <param name="metadata"></param>
         /// <returns></returns>
-        private double CalculateXPosition(TimelineElementViewModel context)
+        private double CalculateXPosition(TimelineElementViewModel tevm)
         {
             var totalTime = Metadata.MaxTime - Metadata.MinTime;
-            Debug.Assert(totalTime != 0);
-            var normOffset = (double)(context.DocumentContext.CreationTimeTicks - Metadata.MinTime) / totalTime;
+            // if the max and min time are the same, use arbitrary small constant (10)
+            if (totalTime == 0) totalTime = 10;
+
+            var normOffset =
+                (double)(tevm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                              .GetValue(new Context()).ToDateTime().Ticks - Metadata.MinTime) / totalTime;
             var offset = normOffset * (Metadata.ActualWidth - 2 * Metadata.LeftRightMargin) + Metadata.LeftRightMargin;
             return offset;
         }
 
         /// <summary>
-        /// Returns whether or not to display a timeline element
+        ///     Returns whether or not to display a timeline element
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        private bool DisplayElement(double x)
+        private bool ShouldDisplayElement(double x)
         {
             // return false to hide current timeline element if it is too close to another displayed element
             foreach (var pos in DisplayedXPositions)
@@ -298,14 +313,15 @@ namespace Dash
                     return false;
                 }
             }
+
             return true;
         }
 
         #endregion
 
-    
+
         /// <summary>
-        /// sets the width of the timeline shape
+        ///     sets the width of the timeline shape
         /// </summary>
         /// <param name="width"></param>
         private void SetTimelineWidth(double width)
@@ -315,15 +331,22 @@ namespace Dash
             xScrollViewCanvas.Width = width;
         }
 
-
-        private void UpdateMetadataMinAndMax()
+        /// <summary>
+        ///     updates the start and end points of the timeline relative to other points
+        /// </summary>
+        private void UpdateTimeline()
         {
             // if context list is empty we can't update anything
             if (!_contextList.Any()) return;
             try
             {
-                Metadata.MinTime = _contextList.Min(vm => vm.DocumentContext.CreationTimeTicks);
-                Metadata.MaxTime = _contextList.Max(vm => vm.DocumentContext.CreationTimeTicks);
+                // lambda f(x) that retrieves value of key from viewmodel
+                Func<TimelineElementViewModel, long> getValues = vm =>
+                    vm.DocumentViewModel.DocumentController.GetDataDocument().GetField(SortKey)
+                        .GetValue(new Context()).ToDateTime().Ticks;
+                // find the earliest and latest modified times in document
+                Metadata.MinTime = _contextList.Min(getValues);
+                Metadata.MaxTime = _contextList.Max(getValues);
 
                 MetadataUpdated?.Invoke();
             }
@@ -331,7 +354,7 @@ namespace Dash
             {
                 Debug.WriteLine(e);
             }
-
+            SetTimelineFormatting();
         }
 
         #endregion
@@ -347,8 +370,11 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            if (_oldViewModel == ViewModel) return;
+            _oldViewModel = ViewModel;
+
             RemoveViewModelEvents(ViewModel);
-            ViewModel = DataContext as CollectionViewModel;;
+            ViewModel = DataContext as CollectionViewModel;
             // make the new ViewModel listen to events
             AddViewModelEvents(ViewModel);
             Initialize(ViewModel);
@@ -358,22 +384,17 @@ namespace Dash
         {
             if (viewModel != null)
             {
+                _contextList.Clear();
                 foreach (var dvm in viewModel.DocumentViewModels)
                 {
-                    var docContexts = GetWebContextFromDocViewModel(dvm)?.TypedData
-                        .Select(i => i.Data.CreateObject<DocumentContext>());
-                    if (docContexts != null)
-                        foreach (var dc in docContexts)
-                            _contextList.Add(new TimelineElementViewModel(dc, dvm));
-                    else
-                    {
-                        // if there is no web context stored for a document, create a context from the ModifiedTimestamp instead
-                        var dateObject = (DateTime)(dvm.DataDocument.GetDereferencedField(KeyStore.ModifiedTimestampKey, null).GetValue(new Context()));
-                        var documentTicks = dateObject.Ticks;
-                        _contextList.Add(new TimelineElementViewModel(new DocumentContext() { CreationTimeTicks = documentTicks}, dvm));
-                    }
+                    // add all document viewmodels as timeline element view models
+                    _contextList.Add(new TimelineElementViewModel(new DocumentContext(), dvm, SortKey));
+                    // add an event listener for the document to listen to when sortkey changes
+                    //TODO This event handler is probably never removed
+                    dvm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
                 }
-                UpdateMetadataMinAndMax();
+
+                UpdateTimeline();
             }
         }
 
@@ -389,100 +410,66 @@ namespace Dash
         private void RemoveViewModelEvents(CollectionViewModel viewModel)
         {
             if (viewModel != null)
-            {
                 viewModel.DocumentViewModels.CollectionChanged -= DocumentViewModels_CollectionChanged;
-            }
         }
 
         private void DocumentViewModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
+                // Todo
                 case NotifyCollectionChangedAction.Add:
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
+                    AddViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    UntrackViewModels(e.OldItems.Cast<DocumentViewModel>());
+                    RemoveViewModels(e.OldItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    UntrackViewModels(e.OldItems.Cast<DocumentViewModel>());
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    UntrackViewModels(new List<DocumentViewModel>(_trackedViewModels));
-                    TrackViewModels(e.NewItems.Cast<DocumentViewModel>());
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void UntrackViewModels(IEnumerable<DocumentViewModel> viewModels)
+        /// <summary>
+        ///     Remove a list of viewmodels from the document and re-organize the timeline
+        /// </summary>
+        /// <param name="removedViewModels"></param>
+        private void RemoveViewModels(IEnumerable<DocumentViewModel> removedViewModels)
         {
-            foreach (var vm in viewModels)
+            foreach (var vm in removedViewModels)
             {
-                _trackedViewModels.Remove(vm);
-                vm.DataDocument.RemoveFieldUpdatedListener(KeyStore.WebContextKey, _docViewModelToHandler[vm]);
+                // use document viewmodels to find the right timeline element viewmodel to remove
+                _contextList.Remove(_contextList.First(i => i.DocumentViewModel.Equals(vm)));
+                vm.DataDocument.RemoveFieldUpdatedListener(SortKey, SortKeyModified);
             }
+
+            UpdateTimeline();
         }
 
-        private void TrackViewModels(IEnumerable<DocumentViewModel> viewModels)
+        /// <summary>
+        ///     Create a list of viewmodels from the document and re-organize the timeline
+        /// </summary>
+        /// <param name="newViewModels"></param>
+        private void AddViewModels(IEnumerable<DocumentViewModel> newViewModels)
         {
-            foreach (var vm in viewModels)
+            foreach (var vm in newViewModels)
             {
-                _trackedViewModels.Add(vm);
-                var dataDocument = vm.DataDocument;
-
-                void Handler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
-                {
-                    var properArgs = args as ListController<TextController>.ListFieldUpdatedEventArgs;
-                    Debug.Assert(properArgs != null, "Make sure the way we store webContexts hasn't changed");
-                    switch (properArgs.ListAction)
-                    {
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                .CreateObject<DocumentContext>()))
-                                _contextList.Add(new TimelineElementViewModel(dc, vm));
-                            UpdateMetadataMinAndMax();
-                            break;
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                            foreach (var dc in properArgs.ChangedDocuments.Select(i => i.Data
-                                .CreateObject<DocumentContext>()))
-                                _contextList.Add(new TimelineElementViewModel(dc, vm));
-                            UpdateMetadataMinAndMax();
-                            break;
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
-                            throw new NotImplementedException();
-                        case ListController<TextController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
-                            throw new NotImplementedException();
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-
-                dataDocument.AddFieldUpdatedListener(KeyStore.WebContextKey, Handler);
-                _docViewModelToHandler[vm] = Handler;
+                _contextList.Add(new TimelineElementViewModel(new DocumentContext(), vm, SortKey));
+                vm.DataDocument.AddFieldUpdatedListener(SortKey, SortKeyModified);
             }
+
+            UpdateTimeline();
         }
 
-        private ListController<TextController> GetWebContextFromDocViewModel(DocumentViewModel vm)
+        // Sort the modified key
+        private void SortKeyModified(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var webContextList =
-                vm.DataDocument.GetDereferencedField<ListController<TextController>>(KeyStore.WebContextKey, null);
-            webContextList?.TypedData.Select(i => i.Data.CreateObject<DocumentContext>());
-            return webContextList;
-        }
-
-        #endregion
-
-        #region Selection
-        
-        
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
+            UpdateTimeline();
         }
 
         #endregion

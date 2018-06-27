@@ -12,6 +12,7 @@ namespace Dash
 
         public TextController(string data) : base(new TextModel(data))
         {
+            SaveOnServer();
         }
 
         public TextController(TextModel textFieldModel) : base(textFieldModel)
@@ -49,11 +50,23 @@ namespace Dash
             {
                 if (TextFieldModel.Data != value)
                 {
-                    _lowerData = value.ToLower();
-                    TextFieldModel.Data = value;
-                    OnFieldModelUpdated(null);
+                    SetData(value);
                 }
             }
+        }
+
+        /*
+        * Sets the data property and gives UpdateOnServer an UndoCommand 
+        */
+        private void SetData(string val, bool withUndo = true)
+        {
+            string data = TextFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            _lowerData = val.ToLower();
+            TextFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
@@ -80,13 +93,19 @@ namespace Dash
 
             if (Data != null)
             {
-                var index = _lowerData.IndexOf(searchString);
-                if (index >= 0)
+                var reg = new System.Text.RegularExpressions.Regex(searchString);
+                var index = _lowerData.IndexOf(searchString.ToLower());
+                if (index >= 0 || reg.IsMatch(Data))
                 {
+                    if (index < 0)
+                    {
+                        return new StringSearchModel(Data, true);
+                    }
                     index = Math.Max(0, index - textDecrementForContext);
                     var substring = Data.Substring(index, Math.Min(maxStringSize, Data.Length - index));
                     return new StringSearchModel(substring, true);
                 }
+                
             }
             return StringSearchModel.False;
         }

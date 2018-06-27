@@ -52,9 +52,14 @@ namespace Dash
                     Focus(FocusState.Programmatic);
                 }
             };
-            KeyDown += (s, e) => {
+            KeyDown += (s, e) =>
+            {
                 if (e.Key == Windows.System.VirtualKey.Enter)
+                {
                     SetExpression(XTextBox.Text);
+                    MainPage.Instance.Focus(FocusState.Programmatic);
+                }
+
                 if (e.Key == Windows.System.VirtualKey.Escape)
                     MainPage.Instance.Focus(FocusState.Programmatic);
             };
@@ -68,12 +73,19 @@ namespace Dash
         {
             try
             {
-                var field = DSL.InterpretUserInput(text, state: ScriptState.CreateStateWithThisDocument(ViewModel.Reference.GetDocumentController(ViewModel.Context)));
+                UndoManager.StartBatch();
+                var field = DSL.InterpretUserInput(text,
+                    state: ScriptState.CreateStateWithThisDocument(
+                        ViewModel.Reference.GetDocumentController(ViewModel.Context)));
                 ViewModel?.Reference.SetField(field, ViewModel.Context);
             }
             catch (DSLException)
             {
                 return false;
+            }
+            finally
+            {
+                UndoManager.EndBatch();
             }
             return true;
         }
@@ -150,7 +162,7 @@ namespace Dash
                 return;
             }
 
-            void fieldChanged(FieldControllerBase ss, FieldUpdatedEventArgs ee, Context c)
+            void fieldChanged(DocumentController ss, DocumentController.DocumentFieldUpdatedEventArgs ee, Context c)
             {
                 if (ee.Action == DocumentController.FieldUpdatedAction.Replace)
                 {
@@ -169,7 +181,7 @@ namespace Dash
                 XamlAssignmentDereferenceLevel = XamlDereferenceLevel.DontDereference,
                 Context = ViewModel.Context,
                 Converter = new ObjectToStringConverter() { DereferenceData = false },
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.OneWay,
             };
             XTextBox.AddFieldBinding(TextBox.TextProperty, _oldBinding);
             _oldDataBox = new DataBox(new DocumentReferenceController(_oldBinding.Document.Id, _oldBinding.Key)).Document;

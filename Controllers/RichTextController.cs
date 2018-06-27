@@ -7,8 +7,15 @@ namespace Dash
 {
     public class RichTextController: FieldModelController<RichTextModel>
     {
-        public RichTextController(): base(new RichTextModel()) { }
-        public RichTextController(RichTextModel.RTD data):base(new RichTextModel(data)) { }
+        public RichTextController() : base(new RichTextModel())
+        {
+            SaveOnServer();
+        }
+
+        public RichTextController(RichTextModel.RTD data) : base(new RichTextModel(data))
+        {
+            SaveOnServer();
+        }
 
         public RichTextController(RichTextModel richTextFieldModel) : base(richTextFieldModel)
         {
@@ -30,10 +37,24 @@ namespace Dash
             get => RichTextFieldModel.Data;
             set
             {
-                if (RichTextFieldModel.Data == value) return;
-                RichTextFieldModel.Data = value;
-                OnFieldModelUpdated(null);
+                if (RichTextFieldModel.Data != value)
+                {
+                    SetData(value);
+                }
             }
+        }
+
+        /*
+       * Sets the data property and gives UpdateOnServer an UndoCommand 
+       */
+        private void SetData(RichTextModel.RTD val, bool withUndo = true)
+        {
+            RichTextModel.RTD data = RichTextFieldModel.Data;
+            UndoCommand newEvent = new UndoCommand(() => SetData(val, false), () => SetData(data, false));
+
+            RichTextFieldModel.Data = val;
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(null);
         }
         public override object GetValue(Context context)
         {

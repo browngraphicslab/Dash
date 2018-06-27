@@ -5,7 +5,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Windows.System;
 using Dash.Converters;
+using Windows.UI.Core;
 
 namespace Dash
 {
@@ -29,17 +31,29 @@ namespace Dash
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
 			//create the media player element 
+			
 			MediaPlayerElement video = new MediaPlayerElement
 			{
 				//set autoplay to false so the vid doesn't play automatically
 				AutoPlay = false,
-				AreTransportControlsEnabled = true
+				AreTransportControlsEnabled = true,
+                MinWidth = 250,
+                MinHeight = 100
+			};
+
+			//enables fullscreen exit with escape shortcut
+			video.KeyDown += (s, e) =>
+			{
+				if (e.Key == VirtualKey.Escape && video.IsFullWindow)
+				{
+					video.IsFullWindow = false;
+				}
 			};
 
 			// setup bindings on the video
 			SetupBindings(video, docController, context);
 			SetupVideoBinding(video, docController, context);
-
+			
 			return video;
 		}
 
@@ -52,11 +66,10 @@ namespace Dash
 				//add fieldUpdatedListener to the doc controller of the reference
 				var dataDoc = reference.GetDocumentController(context);
 				dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-					delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+					delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
 					{
-						var doc = (DocumentController)sender;
-						var dargs =
-							(DocumentController.DocumentFieldUpdatedEventArgs)args;
+						var doc = sender;
+						var dargs = args;
 						if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
 							return;
 						//bind the MediaPlayerElement source to the new video
@@ -86,7 +99,9 @@ namespace Dash
 			//bind to source property of MediaPlayerElement
 			video.AddFieldBinding(MediaPlayerElement.SourceProperty, binding);
 		}
-    }
+
+		
+	}
 }
 
 

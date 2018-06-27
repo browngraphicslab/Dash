@@ -73,14 +73,15 @@ namespace Dash
                 if (!string.IsNullOrEmpty(pageDoc.Title))
                 {
                     thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
-                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument().GetId(), KeyStore.TitleKey), true);
+                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument().Id, KeyStore.TitleKey), true);
                 }
                 else
                 {
                     thumbnailImageViewDoc = (pageDoc.GetDereferencedField(KeyStore.ThumbnailFieldKey, null) as DocumentController ?? pageDoc).GetViewCopy();
                 }
                 thumbnailImageViewDoc.SetLayoutDimensions(xThumbs.ActualWidth, double.NaN);
-                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true, BackgroundBrush = new SolidColorBrush(Colors.Transparent) });
+                thumbnailImageViewDoc.SetBackgroundColor(Colors.Transparent);
+                ViewModel.ThumbDocumentViewModels.Add(new DocumentViewModel(thumbnailImageViewDoc) { Undecorated = true });
             }
             CurPage = PageDocumentViewModels.LastOrDefault();
         }
@@ -164,10 +165,10 @@ namespace Dash
                 };
                 xDocTitle.AddFieldBinding(TextBox.TextProperty, currPageBinding);
 
-                if (bodyDoc?.Equals(CurPage.DataDocument) == false)
-                    bodyDoc?.SetField(CaptionKey,
-                        new DocumentReferenceController(CurPage.DataDocument.GetId(),
-                            CaptionKey), true);
+                //if (bodyDoc?.Equals(CurPage.DataDocument) == false)
+                //    bodyDoc?.SetField(CaptionKey,
+                //        new DocumentReferenceController(CurPage.DataDocument.GetId(),
+                //            CaptionKey), true);
 
                 xDocTitle.Height = 50;
                 xDocCaptionRow.Height = new GridLength(50);
@@ -210,7 +211,7 @@ namespace Dash
                     CurPage.DataDocument.SetField(DisplayKey, data, true);
                     var db = new DataBox(data,0, 0, double.NaN, double.NaN); // CurPage.DocumentController.GetDataDocument(null).GetField(DisplayKey));
                     
-                    xDocView.DataContext = new DocumentViewModel(CurPage.LayoutDocument) { Undecorated = true };
+                    xDocView.DataContext = new DocumentViewModel(db.Document) { Undecorated = true };
                 }
             }
         }
@@ -236,8 +237,10 @@ namespace Dash
                         cview.ViewModel.ContainerDocument.FieldModelUpdated += ContainerDocument_FieldModelUpdated;
                         cview.ViewModel.FitContents();
                     }
+                    cview.ViewModel.ContainerDocument.SetActualSize(new Windows.Foundation.Point(xDocView.ActualWidth, xDocView.ActualHeight));
                     cview.Loaded -= Cview_Loaded;
                     cview.Loaded += Cview_Loaded;
+                    cview.ViewModel.FitContents();
                 }
             }
         }

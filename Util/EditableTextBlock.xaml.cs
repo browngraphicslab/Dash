@@ -49,11 +49,6 @@ namespace Dash
 
         public Grid TextBackground => xBackground;
 
-        private bool Not(bool b)
-        {
-            return b != true;
-        }
-
         public FieldControllerBase TargetFieldController { get; set; }
         public Context TargetDocContext { get; set; }
 
@@ -117,6 +112,8 @@ namespace Dash
 
         private void SetExpression(string expression)
         {
+            //TypeTimer.typeEvent();
+
             Text = expression;
             TextBoxLoaded = false;
             XTextBlock.Visibility = Visibility.Visible;
@@ -127,8 +124,8 @@ namespace Dash
 
         private void XTextBox_OnKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-                SetExpression(XTextBox.Text);
+            
+
         }
 
         private void XTextBox_OnLostFocus(object sender, RoutedEventArgs e)
@@ -137,11 +134,6 @@ namespace Dash
             {
                 SetExpression(XTextBox.Text);
             }
-        }
-
-        private void XTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
-        {
-            e.Handled = true;
         }
     }
 }

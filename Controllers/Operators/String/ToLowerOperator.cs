@@ -12,6 +12,7 @@ namespace Dash
 
         public ToLowerOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
 
         }
 
@@ -38,7 +39,9 @@ namespace Dash
         };
 
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             if (inputs[InputStringKey] is TextController tc)
             {

@@ -2,6 +2,8 @@
 
 //using Windows.Storage;
 
+using System;
+
 namespace DashShared
 {
     public static class DashConstants
@@ -10,7 +12,6 @@ namespace DashShared
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
         public const bool DEVELOP_LOCALLY = true;
-
 
         #region DocumentDB
 
@@ -91,7 +92,25 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 10000; //10 seconds
+        public const int MillisecondBetweenLocalSave = 1000; //1 second
+
+        //BACKUP CONSTANTS
+
+        //Minimum
+        public const int MinNumBackups = 1;
+        public const int MinBackupInterval = 30;
+
+        //Maximum
+        public const int MaxNumBackups = 10;
+        public const int MaxBackupInterval = 3600;
+
+        //DEFAULT SETTINGS CONSTANTS
+
+        public const bool DefaultNightModeEngaged = false; //theme state
+        public const int DefaultFontSize = 16; //pt
+        public const int DefaultNumBackups = 3; //backups
+        public const int DefaultBackupInterval = 900; //seconds
+        public const bool DefaultInfiniteUpwardPanningStatus = true;
 
         #endregion LocalServer
 
@@ -143,22 +162,23 @@ namespace DashShared
             public static KeyModel DocumentContextKey = new KeyModel("17D4CFDE-9146-47E9-8AF0-0F9D546E94EC", "_DocumentContext");
             public static KeyModel AbstractInterfaceKey = new KeyModel("E579C81B-EE13-4B16-BB96-80688D30A73A", "_AbstractInterface");
             public static KeyModel LayoutListKey = new KeyModel("6546DD08-C753-4C34-924E-3C4016C4B95B", "_LayoutList");
-            public static KeyModel ActiveLayoutKey = new KeyModel("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA", "_ActiveLayout");
+            public static KeyModel ActiveLayoutKey = new KeyModel("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA", "ActiveLayout");
             public static KeyModel TitleKey = new KeyModel("0C074CB4-6D05-4363-A867-C0A061C1573F", "Title");
             public static KeyModel CaptionKey = new KeyModel("D01D6702-A3AD-4546-9BFB-C5263F8D5599", "Caption");
             public static KeyModel PrototypeKey = new KeyModel("866A6CC9-0B8D-49A3-B45F-D7954631A682", "_Prototype");
             public static KeyModel DelegatesKey = new KeyModel("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "_Delegates");
             public static KeyModel UserSetWidthKey = new KeyModel("7D3E7CDB-D0C7-4316-BA3B-3C032F24B5AA", "_userSetWidth");
-            public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "_Width");
-            public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "_Height");
+            public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
+            public static KeyModel HeightFieldKey = new KeyModel("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "Height");
             public static KeyModel DataKey = new KeyModel("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
             public static KeyModel SourceUriKey = new KeyModel("26594498-FF15-438D-A577-2C8506F4ECEF", "SourceUriKeys");
             public static KeyModel DocumentTextKey = new KeyModel("D5156A8F-9093-420B-96B7-507DD949360D", "Document Text"); 
             public static KeyModel TextWrappingKey = new KeyModel("FF488D09-BBB7-4158-A5E4-0C4530DF2F56", "Text Wrapping");
             public static KeyModel BackgroundColorKey = new KeyModel("6B597D2A-1A52-446F-901A-B9ED0BBE33E1", "Background Color");
+            public static KeyModel OpacitySliderValueKey = new KeyModel("3FD448B7-8AEE-4FBD-B68C-514E098D8D31", "Opacity Slider Value");
             public static KeyModel AdornmentShapeKey = new KeyModel("5DEBC829-A68B-4D2E-BC29-549DEB910EC6", "Adornment Shape");
             public static KeyModel AdornmentKey = new KeyModel("FF3329BD-AA78-46E4-9A42-47CAB1E62123", "Is Adornment");
-            public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "_Position");
+            public static KeyModel PositionFieldKey = new KeyModel("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "Position");
             public static KeyModel LinkFromFieldKey = new KeyModel("9A3191FF-C8E6-472F-ABE5-B5A250D49D59", "Link From");
             public static KeyModel LinkToFieldKey = new KeyModel("649A7F35-C428-49EC-B914-5746E2590DAC", "Link To");
             public static KeyModel PdfVOffsetFieldKey = new KeyModel("8990098B-83D2-4817-A275-82D8282ECD79", "_PdfVOffset"); 
@@ -178,9 +198,22 @@ namespace DashShared
             public static KeyModel WorkspaceHistoryKey = new KeyModel("D0630828-1488-4F7B-B0D7-9E89EF05497F", "_Workspace History");
             public static KeyModel PanPositionKey = new KeyModel("8778D978-AEA2-470C-8DBD-C684131BA9B4", "_Pan Position");
             public static KeyModel PanZoomKey = new KeyModel("4C4C676B-EEC8-4682-B15C-57866BF4933C", "_Pan Zoom Level");
-            public static KeyModel ActualSizeKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "_ActualSize");
+            public static KeyModel ActualSizeKey = new KeyModel("529D7312-9A33-4A6E-80AF-FA173293DC36", "ActualSize");
             public static KeyModel DocumentTypeKey = new KeyModel("B1DE8ABE-5C04-49C6-913C-A2428ED566F8", "_DocumentType");
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
+            public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
+            public static KeyModel SideCountKey = new KeyModel("276302FF-0E5F-4009-A308-A4EE8B4224F7", "Side Count");
+            public static KeyModel SettingsDocKey = new KeyModel("EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70", "Settings Doc");
+            public static KeyModel SettingsNightModeKey = new KeyModel("7AA22643-3D28-433E-83E9-ECD6A7475270", "Settings Night Mode");
+            public static KeyModel SettingsFontSizeKey = new KeyModel("BD720922-FAD9-4821-9877-F62E3273DED8", "Settings Font Size");
+            public static KeyModel SettingsMouseFuncKey = new KeyModel("867225EC-F9C7-4B14-9A5F-22B7BB71DCCB", "Settings Mouse Functionality");
+            public static KeyModel SettingsNumBackupsKey = new KeyModel("25F0DB4F-D6DE-4D48-A090-77E48C1F621C", "Settings Number of Backups");
+            public static KeyModel SettingsBackupIntervalKey = new KeyModel("8C00E2CD-6272-4E6C-ADC1-622B108A0D9F", "Settings Backup Interval");
+            public static KeyModel BackgroundImageStateKey = new KeyModel("3EAE5AB5-4503-4519-9EF3-0FA5BDDE59E6", "State of Background Image (Radio Buttons)");
+            public static KeyModel CustomBackgroundImagePathKey = new KeyModel("DA719660-D5CE-40CE-9BDE-D57B764CA6BF", "Custom Path to Background Image");
+            public static KeyModel BackgroundImageOpacityKey = new KeyModel("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC", "Background Image Opacity");
+            public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
+            public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
         }
 
         public static class TypeStore

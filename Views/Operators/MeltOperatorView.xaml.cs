@@ -71,12 +71,11 @@ namespace Dash
         /// <summary>
         ///     Called whenever the input collection to the melt operator is changed
         /// </summary>
-        private void OnInputCollectionChanged(FieldControllerBase sender,
-            FieldUpdatedEventArgs args, Context context)
+        private void OnInputCollectionChanged(DocumentController sender,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
             // get all the headers from a collection
-            var collection = dargs.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
+            var collection = args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
             var typedHeaders = Util.GetDisplayableTypedHeaders(collection);
 
             // reset all the headers
@@ -118,12 +117,10 @@ namespace Dash
             // otherwise update the correct backend based on the sender
             if (sender == xNewValueTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorController.ValueName,
-                    new TextController(xNewValueTextBox.Text), true);
+                _operatorDoc.SetField<TextController>(MeltOperatorController.ValueName,xNewValueTextBox.Text, true);
             } else if (sender == xNewVariableTextBox)
             {
-                _operatorDoc.SetField(MeltOperatorController.VariableName,
-                    new TextController(xNewVariableTextBox.Text), true);
+                _operatorDoc.SetField<TextController>(MeltOperatorController.VariableName, xNewVariableTextBox.Text, true);
             }
         }
 
@@ -132,11 +129,10 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnNewValueNameChanged(FieldControllerBase sender,
-            FieldUpdatedEventArgs args, Context context)
+        private void OnNewValueNameChanged(DocumentController sender,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-            var tfmc = dargs.NewValue as TextController;
+            var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);
             if (tfmc.Data.Equals(xNewValueTextBox.Text))
                 return;
@@ -149,11 +145,10 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void OnNewVariableNameChanged(FieldControllerBase sender,
-            FieldUpdatedEventArgs args, Context context)
+        private void OnNewVariableNameChanged(DocumentController sender,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-            var tfmc = dargs.NewValue as TextController;
+            var tfmc = args.NewValue as TextController;
             Debug.Assert(tfmc != null);
             if (tfmc.Data.Equals(xNewVariableTextBox.Text))
                 return;

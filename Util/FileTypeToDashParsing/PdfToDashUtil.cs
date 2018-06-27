@@ -19,12 +19,17 @@ namespace Dash
         public async Task<DocumentController> ParseFileAsync(FileData fileData, DataPackageView dataView = null)
         {
             var localFile = await CopyFileToLocal(fileData);
-            var title = (fileData.File as StorageFile)?.DisplayName ?? fileData.File.Name;
+            return GetPDFDoc(localFile);
+        }
+
+        public DocumentController GetPDFDoc(StorageFile file)
+        {
+            var title = file.DisplayName;
 
             // create a backing document for the pdf
             var fields = new Dictionary<KeyController, FieldControllerBase>
             {
-                [KeyStore.DataKey] = new ImageController(new Uri(localFile.Path)),
+                [KeyStore.DataKey] = new ImageController(new Uri(file.Path)),
                 [KeyStore.TitleKey] = new TextController(title)
             };
             var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
@@ -32,12 +37,14 @@ namespace Dash
 #pragma warning disable 4014
             Task.Run(async () =>
             {
-                var text = await GetPdfText(localFile);
+                var text = await GetPdfText(file);
                 UITask.Run(() => dataDoc.SetField(KeyStore.DocumentTextKey, new TextController(text), true));
             });
 
             // return a new pdf box
-            return new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+            var layout =  new PdfBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey)).Document;
+            layout.SetField(KeyStore.DocumentContextKey, dataDoc, true);
+            return layout;
         }
 
         private async Task<string> GetPdfText(IStorageFile localFile)

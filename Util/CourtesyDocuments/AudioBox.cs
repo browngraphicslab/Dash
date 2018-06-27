@@ -33,7 +33,9 @@ namespace Dash
             {
                 //set autoplay to false so the vid doesn't play automatically
                 AutoPlay = false,
-                AreTransportControlsEnabled = true
+                AreTransportControlsEnabled = true,
+                MinWidth = 250,
+                MinHeight = 100
             };
 
             // setup bindings on the audio
@@ -52,15 +54,12 @@ namespace Dash
                 //add fieldUpdatedListener to the doc controller of the reference
                 var dataDoc = reference.GetDocumentController(context);
                 dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate (FieldControllerBase sender, FieldUpdatedEventArgs args, Context c)
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
                     {
-                        var doc = (DocumentController)sender;
-                        var dargs =
-                            (DocumentController.DocumentFieldUpdatedEventArgs)args;
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || dargs.FromDelegate)
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
                             return;
                         //bind the MediaPlayerElement source to the new audio
-                        BindAudioSource(audio, doc, c, reference.FieldKey);
+                        BindAudioSource(audio, sender, c, reference.FieldKey);
                     });
             }
             BindAudioSource(audio, controller, context, KeyStore.DataKey);

@@ -25,6 +25,7 @@ namespace Dash
 
         public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
         public GetAllDocumentsWithKeyFieldValuesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -45,7 +46,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Key Field Query");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data?.ToLower();
             var toReturn = new ListController<DocumentController>();
@@ -58,10 +61,9 @@ namespace Dash
 
                 var tree = DocumentTree.MainPageTree;
                 var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
-               
+
                 Debug.Assert(allResults != null);
-                var stringContainResults = allResults.TypedData
-                    .Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound));
+                var stringContainResults = allResults.TypedData.Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound));
 
                 var finalResults = (negateCategory ? allResults.TypedData.Except(stringContainResults) : stringContainResults).ToArray();
 
@@ -78,7 +80,7 @@ namespace Dash
                         resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = $"Didn't contain the specified negated key/value: {keyQuery}/{valueQuery} ";
                     }
                 }
-                
+
 
                 toReturn.AddRange(finalResults);
             }

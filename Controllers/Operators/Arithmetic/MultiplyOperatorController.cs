@@ -11,7 +11,7 @@ namespace Dash
 
         public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
-
+            SaveOnServer();
         }
 
         public MultiplyOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -40,11 +40,13 @@ namespace Dash
 
         public static int numExecutions = 0;
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var numberA = (NumberController)inputs[AKey];
             var numberB = (NumberController)inputs[BKey];
-            Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
+            //Debug.WriteLine("NumExecutions " + ++numExecutions + " " + numberA);
 
             var a = numberA.Data;
             var b = numberB.Data;

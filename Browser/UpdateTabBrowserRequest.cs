@@ -1,4 +1,5 @@
-﻿using Dash.Browser;
+﻿using System.Threading.Tasks;
+using Dash.Browser;
 
 namespace Dash
 {
@@ -9,7 +10,7 @@ namespace Dash
         public string title { get; set; }
         public int index { get; set; }
         public double scroll { get; set; }
-        public override void Handle(BrowserView browser)
+        public override Task Handle(BrowserView browser)
         {
             browser.FireUrlUpdated(url);
             browser.FireScrollUpdated(scroll);
@@ -19,6 +20,8 @@ namespace Dash
             {
                 BrowserView.UpdateCurrentFromServer(tabId);
             }
+
+            return base.Handle(browser);
         }
     }
 }
