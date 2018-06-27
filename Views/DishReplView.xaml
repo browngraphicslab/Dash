@@ -17,29 +17,28 @@
                 <RowDefinition Height="50" />
             </Grid.RowDefinitions>
             <!--<Border BorderBrush="Black" BorderThickness="1">-->
-                <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
-                              HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  >
-                    <ScrollViewer.Background>
-                        <SolidColorBrush Color="White" Opacity="0.5" />
-                    </ScrollViewer.Background>
-                    <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="20" />
-                                        <RowDefinition Height="20" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="{Binding LineText}" />
-                                    <TextBlock Grid.Row="1" Text="{Binding LineValueText}" />
-                                </Grid>
-
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+            <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
+                              HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  Margin="5">
+                <ScrollViewer.Background>
+                    <SolidColorBrush Color="White" Opacity="0.6" />
+                </ScrollViewer.Background>
+                <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="20" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding LineText}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Text="{Binding LineValueText}" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
             <!--</Border>-->
-            <TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50">
+            <TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50" Background="Gray">
 
             </TextBox>
         </Grid>

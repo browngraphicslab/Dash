@@ -128,6 +128,17 @@ namespace Dash
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);
 
+                // add the item to create a repl
+                var newRepl = new MenuFlyoutItem() { Text = "Create Scripting REPL"};
+                newRepl.Click += (sender, e) =>
+                {
+                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+                    var note = new DishReplBox(null, where.X, where.Y, 300, 200).Document;
+                    Actions.DisplayDocument(ViewModel, note, where);
+                };
+                contextMenu.Items.Add(newRepl);
+                elementsToBeRemoved.Add(newRepl);
+
                 var tagMode = new MenuFlyoutItem() { Text = "Tag Notes" };
 
                 void EnterTagMode(object sender, RoutedEventArgs e)

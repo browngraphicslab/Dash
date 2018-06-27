@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
@@ -19,7 +21,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class DishReplView : UserControl
+    public sealed partial class DishReplView : UserControl 
     {
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private readonly DSL _dsl;
@@ -33,7 +35,12 @@ namespace Dash
             _dsl = new DSL(new Scope());
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
+
         }
+        public FieldControllerBase TargetFieldController { get; set; }
+        public Context TargetDocContext { get; set; }
+       
+
 
         private void XTextBoxOnLostFocus(object sender, RoutedEventArgs routedEventArgs)
         {
@@ -76,11 +83,12 @@ namespace Dash
                 }
                 catch (Exception ex)
                 {
-                    returnValue = new TextController("There was an error: "+ex.StackTrace);
+                    returnValue = new TextController("There was an error: " + ex.StackTrace);
                 }
 
                 ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
+                //scroll to bottom
                 xScrollViewer.UpdateLayout();
                 xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
             }
