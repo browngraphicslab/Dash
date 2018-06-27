@@ -45,8 +45,6 @@
                     <MenuFlyoutItem Text="Fields" Click="MenuFlyoutItemFields_Click"/>
                     <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Context" Click="MenuFlyoutItemContext_Click"/>
-                    <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Pin to Presentation" Click="MenuFlyoutItemPin_Click"/>
                     <MenuFlyoutItem Text="Toggle As Adornment" Click="MenuFlyoutItemToggleAsAdornment_Click"/>
                     <MenuFlyoutItem Text="Screen capture" Click="MenuFlyoutItemScreenCap_Click"/>
