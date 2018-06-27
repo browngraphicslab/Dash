@@ -26,15 +26,7 @@ namespace Dash
         /// </summary>
         public T Model { get; private set; }
 
-        /// <summary>
-        /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
-        /// </summary>
-        public string GetId()
-        {
-            return Model.Id;
-        }
-
-        public string Id => Model.Id; // TODO: this is the same as above, conslidate
+        public string Id => Model.Id;
 
         // == METHODS ==
         /// <summary>

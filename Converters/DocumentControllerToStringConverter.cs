@@ -24,7 +24,7 @@ namespace Dash.Converters
 
         public static string DocumentToParseableString(DocumentController data)
         {
-            return "<" + data.GetId() + ">";
+            return "<" + data.Id + ">";
         }
 
         public override string ConvertDataToXaml(List<DocumentController> dataList, object parameter = null)

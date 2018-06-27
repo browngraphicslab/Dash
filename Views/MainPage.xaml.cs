@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.System;
@@ -15,20 +14,9 @@ using Windows.UI.Xaml.Navigation;
 using DashShared;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel.Core;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.AppService;
 using Windows.UI;
-using Dash.Views.Document_Menu;
-using System.Collections.Concurrent;
-using Microsoft.Toolkit.Uwp.UI;
-using Microsoft.Toolkit.Uwp.UI.Controls;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Timers;
 using Dash.Views;
-using Dash.Controllers;
-using Windows.UI.Popups;
-using Windows.Foundation.Collections;
-using Newtonsoft.Json.Linq;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -126,7 +114,7 @@ namespace Dash
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
+                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.Id, KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -137,7 +125,7 @@ namespace Dash
                         [KeyStore.DataKey] = new ListController<DocumentController>(),
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), KeyStore.DataKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.Id, KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
                 LoadSettings();
@@ -181,11 +169,23 @@ namespace Dash
             //MultiLineOperatorScriptParser.TEST();
             TypescriptToOperatorParser.TEST();
 
-            BrowserView.ForceInit();
-
             //this next line is optional and can be removed.  
             //Its only use right now is to tell the user that there is successful communication (or not) between Dash and the Browser
             //BrowserView.Current.SetUrl("https://en.wikipedia.org/wiki/Special:Random");
+
+
+           // string localfolder = ApplicationData.Current.LocalFolder.Path;
+           // var array = localfolder.Split('\\');
+           // var username = array[2];
+           // StorageFolder downloads = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\" + username + @"\Downloads");
+           // //replace byes (8).pdf with uploaded file name
+           // StorageFile file = await downloads.GetFileAsync("byes (8).pdf");
+           // FileData fileD = FileDropHelper.GetFileData(file, null).Result;
+           // PdfToDashUtil PdftoDash = new PdfToDashUtil();
+           //DocumentController docC = await PdftoDash.ParseFileAsync(fileD);
+           // var mainPageCollectionView =
+           //               MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+           // mainPageCollectionView.ViewModel.AddDocument(docC);
         }
 
         #region LOAD AND UPDATE SETTINGS
@@ -209,7 +209,7 @@ namespace Dash
             settingsDoc.SetField<BoolController>(KeyStore.SettingsNightModeKey, DashConstants.DefaultNightModeEngaged, true);
             settingsDoc.SetField<BoolController>(KeyStore.SettingsUpwardPanningKey, DashConstants.DefaultInfiniteUpwardPanningStatus, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsFontSizeKey, DashConstants.DefaultFontSize, true);
-            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Scroll.ToString(), true);
+            settingsDoc.SetField<TextController>(KeyStore.SettingsMouseFuncKey, SettingsView.MouseFuncMode.Zoom.ToString(), true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsNumBackupsKey, DashConstants.DefaultNumBackups, true);
             settingsDoc.SetField<NumberController>(KeyStore.SettingsBackupIntervalKey, DashConstants.DefaultBackupInterval, true);
             settingsDoc.SetField<TextController>(KeyStore.BackgroundImageStateKey, SettingsView.BackgroundImageState.Grid.ToString(), true);

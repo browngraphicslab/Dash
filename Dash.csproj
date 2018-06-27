@@ -152,7 +152,7 @@
     <Content Include="Assets\return.png" />
     <Content Include="Assets\Fonts\FontAwesome.otf" />
     <Content Include="win32\Office.Interop.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="ChromeExt\.gitignore" />
     <None Include="ChromeExt\manifest.json" />
@@ -162,6 +162,7 @@
   <ItemGroup>
     <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\PingBrowserRequest.cs" />
@@ -863,6 +864,7 @@
     <Content Include="ChromeExt\close-icon.svg" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jan_2018_dash_logo.png" />
     <Content Include="ChromeExt\jquery.js" />
     <Content Include="ChromeExt\keylistener.js" />
     <Content Include="ChromeExt\logo.png" />
@@ -1271,7 +1273,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper">
-      <Version>7.1.0</Version>
+      <Version>7.1.1</Version>
     </PackageReference>
     <PackageReference Include="Flurl.Http">
       <Version>2.3.1</Version>
@@ -1283,19 +1285,19 @@
       <Version>1.8.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
-      <Version>2.2.3</Version>
+      <Version>2.3.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client">
       <Version>5.2.6</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>2.0.1</Version>
+      <Version>2.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite.Core">
-      <Version>2.0.1</Version>
+      <Version>2.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>2.1.0</Version>
+      <Version>2.1.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.1.5</Version>

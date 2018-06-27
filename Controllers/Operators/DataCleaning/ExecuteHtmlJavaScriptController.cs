@@ -51,7 +51,7 @@ namespace Dash
             execOp.SetField(ScriptKey,    new TextController(""), true);
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
-            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp.GetId(), KeyStore.OperatorKey)).Document;
+            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp.Id, KeyStore.OperatorKey)).Document;
             execOp.SetActiveLayout(layoutDoc, true, true);
             return execOp;
         }
@@ -83,7 +83,7 @@ namespace Dash
 
                 var doc = new CollectionNote(new Windows.Foundation.Point(), CollectionView.CollectionViewType.Schema);
 
-                MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.High, new Windows.UI.Core.DispatchedHandler(
+                MainPage.Instance.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, new Windows.UI.Core.DispatchedHandler(
                     async () => new execClass(correctedHtml, script, doc)));
 
                 outputs[OutputDocumentKey] = doc.Document;

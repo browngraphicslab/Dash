@@ -112,13 +112,13 @@ namespace Dash
             Init();
         }
 
-        public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc?.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        public ListController(IEnumerable<T> list) : base(new ListModel(list.Select(fmc => fmc?.Id), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
             SaveOnServer();
             Init();
         }
 
-        public ListController(T item) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
+        public ListController(T item) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id), TypeInfoHelper.TypeToTypeInfo(typeof(T))))
         {
             SaveOnServer();
             Init();
@@ -141,12 +141,12 @@ namespace Dash
             if (where == -1)
             {
                 TypedData.Add(element);
-                ListFieldModel.Data.Add(element.GetId());
+                ListFieldModel.Data.Add(element.Id);
             }
             else
             {
                 TypedData.Insert(where, element);
-                ListFieldModel.Data.Insert(where, element.GetId());
+                ListFieldModel.Data.Insert(where, element.Id);
             }
             return true;
         }
@@ -160,7 +160,7 @@ namespace Dash
         {
             element.FieldModelUpdated -= ContainedFieldUpdated;
             bool removed = TypedData.Remove(element);
-            ListFieldModel.Data.Remove(element.GetId());
+            ListFieldModel.Data.Remove(element.Id);
             return removed;
         }
 

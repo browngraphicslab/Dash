@@ -1,11 +1,16 @@
-﻿using DashShared;
+﻿using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash.Browser
 {
     public class BrowserRequest : EntityBase
     {
         public int tabId { get; set; }
-        public virtual void Handle(BrowserView browser) { }
+
+        public virtual Task Handle(BrowserView browser)
+        {
+            return Task.CompletedTask;
+        }
 
         public void Send()
         {
