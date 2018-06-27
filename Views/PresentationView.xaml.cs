@@ -39,7 +39,9 @@ namespace Dash.Views
             if (selectedIndex != 0)
             {
                 PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex - 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
+                var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
+                NavigateToDocument(pinnedNode.Data.Key);
+                ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
             }
         }
 
@@ -61,7 +63,9 @@ namespace Dash.Views
                     // zoom to first item in the listview
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
-                    NavigateToDocument((DocumentViewModel)PinnedNodesListView.SelectedItem);
+                    var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
+                    NavigateToDocument(pinnedNode.Data.Key);
+                    ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
 
                     IsPresentationPlaying = true;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -81,27 +85,42 @@ namespace Dash.Views
             if (selectedIndex != PinnedNodesListView.Items.Count - 1)
             {
                 PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex + 1];
-                NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
+                var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
+                var docViewModel = pinnedNode.Data.Key;
+                NavigateToDocument(docViewModel);
+                ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
             }
         }
 
         // remove from viewmodel
         private void DeletePin(object sender, RoutedEventArgs e)
         {
-            ViewModel.RemovePinFromPinnedNodesCollection((sender as Button).Tag as DocumentViewModel);
+            var pinnedNode = (PresentationPinnedNode)(sender as Button).Tag;
+            ViewModel.RemovePinFromPinnedNodesCollection(pinnedNode);
         }
 
         // if we click a node, we should navigate to it immediately. Note that IsItemClickable is always enabled.
         private void PinnedNode_Click(object sender, ItemClickEventArgs e)
         {
-            DocumentViewModel viewModel = (DocumentViewModel) e.ClickedItem;
+            PresentationPinnedNode node = (PresentationPinnedNode) e.ClickedItem;
+            var viewModel = node.Data.Key;
+            var scale = node.Data.Value; 
             NavigateToDocument(viewModel);
+            ZoomToPinnedScale(viewModel, scale);
         }
 
         // helper method for moving the mainpage screen
         private void NavigateToDocument(DocumentViewModel viewModel)
         {
             MainPage.Instance.NavigateToDocumentInWorkspaceAnimated(viewModel.DocumentController);
+        }
+
+        // helper method for zooming the parent collection to the level it was at when the document was pinned
+        private void ZoomToPinnedScale(DocumentViewModel viewModel, double scale)
+        {
+            // main collection for now
+            var collection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformBase>();
+            MainPage.Instance.ZoomToLevel(collection, viewModel, scale);
         }
 
         // these buttons are only enabled when the presentation is playing
@@ -118,7 +137,8 @@ namespace Dash.Views
         // if user strays in middle of presentation, hitting this will bring them back to the selected node
         private void ResetButton_Click(object sender, RoutedEventArgs e)
         {
-            NavigateToDocument((DocumentViewModel) PinnedNodesListView.SelectedItem);
+            var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
+            NavigateToDocument(pinnedNode.Data.Key);
         }
 
         private void PinnedNodesListView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)

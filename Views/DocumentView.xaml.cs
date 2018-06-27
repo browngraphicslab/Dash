@@ -1238,7 +1238,12 @@ namespace Dash
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
-            MainPage.Instance.PinToPresentation(ViewModel);
+            if (ParentCollection.CurrentView is CollectionFreeformBase)
+            {
+                var freeform = ParentCollection.CurrentView as CollectionFreeformBase;
+                var scale = freeform.ViewManipulationControls.ElementScale;
+                MainPage.Instance.PinToPresentation(ViewModel, scale);
+            }
         }
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)

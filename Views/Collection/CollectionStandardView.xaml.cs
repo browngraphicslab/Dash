@@ -110,7 +110,6 @@ namespace Dash
             double newScale = 1;
             if (scaleX < 1 && scaleY < 1)
             {
-                //zoomOut++;
                 zoom--;
                 if (zoom < -3)
                 {
@@ -124,7 +123,6 @@ namespace Dash
             }
             else if (scaleX > 1 && scaleY > 1)
             {
-                //zoomIn++;
                 zoom++;
                 if (zoom > 3)
                 {

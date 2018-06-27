@@ -9,20 +9,20 @@ namespace Dash.Views
 {
     public class PresentationViewModel
     {
-        public ObservableCollection<KeyValuePair<DocumentViewModel, TransformGroupData>> PinnedNodes = new ObservableCollection<KeyValuePair<DocumentViewModel,TransformGroupData>>();
+        public ObservableCollection<PresentationPinnedNode> PinnedNodes = new ObservableCollection<PresentationPinnedNode>();
         public ObservableCollection<IntWrapper> PinNumbers = new ObservableCollection<IntWrapper>();
 
-        public void AddToPinnedNodesCollection(DocumentViewModel viewModel, TransformGroupData zoom)
+        public void AddToPinnedNodesCollection(DocumentViewModel viewModel, double scale)
         {
-            PinnedNodes.Add(new KeyValuePair<DocumentViewModel, TransformGroupData>(viewModel, zoom));
+            PinnedNodes.Add(new PresentationPinnedNode(viewModel, scale));
             PinNumbers.Add(new IntWrapper(PinnedNodes.Count));
         }
 
-        public void RemovePinFromPinnedNodesCollection(KeyValuePair<DocumentViewModel, TransformGroupData> pair)
+        public void RemovePinFromPinnedNodesCollection(PresentationPinnedNode docScale)
         {
             PinNumbers.RemoveAt(PinnedNodes.Count-1);
-            if (PinnedNodes.Contains(pair))
-                PinnedNodes.Remove(pair);
+            if (PinnedNodes.Contains(docScale))
+                PinnedNodes.Remove(docScale);
         }
     }
 

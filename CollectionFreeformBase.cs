@@ -170,6 +170,21 @@ namespace Dash
             var matrix = composite.Value;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
+        
+        public void Scale(double scaleX, double scaleY, Point scaleCenter)
+        {
+            var currentScale = ViewManipulationControls.ElementScale;
+            if ((currentScale == scaleX && currentScale == scaleY)) return;
+            var scale = new ScaleTransform() { ScaleX = scaleX / ViewManipulationControls.ElementScale, ScaleY = scaleY / ViewManipulationControls.ElementScale, CenterX = scaleCenter.X, CenterY = scaleCenter.Y};
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform); // get the current transform
+            composite.Children.Add(scale); // add the new scaling
+
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = scaleX = scaleY;
+        }
 
         public void MoveAnimated(TranslateTransform translate)
         {
