@@ -160,13 +160,13 @@ namespace Dash
             if (newInput.StartsWith("=="))
             {
                 var dsl = new DSL(scope);
-                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);
+                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);//TODO we might need to prepend "return " to the input but maybe not?
             }
 
             if (newInput.StartsWith("="))
             {
                 var dsl = new DSL(scope);
-                return dsl.Run(newInput.Remove(0, 1), catchErrors);
+                return dsl.Run("return " + newInput.Remove(0, 1), catchErrors);
             }
 
 
