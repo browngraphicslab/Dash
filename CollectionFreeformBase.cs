@@ -31,6 +31,7 @@ using DashShared;
 using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Dash.Views;
 
 namespace Dash
 {
@@ -39,7 +40,6 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Canvas _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
-        List<DocumentView> _selectedDocs = new List<DocumentView>();
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }
@@ -47,7 +47,6 @@ namespace Dash
         public KeyController TagKey { get; set; }
         public abstract CollectionViewModel ViewModel { get; }
         public abstract CollectionView.CollectionViewType Type { get; }
-        public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         private Mutex _mutex = new Mutex();
 
         //SET BACKGROUND IMAGE SOURCE
@@ -737,7 +736,7 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectedDocs)
+            foreach (DocumentView doc in SelectionManager.SelectedDocs)
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
@@ -787,7 +786,7 @@ namespace Dash
                     Height = bounds.Height,
                     Width = bounds.Width
                 };
-                viewsToSelectFrom = SelectedDocs;
+                viewsToSelectFrom = SelectionManager.SelectedDocs;
             }
 
             var toSelectFrom = viewsToSelectFrom.ToList();
@@ -877,14 +876,13 @@ namespace Dash
         public void DeselectAll()
         {
             GetSelectionCanvas()?.Children?.Clear();
-            foreach (var doc in SelectedDocs)
+            foreach (var doc in SelectionManager.SelectedDocs)
             {
                 doc.SetSelectionBorder(false);
             }
-            _selectedDocs.Clear();
             _marquee = null;
             _isMarqueeActive = false;
-            MainPage.Instance.DeselectAllDocuments();
+            SelectionManager.DeselectAllDocuments();
         }
 
         /// <summary>
@@ -897,14 +895,12 @@ namespace Dash
 
             foreach (var doc in selected)
             {
-                if (!_selectedDocs.Contains(doc))
+                if (!SelectionManager.Contains(doc))
                 {
-                    _selectedDocs.Add(doc);
+                    SelectionManager.Select(doc);
                     doc.SetSelectionBorder(true);
                 }
             }
-
-            MainPage.Instance.SelectDocuments(_selectedDocs);
         }
 
         #endregion

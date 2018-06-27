@@ -797,7 +797,7 @@ namespace Dash
                 {
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
-                MainPage.Instance.DeselectDocument(this);
+                SelectionManager.Deselect(this);
             }
         }
 

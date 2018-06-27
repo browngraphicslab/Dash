@@ -102,7 +102,7 @@
         <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
         <views:PresentationView x:Name="xPresentationView" Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" HorizontalAlignment="Stretch"/>
 
-        <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"></local:MenuToolbar>
+        <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
     </Grid>
 </Page>
 
