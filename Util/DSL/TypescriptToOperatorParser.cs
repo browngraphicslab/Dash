@@ -82,14 +82,25 @@ namespace Dash
             var op = doc.GetDereferencedField<ListController<OperatorController>>(KeyStore.OperatorKey, context);
 
             if (op == null)
-                return "FIXME in OperatorScriptParser";
-            var funcName = op.TypedData.First().GetDishName();
+                return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
+            var funcName = op.TypedData.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey))?.GetDishName();
+            if(funcName == null)
+            {
+                return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
+            }
             var script = funcName + "(";
             var middle = new List<string>();
             foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))
             {
                 Debug.Assert(doc.GetField(inputKey) != null);
-                middle.Add(DSL.GetScriptForOperatorTree(doc.GetField(inputKey)));
+                var field = doc.GetField(inputKey);
+                if (field is ReferenceController refField)
+                {
+                    middle.Add(GetScriptForOperatorTree(refField, context));
+                } else
+                {
+                    middle.Add($"this.{inputKey.Name}");
+                }
             }
             return script + string.Join(",", middle) + ")";
         }

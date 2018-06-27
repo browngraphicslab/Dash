@@ -169,7 +169,7 @@ namespace Dash
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
+               // LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
             {
                 if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
