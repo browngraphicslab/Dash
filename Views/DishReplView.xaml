@@ -18,7 +18,7 @@
             </Grid.RowDefinitions>
             <!--<Border BorderBrush="Black" BorderThickness="1">-->
             <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
-                              HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  >
+                              HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  Margin="5">
                 <ScrollViewer.Background>
                     <SolidColorBrush Color="White" Opacity="0.6" />
                 </ScrollViewer.Background>
@@ -30,10 +30,9 @@
                                     <RowDefinition Height="20" />
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="{Binding LineText}" />
-                                <TextBlock Grid.Row="1" Text="{Binding LineValueText}" />
+                                <TextBlock Grid.Row="0" Text="{Binding LineText}" TextWrapping="Wrap" />
+                                <TextBlock Grid.Row="1" Text="{Binding LineValueText}" TextWrapping="Wrap" Margin="0,0,0,5"/>
                             </Grid>
-
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

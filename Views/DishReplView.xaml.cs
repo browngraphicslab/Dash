@@ -39,8 +39,7 @@ namespace Dash
         }
         public FieldControllerBase TargetFieldController { get; set; }
         public Context TargetDocContext { get; set; }
-
-        public Point TargetSize { get; set; }
+       
 
 
         private void XTextBoxOnLostFocus(object sender, RoutedEventArgs routedEventArgs)

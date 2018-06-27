@@ -26,14 +26,12 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
             var textController = docController.GetField(KeyStore.DataKey);
-            var size = docController.GetField(KeyStore.ActualSizeKey).DereferenceToRoot<PointController>(null).Data;
 
 
             var tb = new DishReplView
             {
                 TargetFieldController = textController,
                 TargetDocContext = context,
-               TargetSize = size
             };
             SetupBindings(tb, docController, context);
 
