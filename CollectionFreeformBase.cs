@@ -174,7 +174,9 @@ namespace Dash
         public void Scale(double scaleX, double scaleY, Point scaleCenter)
         {
             var currentScale = ViewManipulationControls.ElementScale;
+            // if the current scale of the collection view is already at the anticipated scale, return (otherwise tapping on the same item in presentation mode would continue to zoom in/ zoom out by factor of scaleX and scaleY)
             if ((currentScale == scaleX && currentScale == scaleY)) return;
+            // scale is equal is scaleX and scaleY after transform
             var scale = new ScaleTransform() { ScaleX = scaleX / ViewManipulationControls.ElementScale, ScaleY = scaleY / ViewManipulationControls.ElementScale, CenterX = scaleCenter.X, CenterY = scaleCenter.Y};
             //Create initial composite transform
             var composite = new TransformGroup();
@@ -205,9 +207,9 @@ namespace Dash
             _storyboard1?.Children.Clear();
             _storyboard1 = new Storyboard { Duration = duration };
 
-            _storyboard2?.Stop();
-            _storyboard2?.Children.Clear();
-            _storyboard2 = new Storyboard { Duration = duration };
+            //_storyboard2?.Stop();
+            //_storyboard2?.Children.Clear();
+            //_storyboard2 = new Storyboard { Duration = duration };
 
 
             var startX = _transformBeingAnimated.Matrix.OffsetX;
@@ -220,25 +222,25 @@ namespace Dash
             translateAnimationY.AutoReverse = false;
 
 
-            var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
-            //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+            //var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
+            ////Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
+            //var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
+            //var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
 
-            zoomOutAnimationX.AutoReverse = true;
-            zoomOutAnimationY.AutoReverse = true;
+            //zoomOutAnimationX.AutoReverse = true;
+            //zoomOutAnimationY.AutoReverse = true;
 
-            zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
-            zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+            //zoomOutAnimationX.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
+            //zoomOutAnimationY.RepeatBehavior = new RepeatBehavior(TimeSpan.FromMilliseconds(milliseconds));
 
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (scaleFactor < 0.8)
-            {
-                _storyboard1.Children.Add(zoomOutAnimationX);
-                _storyboard1.Children.Add(zoomOutAnimationY);
-            }
+            //if (scaleFactor < 0.8)
+            //{
+            //    _storyboard1.Children.Add(zoomOutAnimationX);
+            //    _storyboard1.Children.Add(zoomOutAnimationY);
+            //}
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
             CompositionTarget.Rendering += CompositionTargetOnRendering;

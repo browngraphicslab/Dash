@@ -40,8 +40,8 @@ namespace Dash.Views
             {
                 PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex - 1];
                 var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
-                NavigateToDocument(pinnedNode.Data.Key);
                 ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
+                NavigateToDocument(pinnedNode.Data.Key);
             }
         }
 
@@ -64,8 +64,8 @@ namespace Dash.Views
                     PinnedNodesListView.SelectionMode = ListViewSelectionMode.Single;
                     PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[0];
                     var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
-                    NavigateToDocument(pinnedNode.Data.Key);
                     ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
+                    NavigateToDocument(pinnedNode.Data.Key);
 
                     IsPresentationPlaying = true;
                     PlayStopButton.Icon = new SymbolIcon(Symbol.Stop);
@@ -87,8 +87,8 @@ namespace Dash.Views
                 PinnedNodesListView.SelectedItem = PinnedNodesListView.Items[selectedIndex + 1];
                 var pinnedNode = (PresentationPinnedNode)PinnedNodesListView.SelectedItem;
                 var docViewModel = pinnedNode.Data.Key;
-                NavigateToDocument(docViewModel);
                 ZoomToPinnedScale(pinnedNode.Data.Key, pinnedNode.Data.Value);
+                NavigateToDocument(docViewModel);
             }
         }
 
@@ -104,9 +104,9 @@ namespace Dash.Views
         {
             PresentationPinnedNode node = (PresentationPinnedNode) e.ClickedItem;
             var viewModel = node.Data.Key;
-            var scale = node.Data.Value; 
-            NavigateToDocument(viewModel);
+            var scale = node.Data.Value;
             ZoomToPinnedScale(viewModel, scale);
+            NavigateToDocument(viewModel);
         }
 
         // helper method for moving the mainpage screen

@@ -438,10 +438,9 @@ namespace Dash
                         new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
                             containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-                    //if (animated)
-                    //    root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    //else 
-root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    if (animated)
+                        root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+                    else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
@@ -456,9 +455,6 @@ root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shif
         public bool ZoomToLevel(CollectionFreeformBase root, DocumentViewModel rootViewModel, double zoomLevel)
         {
             if (!root.IsInVisualTree()) return false;
-            //var centerX = rootViewModel.XPos + rootViewModel.ActualSize.X / 2;
-            //var centerY = rootViewModel.YPos + rootViewModel.ActualSize.Y / 2;
-            //var scaleCenter = new Point(centerX, centerY);
             var scaleCenter = new Point((MainDocView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
             root.Scale(zoomLevel, zoomLevel, scaleCenter);
             return true;
