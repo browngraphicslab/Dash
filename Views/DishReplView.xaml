@@ -31,7 +31,7 @@
                                     <RowDefinition Height="*" />
                                 </Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0" Text="{Binding LineText}" TextWrapping="Wrap" />
-                                <TextBlock Grid.Row="1" Text="{Binding LineValueText}" TextWrapping="Wrap" Margin="0,0,0,5"/>
+                                <TextBlock Grid.Row="1" Text="{Binding LineValueText}" TextWrapping="Wrap" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
