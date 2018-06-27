@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -13,12 +14,6 @@ using DashShared;
 
 namespace Dash
 {
-
-    /// <summary>
-    /// A generic document type containing a single image. The Data field on an ImageBox is a reference which eventually
-    /// ends in an
-    /// ImageController or an ImageController
-    /// </summary>
     public class TemplateBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("21D67C5E-9A2E-42C8-975A-AD60C728DDAE", "Template Box");
@@ -32,10 +27,12 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
+            // default size of the template editor box's workspace
             var grid = new Grid
             {
                 Width = 300,
-                Height = 400
+                Height = 400,
+                Background = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255))
             };
             LayoutDocuments(docController, context, grid);
 
@@ -77,6 +74,7 @@ namespace Dash
 
         private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
         {
+            // get the list of layout documents and layout each one on the grid
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
             grid.Children.Clear();
             AddDocuments(layoutDocuments, context, grid);
@@ -84,6 +82,7 @@ namespace Dash
 
         private static ListController<DocumentController> GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
+            // returns the list of layout documents stored in the doc controller's data key
             context = Context.SafeInitAndAddDocument(context, docController);
             return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<ListController<DocumentController>>(context);
@@ -93,7 +92,9 @@ namespace Dash
         {
             foreach (var layoutDoc in docs)
             {
+                // create the view for the document controller
                 var layoutView = layoutDoc.MakeViewUI(context);
+                // set width and render transform appropriately
                 layoutDoc.SetField(KeyStore.WidthFieldKey,
                     new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
                 layoutView.AddFieldBinding(UIElement.RenderTransformProperty, new FieldBinding<PointController>
@@ -105,11 +106,6 @@ namespace Dash
                 });
                 layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
                 layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
-                //layoutView.RenderTransform = new TranslateTransform
-                //{
-                //    X = layoutDoc.GetPosition().Value.X,
-                //    Y = layoutDoc.GetPosition().Value.Y
-                //};
                 grid.Children.Add(layoutView);
             }
         }

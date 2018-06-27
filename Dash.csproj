@@ -332,10 +332,8 @@
     <Compile Include="Util\NoteDocuments\CollectionNote.cs" />
     <Compile Include="Util\NoteDocuments\HtmlNote.cs" />
     <Compile Include="Util\NoteDocuments\ImageNote.cs" />
-    <Compile Include="Util\NoteDocuments\TemplateNote.cs" />
     <Compile Include="Util\NoteDocuments\MarkdownNote.cs" />
     <Compile Include="Util\NoteDocuments\PostitNote.cs" />
-    <Compile Include="Util\NoteDocuments\TemplateEditor.cs" />
     <Compile Include="Util\NoteDocuments\RichTextNote.cs" />
     <Compile Include="Util\NoteDocuments\VideoNote.cs" />
     <Compile Include="Util\OperatorScript.cs" />
@@ -382,9 +380,6 @@
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
-    <Compile Include="Util\TemplateView.xaml.cs">
-      <DependentUpon>TemplateView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\TypeTimer.cs" />
     <Compile Include="Util\UndoCommand.cs" />
     <Compile Include="Util\UndoManager.cs" />
@@ -892,10 +887,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Util\TemplateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

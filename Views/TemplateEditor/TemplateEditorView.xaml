@@ -10,10 +10,9 @@
     x:Name="xEditorControl"
     AllowDrop="True"
     d:DesignHeight="500"
-    PointerPressed="TemplateEditorView_OnPointerPressed"
     d:DesignWidth="1000">
 
-    <StackPanel Orientation="Horizontal">
+    <StackPanel Orientation="Horizontal" BorderBrush="Black" BorderThickness="2" x:Name="xOuterPanel">
         <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White" />
 
         <Canvas VerticalAlignment="Top" Width="500" Height="500" Background="LightSlateGray"  HorizontalAlignment="Left">
@@ -75,10 +74,10 @@
             <!--<media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick_" ></AppBarButton>
-                <AppBarButton Icon="Redo"  x:Name="xRedoButton" Height="50" Width="50" Click="XRedoButton_OnClick_" ></AppBarButton>
-                <AppBarButton Icon="DisableUpdates"  x:Name="xResetButton" Height="50" Width="50" Click="XResetButton_OnClick_" ></AppBarButton>
-                <AppBarButton Icon="Clear"  x:Name="xClearButton" Height="50" Width="50" Click="XClearButton_OnClick_" ></AppBarButton>
+                <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick" ></AppBarButton>
+                <AppBarButton Icon="Redo"  x:Name="xRedoButton" Height="50" Width="50" Click="XRedoButton_OnClick" ></AppBarButton>
+                <AppBarButton Icon="DisableUpdates"  x:Name="xResetButton" Height="50" Width="50" Click="XResetButton_OnClick" ></AppBarButton>
+                <AppBarButton Icon="Clear"  x:Name="xClearButton" Height="50" Width="50" Click="XClearButton_OnClick" ></AppBarButton>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

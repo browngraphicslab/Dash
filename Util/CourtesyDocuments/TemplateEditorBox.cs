@@ -1,16 +1,15 @@
-﻿using System;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using DashShared;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.Foundation;
-using Dash.Converters;
-using Windows.UI.Xaml.Controls;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Dash
 {
+    /// <summary>
+    /// Creates the document controller for the actual template editor pane (with the left and right panes).
+    /// Not to be confused with TemplateBox, which is the document controller for the physical template, which
+    /// looks nothing more like a regular document.
+    /// </summary>
     public class TemplateEditorBox : CourtesyDocument
     {
         public static DocumentType DocumentType = new DocumentType("931C41F4-EA4C-4911-A2EE-0D0B6C7BB089", "Template Editor Box");
@@ -21,67 +20,28 @@ namespace Dash
             // template editor box data key = working doc
             var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), workingDoc);
             fields[KeyStore.DocumentContextKey] = new TemplateBox().Document;
+
             SetupDocument(DocumentType, PrototypeId, "TemplateEditorBox Prototype Layout", fields);
         }
 
         public TemplateEditorBox(DocumentController workingDoc = null, Point where = default(Point),
-            Size size = default(Size)) : this(workingDoc, where.X, where.Y, size.Width, size.Height)
-        {
-        }
-
-        public class AutomatedTextWrappingBinding : SafeDataToXamlConverter<List<object>, Windows.UI.Xaml.TextWrapping>
-        {
-            public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(List<object> data, object parameter = null)
-            {
-                if (data[0] != null && data[0] is double)
-                {
-                    switch ((int)(double)data[0])
-                    {
-                        case (int)Windows.UI.Xaml.TextWrapping.Wrap:
-                            return Windows.UI.Xaml.TextWrapping.Wrap;
-                        case (int)Windows.UI.Xaml.TextWrapping.NoWrap:
-                            return Windows.UI.Xaml.TextWrapping.NoWrap;
-                    }
-
-                }
-                double width = (double)data[1];
-                return double.IsNaN(width) ? Windows.UI.Xaml.TextWrapping.NoWrap : Windows.UI.Xaml.TextWrapping.Wrap;
-            }
-
-            public override List<object> ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
-            {
-                throw new NotImplementedException();
-            }
-        }
+            Size size = default(Size)) : this(workingDoc, where.X, where.Y, size.Width, size.Height) { }
 
         public static FrameworkElement MakeView(DocumentController layoutDocController, Context context)
         {
-	        if (layoutDocController == null)
-	        {
-		        Debug.WriteLine("DOC CONTROLLER IS NULL");
-	        }
-
-            TemplateEditorView tev = null;
-            tev = new TemplateEditorView
+            var tev = new TemplateEditorView
             {
                 // Layout Document's Data = Working Document
                 LayoutDocument = layoutDocController,
                 // Data Doc's Data = List of Layout Documents
                 DataDocument = layoutDocController.GetDataDocument(),
-                //LinkedDocument = docController.GetField<DocumentController>(KeyStore.DataKey),
-                ManipulationMode = ManipulationModes.All
+                ManipulationMode = ManipulationModes.All,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
             };
-	        tev.Load();
-            tev.HorizontalAlignment = HorizontalAlignment.Stretch;
-            tev.VerticalAlignment = VerticalAlignment.Stretch;
             SetupBindings(tev, layoutDocController, context);
 
             return tev;
-        }
-
-        private static ReferenceController GetTextReference(DocumentController docController)
-        {
-            return docController.GetField(KeyStore.DataKey) as ReferenceController;
         }
     }
 

@@ -45,8 +45,10 @@ namespace Dash
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }
 
+        //initializing the list of layout documents contained within the template
         public ObservableCollection<DocumentController> DocumentControllers { get; set; }
 
+        //item source for xWorkspace
         public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
         public Collection<DocumentView> DocumentViews { get; set; }
@@ -63,14 +65,13 @@ namespace Dash
         public TemplateEditorView()
 	    {
 		    this.InitializeComponent();
-	        //this.GetFirstAncestorOfType<DocumentView>().ViewModel.DecorationState = false;
-	        //this.GetFirstAncestorOfType<DocumentView>().hideControls();
+            
+            xOuterPanel.BorderThickness = new Thickness(2, 8, 2, 2);
 
             DocumentControllers = new ObservableCollection<DocumentController>();
 	        DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 	        DocumentViews = new Collection<DocumentView>();
-
-	      
+            
         }
 
         private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -99,29 +100,14 @@ namespace Dash
                 var dvm =
                     new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
                 DocumentViewModels.Add(dvm);
-                // check that the layout doc doesn't already exist in data document's list of layout docs
-                // if it already exists, don't add it again to the data document
+                // adds layout doc to list of layout docs
                 DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
             }
 
             xItemsControl.ItemsSource = DocumentViewModels;
-
-            //var dvms = xItemsControl.Items.Cast<DocumentViewModel>();
-            //foreach (var dvm in dvms)
-            //{
-            //    // idk what to do from here, we have the viewmodel but we need the view to change manipulations
-            //}
         }
 
-        public void Load()
-        {
-	        this.UpdatePanes();
-            var rect = new Rect(0, 0, 300, 400);
-            var rectGeo = new RectangleGeometry {Rect = rect};
-            xWorkspace.Clip = rectGeo;
-        }
-
-	    public void UpdatePanes()
+	    public void FormatPanes()
 	    {
 			//make key value pane
 		    if (xDataPanel.Children.Count == 0)
@@ -139,15 +125,25 @@ namespace Dash
 
         private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
         {
+            //initialize UI of workspace
+            this.FormatPanes();
+            var rect = new Rect(0, 0, 300, 400);
+            var rectGeo = new RectangleGeometry { Rect = rect };
+            xWorkspace.Clip = rectGeo;
+
+            //hide resize and ellipse controls for template editor
             this.GetFirstAncestorOfType<DocumentView>().ViewModel.DisableDecorations = true;
             this.GetFirstAncestorOfType<DocumentView>().hideControls();
             DocumentViewModels.Clear();
+            //initialize layout documents on workspace
             foreach (var layoutDoc in DataDocument
                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
             {
                 DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
             }
+            //update item source
             xItemsControl.ItemsSource = DocumentViewModels;
+            //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
 
@@ -156,6 +152,7 @@ namespace Dash
             DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
         }
 
+        // when the "Add Text" button is clicked, this adds a text box to the template preview
         private void TextButton_OnClick(object sender, RoutedEventArgs e)
         {
             DocumentControllers.Add(new RichTextNote("New text box").Document);
@@ -295,9 +292,9 @@ namespace Dash
         }
 
         
-
         private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
         {
+            // TODO: Consider if we really need this and want to put in the work to save borders for documents -sy
             double left = 0;
             if (xLeftBorderChecker.IsChecked.GetValueOrDefault(false))
             {
@@ -329,44 +326,46 @@ namespace Dash
             }
         }
 
+        // called when apply changes button is clicked
         private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
         {
+            // layout document's data key holds the document that we are currently working on
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            // TODO: working doc should be able to be null
+            // set the data document's context to the working doc
             DataDocument.SetField(KeyStore.DocumentContextKey, workingDoc, true);
+            // make a copy of the data document
+            var dataDocCopy = DataDocument.MakeCopy();
+            // loop through each layout document and try to abstract it out when necessary
             foreach (var doc in DocumentControllers)
             {
+                // if either is true, then the layout doc needs to be abstracted
                 if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
                 {
+                    // set the layout doc's context to a reference of the data doc's context
                     doc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey),
                         true);
+                    // get all key value pairs and find the one whose key matches the title of the document
                     var keyValuePairs = DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).GetDataDocument().EnumFields();
-                    KeyController specificKey = null;
-                    specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(doc.Title)).Key;
+                    var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(doc.Title)).Key;
 
                     if (specificKey != null)
                     {
+                        // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
                         doc.SetField(KeyStore.DataKey,
                             new PointerReferenceController(
                                 doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
                     }
-                    else if (doc.Equals(DataDocument))
-                    {
-                        doc.SetField(KeyStore.DataKey,
-                            new DocumentReferenceController(
-                                DataDocument.Id, KeyStore.DataKey), true);
-                    }
-                   
-                }
-                else
-                {
                 }
             }
 
-            var layoutCopy = DataDocument.MakeCopy();
-            layoutCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-            layoutCopy.SetField(KeyStore.PositionFieldKey,
+            // set the dataDocCopy's document context key to the working document's data document
+            dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+            // set the position of the data copy to the working document's position
+            dataDocCopy.SetField(KeyStore.PositionFieldKey,
                 workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
-            workingDoc.SetField(KeyStore.ActiveLayoutKey, layoutCopy, true);
+            // set the active layout of the working document to the dataDocCopy (which is the template)
+            workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
         }
 
         private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -374,10 +373,12 @@ namespace Dash
             var docView = sender as DocumentView;
             if (!DocumentViews.Contains(docView))
             {
+                //adds any children in the template canvas, and hides the template canvas' ellipse functionality
                 DocumentViews.Add(docView);
                 docView.hideEllipses();
             }
             
+            //updates and generates bounds for the children inside the template canvas
             var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
                 xWorkspace.Clip.Rect.Height - docView.ActualHeight);
             docView.Bounds = new RectangleGeometry { Rect = bounds };
@@ -389,10 +390,7 @@ namespace Dash
             _selectedDocument = sender;
         }
 
-        private void TemplateEditorView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            //var focused = this.Focus(FocusState.Programmatic);
-        }
+        #region OnDrop Mechanics
 
         private async void XWorkspace_OnDrop(object sender, DragEventArgs e)
         {
@@ -484,26 +482,7 @@ namespace Dash
                     var htmlNote = new RichTextNote(richtext, _pasteWhereHack, new Size(300, 300)).Document;
 
 
-                    //Syncfusion version
-                    /*
-                    WordDocument d = new WordDocument();
-                    d.EnsureMinimal();
-                    d.LastParagraph.AppendHTML(html);
-                    MemoryStream mem = new MemoryStream();
-                    d.Save(mem, FormatType.Rtf);
-                    mem.Position = 0;
-                    byte[] arr = new byte[mem.Length];
-                    arr = mem.ToArray();
-                    string rtf = Encoding.Default.GetString(arr);
-                    var t = new RichTextNote(rtf, where, new Size(300,double.NaN));
-                    //var matches = new Regex(".*:.*").Matches(rtf);
-                    //foreach (var match in matches)
-                    //{
-                    //    var pair = new Regex(":").Split(match.ToString());
-                    //    t.Document.GetDataDocument().SetField(KeyController.LookupKeyByName(pair[0],true), new TextController(pair[1].Trim('\r')), true);
-                    //}
-                    AddDocument(t.Document);
-                    */
+                    
 
                     var strings = text.Split(new char[] { '\r' });
                     foreach (var str in html.Split(new char[] { '\r' }))
@@ -751,16 +730,7 @@ namespace Dash
                     }
                     else if (dragModel.CanDrop(sender as FrameworkElement))
                     {
-                        //var draggedDocument = dragModel.GetDraggedDocument();
-                        //if (draggedDocument.DocumentType.Equals(DashConstants.TypeStore.CollectionBoxType) &&
-                        //    (sender as DependencyObject).GetFirstAncestorOfType<DocumentView>()?.ViewModel.DocumentController.DocumentType.Equals(DashConstants.TypeStore.MainDocumentType) == false &&
-                        //    this.DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(draggedDocument)).Count() == 0)
-                        //{
-                        //    HandleTemplateLayoutDrop(dragModel);
-                        //    e.Handled = true;
-                        //    return;
-                        //}
-                        //else
+                        
                         DocumentControllers.Add(dragModel.GetDropDocument(where));
                     }
                 }
@@ -917,6 +887,9 @@ namespace Dash
             return null;
         }
 
+        #endregion
+
+        //sets the thickness for the borders
         private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (sender is Slider slider)
@@ -925,36 +898,38 @@ namespace Dash
             }
         }
 
+        //sets the colors for the borders
         private void XColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
              //_color = xColorPicker.SelectedColor;    
         }
 
-        private void XResetButton_OnClick_(object sender, RoutedEventArgs e)
+        private void XResetButton_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: reset to original state of template (clear if new, or revert to other if editing)
         }
 
-        private void XUndoButton_OnClick_(object sender, RoutedEventArgs e)
+        private void XUndoButton_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: implement undo
         }
 
-        private void XRedoButton_OnClick_(object sender, RoutedEventArgs e)
+        private void XRedoButton_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: implement redo
         }
 
-        private void XClearButton_OnClick_(object sender, RoutedEventArgs e)
+        private void XClearButton_OnClick(object sender, RoutedEventArgs e)
         {
             //TODO: implement clear
         }
 
         private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
         {
-            //TODO: implement 
+            //TODO: implement
         }
 
+        //updates the bounding when an element changes size
         private void FrameworkElement_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             var docView = sender as DocumentView;
