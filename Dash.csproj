@@ -271,6 +271,7 @@
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DishReplBox.cs" />
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />

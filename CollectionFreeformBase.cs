@@ -999,6 +999,11 @@ namespace Dash
                 if (resetBuffer)
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
+
+                var size = new Size( double.NaN , double.NaN );
+                var note = new DishReplBox(null, where.X, where.Y, size.Width, size.Height).Document;
+                Actions.DisplayDocument(ViewModel, note, where);
+
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
                     var postitNote = new MarkdownNote(text: text).Document;
