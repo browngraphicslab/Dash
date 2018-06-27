@@ -248,7 +248,6 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\AccessStreamModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
