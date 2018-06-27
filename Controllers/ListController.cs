@@ -242,20 +242,15 @@ namespace Dash
         /*
          * Again wraps List's CopyTo method, which, if possible, copies *all* of *this* ListController's list to the specified portion of the destination array passed in
          */
-        private void CopyToManager(T[] destination, int index, bool withUndo = true)
+        private void CopyToManager(T[] destination, int index)
         {
             if (destination == null) throw new ArgumentNullException(); // cannot copy to a non-existent array
-            var toRevert = destination; // for undo and event args
 
             // ensures that there's enough space in the destination array (from starting index to the end)
             index = CheckedIndex(index, destination);
             if (destination.Length - index < Length) throw new ArgumentException();
 
             TypedData.CopyTo(destination, index);
-
-            var newEvent = new UndoCommand(() => destination = toRevert, () => CopyToManager(destination, index, false));
-            UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Copied, destination.ToList(), toRevert.ToList(), index));
         }
 
         public override string ToString() => $"[{string.Join(", ", TypedData)}]";
@@ -377,7 +372,7 @@ namespace Dash
 
             UpdateOnServer(withUndo ? newEvent : null);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.AddRange, elements.ToList(), prevList, prevList.Count - 1));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, elements.ToList(), prevList, prevList.Count - 1));
         }
 
         // @IList<T> //
@@ -395,7 +390,7 @@ namespace Dash
 
             var newEvent = new UndoCommand(() => InsertManager(index, element, false), () => RemoveManager(element, false));
             UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Insert, new List<T> { element }, prevList, index));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, new List<T> { element }, prevList, index));
         }
 
         #endregion
@@ -509,14 +504,10 @@ namespace Dash
             public enum ListChangedAction
             {
                 Add, //Item was added to the list
-                AddRange, //Multiple items were added to the list
-                Insert, //An item was inserted at an index/between multple indices (not index-based reassignment)
                 Remove, //Items were removed from the list
                 Replace, //Items in the list were replaced with other items
                 Clear, //The list was cleared
-                Update, //An item in the list was updated
-                Copied, //The list has been copied to an external array
-                Content
+                Content //An item in the list was updated
             }
 
             public readonly ListChangedAction ListAction;
