@@ -76,7 +76,7 @@
         <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
-            <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
+            <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250" Margin="400, 100, 0, 0">
             </local:DishReplView>
         </Canvas>
 

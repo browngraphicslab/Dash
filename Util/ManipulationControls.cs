@@ -671,7 +671,7 @@ namespace Dash
             var pos = docRoot.RootPointerPos();
             var overlappedViews = VisualTreeHelper.FindElementsInHostCoordinates(pos, MainPage.Instance).OfType<DocumentView>().ToList();
 
-            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.High, () =>
+            docRoot?.Dispatcher?.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 docRoot.MoveToContainingCollection(overlappedViews);
             });

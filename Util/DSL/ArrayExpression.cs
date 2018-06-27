@@ -19,24 +19,34 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            //execute each element in list if it isn't null
-            var outputList = new ListController<FieldControllerBase>();
-            foreach(var elem in list)
+             var typeInfo = TypeInfo.None;
+            //  execute each element in list if it isn't null
+            var outputList = new List<FieldControllerBase>();
+            foreach (var elem in list)
             {
                 if (elem != null)
                 {
-                    outputList.Add(elem.Execute(scope));
-                }
-                else
-                {
-                    outputList.Add(new TextController(""));
+                    var field = elem.Execute(scope);
+                    outputList.Add(field);
+
+                    if (typeInfo == TypeInfo.None && field.TypeInfo != TypeInfo.None)
+                    {
+                        typeInfo = field.TypeInfo;
+                    } else if(typeInfo != field.TypeInfo)
+                    {
+                        typeInfo = TypeInfo.Any;
+                    }
                 }
             }
 
-            return outputList;
+            var lc = (BaseListController)FieldControllerFactory.CreateDefaultFieldController(TypeInfo.List, typeInfo);
+            foreach (var item in outputList)
+            {
+                lc.Add(item);
+            }
+            //lc.AddRange(outputList);
 
-            //return new ListController<FieldControllerBase>(
-            //    list.Select(se => { (se != null) ? se.Execute(scope); }));
+            return lc;
         }
     }
 }

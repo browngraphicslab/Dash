@@ -26,7 +26,7 @@ namespace Dash
         //.NET interop stuff
         public static BackgroundTaskDeferral AppServiceDeferral = null;
         public static AppServiceConnection Connection = null;
-        public static event EventHandler AppServiceConnected;
+        public static event Action AppServiceConnected;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -140,7 +140,7 @@ namespace Dash
                 if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails details)
                 {
                     Connection = details.AppServiceConnection;
-                    AppServiceConnected?.Invoke(this, null);
+                    AppServiceConnected?.Invoke();
                 }
             }
         }
@@ -195,7 +195,6 @@ namespace Dash
         /// <param name="o"></param>
         private void OnResuming(object sender, object o)
         {
-            BrowserView.ForceInit();
         }
 
     }

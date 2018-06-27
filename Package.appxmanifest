@@ -44,11 +44,11 @@
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
-    <uap:Capability Name="picturesLibrary" />
+    <!--<uap:Capability Name="picturesLibrary" />
     <uap:Capability Name="documentsLibrary" />
     <uap:Capability Name="musicLibrary" />
-    <uap:Capability Name="videosLibrary" />
-    <rescap:Capability Name="runFullTrust" />
+    <uap:Capability Name="videosLibrary" />-->
+    <rescap:Capability Name="runFullTrust"/>
     <rescap:Capability Name="broadFileSystemAccess" />
   </Capabilities>
 </Package>

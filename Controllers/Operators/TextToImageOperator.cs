@@ -10,7 +10,7 @@ using DashShared;
 
 namespace Dash.Controllers.Operators
 {
-    [OperatorType("textToImage")]
+    [OperatorType("Image")]
 
     public class TextToImageOperator : OperatorController
     {
@@ -27,7 +27,7 @@ namespace Dash.Controllers.Operators
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1", "Text To Image");
+            new KeyController("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1", "Image");
 
         //Input keys
         public static readonly KeyController TextKey = new KeyController("CFCA1C0E-CA76-4C58-8A6C-42838BD26C90", "Text");
