@@ -162,6 +162,7 @@
   <ItemGroup>
     <Compile Include="AnnotationManager.cs" />
     <Compile Include="Browser\BrowserRequest.cs" />
+    <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
     <Compile Include="Browser\NewTabBrowserRequest.cs" />
     <Compile Include="Browser\PingBrowserRequest.cs" />
@@ -187,7 +188,9 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\Binary\NumNegateOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
@@ -215,6 +218,7 @@
     <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
     <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
@@ -287,6 +291,7 @@
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
     <Compile Include="Util\DSL\ForExpression.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
+    <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
@@ -850,6 +855,7 @@
     <Content Include="ChromeExt\close-icon.svg" />
     <Content Include="ChromeExt\icon.png" />
     <Content Include="ChromeExt\icon_active.png" />
+    <Content Include="ChromeExt\jan_2018_dash_logo.png" />
     <Content Include="ChromeExt\jquery.js" />
     <Content Include="ChromeExt\keylistener.js" />
     <Content Include="ChromeExt\logo.png" />
