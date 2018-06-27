@@ -8,9 +8,8 @@ namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-        //TODO have this value be dragged out onto the workspace
-        //this is the stored value of every line;
-        private FieldControllerBase _value;
+       
+
         public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
         {
             _outputValue = outputValue;
@@ -55,6 +54,15 @@ namespace Dash
             }
 
             return result;
+        }
+
+        //TODO have this value be dragged out onto the workspace
+        //this is the stored value of every line;
+        private FieldControllerBase _value;
+
+        public FieldControllerBase Value
+        {
+            get => _value;
         }
 
         private string _lineText = "";

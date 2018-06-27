@@ -96,9 +96,15 @@ namespace Dash
 
         private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            var line = (sender as FrameworkElement).DataContext as ReplLineViewModel;
+            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
+            //var lineData = ((line as Dash.ReplLineViewModel)._value as NumberController).Data;
+            var outputData = output.Value;
 
-            var test = MainPage.Instance.MainDocument.GetDataDocument();
+            var collection = MainPage.Instance.MainDocument.GetDataDocument();
+
+            var where = new Point(0, 0);
+
+            Actions.DisplayDocument(outputData, collection, where);
         }
     }
 }
