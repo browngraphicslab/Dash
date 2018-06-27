@@ -310,7 +310,7 @@ namespace Dash
 
         #region // ADDITION AND INSERTION //
 
-        public override void Add(FieldControllerBase element)
+        public override void AddBase(FieldControllerBase element)
         {
             if (element is T checkedElement) Add(checkedElement);
         }
