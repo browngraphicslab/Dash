@@ -28,7 +28,7 @@ namespace Dash
 
         private int _currentHistoryIndex = 0;
 
-        private readonly List<String> _dataset;
+        private static List<String> _dataset;
         private bool _textModified;
 
         public DishReplView()
@@ -38,14 +38,19 @@ namespace Dash
             _dsl = new DSL(new Scope());
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
-
-            _dataset = OperatorScript.GetAllOperators();
-
         }
         public FieldControllerBase TargetFieldController { get; set; }
         public Context TargetDocContext { get; set; }
-       
 
+        public static void SetDataset(List<string> data)
+        {
+            _dataset = data;
+        }
+
+        public static void NewVaraible(string var)
+        {
+            _dataset.Add(var);
+        }
 
         private void XTextBoxOnLostFocus(object sender, RoutedEventArgs routedEventArgs)
         {
