@@ -872,8 +872,15 @@ namespace Dash
             }
             if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
             {
-                if (!this.IsShiftPressed()) SelectionManager.DeselectAll();
-                SelectionManager.Select(this);
+                if (this.IsShiftPressed())
+                {
+                    SelectionManager.ToggleSelection(this);
+                }
+                else
+                {
+                    SelectionManager.DeselectAll();
+                    SelectionManager.Select(this);
+                }
                 if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
                 {
                     cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was

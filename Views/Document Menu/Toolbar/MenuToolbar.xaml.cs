@@ -146,7 +146,7 @@ namespace Dash
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
-            SelectionManager.SelectionChanged += (sender, e) => { Update(SelectionManager.SelectedDocs); };
+            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.SelectedDocs); };
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
