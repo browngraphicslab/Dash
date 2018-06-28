@@ -104,14 +104,17 @@ namespace Dash
                     if (_isDataDocKVP)
                     {
                         // set the layout doc's context to a reference of the data doc's context
-                        doc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey),
+                        doc.SetField(KeyStore.DocumentContextKey,
+                            new DocumentReferenceController(
+                                DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+                                KeyStore.DocumentContextKey),
                             true);
                     }
                     else
                     {
                         // set the layout doc's context to a reference of the data doc's context
                         doc.SetField(KeyStore.DocumentContextKey,
-                            new DocumentReferenceController(new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey).Id,
+                            new DocumentReferenceController(DataDocument.Id,
                                 KeyStore.DocumentContextKey),
                             true);
                     }
@@ -179,7 +182,7 @@ namespace Dash
             //update item source
             xItemsControl.ItemsSource = DocumentViewModels;
 
-            DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
+            DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
             //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
@@ -374,7 +377,7 @@ namespace Dash
             // loop through each layout document and try to abstract it out when necessary
 
             // set the dataDocCopy's document context key to the working document's data document
-            dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+            dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc, true);
             // set the position of the data copy to the working document's position
             dataDocCopy.SetField(KeyStore.PositionFieldKey,
                 workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
