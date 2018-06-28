@@ -299,7 +299,7 @@ namespace Dash
                     {
                         if (ParentCollection.CurrentView is CollectionFreeformView cview)
                         {
-                            SelectionManager.DeselectAll(cview);
+                            SelectionManager.DeselectAll();
                         }
                     }
                 }
@@ -872,7 +872,7 @@ namespace Dash
             }
             if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
             {
-                if (!this.IsShiftPressed()) SelectionManager.DeselectAll(cfview);
+                if (!this.IsShiftPressed()) SelectionManager.DeselectAll();
                 SelectionManager.Select(this);
                 if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
                 {

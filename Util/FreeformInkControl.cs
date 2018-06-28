@@ -212,7 +212,7 @@ namespace Dash
         /// <param name="selectionPoints"></param>
         private void LassoSelectDocs(PointCollection selectionPoints)
         {
-            SelectionManager.DeselectAll(FreeformView);
+            SelectionManager.DeselectAll();
             var selectionList =
                 LassoHelper.GetSelectedDocuments(
                     new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000)))); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl

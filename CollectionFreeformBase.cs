@@ -682,7 +682,7 @@ namespace Dash
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                        SelectionManager.DeselectAll(this);
+                        SelectionManager.DeselectAll();
 
                     GetOuterGrid().CapturePointer(args.Pointer);
                     _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
@@ -835,7 +835,7 @@ namespace Dash
             }
 
             if (deselect)
-                SelectionManager.DeselectAll(this);
+                SelectionManager.DeselectAll();
         }
         #endregion
 

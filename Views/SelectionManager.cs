@@ -45,19 +45,18 @@ namespace Dash
         /*
          * This method deselects everything that's currently selected, but needs to take in a CollectionFreeformBase (wherever it's being called from) in order to reset its marquees and so on.
          */
-        public static void DeselectAll(CollectionFreeformBase cfbase)
+        public static void DeselectAll()
         {
             foreach (var doc in _selectedDocs.ToList())
             {
                 Deselect(doc);
             }
             SelectionChanged?.Invoke(null, EventArgs.Empty);
-            cfbase.ResetMarquee();
         }
 
-        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionView collection)
+        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
-            return SelectedDocs.Where(doc => doc.ParentCollection.Equals(collection));
+            return SelectedDocs.Where(doc => Equals(doc.ParentCollection.CurrentView, collection));
         }
 
         /*
@@ -65,9 +64,9 @@ namespace Dash
          */
         public static List<DocumentView> GetSelectedSiblings(DocumentView view)
         {
-            if (view.ParentCollection != null)
+            if (view.ParentCollection != null && view.ParentCollection.CurrentView is CollectionFreeformBase cfb)
             {
-                var marqueeDocs = GetSelectedDocumentsInCollection(view.ParentCollection).ToList();
+                var marqueeDocs = GetSelectedDocumentsInCollection(cfb).ToList();
                 if (marqueeDocs.Contains(view))
                     return marqueeDocs;
             }
