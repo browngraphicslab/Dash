@@ -69,7 +69,7 @@ namespace Dash
             var text = searchBox.Text; //.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Clear();
 
-            if (!string.IsNullOrWhiteSpace(text))
+            if (string.IsNullOrWhiteSpace(text))
             {
                 ExecuteSearch(searchBox);
                 return;
