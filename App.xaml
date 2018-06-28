@@ -44,7 +44,7 @@
             <Color x:Key="DocumentHighlightBackgroundColor">#FFCCCCCC</Color>
             <Color x:Key="MainTextColor">#FF333333</Color>
             <Color x:Key="TitleTextColor">#FF454545</Color>
-            <Color x:Key="ActivationColor">#f4aa42</Color>
+            <Color x:Key="ActivationColor">#91baaa</Color>
             <Color x:Key="LinkActivationColor">#6a9383</Color>
             <Color x:Key="InverseColor">#ededed</Color>
 
@@ -121,6 +121,8 @@
             <x:String x:Key="TextIcon">&#xf15c;</x:String>
             <x:String x:Key="DefaultIcon">&#xf1c3;</x:String>
             <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
+            <x:String x:Key="ClearIcon">&#xf00d;</x:String>
+            <x:String x:Key="MinusIcon">&#xf068;</x:String>
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
@@ -1451,7 +1453,7 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
             <Style TargetType="Ellipse" x:Key="xFieldHandleHighlighted">
-                <Setter Property="Fill" Value="Gold" />
+                <Setter Property="Fill" Value="#91baaa" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>
@@ -1479,7 +1481,7 @@
             </Style>
 
             <Style TargetType="Ellipse" x:Key="xFieldTemplateHandle">
-                <Setter Property="Fill" Value="SteelBlue" />
+                <Setter Property="Fill" Value="#4b7061" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeight}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidth}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>
@@ -1487,7 +1489,7 @@
                 <Setter Property="AllowDrop" Value="True"/>
             </Style>
             <Style TargetType="Ellipse" x:Key="xFieldTemplateHandleHighlighted">
-                <Setter Property="Fill" Value="SkyBlue" />
+                <Setter Property="Fill" Value="#4b7061" />
                 <Setter Property="Height" Value="{StaticResource InputHandleHeightHighlighted}"></Setter>
                 <Setter Property="Width" Value="{StaticResource InputHandleWidthHighlighted}"></Setter>
                 <Setter Property="ManipulationMode" Value="All"></Setter>

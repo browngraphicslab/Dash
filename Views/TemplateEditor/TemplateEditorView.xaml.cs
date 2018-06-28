@@ -182,6 +182,8 @@ namespace Dash
             //update item source
             xItemsControl.ItemsSource = DocumentViewModels;
 
+            xOuterPanel.BorderThickness = new Thickness(0, 2, 0, 0);
+
             DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
             //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
@@ -980,6 +982,11 @@ namespace Dash
             var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
                 xWorkspace.Clip.Rect.Height - docView.ActualHeight);
             docView.Bounds = new RectangleGeometry { Rect = bounds };
+        }
+
+        private void XItemsExpander_OnExpanded(object sender, EventArgs e)
+        {
+            xItemsExpander.Background = new SolidColorBrush(Color.FromArgb(255,85,102,102));
         }
     }
 }
