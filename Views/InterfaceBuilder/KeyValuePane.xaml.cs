@@ -1,11 +1,8 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.ObjectModel;
-<<<<<<< HEAD
 using System.Diagnostics;
-=======
 using System.Threading.Tasks;
->>>>>>> 44fd43c9010f25f7806afae7d05a47dc90f0003b
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
