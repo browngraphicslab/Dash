@@ -259,24 +259,24 @@ namespace Dash
 
             // add manipulation code
             ManipulationControls = new ManipulationControls(this);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectedDocuments().ForEach((d) => d.TransformDelta(delta));
+            ManipulationControls.OnManipulatorTranslatedOrScaled += (delta) => SelectionManager.GetSelectedSiblings(this).ForEach((d) => d.TransformDelta(delta));
             ManipulationControls.OnManipulatorStarted += () =>
             {
 
                 var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
 
                 // get all BackgroundBox types selected initially, and add the documents they contain to selected documents list 
-                var adornmentGroups = SelectedDocuments().Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
+                var adornmentGroups = SelectionManager.GetSelectedSiblings(this).Where((dv) => dv.ViewModel.IsAdornmentGroup).ToList();
                 if (!wasSelected && ParentCollection?.CurrentView is CollectionFreeformBase cview)
                 {
                     adornmentGroups.ForEach((dv) =>
                     {
-                        cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
+                        SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
                     });
                     SetSelectionBorder(false);
                 }
                 // initialize the cached values of position and scale for each manipulated document  
-                SelectedDocuments().ForEach((d) =>
+                SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
                 {
                     d.ViewModel.InteractiveManipulationPosition = d.ViewModel.Position;
                     d.ViewModel.InteractiveManipulationScale = d.ViewModel.Scale;
@@ -286,7 +286,7 @@ namespace Dash
             {
                 using (UndoManager.GetBatchHandle())
                 {
-                    SelectedDocuments().ForEach((d) =>
+                    SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
                     {
                         d.ViewModel.DecorationState = d.IsPointerOver();
                         d.ViewModel.Position =
@@ -299,7 +299,7 @@ namespace Dash
                     {
                         if (ParentCollection.CurrentView is CollectionFreeformView cview)
                         {
-                            cview.DeselectAll();
+                            SelectionManager.DeselectAll();
                         }
                     }
                 }
@@ -447,7 +447,7 @@ namespace Dash
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
-        /// If the document is marked as being an adormnment, we want to place it below all other documents
+        /// If the document is marked as being an adornment, we want to place it below all other documents
         /// </summary>
         void SetZLayer()
         {
@@ -797,7 +797,7 @@ namespace Dash
                 {
                     (ParentCollection.CurrentView as CollectionFreeformBase)?.RenderPreviewTextbox(ViewModel.Position);
                 }
-                MainPage.Instance.DeselectDocument(this);
+                SelectionManager.Deselect(this);
             }
         }
 
@@ -860,16 +860,6 @@ namespace Dash
             this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
-        /// <summary>
-        /// Returns the currently selected documents, or just this document if nothing is selected
-        /// </summary>
-        List<DocumentView> SelectedDocuments()
-        {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformBase)?.SelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Contains(this))
-                return marqueeDocs.ToList();
-            return new List<DocumentView>(new DocumentView[] { this });
-        }
 
         #endregion
         public void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -880,12 +870,18 @@ namespace Dash
             {
                 ToFront();
             }
-            var d = new List<DocumentView>(new DocumentView[] { this });
             if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
             {
-                if (!this.IsShiftPressed()) cfview.DeselectAll();
-                cfview.SelectDocs(d);
-                if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                if (this.IsShiftPressed())
+                {
+                    SelectionManager.ToggleSelection(this);
+                }
+                else
+                {
+                    SelectionManager.DeselectAll();
+                    SelectionManager.Select(this);
+                }
+                if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
                 {
                     cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
@@ -924,7 +920,7 @@ namespace Dash
 
         public CollectionView GetCollectionToMoveTo(List<DocumentView> overlappedViews)
         {
-            var selectedDocs = SelectedDocuments();
+            var selectedDocs = SelectionManager.GetSelectedSiblings(this);
             var collection = this.GetFirstAncestorOfType<CollectionView>();
 
             if (collection == null || ViewModel == null || selectedDocs == null)
@@ -949,7 +945,7 @@ namespace Dash
 
         public bool MoveToContainingCollection(List<DocumentView> overlappedViews)
         {
-            var selectedDocs = SelectedDocuments();
+            var selectedDocs = SelectionManager.GetSelectedSiblings(this);
 
             var collection = this.GetFirstAncestorOfType<CollectionView>();
             var nestedCollection = GetCollectionToMoveTo(overlappedViews);
@@ -1013,27 +1009,27 @@ namespace Dash
 
         private void MenuFlyoutItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocuments())
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                 doc.CopyDocument();
         }
         private void MenuFlyoutItemAlias_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocuments())
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                 doc.CopyViewDocument();
         }
         private void MenuFlyoutItemDelete_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocuments())
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                 doc.DeleteDocument();
         }
         private void MenuFlyoutItemFields_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var doc in SelectedDocuments())
+            foreach (var doc in SelectionManager.GetSelectedSiblings(this))
                 doc.KeyValueViewDocument();
         }
         private void MenuFlyoutItemToggleAsAdornment_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var docView in SelectedDocuments())
+            foreach (var docView in SelectionManager.GetSelectedSiblings(this))
             {
                 docView.ViewModel.IsAdornmentGroup = !docView.ViewModel.IsAdornmentGroup;
                 SetZLayer();

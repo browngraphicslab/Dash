@@ -31,6 +31,7 @@ using DashShared;
 using System.Threading;
 using Windows.Storage.Streams;
 using Windows.Storage;
+using Dash.Views;
 
 namespace Dash
 {
@@ -39,7 +40,6 @@ namespace Dash
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Canvas _itemsPanelCanvas => GetCanvas();
         CollectionViewModel _lastViewModel = null;
-        List<DocumentView> _selectedDocs = new List<DocumentView>();
         public abstract DocumentView ParentDocument { get; }
         //TODO: instantiate in derived class and define OnManipulatorTranslatedOrScaled
         public abstract ViewManipulationControls ViewManipulationControls { get; set; }
@@ -47,7 +47,6 @@ namespace Dash
         public KeyController TagKey { get; set; }
         public abstract CollectionViewModel ViewModel { get; }
         public abstract CollectionView.CollectionViewType Type { get; }
-        public IEnumerable<DocumentView> SelectedDocs { get => _selectedDocs.Where((dv) => dv?.ViewModel?.DocumentController != null).ToList(); }
         private Mutex _mutex = new Mutex();
 
         //SET BACKGROUND IMAGE SOURCE
@@ -596,7 +595,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectDocs(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
                 GetSelectionCanvas().Children.Remove(_marquee);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
@@ -604,6 +603,7 @@ namespace Dash
                 e.Handled = true;
             }
 
+            SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
@@ -682,7 +682,7 @@ namespace Dash
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                        DeselectAll();
+                        SelectionManager.DeselectAll();
 
                     GetOuterGrid().CapturePointer(args.Pointer);
                     _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
@@ -706,9 +706,14 @@ namespace Dash
             }
         }
 
-        public bool IsMarqueeActive()
+        public bool IsMarqueeActive => _isMarqueeActive;
+        
+        // called by SelectionManager to reset this collection's internal selection-based logic
+        public void ResetMarquee()
         {
-            return _isMarqueeActive;
+            GetSelectionCanvas()?.Children?.Clear();
+            _marquee = null;
+            _isMarqueeActive = false;
         }
 
         public List<DocumentView> DocsInMarquee(Rect marquee)
@@ -737,7 +742,7 @@ namespace Dash
 
             bool isEmpty = true;
 
-            foreach (DocumentView doc in SelectedDocs)
+            foreach (DocumentView doc in SelectionManager.SelectedDocs)
             {
                 isEmpty = false;
                 topLeftMostPoint.X = doc.ViewModel.Position.X < topLeftMostPoint.X ? doc.ViewModel.Position.X : topLeftMostPoint.X;
@@ -787,7 +792,7 @@ namespace Dash
                     Height = bounds.Height,
                     Width = bounds.Width
                 };
-                viewsToSelectFrom = SelectedDocs;
+                viewsToSelectFrom = SelectionManager.SelectedDocs;
             }
 
             var toSelectFrom = viewsToSelectFrom.ToList();
@@ -829,8 +834,8 @@ namespace Dash
                 }
             }
 
-            if (deselect) DeselectAll();
-
+            if (deselect)
+                SelectionManager.DeselectAll();
         }
         #endregion
 
@@ -870,43 +875,6 @@ namespace Dash
                 previewTextbox.Focus(FocusState.Pointer);
             }
         }
-        #endregion
-
-        #region SELECTION
-
-        public void DeselectAll()
-        {
-            GetSelectionCanvas()?.Children?.Clear();
-            foreach (var doc in SelectedDocs)
-            {
-                doc.SetSelectionBorder(false);
-            }
-            _selectedDocs.Clear();
-            _marquee = null;
-            _isMarqueeActive = false;
-            MainPage.Instance.DeselectAllDocuments();
-        }
-
-        /// <summary>
-        /// Selects all of the documents in selected. Works on a view-specific level.
-        /// </summary>
-        /// <param name="selected"></param>
-        public void SelectDocs(IEnumerable<DocumentView> selected)
-        {
-            GetSelectionCanvas().Children.Clear();
-
-            foreach (var doc in selected)
-            {
-                if (!_selectedDocs.Contains(doc))
-                {
-                    _selectedDocs.Add(doc);
-                    doc.SetSelectionBorder(true);
-                }
-            }
-
-            MainPage.Instance.SelectDocuments(_selectedDocs);
-        }
-
         #endregion
 
         #region TextInputBox

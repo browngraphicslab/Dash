@@ -254,7 +254,7 @@ namespace Dash
                 boundsBeforeTranslation.Y + originalTranslate.Y, boundsBeforeTranslation.Width,
                 boundsBeforeTranslation.Height);
             var listOfSiblings = collectionFreeformView.ViewModel.DocumentViewModels.Where(vm =>
-                vm != ParentDocument.ViewModel && !collectionFreeformView.SelectedDocs.Select((dv) => dv.ViewModel)
+                vm != ParentDocument.ViewModel && !SelectionManager.GetSelectedDocumentsInCollection(collectionFreeformView).Select(dv => dv.ViewModel)
                     .ToList().Contains(vm));
             var parentDocumentLinesAfter = AlignmentLinesFromRect(parentDocumentBounds);
 
