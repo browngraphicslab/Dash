@@ -1616,7 +1616,6 @@
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"/>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"/>
         <local:TypeToFillConverter x:Key="TypeToFillConverter"/>
-        <local:DocumentAndKeyToEditableScriptBoxConverter x:Key="DocumentAndKeyToEditableScriptBoxConverter"/>
 
             <!-- MISC. STYLES-->
             <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">
