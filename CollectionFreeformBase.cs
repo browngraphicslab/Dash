@@ -603,6 +603,7 @@ namespace Dash
                 e.Handled = true;
             }
 
+            SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
             GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
@@ -681,7 +682,7 @@ namespace Dash
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                        SelectionManager.DeselectAllDocuments();
+                        SelectionManager.DeselectAll(this);
 
                     GetOuterGrid().CapturePointer(args.Pointer);
                     _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
@@ -705,9 +706,14 @@ namespace Dash
             }
         }
 
-        public bool IsMarqueeActive()
+        public bool IsMarqueeActive => _isMarqueeActive;
+        
+        // called by SelectionManager to reset this collection's internal selection-based logic
+        public void ResetMarquee()
         {
-            return _isMarqueeActive;
+            GetSelectionCanvas()?.Children?.Clear();
+            _marquee = null;
+            _isMarqueeActive = false;
         }
 
         public List<DocumentView> DocsInMarquee(Rect marquee)
@@ -828,8 +834,8 @@ namespace Dash
                 }
             }
 
-            if (deselect) SelectionManager.DeselectAllDocuments();
-
+            if (deselect)
+                SelectionManager.DeselectAll(this);
         }
         #endregion
 

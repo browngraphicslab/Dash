@@ -299,7 +299,7 @@ namespace Dash
                     {
                         if (ParentCollection.CurrentView is CollectionFreeformView cview)
                         {
-                            SelectionManager.DeselectDocuments(SelectionManager.GetSelectedDocumentsInCollection(cview).ToList());
+                            SelectionManager.DeselectAll(cview);
                         }
                     }
                 }
@@ -447,7 +447,7 @@ namespace Dash
 
         /// <summary>
         /// Sets the 2D stacking layer ("Z" value) of the document.
-        /// If the document is marked as being an adormnment, we want to place it below all other documents
+        /// If the document is marked as being an adornment, we want to place it below all other documents
         /// </summary>
         void SetZLayer()
         {
@@ -887,7 +887,7 @@ namespace Dash
             }
             if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
             {
-                if (!this.IsShiftPressed()) SelectionManager.DeselectAllDocuments();
+                if (!this.IsShiftPressed()) SelectionManager.DeselectAll(cfview);
                 SelectionManager.Select(this);
                 if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
                 {
