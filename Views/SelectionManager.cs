@@ -55,9 +55,9 @@ namespace Dash
             cfbase.ResetMarquee();
         }
 
-        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
+        public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionView collection)
         {
-            return SelectedDocs.Where(doc => doc.GetFirstAncestorOfType<CollectionFreeformBase>().Equals(collection));
+            return SelectedDocs.Where(doc => doc.ParentCollection.Equals(collection));
         }
 
         /*
@@ -67,9 +67,9 @@ namespace Dash
         {
             if (view.ParentCollection != null)
             {
-                var marqueeDocs = GetSelectedDocumentsInCollection(view.ParentCollection.CurrentView as CollectionFreeformBase);
-                if (marqueeDocs != null && marqueeDocs.Contains(view))
-                    return marqueeDocs.ToList();
+                var marqueeDocs = GetSelectedDocumentsInCollection(view.ParentCollection).ToList();
+                if (marqueeDocs.Contains(view))
+                    return marqueeDocs;
             }
             return new List<DocumentView>(new[] { view });
         }
