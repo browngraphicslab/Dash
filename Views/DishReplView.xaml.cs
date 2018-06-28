@@ -62,17 +62,43 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
 
+        private void moveCursorToEnd()
+        {
+            if (xTextBox.Text.Length != 0)
+            {
+                xTextBox.SelectionStart = xTextBox.Text.Length;
+                xTextBox.SelectionLength = 0;
+            }
+        }
+
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
         {
-                switch (args.VirtualKey)
+            var numItem = ViewModel.Items.Count;
+            switch (args.VirtualKey)
                 {
                     case VirtualKey.Up:
+                        var index1 = numItem - (_currentHistoryIndex + 1);
+                        if (numItem > index1 && index1 >= 0)
+                         {
                         _currentHistoryIndex++;
-                        xTextBox.Text = ViewModel.Items.ElementAt(Math.Max(0, ViewModel.Items.Count - _currentHistoryIndex))?.LineText?.Substring(3) ?? xTextBox.Text;
+                        xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
+                             moveCursorToEnd();
+                         }
+
                         break;
                     case VirtualKey.Down:
-                        _currentHistoryIndex = Math.Max(1, _currentHistoryIndex - 1);
-                        xTextBox.Text = ViewModel.Items.ElementAt(Math.Max(0, ViewModel.Items.Count - _currentHistoryIndex))?.LineText?.Substring(3) ?? xTextBox.Text;
+                        var index = numItem - (_currentHistoryIndex - 1);
+                        if (numItem > index && index >= 0)
+                        {
+                            _currentHistoryIndex--;
+                            xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
+                            moveCursorToEnd();
+                        } else if (index == numItem)
+                        {
+                            _currentHistoryIndex--;
+                            xTextBox.Text = "";
+                        }
+
                         break;
                 }
         }

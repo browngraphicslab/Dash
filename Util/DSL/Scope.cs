@@ -37,7 +37,7 @@ namespace Dash
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option
-            DishReplView.newVaraible(variableName);
+            DishReplView.NewVaraible(variableName);
         }
 
         public void SetVariable(string variableName, FieldControllerBase valueToSet)

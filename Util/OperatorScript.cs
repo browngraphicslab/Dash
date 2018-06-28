@@ -53,7 +53,7 @@ namespace Dash
 
             }
 
-            DishReplView.setDataset(_functionMap.Keys.ToList());
+            DishReplView.SetDataset(_functionMap.Keys.ToList());
 
             if (PrintAllFuncDocumentation)
             {
