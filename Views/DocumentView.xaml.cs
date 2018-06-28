@@ -271,7 +271,7 @@ namespace Dash
                 {
                     adornmentGroups.ForEach((dv) =>
                     {
-                        cview.SelectDocs(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
+                        SelectionManager.SelectDocuments(cview.DocsInMarquee(new Rect(dv.ViewModel.Position, new Size(dv.ActualWidth, dv.ActualHeight))));
                     });
                     SetSelectionBorder(false);
                 }
@@ -299,7 +299,7 @@ namespace Dash
                     {
                         if (ParentCollection.CurrentView is CollectionFreeformView cview)
                         {
-                            cview.DeselectAll();
+                            SelectionManager.DeselectDocuments(SelectionManager.GetSelectedDocumentsInCollection(cview).ToList());
                         }
                     }
                 }
@@ -865,10 +865,15 @@ namespace Dash
         /// </summary>
         List<DocumentView> SelectedDocuments()
         {
-            var marqueeDocs = (ParentCollection?.CurrentView as CollectionFreeformBase)?.SelectedDocs;
-            if (marqueeDocs != null && marqueeDocs.Contains(this))
-                return marqueeDocs.ToList();
-            return new List<DocumentView>(new DocumentView[] { this });
+            if (ParentCollection != null)
+            {
+                var marqueeDocs =
+                    SelectionManager.GetSelectedDocumentsInCollection(
+                        ParentCollection.CurrentView as CollectionFreeformBase);
+                if (marqueeDocs != null && marqueeDocs.Contains(this))
+                    return marqueeDocs.ToList();
+            }
+            return new List<DocumentView>(new[] { this });
         }
 
         #endregion
@@ -880,12 +885,11 @@ namespace Dash
             {
                 ToFront();
             }
-            var d = new List<DocumentView>(new DocumentView[] { this });
             if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
             {
-                if (!this.IsShiftPressed()) cfview.DeselectAll();
-                cfview.SelectDocs(d);
-                if (cfview.SelectedDocs.Count() > 1 && this.IsShiftPressed())
+                if (!this.IsShiftPressed()) SelectionManager.DeselectAllDocuments();
+                SelectionManager.Select(this);
+                if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
                 {
                     cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }

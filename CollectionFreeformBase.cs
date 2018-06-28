@@ -595,7 +595,7 @@ namespace Dash
             {
                 var pos = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
                     GetSelectionCanvas(), GetItemsControl().ItemsPanelRoot);
-                SelectDocs(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
+                SelectionManager.SelectDocuments(DocsInMarquee(new Rect(pos, new Size(_marquee.Width, _marquee.Height))));
                 GetSelectionCanvas().Children.Remove(_marquee);
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
@@ -681,7 +681,7 @@ namespace Dash
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
-                        DeselectAll();
+                        SelectionManager.DeselectAllDocuments();
 
                     GetOuterGrid().CapturePointer(args.Pointer);
                     _marqueeAnchor = args.GetCurrentPoint(GetSelectionCanvas()).Position;
@@ -828,7 +828,7 @@ namespace Dash
                 }
             }
 
-            if (deselect) DeselectAll();
+            if (deselect) SelectionManager.DeselectAllDocuments();
 
         }
         #endregion
@@ -869,40 +869,6 @@ namespace Dash
                 previewTextbox.Focus(FocusState.Pointer);
             }
         }
-        #endregion
-
-        #region SELECTION
-
-        public void DeselectAll()
-        {
-            GetSelectionCanvas()?.Children?.Clear();
-            foreach (var doc in SelectionManager.SelectedDocs)
-            {
-                doc.SetSelectionBorder(false);
-            }
-            _marquee = null;
-            _isMarqueeActive = false;
-            SelectionManager.DeselectAllDocuments();
-        }
-
-        /// <summary>
-        /// Selects all of the documents in selected. Works on a view-specific level.
-        /// </summary>
-        /// <param name="selected"></param>
-        public void SelectDocs(IEnumerable<DocumentView> selected)
-        {
-            GetSelectionCanvas().Children.Clear();
-
-            foreach (var doc in selected)
-            {
-                if (!SelectionManager.Contains(doc))
-                {
-                    SelectionManager.Select(doc);
-                    doc.SetSelectionBorder(true);
-                }
-            }
-        }
-
         #endregion
 
         #region TextInputBox

@@ -146,6 +146,7 @@ namespace Dash
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
+            SelectionManager.SelectionChanged += (sender, e) => { Update(SelectionManager.SelectedDocs); };
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
@@ -439,7 +440,7 @@ namespace Dash
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            foreach (DocumentView d in SelectionManager.SelectedDocs)
             {
                 d.CopyDocument();
             }
@@ -448,8 +449,7 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
-            foreach (DocumentView d in tempDocs)
+            foreach (DocumentView d in SelectionManager.SelectedDocs)
             {
                 d.DeleteDocument();
             }
