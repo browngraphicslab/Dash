@@ -28,8 +28,8 @@ namespace Dash
 
         private int _currentHistoryIndex = 0;
 
-        private List<String> dataset;
-        private List<String> currentSuggestions;
+        private readonly List<String> _dataset;
+        private bool _textModified;
 
         public DishReplView()
         {
@@ -39,7 +39,7 @@ namespace Dash
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
 
-            dataset = OperatorScript.GetAllOperators();
+            _dataset = OperatorScript.GetAllOperators();
 
         }
         public FieldControllerBase TargetFieldController { get; set; }
@@ -59,10 +59,6 @@ namespace Dash
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
         {
-
-            //only use terminal arrows if there is no autosuggest box
-            if (currentSuggestions == null || currentSuggestions.Count == 0)
-            {
                 switch (args.VirtualKey)
                 {
                     case VirtualKey.Up:
@@ -74,13 +70,12 @@ namespace Dash
                         xTextBox.Text = ViewModel.Items.ElementAt(Math.Max(0, ViewModel.Items.Count - _currentHistoryIndex))?.LineText?.Substring(3) ?? xTextBox.Text;
                         break;
                 }
-            }
         }
 
 
         private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
         {
-            var textBox = sender as TextBox;
+           var textBox = sender as TextBox;
             if (e.OriginalKey == VirtualKey.Enter)
             {
                 _currentHistoryIndex = 0;
@@ -104,6 +99,46 @@ namespace Dash
             }
         }
 
+        private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (!_textModified && xTextBox.Text != "")
+            {
+                var suggestions = _dataset.Where(x => x.StartsWith(xTextBox.Text)).ToList();
+
+                Suggestions.ItemsSource = suggestions;
+
+                var numSug = suggestions.Count;
+
+                if (numSug > 0)
+                {
+                    SuggestionsPopup.IsOpen = true;
+                    SuggestionsPopup.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    SuggestionsPopup.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                SuggestionsPopup.IsOpen = false;
+                SuggestionsPopup.Visibility = Visibility.Collapsed;
+            }
+
+            _textModified = false;
+        }
+
+        private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            var selectedItem = e.ClickedItem.ToString();
+            _textModified = true;
+            xTextBox.Text = selectedItem;
+
+            SuggestionsPopup.IsOpen = false;
+            SuggestionsPopup.Visibility = Visibility.Collapsed;
+        }
+
+
         private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             //Todo: find a better way to make doc controller for non text
@@ -120,60 +155,7 @@ namespace Dash
             var where = new Point(0, 0);
 
 
-           //  Actions.DisplayDocument(ViewModel, postitNote, where);
-        }
-
-        private void xTextBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            // Only get results when it was a user typing,
-            // otherwise assume the value got filled in by TextMemberPath
-            // or the handler for SuggestionChosen.
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                //Set the ItemsSource to be your filtered dataset
-                var suggestions = dataset.Where(x => x.StartsWith(sender.Text)).ToList();
-
-               sender.ItemsSource = suggestions;
-                currentSuggestions = suggestions;
-            }
-        }
-
-        private void xTextBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            var chosen = args.ChosenSuggestion;
-
-            //don't submit if suggestion clicked
-            if (chosen == null)
-            {
-                var textBox = sender as AutoSuggestBox;
-                _currentHistoryIndex = 0;
-                var currentText = textBox.Text;
-                textBox.Text = "";
-                FieldControllerBase returnValue;
-                try
-                {
-                    returnValue = _dsl.Run(currentText, true);
-                }
-                catch (Exception ex)
-                {
-                    returnValue = new TextController("There was an error: " + ex.StackTrace);
-                }
-
-                ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
-
-                //scroll to bottom
-                xScrollViewer.UpdateLayout();
-                xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
-
-                currentSuggestions = null;
-            }
-        }
-
-        private void xTextBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            var selectedItem = args.SelectedItem.ToString();
-            sender.Text = selectedItem;
-
+            //  Actions.DisplayDocument(ViewModel, postitNote, where);
         }
     }
 }

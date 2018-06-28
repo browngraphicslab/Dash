@@ -113,13 +113,13 @@ namespace Dash
         public override bool Equals(object obj)
         {
             var k = obj as KeyController;
-            return k != null && k.Id.Equals(GetId());
+            return k != null && k.Id.Equals(Id);
         }
 
         public override int GetHashCode()
         {
 
-            return GetId().GetHashCode();
+            return Id.GetHashCode();
 
         }
 

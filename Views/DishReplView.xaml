@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    x:Name="Control">
 
 
     <Border BorderBrush="Black" BorderThickness="1">
@@ -37,14 +38,37 @@
             <!--<TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50" Background="Gray">
 
             </TextBox>-->
-            <AutoSuggestBox Name="xTextBox" Grid.Row="1" Height="50" Background="Black"
+            <TextBox Name="xTextBox" Grid.Row="1" Height="50" Background="White"
                             PlaceholderText="Enter Command" KeyDown="TextInputKeyDown"
-                TextChanged="xTextBox_TextChanged"
-                QuerySubmitted="xTextBox_QuerySubmitted"
-                SuggestionChosen="xTextBox_SuggestionChosen" >
-            </AutoSuggestBox>
-            
-            
+                TextChanged="XTextBox_OnTextChanged"
+                            >
+            </TextBox>
+            <Popup x:Name="SuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="50" >
+                <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
+                              HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
+                    <Border x:Name="SuggestionsContainer" Background="LightGray">
+                    <Border.RenderTransform>
+                        <TranslateTransform x:Name="UpwardTransform"/>
+                    </Border.RenderTransform>
+                    <ListView x:Name="Suggestions" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Border Height="40">
+                                        <TextBlock Text="{Binding}" 
+                                           FontSize="12" Foreground="Black"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
+                </Border>
+                </ScrollViewer>
+            </Popup>
+
         </Grid>
     </Border>
 
