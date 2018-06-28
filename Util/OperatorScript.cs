@@ -136,6 +136,11 @@ namespace Dash
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
 
+        public static List<String> GetAllOperators()
+        {
+            return _functionMap.Keys.ToList();
+        }
+
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function
         /// </summary>
