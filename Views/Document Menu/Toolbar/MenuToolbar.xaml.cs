@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Controllers;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -329,6 +330,58 @@ namespace Dash
                         subtoolbarElement = xGroupToolbar;
                     }
 
+                    // Data box controls
+                    if (selection.ViewModel.DocumentController.DocumentType.Equals(DataBox.DocumentType))
+                    {
+                        var documentController = selection.ViewModel.DocumentController;
+                        var context = new Context(documentController);
+                        var data = documentController.GetDereferencedField<FieldControllerBase>(KeyStore.DataKey, context);
+                        //switch statement for type of data
+                        if (data is ImageController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xImageToolbar;
+                            subtoolbarElement = xImageToolbar;
+                            xImageToolbar.SetImageBinding(selection);
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is ListController<DocumentController>)
+                        {
+                            if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+                            {
+                                if (!containsInternalContent)
+                                {
+                                    var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                    xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                    subtoolbarElement = xCollectionToolbar;
+                                }
+                                else
+                                {
+                                    subtoolbarElement = baseLevelContentToolbar;
+                                }
+                            }
+                            else
+                            {
+                                var thisCollection = VisualTreeHelperExtensions.GetFirstDescendantOfType<CollectionView>(selection);
+                                xCollectionToolbar.SetCollectionBinding(thisCollection);
+                                subtoolbarElement = xCollectionToolbar;
+                            }
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is TextController || data is NumberController || data is DateTimeController || data is RichTextController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xTextToolbar;
+                            xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                            //give toolbar access to the most recently selected text box for editing purposes
+                            xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+                            xTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xTextToolbar;
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                    }
+
+
                     // <------------------- ADD BASE LEVEL CONTENT TYPES ABOVE THIS LINE -------------------> 
 
                     // TODO Revisit this when selection is refactored
@@ -364,6 +417,8 @@ namespace Dash
                         System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
                     }
+
+                    
 
                     //If the user has clicked on valid content (text, image, video, etc)...
                     if (subtoolbarElement != null)

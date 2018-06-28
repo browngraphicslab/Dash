@@ -57,6 +57,7 @@ namespace Dash
         private DocumentView _selectedDocument;
         private Point _pasteWhereHack;
         private double _thickness;
+        private bool _isDataDocKVP = true;
         private Windows.UI.Color _color;
         DataPackage dataPackage = new DataPackage();
 
@@ -94,8 +95,36 @@ namespace Dash
 
         private void AddDocs(IEnumerable<DocumentController> newDocs)
         {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             foreach (var doc in newDocs)
             {
+                // if either is true, then the layout doc needs to be abstracted
+                if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+                {
+                    if (_isDataDocKVP)
+                    {
+                        // set the layout doc's context to a reference of the data doc's context
+                        doc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey),
+                            true);
+                    }
+                    else
+                    {
+                        // set the layout doc's context to a reference of the data doc's context
+                        doc.SetField(KeyStore.DocumentContextKey,
+                            new DocumentReferenceController(new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey).Id,
+                                KeyStore.DocumentContextKey),
+                            true);
+                    }
+                    var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+
+                    if (specificKey != null)
+                    {
+                        // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
+                        doc.SetField(KeyStore.DataKey,
+                            new PointerReferenceController(
+                                doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
+                    }
+                }
                 // create new viewmodel with a copy of document, set editor to this
                 var dvm =
                     new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
@@ -107,12 +136,18 @@ namespace Dash
             xItemsControl.ItemsSource = DocumentViewModels;
         }
 
-	    public void FormatPanes()
+        private void XSwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _isDataDocKVP = !_isDataDocKVP;
+        }
+
+        public void FormatPanes()
 	    {
 			//make key value pane
 		    if (xDataPanel.Children.Count == 0)
 		    {
 				_keyValuePane = new KeyValueTemplatePane(this);
+                _keyValuePane.KVP.xSwitchButton.Tapped += XSwitchButton_Tapped;
 			    xDataPanel.Children.Add(_keyValuePane);
 			}
 
@@ -143,6 +178,8 @@ namespace Dash
             }
             //update item source
             xItemsControl.ItemsSource = DocumentViewModels;
+
+            DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
             //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
         }
@@ -295,35 +332,35 @@ namespace Dash
         private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
         {
             // TODO: Consider if we really need this and want to put in the work to save borders for documents -sy
-            double left = 0;
-            if (xLeftBorderChecker.IsChecked.GetValueOrDefault(false))
-            {
-                left = _thickness;
-            }
+            //double left = 0;
+            //if (xLeftBorderChecker.IsChecked.GetValueOrDefault(false))
+            //{
+            //    left = _thickness;
+            //}
 
-            double top = 0;
-            if (xTopBorderChecker.IsChecked.GetValueOrDefault(false))
-            {
-                top = _thickness;
-            }
+            //double top = 0;
+            //if (xTopBorderChecker.IsChecked.GetValueOrDefault(false))
+            //{
+            //    top = _thickness;
+            //}
 
-            double right = 0;
-            if (xRightBorderChecker.IsChecked.GetValueOrDefault(false))
-            {
-                right = _thickness;
-            }
+            //double right = 0;
+            //if (xRightBorderChecker.IsChecked.GetValueOrDefault(false))
+            //{
+            //    right = _thickness;
+            //}
 
-            double bottom = 0;
-            if (xBottomBorderChecker.IsChecked.GetValueOrDefault(false))
-            {
-                bottom = _thickness;
-            }
+            //double bottom = 0;
+            //if (xBottomBorderChecker.IsChecked.GetValueOrDefault(false))
+            //{
+            //    bottom = _thickness;
+            //}
 
-            if (_selectedDocument != null)
-            {
-                _selectedDocument.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
-                _selectedDocument.TemplateBorder.BorderThickness = new Thickness(left, top, right, bottom);
-            }
+            //if (_selectedDocument != null)
+            //{
+            //    _selectedDocument.TemplateBorder.BorderBrush = new SolidColorBrush(_color);
+            //    _selectedDocument.TemplateBorder.BorderThickness = new Thickness(left, top, right, bottom);
+            //}
         }
 
         // called when apply changes button is clicked
@@ -332,32 +369,9 @@ namespace Dash
             // layout document's data key holds the document that we are currently working on
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             // TODO: working doc should be able to be null
-            // set the data document's context to the working doc
-            DataDocument.SetField(KeyStore.DocumentContextKey, workingDoc, true);
             // make a copy of the data document
             var dataDocCopy = DataDocument.MakeCopy();
             // loop through each layout document and try to abstract it out when necessary
-            foreach (var doc in DocumentControllers)
-            {
-                // if either is true, then the layout doc needs to be abstracted
-                if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-                {
-                    // set the layout doc's context to a reference of the data doc's context
-                    doc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument.Id, KeyStore.DocumentContextKey),
-                        true);
-                    // get all key value pairs and find the one whose key matches the title of the document
-                    var keyValuePairs = DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).GetDataDocument().EnumFields();
-                    var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(doc.Title)).Key;
-
-                    if (specificKey != null)
-                    {
-                        // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
-                        doc.SetField(KeyStore.DataKey,
-                            new PointerReferenceController(
-                                doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
-                    }
-                }
-            }
 
             // set the dataDocCopy's document context key to the working document's data document
             dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
@@ -377,7 +391,7 @@ namespace Dash
                 DocumentViews.Add(docView);
                 docView.hideEllipses();
             }
-            
+
             //updates and generates bounds for the children inside the template canvas
             var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
                 xWorkspace.Clip.Rect.Height - docView.ActualHeight);
@@ -388,6 +402,33 @@ namespace Dash
         private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
         {
             _selectedDocument = sender;
+            var title = _selectedDocument.ViewModel.DocumentController.Title.ToString();
+            var specificKey = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+            string text = "";
+            if (specificKey != null)
+            {
+                text = "#";
+            }
+            text += title;
+            xKeyBox.Text = text;
+            xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+        }
+
+        private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (!xKeyBox.TextBoxLoaded)
+            {
+                var text = xKeyBox.Text;
+                if (text.StartsWith("#"))
+                {
+                    var possibleKeyString = text.Substring(1);
+                    var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument().EnumFields();
+                    //var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString)).Key;
+                  //  if (specificKey != null)
+                  //  {
+                  //  }
+                }
+            }
         }
 
         #region OnDrop Mechanics

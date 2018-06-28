@@ -46,6 +46,8 @@
         </Canvas>
 
         <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="DodgerBlue" Padding="10 10 10 10">
+            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Data Key</TextBlock>
+            <local:EditableTextBlock Width="180" FontSize="16" HorizontalAlignment="Left" x:Name="xKeyBox"></local:EditableTextBlock>
             <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Add Item</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarButton Icon="Rename" Height="50" Width="50" Click="TextButton_OnClick"></AppBarButton>
@@ -61,7 +63,7 @@
                 <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
             </StackPanel>
 
-            <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
+            <!--<TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarToggleButton Icon="Import" Height="50" Width="50" x:Name="xLeftBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Up" Height="50" Width="50" x:Name="xTopBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
@@ -71,7 +73,7 @@
 
             <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200" Maximum="10"
                     ValueChanged="XThicknessSlider_OnValueChanged" />
-            <!--<media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
+            <media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick" ></AppBarButton>

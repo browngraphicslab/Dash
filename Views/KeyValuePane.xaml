@@ -58,7 +58,7 @@
                 <TextBlock x:Name="xTitleBlock" Foreground="White" Margin="0,5,0,0" FontWeight="Medium" TextAlignment="Center" />
                 <TextBlock x:Name="xDocBlock" Foreground="White" Text="Data" Padding="0" FontWeight="Medium" Tapped="xDocBlock_Tapped" TextAlignment="Center" VerticalAlignment="Center" Width="60" Grid.Column="1" />
 
-                <AppBarButton Width="40"  Foreground="White" Background="Transparent" Label="Data"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
+                <AppBarButton Width="40"  Foreground="White" Background="Transparent" Label="Data" x:Name="xSwitchButton" x:FieldModifier="public"  Tapped="SwitchButton_Tapped"  Grid.Column="2" >
                     <AppBarButton.Icon>
                         <SymbolIcon Symbol="Switch"  FocusVisualPrimaryBrush="White" HorizontalAlignment="Right"></SymbolIcon>
                     </AppBarButton.Icon>

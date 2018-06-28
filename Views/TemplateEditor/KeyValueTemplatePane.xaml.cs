@@ -22,7 +22,7 @@ namespace Dash
 {
 	public sealed partial class KeyValueTemplatePane : UserControl
 	{
-		private KeyValuePane _kvPane;
+        public KeyValuePane KVP { get; set; }
 
 		public KeyValueTemplatePane(TemplateEditorView editor)
 		{
@@ -34,13 +34,13 @@ namespace Dash
 
 		private void FormatPane(TemplateEditorView editor)
 		{
-			var kvPane = new KeyValuePane()
+			KVP = new KeyValuePane()
 			{
 				DataContext = editor.LayoutDocument.GetDereferencedField<DocumentController>(KeyStore.DataKey, null),
 				Width = 300
 			};
 
-			xGrid.Children.Add(kvPane);
+			xGrid.Children.Add(KVP);
 		}
-	}
+    }
 }
