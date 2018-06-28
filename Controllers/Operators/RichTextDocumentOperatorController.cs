@@ -48,6 +48,7 @@ namespace Dash
                 var richEditBox = new RichEditBox();
                 richEditBox.Document.SetText(TextSetOptions.FormatRtf, richTextController.RichTextFieldModel.Data.RtfFormatString);
                 richEditBox.Document.GetText(TextGetOptions.UseObjectText, out string readableText);
+                readableText = readableText.Replace("\r", "\n");
                 outputs[ReadableTextKey] = new TextController(readableText ?? "");
             }
         }

@@ -213,14 +213,14 @@ namespace Dash
                     foreach (var e in refDoc.EnumFields())
                         if (e.Key.Name == path[1])
                         {
-                            return new DocumentReferenceController(refDoc.GetId(), e.Key); // found <DocName=a>.<FieldName=b>
+                            return new DocumentReferenceController(refDoc.Id, e.Key); // found <DocName=a>.<FieldName=b>
                         }
             }
 
             foreach (var e in this.EnumFields())
                 if (e.Key.Name == path[0])
                 {
-                    return new DocumentReferenceController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
+                    return new DocumentReferenceController(refDoc.Id, e.Key);  // found This.<FieldName=a>
                 }
 
             //if (searchAllDocsIfFail)
@@ -295,7 +295,7 @@ namespace Dash
                             }
                         }
                     }
-                    SetField(key, new DocumentReferenceController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
+                    SetField(key, new DocumentReferenceController(opModel.Id, opFieldController.Outputs.First().Key), true, false);
                 }
             }
             else
@@ -499,7 +499,7 @@ namespace Dash
                 return false;
             }
             var visitedFields = new HashSet<FieldReference>();
-            visitedFields.Add(new DocumentFieldReference(GetId(), key));
+            visitedFields.Add(new DocumentFieldReference(Id, key));
             var rfms = new Queue<Tuple<FieldControllerBase, Context>>();
 
             //TODO If this is a DocPointerFieldReference this might not work
@@ -629,7 +629,7 @@ namespace Dash
 
             //// create a controller for the child
             //var delegateController = new DocumentController(delegateModel);
-            var delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, "delegate-of-" + GetId() + "-" + Guid.NewGuid());
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldControllerBase>(), DocumentType, "delegate-of-" + Id + "-" + Guid.NewGuid());
             delegateController.Tag = (Tag ?? "") + "DELEGATE";
 
             // create and set a prototype field on the child, pointing to ourself
@@ -683,7 +683,7 @@ namespace Dash
         {
             var proto = GetPrototype();
             if (proto == null) return false;
-            return proto.GetId() == id || proto.IsDelegateOf(id);
+            return proto.Id == id || proto.IsDelegateOf(id);
         }
 
 
@@ -746,7 +746,6 @@ namespace Dash
                     
                 }
             }
-
             return GetField(key)?.RootTypeInfo ?? TypeInfo.Any;
         }
         /// <summary>
@@ -843,7 +842,7 @@ namespace Dash
 
                 // fire document field updated if the field has been replaced or if it did not exist before
                 var action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-                var reference = new DocumentFieldReference(GetId(), key);
+                var reference = new DocumentFieldReference(Id, key);
                 var updateArgs = new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, null, false);
                 if (key.Name != "_Cache Access Key")
                     generateDocumentFieldUpdatedEvents(updateArgs, new Context(doc));
@@ -1117,7 +1116,7 @@ namespace Dash
                     cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
                         .SetField(key, fieldModel.Value, true);
                 }
-                var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
+                var reference = new DocumentFieldReference(Id, fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)
                 {
@@ -1144,7 +1143,7 @@ namespace Dash
             var panel = fields.Count() > 1 ? (Panel)new StackPanel() : new Grid();
             void Action(KeyValuePair<KeyController, FieldControllerBase> f)
             {
-                f.Value.MakeAllViewUI(this, f.Key, context, panel, GetId());
+                f.Value.MakeAllViewUI(this, f.Key, context, panel, Id);
             }
 
 
@@ -1272,7 +1271,7 @@ namespace Dash
         #region Overriden from Object
         public override int GetHashCode()
         {
-            return GetId().GetHashCode();
+            return Id.GetHashCode();
         }
         
 
@@ -1287,7 +1286,7 @@ namespace Dash
             {
                 return false;
             }
-            return GetId().Equals(controller.GetId());
+            return Id.Equals(controller.Id);
         }
         #endregion
 
@@ -1325,7 +1324,7 @@ namespace Dash
         /// </summary>
         void setupFieldChangedListeners(KeyController key, FieldControllerBase newField, FieldControllerBase oldField, Context context)
         {
-            var reference = new DocumentFieldReference(GetId(), key);
+            var reference = new DocumentFieldReference(Id, key);
             ///<summary>
             /// Generates a DocumentFieldUpdated event when a fieldModelUpdated event has been fired for a field in this document.
             ///</summary>
@@ -1336,7 +1335,7 @@ namespace Dash
                 //if (new Context(proto).IsCompatibleWith(c))
                 {
                     var newContext = new Context(c);
-                    if (newContext.DocContextList.Count(d => d.IsDelegateOf(GetId())) == 0)  // don't add This if a delegate of This is already in the Context.
+                    if (newContext.DocContextList.Count(d => d.IsDelegateOf(Id)) == 0)  // don't add This if a delegate of This is already in the Context.
                         newContext.AddDocumentContext(this);                                 // TODO lsm don't we get deepest delegate anyway, why would we not add it???
 
                     var updateArgs = new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, args, false);

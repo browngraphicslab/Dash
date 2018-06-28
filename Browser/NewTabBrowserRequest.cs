@@ -10,10 +10,5 @@ namespace Dash.Browser
         {
             var a = this.Serialize();
         }
-
-        public override void Handle(BrowserView browser)
-        {
-            
-        }
     }
 }

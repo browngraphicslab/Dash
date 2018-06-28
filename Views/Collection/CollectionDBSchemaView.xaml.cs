@@ -237,7 +237,7 @@ namespace Dash
             field = dc.Document.GetDataDocument().GetDereferencedField(dc.HeaderViewModel.FieldKey, null);
 
             dc.Document.GetDataDocument().ParseDocField(dc.HeaderViewModel.FieldKey, xEditTextBox.Text, field);
-            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().GetId(), dc.HeaderViewModel.FieldKey);
+            dc.DataReference = new DocumentReferenceController(dc.Document.GetDataDocument().Id, dc.HeaderViewModel.FieldKey);
             dc.Selected = false;
         }
 
@@ -491,7 +491,7 @@ namespace Dash
             {
                 var viewModel = m as HeaderViewModel;
                 var collectionViewModel = (viewModel.SchemaView.DataContext as CollectionViewModel);
-                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().GetId(), collectionViewModel.CollectionKey);
+                var collectionReference = new DocumentReferenceController(viewModel.SchemaDocument.GetDataDocument().Id, collectionViewModel.CollectionKey);
                 var collectionData = collectionReference.DereferenceToRoot<ListController<DocumentController>>(null).TypedData;
                 e.Data.Properties.Add(nameof(DragCollectionFieldModel),
                     new DragCollectionFieldModel(

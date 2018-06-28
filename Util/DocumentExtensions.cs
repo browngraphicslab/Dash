@@ -221,7 +221,7 @@ namespace Dash
             Debug.Assert(where != null);
             var previewDoc =
                 new PreviewDocument(
-                    new DocumentReferenceController(doc.GetId(), KeyStore.SelectedSchemaRow), where.Value);
+                    new DocumentReferenceController(doc.Id, KeyStore.SelectedSchemaRow), where.Value);
             return new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {
                 [KeyStore.ActiveLayoutKey] = previewDoc.Document,
@@ -556,8 +556,8 @@ namespace Dash
                 foreach (var r in refs)
                 {
                     var referenceDoc = r as DocumentReferenceController ?? (r as PointerReferenceController)?.DocumentReference as DocumentReferenceController;
-                    if (referenceDoc?.DocumentId == oldToNewDoc.Key.GetId()) // if reference pointed to a doc that got copied
-                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value.GetId());  // then update the reference to point to the new doc
+                    if (referenceDoc?.DocumentId == oldToNewDoc.Key.Id) // if reference pointed to a doc that got copied
+                       referenceDoc.ChangeFieldDoc(oldToNewDoc.Value.Id);  // then update the reference to point to the new doc
                 }
             }
             return copy;

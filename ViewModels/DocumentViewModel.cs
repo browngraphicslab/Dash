@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
         Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
         
@@ -145,6 +146,11 @@ namespace Dash
             set { SetProperty(ref _searchHighlightState, value); }
         }
 
+        public CollectionViewModel.StandardViewLevel ViewLevel
+        {
+            get => _standardViewLevel;
+            set => SetProperty(ref _standardViewLevel, value);
+        }
         public bool DisableDecorations { get; set; } = false;
 
 
@@ -163,7 +169,7 @@ namespace Dash
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
+                //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
                 LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
             {
                 if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
