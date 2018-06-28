@@ -219,7 +219,6 @@
     <Compile Include="Converters\BoolToBrushConverter.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoolToOpacityConverter.cs" />
-    <Compile Include="Converters\DocumentAndKeyToEditableScriptBoxConverter.cs" />
     <Compile Include="Converters\RadioEnumToBoolConverter.cs" />
     <Compile Include="Converters\ObjectToStringConverter.cs" />
     <Compile Include="Converters\PointToStringConverter.cs" />
