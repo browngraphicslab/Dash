@@ -113,12 +113,12 @@ namespace Dash
         
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs scrollViewerViewChangedEventArgs)
         {
-            foreach (var scrollViewer in ColumnViewModels.Select(cvm => cvm.ViewModelScrollViewer))
+            foreach (var scrollViewer in ColumnViewModels.Select(cvm => cvm.ViewModelScrollViewer))//TODO calling change view in the view changed method causes this to get called way more than it should
             {
                 if (scrollViewer == null) continue;
 
                 if (!scrollViewer.Equals(sender as ScrollViewer))
-                    scrollViewer.ScrollToVerticalOffset((sender as ScrollViewer).VerticalOffset);
+                    scrollViewer.ChangeView(null, (sender as ScrollViewer).VerticalOffset, null, true);
             }
 
         }
