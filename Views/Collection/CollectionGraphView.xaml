@@ -65,7 +65,7 @@
                 </Canvas>
             </Grid>
         </ScrollViewer>
-        <controls:Expander x:Name="xExpandingBoy" Grid.Column="1" Header="Open Info Panel"
+        <controls:Expander x:Name="xExpander" Grid.Column="1" Header="Open Info Panel"
                            Foreground="White"
                            ExpandDirection="Left" Width="40" HorizontalAlignment="Right"
                            Expanded="Expander_OnExpanded" Collapsed="Expander_OnCollapsed"

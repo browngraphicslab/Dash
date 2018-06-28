@@ -71,50 +71,37 @@ namespace Dash
 
     public sealed partial class CollectionGraphView : UserControl, ICollectionView
     {
-        private DocumentController _parentDocument;
-
-
         private GraphNodeView _selectedNode;
 
         public CollectionGraphView()
         {
             InitializeComponent();
-            OriginalXPositions = new ObservableDictionary<GraphNodeViewModel, double>();
-            CollectionCanvas = new ObservableCollection<GraphNodeView>();
-            AdjacencyLists = new ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>>();
+            OriginalXPositions = new Dictionary<GraphNodeViewModel, double>();
+            CollectionCanvas = new List<GraphNodeView>();
+            AdjacencyLists = new Dictionary<DocumentViewModel, List<DocumentViewModel>>();
             Connections = new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
-            CollectionDocuments = new ObservableCollection<DocumentController>();
-            Links = new ObservableCollection<GraphConnection>();
-            Nodes = new ObservableCollection<GraphNodeViewModel>();
+            CollectionDocuments = new List<DocumentController>();
+            Links = new List<GraphConnection>();
+            Nodes = new List<GraphNodeViewModel>();
 
             Loaded += CollectionGraphView_Loaded;
             Unloaded += CollectionGraphView_Unloaded;
         }
 
-        public DocumentController ParentDocument
-        {
-            get => _parentDocument;
-            set
-            {
-                _parentDocument = value;
-                if (value != null)
-                    if (ParentDocument.GetField(CollectionDBView.FilterFieldKey) == null)
-                        ParentDocument.SetField(CollectionDBView.FilterFieldKey, new KeyController(), true);
-            }
-        }
+        public DocumentController ParentDocument { get; set; }
 
-        public ObservableCollection<GraphConnection> Links { get; set; }
-        public ObservableCollection<GraphNodeViewModel> Nodes { get; set; }
-        public ObservableCollection<DocumentController> CollectionDocuments { get; set; }
-        public ObservableCollection<GraphNodeView> CollectionCanvas { get; set; }
+        public List<GraphConnection> Links { get; set; }
+        public List<GraphNodeViewModel> Nodes { get; set; }
+        public List<DocumentController> CollectionDocuments { get; set; }
+        public List<GraphNodeView> CollectionCanvas { get; set; }
 
-        public ObservableDictionary<DocumentViewModel, ObservableCollection<DocumentViewModel>> AdjacencyLists
+        public Dictionary<DocumentViewModel, List<DocumentViewModel>> AdjacencyLists
         {
             get;
             set;
         }
 
-        public ObservableDictionary<GraphNodeViewModel, double> OriginalXPositions { get; set; }
+        public Dictionary<GraphNodeViewModel, double> OriginalXPositions { get; set; }
 
         public ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>> Connections { get; set; }
 
@@ -178,7 +165,7 @@ namespace Dash
         {
             xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
             xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
-            xExpandingBoy.Height = xScrollViewer.ActualHeight;
+            xExpander.Height = xScrollViewer.ActualHeight;
             xInfoScroller.Height = xScrollViewer.ActualHeight;
             xContainerGrid.Height = xInfoPanel.ActualHeight;
             xInfoPanel.Height = xScrollViewer.ActualHeight;
@@ -317,7 +304,7 @@ namespace Dash
             foreach (var dvm in ViewModel.DocumentViewModels)
                 if (dvm != null)
                 {
-                    AdjacencyLists[dvm] = new ObservableCollection<DocumentViewModel>();
+                    AdjacencyLists[dvm] = new List<DocumentViewModel>();
                     Nodes.Add(new GraphNodeViewModel(dvm, xPositions.First(i => i.Key.Equals(dvm)).Value,
                         yPositions.First(i => i.Key.Equals(dvm)).Value));
                 }
@@ -360,7 +347,7 @@ namespace Dash
                 var offsetY = e?.NewSize.Height - e?.PreviousSize.Height ?? 0;
                 xScrollViewCanvas.Width = xScrollViewer.ActualWidth;
                 xScrollViewCanvas.Height = xScrollViewer.ActualHeight;
-                xExpandingBoy.Height = xScrollViewer.ActualHeight;
+                xExpander.Height = xScrollViewer.ActualHeight;
                 xInfoScroller.Height = xScrollViewCanvas.ActualHeight;
                 xContainerGrid.Height = xInfoPanel.ActualHeight;
                 xInfoPanel.Height = xScrollViewer.ActualHeight;
@@ -384,10 +371,10 @@ namespace Dash
 
         private void Expander_OnExpanded(object sender, EventArgs e)
         {
-            xExpandingBoy.Width = 300;
-            xExpandingBoy.Header = "Close Info Panel";
+            xExpander.Width = 300;
+            xExpander.Header = "Close Info Panel";
             xScrollViewCanvas.Width -= 260;
-            xExpandingBoy.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
+            xExpander.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
 
             // store the original x positions of each node so we know where to put them back
             foreach (var node in Nodes)
@@ -400,10 +387,10 @@ namespace Dash
 
         private void Expander_OnCollapsed(object sender, EventArgs e)
         {
-            xExpandingBoy.Width = 40;
-            xExpandingBoy.Header = "Open Info Panel";
+            xExpander.Width = 40;
+            xExpander.Header = "Open Info Panel";
             xScrollViewCanvas.Width += 260;
-            xExpandingBoy.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+            xExpander.Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
 
             foreach (var node in Nodes)
             {
