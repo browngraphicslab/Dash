@@ -173,6 +173,7 @@ namespace Dash
         {
             var selectedItem = args.SelectedItem.ToString();
             sender.Text = selectedItem;
+
         }
     }
 }
