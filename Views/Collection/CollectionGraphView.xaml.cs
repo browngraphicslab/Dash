@@ -47,7 +47,7 @@ namespace Dash
             set => SetProperty(ref _yPosition, value);
         }
 
-        public ObservableCollection<Polyline> Links;
+        public List<Polyline> Links;
 
         #endregion
 
@@ -59,7 +59,7 @@ namespace Dash
 
         public GraphNodeViewModel(DocumentViewModel dvm, double x, double y)
         {
-            Links = new ObservableCollection<Polyline>();
+            Links = new List<Polyline>();
             DocumentViewModel = dvm;
             DocumentController = dvm.DocumentController;
             XPosition = x;
@@ -206,10 +206,10 @@ namespace Dash
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    AddNodes(new ObservableCollection<DocumentViewModel>(e.NewItems.Cast<DocumentViewModel>()));
+                    AddNodes(e.NewItems.Cast<DocumentViewModel>().ToList());
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    RemoveNodes(new ObservableCollection<DocumentViewModel>(e.OldItems.Cast<DocumentViewModel>()));
+                    RemoveNodes(e.OldItems.Cast<DocumentViewModel>().ToList());
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     CollectionDocuments.Clear();
@@ -218,7 +218,7 @@ namespace Dash
             }
         }
 
-        private void RemoveNodes(ObservableCollection<DocumentViewModel> oldDocs)
+        private void RemoveNodes(List<DocumentViewModel> oldDocs)
         {
             //loops through each removed document
             foreach (var doc in oldDocs)
@@ -227,7 +227,7 @@ namespace Dash
                 //finds node to remove
                 var nvmToRemove = Nodes.First(gvm => gvm.DocumentViewModel.Equals(doc));
                 var connectionsToRemove =
-                    new ObservableCollection<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
+                    new List<KeyValuePair<DocumentViewModel, DocumentViewModel>>();
                 //removes all the links connecting to the node
                 foreach (var connection in Links)
                     if (connection.ToDoc.ViewModel == nvmToRemove ||
@@ -255,10 +255,10 @@ namespace Dash
         {
             AdjacencyLists.Clear();
             // initialize and sort each node by their freeform positions
-            var sortX = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
+            var sortX = new List<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedX = sortX.OrderBy(i =>
                 i.DocumentController?.GetField<PointController>(KeyStore.PositionFieldKey).Data.X);
-            var sortY = new ObservableCollection<DocumentViewModel>(ViewModel.DocumentViewModels);
+            var sortY = new List<DocumentViewModel>(ViewModel.DocumentViewModels);
             var sortedY = sortY.OrderBy(i =>
                 i.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y);
 
@@ -284,7 +284,7 @@ namespace Dash
                 gridY = (xScrollViewCanvas.Height - maxNodeDiam) / sortedY.Count();
 
             // place nodes in relation to their freeform spatial positions
-            var xPositions = new ObservableDictionary<DocumentViewModel, double>();
+            var xPositions = new Dictionary<DocumentViewModel, double>();
             double x = 0;
             foreach (var dvm in sortedX)
             {
@@ -292,7 +292,7 @@ namespace Dash
                 x += gridX;
             }
 
-            var yPositions = new ObservableDictionary<DocumentViewModel, double>();
+            var yPositions = new Dictionary<DocumentViewModel, double>();
             double y = 0;
             foreach (var dvm in sortedY)
             {
@@ -316,7 +316,7 @@ namespace Dash
         ///     nearly all of the information associated with the graph
         /// </summary>
         /// <param name="newDocs"></param>
-        private void AddNodes(ObservableCollection<DocumentViewModel> newDocs)
+        private void AddNodes(List<DocumentViewModel> newDocs)
         {
             // add each new document to the list of documents
             foreach (var newDoc in newDocs)
