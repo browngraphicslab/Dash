@@ -98,13 +98,13 @@ namespace Dash
         {
             var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
             //var lineData = ((line as Dash.ReplLineViewModel)._value as NumberController).Data;
-            var outputData = output.Value;
+            //var outputData = output.Value;
 
-            var collection = MainPage.Instance.MainDocument.GetDataDocument();
+            //var collection = MainPage.Instance.MainDocument.GetDataDocument();
 
-            var where = new Point(0, 0);
+            //var where = new Point(0, 0);
 
-            Actions.DisplayDocument(outputData, collection, where);
+            //Actions.DisplayDocument(outputData, collection, where);
         }
     }
 }

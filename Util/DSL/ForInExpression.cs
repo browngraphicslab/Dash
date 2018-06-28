@@ -23,13 +23,13 @@ namespace Dash
         {
             scope = new Scope(scope);
             scope.DeclareVariable(_subVarName, new NumberController(0));
-            var list = _listToExecute.Execute(scope) as ListController<FieldControllerBase>;
+            var list = _listToExecute.Execute(scope) as BaseListController;
 
             for (var i = 0; i < list?.Count; i++)
             {
-                scope.SetVariable(_subVarName, list[i]);
+                scope.SetVariable(_subVarName, list.GetValue(i));
                 _bodyToExecute.Execute(scope);
-                list[i] = scope.GetVariable(_subVarName);
+                list.SetValue(i, scope.GetVariable(_subVarName));
             }
 
             return list;

@@ -345,6 +345,19 @@ namespace Dash
             if (elements is IList<T> checkedElements && !IsReadOnly) AddRangeManager(checkedElements);
         }
 
+        public override void SetValue(int index, FieldControllerBase field)
+        {
+            if (field is T tValue)
+            {
+                this[index] = tValue;
+            }
+        }
+
+        public override FieldControllerBase GetValue(int index)
+        {
+            return this[index];
+        }
+
         public void AddRange(IList<T> elements)
         {
             if (!IsReadOnly) AddRangeManager(elements);
