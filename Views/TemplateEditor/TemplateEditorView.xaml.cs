@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
@@ -1005,29 +1006,51 @@ namespace Dash
 		#endregion
 
 
-		private void AddItemsOnClick(object sender, RoutedEventArgs e)
+		private void ExpandButtonOnClick(object sender, RoutedEventArgs e)
 		{
-			var centX = (float) xAddItemsArrow.ActualWidth / 2;
-			var centY= (float)xAddItemsArrow.ActualHeight / 2;
-
-			if (xAddItemsButtonStack.Visibility == Visibility.Visible)
+			var button = sender as StackPanel;
+			StackPanel stack = null;
+			FontAwesome arrow = null;
+			Storyboard animation = null;
+			//toggle visibility of sub-buttons according to what header button was pressed
+			switch (button?.Name)
 			{
-				xAddItemsArrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
-				xAddItemsButtonStack.Visibility = Visibility.Collapsed;
-				
+				case "xAddItemsHeader":
+					stack = xAddItemsButtonStack;
+					arrow = xAddItemsArrow;
+					animation = xFadeAnimation;
+					break;
+				case "xFormatItemsHeader":
+					stack = xFormatItemsButtonStack;
+					arrow = xFormatItemsArrow;
+					animation = xFadeAnimationFormat;
+					break;
+				case "xOptionsHeader":
+					stack = xOptionsButtonStack;
+					arrow = xOptionsArrow;
+					animation = xFadeAnimationOptions;
+					break;
+			}
+			if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
+		}
+
+		private void ToggleButtonState(StackPanel buttonStack, FontAwesome arrow, Storyboard fade)
+		{
+			var centX = (float)xAddItemsArrow.ActualWidth / 2;
+			var centY = (float)xAddItemsArrow.ActualHeight / 2;
+
+			if (buttonStack.Visibility == Visibility.Visible)
+			{
+				arrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
+				buttonStack.Visibility = Visibility.Collapsed;
+
 			}
 			else
 			{
-				xAddItemsArrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
-				xAddItemsButtonStack.Visibility = Visibility.Visible;
-				xFadeAnimation?.Begin();
+				arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
+				buttonStack.Visibility = Visibility.Visible;
+				fade?.Begin();
 			}
-			
-		}
-
-		private void ToggleButtonState(FontAwesomeIcon icon, StackPanel buttonStack)
-		{
-
 		}
 
 
@@ -1089,11 +1112,14 @@ namespace Dash
 			//xItemsExpander.Background = new SolidColorBrush(Color.FromArgb(255, 85, 102, 102));
 		}
 
+
+		//if we want to change the buttons on hover
 		private void XExpansionGrid_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
 			XAddItemsGrid.Background = new SolidColorBrush(Color.FromArgb(255, 65, 104, 87));
 		}
 
+		
 		private void XExpansionGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
 			if (xAddItemsButtonStack.Visibility == Visibility.Collapsed)
