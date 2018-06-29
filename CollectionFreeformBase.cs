@@ -600,12 +600,12 @@ namespace Dash
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
                 _isMarqueeActive = false;
-                e.Handled = true;
+                if (e != null) e.Handled = true;
             }
 
             SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
-            GetOuterGrid().ReleasePointerCapture(e.Pointer);
+            if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
         /// <summary>
@@ -778,6 +778,7 @@ namespace Dash
                     SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                 marquee = _marquee;
                 viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                OnPointerReleased(null, null);
             }
             else
             {
