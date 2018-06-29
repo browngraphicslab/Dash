@@ -15,7 +15,7 @@
         <Grid VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="50" x:Name="xTextRow" />
+                <RowDefinition Height="50" x:Name="TextGrid" />
             </Grid.RowDefinitions>
             <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
@@ -35,11 +35,11 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <TextBox Name="xTextBox" Grid.Row="1" Height="50" Background="White" FontSize="18"
+            <TextBox Name="xTextBox" Grid.Row="1" Height="{x:Bind TextHeight, Mode=OneWay}" Background="White" FontSize="18"
                             PlaceholderText="Enter Command" 
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true">
             </TextBox>
-            <Popup x:Name="SuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="50" >
+            <Popup x:Name="SuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
                 <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
                     <Border x:Name="SuggestionsContainer" Background="LightGray">

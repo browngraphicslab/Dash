@@ -1,8 +1,10 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -16,12 +18,13 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.Annotations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class DishReplView : UserControl 
+    public sealed partial class DishReplView : UserControl, INotifyPropertyChanged
     {
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private readonly DSL _dsl;
@@ -32,6 +35,18 @@ namespace Dash
         private bool _textModified;
 
         private string _currentText = "";
+
+        private int _textHeight = 50;
+
+        private int TextHeight
+        {
+            get => _textHeight;
+            set
+            {
+                _textHeight = value;
+                OnPropertyChanged();
+            }
+        }
 
         public DishReplView()
         {
@@ -148,8 +163,8 @@ namespace Dash
                     //enter pressed without shift - send code to terminal
 
                     //put textbox size back to default
-                    xTextRow.Height = new GridLength(50);
-                    xTextBox.Height = 50;
+                   TextHeight = 50;
+                    TextGrid.Height = new GridLength(50);
 
                     _currentHistoryIndex = 0;
                     //get text replacing newlines with spaces
@@ -173,14 +188,13 @@ namespace Dash
                 } else if(textDiff == "\r")
                 {
                     //if enter is pressed, make text box larger
-                    var newHeight = xTextBox.Height + 20;
-                    xTextRow.Height = new GridLength(newHeight);
-                    xTextBox.Height = newHeight;
+                    TextHeight = TextHeight + 20;
+                    TextGrid.Height = new GridLength(TextHeight);
                 }
                 else if (xTextBox.Text != "")
                 {
                     //only give suggestions on last word
-                    var allText = xTextBox.Text.Split(' ');
+                    var allText = xTextBox.Text.Replace('\r', ' ').Split(' ');
                     var lastWord = "";
                     if (allText.Length > 0)
                     {
@@ -226,7 +240,7 @@ namespace Dash
             _textModified = true;
 
             //only change last word to new text
-            var currentText = xTextBox.Text.Split(' ');
+            var currentText = xTextBox.Text.Replace('\r', ' ').Split(' ');
             var keepText = "";
             if (currentText.Length > 1)
             {
@@ -268,6 +282,14 @@ namespace Dash
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
             args.Data.RequestedOperation =
                 DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
