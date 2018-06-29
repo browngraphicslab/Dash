@@ -22,11 +22,8 @@ namespace Dash
             Init();
         }
 
-        public static void Init()
+        public void Init()
         {
-            //this is static because nothing is operator specifc. If you need things specific to one 
-            //OperatorScript, don't put it here
-
             if (PrintAllFuncDocumentation)
             {
                 Debug.WriteLine("\n\n\n\nAll DSL Functions: \n");

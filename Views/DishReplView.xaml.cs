@@ -31,7 +31,7 @@ namespace Dash
         private static List<String> _dataset;
         private bool _textModified;
 
-        private string _currentText;
+        private string _currentText = "";
 
         public DishReplView()
         {
@@ -105,15 +105,55 @@ namespace Dash
                 }
         }
 
+        private string stringDiff(string a, string b, bool remove = false)
+        {
+            //a is the longer string
+            var aL = a.ToCharArray();
+            var bL = b.ToCharArray();
+            for(int i = 0; i < aL.Length; i++)
+            {
+                if (i >= bL.Length || aL[i] != bL[i])
+                {
+                    //remove last character if it was enter
+                    if (remove && aL[i] == '\r')
+                    {
+                        //remove new character
+                        var aL2 = aL.ToList();
+                        aL2.RemoveAt(i);
+                        return new string(aL2.ToArray());
+                    }
+
+                    if (!remove)
+                    {
+                        return aL[i].ToString();
+                    }
+                }
+            }
+
+            return a;
+        }
+
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            //enter pressed without shift
-            if (xTextBox.Text.Length > 1 && xTextBox.Text[xTextBox.Text.Length - 1] == '\r' && 
-                !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            if (!_textModified)
+            {
+                //get most recent char typed
+                var addedText = ' ';
+
+                var textDiff = stringDiff(xTextBox.Text, _currentText);
+
+                if (textDiff == "\r" &&
+                    !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
+                    //enter pressed without shift - send code to terminal
+
+                    //put textbox size back to default
+                    xTextRow.Height = new GridLength(50);
+                    xTextBox.Height = 50;
+
                     _currentHistoryIndex = 0;
                     //get text replacing newlines with spaces
-                    var currentText = xTextBox.Text.Replace('\r', ' ');
+                    var currentText = stringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
                     xTextBox.Text = "";
                     FieldControllerBase returnValue;
                     try
@@ -130,45 +170,53 @@ namespace Dash
                     //scroll to bottom
                     xScrollViewer.UpdateLayout();
                     xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
-            }
-            else if (!_textModified && xTextBox.Text != "")
-            {
-                //only give suggestions on last word
-                var allText = xTextBox.Text.Split(' ');
-                var lastWord = "";
-                if (allText.Length > 0)
+                } else if(textDiff == "\r")
                 {
-                    lastWord = allText[allText.Length - 1];
+                    //if enter is pressed, make text box larger
+                    var newHeight = xTextBox.Height + 20;
+                    xTextRow.Height = new GridLength(newHeight);
+                    xTextBox.Height = newHeight;
                 }
-
-                if (_dataset == null)
+                else if (xTextBox.Text != "")
                 {
-                    OperatorScript.Init();
-                }
+                    //only give suggestions on last word
+                    var allText = xTextBox.Text.Split(' ');
+                    var lastWord = "";
+                    if (allText.Length > 0)
+                    {
+                        lastWord = allText[allText.Length - 1];
+                    }
 
-                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+                    if (_dataset == null)
+                    {
+                        OperatorScript.Instance.Init();
+                    }
 
-                Suggestions.ItemsSource = suggestions;
+                    var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
 
-                var numSug = suggestions.Count;
+                    Suggestions.ItemsSource = suggestions;
 
-                if (numSug > 0)
-                {
-                    SuggestionsPopup.IsOpen = true;
-                    SuggestionsPopup.Visibility = Visibility.Visible;
+                    var numSug = suggestions.Count;
+
+                    if (numSug > 0)
+                    {
+                        SuggestionsPopup.IsOpen = true;
+                        SuggestionsPopup.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        SuggestionsPopup.Visibility = Visibility.Collapsed;
+                    }
                 }
                 else
                 {
+                    SuggestionsPopup.IsOpen = false;
                     SuggestionsPopup.Visibility = Visibility.Collapsed;
                 }
             }
-            else
-            {
-                SuggestionsPopup.IsOpen = false;
-                SuggestionsPopup.Visibility = Visibility.Collapsed;
-            }
 
             _textModified = false;
+            _currentText = xTextBox.Text;
         }
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)

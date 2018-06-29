@@ -15,7 +15,7 @@
         <Grid VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="50" />
+                <RowDefinition Height="50" x:Name="xTextRow" />
             </Grid.RowDefinitions>
             <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
