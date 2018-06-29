@@ -1008,22 +1008,27 @@ namespace Dash
 
 		private void ExpandButtonOnClick(object sender, RoutedEventArgs e)
 		{
-			var grid = sender as Grid;
+			var button = sender as StackPanel;
 			StackPanel stack = null;
 			FontAwesome arrow = null;
 			Storyboard animation = null;
 			//toggle visibility of sub-buttons according to what header button was pressed
-			switch (grid.Name)
+			switch (button?.Name)
 			{
-				case "XAddItemsGrid":
+				case "xAddItemsHeader":
 					stack = xAddItemsButtonStack;
 					arrow = xAddItemsArrow;
 					animation = xFadeAnimation;
 					break;
-				case "XFormatItemsGrid":
+				case "xFormatItemsHeader":
 					stack = xFormatItemsButtonStack;
 					arrow = xFormatItemsArrow;
 					animation = xFadeAnimationFormat;
+					break;
+				case "xOptionsHeader":
+					stack = xOptionsButtonStack;
+					arrow = xOptionsArrow;
+					animation = xFadeAnimationOptions;
 					break;
 			}
 			if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
@@ -1044,7 +1049,7 @@ namespace Dash
 			{
 				arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
 				buttonStack.Visibility = Visibility.Visible;
-				fade.Begin();
+				fade?.Begin();
 			}
 		}
 

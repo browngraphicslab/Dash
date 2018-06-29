@@ -12,9 +12,9 @@
     <Grid>
         <CommandBar Background="LightGray" x:Name="xTemplateCommandbar" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
             <CommandBar.Content>
-                
+
             </CommandBar.Content>
-        
+
         </CommandBar>
     </Grid>
 </UserControl>

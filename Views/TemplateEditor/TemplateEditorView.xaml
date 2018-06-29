@@ -95,12 +95,12 @@
                             <DoubleAnimation
                                 Storyboard.TargetName="xAddItemsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
-                                From="0.0" To="1.0" Duration="0:0:.7"
+                                From="0.0" To="1.0" Duration="0:0:.5"
                             />
                         </Storyboard>
                     </StackPanel.Resources>
                     <!--Header-->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                    <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                     </StackPanel>
@@ -120,12 +120,12 @@
                             <DoubleAnimation
                                 Storyboard.TargetName="xFormatItemsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
-                                From="0.0" To="1.0" Duration="0:0:.7"
+                                From="0.0" To="1.0" Duration="0:0:.5"
                             />
                         </Storyboard>
                     </StackPanel.Resources>
                     <!--Header-->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                    <StackPanel  x:Name="xFormatItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Items</TextBlock>
                     </StackPanel>
@@ -139,24 +139,24 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!--Format Items Drop Down-->
-                <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                <!--Options Drop Down-->
+                <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
                     <StackPanel.Resources>
                         <Storyboard x:Name="xFadeAnimationOptions">
                             <DoubleAnimation
                                 Storyboard.TargetName="xOptionsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
-                                From="0.0" To="1.0" Duration="0:0:.7"
+                                From="0.0" To="1.0" Duration="0:0:.5"
                             />
                         </Storyboard>
                     </StackPanel.Resources>
                     <!--Header-->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                        <fontIcons:FontAwesome x:Name="xOptionsItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                    <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                     </StackPanel>
                     <!--StackPanel for Format buttons-->
-                    <StackPanel x:Name="xOptionsItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                    <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <Button Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontSize="13" Foreground="White">Upload Template</TextBlock>
