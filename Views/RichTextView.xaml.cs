@@ -420,6 +420,15 @@ namespace Dash
                 e.Handled = true;
             }
 
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                var tab = xRichEditBox.IsTabStop;
+                xRichEditBox.IsTabStop = false;
+                xRichEditBox.IsEnabled = false;
+                xRichEditBox.IsEnabled = true;
+                xRichEditBox.IsTabStop = tab;
+            }
+
             /**
 			else if (this.IsAltPressed()) // opens the format options flyout 
             {

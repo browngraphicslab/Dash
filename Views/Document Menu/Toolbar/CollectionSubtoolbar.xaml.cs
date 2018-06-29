@@ -94,8 +94,7 @@ namespace Dash
             }
 
             //delete the sellected collection
-            var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
-            foreach (DocumentView d in tempDocs)
+            foreach (DocumentView d in SelectionManager.SelectedDocs)
             {
                 d.DeleteDocument();
             }
