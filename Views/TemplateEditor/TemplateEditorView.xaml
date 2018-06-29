@@ -75,21 +75,21 @@
             </Grid>
 
             <!--Formatting Panel-->
-            <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" Spacing="10">
+            <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" >
 
                 <!--Data Key Header-->
 
-                <StackPanel Width="170" Background="#416857" HorizontalAlignment="Center" Margin="0,5,0,0">
+                <StackPanel Width="170" Background="#334f43" HorizontalAlignment="Center" Margin="0,5,0,10">
 
                         <TextBlock FontSize="15"  HorizontalAlignment="Left" Foreground="White">Data Key</TextBlock>
-                        <local:EditableTextBlock Width="170" FontSize="16" HorizontalAlignment="Left" x:Name="xKeyBox" Foreground="White"></local:EditableTextBlock>
+                        <local:EditableTextBlock Width="170" FontSize="14" HorizontalAlignment="Left" x:Name="xKeyBox" Foreground="White"></local:EditableTextBlock>
 
                     </StackPanel>
 
 
 
                 <!--Add Items Drop Down-->
-                <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited">
+                <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
                     <StackPanel.Resources>
                         <Storyboard x:Name="xFadeAnimation">
                             <DoubleAnimation
@@ -102,10 +102,35 @@
                     <!--Header-->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="AddItemsOnClick" >
                         <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Item</TextBlock>
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                     </StackPanel>
                     <!--StackPanel for buttons-->
                     <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" Background="#334f43"></AppBarButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--Format Items Drop Down-->
+                <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                    <StackPanel.Resources>
+                        <Storyboard x:Name="xFadeAnimationFormat">
+                            <DoubleAnimation
+                                Storyboard.TargetName="xFormatItemsButtonStack"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0.0" To="1.0" Duration="0:0:.7"
+                            />
+                        </Storyboard>
+                    </StackPanel.Resources>
+                    <!--Header-->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="AddItemsOnClick" >
+                        <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Items</TextBlock>
+                    </StackPanel>
+                    <!--StackPanel for buttons-->
+                    <StackPanel x:Name="FormatItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
                         <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#365648"></AppBarButton>
                         <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#365648"></AppBarButton>
                         <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#365648"></AppBarButton>
@@ -126,13 +151,14 @@
                     </StackPanel>
                 </controls:Expander>
                 -->
+                <!--
                 <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="White">Horizontal Alignment</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
                     <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
                     <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
                 </StackPanel>
-
+-->
                 <!--<TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarToggleButton Icon="Import" Height="50" Width="50" x:Name="xLeftBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
@@ -144,7 +170,7 @@
             <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200" Maximum="10"
                     ValueChanged="XThicknessSlider_OnValueChanged" />
             <media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
-
+<!--
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick" ></AppBarButton>
                     <AppBarButton Icon="Redo"  x:Name="xRedoButton" Height="50" Width="50" Click="XRedoButton_OnClick" ></AppBarButton>
@@ -172,9 +198,11 @@
                         </StackPanel>
                     </Button>
                 </StackPanel>
-
+-->
 
             </StackPanel>
+                
         </StackPanel>
+                
     </StackPanel>
 </UserControl>

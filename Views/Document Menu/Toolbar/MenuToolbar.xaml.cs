@@ -861,14 +861,15 @@ namespace Dash
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
 
        
-
+		
         private void XTemplate_OnChecked(object sender, RoutedEventArgs e)
         {
         }
 
-        private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
+		private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
         {
         }
+		
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
         {
