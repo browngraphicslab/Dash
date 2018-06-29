@@ -35,13 +35,9 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <!--<TextBox Name="xTextBox" Grid.Row="1" KeyDown="TextInputKeyDown" Height="50" Background="Gray">
-
-            </TextBox>-->
             <TextBox Name="xTextBox" Grid.Row="1" Height="50" Background="White" FontSize="18"
-                            PlaceholderText="Enter Command" KeyDown="TextInputKeyDown"
-                TextChanged="XTextBox_OnTextChanged"
-                            >
+                            PlaceholderText="Enter Command" 
+                TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true">
             </TextBox>
             <Popup x:Name="SuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="50" >
                 <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 

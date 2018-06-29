@@ -630,7 +630,6 @@ namespace Dash
                         default:
                             throw new Exception("Unkown binary expression type");
                     }
-
                     break;
                 case SyntaxKind.ConditionalExpression:
                     break;

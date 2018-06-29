@@ -31,6 +31,8 @@ namespace Dash
         private static List<String> _dataset;
         private bool _textModified;
 
+        private bool _shiftPressed;
+
         public DishReplView()
         {
             this.InitializeComponent();
@@ -103,36 +105,33 @@ namespace Dash
                 }
         }
 
-
-        private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-           var textBox = sender as TextBox;
-            if (e.OriginalKey == VirtualKey.Enter)
-            {
-                _currentHistoryIndex = 0;
-                var currentText = textBox.Text;
-                textBox.Text = "";
-                FieldControllerBase returnValue;
-                try
-                {
-                    returnValue = _dsl.Run(currentText, true);
-                }
-                catch (Exception ex)
-                {
-                    returnValue = new TextController("There was an error: " + ex.StackTrace);
-                }
-
-                ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
-
-                //scroll to bottom
-                xScrollViewer.UpdateLayout();
-                xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
-            }
-        }
-
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!_textModified && xTextBox.Text != "")
+            //enter pressed without shift
+            if (xTextBox.Text.Length > 1 && xTextBox.Text[xTextBox.Text.Length - 1] == '\r' && 
+                !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+                {
+                    _currentHistoryIndex = 0;
+                    //get text replacing newlines with spaces
+                    var currentText = xTextBox.Text.Replace('\r', ' ');
+                    xTextBox.Text = "";
+                    FieldControllerBase returnValue;
+                    try
+                    {
+                        returnValue = _dsl.Run(currentText, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        returnValue = new TextController("There was an error: " + ex.StackTrace);
+                    }
+
+                    ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+
+                    //scroll to bottom
+                    xScrollViewer.UpdateLayout();
+                    xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
+            }
+            else if (!_textModified && xTextBox.Text != "")
             {
                 //only give suggestions on last word
                 var allText = xTextBox.Text.Split(' ');
