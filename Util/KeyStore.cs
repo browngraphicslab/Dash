@@ -67,6 +67,10 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
         public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
         public static KeyController SettingsMarkdownModeKey = new KeyController(DashConstants.KeyStore.SettingsMarkdownModeKey);
+        public static KeyController DockedDocumentsLeftKey = new KeyController(DashConstants.KeyStore.DockedDocumentsLeftKey);
+        public static KeyController DockedDocumentsTopKey = new KeyController(DashConstants.KeyStore.DockedDocumentsTopKey);
+        public static KeyController DockedDocumentsRightKey = new KeyController(DashConstants.KeyStore.DockedDocumentsRightKey);
+        public static KeyController DockedDocumentsBottomKey = new KeyController(DashConstants.KeyStore.DockedDocumentsBottomKey);
 
         public static class SearchResultDocumentOutline
         {
@@ -75,9 +79,7 @@ namespace Dash
             public static KeyController SearchResultHelpTextKey = new KeyController(new KeyModel("4712CBF3-BDD9-4A92-8AC5-043F4BA14AAB", "_searchResultHelpText"));
         }
 
-
         public static KeyController CollectionFitToParentKey = new KeyController("61CA156E-F959-4607-A2F3-BFEFA5D00B64", "CollectionFitToParent");
-
         public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "_Horizontal Alignment");
         public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "_Vertical Alignment");
 
