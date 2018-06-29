@@ -1235,6 +1235,10 @@ namespace Dash
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
         {
             MainPage.Instance.PinToPresentation(ViewModel.LayoutDocument);
+            if (ViewModel.LayoutDocument == null)
+            {
+                Debug.WriteLine("uh oh");
+            }
         }
 
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)

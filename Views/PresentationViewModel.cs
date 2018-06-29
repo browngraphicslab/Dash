@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,8 +10,8 @@ namespace Dash.Views
 {
     public class PresentationViewModel
     {
-        public ObservableCollection<DocumentController> PinnedNodes = new ObservableCollection<DocumentController>();
-        public ObservableCollection<IntWrapper> PinNumbers = new ObservableCollection<IntWrapper>();
+        public ObservableCollection<DocumentController> PinnedNodes { get; set; } = new ObservableCollection<DocumentController>();
+        public ObservableCollection<IntWrapper> PinNumbers { get; set; } = new ObservableCollection<IntWrapper>();
         private ListController<DocumentController> _listController = null;
 
         public PresentationViewModel()
@@ -22,7 +23,7 @@ namespace Dash.Views
         {
             _listController = lc;
             PinnedNodes = new ObservableCollection<DocumentController>(_listController.TypedData);
-            for (int i = 1; i < PinnedNodes.Count; i++)
+            for (int i = 1; i <= PinnedNodes.Count; i++)
             {
                 PinNumbers.Add(new IntWrapper(i));
             }
@@ -33,7 +34,7 @@ namespace Dash.Views
             if (_listController == null)
             {
                 _listController = new ListController<DocumentController>();
-                MainPage.Instance.MainDocument.SetField<ListController<DocumentController>>(KeyStore.PresentationItemsKey, _listController,
+                MainPage.Instance.MainDocument.SetField(KeyStore.PresentationItemsKey, _listController,
                     true);
             }
             PinnedNodes.Add(dc);

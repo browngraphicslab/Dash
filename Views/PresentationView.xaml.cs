@@ -20,7 +20,12 @@ namespace Dash.Views
 {
     public sealed partial class PresentationView : UserControl
     {
-        public PresentationViewModel ViewModel => DataContext as PresentationViewModel;
+        public PresentationViewModel ViewModel
+        {
+            get => DataContext as PresentationViewModel;
+            set => DataContext = value;
+        }
+
         public bool IsPresentationPlaying = false;
         private PresentationViewTextBox _textbox;
         private bool _giveTextBoxFocusUponFlyoutClosing = false;

@@ -25,14 +25,14 @@
                     <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <ListView ItemsSource="{x:Bind ViewModel.PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
+                <ListView ItemsSource="{Binding PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="local:IntWrapper">
                             <TextBlock Text="{x:Bind Number}" FontSize="20" Foreground="LightGray"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <ListView x:Name="PinnedNodesListView" ItemsSource="{x:Bind ViewModel.PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
+                <ListView x:Name="PinnedNodesListView" ItemsSource="{Binding PinnedNodes}" ReorderMode="Enabled" CanReorderItems="True"
                           AllowDrop="True" HorizontalAlignment="Stretch" Grid.Column="1" SelectionMode="None" IsItemClickEnabled="True" ItemClick="PinnedNode_Click" RightTapped="PinnedNodesListView_OnRightTapped">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
