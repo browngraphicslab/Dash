@@ -64,8 +64,6 @@ namespace Dash
 		private Windows.UI.Color _color;
 		DataPackage dataPackage = new DataPackage();
 
-
-
 		public TemplateEditorView()
 		{
 			this.InitializeComponent();
@@ -75,8 +73,14 @@ namespace Dash
 			DocumentControllers = new ObservableCollection<DocumentController>();
 			DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 			DocumentViews = new Collection<DocumentView>();
+        }
 
-		}
+        private void TemplateEditorView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+        {
+            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument().GetField(KeyStore.TemplateDocumentKey) != null)
+                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
+                   .RemoveField(KeyStore.TemplateDocumentKey);
+        }
 
         private void DocumentControllers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -209,6 +213,7 @@ namespace Dash
             //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
             xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+		    this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
         }
 
 		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)

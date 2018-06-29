@@ -55,6 +55,7 @@
             <StackPanel x:Name="xSubtoolbarStackPanel">
                 <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:TemplateSubtoolbar x:Name="xTemplateToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:CollectionSubtoolbar Visibility="Collapsed" x:Name="xAnnotationToolbar" />
                 <dash:GroupingSubtoolbar x:Name="xGroupToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>

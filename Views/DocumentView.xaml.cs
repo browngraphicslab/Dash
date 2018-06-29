@@ -28,9 +28,9 @@ namespace Dash
     public sealed partial class DocumentView
     {
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
-        public delegate void DocumentViewDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
+        public delegate void DocumentDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
         public event DocumentViewSelectedHandler DocumentSelected;
-        public event DocumentViewDeletedHandler DocumentDeleted;
+        public event DocumentDeletedHandler DocumentDeleted;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public Border _templateBorder;
         public Border TemplateBorder
@@ -151,6 +151,10 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                if (ViewModel?.DataDocument.GetField(KeyStore.TemplateDocumentKey) != null)
+                {
+                    ViewModel?.DataDocument.RemoveField(KeyStore.TemplateDocumentKey);
+                }
                 SetZLayer();
 
                 var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
@@ -375,9 +379,6 @@ namespace Dash
 
         public void ToggleTemplateEditor()
         {
-            var mainPageCollectionView =
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-
             if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey) == null)
             {
                 var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
