@@ -292,15 +292,13 @@ namespace Dash
                     if (CurrentView is CollectionTimelineView) return;
                     CurrentView = new CollectionTimelineView();
                     break;
-<<<<<<< HEAD
                 case CollectionViewType.Graph:
                     if (CurrentView is CollectionGraphView) return;
                     CurrentView = new CollectionGraphView();
-=======
+                    break;
                 case CollectionViewType.Standard:
                     if (CurrentView is CollectionStandardView) return;
                     CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
->>>>>>> a2a350e2578185defb5bcd1f300d3cf2b98406d2
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

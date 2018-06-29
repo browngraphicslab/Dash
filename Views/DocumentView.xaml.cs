@@ -1085,11 +1085,12 @@ namespace Dash
                     c => c.Title + "  :  " + c.Url)));
             Clipboard.SetContent(data);
         }
-        private void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
+
+        private async void MenuFlyoutLaunch_Click(object sender, RoutedEventArgs e)
         {
             var text = ViewModel.DocumentController.GetField(KeyStore.SystemUriKey) as TextController;
             if (text != null)
-                Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
+                await Launcher.QueryAppUriSupportAsync(new Uri(text.Data));
 
             //var storageFile = item as StorageFile;
             //var fields = new Dictionary<KeyController, FieldControllerBase>
