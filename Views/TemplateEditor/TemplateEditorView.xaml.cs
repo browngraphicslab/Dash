@@ -78,7 +78,7 @@ namespace Dash
 
 		}
 
-        private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void DocumentControllers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -104,6 +104,8 @@ namespace Dash
                 DocumentViewModels.Remove(DocumentViewModels.First(i => i.DocumentController.Equals(doc)));
             }
 
+            DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(DocumentControllers),
+                true);
             xItemsControl.ItemsSource = DocumentViewModels;
         }
 
@@ -149,7 +151,7 @@ namespace Dash
 					}
 				// create new viewmodel with a copy of document, set editor to this
 				var dvm =
-					new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
+					new DocumentViewModel(doc, new Context(doc));
 				DocumentViewModels.Add(dvm);
 				// adds layout doc to list of layout docs
 				DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
@@ -197,6 +199,7 @@ namespace Dash
 			{
 				DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 			}
+
 			//update item source
 			xItemsControl.ItemsSource = DocumentViewModels;
 
@@ -247,7 +250,7 @@ namespace Dash
 						if (docController.GetWidthField().Data >= xWorkspace.Width)
 							docController.SetWidth(xWorkspace.Width - 20);
 						// TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
-						DocumentControllers.Add(docController);
+						DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
 				}
 			}
@@ -282,7 +285,7 @@ namespace Dash
 						if (docController.GetWidthField().Data >= xWorkspace.Width)
 							docController.SetWidth(xWorkspace.Width - 20);
 						// TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
-						DocumentControllers.Add(docController);
+						DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
 				}
 
@@ -317,7 +320,7 @@ namespace Dash
 					{
 						if (docController.GetWidthField().Data >= xWorkspace.Width)
 							docController.SetWidth(xWorkspace.Width - 20);
-						DocumentControllers.Add(docController);
+						DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
 				}
 				//add error message for null file?
@@ -421,7 +424,13 @@ namespace Dash
 				xWorkspace.Clip.Rect.Height - docView.ActualHeight);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
+            docView.DocumentDeleted += DocView_DocumentDeleted;
 		}
+
+        private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+        {
+            DocumentControllers.Remove(sender.ViewModel.DocumentController);
+        }
 
         private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
         {
@@ -523,7 +532,7 @@ namespace Dash
 					{
 						var droppedDoc = await FileDropHelper.HandleDrop(where, e.DataView, null);
 						if (droppedDoc != null)
-							DocumentControllers.Add(droppedDoc);
+							DocumentControllers.Add(droppedDoc.GetViewCopy(new Point(0, 0)));
 						return;
 					}
 					catch (Exception exception)
@@ -560,7 +569,7 @@ namespace Dash
 						var srcMatch = new Regex("[^-]src=\"[^{>?}\"]*").Match(imgs.First().ToString()).Value;
 						var src = srcMatch.Substring(6, srcMatch.Length - 6);
 						var imgNote = new ImageNote(new Uri(src), where, new Size(), src.ToString());
-						DocumentControllers.Add(imgNote.Document);
+						DocumentControllers.Add(imgNote.Document.GetViewCopy(new Point(0, 0)));
 						return;
 					}
 
@@ -643,14 +652,14 @@ namespace Dash
 						}
 					}
 
-					DocumentControllers.Add(htmlNote);
+					DocumentControllers.Add(htmlNote.GetViewCopy(new Point(0, 0)));
 				}
 				else if (e.DataView?.Contains(StandardDataFormats.Rtf) == true)
 				{
 					var text = await e.DataView.GetRtfAsync();
 
 					var t = new RichTextNote(text, where, new Size(300, double.NaN));
-					DocumentControllers.Add(t.Document);
+					DocumentControllers.Add(t.Document.GetViewCopy(new Point(0, 0)));
 				}
 				else if (e.DataView?.Contains(StandardDataFormats.Text) == true)
 				{
@@ -665,7 +674,7 @@ namespace Dash
 								true);
 					}
 
-					DocumentControllers.Add(t.Document);
+					DocumentControllers.Add(t.Document.GetViewCopy(new Point(0, 0)));
 				}
 				else if (e.DataView?.Contains(StandardDataFormats.Bitmap) == true)
 				{
@@ -686,10 +695,10 @@ namespace Dash
 					localFile.OpenStreamForWriteAsync().Result.Write(buffer, 0, buffer.Count());
 
 					var img = await ImageToDashUtil.CreateImageBoxFromLocalFile(localFile, "dropped image");
-					DocumentControllers.Add(img);
+					DocumentControllers.Add(img.GetViewCopy(new Point(0, 0)));
 					var t = new ImageNote(new Uri(localFile.FolderRelativeId));
 					// var t = new AnnotatedImage(null, Convert.ToBase64String(buffer), "", "");
-					DocumentControllers.Add(t.Document);
+					DocumentControllers.Add(t.Document.GetViewCopy(new Point(0, 0)));
 				}
 				else if (e.DataView?.Properties.ContainsKey(nameof(DragCollectionFieldModel)) == true)
 				{
@@ -721,7 +730,7 @@ namespace Dash
 							cnote.Document.GetDataDocument()
 								.SetField(KeyStore.DataKey, dragData.CollectionReference, true);
 						cnote.Document.SetField(CollectionDBView.FilterFieldKey, showField, true);
-						DocumentControllers.Add(cnote.Document);
+						DocumentControllers.Add(cnote.Document.GetViewCopy(new Point(0, 0)));
 					}
 					else
 					{
@@ -758,7 +767,7 @@ namespace Dash
                                 dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
                                 dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList()))
                         {
-                            DocumentControllers.Add(doc);
+                            DocumentControllers.Add(doc.GetViewCopy(new Point(0, 0)));
                         }
                     }
                 }
@@ -790,7 +799,7 @@ namespace Dash
                                 });
                                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
                                     aliases.ToList());
-                                DocumentControllers.Add(cnote.Document);
+                                DocumentControllers.Add(cnote.Document.GetViewCopy(new Point(0, 0)));
                             }
                         }
                         else if (MainPage.Instance.IsCtrlPressed()
@@ -812,7 +821,7 @@ namespace Dash
                                     links.AddRange(directlyLinkedTo);
                                 var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
                                     links.ToList());
-                                DocumentControllers.Add(cnote.Document);
+                                DocumentControllers.Add(cnote.Document.GetViewCopy(new Point(0, 0)));
                             }
                         }
                         else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
@@ -823,13 +832,13 @@ namespace Dash
                                 dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                             var note = new RichTextNote("<annotation>", where).Document;
                             dragDoc.Link(note);
-                            DocumentControllers.Add(note);
+                            DocumentControllers.Add(note.GetViewCopy(new Point(0, 0)));
                         }
                     }
                     else if (dragModel.CanDrop(sender as FrameworkElement))
                     {
                         var dropDoc = dragModel.GetDropDocument(where);
-                        DocumentControllers.Add(dropDoc);
+                        DocumentControllers.Add(dropDoc.GetViewCopy(new Point(0, 0)));
                         // kinda hacky lol -sy
                         DocumentViewModels.Last().DocumentController
                             .SetField(KeyStore.PositionFieldKey, new PointController(where), true);

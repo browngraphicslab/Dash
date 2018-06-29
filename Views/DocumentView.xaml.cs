@@ -28,7 +28,9 @@ namespace Dash
     public sealed partial class DocumentView
     {
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
+        public delegate void DocumentViewDeletedHandler(DocumentView sender, DocumentViewDeletedEventArgs args);
         public event DocumentViewSelectedHandler DocumentSelected;
+        public event DocumentViewDeletedHandler DocumentDeleted;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
         public Border _templateBorder;
         public Border TemplateBorder
@@ -957,6 +959,7 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection?.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            DocumentDeleted?.Invoke(this, new DocumentViewDeletedEventArgs());
         }
 
         #endregion
@@ -1032,6 +1035,16 @@ namespace Dash
         public class DocumentViewSelectedEventArgs
         {
             public DocumentViewSelectedEventArgs()
+            {
+            }
+        }
+
+        /// <summary>
+        /// Encompasses the different type of events triggers by changing document data.
+        /// </summary>
+        public class DocumentViewDeletedEventArgs
+        {
+            public DocumentViewDeletedEventArgs()
             {
             }
         }
