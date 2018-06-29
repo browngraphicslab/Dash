@@ -6,7 +6,7 @@ using DashShared;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.subtract, Op.Name.minus, Op.Name.operator_subtract)]
+    [OperatorType(Op.Name.subtract, Op.Name.minus, Op.Name.operator_subtract, Op.Name.remove_first_char)]
     public class RemoveFirstCharOperatorController : OperatorController
     {
         public RemoveFirstCharOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) { }

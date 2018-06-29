@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -36,6 +37,14 @@ namespace Dash
             modulo,
             mod,
 
+            // STRING MANIPULATION
+
+            char_search,
+            operator_char_search,
+
+            remove_first_char,
+            remove_char,
+
             // BINARY COMPARISONS
 
             operator_equal, //needed?
@@ -47,10 +56,16 @@ namespace Dash
             operator_negate,
             negate,
 
+            operator_greater_than,
             greater_than,
+
+            operator_greater_than_equals,
             greater_than_equals,
 
+            operator_less_than,
             less_than,
+
+            operator_less_than_equals,
             less_than_equals,
 
             // LOOPS & CONDITIONALS
@@ -129,5 +144,7 @@ namespace Dash
 
             invalid,
         }
+
+        public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
     }
 }

@@ -84,11 +84,15 @@ namespace Dash
 
             if (op == null)
                 return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
-            var funcName = op.TypedData.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey))?.GetDishName();
-            if(funcName == null)
+            var opCont = op.TypedData.FirstOrDefault(opController => opController.Outputs.ContainsKey(operatorReference.FieldKey));
+            if (opCont == null)
             {
                 return $"doc(\"{doc.Id}\").{operatorReference.FieldKey}";
             }
+
+            var funcName = opCont.GetDishName();
+            Debug.Assert(funcName != Op.Name.invalid);
+
             var script = funcName + "(";
             var middle = new List<string>();
             foreach (var inputKey in OperatorScript.GetOrderedKeyControllersForFunction(funcName))
@@ -105,8 +109,6 @@ namespace Dash
             }
             return script + string.Join(",", middle) + ")";
         }
-
-
 
         /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.
@@ -539,25 +541,25 @@ namespace Dash
                                 rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanToken:
-                            return new FunctionExpression(Op.Name.greater_than, new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_greater_than, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.LessThanToken:
-                            return new FunctionExpression(Op.Name.less_than, new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_less_than, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanEqualsToken:
-                            return new FunctionExpression(Op.Name.greater_than_equals, new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_greater_than_equals, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.LessThanEqualsToken:
-                            return new FunctionExpression(Op.Name.less_than_equals, new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_less_than_equals, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
@@ -610,22 +612,22 @@ namespace Dash
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:
-                            if (leftBinExpr is VariableExpression varExpAdd) return new SelfRefAssignmentExpression(varExpAdd, rightBinExpr, SelfRefAssignment.Addition);
+                            if (leftBinExpr is VariableExpression varExpAdd) return new SelfRefAssignmentExpression(varExpAdd, rightBinExpr, Op.Name.operator_add);
                             break;
                         case SyntaxKind.MinusEqualsToken:
-                            if (leftBinExpr is VariableExpression varExpSubtract) return new SelfRefAssignmentExpression(varExpSubtract, rightBinExpr, SelfRefAssignment.Subtraction);
+                            if (leftBinExpr is VariableExpression varExpSubtract) return new SelfRefAssignmentExpression(varExpSubtract, rightBinExpr, Op.Name.operator_subtract);
                             break;
                         case SyntaxKind.AsteriskEqualsToken:
-                            if (leftBinExpr is VariableExpression varExpMultiply) return new SelfRefAssignmentExpression(varExpMultiply, rightBinExpr, SelfRefAssignment.Multiplication);
+                            if (leftBinExpr is VariableExpression varExpMultiply) return new SelfRefAssignmentExpression(varExpMultiply, rightBinExpr, Op.Name.operator_multiply);
                             break;
                         case SyntaxKind.SlashEqualsToken:
-                            if (leftBinExpr is VariableExpression varExpDivide) return new SelfRefAssignmentExpression(varExpDivide, rightBinExpr, SelfRefAssignment.Division);
+                            if (leftBinExpr is VariableExpression varExpDivide) return new SelfRefAssignmentExpression(varExpDivide, rightBinExpr, Op.Name.operator_divide);
                             break;
                         case SyntaxKind.PercentEqualsToken:
-                            if (leftBinExpr is VariableExpression varExpMod) return new SelfRefAssignmentExpression(varExpMod, rightBinExpr, SelfRefAssignment.Modulo);
+                            if (leftBinExpr is VariableExpression varExpMod) return new SelfRefAssignmentExpression(varExpMod, rightBinExpr, Op.Name.operator_modulo);
                             break;
                         case SyntaxKind.QuestionToken:
-                            if (leftBinExpr is VariableExpression varExpSearch) return new SelfRefAssignmentExpression(varExpSearch, rightBinExpr, SelfRefAssignment.StringSearch);
+                            if (leftBinExpr is VariableExpression varExpSearch) return new SelfRefAssignmentExpression(varExpSearch, rightBinExpr, Op.Name.operator_char_search);
                             break;
                         default:
                             throw new Exception("Unkown binary expression type");
@@ -955,13 +957,12 @@ namespace Dash
                     var stringLiteral = node as StringLiteral;
                     var parsedString = stringLiteral.Text;
                     return new LiteralExpression(new TextController(parsedString));
-                    break;
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
 
                     var parameters = new List<ScriptExpression>();
 
-                    var keys = OperatorScript.GetOrderedKeyControllersForFunction(callExpr.IdentifierStr).ToArray();
+                    var keys = OperatorScript.GetOrderedKeyControllersForFunction(Op.Parse(callExpr.IdentifierStr)).ToArray();
                     int keyIndex = 0;
                     foreach (var arg in callExpr.Arguments)
                     {
@@ -969,7 +970,7 @@ namespace Dash
                         keyIndex++;
                     }
 
-                    var func = new FunctionExpression(callExpr.IdentifierStr, parameters);
+                    var func = new FunctionExpression(Op.Parse(callExpr.IdentifierStr), parameters);
                     return func;
                 default:
                     throw new ArgumentOutOfRangeException();

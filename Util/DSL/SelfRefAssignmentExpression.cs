@@ -81,13 +81,7 @@ namespace Dash
             //                case SelfRefAssignment.Addition:
             //                    outString = varText + assignText; break;
             //                case SelfRefAssignment.Division:
-            //                    varEditor = new StringBuilder(varText);
-            //                    toRemove = assignText.ToCharArray();
-            //                    foreach (var c in toRemove)
-            //                    {
-            //                        varEditor.Replace(c.ToString(), "");
-            //                    }
-            //                    outString = varEditor.ToString(); break;
+
             //                case SelfRefAssignment.StringSearch:
             //                    varEditor = new StringBuilder(varText);
             //                    var toFind = assignText.ToCharArray();

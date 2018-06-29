@@ -224,6 +224,7 @@
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
@@ -286,6 +287,7 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\AbsentStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
     <Compile Include="Util\DSL\OverloadErrorModel.cs" />

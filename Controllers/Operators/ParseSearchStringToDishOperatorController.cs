@@ -98,8 +98,7 @@ namespace Dash
                 var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
 
-                var funcName = Enum.TryParse<Op.Name>(parts[0], out var interpretedName) ? interpretedName : Op.Name.invalid;
-                return WrapInParameterizedFunction(funcName, parts[1]);
+                return WrapInParameterizedFunction(Op.Parse(parts[0]), parts[1]);
             }
             else
             {
