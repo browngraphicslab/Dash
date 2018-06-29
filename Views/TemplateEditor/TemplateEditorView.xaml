@@ -131,6 +131,7 @@
                     </StackPanel>
                     <!--StackPanel for Format buttons-->
                     <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
                             <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
