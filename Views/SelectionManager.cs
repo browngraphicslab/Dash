@@ -114,7 +114,7 @@ namespace Dash
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
-            return SelectedDocs.Where(doc => Equals(doc.ParentCollection.CurrentView, collection));
+            return SelectedDocs.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
         }
 
         /*
