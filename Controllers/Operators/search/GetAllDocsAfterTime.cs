@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents after a given time
     /// </summary>
-    [OperatorType("after")]
+    [OperatorType(Op.Name.after)]
     public class GetAllDocsAfterTime : OperatorController
     {
         //Input keys

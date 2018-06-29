@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
-    class BreakLoopExpression : ScriptExpression
+    public class BreakLoopExpression : ScriptExpression
     {
-        private Dictionary<KeyController, ScriptExpression> _parameters;
-        private string _opName;
+        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
+        private Op.Name _opName = Op.Name.invalid;
 
         public BreakLoopExpression(Dictionary<KeyController, ScriptExpression> parameters = null)
         {
-            this._parameters = parameters;
+            _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
@@ -37,16 +34,10 @@ namespace Dash
             //}
         }
 
-        public string GetOperatorName()
-        {
-            return _opName;
-        }
+        public Op.Name GetOperatorName() => _opName;
 
 
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
-        {
-            return _parameters;
-        }
+        public Dictionary<KeyController, ScriptExpression> GetFuncParams() => _parameters;
 
 
         public override FieldControllerBase CreateReference(Scope scope)

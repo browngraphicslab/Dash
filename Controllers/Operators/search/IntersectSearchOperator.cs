@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("intersectSearch")]
+    [OperatorType(Op.Name.intersect_search)]
     public class IntersectSearchOperator : OperatorController
     {
         //Input keys

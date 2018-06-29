@@ -65,7 +65,7 @@ namespace Dash
         /// <typeparam name="T"></typeparam>
         /// <param name="operatorController"></param>
         /// <returns></returns>
-        public static string GetFuncName<T>(T operatorController) where T : OperatorController
+        public static Op.Name GetFuncName<T>(T operatorController) where T : OperatorController
         {
             return OperatorScript.GetDishOperatorName(operatorController);
         }
@@ -76,7 +76,7 @@ namespace Dash
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static string GetFuncName<T>() where T : OperatorController
+        public static Op.Name GetFuncName<T>() where T : OperatorController
         {
             return OperatorScript.GetDishOperatorName<T>();
         }
@@ -86,7 +86,7 @@ namespace Dash
         /// </summary>
         /// <param name="funcName"></param>
         /// <returns></returns>
-        public static bool FuncNameExists(string funcName)
+        public static bool FuncNameExists(Op.Name funcName)
         {
             return OperatorScript.FuncNameExists(funcName);
         }

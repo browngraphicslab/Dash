@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("mod")]
+    [OperatorType(Op.Name.mod, Op.Name.modulo, Op.Name.operator_modulo)]
     public class ModuloOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public ModuloOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

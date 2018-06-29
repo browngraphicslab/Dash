@@ -7,57 +7,57 @@ namespace Dash
 {
     public class ForExpression : ScriptExpression
     {
-        private readonly string _opName;
+        private readonly Op.Name _opName;
         private readonly Dictionary<KeyController, ScriptExpression> _parameters;
 
-        private readonly FieldControllerBase recursiveError = new TextController("ERROR - an infinite loop was created.");
-        FieldControllerBase output = null;
+        private readonly FieldControllerBase _recursiveError = new TextController("ERROR - an infinite loop was created.");
+        private  FieldControllerBase _output;
 
-        public ForExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public ForExpression(Op.Name opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _opName = opName;
+            _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var BoolKey = ForOperatorController.BoolKey;
-            var BlockKey = ForOperatorController.ForBlockKey;
-            var IncrementKey = ForOperatorController.IncrementKey;
-            var CountDecKey = ForOperatorController.CounterDeclarationKey;
+            var boolKey = ForOperatorController.BoolKey;
+            var blockKey = ForOperatorController.ForBlockKey;
+            var incrementKey = ForOperatorController.IncrementKey;
+            var countDecKey = ForOperatorController.CounterDeclarationKey;
 
             var inputs = new Dictionary<KeyController, FieldControllerBase>
             {
-                { CountDecKey, _parameters[CountDecKey].Execute(scope) },
-                { BoolKey, _parameters[BoolKey].Execute(scope) }
+                { countDecKey, _parameters[countDecKey].Execute(scope) },
+                { boolKey, _parameters[boolKey].Execute(scope) }
             };
 
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
             Timer whileTimer = new Timer(whileTimeout, null, 5000, Timeout.Infinite);
 
             //if there hasn't been an infinite loop timeout, keep looping
-            while (output != recursiveError)
+            while (_output != _recursiveError)
             {
                 //see if boolean is true or false
                 var boolRes = ((BoolController)_parameters[ForOperatorController.BoolKey].Execute(scope)).Data;
                 if (boolRes)
                 {
                     //boolean is true, so execute block again
-                    if (inputs.ContainsKey(BlockKey))
+                    if (inputs.ContainsKey(blockKey))
                     {
-                        inputs[BlockKey] = _parameters[BlockKey].Execute(scope);
-                        inputs[IncrementKey] = _parameters[IncrementKey].Execute(scope);
+                        inputs[blockKey] = _parameters[blockKey].Execute(scope);
+                        inputs[incrementKey] = _parameters[incrementKey].Execute(scope);
                     }
                     else
                     {
-                        inputs.Add(BlockKey, _parameters[BlockKey].Execute(scope));
-                        inputs.Add(IncrementKey, _parameters[IncrementKey].Execute(scope));
+                        inputs.Add(blockKey, _parameters[blockKey].Execute(scope));
+                        inputs.Add(incrementKey, _parameters[incrementKey].Execute(scope));
                     }
 
 
                     try
                     {
-                        if (output != recursiveError)
+                        if (_output != _recursiveError)
                         {
                             //output = OperatorScript.Run(_opName, inputs, scope);
                         }
@@ -70,34 +70,28 @@ namespace Dash
                 else
                 {
                     //now that boolean is false, give it a null input and stop looping
-                    if (!inputs.ContainsKey(BlockKey))
+                    if (!inputs.ContainsKey(blockKey))
                     {
-                        inputs.Add(BlockKey, null);
+                        inputs.Add(blockKey, null);
                     }
 
                     break;
                 }
             }
 
-            return output;
+            return _output;
         }
 
         private void whileTimeout(object status)
         {
             //set the output to an infinite recursion error
-            output = recursiveError;
+            _output = _recursiveError;
         }
 
-        public string GetOperatorName()
-        {
-            return _opName;
-        }
+        public Op.Name GetOperatorName() => _opName;
 
 
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
-        {
-            return _parameters;
-        }
+        public Dictionary<KeyController, ScriptExpression> GetFuncParams() => _parameters;
 
 
         public override FieldControllerBase CreateReference(Scope scope)

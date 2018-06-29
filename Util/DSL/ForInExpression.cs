@@ -4,13 +4,13 @@ namespace Dash
 {
     public class ForInExpression : ScriptExpression
     {
-        private readonly string _opName;
+        private readonly Op.Name _opName;
 
         private readonly string _subVarName;
         private readonly ScriptExpression _listToExecute;
         private readonly ExpressionChain _bodyToExecute;
 
-        public ForInExpression(string opName, string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
+        public ForInExpression(Op.Name opName, string subVarName, ScriptExpression listToExecute, ExpressionChain bodyToExecute)
         {
             _opName = opName;
 
@@ -35,7 +35,7 @@ namespace Dash
             return list;
         }
 
-        public string GetOperatorName() => _opName;
+        public Op.Name GetOperatorName() => _opName;
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 

@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("putSearchResultsIntoDictionary")]
+    [OperatorType(Op.Name.process_search_results)]
     public class PutSearchResultsIntoDictionaryOperatorController : OperatorController
     {
         //Input keys

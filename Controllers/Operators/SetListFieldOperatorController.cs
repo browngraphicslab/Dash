@@ -9,7 +9,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("setListField")]
+    [OperatorType(Op.Name.set_list_field)]
    public class SetListFieldOperatorController : OperatorController
     {
         //Input keys

@@ -9,13 +9,13 @@ namespace Dash
 {
     public class WhileExpression : ScriptExpression
     {
-        private readonly string _opName;
+        private readonly Op.Name _opName;
         private readonly Dictionary<KeyController, ScriptExpression> _parameters;
 
         private readonly FieldControllerBase _recursiveError = new TextController("ERROR - an infinite loop was created.");
         private FieldControllerBase _output;
 
-        public WhileExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public WhileExpression(Op.Name opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
             _opName = opName;
             _parameters = parameters;
@@ -81,7 +81,7 @@ namespace Dash
         //set the output to an infinite recursion error
         private void WhileTimeout(object status) => _output = _recursiveError;
 
-        public string GetOperatorName() => _opName;
+        public Op.Name GetOperatorName() => _opName;
 
         public Dictionary<KeyController, ScriptExpression> GetFuncParams() => _parameters;
 

@@ -32,43 +32,18 @@ namespace Dash
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class OperatorTypeAttribute : Attribute
     {
-        private string[] _names;
-        public double version;
+        private readonly Op.Name[] _names;
+        public double Version;
 
-        public OperatorTypeAttribute(string name) //Cant pass enumerable to type attribute consrtructor.  Hacky but it works and shouldn't need to scale much
+        public OperatorTypeAttribute(params Op.Name[] names) //Cant pass enumerable to type attribute consrtructor.  Hacky but it works and shouldn't need to scale much
         {
-            this._names = new []{name};
+            _names = names;
 
             // Default value.
-            version = 1.0;
+            Version = 1.0;
         }
 
-        public OperatorTypeAttribute(string name1, string name2)
-        {
-            this._names = new[] { name1, name2 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-
-        public OperatorTypeAttribute(string name1, string name2, string name3)
-        {
-            this._names = new[] { name1, name2, name3 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-        public OperatorTypeAttribute(string name1, string name2, string name3, string name4)
-        {
-            this._names = new[] { name1, name2, name3, name4 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-        public string[] GetTypeNames()
+        public Op.Name[] GetTypeNames()
         {
             return _names;
         }

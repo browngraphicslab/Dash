@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("coll", "inside")]
+    [OperatorType(Op.Name.coll, Op.Name.inside)]
     public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
@@ -18,10 +18,7 @@ namespace Dash
         public static readonly KeyController ResultsKey = new KeyController("054D019F-665B-4053-9A24-1EE45245920A", "Results");
 
 
-        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public GetDocumentsInCollectionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents before a given time
     /// </summary>
-    [OperatorType("alias")]
+    [OperatorType(Op.Name.alias)]
     public class GetAllDocsByAlias : OperatorController
     {
         //Input keys

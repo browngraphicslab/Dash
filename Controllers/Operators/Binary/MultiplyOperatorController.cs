@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("mult")]
+    [OperatorType(Op.Name.mult)]
     public class MultiplyOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public MultiplyOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

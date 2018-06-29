@@ -564,10 +564,7 @@ namespace Dash
         }
 
 
-        public static string GetDishName<T>(this T controller) where T : OperatorController
-        {
-            return DSL.GetFuncName(controller);
-        }
+        public static Op.Name GetDishName<T>(this T controller) where T : OperatorController => DSL.GetFuncName(controller);
 
         static DocumentController makeCopy(
                 this DocumentController doc, 

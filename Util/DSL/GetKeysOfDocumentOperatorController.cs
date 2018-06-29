@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("keys")]
+    [OperatorType(Op.Name.get_keys, Op.Name.keys)]
     public class GetKeysOfDocumentOperatorController : OperatorController
     {
         public GetKeysOfDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

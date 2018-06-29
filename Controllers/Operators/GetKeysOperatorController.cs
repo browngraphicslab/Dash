@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("getKeys")]
+    [OperatorType(Op.Name.get_keys)]
     public class GetKeysOperatorController : OperatorController
     {
         //Input keys

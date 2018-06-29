@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("lessthanequals")]
+    [OperatorType(Op.Name.less_than_equals)]
     public class LessThanEqualsOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public LessThanEqualsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

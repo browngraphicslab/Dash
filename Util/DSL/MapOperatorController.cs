@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("map")]
+    [OperatorType(Op.Name.map)]
     public class MapOperator : OperatorController
     {
 

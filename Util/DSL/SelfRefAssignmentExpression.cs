@@ -21,13 +21,13 @@ namespace Dash
     {
         private readonly VariableExpression _var;
         private readonly ScriptExpression _assignExp;
-        private readonly SelfRefAssignment _selfRefOp;
+        private readonly Op.Name _opName;
 
-        public SelfRefAssignmentExpression(VariableExpression var, ScriptExpression assignExp, SelfRefAssignment selfRefOp)
+        public SelfRefAssignmentExpression(VariableExpression var, ScriptExpression assignExp, Op.Name opName)
         {
             _var = var;
             _assignExp = assignExp;
-            _selfRefOp = selfRefOp;
+            _opName = opName;
         }
 
         public override FieldControllerBase Execute(Scope scope)
@@ -35,8 +35,6 @@ namespace Dash
             var varCtrl = _var.Execute(scope);
             var assignCtrl = _assignExp.Execute(scope);
 
-            var leftKey = BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>.LeftKey;
-            var rightKey = BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>.RightKey;
             var inputs = new List<FieldControllerBase>
             {
                 varCtrl,
@@ -82,15 +80,6 @@ namespace Dash
             //            {
             //                case SelfRefAssignment.Addition:
             //                    outString = varText + assignText; break;
-            //                case SelfRefAssignment.Subtraction:
-            //                    var varEditor = new StringBuilder(varText);
-            //                    var toRemove = assignText.ToCharArray();
-            //                    foreach (var c in toRemove)
-            //                    {
-            //                        var index = varEditor.ToString().IndexOf(c);
-            //                        if (index != -1) varEditor.Remove(index, 1);
-            //                    }
-            //                    outString = varEditor.ToString(); break;
             //                case SelfRefAssignment.Division:
             //                    varEditor = new StringBuilder(varText);
             //                    toRemove = assignText.ToCharArray();
@@ -106,43 +95,11 @@ namespace Dash
             //                    {
             //                        varEditor.Replace(c, '_');
             //                    }
-            //                    outString = varEditor.ToString(); break;
-            //            }
-
-            //            scope.SetVariable(_varName, new TextController(outString));
-            //            break;
-            //    }
-            //}
-
-            string opName = "";
-            switch (_selfRefOp)
-            {
-                case SelfRefAssignment.Addition:
-                    opName = "add";
-                    break;
-                case SelfRefAssignment.Subtraction:
-                    opName = "subtract";
-                    break;
-                case SelfRefAssignment.Multiplication:
-                    opName = "mult";
-                    break;
-                case SelfRefAssignment.Division:
-                    opName = "div";
-                    break;
-                case SelfRefAssignment.Modulo:
-                    opName = "mod";
-                    break;
-            }
-
-            if (String.IsNullOrEmpty(opName))
-            {
-                Debug.Fail("How did you get here?");
-            }
 
             FieldControllerBase output;
             try
             {
-                output = OperatorScript.Run(opName, inputs, scope);
+                output = OperatorScript.Run(_opName, inputs, scope);
                 scope.SetVariable(_var.GetVariableName(), output);
             }
             catch (ScriptExecutionException)
@@ -151,14 +108,13 @@ namespace Dash
             }
             catch (Exception)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
             }
             return output;
         }
 
         public override FieldControllerBase CreateReference(Scope scope) => throw new NotImplementedException();
 
-        //TODO
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType("add");
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
     }
 }

@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents before a given time
     /// </summary>
-    [OperatorType("before")]
+    [OperatorType(Op.Name.before)]
     public class GetAllDocsBeforeTime : OperatorController
     {
         //Input keys

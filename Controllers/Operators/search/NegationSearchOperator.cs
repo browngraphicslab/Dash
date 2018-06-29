@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("negationSearch")]
+    [OperatorType(Op.Name.negation_search)]
     public class NegationSearchOperator : OperatorController
     {
         //Input keys

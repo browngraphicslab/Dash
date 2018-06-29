@@ -515,67 +515,67 @@ namespace Dash
                     switch (binaryExpr.OperatorToken.Kind)
                     {
                         case SyntaxKind.PlusToken:
-                            return new FunctionExpression(DSL.GetFuncName<AddOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_add, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.MinusToken:
-                            return new FunctionExpression(DSL.GetFuncName<SubtractOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_subtract, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.SlashToken:
-                            return new FunctionExpression(DSL.GetFuncName<DivideOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_divide, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.AsteriskToken:
-                            return new FunctionExpression(DSL.GetFuncName<MultiplyOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_multiply, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanToken:
-                            return new FunctionExpression(DSL.GetFuncName<GreaterThanOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.greater_than, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.LessThanToken:
-                            return new FunctionExpression(DSL.GetFuncName<LessThanOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.less_than, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<GreaterThanEqualsOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.greater_than_equals, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.LessThanEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<LessThanEqualsOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.less_than_equals, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.EqualsEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_equal, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.ExclamationEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<InverseEqualityOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_not_equal, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,
                             });
                         case SyntaxKind.PercentToken:
-                            return new FunctionExpression(DSL.GetFuncName<ModuloOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(Op.Name.operator_modulo, new List<ScriptExpression>()
                             {
                                 leftBinExpr,
                                 rightBinExpr,

@@ -19,7 +19,7 @@ namespace Dash
         public DashException(OperatorController operatorController, DashException innerDashException): this(operatorController, null, innerDashException){}
         public DashException(OperatorController operatorController, Exception innerException) : this(operatorController, null, null, innerException){}
 
-        public string SourceOperatorFunctionName { get; private set; }
+        public Op.Name SourceOperatorFunctionName { get; private set; }
         public DashException InnerDashException { get; private set; }
         public Exception InnerException { get; private set; }
         public string UserMessage { get; private set; } = "An Exception Occurred";

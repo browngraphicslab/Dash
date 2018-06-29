@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("minus", "subtract")]
+    [OperatorType(Op.Name.minus, Op.Name.subtract, Op.Name.operator_subtract)]
     public class SubtractOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public SubtractOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

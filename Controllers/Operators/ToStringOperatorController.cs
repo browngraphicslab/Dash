@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("string")]
+    [OperatorType(Op.Name._string)]
     public class ToStringOperatorController : OperatorController
     {
         //Input keys

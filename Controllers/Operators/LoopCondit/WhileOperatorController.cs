@@ -8,8 +8,8 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("while")]
-    class WhileOperatorController : OperatorController
+    [OperatorType(Op.Name._while)]
+    public class WhileOperatorController : OperatorController
     {
         public WhileOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

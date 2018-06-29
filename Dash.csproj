@@ -194,6 +194,7 @@
     <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Op.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\SubtractOperatorController.cs" />
@@ -223,6 +224,7 @@
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />

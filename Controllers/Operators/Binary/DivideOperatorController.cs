@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("div")]
+    [OperatorType(Op.Name.divide, Op.Name.div, Op.Name.operator_divide)]
     public class DivideOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public DivideOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

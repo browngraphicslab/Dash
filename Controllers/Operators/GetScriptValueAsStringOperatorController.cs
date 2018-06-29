@@ -6,7 +6,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("execToString")]
+    [OperatorType(Op.Name.exec_to_string)]
     public class GetScriptValueAsStringOperatorController : OperatorController
     {
         //Input keys

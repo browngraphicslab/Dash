@@ -17,7 +17,7 @@ namespace Dash
 
         public List<int> GetDistances(List<FieldControllerBase> checkAgainst)
         {
-            if (ParamTypes.Count != checkAgainst.Count) return null;
+            if (checkAgainst.Count > ParamTypes.Count) return null;
             var distances = new List<int>(checkAgainst.Count);
             for (var i = 0; i < checkAgainst.Count; i++)
             {
@@ -37,6 +37,14 @@ namespace Dash
                     return null;
                 }
             }
+
+            for (var i = checkAgainst.Count; i < ParamTypes.Count; ++i)
+            {
+                if (ParamTypes[i].Value.IsRequired)
+                {
+                    return null;
+                }
+            } 
 
             return distances;
         }

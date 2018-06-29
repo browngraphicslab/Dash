@@ -4,7 +4,6 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("binarybase")]
     public abstract class BinaryOperatorControllerBase<T, U> : OperatorController where T : FieldControllerBase where U : FieldControllerBase
     {
         protected BinaryOperatorControllerBase(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

@@ -8,20 +8,22 @@ namespace Dash
 {
     public class IfExpression : ScriptExpression
     {
-        private string _opName;
-        private Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly Op.Name _opName;
+        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
 
-        public IfExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public IfExpression(Op.Name opName, Dictionary<KeyController, ScriptExpression> parameters)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _opName = opName;
+            _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            inputs.Add(IfOperatorController.BoolKey, _parameters[IfOperatorController.BoolKey].Execute(scope));
-            bool boolRes = ((BoolController)_parameters[IfOperatorController.BoolKey].Execute(scope)).Data;
+            var inputs = new Dictionary<KeyController, FieldControllerBase>
+            {
+                {IfOperatorController.BoolKey, _parameters[IfOperatorController.BoolKey].Execute(scope)}
+            };
+            var boolRes = ((BoolController)_parameters[IfOperatorController.BoolKey].Execute(scope)).Data;
 
             var ifKey = IfOperatorController.IfBlockKey;
             var elseKey = IfOperatorController.ElseBlockKey;
@@ -51,7 +53,7 @@ namespace Dash
             }
         }
 
-        public string GetOperatorName()
+        public Op.Name GetOperatorName()
         {
             return _opName;
         }

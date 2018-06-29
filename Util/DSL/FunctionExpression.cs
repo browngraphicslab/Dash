@@ -6,10 +6,10 @@ namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
-        private readonly string _opName;
+        private readonly Op.Name _opName;
         private readonly List<ScriptExpression> _parameters;
 
-        public FunctionExpression(string opName, List<ScriptExpression> parameters)
+        public FunctionExpression(Op.Name opName, List<ScriptExpression> parameters)
         {
             _opName = opName;
             _parameters = parameters;
@@ -34,16 +34,10 @@ namespace Dash
             }
         }
 
-        public string GetOperatorName()
-        {
-            return _opName;
-        }
+        public Op.Name GetOperatorName() => _opName;
 
 
-        public List<ScriptExpression> GetFuncParams()
-        {
-            return _parameters;
-        }
+        public List<ScriptExpression> GetFuncParams() => _parameters;
 
         public override FieldControllerBase CreateReference(Scope scope)
         {

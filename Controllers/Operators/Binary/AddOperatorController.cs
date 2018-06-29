@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("add")]
+    [OperatorType(Op.Name.operator_add, Op.Name.add)]
     public class AddOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
     {
         public AddOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

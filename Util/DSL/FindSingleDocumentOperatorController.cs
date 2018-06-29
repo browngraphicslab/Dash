@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    [OperatorType("findSingle", "fs", "findS")]
+    [OperatorType(Op.Name.find_s, Op.Name.find_single, Op.Name.fs)]
     public class FindSingleDocumentOperatorController : OperatorController
     {
         //Input keys
@@ -17,10 +14,7 @@ namespace Dash
         //Output keys
         public static readonly KeyController ResultsKey = new KeyController("A8E9A428-C76C-47CA-A1C0-C4B4F1FB0E05", "Results");
 
-        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public FindSingleDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {

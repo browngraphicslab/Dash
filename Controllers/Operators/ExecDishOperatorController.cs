@@ -7,7 +7,7 @@ namespace Dash
     /// <summary>
     /// Operator Class used to execute Dish Scripting Language (DSL) as a string and return the return value
     /// </summary>
-    [OperatorType("exec")]
+    [OperatorType(Op.Name.exec)]
     public class ExecDishOperatorController : OperatorController
     {
 

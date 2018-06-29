@@ -9,7 +9,7 @@ namespace Dash
     /// this class represents a fake operator controller.  
     /// This was made so that the language can parse the 'let' operation just like any operator, but can override its functionality
     /// </summary>
-    [OperatorType("let")]
+    [OperatorType(Op.Name.let)]
     public class LetOperatorController : OperatorController
     {
         public override KeyController OperatorType { get; } = TypeKey;

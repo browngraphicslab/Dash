@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("!equality")]
+    [OperatorType(Op.Name.not_equal, Op.Name.operator_not_equal)]
     public class InverseEqualityOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
     {
         public InverseEqualityOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

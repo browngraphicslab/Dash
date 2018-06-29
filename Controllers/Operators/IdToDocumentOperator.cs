@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("idToDocument")]
+    [OperatorType(Op.Name.id_to_document)]
     class IdToDocumentOperator : OperatorController
     {
         public IdToDocumentOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)

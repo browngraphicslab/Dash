@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("equality")]
+    [OperatorType(Op.Name.equal, Op.Name.operator_equal)]
     public class EqualityOperatorController : BinaryOperatorControllerBase<FieldControllerBase, FieldControllerBase>
     {
         public EqualityOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

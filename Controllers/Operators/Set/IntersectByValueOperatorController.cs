@@ -4,7 +4,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("intersectByValue")]
+    [OperatorType(Op.Name.intersect_by_value)]
     public class IntersectByValueOperatorController : OperatorController
     {
         //Input keys

@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("colTitle")]
+    [OperatorType(Op.Name.coll_title)]
     public class CollectionTitleOperatorController : OperatorController
     {
         public CollectionTitleOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

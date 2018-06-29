@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("parseSearchString")]
+    [OperatorType(Op.Name.parse_search_string)]
     public class ParseSearchStringToDishOperatorController : OperatorController
     {
 
@@ -19,10 +19,7 @@ namespace Dash
         //Output keys
         public static readonly KeyController ScriptKey = new KeyController("EE6A6F8A-D0EF-48FC-89FD-87EBB91F8C77", "Script");
 
-        public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public ParseSearchStringToDishOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -71,7 +68,7 @@ namespace Dash
             return OperatorScript.GetDishOperatorName<NegationSearchOperator>() + "(" + search + ")";
         }
 
-        private string WrapInParameterizedFunction(string funcName, string paramName)
+        private string WrapInParameterizedFunction(Op.Name funcName, string paramName)
         {
             //this returns a string that more closely follows function syntax
             //TODO check if func exists
@@ -100,7 +97,9 @@ namespace Dash
                 //splits after first colon
                 var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
-               return WrapInParameterizedFunction(parts[0], parts[1]);
+
+                var funcName = Enum.TryParse<Op.Name>(parts[0], out var interpretedName) ? interpretedName : Op.Name.invalid;
+                return WrapInParameterizedFunction(funcName, parts[1]);
             }
             else
             {

@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType("numnegate")]
+    [OperatorType(Op.Name.negate, Op.Name.operator_negate)]
     public class NumNegateOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public NumNegateOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

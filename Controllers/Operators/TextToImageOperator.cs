@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
 namespace Dash.Controllers.Operators
 {
-    [OperatorType("Image")]
+    [OperatorType(Op.Name.image)]
 
     public class TextToImageOperator : OperatorController
     {
@@ -19,10 +14,7 @@ namespace Dash.Controllers.Operators
         {
         }
 
-        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public TextToImageOperator() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
 
@@ -52,22 +44,19 @@ namespace Dash.Controllers.Operators
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var textController = inputs[TextKey] as TextController;
-            var uri = textController.Data;
+            var uri = textController?.Data;
 
             try
             {
                 outputs[ImageKey] = new ImageController(new Uri(uri));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return;
             }   
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new TextToImageOperator();
-        }
+        public override FieldControllerBase GetDefaultController() => new TextToImageOperator();
     }
 
 }

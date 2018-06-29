@@ -8,16 +8,13 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("getField")]
+    [OperatorType(Op.Name.get_field)]
     public class GetFieldOperatorController : OperatorController
     {
         public GetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override FieldControllerBase GetDefaultController()
         {

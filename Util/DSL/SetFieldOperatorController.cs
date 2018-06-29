@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("setField")]
+    [OperatorType(Op.Name.set_field)]
     public class SetFieldOperatorController : OperatorController
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))

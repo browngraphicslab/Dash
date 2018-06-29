@@ -1,21 +1,12 @@
-﻿using Dash.Models.DragModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,7 +19,7 @@ namespace Dash
 
         private int _currentHistoryIndex = 0;
 
-        private static List<String> _dataset;
+        private static List<string> _dataset;
         private bool _textModified;
 
         public DishReplView()
@@ -47,7 +38,7 @@ namespace Dash
             _dataset = data;
         }
 
-        public static void NewVaraible(string var)
+        public static void NewVariable(string var)
         {
             _dataset.Add(var);
         }
@@ -62,7 +53,7 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
 
-        private void moveCursorToEnd()
+        private void MoveCursorToEnd()
         {
             if (xTextBox.Text.Length != 0)
             {
@@ -82,7 +73,7 @@ namespace Dash
                          {
                         _currentHistoryIndex++;
                         xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
-                             moveCursorToEnd();
+                             MoveCursorToEnd();
                          }
 
                         break;
@@ -92,7 +83,7 @@ namespace Dash
                         {
                             _currentHistoryIndex--;
                             xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
-                            moveCursorToEnd();
+                            MoveCursorToEnd();
                         } else if (index == numItem)
                         {
                             _currentHistoryIndex--;
@@ -106,8 +97,7 @@ namespace Dash
 
         private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
         {
-           var textBox = sender as TextBox;
-            if (e.OriginalKey == VirtualKey.Enter)
+            if (sender is TextBox textBox && e.OriginalKey == VirtualKey.Enter)
             {
                 _currentHistoryIndex = 0;
                 var currentText = textBox.Text;
@@ -134,7 +124,7 @@ namespace Dash
         {
             if (!_textModified && xTextBox.Text != "")
             {
-                var suggestions = _dataset.Where(x => x.StartsWith(xTextBox.Text)).ToList();
+                var suggestions = _dataset.Where(x => x.ToString().StartsWith(xTextBox.Text)).ToList();
 
                 Suggestions.ItemsSource = suggestions;
 
@@ -173,9 +163,9 @@ namespace Dash
         private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
             //Todo: find a better way to make doc controller for non text
-            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
-            var outputData = output.Value;
-            var postitNote = new RichTextNote(text: outputData.ToString()).Document;
+            var output = ((FrameworkElement)sender).DataContext as ReplLineViewModel;
+            var outputData = output?.Value;
+            var postitNote = new RichTextNote(text: outputData?.ToString()).Document;
 
 
             //TODO: get collection view model

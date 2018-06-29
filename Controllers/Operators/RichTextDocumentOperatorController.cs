@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    [OperatorType("docText")]
+    [OperatorType(Op.Name.rich_document_text)]
     public class RichTextDocumentOperatorController : OperatorController
     {
 

@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Dash
 {
-    [OperatorType("lessthan")]
+    [OperatorType(Op.Name.less_than)]
     public class LessThanOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public LessThanOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

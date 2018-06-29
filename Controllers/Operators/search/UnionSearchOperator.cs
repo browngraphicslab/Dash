@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("unionSearch")]
+    [OperatorType(Op.Name.union_search)]
     public class UnionSearchOperator : OperatorController
     {
         //Input keys

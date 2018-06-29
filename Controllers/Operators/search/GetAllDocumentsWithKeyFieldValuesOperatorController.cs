@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents with a given field and value of that field
     /// </summary>
-    [OperatorType("keyFieldQuery")]
+    [OperatorType(Op.Name.key_field_query)]
     public class GetAllDocumentsWithKeyFieldValuesOperatorController : OperatorController
     {
 

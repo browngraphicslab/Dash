@@ -9,7 +9,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("elementAccess")]
+    [OperatorType(Op.Name.element_access)]
     public class ElementAccessOperatorController : OperatorController
     {
         //Input keys

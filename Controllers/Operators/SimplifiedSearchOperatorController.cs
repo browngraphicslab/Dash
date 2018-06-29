@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("find", "f")]
+    [OperatorType(Op.Name.find, Op.Name.f)]
     public class SimplifiedSearchOperatorController : OperatorController
     {
 
@@ -54,7 +54,7 @@ namespace Dash
 
             var exec = OperatorScript.GetDishOperatorName<ExecDishOperatorController>();
 
-            var stringScriptToExecute = $"{exec}(parseSearchString(\"{searchQuery}\"))";
+            var stringScriptToExecute = $"{exec}({DSL.GetFuncName<ParseSearchStringToDishOperatorController>()}(\"{searchQuery}\"))";
 
             var interpreted = TypescriptToOperatorParser.Interpret(stringScriptToExecute);
             var resultDict = interpreted as DocumentController;

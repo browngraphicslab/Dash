@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("dataDoc", "dataDocument")]
+    [OperatorType(Op.Name.data_doc, Op.Name.data_document)]
     public class GetDataDocumentOperatorController : OperatorController
     {
         //Input keys

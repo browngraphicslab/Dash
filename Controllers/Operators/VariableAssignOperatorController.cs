@@ -8,8 +8,8 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("varAssign")]
-    class VariableAssignOperatorController : OperatorController
+    [OperatorType(Op.Name.var_assign)]
+    public class VariableAssignOperatorController : OperatorController
     {
 
         public static readonly KeyController VariableKey = new KeyController("20859151-FBBC-4267-8008-E91A2CD3D61A", "Variable");
