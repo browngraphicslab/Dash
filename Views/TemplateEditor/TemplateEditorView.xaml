@@ -30,7 +30,7 @@
                 <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White" />
             </ScrollViewer>
             
-            <Grid VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"  HorizontalAlignment="Left">
+           <Grid VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"  HorizontalAlignment="Left">
                 
                 <Canvas VerticalAlignment="Center" Width="300" Height="400" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public"
@@ -55,7 +55,7 @@
                                 <local:DocumentView
                                 BindRenderTransform="True"
                                 Loaded="DocumentView_OnLoaded"
-                                SizeChanged="FrameworkElement_OnSizeChanged"/>
+                                SizeChanged="DocumentView_OnSizeChanged"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

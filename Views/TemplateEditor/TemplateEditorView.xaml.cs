@@ -85,6 +85,7 @@ namespace Dash
                 case NotifyCollectionChangedAction.Move:
                     break;
                 case NotifyCollectionChangedAction.Remove:
+                    RemoveDocs(e.OldItems.Cast<DocumentController>());
                     break;
                 case NotifyCollectionChangedAction.Replace:
                     break;
@@ -93,48 +94,63 @@ namespace Dash
             }
         }
 
+        private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
+        {
+            foreach (var doc in oldDocs)
+            {
+                DocumentViewModels.Remove(DocumentViewModels.First(i => i.DocumentController.Equals(doc)));
+            }
+
+            xItemsControl.ItemsSource = DocumentViewModels;
+        }
+
         private void AddDocs(IEnumerable<DocumentController> newDocs)
         {
-            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             foreach (var doc in newDocs)
             {
-                // if either is true, then the layout doc needs to be abstracted
-                if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-                {
-                    if (_isDataDocKVP)
-                    {
-                        // set the layout doc's context to a reference of the data doc's context
-                        doc.SetField(KeyStore.DocumentContextKey,
-                            new DocumentReferenceController(
-                                DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
-                                KeyStore.DocumentContextKey),
-                            true);
-                    }
-                    else
-                    {
-                        // set the layout doc's context to a reference of the data doc's context
-                        doc.SetField(KeyStore.DocumentContextKey,
-                            new DocumentReferenceController(DataDocument.Id,
-                                KeyStore.DocumentContextKey),
-                            true);
-                    }
-                    var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
-
-                    if (specificKey != null)
-                    {
-                        // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
-                        doc.SetField(KeyStore.DataKey,
-                            new PointerReferenceController(
-                                doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
-                    }
-                }
-                // create new viewmodel with a copy of document, set editor to this
-                var dvm =
-                    new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
-                DocumentViewModels.Add(dvm);
-                // adds layout doc to list of layout docs
-                DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
+                AddDoc(doc);
             }
+        }
+
+        private void AddDoc(DocumentController doc)
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            // if either is true, then the layout doc needs to be abstracted
+            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            {
+                if (_isDataDocKVP)
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(
+                            DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
+                else
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(DataDocument.Id,
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
+                var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+
+                if (specificKey != null)
+                {
+                    // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
+                    doc.SetField(KeyStore.DataKey,
+                        new PointerReferenceController(
+                            doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
+                }
+            }
+            // create new viewmodel with a copy of document, set editor to this
+            var dvm =
+                new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
+            DocumentViewModels.Add(dvm);
+            // adds layout doc to list of layout docs
+            DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
 
             xItemsControl.ItemsSource = DocumentViewModels;
         }
@@ -187,6 +203,7 @@ namespace Dash
             DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
             //listen for any changes to the collection
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
+            xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
         }
 
         private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
@@ -406,6 +423,7 @@ namespace Dash
 
         private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
         {
+            xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
             _selectedDocument = sender;
             var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
             var specificKey = pRef.FieldKey;
@@ -463,9 +481,10 @@ namespace Dash
                         }
                         var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
                         DocumentViewModels.Remove(dvm);
-                        var newDoc = DocumentControllers.First(doc => doc.GetDataDocument().Equals(dvm.DataDocument));
-                        var test = newDoc.SetField(KeyStore.DataKey, newRef, true);
-                        DocumentViewModels.Add(new DocumentViewModel(newDoc));
+                        var newDoc = DocumentControllers.First(doc => doc.Equals(_selectedDocument.ViewModel.DocumentController));
+                        newDoc.SetField(KeyStore.DataKey, newRef, true);
+                        var newDvm = new DocumentViewModel(newDoc);
+                        DocumentViewModels.Add(newDvm);
                         _selectedDocument = null;
                     }
                 }
@@ -488,12 +507,8 @@ namespace Dash
 
                 //RemoveDragDropIndication(sender as UserControl);
 
-                var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
-                var where = new Point();
-                if (senderView is CollectionFreeformView)
-                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
-                        e.GetPosition(MainPage.Instance));
-                else if (DocumentViewModels.Count > 0)
+                var where = e.GetPosition(sender as Canvas);
+                if (DocumentViewModels.Count > 0)
                 {
                     var lastPos = DocumentViewModels.Last().Position;
                     where = e.GetPosition(xWorkspace);
@@ -812,8 +827,11 @@ namespace Dash
                     }
                     else if (dragModel.CanDrop(sender as FrameworkElement))
                     {
-                        
-                        DocumentControllers.Add(dragModel.GetDropDocument(where));
+                        var dropDoc = dragModel.GetDropDocument(where);
+                        DocumentControllers.Add(dropDoc);
+                        // kinda hacky lol -sy
+                        DocumentViewModels.Last().DocumentController
+                            .SetField(KeyStore.PositionFieldKey, new PointController(where), true);
                     }
                 }
             }
@@ -1012,7 +1030,7 @@ namespace Dash
         }
 
         //updates the bounding when an element changes size
-        private void FrameworkElement_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             var docView = sender as DocumentView;
             var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
@@ -1023,6 +1041,11 @@ namespace Dash
         private void XItemsExpander_OnExpanded(object sender, EventArgs e)
         {
             xItemsExpander.Background = new SolidColorBrush(Color.FromArgb(255,85,102,102));
+        }
+
+        private void DocumentView_OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            DocumentControllers.Remove((sender as DocumentView).ViewModel.DocumentController);
         }
     }
 }
