@@ -856,8 +856,8 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,7 +26,7 @@ namespace Dash
         /// </summary>
         public SfPdfViewerControl Pdf => xPdfView;
         private AnnotationManager _annotationManager;
-        private ListController<DocumentController> _dataRegions;
+        private List<PDFRegionMarker> _dataRegions = new List<PDFRegionMarker>();
         private ScrollViewer _internalViewer;
         private Point _anchor;
         private bool _isDragging;
@@ -46,13 +47,13 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 GetInternalScrollViewer().ChangeView(null, curOffset ?? 0.0, null);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
-                _dataRegions = DataDocument.GetDataDocument()
+                var dataRegions = DataDocument.GetDataDocument()
                     .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-                if (_dataRegions != null)
+                if (dataRegions != null)
                 {
                     var totalOffset = DataDocument.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
                     xRegionsGrid.Height = totalOffset;
-                    foreach (var region in _dataRegions.TypedData)
+                    foreach (var region in dataRegions.TypedData)
                     {
                         var offset = region.GetDataDocument()
                             .GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
@@ -87,7 +88,7 @@ namespace Dash
         private void xMarker_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = false;
-            this.MarkerSelected((PDFRegionMarker) sender, e.GetCurrentPoint(MainPage.Instance).Position);
+            this.MarkerSelected((PDFRegionMarker) sender);
             e.Handled = true;
         }
 
@@ -100,7 +101,7 @@ namespace Dash
         }
 
         // moves to the region's offset
-        private void MarkerSelected(object region, Point pos)
+        private void MarkerSelected(object region)
         {
             if (region == null) return;
 
@@ -200,7 +201,6 @@ namespace Dash
                 }
 
                 MakeRegionMarker(xPdfView.VerticalOffset, endOffset, xTemporaryRegionMarker.Position, xTemporaryRegionMarker.Size, dc);
-
                 return dc;
             }
 
@@ -222,7 +222,7 @@ namespace Dash
             newRegion.Offset = offset;
             newRegion.PointerPressed += xRegion_OnPointerPressed;
             xRegionsGrid.Children.Add(newRegion);
-
+            _dataRegions.Add(newMarker);
             xTemporaryRegionMarker.Visibility = Visibility.Collapsed;
         }
 
@@ -335,6 +335,49 @@ namespace Dash
             {
                 xTemporaryRegionMarker.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine(_dataRegions.Count);
+            var currOffset = xPdfView.VerticalOffset;
+            PDFRegionMarker nextOffset = null;
+
+            foreach (var region in _dataRegions)
+            {
+                if (region.Offset > currOffset && Math.Abs(region.Offset - currOffset) > 1 && (nextOffset == null || region.Offset < nextOffset.Offset))
+                {
+                    nextOffset = region;
+                }
+            }
+
+            MarkerSelected(nextOffset);
+        }
+
+        private void xPrevAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            var currOffset = xPdfView.VerticalOffset;
+            PDFRegionMarker prevOffset = _dataRegions.First();
+
+            foreach (var region in _dataRegions)
+            {
+                if (region.Offset < currOffset && Math.Abs(region.Offset - currOffset) > 1 && (prevOffset == null || region.Offset > prevOffset.Offset))
+                {
+                    prevOffset = region;
+                }
+            }
+            
+            MarkerSelected(prevOffset);
+        }
+
+        private void xRegionsScrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            xAnnotationNavigation.Opacity = 0.8;
+        }
+
+        private void xRegionsScrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            xAnnotationNavigation.Opacity = 0;
         }
     }
     
