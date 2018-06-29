@@ -857,7 +857,8 @@ namespace Dash
             if (XInkCanvas.IsTopmost())
             {
                 _isMarqueeActive = false;
-                RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (!this.IsShiftPressed())
+                    RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
         }
 
@@ -939,6 +940,11 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                PreviewTextbox_LostFocus(null, null);
+                return;
+            }
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))

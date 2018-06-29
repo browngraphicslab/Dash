@@ -297,7 +297,7 @@ namespace Dash
                     var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
                     if (ViewModel.IsAdornmentGroup && !wasSelected)
                     {
-                        if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                        if (ParentCollection.CurrentView is CollectionFreeformView)
                         {
                             SelectionManager.DeselectAll();
                         }
@@ -881,7 +881,7 @@ namespace Dash
                     SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
                 }
-                if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
+                if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                 {
                     cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
