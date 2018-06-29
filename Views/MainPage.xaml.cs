@@ -36,7 +36,6 @@ namespace Dash
         
         // relating to system wide selected items
         public DocumentView xMapDocumentView;
-        private  ICollection<DocumentView> SelectedDocuments; // currently selected documents
 
         private bool IsPresentationModeToggled = false;
 
@@ -45,30 +44,7 @@ namespace Dash
 
         public static int GridSplitterThickness { get; } = 7;
 
-        // TODO: change this to Toolbar binding to SelectedDocuments
-        public void DeselectAllDocuments()
-        {
-            SelectedDocuments = new List<DocumentView>();
-            Toolbar.Update(SelectedDocuments);
-        }
-        public void DeselectDocument(DocumentView doc)
-        {
-            if (SelectedDocuments?.Count() > 0)
-            {
-                SelectedDocuments.Remove(doc);
-                Toolbar.Update(SelectedDocuments);
-            }
-        }
-        public void SelectDocument(DocumentView doc) => SelectDocuments( new List<DocumentView>() { doc } );
-        public void SelectDocuments(ICollection<DocumentView> docs)
-        {
-            SelectedDocuments = docs;
-            Toolbar.Update(docs);
-        }
-
         public SettingsView GetSettingsView => xSettingsView;
-
-    public IEnumerable<DocumentView> GetSelectedDocuments() => SelectedDocuments;
 
         public MainPage()
         {
@@ -527,15 +503,19 @@ namespace Dash
             {
                 if (!(FocusManager.GetFocusedElement() is TextBox))
                 {
-                    var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
-                        .OfType<CollectionView>().ToList();
-                    foreach (var c in topCollection.Select((c) => c.CurrentView).OfType<CollectionFreeformBase>())
-                        if (c.SelectedDocs.Count() > 0)
-                        {
-                            foreach (var d in c.SelectedDocs)
-                                d.DeleteDocument();
-                            break;
-                        }
+                    foreach (var doc in SelectionManager.SelectedDocs)
+                    {
+                        doc.DeleteDocument();
+                    }
+                    //var topCollection = VisualTreeHelper.FindElementsInHostCoordinates(this.RootPointerPos(), this)
+                    //    .OfType<CollectionView>().ToList();
+                    //foreach (var c in topCollection.Select(c => c.CurrentView).OfType<CollectionFreeformBase>())
+                    //    if (c.SelectedDocs.Count() > 0)
+                    //    {
+                    //        foreach (var d in c.SelectedDocs)
+                    //            d.DeleteDocument();
+                    //        break;
+                    //    }
                 }
             }
 
@@ -543,7 +523,7 @@ namespace Dash
             var coll = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
             
             // TODO: this should really only trigger when the marquee is inactive -- currently it doesn't happen fast enough to register as inactive, and this method fires
-            if (!coll.IsMarqueeActive() && !(FocusManager.GetFocusedElement() is TextBox))
+            if (!coll.IsMarqueeActive&& !(FocusManager.GetFocusedElement() is TextBox))
             {
                 coll.TriggerActionFromSelection(e.VirtualKey, false);
             }

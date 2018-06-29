@@ -162,6 +162,15 @@ namespace Dash
                 SetExpression(XMarkdownBox.Text);
                 e.Handled = true;
             }
+
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                var tab = XMarkdownBlock.IsTabStop;
+                XMarkdownBlock.IsTabStop = false;
+                XMarkdownBlock.IsEnabled = false;
+                XMarkdownBlock.IsEnabled = true;
+                XMarkdownBlock.IsTabStop = tab;
+            }
         }
 
         private async void XMarkdownBlock_LinkClicked(object sender, Microsoft.Toolkit.Uwp.UI.Controls.LinkClickedEventArgs e)
