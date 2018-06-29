@@ -81,6 +81,9 @@ namespace Dash
                 case TypeInfo.DateTime:
                     controller = new DateTimeController(model as DateTimeModel);
                     break;
+                case TypeInfo.Bool:
+                    controller = new BoolController(model as BoolModel);
+                    break;
                 case TypeInfo.None:
                     throw new Exception("Shoudlnt get here");
                 case TypeInfo.Reference:
@@ -150,6 +153,12 @@ namespace Dash
                     break;
                 case TypeInfo.Key:
                     controller = new ListController<KeyController>(model);
+                    break;
+                case TypeInfo.DateTime:
+                    controller = new ListController<DateTimeController>(model);
+                    break;
+                case TypeInfo.Bool:
+                    controller = new ListController<BoolController>(model);
                     break;
                 case TypeInfo.Any:
                     //Debug.Fail("idk why you got here");

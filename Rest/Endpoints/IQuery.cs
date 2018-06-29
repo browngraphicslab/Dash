@@ -3,7 +3,7 @@ using DashShared;
 
 namespace Dash
 {
-    public interface IQuery<T> : ISerializable where T:EntityBase
+    public interface IQuery<in T> : ISerializable where T:EntityBase
     {
         Func<T, bool> Func { get; }
     }

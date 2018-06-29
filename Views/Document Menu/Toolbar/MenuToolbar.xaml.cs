@@ -59,6 +59,33 @@ namespace Dash
             set { SetValue(CollapseColorProperty, value); }
         }
 
+
+        public void SetUndoEnabled(bool enabled)
+        {
+            xUndo.IsEnabled = enabled;
+            if (enabled)
+            {
+                xUndo.Opacity = 1.0;
+            }
+            else
+            {
+                xUndo.Opacity = 0.5;
+            }
+        }
+
+        public void SetRedoEnabled(bool enabled)
+        {
+            xRedo.IsEnabled = enabled;
+            if (enabled)
+            {
+                xRedo.Opacity = 1.0;
+            }
+            else
+            {
+                xRedo.Opacity = 0.5;
+            }
+        }
+
         // == STATIC ==
         public static MenuToolbar Instance;
 
@@ -119,11 +146,12 @@ namespace Dash
             //xPadding.Height = ToolbarConstants.PaddingShort;
 
             xToolbar.Loaded += (sender, e) => { SetUpOrientationBindings(); };
+            SelectionManager.SelectionChanged += (sender) => { Update(SelectionManager.SelectedDocs); };
 
             //move toolbar to ideal location on start-up
             Loaded += (sender, args) =>
             {
-                xFloating.ManipulateControlPosition(325, 10, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -329,16 +357,16 @@ namespace Dash
                         xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
-					//Annnotation controls
-	                var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
-	                if (annot != null)
-	                {
-		                System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
-						
-	                }
+                    //Annnotation controls
+                    var annot = VisualTreeHelperExtensions.GetFirstDescendantOfType<ImageRegionBox>(selection);
+                    if (annot != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("IMAGEBOX IS SELECTED");
 
-					//If the user has clicked on valid content (text, image, video, etc)...
-					if (subtoolbarElement != null)
+                    }
+
+                    //If the user has clicked on valid content (text, image, video, etc)...
+                    if (subtoolbarElement != null)
                     {
                         AdjustComboBoxes();
                         xToolbar.IsOpen = false;
@@ -412,7 +440,7 @@ namespace Dash
         // copy btn
         private void Copy(object sender, RoutedEventArgs e)
         {
-            foreach (DocumentView d in MainPage.Instance.GetSelectedDocuments())
+            foreach (DocumentView d in SelectionManager.SelectedDocs)
             {
                 d.CopyDocument();
             }
@@ -421,8 +449,7 @@ namespace Dash
         // delete btn
         private void Delete(object sender, RoutedEventArgs e)
         {
-            var tempDocs = MainPage.Instance.GetSelectedDocuments().ToList<DocumentView>();
-            foreach (DocumentView d in tempDocs)
+            foreach (DocumentView d in SelectionManager.SelectedDocs)
             {
                 d.DeleteDocument();
             }
@@ -489,12 +516,8 @@ namespace Dash
                     var docController = await parser.ParseFileAsync(thisImage);
                     if (docController != null)
                     {
-                        //creates a doc controller for the image(s)
-                        var mainPageCollectionView =
-                            MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        //TODO: change the point used to position the image to the center of the screen, despite any ScrollViewer offset.
-                        var where = Util.GetCollectionFreeFormPoint(
-                            mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                         docController.GetPositionField().Data = where;
                         mainPageCollectionView.ViewModel.AddDocument(docController);
                     }
@@ -543,7 +566,7 @@ namespace Dash
                     //create a doc controller for the video, set position, and add to canvas
                     var docController = await new VideoToDashUtil().ParseFileAsync(file);
                     var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformView, new Point(500, 500));
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
                     docController.GetPositionField().Data = where;
                     MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.AddDocument(docController);
                 }
@@ -557,6 +580,8 @@ namespace Dash
         /// </summary>
         private async void Add_Audio_On_Click(object sender, RoutedEventArgs e)
         {
+            xToolbar.IsOpen = (subtoolbarElement == null) ? true : IsAtTop();
+
             //instantiates a file picker, set to open in user's audio library
             var picker = new FileOpenPicker
             {
@@ -756,12 +781,12 @@ namespace Dash
             EnsureVisible();
         }
 
-	    public void EnsureVisible()
-	    {
-		    //ensure toolbar is visible
-		    xToolbar.IsEnabled = true;
-		    xToolbar.Visibility = Visibility.Visible;
-		}
+        public void EnsureVisible()
+        {
+            //ensure toolbar is visible
+            xToolbar.IsEnabled = true;
+            xToolbar.Visibility = Visibility.Visible;
+        }
 
         /// <summary>
         /// Toggles toolbar locked-state when pin button is clicked.
@@ -778,5 +803,15 @@ namespace Dash
         }
 
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
+
+        private void xRedo_Click(object sender, RoutedEventArgs e)
+        {
+            UndoManager.RedoOccured();
+        }
+
+        private void xUndo_Click(object sender, RoutedEventArgs e)
+        {
+            UndoManager.UndoOccured();
+        }
     }
 }

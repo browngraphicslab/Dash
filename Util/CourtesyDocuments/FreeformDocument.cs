@@ -36,17 +36,16 @@ namespace Dash
 
             var c = new Context(context);
 
-            void OnDocumentFieldUpdatedHandler(FieldControllerBase sender, FieldUpdatedEventArgs args, Context c2)
+            void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c2)
             {
-                var dargs = (DocumentController.DocumentFieldUpdatedEventArgs) args;
-                var collFieldArgs = dargs.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                var collFieldArgs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (collFieldArgs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
                     AddDocuments(collFieldArgs.ChangedDocuments, c, grid);
                 }
                 else
                 {
-                    LayoutDocuments((DocumentController) sender, c, grid);
+                    LayoutDocuments(sender, c, grid);
                 }
             }
 

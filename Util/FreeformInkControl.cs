@@ -38,7 +38,7 @@ namespace Dash
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
-        public CollectionFreeformView FreeformView;
+        public CollectionFreeformBase FreeformView;
         public InkController InkController;
         public LassoSelectHelper LassoHelper;
         public Canvas SelectionCanvas;
@@ -46,7 +46,7 @@ namespace Dash
         public InkRecognitionHelper InkRecognitionHelper { get; }
 
 
-        public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
+        public FreeformInkControl(CollectionFreeformBase view, InkCanvas canvas, Canvas selectionCanvas)
         {
             TargetInkCanvas = canvas;
             FreeformView = view;
@@ -212,11 +212,11 @@ namespace Dash
         /// <param name="selectionPoints"></param>
         private void LassoSelectDocs(PointCollection selectionPoints)
         {
-            FreeformView.DeselectAll();
+            SelectionManager.DeselectAll();
             var selectionList =
                 LassoHelper.GetSelectedDocuments(
                     new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000)))); //Adjust for offset of InkCanvas vs FreeformView's ItemsControl
-            FreeformView.SelectDocs(selectionList);
+            SelectionManager.SelectDocuments(selectionList);
         }
 
         /// <summary>

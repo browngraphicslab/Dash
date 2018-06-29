@@ -54,7 +54,7 @@ namespace Dash
             {
                 return true;
             }
-            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().GetId());
+            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().Id);
             return doc.IsDelegateOf(deepestRelative); 
         }
 
@@ -152,10 +152,10 @@ namespace Dash
             foreach (var doc in _documentContextList)
             {
                 // set the flag if we find a delegate or the document with the passed in id
-                if (doc.GetId() == referenceDocId || doc.IsDelegateOf(referenceDocId))
+                if (doc.Id == referenceDocId || doc.IsDelegateOf(referenceDocId))
                 {
                     found = true;
-                    referenceDocId = doc.GetId();
+                    referenceDocId = doc.Id;
                 }
             }
 

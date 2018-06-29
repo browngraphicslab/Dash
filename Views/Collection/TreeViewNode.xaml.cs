@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
@@ -256,6 +257,7 @@ namespace Dash
 
         private void Rename_OnClick(object sender, RoutedEventArgs e)
         {
+            UndoManager.StartBatch();
             xBorder.Visibility = Visibility.Visible;
             XTextBlock.Visibility = Visibility.Collapsed;
             XTextBox.Focus(FocusState.Keyboard);
@@ -271,6 +273,7 @@ namespace Dash
         {
             xBorder.Visibility = Visibility.Collapsed;
             XTextBlock.Visibility = Visibility.Visible;
+            UndoManager.EndBatch();
         }
 
 
@@ -289,5 +292,6 @@ namespace Dash
             if (args.NewFocusedElement == this.GetFirstAncestorOfType<ListViewItem>())
                 args.Cancel = true;
         }
+
     }
 }

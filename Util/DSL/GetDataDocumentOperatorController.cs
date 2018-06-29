@@ -19,6 +19,7 @@ namespace Dash
 
         public GetDataDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public GetDataDocumentOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -45,7 +46,9 @@ namespace Dash
         private static readonly KeyController TypeKey =
             new KeyController("420D6ED9-F09E-4912-B106-576567E00C83", "Get Data Document");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var inputDocument = inputs[InputDocumentKey] as DocumentController;
             if (inputDocument != null)

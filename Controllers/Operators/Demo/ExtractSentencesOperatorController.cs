@@ -41,6 +41,7 @@ namespace Dash
 
         public ExtractSentencesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public ExtractSentencesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -50,7 +51,9 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("D9EE3561-0A30-4DA9-B11A-859CABCF237B", "Sentence Analyzer");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var collection = inputs[InputCollection] as ListController<DocumentController>;
             var textFieldKeyId = (inputs[TextField] as TextController).Data;
@@ -74,7 +77,7 @@ namespace Dash
                         outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
                         outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
 
-                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.GetId(), SentenceKey), 0, 0, 200, 200).Document;
+                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.Id, SentenceKey), 0, 0, 200, 200).Document;
                         docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
                         outputDocs.Add(docLayout);
 

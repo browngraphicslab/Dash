@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.ApplicationModel.AppService;
@@ -8,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.HockeyApp;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -24,7 +26,7 @@ namespace Dash
         //.NET interop stuff
         public static BackgroundTaskDeferral AppServiceDeferral = null;
         public static AppServiceConnection Connection = null;
-        public static event EventHandler AppServiceConnected;
+        public static event Action AppServiceConnected;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -100,12 +102,13 @@ namespace Dash
                     KeyStore.RegisterDocumentTypeRenderer(ListViewLayout.DocumentType, ListViewLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.MeltOperatorBoxDocumentType, MeltOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.OperatorBoxType, OperatorBox.MakeView, null);
-                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(PdfBox.DocumentType, PdfBox.MakeView, PdfBox.MakeRegionDocument);
                     KeyStore.RegisterDocumentTypeRenderer(PreviewDocument.DocumentType, PreviewDocument.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.QuizletOperatorType, QuizletOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(DashConstants.TypeStore.SearchOperatorType, SearchOperatorBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(StackLayout.DocumentType, StackLayout.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(TextingBox.DocumentType, TextingBox.MakeView, null);
+                    KeyStore.RegisterDocumentTypeRenderer(MarkdownBox.DocumentType, MarkdownBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(EditableScriptBox.DocumentType, EditableScriptBox.MakeView, null);
                     KeyStore.RegisterDocumentTypeRenderer(WebBox.DocumentType, WebBox.MakeView, null);
 					KeyStore.RegisterDocumentTypeRenderer(VideoBox.DocumentType, VideoBox.MakeView, null);
@@ -137,7 +140,7 @@ namespace Dash
                 if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails details)
                 {
                     Connection = details.AppServiceConnection;
-                    AppServiceConnected?.Invoke(this, null);
+                    AppServiceConnected?.Invoke();
                 }
             }
         }
@@ -173,6 +176,14 @@ namespace Dash
         {
             var deferral = e.SuspendingOperation.GetDeferral();
             //TODO: Save application state and stop any background activity
+
+            // close the connection to the 
+
+            Task.Run(async () =>
+            {
+                await Container.GetRequiredService<IModelEndpoint<FieldModel>>().Close();
+            });
+
             deferral.Complete();
         }
 
@@ -184,7 +195,6 @@ namespace Dash
         /// <param name="o"></param>
         private void OnResuming(object sender, object o)
         {
-            BrowserView.ForceInit();
         }
 
     }

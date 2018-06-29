@@ -16,6 +16,7 @@ namespace Dash
         }
         public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public override FieldControllerBase GetDefaultController()
@@ -41,53 +42,42 @@ namespace Dash
         {
             [ResultFieldKey] = TypeInfo.Any,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
-            //var dargs = args as DocumentController.DocumentFieldUpdatedEventArgs;
-            //if (args != null && dargs == null)
-            //{
-            //    return;
-            //}
 
-            //string updatedKeyName = null;
-            //if (dargs != null)
-            //{
-            //    if (!(dargs.FieldArgs is DocumentController.DocumentFieldUpdatedEventArgs dargs2))
-            //    {
-            //        return;
-            //    }
+            string updatedKeyName = null;
+            if (args != null)
+            {
+                if (!(args.FieldArgs is DocumentController.DocumentFieldUpdatedEventArgs dargs))
+                {
+                    return;
+                }
 
-            //    updatedKeyName = dargs2.Reference.FieldKey.Name;
-            //}
+                updatedKeyName = dargs.Reference.FieldKey.Name;
+            }
 
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
                 var fields = doc.EnumFields().ToArray();
 
-                var controller = FindInDocFields(doc, fields, keyName);
-
-                var dataDoc = doc.GetDataDocument();
-                if (controller == null && ! doc.Equals(dataDoc))
-                {
-                    fields = dataDoc.EnumFields().ToArray();
-                    controller = FindInDocFields(dataDoc, fields, keyName);
-                }
+                var controller = FindInDocFields(fields, keyName);
 
                 outputs[ResultFieldKey] = controller ?? new TextController();
             }
         }
 
-        private FieldControllerBase FindInDocFields(DocumentController doc,
-            KeyValuePair<KeyController, FieldControllerBase>[] fields, string keyName)
+        private FieldControllerBase FindInDocFields(KeyValuePair<KeyController, FieldControllerBase>[] fields, string keyName)
         {
             foreach (var key in fields) //check exact string equality
             {
                 if (key.Key.Name.Replace(" ", "").Equals(keyName))
                 {
 
-                    return key.Value.DereferenceToRoot(new Context(doc));
+                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
                 }
             }
 
@@ -95,28 +85,9 @@ namespace Dash
             {
                 if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
                 {
-                    return key.Value.DereferenceToRoot(new Context(doc));
+                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
                 }
             }
-
-
-            foreach (var key in fields) //check exact string contains
-            {
-                if (key.Key.Name.Replace(" ", "").Contains(keyName) && keyName.Length >= 3)
-                {
-                    return key.Value.DereferenceToRoot(new Context(doc));
-                }
-            }
-
-            foreach (var key in fields) //check to lower stirng contains
-            {
-                if (key.Key.Name.Replace(" ", "").ToLower().Contains(keyName.ToLower()) && keyName.Length >= 3)
-                {
-                    return key.Value.DereferenceToRoot(new Context(doc));
-                }
-            }
-
-
 
             return null;
         }

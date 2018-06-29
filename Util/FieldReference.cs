@@ -29,7 +29,7 @@ namespace Dash
         /// <returns></returns>
         public string GetDocumentId(Context context = null)
         {
-            return GetDocumentController(context)?.GetId();
+            return GetDocumentController(context)?.Id;
         }
 
         public abstract FieldReference Copy();

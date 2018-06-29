@@ -13,6 +13,7 @@ namespace Dash
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
+            SaveOnServer();
         }
 
         public SetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
@@ -45,7 +46,9 @@ namespace Dash
         {
             [ResultDocKey] = TypeInfo.Document,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, FieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
             var fieldName = inputs[KeyNameKey] as TextController;
