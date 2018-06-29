@@ -241,6 +241,7 @@
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
+    <Compile Include="Rest\Endpoints\BaseModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
     <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
