@@ -102,7 +102,12 @@ namespace Dash
                              moveCursorToEnd();
                          }
 
-                        break;
+                        _textModified = true;
+
+                        TextHeight = 50;
+                        TextGrid.Height = new GridLength(50);
+
+                    break;
                     case VirtualKey.Down:
                         var index = numItem - (_currentHistoryIndex - 1);
                         if (numItem > index && index >= 0)
@@ -113,10 +118,18 @@ namespace Dash
                         } else if (index == numItem)
                         {
                             _currentHistoryIndex--;
-                            xTextBox.Text = "";
-                        }
+                            xTextBox.Text = _currentText;
+                            moveCursorToEnd();
+                    }
 
-                        break;
+                        _textModified = true;
+
+                        var numEnter = xTextBox.Text.Split('\r').Length - 1;
+                        var newTextSize = 50 + (numEnter * 20);
+                        TextHeight = newTextSize;
+                        TextGrid.Height = new GridLength(newTextSize);
+
+                    break;
                 }
         }
 
@@ -227,10 +240,12 @@ namespace Dash
                     SuggestionsPopup.IsOpen = false;
                     SuggestionsPopup.Visibility = Visibility.Collapsed;
                 }
+
+                _currentText = xTextBox.Text;
             }
 
             _textModified = false;
-            _currentText = xTextBox.Text;
+            
         }
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
