@@ -134,7 +134,20 @@ namespace Dash
         {
             if (!_textModified && xTextBox.Text != "")
             {
-                var suggestions = _dataset.Where(x => x.StartsWith(xTextBox.Text)).ToList();
+                //only give suggestions on last word
+                var allText = xTextBox.Text.Split(' ');
+                var lastWord = "";
+                if (allText.Length > 0)
+                {
+                    lastWord = allText[allText.Length - 1];
+                }
+
+                if (_dataset == null)
+                {
+                    OperatorScript.Init();
+                }
+
+                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
 
                 Suggestions.ItemsSource = suggestions;
 
@@ -163,7 +176,16 @@ namespace Dash
         {
             var selectedItem = e.ClickedItem.ToString();
             _textModified = true;
-            xTextBox.Text = selectedItem;
+
+            var currentText = xTextBox.Text.Split(' ');
+            var keepText = "";
+            if (currentText.Length > 1)
+            {
+                var lastWordLength = currentText[currentText.Length - 1].Length;
+                keepText = xTextBox.Text.Substring(0, xTextBox.Text.Length - lastWordLength);
+            }
+
+            xTextBox.Text = keepText + selectedItem;
 
             SuggestionsPopup.IsOpen = false;
             SuggestionsPopup.Visibility = Visibility.Collapsed;

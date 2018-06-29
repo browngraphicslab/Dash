@@ -22,8 +22,10 @@ namespace Dash
             Init();
         }
 
-        private void Init()
+        public static void Init()
         {
+            //this is static because nothing is operator specifc. If you need things specific to one 
+            //OperatorScript, don't put it here
 
             if (PrintAllFuncDocumentation)
             {
