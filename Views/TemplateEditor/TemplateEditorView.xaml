@@ -75,7 +75,7 @@
             </Grid>
 
             <!--Formatting Panel-->
-            <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" >
+            <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" Height="500">
 
                 <!--Data Key Header-->
 
@@ -100,16 +100,16 @@
                         </Storyboard>
                     </StackPanel.Resources>
                     <!--Header-->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="AddItemsOnClick" >
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                     </StackPanel>
                     <!--StackPanel for buttons-->
-                    <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
-                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#334f43"></AppBarButton>
-                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#334f43"></AppBarButton>
-                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#334f43"></AppBarButton>
-                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" Background="#334f43"></AppBarButton>
+                    <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" ></AppBarButton>
+                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" ></AppBarButton>
+                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" ></AppBarButton>
+                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" ></AppBarButton>
                     </StackPanel>
                 </StackPanel>
 
@@ -125,18 +125,32 @@
                         </Storyboard>
                     </StackPanel.Resources>
                     <!--Header-->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="AddItemsOnClick" >
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Items</TextBlock>
                     </StackPanel>
-                    <!--StackPanel for buttons-->
-                    <StackPanel x:Name="FormatItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
-                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" Background="#365648"></AppBarButton>
+                    <!--StackPanel for Format buttons-->
+                    <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
+                            <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
+                            <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
+                
+                <!--Apply Template button!-->
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+
+                    <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Bold" FontSize="14" Foreground="White">Apply Changes</TextBlock>
+                            <TextBlock FontSize="20" Foreground="White"
+                                       FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SaveIcon}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
                 <!--
                 <controls:Expander x:Name="xItemsExpander" Grid.Column="1" Header="Add Items" HeaderStyle="{StaticResource ExpanderBackgroundColor}"
                                Foreground="White"
