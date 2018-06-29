@@ -64,7 +64,7 @@
                     </AppBarButton.Icon>
                 </AppBarButton>
                 <!--close button-->
-                <AppBarButton Width="40" Foreground="White" Background="Transparent" Tapped="CloseButton_Tapped"   Grid.Column="3">
+                <AppBarButton Width="40" Foreground="White" Background="Transparent" x:Name="xCloseButton" Tapped="CloseButton_Tapped"   Grid.Column="3">
                     <AppBarButton.Icon>
                         <SymbolIcon Symbol="Cancel" Foreground="White" HorizontalAlignment="Right"></SymbolIcon>
                     </AppBarButton.Icon>

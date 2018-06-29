@@ -14,11 +14,11 @@
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
-    d:DesignHeight="530"
+    d:DesignHeight="540"
     d:DesignWidth="1000">
 
 
-    <StackPanel Orientation="Vertical" Height="532" BorderBrush="#223a31" BorderThickness="2 2 2 2" Background="#416857">
+    <StackPanel Orientation="Vertical" Height="540" BorderBrush="#223a31" BorderThickness="2 2 2 2" Background="#416857">
 
         <!--Header-->
         <Grid>
@@ -35,7 +35,7 @@
         </Grid>
 
         <!--StackPanel for panes-->
-        <StackPanel Orientation="Horizontal" BorderBrush="#223a31" BorderThickness="0 2 0 0" x:Name="xOuterPanel">
+        <StackPanel Orientation="Horizontal" BorderBrush="#223a31" Height="500" BorderThickness="0 2 0 0" x:Name="xOuterPanel">
 
             <!--Panel that holds Key Value Pane-->
             <ScrollViewer Width="300" Height="500" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalScrollBarVisibility="Hidden">

@@ -34,7 +34,7 @@ namespace Dash
 
 		private void FormatPane(TemplateEditorView editor)
 		{
-			KVP = new KeyValuePane()
+			KVP = new KeyValuePane(true)
 			{
 				DataContext = editor.LayoutDocument.GetDereferencedField<DocumentController>(KeyStore.DataKey, null),
 				Width = 300
