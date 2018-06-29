@@ -407,31 +407,67 @@ namespace Dash
         private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
         {
             _selectedDocument = sender;
-            var title = _selectedDocument.ViewModel.DocumentController.Title.ToString();
-            var specificKey = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+            var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
+            var specificKey = pRef.FieldKey;
             string text = "";
-            if (specificKey != null)
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            var doc = _selectedDocument.ViewModel.DocumentController;
+            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
             {
                 text = "#";
+                text += specificKey;
             }
-            text += title;
+            else
+            {
+                text = _selectedDocument.ViewModel.DocumentController.Title;
+            }
             xKeyBox.Text = text;
             xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
         }
 
         private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (!xKeyBox.TextBoxLoaded)
+            if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
             {
                 var text = xKeyBox.Text;
                 if (text.StartsWith("#"))
                 {
                     var possibleKeyString = text.Substring(1);
                     var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument().EnumFields();
-                    //var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString)).Key;
-                  //  if (specificKey != null)
-                  //  {
-                  //  }
+                    var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString)).Key;
+                    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+                    if (specificKey != null)
+                    {
+                        var newRef =
+                            _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
+                                KeyStore.DataKey);
+                        var selectedDoc = _selectedDocument.ViewModel.DocumentController;
+                        if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || selectedDoc.GetDataDocument().Equals(workingDoc))
+                        {
+                            newRef.FieldKey = specificKey;
+                        }
+                        else
+                        {
+                            DocumentReferenceController docRef;
+                            if (workingDoc.GetField(specificKey) != null)
+                            {
+                                docRef = new DocumentReferenceController(LayoutDocument.Id, KeyStore.DataKey);
+                                newRef = new PointerReferenceController(docRef, specificKey);
+                            }
+                            else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
+                            {
+                                docRef = new DocumentReferenceController(
+                                    LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).Id, KeyStore.DataKey);
+                                newRef = new PointerReferenceController(docRef, specificKey);
+                            }
+                        }
+                        var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
+                        DocumentViewModels.Remove(dvm);
+                        var newDoc = DocumentControllers.First(doc => doc.GetDataDocument().Equals(dvm.DataDocument));
+                        var test = newDoc.SetField(KeyStore.DataKey, newRef, true);
+                        DocumentViewModels.Add(new DocumentViewModel(newDoc));
+                        _selectedDocument = null;
+                    }
                 }
             }
         }
