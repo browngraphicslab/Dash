@@ -82,6 +82,8 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
+        public virtual bool CheckTypeEquality(FieldControllerBase fmc) => fmc.TypeInfo == TypeInfo;
+
         public abstract FieldControllerBase Copy();
 
         public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return null; }

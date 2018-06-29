@@ -11,15 +11,13 @@ namespace Dash
     [OperatorType("varAssign")]
     class VariableAssignOperatorController : OperatorController
     {
+
         public static readonly KeyController VariableKey = new KeyController("20859151-FBBC-4267-8008-E91A2CD3D61A", "Variable");
         public static readonly KeyController AssignmentKey = new KeyController("B9230797-EFE1-4231-9AD7-9F5C401F44D0", "Assignment");
 
         public static readonly KeyController OutputKey = new KeyController("E0B86647-5A1C-40B4-B4AD-0A738EB85CA9", "Output");
 
-        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public VariableAssignOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public VariableAssignOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -30,7 +28,7 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new ConcatOperatorController();
+            return new VariableAssignOperatorController();
         }
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

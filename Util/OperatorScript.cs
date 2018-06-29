@@ -9,7 +9,7 @@ namespace Dash
     public class OperatorScript
     {
         public static OperatorScript Instance = new OperatorScript();
-        private static Dictionary<string, Type> _functionMap;
+        private static Dictionary<string, List<OperatorControllerOverload>> _functionMap;
         private static Dictionary<Type, string> _reverseFunctionMap;
 
         private static bool PrintAllFuncDocumentation;
@@ -30,7 +30,7 @@ namespace Dash
                 Debug.WriteLine("\n\n\n\nAll DSL Functions: \n");
             }
 
-            _functionMap = new Dictionary<string, Type>();
+            _functionMap = new Dictionary<string, List<OperatorControllerOverload>>();
             _reverseFunctionMap = new Dictionary<Type, string>();
             foreach (var operatorType in GetTypesWithOperatorAttribute(Assembly.GetExecutingAssembly()))
             {
@@ -41,7 +41,17 @@ namespace Dash
 
                 foreach (var typeName in typeNames)
                 {
-                    _functionMap[typeName] = operatorType;
+                    if (_functionMap.ContainsKey(typeName))
+                    {
+                        _functionMap[typeName].Add(new OperatorControllerOverload(op.Inputs.ToList(), operatorType));
+                    } else
+                    {
+                        var list = new List<OperatorControllerOverload>
+                        {
+                            new OperatorControllerOverload(op.Inputs.ToList(), operatorType)
+                        };
+                        _functionMap[typeName] = list;
+                    }
                     _reverseFunctionMap[operatorType] = typeName;
 
 
@@ -61,7 +71,7 @@ namespace Dash
 
         private static void PrintDocumentation(string funcName, OperatorController op)
         {
-            var doc = op.Outputs[0].Value.ToString()+"   "+funcName + "( " + string.Join(',', op.Inputs.Select(i => " "+i.Value.Type.ToString() + "  "+  i.Key.Name.ToLower())) + " );";
+            var doc = op.Outputs[0].Value.ToString() + "   " + funcName + "( " + string.Join(',', op.Inputs.Select(i => " " + i.Value.Type.ToString() + "  " + i.Key.Name.ToLower())) + " );";
             FunctionDocumentation += doc + "         \n";
             Debug.WriteLine(doc);
         }
@@ -95,8 +105,9 @@ namespace Dash
         {
             if (_functionMap.ContainsKey(funcName))
             {
-                var t = _functionMap[funcName];
-                var op = (OperatorController) Activator.CreateInstance(t);
+                //TODO With overloading this isn't correct
+                var t = _functionMap[funcName].First().OperatorType;
+                var op = (OperatorController)Activator.CreateInstance(t);
                 return op;
             }
 
@@ -126,11 +137,13 @@ namespace Dash
             return _functionMap.ContainsKey(funcName);
         }
 
+        //TODO With overloads we need more info to have this make sense
         public static DashShared.TypeInfo GetOutputType(string funcName)
         {
             return GetOperatorWithName(funcName)?.Outputs?.ElementAt(0).Value ?? DashShared.TypeInfo.None;
         }
 
+        //TODO With overloads we need more info to have this make sense
         public static DashShared.TypeInfo GetFirstInputType(string funcName)
         {
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
@@ -145,7 +158,8 @@ namespace Dash
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
 
-            var t = _functionMap[funcName];
+            //TODO With overloading this isn't correct
+            var t = _functionMap[funcName].First().OperatorType;
             var op = (OperatorController)Activator.CreateInstance(t);
             return op.Inputs.ToList().Select(i => i.Key).ToList();
         }
@@ -155,7 +169,8 @@ namespace Dash
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
 
-            var t = _functionMap[funcName];
+            //TODO With overloading this isn't correct
+            var t = _functionMap[funcName].First().OperatorType;
             var op = (OperatorController)Activator.CreateInstance(t);
             return op.Inputs.ToDictionary(k => k.Key, v => v.Value);
         }
@@ -170,22 +185,57 @@ namespace Dash
             }
         }
 
-        public static FieldControllerBase Run(string funcName, Dictionary<KeyController, FieldControllerBase> args, Scope scope = null)
+        public static FieldControllerBase Run(string funcName, List<FieldControllerBase> args, Scope scope = null)
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
-            var t = _functionMap[funcName];
-            var op = (OperatorController) Activator.CreateInstance(t);
+
+            var overloads = _functionMap[funcName];
+
+            var distances = new List<KeyValuePair<OperatorControllerOverload, List<int>>>();
+            foreach (var overload in overloads)
+            {
+                var dist = overload.GetDistances(args);
+                if (dist == null) continue;
+
+                dist.Sort();
+                distances.Add(new KeyValuePair<OperatorControllerOverload, List<int>>(overload, dist));
+            }
+
+            for (var j = 0; j < args.Count; j++)
+            {
+                if (distances.Count <= 1) break;
+                var min = distances.Min(pair => pair.Value[j]);
+                distances = distances.Where(pair => pair.Value[j] == min).ToList();
+            }
+
+            if (distances.Count == 0)
+            {
+                //No valid overloads
+                throw new ScriptExecutionException(new OverloadErrorModel(false, funcName));
+            }
+
+            if (distances.Count > 1)
+            {
+                //Ambiguous overloads
+                throw new ScriptExecutionException(new OverloadErrorModel(true, funcName));
+            }
+
+            var t = distances[0].Key.OperatorType;
+            var op = (OperatorController)Activator.CreateInstance(t);
             var outDict = new Dictionary<KeyController, FieldControllerBase>();
-            op.Execute(args,outDict, null, scope);
+
+            var inputs = new Dictionary<KeyController, FieldControllerBase>(args.Zip(op.Inputs, (arg, pair) => new KeyValuePair<KeyController, FieldControllerBase>(pair.Key, arg)));
+
+            op.Execute(inputs, outDict, null, scope);
             return outDict.Count == 0 ? null : outDict.First().Value;
         }
-
 
         public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, string funcName)
         {
             if (!_functionMap.ContainsKey(funcName)) return null;
-            var t = _functionMap[funcName];
-            var op = (OperatorController) Activator.CreateInstance(t);
+            //TODO With overloading this isn't correct
+            var t = _functionMap[funcName].First().OperatorType;
+            var op = (OperatorController)Activator.CreateInstance(t);
 
             var doc = new DocumentController();
 

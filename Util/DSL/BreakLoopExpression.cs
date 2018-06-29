@@ -18,22 +18,23 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            if (_parameters == null) { return null; }
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            foreach (var parameter in _parameters)
-            {
-                inputs.Add(parameter.Key, parameter.Value?.Execute(scope));
-            }
+            return null;
+            //if (_parameters == null) { return null; }
+            //var inputs = new List<FieldControllerBase>();
+            //foreach (var parameter in _parameters)
+            //{
+            //    inputs.Add(parameter.Value?.Execute(scope));
+            //}
 
-            try
-            {
-                var output = OperatorScript.Run(_opName, inputs, scope);
-                return output;
-            }
-            catch (Exception e)
-            {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
-            }
+            //try
+            //{
+            //    var output = OperatorScript.Run(_opName, inputs, scope);
+            //    return output;
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+            //}
         }
 
         public string GetOperatorName()

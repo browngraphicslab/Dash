@@ -7,26 +7,26 @@ namespace Dash
     public class FunctionExpression : ScriptExpression
     {
         private readonly string _opName;
-        private readonly Dictionary<KeyController, ScriptExpression> _parameters;
+        private readonly List<ScriptExpression> _parameters;
 
-        public FunctionExpression(string opName, Dictionary<KeyController, ScriptExpression> parameters)
+        public FunctionExpression(string opName, List<ScriptExpression> parameters)
         {
-            this._opName = opName;
-            this._parameters = parameters;
+            _opName = opName;
+            _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>();
-            foreach (var parameter in _parameters)
-            {
-                inputs.Add(parameter.Key, parameter.Value?.Execute(scope));
-            }
+            var inputs = _parameters.Select(v => v.Execute(scope)).ToList();
 
             try
             {
                 var output = OperatorScript.Run(_opName, inputs, scope);
                 return output;
+            }
+            catch (ScriptExecutionException)
+            {
+                throw;
             }
             catch (Exception)
             {
@@ -40,20 +40,39 @@ namespace Dash
         }
 
 
-        public Dictionary<KeyController, ScriptExpression> GetFuncParams()
+        public List<ScriptExpression> GetFuncParams()
         {
             return _parameters;
         }
 
-
         public override FieldControllerBase CreateReference(Scope scope)
         {
-            return OperatorScript.CreateDocumentForOperator(
-                _parameters.Select(
-                    kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.Key,
-                        kvp.Value.CreateReference(scope))), _opName); //recursive linq
+            //TODO
+            return null;
+            //return OperatorScript.CreateDocumentForOperator(
+            //    _parameters.Select(
+            //        kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.CreateReference(scope))), _opName); //recursive linq
         }
 
         public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+
+        public override string ToString()
+        {
+            var concat = "";
+            foreach (var param in _parameters)
+            {
+                switch (param)
+                {
+                    case VariableExpression varExp:
+                        concat += varExp.GetVariableName() + " ";
+                        break;
+                    case LiteralExpression litExp:
+                        concat += litExp.GetField() + " ";
+                        break;
+                }
+            }
+
+            return concat;
+        }
     }
 }

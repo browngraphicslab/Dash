@@ -286,6 +286,7 @@
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
@@ -294,9 +295,11 @@
     <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
     <Compile Include="Util\DSL\ForInExpression.cs" />
     <Compile Include="Util\DSL\IfExpression.cs" />
+    <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
+    <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>

@@ -28,19 +28,22 @@ namespace Dash
 
             if (boolRes)
             {
-                inputs.Add(ifKey, _parameters[ifKey].Execute(scope));
+                //inputs.Add(ifKey, _parameters[ifKey].Execute(scope));
                 inputs.Add(elseKey, null);
+                return _parameters[ifKey].Execute(scope);
             }
             else
             {
                 inputs.Add(ifKey, null);
-                inputs.Add(elseKey, _parameters[elseKey].Execute(scope));
+                //inputs.Add(elseKey, _parameters[elseKey].Execute(scope));
+                return _parameters[elseKey].Execute(scope);
             }
 
             try
             {
-                var output = OperatorScript.Run(_opName, inputs, scope);
-                return output;
+                //TODO
+                //var output = OperatorScript.Run(_opName, inputs, scope);
+                //return output;
             }
             catch (Exception e)
             {

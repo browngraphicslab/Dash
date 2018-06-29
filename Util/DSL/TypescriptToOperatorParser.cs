@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using DashShared;
+using Syncfusion.UI.Xaml.Controls.Input;
 using Zu.TypeScript;
 using Zu.TypeScript.TsTypes;
 
@@ -443,20 +444,20 @@ namespace Dash
                     var inpDoc = ParseToExpression(propAccessExpr.First);
                     var fieldName = ParseToExpression(propAccessExpr.Last);
 
-                    return new FunctionExpression(DSL.GetFuncName<GetFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    return new FunctionExpression(DSL.GetFuncName<GetFieldOperatorController>(), new List<ScriptExpression>()
                     {
-                        {GetFieldOperatorController.InputDocumentKey , inpDoc},
-                        {GetFieldOperatorController.KeyNameKey , new LiteralExpression(new TextController((fieldName as VariableExpression).GetVariableName()))},
+                        inpDoc,
+                        new LiteralExpression(new TextController((fieldName as VariableExpression).GetVariableName())),
                     });
                 case SyntaxKind.ElementAccessExpression:
                     var elemAcessChildren = (node as ElementAccessExpression).Children;
                     var elemVar = ParseToExpression(elemAcessChildren[0]);
                     var elemIndex = ParseToExpression(elemAcessChildren[1]);
 
-                    return new FunctionExpression(DSL.GetFuncName<ElementAccessOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                    return new FunctionExpression(DSL.GetFuncName<ElementAccessOperatorController>(), new List<ScriptExpression>()
                     {
-                        {ElementAccessOperatorController.VariableKey, elemVar},
-                        {ElementAccessOperatorController.IndexKey, elemIndex},
+                        elemVar,
+                        elemIndex,
                     });
                 case SyntaxKind.NewExpression:
                     break;
@@ -482,14 +483,14 @@ namespace Dash
                     break;
                 case SyntaxKind.PrefixUnaryExpression:
                     var preUnEx = (PrefixUnaryExpression) node;
-                    if (!double.TryParse(preUnEx.Children[0].GetText(), out var toNegate)) break;
+                    var body = ParseToExpression(preUnEx.Children[0]);
                     switch (preUnEx.Operator)
                     {
                         case SyntaxKind.MinusToken:
-                            return new FunctionExpression(DSL.GetFuncName<NumNegateOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<NumNegateOperatorController>(), new List<ScriptExpression>()
                             {
-                                {NumNegateOperatorController.LeftKey,  null},
-                                {NumNegateOperatorController.RightKey, new LiteralExpression(new NumberController(toNegate))},
+                                null,
+                                body,
                             });
                     }
                     break;
@@ -514,165 +515,117 @@ namespace Dash
                     switch (binaryExpr.OperatorToken.Kind)
                     {
                         case SyntaxKind.PlusToken:
-                            return new FunctionExpression(DSL.GetFuncName<AddOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<AddOperatorController>(), new List<ScriptExpression>()
                             {
-                                {AddOperatorController.LeftKey,  leftBinExpr},
-                                {AddOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.MinusToken:
-                            return new FunctionExpression(DSL.GetFuncName<SubtractOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<SubtractOperatorController>(), new List<ScriptExpression>()
                             {
-                                {SubtractOperatorController.LeftKey,  leftBinExpr},
-                                {SubtractOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.SlashToken:
-                            return new FunctionExpression(DSL.GetFuncName<DivideOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<DivideOperatorController>(), new List<ScriptExpression>()
                             {
-                                {DivideOperatorController.LeftKey,  leftBinExpr},
-                                {DivideOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.AsteriskToken:
-                            return new FunctionExpression(DSL.GetFuncName<MultiplyOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<MultiplyOperatorController>(), new List<ScriptExpression>()
                             {
-                                {MultiplyOperatorController.LeftKey,  leftBinExpr},
-                                {MultiplyOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanToken:
-                            return new FunctionExpression(DSL.GetFuncName<GreaterThanOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<GreaterThanOperatorController>(), new List<ScriptExpression>()
                             {
-                                {GreaterThanOperatorController.LeftKey,  leftBinExpr},
-                                {GreaterThanOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.LessThanToken:
-                            return new FunctionExpression(DSL.GetFuncName<LessThanOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<LessThanOperatorController>(), new List<ScriptExpression>()
                             {
-                                {LessThanOperatorController.LeftKey,  leftBinExpr},
-                                {LessThanOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.GreaterThanEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<GreaterThanEqualsOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<GreaterThanEqualsOperatorController>(), new List<ScriptExpression>()
                             {
-                                {GreaterThanEqualsOperatorController.LeftKey,  leftBinExpr},
-                                {GreaterThanEqualsOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.LessThanEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<LessThanEqualsOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<LessThanEqualsOperatorController>(), new List<ScriptExpression>()
                             {
-                                {LessThanEqualsOperatorController.LeftKey,  leftBinExpr},
-                                {LessThanEqualsOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.EqualsEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<EqualityOperatorController>(), new List<ScriptExpression>()
                             {
-                                {EqualityOperatorController.LeftKey,  leftBinExpr},
-                                {EqualityOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.ExclamationEqualsToken:
-                            return new FunctionExpression(DSL.GetFuncName<InverseEqualityOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<InverseEqualityOperatorController>(), new List<ScriptExpression>()
                             {
-                                {InverseEqualityOperatorController.LeftKey,  leftBinExpr},
-                                {InverseEqualityOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.PercentToken:
-                            return new FunctionExpression(DSL.GetFuncName<ModuloOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<ModuloOperatorController>(), new List<ScriptExpression>()
                             {
-                                {ModuloOperatorController.LeftKey,  leftBinExpr},
-                                {ModuloOperatorController.RightKey,  rightBinExpr},
+                                leftBinExpr,
+                                rightBinExpr,
                             });
                         case SyntaxKind.EqualsToken:
                             if (leftBinExpr is FunctionExpression lefttBinFuncExpr && lefttBinFuncExpr.GetOperatorName() == DSL.GetFuncName<GetFieldOperatorController>())
                             {
-                                return new FunctionExpression(DSL.GetFuncName<SetFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                return new FunctionExpression(DSL.GetFuncName<SetFieldOperatorController>(), new List<ScriptExpression>()
                                 {
-                                    {SetFieldOperatorController.InputDocumentKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.InputDocumentKey]},
-                                    {SetFieldOperatorController.KeyNameKey, lefttBinFuncExpr.GetFuncParams()[GetFieldOperatorController.KeyNameKey]},
-                                    {SetFieldOperatorController.FieldValueKey, rightBinExpr},
+                                    lefttBinFuncExpr.GetFuncParams()[0],
+                                    lefttBinFuncExpr.GetFuncParams()[1],
+                                    rightBinExpr,
                                 });
                             }
                            else if (leftBinExpr is FunctionExpression lefttBinFuncExpr2 && lefttBinFuncExpr2.GetOperatorName() == DSL.GetFuncName<ElementAccessOperatorController>())
                             {
-                                return new FunctionExpression(DSL.GetFuncName<SetListFieldOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                return new FunctionExpression(DSL.GetFuncName<SetListFieldOperatorController>(), new List<ScriptExpression>()
                                 {
-                                    {SetListFieldOperatorController.VariableNameKey, new LiteralExpression(new TextController(
-                                        (lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey] as VariableExpression).GetVariableName() ))},
-                                    {SetListFieldOperatorController.VariableKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.VariableKey]},
-                                    {SetListFieldOperatorController.IndexKey, lefttBinFuncExpr2.GetFuncParams()[ElementAccessOperatorController.IndexKey]},
-                                    {SetListFieldOperatorController.ValueKey, rightBinExpr},
+                                    new LiteralExpression(new TextController((lefttBinFuncExpr2.GetFuncParams()[0] as VariableExpression)?.GetVariableName() )),
+                                    lefttBinFuncExpr2.GetFuncParams()[0],
+                                    lefttBinFuncExpr2.GetFuncParams()[1],
+                                    rightBinExpr,
                                 });
                             }
                             else if (leftBinExpr is VariableExpression safeBinExpr)
                             {
-                                return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
+                                return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>()
                                 {
-                                    {VariableAssignOperatorController.VariableKey, new LiteralExpression(new TextController(safeBinExpr.GetVariableName()))},
-                                    {VariableAssignOperatorController.AssignmentKey, rightBinExpr},
+                                    new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
+                                    rightBinExpr,
                                 });
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:
-                            if (leftBinExpr is LiteralExpression) break;
-                            var varName = ((VariableExpression)leftBinExpr).GetVariableName();
-
-                            if (rightBinExpr is VariableExpression varToAdd)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " + " + varToAdd.GetVariableName());
-                            }
-                            else if (rightBinExpr is LiteralExpression numToMult)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " + " + numToMult.GetField());
-                            }
+                            if (leftBinExpr is VariableExpression varExpAdd) return new SelfRefAssignmentExpression(varExpAdd, rightBinExpr, SelfRefAssignment.Addition);
                             break;
                         case SyntaxKind.MinusEqualsToken:
-                            if (leftBinExpr is LiteralExpression) break;
-                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
-
-                            if (rightBinExpr is VariableExpression varToSub)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " - " + varToSub.GetVariableName());
-                            }
-                            else if (rightBinExpr is LiteralExpression numToSub)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " - " + numToSub.GetField());
-                            }
+                            if (leftBinExpr is VariableExpression varExpSubtract) return new SelfRefAssignmentExpression(varExpSubtract, rightBinExpr, SelfRefAssignment.Subtraction);
                             break;
                         case SyntaxKind.AsteriskEqualsToken:
-                            if (leftBinExpr is LiteralExpression) break;
-                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
-
-                            if (rightBinExpr is VariableExpression varToMult)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " * " + varToMult.GetVariableName());
-                            }
-                            else if (rightBinExpr is LiteralExpression numToMult)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " * " + numToMult.GetField());
-                            }
+                            if (leftBinExpr is VariableExpression varExpMultiply) return new SelfRefAssignmentExpression(varExpMultiply, rightBinExpr, SelfRefAssignment.Multiplication);
                             break;
                         case SyntaxKind.SlashEqualsToken:
-                            if (leftBinExpr is LiteralExpression) break;
-                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
-
-                            if (rightBinExpr is VariableExpression varToDiv)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " / " + varToDiv.GetVariableName());
-                            }
-                            else if (rightBinExpr is LiteralExpression numToDiv)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " / " + numToDiv.GetField());
-                            }
+                            if (leftBinExpr is VariableExpression varExpDivide) return new SelfRefAssignmentExpression(varExpDivide, rightBinExpr, SelfRefAssignment.Division);
                             break;
                         case SyntaxKind.PercentEqualsToken:
-                            if (leftBinExpr is LiteralExpression) break;
-                            varName = ((VariableExpression)leftBinExpr).GetVariableName();
-
-                            if (rightBinExpr is VariableExpression varToMod)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " % " + varToMod.GetVariableName());
-                            }
-                            else if (rightBinExpr is LiteralExpression numToMod)
-                            {
-                                return ParseToExpression(varName + " = " + varName + " % " + numToMod.GetField());
-                            }
+                            if (leftBinExpr is VariableExpression varExpMod) return new SelfRefAssignmentExpression(varExpMod, rightBinExpr, SelfRefAssignment.Modulo);
+                            break;
+                        case SyntaxKind.QuestionToken:
+                            if (leftBinExpr is VariableExpression varExpSearch) return new SelfRefAssignmentExpression(varExpSearch, rightBinExpr, SelfRefAssignment.StringSearch);
                             break;
                         default:
                             throw new Exception("Unkown binary expression type");
@@ -779,7 +732,7 @@ namespace Dash
                     var forInChild = (node as ForInStatement)?.Children;
 
                     var subVarName = forInChild?[0].First.IdentifierStr;
-                    var listNameExpr = ParseToExpression(forInChild?[1]) as VariableExpression;
+                    var listNameExpr = ParseToExpression(forInChild?[1]);
                     var forInBody = ParseToExpression(forInChild?[2]) as ExpressionChain;
 
                     return new ForInExpression(DSL.GetFuncName<ForInOperatorController>(), subVarName, listNameExpr, forInBody);
@@ -1006,13 +959,13 @@ namespace Dash
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
 
-                    var parameters = new Dictionary<KeyController, ScriptExpression>();
+                    var parameters = new List<ScriptExpression>();
 
                     var keys = OperatorScript.GetOrderedKeyControllersForFunction(callExpr.IdentifierStr).ToArray();
                     int keyIndex = 0;
                     foreach (var arg in callExpr.Arguments)
                     {
-                        parameters.Add(keys[keyIndex], ParseToExpression(arg));
+                        parameters.Add(ParseToExpression(arg));
                         keyIndex++;
                     }
 

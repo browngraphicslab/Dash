@@ -33,7 +33,7 @@ namespace Dash
             };
 
             //create a timer to catch infinite loops, that fires after 5 sec and then never fires again
-            Timer whileTimer = new Timer(whileTimeut, null, 5000, Timeout.Infinite);
+            Timer whileTimer = new Timer(whileTimeout, null, 5000, Timeout.Infinite);
 
             //if there hasn't been an infinite loop timeout, keep looping
             while (output != recursiveError)
@@ -59,7 +59,7 @@ namespace Dash
                     {
                         if (output != recursiveError)
                         {
-                            output = OperatorScript.Run(_opName, inputs, scope);
+                            //output = OperatorScript.Run(_opName, inputs, scope);
                         }
                     }
                     catch (Exception)
@@ -82,7 +82,7 @@ namespace Dash
             return output;
         }
 
-        private void whileTimeut(object status)
+        private void whileTimeout(object status)
         {
             //set the output to an infinite recursion error
             output = recursiveError;

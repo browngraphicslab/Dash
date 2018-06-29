@@ -55,7 +55,7 @@ namespace Dash
                     {
                         if (_output != _recursiveError)
                         {
-                            _output = OperatorScript.Run(_opName, inputs, scope);
+                            //_output = OperatorScript.Run(_opName, inputs, scope);
                         }
                     }
                     catch (Exception)
