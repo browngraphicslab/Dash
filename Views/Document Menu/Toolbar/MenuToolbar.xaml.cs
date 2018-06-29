@@ -861,15 +861,16 @@ namespace Dash
         public void TempFreeze(bool mobile) { xFloating.ShouldManipulateChild = (mobile) ? true : pinned == Pinned.Unpinned; }
 
        
-
+		
         private void XTemplate_OnChecked(object sender, RoutedEventArgs e)
         {
+	        /*
             //CODE FOR IF THERE IS NO DOCUMENT SELECTED (BASICALLY GENERATING TEMPLATE CREATOR)
             //_temp = new TemplateEditorView();
             //_docControl = _temp's document controller
             //MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().ViewModel.RemoveDocument(docControl);
 
-
+	        
             if (MainPage.Instance.GetSelectedDocuments().Count() == 1)
             {
 
@@ -887,11 +888,13 @@ namespace Dash
                 
                 
             }
-            
-        }
+	        */
 
-        private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
+		}
+
+		private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
         {
+		/*
             //CODE FOR IF THERE IS NO DOCUMENT SELECTED (BASICALLY REMOVING TEMPLATE CREATOR)
             //var temp = MainPage.Instance.MainDocView.Select(d => d.GetFirstDescendantofType<TemplateEditorView>().DocController = _docControl)
             //MainPage.Instance.MainDocView.GetFirstDescendantOfType<TemplateEditorView>().ViewModel.RemoveDocument(temp);
@@ -912,7 +915,9 @@ namespace Dash
 
 
             }
+			*/
         }
+		
 
         private void xRedo_Click(object sender, RoutedEventArgs e)
         {

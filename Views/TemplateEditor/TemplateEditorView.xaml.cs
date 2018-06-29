@@ -1084,7 +1084,7 @@ namespace Dash
 		{
 			if (xAddItemsButtonStack.Visibility == Visibility.Collapsed)
 			{
-				XAddItemsGrid.Background = new SolidColorBrush(Colors.Transparent);
+				//XAddItemsGrid.Background = new SolidColorBrush(Colors.Transparent);
 			}
 			
 		}

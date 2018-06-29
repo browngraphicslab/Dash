@@ -106,10 +106,10 @@
                     </StackPanel>
                     <!--StackPanel for buttons-->
                     <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
-                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#365648"></AppBarButton>
-                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" Background="#365648"></AppBarButton>
+                        <AppBarButton Icon="Rename" Height="50" Width="42.5" Click="TextButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Pictures" Height="50" Width="42.5" Click="ImageButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Video" Height="50" Width="42.5" Click="VideoButton_OnClick" Background="#334f43"></AppBarButton>
+                        <AppBarButton Icon="Audio" Height="50" Width="42.5" Click="AudioButton_OnClick" Background="#334f43"></AppBarButton>
                     </StackPanel>
                 </StackPanel>
 
