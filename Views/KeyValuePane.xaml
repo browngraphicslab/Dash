@@ -47,7 +47,7 @@
 
             <!--header-->
             <Rectangle VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                       Fill="{ThemeResource TranslucentWindowsBlue}" />
+                       Fill="{StaticResource AccentGreenLight}" />
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"></ColumnDefinition>

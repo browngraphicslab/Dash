@@ -28,10 +28,12 @@ using Windows.UI.Xaml.Shapes;
 using Dash.Annotations;
 using Dash.Controllers;
 using Dash.Converters;
+using Dash.FontIcons;
 using Dash.Models.DragModels;
 using DashShared;
 using Flurl.Util;
 using Microsoft.Office.Interop.Word;
+using Microsoft.Toolkit.Uwp.UI.Animations;
 using Syncfusion.Pdf.Graphics;
 using Border = Windows.UI.Xaml.Controls.Border;
 using Point = Windows.Foundation.Point;
@@ -971,6 +973,37 @@ namespace Dash
 
 		#endregion
 
+
+		private void AddItemsOnClick(object sender, RoutedEventArgs e)
+		{
+			var centX = (float) xAddItemsArrow.ActualWidth / 2;
+			var centY= (float)xAddItemsArrow.ActualHeight / 2;
+
+			if (xAddItemsButtonStack.Visibility == Visibility.Visible)
+			{
+				xAddItemsArrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
+				xAddItemsButtonStack.Visibility = Visibility.Collapsed;
+				
+			}
+			else
+			{
+				xAddItemsArrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0, easingType: EasingType.Default).Start();
+				xAddItemsButtonStack.Visibility = Visibility.Visible;
+				xFadeAnimation?.Begin();
+			}
+			
+		}
+
+		private void ToggleButtonState(FontAwesomeIcon icon, StackPanel buttonStack)
+		{
+
+		}
+
+
+
+
+
+
 		//sets the thickness for the borders
 		private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
@@ -1022,7 +1055,21 @@ namespace Dash
 
 		private void XItemsExpander_OnExpanded(object sender, EventArgs e)
 		{
-			xItemsExpander.Background = new SolidColorBrush(Color.FromArgb(255, 85, 102, 102));
+			//xItemsExpander.Background = new SolidColorBrush(Color.FromArgb(255, 85, 102, 102));
+		}
+
+		private void XExpansionGrid_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+		{
+			XAddItemsGrid.Background = new SolidColorBrush(Color.FromArgb(255, 65, 104, 87));
+		}
+
+		private void XExpansionGrid_OnPointerExited(object sender, PointerRoutedEventArgs e)
+		{
+			if (xAddItemsButtonStack.Visibility == Visibility.Collapsed)
+			{
+				XAddItemsGrid.Background = new SolidColorBrush(Colors.Transparent);
+			}
+			
 		}
 	}
 }

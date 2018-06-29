@@ -11,10 +11,7 @@
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
 
-            <Style x:Key="ExpanderBackgroundColor" TargetType="localMicrosoft:Expander">
-                <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
-
-            </Style>
+            
  
     </Page.Resources>
 
