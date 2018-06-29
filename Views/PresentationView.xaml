@@ -14,10 +14,11 @@
         <StackPanel>
             <TextBlock TextAlignment="Center" Text="Presentation" FontSize="36" Padding="0, 0, 0, 30"/>
             <CommandBar HorizontalAlignment="Center" Background="Transparent" Foreground="White" OverflowButtonVisibility="Collapsed">
-                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click"/>
-                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3"/>
-                <AppBarButton x:Name="ResetButton" Icon="Undo" Label="Reset" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3"/>
+                <AppBarButton x:Name="BackButton" Icon="Back" Label="Back" Click="BackButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarButton x:Name="PlayStopButton" Tag="play" Icon="Play" Label="Play" Click="PlayStopButton_Click" Width="50"/>
+                <AppBarButton x:Name="NextButton" Icon="Forward" Label="Next" Click="NextButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
+                <AppBarToggleButton Icon="RepeatAll" Label="Repeat" Checked="RepeatButton_OnChecked" Unchecked="RepeatButton_OnUnchecked" Width="50"/>
+                <AppBarButton x:Name="ResetButton" Icon="Undo" Label="Reset" Click="ResetButton_Click" IsEnabled="False" Opacity="0.3" Width="50"/>
             </CommandBar>
             <Grid Margin="0, 40, 0, 0" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -47,7 +48,7 @@
                         </MenuFlyout>
                     </ListView.Resources>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="dash:DocumentViewModel">
+                        <DataTemplate x:DataType="dash:DocumentController">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

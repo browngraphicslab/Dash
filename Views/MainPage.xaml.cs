@@ -833,9 +833,9 @@ namespace Dash
             xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
         }
 
-        public void PinToPresentation(DocumentViewModel viewModel)
+        public void PinToPresentation(DocumentController dc)
         {
-            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(dc);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
         }
