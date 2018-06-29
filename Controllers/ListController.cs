@@ -103,10 +103,10 @@ namespace Dash
         public ListController() : base(new ListModel(new List<string>(), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(false);
 
         // IEnumerable<T> (list of items)
-        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc?.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(IEnumerable<T> list, bool readOnly = false) : base(new ListModel(list.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
 
         // T (item)
-        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.GetId()), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
+        public ListController(T item, bool readOnly = false) : base(new ListModel(new List<T> { item }.Select(fmc => fmc.Id ), TypeInfoHelper.TypeToTypeInfo(typeof(T)))) => ConstructorHelper(readOnly);
 
         /*
          * Factors out code common to all constructors - sets the readonly status, saves to database and calls the custom initialization
@@ -336,7 +336,7 @@ namespace Dash
 
             //TODO tfs: Remove deleted fields from the list if we can delete fields 
             TypedData.Add(element);
-            ListModel.Data.Add(element.GetId());
+            ListModel.Data.Add(element.Id );
             return true;
         }
 
@@ -438,7 +438,7 @@ namespace Dash
             element.FieldModelUpdated -= ContainedFieldUpdated;
 
             var removed = TypedData.Remove(element);
-            ListModel.Data.Remove(element.GetId());
+            ListModel.Data.Remove(element.Id );
 
             return removed;
         }
@@ -467,7 +467,7 @@ namespace Dash
             element.FieldModelUpdated -= ContainedFieldUpdated;
 
             TypedData.Remove(element);
-            ListModel.Data.Remove(element.GetId());
+            ListModel.Data.Remove(element.Id);
 
             return element;
         }

@@ -63,6 +63,8 @@ namespace Dash
 
             }
 
+            DishReplView.SetDataset(_functionMap.Keys.ToList());
+
             if (PrintAllFuncDocumentation)
             {
                 Debug.WriteLine("\n\n\n\n\n");
@@ -148,6 +150,7 @@ namespace Dash
         {
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
+
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function

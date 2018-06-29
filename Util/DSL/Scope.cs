@@ -35,6 +35,9 @@ namespace Dash
             //TODO: Throw exception or provide feedback if attempted duplicate declaration
             if (GetVariable(variableName) != null) return;
             _dictionary[variableName] = valueToSet;
+
+            //add varible to autosuggest option
+            DishReplView.NewVaraible(variableName);
         }
 
         public void SetVariable(string variableName, FieldControllerBase valueToSet)

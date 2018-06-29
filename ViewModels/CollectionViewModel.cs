@@ -284,8 +284,8 @@ namespace Dash
         {
             using (BindableDocumentViewModels.DeferRefresh())
             {
-                var ids = documents.Select(doc => doc.GetId());
-                var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+                var ids = documents.Select(doc => doc.Id);
+                var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.Id)).ToList();
                 foreach (var vm in vms)
                 {
                     DocumentViewModels.Remove(vm);
@@ -522,7 +522,7 @@ namespace Dash
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     //DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.GetId(), pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
@@ -530,7 +530,7 @@ namespace Dash
 
             if (obj != null)
             {
-                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].GetId(), pivotKey), true);
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
                 return dictionary[obj];
             }
             return null;
@@ -1075,7 +1075,7 @@ namespace Dash
                         var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
                         if (k != null)
                         {
-                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().GetId(), k), p.X, p.Y, w, h).Document);
+                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().Id, k), p.X, p.Y, w, h).Document);
                         }
                     }
                     else

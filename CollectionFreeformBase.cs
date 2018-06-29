@@ -998,9 +998,7 @@ namespace Dash
             {
                 if (resetBuffer)
                     previewTextBuffer = "";
-                loadingPermanentTextbox = true;
-
-         
+                loadingPermanentTextbox = true;        
 
                 if (SettingsView.Instance.MarkdownEditOn)
                 {
