@@ -62,11 +62,11 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
 
-        private void moveCursorToEnd()
+        private void moveCursorToEnd(int? end = null)
         {
             if (xTextBox.Text.Length != 0)
             {
-                xTextBox.SelectionStart = xTextBox.Text.Length;
+                xTextBox.SelectionStart = end ?? xTextBox.Text.Length;
                 xTextBox.SelectionLength = 0;
             }
         }
@@ -174,9 +174,11 @@ namespace Dash
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
+            //get selected item
             var selectedItem = e.ClickedItem.ToString();
             _textModified = true;
 
+            //only change last word to new text
             var currentText = xTextBox.Text.Split(' ');
             var keepText = "";
             if (currentText.Length > 1)
@@ -185,7 +187,25 @@ namespace Dash
                 keepText = xTextBox.Text.Substring(0, xTextBox.Text.Length - lastWordLength);
             }
 
-            xTextBox.Text = keepText + selectedItem;
+            //if it is function, set up sample inputs
+            var numInputs = OperatorScript.GetAmountInputs(selectedItem);
+            var functionEnding = " ";
+            var offset = 1;
+            if (numInputs != null)
+            {
+                functionEnding = "(";
+                offset = 2;
+                for (var i = 0; i < numInputs; i++)
+                {
+                    functionEnding = functionEnding + "_, ";
+                }
+                //delete last comma and space and add ending paranthesis
+                functionEnding = functionEnding.Substring(0, functionEnding.Length - 2) + ")";
+            }
+
+            xTextBox.Text = keepText + selectedItem + functionEnding;
+            xTextBox.Focus(FocusState.Pointer);
+            moveCursorToEnd((keepText + selectedItem).Length + offset);
 
             SuggestionsPopup.IsOpen = false;
             SuggestionsPopup.Visibility = Visibility.Collapsed;

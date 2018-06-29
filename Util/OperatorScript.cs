@@ -153,6 +153,11 @@ namespace Dash
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
 
+        public static int? GetAmountInputs(string funcName)
+        {
+            return GetOperatorWithName(funcName)?.Inputs?.Count;
+        }
+
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function
