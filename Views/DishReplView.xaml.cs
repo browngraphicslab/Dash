@@ -35,6 +35,7 @@ namespace Dash
         private bool _textModified;
 
         private string _currentText = "";
+        private string _typedText = "";
 
         private int _textHeight = 50;
 
@@ -95,14 +96,16 @@ namespace Dash
                 {
                     case VirtualKey.Up:
                         var index1 = numItem - (_currentHistoryIndex + 1);
+                        if (index1 + 1 == numItem)
+                        {
+                            _typedText = _currentText;
+                        }
                         if (numItem > index1 && index1 >= 0)
                          {
                         _currentHistoryIndex++;
                         xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
                              moveCursorToEnd();
                          }
-
-                        _textModified = true;
 
                         TextHeight = 50;
                         TextGrid.Height = new GridLength(50);
@@ -118,11 +121,9 @@ namespace Dash
                         } else if (index == numItem)
                         {
                             _currentHistoryIndex--;
-                            xTextBox.Text = _currentText;
+                            xTextBox.Text = _typedText;
                             moveCursorToEnd();
                     }
-
-                        _textModified = true;
 
                         var numEnter = xTextBox.Text.Split('\r').Length - 1;
                         var newTextSize = 50 + (numEnter * 20);
@@ -163,9 +164,9 @@ namespace Dash
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            //get most recent char typed
             if (!_textModified)
             {
-                //get most recent char typed
                 var addedText = ' ';
 
                 var textDiff = stringDiff(xTextBox.Text, _currentText);
@@ -176,7 +177,7 @@ namespace Dash
                     //enter pressed without shift - send code to terminal
 
                     //put textbox size back to default
-                   TextHeight = 50;
+                    TextHeight = 50;
                     TextGrid.Height = new GridLength(50);
 
                     _currentHistoryIndex = 0;
@@ -204,7 +205,8 @@ namespace Dash
                     TextHeight = TextHeight + 20;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
-                else if (xTextBox.Text != "")
+
+                if (xTextBox.Text != "")
                 {
                     //only give suggestions on last word
                     var allText = xTextBox.Text.Replace('\r', ' ').Split(' ');
@@ -241,9 +243,10 @@ namespace Dash
                     SuggestionsPopup.Visibility = Visibility.Collapsed;
                 }
 
-                _currentText = xTextBox.Text;
+                
             }
 
+            _currentText = xTextBox.Text;
             _textModified = false;
             
         }
