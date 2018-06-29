@@ -132,6 +132,7 @@ namespace Dash
 
                     break;
                 }
+            _currentText = xTextBox.Text;
         }
 
         private string stringDiff(string a, string b, bool remove = false)
@@ -165,6 +166,7 @@ namespace Dash
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             //get most recent char typed
+
             if (!_textModified)
             {
                 var addedText = ' ';
@@ -206,7 +208,7 @@ namespace Dash
                     TextGrid.Height = new GridLength(TextHeight);
                 }
 
-                if (xTextBox.Text != "")
+                else if (xTextBox.Text != "")
                 {
                     //only give suggestions on last word
                     var allText = xTextBox.Text.Replace('\r', ' ').Split(' ');
