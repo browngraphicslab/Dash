@@ -78,50 +78,67 @@ namespace Dash
 
 		}
 
-		private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-		{
-			switch (e.Action)
-			{
-				case NotifyCollectionChangedAction.Add:
-					AddDocs(e.NewItems.Cast<DocumentController>());
-					break;
-				case NotifyCollectionChangedAction.Move:
-					break;
-				case NotifyCollectionChangedAction.Remove:
-					break;
-				case NotifyCollectionChangedAction.Replace:
-					break;
-				case NotifyCollectionChangedAction.Reset:
-					break;
-			}
-		}
+        private void DocumentControllers_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    AddDocs(e.NewItems.Cast<DocumentController>());
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    RemoveDocs(e.OldItems.Cast<DocumentController>());
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+            }
+        }
 
-		private void AddDocs(IEnumerable<DocumentController> newDocs)
-		{
-			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-			foreach (var doc in newDocs)
-			{
-				// if either is true, then the layout doc needs to be abstracted
-				if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-				{
-					if (_isDataDocKVP)
-					{
-						// set the layout doc's context to a reference of the data doc's context
-						doc.SetField(KeyStore.DocumentContextKey,
-							new DocumentReferenceController(
-								DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
-								KeyStore.DocumentContextKey),
-							true);
-					}
-					else
-					{
-						// set the layout doc's context to a reference of the data doc's context
-						doc.SetField(KeyStore.DocumentContextKey,
-							new DocumentReferenceController(DataDocument.Id,
-								KeyStore.DocumentContextKey),
-							true);
-					}
-					var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+        private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
+        {
+            foreach (var doc in oldDocs)
+            {
+                DocumentViewModels.Remove(DocumentViewModels.First(i => i.DocumentController.Equals(doc)));
+            }
+
+            xItemsControl.ItemsSource = DocumentViewModels;
+        }
+
+        private void AddDocs(IEnumerable<DocumentController> newDocs)
+        {
+            foreach (var doc in newDocs)
+            {
+                AddDoc(doc);
+            }
+        }
+
+        private void AddDoc(DocumentController doc)
+        {
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            // if either is true, then the layout doc needs to be abstracted
+            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            {
+                if (_isDataDocKVP)
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(
+                            DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
+                else
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(DataDocument.Id,
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
+                var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
 
 					if (specificKey != null)
 					{
@@ -130,7 +147,6 @@ namespace Dash
 							new PointerReferenceController(
 								doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
 					}
-				}
 				// create new viewmodel with a copy of document, set editor to this
 				var dvm =
 					new DocumentViewModel(doc.GetViewCopy(new Point(0, 0)), new Context(doc));
@@ -138,7 +154,6 @@ namespace Dash
 				// adds layout doc to list of layout docs
 				DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
 			}
-
 			xItemsControl.ItemsSource = DocumentViewModels;
 		}
 
@@ -187,10 +202,11 @@ namespace Dash
 
 			xOuterPanel.BorderThickness = new Thickness(0, 2, 0, 0);
 
-			DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
-			//listen for any changes to the collection
-			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
-		}
+            DataDocument.SetField(KeyStore.DocumentContextKey, LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
+            //listen for any changes to the collection
+            DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
+            xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+        }
 
 		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
@@ -407,73 +423,75 @@ namespace Dash
 			docView.DocumentSelected += DocView_DocumentSelected;
 		}
 
-		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
-		{
-			_selectedDocument = sender;
-			var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
-			var specificKey = pRef.FieldKey;
-			string text = "";
-			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-			var doc = _selectedDocument.ViewModel.DocumentController;
-			if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-			{
-				text = "#";
-				text += specificKey;
-			}
-			else
-			{
-				text = _selectedDocument.ViewModel.DocumentController.Title;
-			}
-			xKeyBox.Text = text;
-			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
-		}
+        private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
+        {
+            xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
+            _selectedDocument = sender;
+            var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
+            var specificKey = pRef.FieldKey;
+            string text = "";
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            var doc = _selectedDocument.ViewModel.DocumentController;
+            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            {
+                text = "#";
+                text += specificKey;
+            }
+            else
+            {
+                text = _selectedDocument.ViewModel.DocumentController.Title;
+            }
+            xKeyBox.Text = text;
+            xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+        }
 
-		private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
-			{
-				var text = xKeyBox.Text;
-				if (text.StartsWith("#"))
-				{
-					var possibleKeyString = text.Substring(1);
-					var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument().EnumFields();
-					var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString)).Key;
-					var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-					if (specificKey != null)
-					{
-						var newRef =
-							_selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
-								KeyStore.DataKey);
-						var selectedDoc = _selectedDocument.ViewModel.DocumentController;
-						if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || selectedDoc.GetDataDocument().Equals(workingDoc))
-						{
-							newRef.FieldKey = specificKey;
-						}
-						else
-						{
-							DocumentReferenceController docRef;
-							if (workingDoc.GetField(specificKey) != null)
-							{
-								docRef = new DocumentReferenceController(LayoutDocument.Id, KeyStore.DataKey);
-								newRef = new PointerReferenceController(docRef, specificKey);
-							}
-							else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
-							{
-								docRef = new DocumentReferenceController(
-									LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).Id, KeyStore.DataKey);
-								newRef = new PointerReferenceController(docRef, specificKey);
-							}
-						}
-						var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
-						DocumentViewModels.Remove(dvm);
-						var newDoc = DocumentControllers.First(doc => doc.GetDataDocument().Equals(dvm.DataDocument));
-						var test = newDoc.SetField(KeyStore.DataKey, newRef, true);
-						DocumentViewModels.Add(new DocumentViewModel(newDoc));
-						_selectedDocument = null;
-					}
-				}
-			}
-		}
+        private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
+            {
+                var text = xKeyBox.Text;
+                if (text.StartsWith("#"))
+                {
+                    var possibleKeyString = text.Substring(1);
+                    var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument().EnumFields();
+                    var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString)).Key;
+                    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+                    if (specificKey != null)
+                    {
+                        var newRef =
+                            _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
+                                KeyStore.DataKey);
+                        var selectedDoc = _selectedDocument.ViewModel.DocumentController;
+                        if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || selectedDoc.GetDataDocument().Equals(workingDoc))
+                        {
+                            newRef.FieldKey = specificKey;
+                        }
+                        else
+                        {
+                            DocumentReferenceController docRef;
+                            if (workingDoc.GetField(specificKey) != null)
+                            {
+                                docRef = new DocumentReferenceController(LayoutDocument.Id, KeyStore.DataKey);
+                                newRef = new PointerReferenceController(docRef, specificKey);
+                            }
+                            else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
+                            {
+                                docRef = new DocumentReferenceController(
+                                    LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).Id, KeyStore.DataKey);
+                                newRef = new PointerReferenceController(docRef, specificKey);
+                            }
+                        }
+                        var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
+                        DocumentViewModels.Remove(dvm);
+                        var newDoc = DocumentControllers.First(doc => doc.Equals(_selectedDocument.ViewModel.DocumentController));
+                        newDoc.SetField(KeyStore.DataKey, newRef, true);
+                        var newDvm = new DocumentViewModel(newDoc);
+                        DocumentViewModels.Add(newDvm);
+                        _selectedDocument = null;
+                    }
+                }
+            }
+        }
 
 		#region OnDrop Mechanics
 
@@ -491,16 +509,12 @@ namespace Dash
 
 				//RemoveDragDropIndication(sender as UserControl);
 
-				var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
-				var where = new Point();
-				if (senderView is CollectionFreeformView)
-					where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
-						e.GetPosition(MainPage.Instance));
-				else if (DocumentViewModels.Count > 0)
-				{
-					var lastPos = DocumentViewModels.Last().Position;
-					where = e.GetPosition(xWorkspace);
-				}
+                var where = e.GetPosition(sender as Canvas);
+                if (DocumentViewModels.Count > 0)
+                {
+                    var lastPos = DocumentViewModels.Last().Position;
+                    where = e.GetPosition(xWorkspace);
+                }
 
 				// if we drag from the file system
 				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
@@ -717,109 +731,112 @@ namespace Dash
 							!parentDocs.Contains(d.GetDataDocument()) &&
 							d?.DocumentType?.Equals(DashConstants.TypeStore.MainDocumentType) == false);
 
-						var payloadLayoutDelegates = filteredDocs.Select((p) =>
-						{
-							if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
-								p.SetActiveLayout(new DefaultLayout().Document, true, true);
-							var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
-										 e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
-							if (double.IsNaN(newDoc.GetWidthField().Data))
-								newDoc.SetWidth(dragData.Width ?? double.NaN);
-							if (double.IsNaN(newDoc.GetHeightField().Data))
-								newDoc.SetHeight(dragData.Height ?? double.NaN);
-							return newDoc;
-						});
-						DocumentControllers.Add(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
-					}
-				}
-				// if the user drags a data document
-				else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
-				{
-					var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
-					foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
-					{
-						var start = dragModel.First().DraggedDocument.GetPositionField().Data;
-						foreach (var doc in (dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).Select(
-							(dm) => dm.GetDropDocument(new Point(
-								dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
-								dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList()))
-						{
-							DocumentControllers.Add(doc);
-						}
-					}
-				}
-				// if the user drags a data document
-				else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
-				{
-					var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-					if (dragModel.LinkSourceView != null
-					) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
-					{
-						// bcz:  Needs to support LinksFrom as well as LinksTo...
-						if (MainPage.Instance.IsShiftPressed()
-						) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
-						{
-							var regions = dragModel.DraggedDocument.GetDataDocument()
-								.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
-								?.TypedData;
-							if (regions != null)
-							{
-								var links = regions.SelectMany((r) =>
-									r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-								var targets = links.SelectMany((l) =>
-									l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
-								var aliases = targets.Select((t) =>
-								{
-									var vc = t.GetViewCopy();
-									vc.SetHidden(false);
-									return vc;
-								});
-								var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
-									aliases.ToList());
-								DocumentControllers.Add(cnote.Document);
-							}
-						}
-						else if (MainPage.Instance.IsCtrlPressed()
-						) // if control is pressed during this drag, we want to see a collection of the actual link documents
-						{
-							var regions = dragModel.DraggedDocument.GetDataDocument()
-								.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
-								?.TypedData;
-							var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
-								.GetLinks(KeyStore.LinkToKey)?.TypedData;
-							var regionLinkedTo = regions?.SelectMany((r) =>
-								r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
-							if (regionLinkedTo != null || directlyLinkedTo != null)
-							{
-								var links = regionLinkedTo != null
-									? regionLinkedTo.ToList()
-									: new List<DocumentController>();
-								if (directlyLinkedTo != null)
-									links.AddRange(directlyLinkedTo);
-								var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
-									links.ToList());
-								DocumentControllers.Add(cnote.Document);
-							}
-						}
-						else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
-						{
-							var dragDoc = dragModel.DraggedDocument;
-							if (dragModel.LinkSourceView != null &&
-								KeyStore.RegionCreator[dragDoc.DocumentType] != null)
-								dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
-							var note = new RichTextNote("<annotation>", where).Document;
-							dragDoc.Link(note);
-							DocumentControllers.Add(note);
-						}
-					}
-					else if (dragModel.CanDrop(sender as FrameworkElement))
-					{
-
-						DocumentControllers.Add(dragModel.GetDropDocument(where));
-					}
-				}
-			}
-		}
+                        var payloadLayoutDelegates = filteredDocs.Select((p) =>
+                        {
+                            if (p.GetActiveLayout() == null && p.GetDereferencedField(KeyStore.DocumentContextKey, null) == null)
+                                p.SetActiveLayout(new DefaultLayout().Document, true, true);
+                            var newDoc = e.AcceptedOperation == DataPackageOperation.Move ? p.GetSameCopy(where) :
+                                         e.AcceptedOperation == DataPackageOperation.Link ? p.GetKeyValueAlias(where) : p.GetCopy(where);
+                            if (double.IsNaN(newDoc.GetWidthField().Data))
+                                newDoc.SetWidth(dragData.Width ?? double.NaN);
+                            if (double.IsNaN(newDoc.GetHeightField().Data))
+                                newDoc.SetHeight(dragData.Height ?? double.NaN);
+                            return newDoc;
+                        });
+                        DocumentControllers.Add(new CollectionNote(where, dragData.ViewType, 500, 300, payloadLayoutDelegates.ToList()).Document);
+                    }
+                }
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(List<DragDocumentModel>)) == true)
+                {
+                    var dragModel = (List<DragDocumentModel>)e.DataView.Properties[nameof(List<DragDocumentModel>)];
+                    foreach (var d in dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)))
+                    {
+                        var start = dragModel.First().DraggedDocument.GetPositionField().Data;
+                        foreach (var doc in (dragModel.Where((dm) => dm.CanDrop(sender as FrameworkElement)).Select(
+                            (dm) => dm.GetDropDocument(new Point(
+                                dm.DraggedDocument.GetPositionField().Data.X - start.X + where.X,
+                                dm.DraggedDocument.GetPositionField().Data.Y - start.Y + where.Y), true)).ToList()))
+                        {
+                            DocumentControllers.Add(doc);
+                        }
+                    }
+                }
+                // if the user drags a data document
+                else if (e.DataView?.Properties.ContainsKey(nameof(DragDocumentModel)) == true)
+                {
+                    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+                    if (dragModel.LinkSourceView != null
+                    ) // The LinkSourceView is non-null when we're dragging the green 'link' dot from a document
+                    {
+                        // bcz:  Needs to support LinksFrom as well as LinksTo...
+                        if (MainPage.Instance.IsShiftPressed()
+                        ) // if shift is pressed during this drag, we want to see all the linked documents to this document as a collection
+                        {
+                            var regions = dragModel.DraggedDocument.GetDataDocument()
+                                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
+                                ?.TypedData;
+                            if (regions != null)
+                            {
+                                var links = regions.SelectMany((r) =>
+                                    r.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                                var targets = links.SelectMany((l) =>
+                                    l.GetDataDocument().GetLinks(KeyStore.LinkToKey).TypedData);
+                                var aliases = targets.Select((t) =>
+                                {
+                                    var vc = t.GetViewCopy();
+                                    vc.SetHidden(false);
+                                    return vc;
+                                });
+                                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
+                                    aliases.ToList());
+                                DocumentControllers.Add(cnote.Document);
+                            }
+                        }
+                        else if (MainPage.Instance.IsCtrlPressed()
+                        ) // if control is pressed during this drag, we want to see a collection of the actual link documents
+                        {
+                            var regions = dragModel.DraggedDocument.GetDataDocument()
+                                .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null)
+                                ?.TypedData;
+                            var directlyLinkedTo = dragModel.DraggedDocument.GetDataDocument()
+                                .GetLinks(KeyStore.LinkToKey)?.TypedData;
+                            var regionLinkedTo = regions?.SelectMany((r) =>
+                                r.GetDataDocument().GetLinks(KeyStore.LinkToKey)?.TypedData);
+                            if (regionLinkedTo != null || directlyLinkedTo != null)
+                            {
+                                var links = regionLinkedTo != null
+                                    ? regionLinkedTo.ToList()
+                                    : new List<DocumentController>();
+                                if (directlyLinkedTo != null)
+                                    links.AddRange(directlyLinkedTo);
+                                var cnote = new CollectionNote(where, CollectionView.CollectionViewType.Grid, 500, 300,
+                                    links.ToList());
+                                DocumentControllers.Add(cnote.Document);
+                            }
+                        }
+                        else // if no modifiers are pressed, we want to create a new annotation document and link it to the source document (region)
+                        {
+                            var dragDoc = dragModel.DraggedDocument;
+                            if (dragModel.LinkSourceView != null &&
+                                KeyStore.RegionCreator[dragDoc.DocumentType] != null)
+                                dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
+                            var note = new RichTextNote("<annotation>", where).Document;
+                            dragDoc.Link(note);
+                            DocumentControllers.Add(note);
+                        }
+                    }
+                    else if (dragModel.CanDrop(sender as FrameworkElement))
+                    {
+                        var dropDoc = dragModel.GetDropDocument(where);
+                        DocumentControllers.Add(dropDoc);
+                        // kinda hacky lol -sy
+                        DocumentViewModels.Last().DocumentController
+                            .SetField(KeyStore.PositionFieldKey, new PointController(where), true);
+                    }
+                }
+            }
+        }
 
 		KeyController expandCollection(KeyController fieldKey, List<DocumentController> getDocs, List<DocumentController> subDocs, KeyController showField)
 		{
@@ -1044,14 +1061,14 @@ namespace Dash
 			//TODO: implement
 		}
 
-		//updates the bounding when an element changes size
-		private void FrameworkElement_OnSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			var docView = sender as DocumentView;
-			var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
-				xWorkspace.Clip.Rect.Height - docView.ActualHeight);
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
-		}
+        //updates the bounding when an element changes size
+        private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
+                xWorkspace.Clip.Rect.Height - docView.ActualHeight);
+            docView.Bounds = new RectangleGeometry { Rect = bounds };
+        }
 
 		private void XItemsExpander_OnExpanded(object sender, EventArgs e)
 		{

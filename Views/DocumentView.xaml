@@ -125,10 +125,10 @@
                  HorizontalAlignment="Right" VerticalAlignment="Bottom" Visibility="{Binding DecorationState}"
                  x:FieldModifier="public"/>
 
-            <Button x:Name="xFooter" Foreground="Black" 
+            <!--<Button x:Name="xFooter" Foreground="Black" 
     AllowDrop="True" Background="White" Opacity="0.75" Content="- footer -"  VerticalAlignment="Bottom" HorizontalAlignment="Center" Visibility="Collapsed" Drop="FooterDrop"/>
             <Button x:Name="xHeader" Foreground="Black"
-    AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>
+    AllowDrop="True" Background="White" Opacity="0.75" Content="- header -"  VerticalAlignment="Top" HorizontalAlignment="Center" Visibility="Collapsed"    Drop="HeaderDrop"/>-->
 
 
 

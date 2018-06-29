@@ -30,7 +30,6 @@ namespace Dash
         public delegate void DocumentViewSelectedHandler(DocumentView sender, DocumentViewSelectedEventArgs args);
         public event DocumentViewSelectedHandler DocumentSelected;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
-
         public Border _templateBorder;
         public Border TemplateBorder
         {
@@ -1201,7 +1200,7 @@ namespace Dash
 
         void This_Drop(object sender, DragEventArgs e)
         {
-            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
             if (dragModel?.LinkSourceView != null)
             {
@@ -1220,43 +1219,43 @@ namespace Dash
                 e.Handled = true;
             }
         }
-        void FooterDrop(object sender, DragEventArgs e)
-        {
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+        //void FooterDrop(object sender, DragEventArgs e)
+        //{
+        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.LinkSourceView != null)
-            {
-                var note = new RichTextNote("<annotation>").Document;
-                dragModel.DraggedDocument.Link(note);
-                drop(true, note);
-            }
-            else
-                drop(true, dragModel.GetDropDocument(new Point()));
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+        //    if (dragModel?.LinkSourceView != null)
+        //    {
+        //        var note = new RichTextNote("<annotation>").Document;
+        //        dragModel.DraggedDocument.Link(note);
+        //        drop(true, note);
+        //    }
+        //    else
+        //        drop(true, dragModel.GetDropDocument(new Point()));
+        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-            e.Handled = true;
-        }
-        void HeaderDrop(object sender, DragEventArgs e)
-        {
-            var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
+        //    e.Handled = true;
+        //}
+        //void HeaderDrop(object sender, DragEventArgs e)
+        //{
+        //    var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
 
-            if (dragModel?.LinkSourceView != null)
-            {
-                var note = new RichTextNote("<annotation>").Document;
-                dragModel.DraggedDocument.Link(note);
-                drop(false, note);
-            }
-            else
-                drop(false, dragModel.GetDropDocument(new Point()));
+        //    if (dragModel?.LinkSourceView != null)
+        //    {
+        //        var note = new RichTextNote("<annotation>").Document;
+        //        dragModel.DraggedDocument.Link(note);
+        //        drop(false, note);
+        //    }
+        //    else
+        //        drop(false, dragModel.GetDropDocument(new Point()));
 
-            e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
+        //    e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
 
-            e.Handled = true;
-        }
+        //    e.Handled = true;
+        //}
 
         void drop(bool footer, DocumentController newFieldDoc)
         {
-            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
 
             // newFieldDoc.SetField<NumberController>(KeyStore.HeightFieldKey, 30, true);
             newFieldDoc.SetWidth(double.NaN);
@@ -1317,7 +1316,7 @@ namespace Dash
         void This_DragOver(object sender, DragEventArgs e)
         {
             var dragModel = (DragDocumentModel)e.DataView.Properties[nameof(DragDocumentModel)];
-            xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
+            //xFooter.Visibility = xHeader.Visibility = Visibility.Visible;
             ViewModel.DecorationState = ViewModel?.Undecorated == false;
 
             e.AcceptedOperation = e.DataView.RequestedOperation == DataPackageOperation.None ? DataPackageOperation.Copy : e.DataView.RequestedOperation;
@@ -1329,7 +1328,7 @@ namespace Dash
 
         public void This_DragLeave(object sender, DragEventArgs e)
         {
-            xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
+            //xFooter.Visibility = xHeader.Visibility = Visibility.Collapsed;
             ViewModel.DecorationState = false;
         }
 		
