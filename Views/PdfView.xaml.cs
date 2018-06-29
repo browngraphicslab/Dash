@@ -331,7 +331,7 @@ namespace Dash
         {
             _isDragging = false;
             var pos = e.GetCurrentPoint(xRegionsGrid).Position;
-            if (Math.Abs(_anchor.Y - pos.Y) < 30 || (Math.Abs(_anchor.X - pos.X)) < 30)
+            if (Math.Abs(_anchor.Y - pos.Y) < 30 && (Math.Abs(_anchor.X - pos.X)) < 30)
             {
                 xTemporaryRegionMarker.Visibility = Visibility.Collapsed;
             }
