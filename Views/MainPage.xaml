@@ -10,6 +10,12 @@
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
+
+            <Style x:Key="ExpanderBackgroundColor" TargetType="localMicrosoft:Expander">
+                <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
+
+            </Style>
+ 
     </Page.Resources>
 
 
@@ -63,7 +69,7 @@
             </Button>
         </StackPanel>
 
-        <local:SettingsView x:Name="xSettingsView" Grid.Column="4" Grid.Row="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" />
+        <local:SettingsView x:Name="xSettingsView" Grid.Column="4" Grid.Row="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
         <Grid x:Name="xSettingsGrid" Grid.Column="4" Grid.Row="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
             <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
@@ -72,7 +78,7 @@
 
         <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
             <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
             <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
         </Canvas>

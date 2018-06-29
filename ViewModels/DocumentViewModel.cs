@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
         Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
         
@@ -145,6 +146,11 @@ namespace Dash
             set { SetProperty(ref _searchHighlightState, value); }
         }
 
+        public CollectionViewModel.StandardViewLevel ViewLevel
+        {
+            get => _standardViewLevel;
+            set => SetProperty(ref _standardViewLevel, value);
+        }
         public bool DisableDecorations { get; set; } = false;
 
 
@@ -157,16 +163,17 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="args"></param>
         /// <param name="context"></param>
-        void LayoutDocument_DataChanged(FieldControllerBase sender, FieldUpdatedEventArgs args, Context context)
+        void LayoutDocument_DataChanged(DocumentController sender, DocumentFieldUpdatedEventArgs args, Context context)
         {
             // filter out callbacks on prototype from delegate
             // some updates to LayoutDocuments are not bound to the UI.  In these cases, we need to rebuild the UI.
             //   bcz: need some better mechanism than this....
             if (LayoutDocument.DocumentType.Equals(StackLayout.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(DataBox.DocumentType) ||
-                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType))
+                //LayoutDocument.DocumentType.Equals(DataBox.DocumentType) || //TODO Is this necessary? It causes major issues with the KVP - tfs
+                LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
+                LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
             {
-                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
                     ;
                 else
@@ -174,7 +181,7 @@ namespace Dash
             }
             else if (LayoutDocument.DocumentType.Equals(CollectionBox.DocumentType))
             {
-                if (args is DocumentFieldUpdatedEventArgs dargs && dargs.FieldArgs is Dash.ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                    (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add ||
                      largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove))
@@ -190,13 +197,12 @@ namespace Dash
         /// a delegate of the prototype's activeLayout field. Otherwise, the instance would share the position, 
         /// size, etc of the prototype and changes to the instance would affect the prototype.
         /// </summary>
-        /// <param name="fieldControllerBase"></param>
-        /// <param name="fieldUpdatedEventArgs"></param>
+        /// <param name="doc"></param>
+        /// <param name="args"></param>
         /// <param name="context"></param>
-        void DocumentController_ActiveLayoutChanged(FieldControllerBase fieldControllerBase, FieldUpdatedEventArgs fieldUpdatedEventArgs, Context context)
+        void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var dargs = fieldUpdatedEventArgs as DocumentFieldUpdatedEventArgs;
-            var fargs = (dargs?.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+            var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
             // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
             // if a field of the activelayout changed, we ignore that here since it should update the layout directly
             // through bindings.

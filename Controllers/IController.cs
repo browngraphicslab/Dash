@@ -26,15 +26,7 @@ namespace Dash
         /// </summary>
         public T Model { get; private set; }
 
-        /// <summary>
-        /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
-        /// </summary>
-        public string GetId()
-        {
-            return Model.Id;
-        }
-
-        public string Id => Model.Id; // TODO: this is the same as above, conslidate
+        public string Id => Model.Id;
 
         // == METHODS ==
         /// <summary>
@@ -80,8 +72,13 @@ namespace Dash
         /// </summary>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public virtual void UpdateOnServer(Action<T> success = null, Action<Exception> error = null)
+        public virtual void UpdateOnServer(UndoCommand undoEvent, Action<T> success = null, Action<Exception> error = null)
         {
+            if(undoEvent != null)
+            {
+                UndoManager.EventOccured(undoEvent);
+            }
+
             error = error ?? ((e) => throw e);
             _serverEndpoint.UpdateDocument(Model, success, error);
         }
@@ -107,5 +104,10 @@ namespace Dash
             _serverEndpoint.AddDocument(Model, success, error);
         }
 
+        public virtual void IsOnServer(Action<bool> success = null, Action<Exception> error = null)
+        {
+            error = error ?? ((e) => throw e);
+            _serverEndpoint.HasDocument(Model, success, error);
+        }
     }
 }

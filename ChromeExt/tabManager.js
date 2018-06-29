@@ -18,6 +18,7 @@ function tabManager(sendRequestFunction) {
     }*/
 
     var updateTab = function (tabId) {
+        document.body.style.backgroundColor = "red";
         var update = function (tab) {
             windowId = tab.windowId;
             var finalUpdate = function (result) {
@@ -108,7 +109,8 @@ function tabManager(sendRequestFunction) {
     }
     activeTabPoll();
 
-    var addTab = function(tab) {
+    var addTab = function (tab) {
+        document.body.style.backgroundColor = "red";
         tabs[tab.id] = tab;
 
         if (tab.active) {
@@ -174,7 +176,7 @@ function tabManager(sendRequestFunction) {
     this.addNewTab = function (url)
     {   
         var tabHandler = function (tab) {
-            //console.log("in tab handler");
+            console.log("in tab handler");
             //console.log(tab);
             thisSetScrollPosition(tab.id, 0);
         }

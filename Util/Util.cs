@@ -29,6 +29,8 @@ using Newtonsoft.Json;
 namespace Dash
 {
     // TODO: name this to something more descriptive
+    //If you get an error that Util is already defined, you made a class somewhere that is in the Util namespace.
+    //Change that namespace to just be Dash and it will be fixed
     public static class Util
     {
         public static void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
@@ -111,12 +113,12 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformBase freeForm, Point absolutePosition)
         {
             //Debug.Assert(freeForm != null);
             if (freeForm != null)
             {
-                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.GetItemsControl().ItemsPanelRoot);
                 Debug.Assert(r != null);
                 return r.TransformPoint(absolutePosition);
             }

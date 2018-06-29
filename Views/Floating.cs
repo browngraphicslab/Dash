@@ -34,6 +34,8 @@
 			set { _border.SetValue(Canvas.TopProperty, value); }
 		}
 
+        public DocumentViewModel ViewModel { get; set; }
+
         /// <summary>
         /// Prevents the Floating control from manipulating it's content
         /// </summary>
@@ -271,11 +273,26 @@
             return new Point(left, top);
         }
 
+        private UIElement _parent;
+
+        public UIElement Parent
+        {
+            get => _parent;
+            set
+            {
+                if (value is FrameworkElement fme)
+                {
+                    _parent = fme;
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the closest parent with a real size.
         /// </summary>
         private FrameworkElement GetClosestParentWithSize(FrameworkElement element)
         {
+            if (Parent != null) return (FrameworkElement) Parent;
             while (element != null && (element.ActualHeight == 0 || element.ActualWidth == 0))
             {
                 element = element.Parent as FrameworkElement;

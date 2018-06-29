@@ -23,7 +23,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
-    public sealed partial class CollectionTreeView : ICollectionView
+   public sealed partial class CollectionTreeView : ICollectionView
     {
         public CollectionViewModel ViewModel => DataContext as CollectionViewModel;
 
@@ -57,10 +57,11 @@ namespace Dash
 
         private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            UndoManager.StartBatch();
             Debug.Assert(ViewModel != null, "ViewModel != null");
             var documentController = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, double.NaN, double.NaN).Document;//, "New Workspace " + cvm.CollectionController.Count);
             ViewModel.ContainerDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)?.Add(documentController);
-
+            UndoManager.EndBatch();
         }
 
         public void Highlight(DocumentController document, bool? flag)

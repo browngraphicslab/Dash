@@ -388,7 +388,7 @@ namespace Dash
                 return null;
             // loop through each field to find on that matches the field name pattern 
             if (dmc.GetField(pattern) != null)
-                return new DocumentReferenceController(dmc.GetId(), pattern);
+                return new DocumentReferenceController(dmc.Id, pattern);
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Value is DocumentController))
             {
                 var nestedDoc = pfield.Value as DocumentController;

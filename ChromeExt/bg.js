@@ -45,63 +45,79 @@ var getLocalIPs = function (callback) {
     }
 }*/
 
-var start = function(ip) {
-    useSocket = true;
-    var socket;
+var start = function () {
+    document.body.style.backgroundColor = "red";
 
-    var socketOpen = false;
-    var messagesToSend = []
+    useSocket = true;
+    var socket = null;
+
+    var messagesToSend = [];
     var sending = false;
 
-    var pollSend = function() {
-        if (socketOpen === true && messagesToSend.length > 0 && !sending) {
+    var pollSend = function () {
+        //TODO Can we just call send and have socket buffer it?
+        if (socket.readyState === WebSocket.OPEN && messagesToSend.length > 0 && !sending) {
             sending = true;
-            var array = JSON.stringify(messagesToSend)
+            var array = JSON.stringify(messagesToSend);
             messagesToSend.length = 0;
             console.log("sending message array with length: " + array.length);
-            socket.send(array)
-            sending = false
+            socket.send(array);
+            sending = false;
         }
     }
 
     setInterval(pollSend, 50);
 
-    var sendFunction = function(messageObject) {
+    //this function is used in tabManager whenever it gets a result
+    var sendFunction = function (messageObject) {
         //console.log(socket)
         //messagesToSend.push(messageObject)
-        messagesToSend.push(JSON.stringify(messageObject))
+        messagesToSend.push(JSON.stringify(messageObject));
     }
+
+    chrome.runtime.onMessage.addListener(function(request) {
+        if (request.type === "sendRequest") {
+            sendFunction(request.data);
+        }
+    });
 
     var manager = new tabManager(sendFunction);
     var handler = new requestHandler(manager);
 
-    if (useSocket) {
-        if ("WebSocket" in window) {
-            socket = new WebSocket("ws://dashchromewebapp.azurewebsites.net/api/values");
-        } else {
-            console.log("WebSocket is NOT supported by your Browser!");
-        }
+    function connect() {
+        if (useSocket) {
+            socket = new WebSocket("ws://127.0.0.1:12345/dash/chrome");
 
-        socket.onopen = function() {
-            console.log("Connection Opened");
-            socket.send("browser:"+ip)
-            socketOpen = true;
-        }
+            socket.onopen = function () {
+                console.log("Connection Opened");
+            }
 
-        socket.onclose = function () {
-            console.log("close occurred... starting again")
-            //start();
-        }
+            socket.onclose = function () {
+                console.log("close occurred... starting again");
+            }
 
-        socket.onerror = function () {
-            console.log("error occurred... starting again")
-            //start();
-        }
+            socket.onerror = function () {
+                console.log("error occurred... starting again");
+            }
 
-        socket.onmessage = function(msg) {
-            console.log(msg);
-            handler.handle(msg.data);
+            socket.onmessage = function (msg) {
+                console.log("Received message from interop");
+                handler.handle(msg.data);
+            }
         }
+    }
+
+
+    if ("WebSocket" in window) {
+        setInterval(function () {
+            if (socket == null || socket.readyState === WebSocket.CLOSED) {
+                connect();
+            }
+        },
+            200);
+        connect();
+    } else {
+        console.log("WebSocket is NOT supported by your Browser!");
     }
 
     tabs_initialized = {}
@@ -114,10 +130,11 @@ var start = function(ip) {
                 .substring(1);
         }
 
-        return s4() +s4() + s4() +  s4() + s4() +s4() + s4() +s4() + s4() +s4();
+        return s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4() + s4();
     }
 }
-start("123");
+document.body.style.backgroundColor = "red";
+start();
 /*
 getLocalIPs(function (ips) {
     console.log(ips);

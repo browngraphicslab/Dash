@@ -2,6 +2,8 @@
 
 //using Windows.Storage;
 
+using System;
+
 namespace DashShared
 {
     public static class DashConstants
@@ -10,7 +12,6 @@ namespace DashShared
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
         public const bool DEVELOP_LOCALLY = true;
-
 
         #region DocumentDB
 
@@ -91,7 +92,25 @@ namespace DashShared
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
 
-        public static int MillisecondBetweenLocalSave = 10000; //10 seconds
+        public const int MillisecondBetweenLocalSave = 1000; //1 second
+
+        //BACKUP CONSTANTS
+
+        //Minimum
+        public const int MinNumBackups = 1;
+        public const int MinBackupInterval = 30;
+
+        //Maximum
+        public const int MaxNumBackups = 10;
+        public const int MaxBackupInterval = 3600;
+
+        //DEFAULT SETTINGS CONSTANTS
+
+        public const bool DefaultNightModeEngaged = false; //theme state
+        public const int DefaultFontSize = 16; //pt
+        public const int DefaultNumBackups = 3; //backups
+        public const int DefaultBackupInterval = 900; //seconds
+        public const bool DefaultInfiniteUpwardPanningStatus = true;
 
         #endregion LocalServer
 
@@ -184,8 +203,19 @@ namespace DashShared
             public static KeyModel SelectedKey = new KeyModel("86009EF6-7D77-4D67-8C7A-C5EA5704432F", "_Selected");
             public static KeyModel OriginalImageKey = new KeyModel("6226CC11-3616-4521-9C9E-731245FA1F4C", "_Original Image");
             public static KeyModel SideCountKey = new KeyModel("276302FF-0E5F-4009-A308-A4EE8B4224F7", "Side Count");
-            public static KeyModel TemplateDocumentKey = new KeyModel("35624019-4C59-45AD-B44D-77830FD41EA3", "Template Document");
+            public static KeyModel TemplateDocumentKey = new KeyModel("35624019-4C59-45AD-B44D-77830FD41EA3", "_Template Document");
 
+            public static KeyModel SettingsDocKey = new KeyModel("EFD6D6B8-286F-4D34-AD44-BCFB72CD3F70", "Settings Doc");
+            public static KeyModel SettingsNightModeKey = new KeyModel("7AA22643-3D28-433E-83E9-ECD6A7475270", "Settings Night Mode");
+            public static KeyModel SettingsFontSizeKey = new KeyModel("BD720922-FAD9-4821-9877-F62E3273DED8", "Settings Font Size");
+            public static KeyModel SettingsMouseFuncKey = new KeyModel("867225EC-F9C7-4B14-9A5F-22B7BB71DCCB", "Settings Mouse Functionality");
+            public static KeyModel SettingsNumBackupsKey = new KeyModel("25F0DB4F-D6DE-4D48-A090-77E48C1F621C", "Settings Number of Backups");
+            public static KeyModel SettingsBackupIntervalKey = new KeyModel("8C00E2CD-6272-4E6C-ADC1-622B108A0D9F", "Settings Backup Interval");
+            public static KeyModel BackgroundImageStateKey = new KeyModel("3EAE5AB5-4503-4519-9EF3-0FA5BDDE59E6", "State of Background Image (Radio Buttons)");
+            public static KeyModel CustomBackgroundImagePathKey = new KeyModel("DA719660-D5CE-40CE-9BDE-D57B764CA6BF", "Custom Path to Background Image");
+            public static KeyModel BackgroundImageOpacityKey = new KeyModel("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC", "Background Image Opacity");
+            public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
+            public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
         }
 
         public static class TypeStore

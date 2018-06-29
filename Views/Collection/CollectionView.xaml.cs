@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.System;
+using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
 
@@ -17,7 +18,8 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl, ICollectionView
     {
-        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph }
+        public enum CollectionViewType { Freeform, Grid, Page, DB, Schema, TreeView, Timeline, Graph, Standard
+        }
 
         CollectionViewType _viewType;
         public int MaxZ { get; set; }
@@ -62,10 +64,10 @@ namespace Dash
         {
             var shifted = (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0;
             var rightBtn = args.GetCurrentPoint(this).Properties.IsRightButtonPressed;
-            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
             if (parentFreeform != null && rightBtn)
             {
-                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformView>();
+                var parentParentFreeform = parentFreeform.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var grabbed = parentParentFreeform == null && (args.KeyModifiers & VirtualKeyModifiers.Shift) != 0 && args.OriginalSource != this;
                 if (!grabbed && (shifted || parentParentFreeform == null))
                 {
@@ -121,7 +123,7 @@ namespace Dash
                 var newCollection = new MenuFlyoutItem() { Text = "Add new collection", Icon = new FontIcon() { Glyph = "\uf247;", FontFamily = new FontFamily("Segoe MDL2 Assets") } };
                 newCollection.Click += (sender, e) =>
                 {
-                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformView, GetFlyoutOriginCoordinates());
+                    var pt = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
                     ViewModel.AddDocument(Util.BlankCollectionWithPosition(pt)); //NOTE: Because mp is null when in, for example, grid view, this will do nothing
                 };
                 contextMenu.Items.Add(newCollection);
@@ -136,7 +138,7 @@ namespace Dash
 
                     tagMode.Text = "Exit Tag Mode";
                     
-                    (CurrentView as CollectionFreeformView)?.ShowTagKeyBox();
+                    (CurrentView as CollectionFreeformBase)?.ShowTagKeyBox();
                 }
 
                 void ExitTagMode(object sender, RoutedEventArgs e)
@@ -145,7 +147,7 @@ namespace Dash
                     tagMode.Click += EnterTagMode;
 
                     tagMode.Text = "Tag Notes";
-                    var view = CurrentView as CollectionFreeformView;
+                    var view = CurrentView as CollectionFreeformBase;
                     if (view != null)
                     {
                         view.HideTagKeyBox();
@@ -182,7 +184,12 @@ namespace Dash
                 foreach (var n in Enum.GetValues(typeof(CollectionViewType)).Cast<CollectionViewType>())
                 {
                     var vtype = new MenuFlyoutItem() { Text = n.ToString() };
-                    vtype.Click += (sender, e) => SetView(n);
+                    vtype.Click += (sender, e) =>
+                    {
+                        UndoManager.StartBatch();
+                        SetView(n);
+                        UndoManager.EndBatch();
+                    };
                     viewCollectionAs.Items.Add(vtype);
                 }
 
@@ -224,7 +231,16 @@ namespace Dash
             UpdateContextMenu();
 
             // set the top-level viewtype to be freeform by default
-            SetView(ParentDocument == MainPage.Instance.MainDocView ? CollectionViewType.Freeform : _viewType);
+            if (ParentDocument != MainPage.Instance.MainDocView || _viewType == CollectionViewType.Freeform ||
+                _viewType == CollectionViewType.Standard)
+            {
+                SetView(_viewType);
+            }
+            else //If we are trying to view the main collection not in a freeform-ish view, force a freeform view
+            //TODO This might not be what we want
+            {
+                SetView(CollectionViewType.Freeform);
+            }
         }
         
         #endregion
@@ -280,6 +296,10 @@ namespace Dash
                 case CollectionViewType.Graph:
                     if (CurrentView is CollectionGraphView) return;
                     CurrentView = new CollectionGraphView();
+                    break;
+                case CollectionViewType.Standard:
+                    if (CurrentView is CollectionStandardView) return;
+                    CurrentView = new CollectionStandardView() { InkController = ViewModel.InkController };
                     break;
                 default:
                     throw new NotImplementedException("You need to add support for your collectionview here");

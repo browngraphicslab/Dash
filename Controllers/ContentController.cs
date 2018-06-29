@@ -1,8 +1,11 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -32,14 +35,14 @@ namespace Dash
         public static void AddController(IController<T> newController)
         {
             // get the newController's id and make sure it isn't null
-            var newControllerId = newController.GetId();
+            var newControllerId = newController.Id;
             Debug.Assert(newControllerId != null);
 
             // if the newController is already saved, make sure we are not overwriting the current reference
             if (_controllers.ContainsKey(newControllerId))
             {
                 var savedController = _controllers[newControllerId];
-                Debug.Assert(!ReferenceEquals(savedController, newController) && savedController.GetId() == newController.GetId(),
+                Debug.Assert(!ReferenceEquals(savedController, newController) && savedController.Id == newController.Id,
                     "If we overwrite a reference to a saved controller bindings to the saved controller will no longer exist");
             }
             else
@@ -266,6 +269,13 @@ namespace Dash
 
             return succesfulModels;
         }
+
+        public static bool CheckAllModels()
+        {
+            return App.Instance.Container.GetRequiredService<IModelEndpoint<T>>()
+                .CheckAllDocuments(_models.Values);
+        }
+
 
         #endregion
     }

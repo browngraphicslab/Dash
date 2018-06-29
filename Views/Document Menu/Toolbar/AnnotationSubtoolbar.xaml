@@ -1,0 +1,33 @@
+﻿<UserControl
+    x:Class="Dash.Views.Document_Menu.Toolbar.AnnotationSubtoolbar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views.Document_Menu.Toolbar"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <CommandBar x:Name="xCollectionCommandbar" IsSticky="True" OverflowButtonVisibility="Collapsed" Background="LightGray">
+
+            <CommandBar.Content>
+                <Grid>
+                    <Slider x:Name="xOpacitySlider" Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1" SnapsTo="StepValues" TickPlacement="None"  VerticalAlignment="Center" Grid.Column="1" IntermediateValue="128" Margin="22, 11, 0, 0"  Width="200"/>
+                </Grid>
+            </CommandBar.Content>
+
+            <AppBarButton x:Name="xRegionColor" Icon="Help" Label="Color">
+                <Button.Flyout>
+                    <Flyout>
+                        <media:SfColorPicker  x:Name="xRegionColorPicker" />
+                    </Flyout>
+                </Button.Flyout>
+                <!-- pull from master & uncomment this <Image Source="ms-appx:///Assets/GroupColorIcon.png"/> -->
+            </AppBarButton>
+        </CommandBar>
+
+    </Grid>
+</UserControl>

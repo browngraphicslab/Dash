@@ -1,6 +1,7 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
@@ -148,7 +149,10 @@ namespace Dash
 
         private void removeField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
         {
-            ListItemSource.Remove(new EditableScriptViewModel(dargs.Reference));
+            foreach (var editableScriptViewModel in ListItemSource.Where(esvm => esvm.Reference.Equals(dargs.Reference)).ToList())
+            {
+                ListItemSource.Remove(editableScriptViewModel);
+            }
         }
 
         private void addField(DocumentController.DocumentFieldUpdatedEventArgs dargs)
@@ -165,6 +169,7 @@ namespace Dash
         /// </summary>
         private void AddKeyValuePair()
         {
+            UndoManager.StartBatch();
             var key = KeyController.LookupKeyByName(xNewKeyText.Text) ?? new KeyController(Guid.NewGuid().ToString(), xNewKeyText.Text);
             var stringValue = xNewValueText.Text;
 
@@ -187,6 +192,7 @@ namespace Dash
             xNewValueText.Text = "";
             xFieldsScroller.ChangeView(null, xFieldsScroller.ScrollableHeight, null);
 
+            UndoManager.EndBatch();
             return;
         }
 

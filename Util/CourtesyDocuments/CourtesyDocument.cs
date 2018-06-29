@@ -20,16 +20,16 @@ namespace Dash
         {
 
             return ContentController<FieldModel>.GetController<DocumentController>(prototypeId) ??
-                   InstantiatePrototypeLayout(documentType, abstractInterface);
+                   InstantiatePrototypeLayout(documentType, abstractInterface, prototypeId);
         }
 
         public virtual DocumentController Document { get; set; }
 
-        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface)
+        protected DocumentController InstantiatePrototypeLayout(DocumentType documentType, string abstractInterface, string prototypeId)
         {
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
             fields.Add(KeyStore.AbstractInterfaceKey, new TextController(abstractInterface));
-            return new DocumentController(fields, documentType);
+            return new DocumentController(fields, documentType, prototypeId);
         }
 
     /// <summary>
@@ -75,17 +75,17 @@ namespace Dash
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
-            FieldControllerBase.FieldUpdatedHandler handler = (sender, args, c) =>
+            DocumentController.DocumentUpdatedHandler handler = (sender, args, c) =>
             {
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                bindingDelegate(element, (DocumentController)sender, c); //TODO Should be context or args.Context?
+                bindingDelegate(element, sender, c); //TODO Should be context or args.Context?
             };
 
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
         protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
-            BindingDelegate<T> bindingDelegate, FieldControllerBase.FieldUpdatedHandler handler) where T : FrameworkElement
+            BindingDelegate<T> bindingDelegate, DocumentController.DocumentUpdatedHandler handler) where T : FrameworkElement
         {
             element.Loaded += delegate
             {
@@ -96,6 +96,17 @@ namespace Dash
             {
                 docController.RemoveFieldUpdatedListener(k, handler);
             };
+        }
+
+        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        {
+            //Set width and height
+            BindWidth(element, docController, context);
+            BindHeight(element, docController, context);
+
+            //Set alignments
+            BindHorizontalAlignment(element, docController, context);
+            BindVerticalAlignment(element, docController, context);
         }
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
@@ -122,20 +133,6 @@ namespace Dash
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
-        }
-
-        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
-        {
-            FieldBinding<PointController> binding = new FieldBinding<PointController>()
-            {
-                Mode = BindingMode.TwoWay,
-                Document = docController,
-                Key = KeyStore.PositionFieldKey,
-                Context = context,
-                Converter = new PointToTranslateTransformConverter()
-            };
-
-            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
@@ -168,15 +165,18 @@ namespace Dash
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
-        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
         {
-            //Set width and height
-            BindWidth(element, docController, context);
-            BindHeight(element, docController, context);
+            FieldBinding<PointController> binding = new FieldBinding<PointController>()
+            {
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.PositionFieldKey,
+                Context = context,
+                Converter = new PointToTranslateTransformConverter()
+            };
 
-            //Set alignments
-            BindHorizontalAlignment(element, docController, context);
-            BindVerticalAlignment(element, docController, context);
+            element.AddFieldBinding(UIElement.RenderTransformProperty, binding);
         }
 
         /// <summary>
@@ -319,21 +319,46 @@ namespace Dash
         {
             document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
         }
-        public static bool GetTransient(this DocumentController document)
+
+        public static ListController<DocumentController> GetLinks(this DocumentController document, KeyController linkFromOrToKey)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
+        }
+        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        {
+            var todocs = document.GetLinks(LinkFromOrToKey);
+            if (todocs == null)
+            {
+                document.SetField(LinkFromOrToKey, new ListController<DocumentController>(docs), true);
+            }
+            else
+                todocs.AddRange(docs);
+        }
+
+        public static DocumentController GetRegionDefinition(this DocumentController document)
+        {
+            return document.GetDereferencedField<DocumentController>(KeyStore.RegionDefinitionKey, null);
+        }
+        public static void    SetRegionDefinition(this DocumentController document, DocumentController regionParent)
+        {
+            document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
+        }
+
+        public static bool    GetTransient(this DocumentController document)
         {
             var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
             return data?.Data == "true";
         }
-        public static void SetTransient(this DocumentController document, bool hidden)
+        public static void    SetTransient(this DocumentController document, bool hidden)
         {
             document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
         }
 
-        public static int ?GetSideCount(this DocumentController document)
+        public static int ?   GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void SetSideCount(this DocumentController document, int count)
+        public static void    SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
