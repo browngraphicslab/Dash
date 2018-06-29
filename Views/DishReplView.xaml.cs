@@ -31,7 +31,7 @@ namespace Dash
         private static List<String> _dataset;
         private bool _textModified;
 
-        private bool _shiftPressed;
+        private string _currentText;
 
         public DishReplView()
         {
@@ -213,21 +213,13 @@ namespace Dash
 
         private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //Todo: find a better way to make doc controller for non text
             var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
             var outputData = output.Value;
-            var postitNote = new RichTextNote(text: outputData.ToString()).Document;
-
-
-            //TODO: get collection view model
-            var collection = MainPage.Instance.MainDocument.GetDataDocument();
-
-
-            //Todo: get real point
-            var where = new Point(0, 0);
-
-
-            //  Actions.DisplayDocument(ViewModel, postitNote, where);
+            var dataBox = new DataBox(outputData).Document;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation =
+                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }
