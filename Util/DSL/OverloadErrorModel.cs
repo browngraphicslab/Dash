@@ -42,7 +42,9 @@ namespace Dash
 
             var paramExpr = _givenParamTypes.Count > 0 ? _givenParamTypes.Count == 1 ? "supports 1 parameter" : $"supports { _givenParamTypes.Count} parameters" : "is parameterless";
             var invalidParamNum = validNumParams ? "" : $"\n            No implementation of {_functionName}() {paramExpr}. Instead, try...";
-            var helpfulTypeBreakdown = $"      \n      Received: \n            ({string.Join(", ", _givenParamTypes)})\n      Expected:" + invalidParamNum;
+            var receivedTypes = string.Join(", ", _givenParamTypes);
+            var receivedExpr = receivedTypes == "" ? "None" : receivedTypes;
+            var helpfulTypeBreakdown = $"      \n      Received: \n            ({receivedExpr})\n      Expected:" + invalidParamNum;
             foreach (var paramList in _candidateParamTypes) { helpfulTypeBreakdown += paramList; }
             return _ambiguous ? $"Ambiguous call to function {_functionName}. Multiple valid overloads exist" : $" Exception:\n            No valid overloads exist for function {_functionName}()" + helpfulTypeBreakdown + $"\n      Feedback:\n            {feedback}";
             //TODO: IMPLEMENT PROPER RESPONSE TO AMBIGUITY
