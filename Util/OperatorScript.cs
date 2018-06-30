@@ -22,11 +22,8 @@ namespace Dash
             Init();
         }
 
-        public static void Init()
+        public void Init()
         {
-            //this is static because nothing is operator specifc. If you need things specific to one 
-            //OperatorScript, don't put it here
-
             if (PrintAllFuncDocumentation)
             {
                 Debug.WriteLine("\n\n\n\nAll DSL Functions: \n");
@@ -231,13 +228,14 @@ namespace Dash
                     typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})"));
                 }
 
+                var oneElement = typeSublists.Count == 1;
                 var sortedParams = typeSublists.OrderBy(x => x.Key).ToList();
 
                 if (properNumParams)
                 {
                     var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
                     sortedParams.RemoveAll(kv => kv.Key == args.Count);
-                    properTypes.Add(new KeyValuePair<int, string>(0, "\n      -^-"));
+                    if (!oneElement) properTypes.Add(new KeyValuePair<int, string>(0, "\n      -^-"));
                     properTypes.AddRange(sortedParams);
                     sortedParams = properTypes;
                 }
@@ -247,7 +245,7 @@ namespace Dash
                     var below = sortedParams.Where(kv => kv.Key < args.Count).ToList();
                     var above = sortedParams.Where(kv => kv.Key > args.Count).ToList();
                     ordered.AddRange(below);
-                    ordered.Add(new KeyValuePair<int, string>(0, "\n      --> ?"));
+                    if (!oneElement) ordered.Add(new KeyValuePair<int, string>(0, "\n      --> ?"));
                     ordered.AddRange(above);
                     sortedParams = ordered;
                 }
