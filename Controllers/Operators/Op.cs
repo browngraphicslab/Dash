@@ -77,6 +77,11 @@ namespace Dash
             _if,
             let,
 
+            // CONVERTERS
+
+            to_list,
+            to_string,
+
             // DOCUMENTS
 
             data_document,
@@ -131,8 +136,6 @@ namespace Dash
             rich_document_text,
             alias,
             key_field_query,
-
-            _string,
 
             // MISC & MUTATORS
 

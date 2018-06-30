@@ -632,7 +632,6 @@ namespace Dash
                         default:
                             throw new Exception("Unkown binary expression type");
                     }
-
                     break;
                 case SyntaxKind.ConditionalExpression:
                     break;
@@ -753,6 +752,7 @@ namespace Dash
                     //be a lot more elegant instead of using an error statement
                     var returnStatement = node as ReturnStatement;
                     var c1 = node.Children;
+                    //TODO: throw empty return error
                    return new ReturnExpression(ParseToExpression(node.Children[0]));
                 case SyntaxKind.WithStatement:
                     break;

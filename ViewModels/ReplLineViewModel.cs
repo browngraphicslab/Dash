@@ -46,7 +46,7 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                result = e.GetHelpfulString();
+                result = "      \nException: " + e.GetHelpfulString();
             }
             catch (Exception e)
             {

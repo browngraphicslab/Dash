@@ -26,7 +26,7 @@ namespace Dash
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
             new KeyValuePair<KeyController, IOInfo>(SourceKey, new IOInfo(TypeInfo.Text, true)),
-            new KeyValuePair<KeyController, IOInfo>(ToRemoveKey, new IOInfo(TypeInfo.Text, true))
+            new KeyValuePair<KeyController, IOInfo>(ToRemoveKey, new IOInfo(TypeInfo.List, true))
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo> { [ComputedResultKey] = TypeInfo.Number };
@@ -34,14 +34,24 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var varText = ((TextController)inputs[SourceKey]).Data;
-            var removeText = ((TextController)inputs[ToRemoveKey]).Data;
+            var phrasesToRemove = (ListController<TextController>)inputs[ToRemoveKey];
+
+            var absentPhrases = new List<string>();
 
             var varEditor = new StringBuilder(varText);
-            var toRemove = removeText.ToCharArray();
-            foreach (var c in toRemove) { varEditor.Replace(c.ToString(), ""); }
+            foreach (var tc in phrasesToRemove)
+            {
+                var phrase = tc.Data;
+                if (!varText.Contains(phrase) || phrase == "")
+                {
+                    absentPhrases.Add(phrase);
+                    continue;
+                }
 
-            if (varEditor.ToString().Equals(varText)) throw new ScriptExecutionException(new AbsentStringScriptErrorModel(varText, removeText));
+                varEditor.Replace(phrase, "");
+            }
 
+            if(varEditor.ToString().Equals(varText)) throw new ScriptExecutionException(new AbsentStringScriptErrorModel(varText, $"[{string.Join(", ", absentPhrases)}]"));
             outputs[ComputedResultKey] = new TextController(varEditor.ToString());
         }
 

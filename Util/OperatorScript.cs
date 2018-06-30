@@ -22,8 +22,10 @@ namespace Dash
             Init();
         }
 
-        private void Init()
+        public static void Init()
         {
+            //this is static because nothing is operator specifc. If you need things specific to one 
+            //OperatorScript, don't put it here
 
             if (PrintAllFuncDocumentation)
             {
@@ -151,6 +153,8 @@ namespace Dash
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
 
+        public static int? GetAmountInputs(Op.Name funcName) => GetOperatorWithName(funcName)?.Inputs?.Count;
+
 
         /// <summary>
         /// returns an ordered list of the keycontorllers in a function
@@ -214,14 +218,57 @@ namespace Dash
             if (distances.Count == 0)
             {
                 //No valid overloads
-                //List<>
-                throw new ScriptExecutionException(new OverloadErrorModel(false, funcName.ToString()));
+                var properNumParams = false;
+                var typeSublists = new List<KeyValuePair<int, string>>();
+                var allParamCounts = new List<int>();
+                var overloadUnpacking = overloads.Select(ct => ct.ParamTypes).ToList();
+                foreach (var listKv in overloadUnpacking)
+                {
+                    var typeInfoList = listKv.Select(kv => kv.Value.Type).ToList();
+                    var numParams = typeInfoList.Count;
+                    if (args.Count == numParams) properNumParams = true;
+                    if (!allParamCounts.Contains(numParams)) allParamCounts.Add(numParams);
+                    typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})"));
+                }
+
+                var sortedParams = typeSublists.OrderBy(x => x.Key).ToList();
+
+                if (properNumParams)
+                {
+                    var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
+                    sortedParams.RemoveAll(kv => kv.Key == args.Count);
+                    properTypes.Add(new KeyValuePair<int, string>(0, "\n      -^-"));
+                    properTypes.AddRange(sortedParams);
+                    sortedParams = properTypes;
+                }
+                else
+                {
+                    var ordered = new List<KeyValuePair<int, string>>();
+                    var below = sortedParams.Where(kv => kv.Key < args.Count).ToList();
+                    var above = sortedParams.Where(kv => kv.Key > args.Count).ToList();
+                    ordered.AddRange(below);
+                    ordered.Add(new KeyValuePair<int, string>(0, "\n      --> ?"));
+                    ordered.AddRange(above);
+                    sortedParams = ordered;
+                }
+                var typesToString = sortedParams.Select(kv => kv.Value).ToList();
+
+                throw new ScriptExecutionException(new OverloadErrorModel(false, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typesToString, allParamCounts));
             }
 
             if (distances.Count > 1)
             {
                 //Ambiguous overloads
-                throw new ScriptExecutionException(new OverloadErrorModel(true, funcName.ToString()));
+                var typeSublists = new List<string>();
+                var paramCounts = new List<int>();
+                var overloadUnpacking = overloads.Select(ct => ct.ParamTypes).ToList();
+                foreach (var listKv in overloadUnpacking)
+                {
+                    var typeInfoList = listKv.Select(kv => kv.Value.Type).ToList();
+                    typeSublists.Add($"\n            ({string.Join(", ", typeInfoList)})");
+                    if (!paramCounts.Contains(typeInfoList.Count)) paramCounts.Add(typeInfoList.Count);
+                }
+                throw new ScriptExecutionException(new OverloadErrorModel(true, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typeSublists, paramCounts));
             }
 
             var t = distances[0].Key.OperatorType;

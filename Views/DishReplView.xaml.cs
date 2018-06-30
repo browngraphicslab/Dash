@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -21,6 +23,8 @@ namespace Dash
 
         private static List<string> _dataset;
         private bool _textModified;
+
+        private string _currentText;
 
         public DishReplView()
         {
@@ -52,14 +56,11 @@ namespace Dash
         {
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
-
-        private void MoveCursorToEnd()
+        private void MoveCursorToEnd(int? end = null)
         {
-            if (xTextBox.Text.Length != 0)
-            {
-                xTextBox.SelectionStart = xTextBox.Text.Length;
-                xTextBox.SelectionLength = 0;
-            }
+            if (xTextBox.Text.Length == 0) return;
+            xTextBox.SelectionStart = end ?? xTextBox.Text.Length;
+            xTextBox.SelectionLength = 0;
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
@@ -94,37 +95,47 @@ namespace Dash
                 }
         }
 
-
-        private void TextInputKeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (sender is TextBox textBox && e.OriginalKey == VirtualKey.Enter)
-            {
-                _currentHistoryIndex = 0;
-                var currentText = textBox.Text;
-                textBox.Text = "";
-                FieldControllerBase returnValue;
-                try
-                {
-                    returnValue = _dsl.Run(currentText, true);
-                }
-                catch (Exception ex)
-                {
-                    returnValue = new TextController("There was an error: " + ex.StackTrace);
-                }
-
-                ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
-
-                //scroll to bottom
-                xScrollViewer.UpdateLayout();
-                xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
-            }
-        }
-
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (!_textModified && xTextBox.Text != "")
+            //enter pressed without shift
+            if (xTextBox.Text.Length > 1 && xTextBox.Text[xTextBox.Text.Length - 1] == '\r' && 
+                !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+                {
+                    _currentHistoryIndex = 0;
+                    //get text replacing newlines with spaces
+                    var currentText = xTextBox.Text.Replace('\r', ' ');
+                    xTextBox.Text = "";
+                    FieldControllerBase returnValue;
+                    try
+                    {
+                        returnValue = _dsl.Run(currentText, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        returnValue = new TextController("There was an error: " + ex.StackTrace);
+                    }
+
+                    ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+
+                    //scroll to bottom
+                    xScrollViewer.UpdateLayout();
+                    xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
+            }
+            else if (!_textModified && xTextBox.Text != "")
             {
-                var suggestions = _dataset.Where(x => x.ToString().StartsWith(xTextBox.Text)).ToList();
+                //only give suggestions on last word
+                var allText = xTextBox.Text.Split(' ');
+                var lastWord = "";
+                if (allText.Length > 0)
+                {
+                    lastWord = allText[allText.Length - 1];
+                }
+
+                if (_dataset == null)
+                {
+                    OperatorScript.Init();
+                }
+                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
 
                 Suggestions.ItemsSource = suggestions;
 
@@ -151,9 +162,38 @@ namespace Dash
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
+            //get selected item
             var selectedItem = e.ClickedItem.ToString();
             _textModified = true;
-            xTextBox.Text = selectedItem;
+
+            //only change last word to new text
+            var currentText = xTextBox.Text.Split(' ');
+            var keepText = "";
+            if (currentText.Length > 1)
+            {
+                var lastWordLength = currentText[currentText.Length - 1].Length;
+                keepText = xTextBox.Text.Substring(0, xTextBox.Text.Length - lastWordLength);
+            }
+
+            //if it is function, set up sample inputs
+            var numInputs = OperatorScript.GetAmountInputs(Op.Parse(selectedItem));
+            var functionEnding = " ";
+            var offset = 1;
+            if (numInputs != null)
+            {
+                functionEnding = "(";
+                offset = 2;
+                for (var i = 0; i < numInputs; i++)
+                {
+                    functionEnding = functionEnding + "_, ";
+                }
+                //delete last comma and space and add ending paranthesis
+                functionEnding = functionEnding.Substring(0, functionEnding.Length - 2) + ")";
+            }
+
+            xTextBox.Text = keepText + selectedItem + functionEnding;
+            xTextBox.Focus(FocusState.Pointer);
+            MoveCursorToEnd((keepText + selectedItem).Length + offset);
 
             SuggestionsPopup.IsOpen = false;
             SuggestionsPopup.Visibility = Visibility.Collapsed;
@@ -162,21 +202,12 @@ namespace Dash
 
         private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //Todo: find a better way to make doc controller for non text
-            var output = ((FrameworkElement)sender).DataContext as ReplLineViewModel;
-            var outputData = output?.Value;
-            var postitNote = new RichTextNote(text: outputData?.ToString()).Document;
-
-
-            //TODO: get collection view model
-            var collection = MainPage.Instance.MainDocument.GetDataDocument();
-
-
-            //Todo: get real point
-            var where = new Point(0, 0);
-
-
-            //  Actions.DisplayDocument(ViewModel, postitNote, where);
+            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
+            var outputData = output.Value;
+            var dataBox = new DataBox(outputData).Document;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
     }
 }
