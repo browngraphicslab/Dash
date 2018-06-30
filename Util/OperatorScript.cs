@@ -235,7 +235,7 @@ namespace Dash
                 {
                     var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
                     sortedParams.RemoveAll(kv => kv.Key == args.Count);
-                    if (!oneElement) properTypes.Add(new KeyValuePair<int, string>(0, "\n      -^-"));
+                    if (!oneElement) properTypes.Add(new KeyValuePair<int, string>(0, "\n      ^^"));
                     properTypes.AddRange(sortedParams);
                     sortedParams = properTypes;
                 }
