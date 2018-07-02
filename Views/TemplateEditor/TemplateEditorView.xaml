@@ -14,13 +14,13 @@
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
-    d:DesignHeight="540"
+    d:DesignHeight="535"
     d:DesignWidth="1000">
 
     
 
 
-    <StackPanel Orientation="Vertical" Height="540" Background="#416857">
+    <StackPanel Orientation="Vertical" Height="536" Width="1000" Background="#416857">
 
         <!--Header-->
         <Grid>
@@ -76,22 +76,36 @@
                 </Canvas>
 
                     <!--ELLIPSES-->
-                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Width="30" Height="30" Margin="10, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
-                        <StackPanel x:Name="xEllipseStack">
-                            <!--Clear button -->
-                            <Grid>
-                            <Ellipse x:Name="xClearEllipse" Fill="#8E2929" Height="30" Width="30" PointerEntered="Ellipse_OnPointerEntered"/>
-                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="10, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                        <StackPanel x:Name="xEllipseStack" Spacing="10" Width="36" Height="120">
+                            <!--Apply button -->
+                            <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
+                            <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
-                                <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="5" VerticalOffset="0"
+                                <ToolTip Content="Apply Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                 />
                             </ToolTipService.ToolTip>
                             </Grid>
-
-                         <!--Revert button -->
-
-                           <!--Apply Template button -->
-
+                            
+                         <!--Revert Ellipse -->
+                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" VerticalAlignment="Center">
+                            <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Revert Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                                />
+                            </ToolTipService.ToolTip>
+                        </Grid>
+                        <!--Clear Template Ellipse -->
+                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" VerticalAlignment="Bottom">
+                            <Ellipse x:Name="xClearEllipse" Fill="#D64141" />
+                                <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                                    />
+                                </ToolTipService.ToolTip>
+                            </Grid>
                     </StackPanel>
                     </RelativePanel>
             </RelativePanel>
@@ -152,10 +166,16 @@
                     <!--StackPanel for Format buttons-->
                     <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <fontIcons:FontAwesome x:Name="xAlignLeft" Icon="AlignLeft" Foreground="LightGray" Height="40" Width="60" Tapped="AlignmentButton_OnChecked" />
-                            <fontIcons:FontAwesome x:Name="xAlignCenter" Icon="AlignCenter" Foreground="LightGray" Height="40" Width="60" Tapped="AlignmentButton_OnChecked" FocusVisualPrimaryBrush="White"/>
-                            <fontIcons:FontAwesome x:Name="xAlignRight" Icon="AlignRight" Foreground="LightGray" Height="40" Width="60"  Tapped="AlignmentButton_OnChecked"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
+                            <AppBarButton x:Name="xAlignLeft"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                            </AppBarButton>
+                            <AppBarButton x:Name="xAlignCenter" Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                            </AppBarButton>
+                            <AppBarButton x:Name="xAlignRight" Height="40" Width="58" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
+                            </AppBarButton>
                         </StackPanel>
 
                         <!-- BACKGROUND -->

@@ -124,6 +124,8 @@
             <x:String x:Key="ClearIcon">&#xf00d;</x:String>
             <x:String x:Key="MinusIcon">&#xf068;</x:String>
             <x:String x:Key="UploadIcon">&#xf093;</x:String>
+            <x:String x:Key="CheckIcon">&#xf00c;</x:String>
+            
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">
