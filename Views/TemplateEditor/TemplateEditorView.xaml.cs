@@ -1142,11 +1142,23 @@ namespace Dash
 		//updates the bounding when an element changes size
 		private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			var docView = sender as DocumentView;
+		    var docView = sender as DocumentView;
+      //      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
+		    //{
+		    //    docView.Width = docView.Bounds.Rect.Width;
+		    //}
+
+		    //if (docView.Bounds.Rect.Height != null && docView.ActualHeight + docView.ViewModel.YPos > docView.Bounds.Rect.Height)
+		    //{
+		    //    docView.Height = docView.Bounds.Rect.Height;
+		    //}
+           
 			var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
 				xWorkspace.Clip.Rect.Height - docView.ActualHeight);
-			docView.Bounds = new RectangleGeometry { Rect = bounds };
-		}
+		   
+            docView.Bounds = new RectangleGeometry { Rect = bounds };
+		   
+        }
 
 		private void XItemsExpander_OnExpanded(object sender, EventArgs e)
 		{
@@ -1243,20 +1255,20 @@ namespace Dash
 	            newPoint.X += (newSize.Width - oldSize.Width) / 2;
 	            newPoint.Y += (newSize.Height - oldSize.Height) / 2;
                 docview.ViewModel.DocumentController.SetPosition(newPoint);
-	            if (newSize.Width / 2 - newPoint.X > maxOffsetX)
+	            if (newSize.Width - newPoint.X > maxOffsetX)
 	            {
-                    maxOffsetX = newSize.Width / 2 - newPoint.X;
-	            } else if (-(newSize.Width / 2 - newPoint.X - docview.ActualWidth) > maxOffsetX)
+                    maxOffsetX = newSize.Width - newPoint.X;
+	            } else if (-(newSize.Width - newPoint.X - docview.ActualWidth) > maxOffsetX)
 	            {
-	                maxOffsetX = -(newSize.Width / 2 - newPoint.X - docview.ActualWidth);
+	                maxOffsetX = -(newSize.Width - newPoint.X - docview.ActualWidth);
                 }
 
-	            if (newSize.Height / 2 - newPoint.Y > maxOffsetY)
+	            if (newSize.Height - newPoint.Y > maxOffsetY)
 	            {
-	                maxOffsetY = newSize.Height / 2 - newPoint.Y;
-	            } else if (-(newSize.Height / 2 - newPoint.Y - docview.ActualHeight) > maxOffsetY)
+	                maxOffsetY = newSize.Height - newPoint.Y;
+	            } else if (-(newSize.Height - newPoint.Y - docview.ActualHeight) > maxOffsetY)
 	            {
-	                maxOffsetY = -(newSize.Height / 2 - newPoint.Y - docview.ActualHeight);
+	                maxOffsetY = -(newSize.Height - newPoint.Y - docview.ActualHeight);
                 }
 
                 var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docview.ActualWidth,

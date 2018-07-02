@@ -1,4 +1,5 @@
 ﻿using System;
+using Windows.Devices.Input;
 using Windows.Foundation;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -13,6 +14,7 @@ namespace Dash
     public sealed partial class ResizingControls : UserControl
     {
         private TemplateEditorView _parent;
+        private bool _isLeft;
 
         public ResizingControls()
         {
@@ -214,7 +216,10 @@ namespace Dash
         // required for all manipulation deltas to start
         private void OnAllManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
-            e.Handled = true;
+            if (_isLeft)
+            {
+                e.Handled = true;
+            }
         }
 
         private void LeftRightPointerEntered(object sender, PointerRoutedEventArgs e)
@@ -233,6 +238,29 @@ namespace Dash
         }
 
         private void OnAllManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (_isLeft)
+            {
+                e.Handled = true;
+            }
+           
+        }
+
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint((UIElement)sender).Properties.IsLeftButtonPressed)
+            {
+                _isLeft = true;
+            }
+            else
+            {
+                _isLeft = false;
+            }
+
+            e.Handled = true;
+        }
+
+        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
         }
