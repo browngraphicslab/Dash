@@ -53,6 +53,20 @@ namespace Dash
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
             "CollapseColor", typeof(SolidColorBrush), typeof(MenuToolbar), new PropertyMetadata(default(SolidColorBrush)));
 
+        public void ChangeVisibility(bool isVisible)
+        {
+            //Making the command bar collapsed while it is open causes a bug with making it visible again, so we close it first
+            if (!isVisible)
+            {
+                xToolbar.IsOpen = false;
+            }
+            Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+            if (isVisible)
+            {
+                xToolbar.IsOpen = true;
+            }
+        }
+
         public SolidColorBrush CollapseColor
         {
             get { return (SolidColorBrush)GetValue(CollapseColorProperty); }
@@ -777,15 +791,6 @@ namespace Dash
             //toggle night mode styles
             xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
-
-            EnsureVisible();
-        }
-
-        public void EnsureVisible()
-        {
-            //ensure toolbar is visible
-            xToolbar.IsEnabled = true;
-            xToolbar.Visibility = Visibility.Visible;
         }
 
         /// <summary>
