@@ -344,10 +344,10 @@ namespace Dash
 			}
 		}
 
-		//TODO: NEED TO CHANGE FROM APPBARBUTTON TO FONT AWESOME
+
 		private void AlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			var button = sender as FontAwesome;
+			var button = sender as AppBarButton;
 
 			//for each document, align according to what button was pressed
 			foreach (var dvm in DocumentViewModels)
@@ -1162,7 +1162,7 @@ namespace Dash
 		//if we want to change the buttons on hover
 		private void XExpansionGrid_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
-			XAddItemsGrid.Background = new SolidColorBrush(Color.FromArgb(255, 65, 104, 87));
+			//XAddItemsGrid.Background = new SolidColorBrush(Color.FromArgb(255, 65, 104, 87));
 		}
 
 
@@ -1188,7 +1188,6 @@ namespace Dash
 				xBackgroundColorPreviewBox.Fill = brush;
 
 				_backgroundColor = brush;
-
 			}
 		}
 
@@ -1205,28 +1204,27 @@ namespace Dash
 		//highlights ellipse on pointer entered
 		private void Ellipse_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 		{
-			var ellipse = sender as Ellipse;
+			var grid = sender as Grid;
+			var ellipse = grid?.GetFirstDescendantOfType<Ellipse>();
 			if (ellipse != null)
 			{
-				ellipse.Width = 40;
-				ellipse.Height = 40;
-				ellipse.GetFirstAncestorOfType<RelativePanel>().Margin = new Thickness(20, 0, 0, 0);
-				ellipse.Fill = new SolidColorBrush(Color.FromArgb(255, 214, 65, 65));
-				
+				grid.Width = 34;
+				grid.Height = 34;
+				grid.Opacity = 1;
+				//grid.Margin = new Thickness(0, 0, 0, 0);
 			}
-
 		}
 
 		//un-highlights ellipse on pointer exited
 		private void Ellipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
-			var ellipse = sender as Ellipse;
+			var grid = sender as Grid;
+			var ellipse = grid?.GetFirstDescendantOfType<Ellipse>();
 			if (ellipse != null)
 			{
-				ellipse.Width = 30;
-				ellipse.Height = 30;
-				ellipse.Fill = new SolidColorBrush(Color.FromArgb(255, 142, 41, 41));
-				ellipse.GetFirstAncestorOfType<RelativePanel>().Margin = new Thickness(10, 0, 0, 0);
+				grid.Width = 30;
+				grid.Height = 30;
+				grid.Opacity = .75;
 			}
 
 		}
