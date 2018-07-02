@@ -600,12 +600,12 @@ namespace Dash
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
                 _isMarqueeActive = false;
-                e.Handled = true;
+                if (e != null) e.Handled = true;
             }
 
             SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
-            GetOuterGrid().ReleasePointerCapture(e.Pointer);
+            if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
         /// <summary>
@@ -778,6 +778,7 @@ namespace Dash
                     SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                 marquee = _marquee;
                 viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                OnPointerReleased(null, null);
             }
             else
             {
@@ -856,7 +857,8 @@ namespace Dash
             if (XInkCanvas.IsTopmost())
             {
                 _isMarqueeActive = false;
-                RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (!this.IsShiftPressed())
+                    RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
             }
         }
 
@@ -938,6 +940,11 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                PreviewTextbox_LostFocus(null, null);
+                return;
+            }
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))

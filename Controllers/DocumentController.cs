@@ -1076,33 +1076,33 @@ namespace Dash
                 }
             }
 
-            bool needsToExecute = updatedArgs != null;
-            var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
-            var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
-                "_Cache Access Key");
+            //bool needsToExecute = updatedArgs != null;
+            //var id = inputs.Values.Select(f => f.Id).Aggregate(0, (sum, next) => sum + next.GetHashCode());
+            //var key = new KeyController(DashShared.UtilShared.GetDeterministicGuid(id.ToString()),
+            //    "_Cache Access Key");
 
-            //TODO We should get rid of old cache values that aren't necessary at some point
-            var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
-            if (updatedArgs == null)
-            {
-                foreach (var opFieldOutput in opField.Outputs)
-                {
-                    var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
-                    if (field == null)
-                    {
-                        needsToExecute = true;
-                        outputs.Clear();
-                        break;
-                    }
-                    else
-                    {
-                        outputs[opFieldOutput.Key] = field;
-                    }
-                }
-            }
+            ////TODO We should get rid of old cache values that aren't necessary at some point
+            //var cache = GetFieldOrCreateDefault<DocumentController>(KeyStore.OperatorCacheKey);
+            //if (updatedArgs == null)
+            //{
+            //    foreach (var opFieldOutput in opField.Outputs)
+            //    {
+            //        var field = cache.GetFieldOrCreateDefault<DocumentController>(opFieldOutput.Key)?.GetField(key);
+            //        if (field == null)
+            //        {
+            //            needsToExecute = true;
+            //            outputs.Clear();
+            //            break;
+            //        }
+            //        else
+            //        {
+            //            outputs[opFieldOutput.Key] = field;
+            //        }
+            //    }
+            //}
 
 
-            if (needsToExecute)
+            //if (needsToExecute)
             {
                 // execute the operator
                 opField.Execute(inputs, outputs, updatedArgs);
@@ -1111,11 +1111,11 @@ namespace Dash
             // pass the updates along 
             foreach (var fieldModel in outputs)
             {
-                if (needsToExecute)
-                {
-                    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
-                        .SetField(key, fieldModel.Value, true);
-                }
+                //if (needsToExecute)
+                //{
+                //    cache.GetFieldOrCreateDefault<DocumentController>(fieldModel.Key)
+                //        .SetField(key, fieldModel.Value, true);
+                //}
                 var reference = new DocumentFieldReference(Id, fieldModel.Key);
                 context.AddData(reference, fieldModel.Value);
                 if (update)

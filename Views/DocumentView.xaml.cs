@@ -297,7 +297,7 @@ namespace Dash
                     var wasSelected = this.xTargetBorder.BorderThickness.Left > 0;
                     if (ViewModel.IsAdornmentGroup && !wasSelected)
                     {
-                        if (ParentCollection.CurrentView is CollectionFreeformView cview)
+                        if (ParentCollection.CurrentView is CollectionFreeformView)
                         {
                             SelectionManager.DeselectAll();
                         }
@@ -856,8 +856,8 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
@@ -881,7 +881,7 @@ namespace Dash
                     SelectionManager.DeselectAll();
                     SelectionManager.Select(this);
                 }
-                if (SelectionManager.GetSelectedDocumentsInCollection(cfview).Count() > 1 && this.IsShiftPressed())
+                if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                 {
                     cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
