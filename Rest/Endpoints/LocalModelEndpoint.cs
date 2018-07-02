@@ -224,6 +224,11 @@ namespace Dash
             }
         }
 
+        public void DeleteDocuments(IEnumerable<T> documents, Action success, Action<Exception> error)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             ModelDictionary = new Dictionary<string, string>();

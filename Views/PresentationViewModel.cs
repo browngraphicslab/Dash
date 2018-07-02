@@ -11,7 +11,7 @@ namespace Dash.Views
     public class PresentationViewModel
     {
         public ObservableCollection<DocumentController> PinnedNodes { get; set; } = new ObservableCollection<DocumentController>();
-        public ObservableCollection<IntWrapper> PinNumbers { get; set; } = new ObservableCollection<IntWrapper>();
+        public ObservableCollection<int> PinNumbers { get; set; } = new ObservableCollection<int>();
         private ListController<DocumentController> _listController = null;
 
         public PresentationViewModel()
@@ -25,7 +25,7 @@ namespace Dash.Views
             PinnedNodes = new ObservableCollection<DocumentController>(_listController.TypedData);
             for (int i = 1; i <= PinnedNodes.Count; i++)
             {
-                PinNumbers.Add(new IntWrapper(i));
+                PinNumbers.Add(i);
             }
         }
 
@@ -38,7 +38,7 @@ namespace Dash.Views
                     true);
             }
             PinnedNodes.Add(dc);
-            PinNumbers.Add(new IntWrapper(PinnedNodes.Count));
+            PinNumbers.Add(PinnedNodes.Count);
             _listController.Add(dc);
         }
 
@@ -47,16 +47,6 @@ namespace Dash.Views
             PinNumbers.RemoveAt(PinnedNodes.Count-1);
             PinnedNodes.Remove(dc);
             _listController.Remove(dc);
-        }
-    }
-
-    public class IntWrapper
-    {
-        public int Number { get; set; }
-
-        public IntWrapper(int num)
-        {
-            Number = num;
         }
     }
 }

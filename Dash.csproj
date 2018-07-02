@@ -241,6 +241,7 @@
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
+    <Compile Include="Rest\Endpoints\BaseModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
     <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
@@ -513,6 +514,9 @@
     </Compile>
     <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
       <DependentUpon>SearchOperatorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PDFRegionMarker.xaml.cs">
+      <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -1021,6 +1025,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\SearchOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PDFRegionMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

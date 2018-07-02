@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
+    xmlns:system="using:System"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -27,8 +28,8 @@
                 </Grid.ColumnDefinitions>
                 <ListView ItemsSource="{Binding PinNumbers}" SelectionMode="None" IsItemClickEnabled="False" Grid.Column="0">
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:IntWrapper">
-                            <TextBlock Text="{x:Bind Number}" FontSize="20" Foreground="LightGray"/>
+                        <DataTemplate x:DataType="system:Int32">
+                            <TextBlock Text="{x:Bind}" FontSize="20" Foreground="LightGray"/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>

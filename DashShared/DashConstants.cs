@@ -215,6 +215,10 @@ namespace DashShared
             public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
             public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
             public static KeyModel PresentationItemsKey = new KeyModel("5AB85A0A-7983-4E08-8E51-2D53BBFB30FF", "Presentation Items");
+            public static KeyModel DockedDocumentsLeftKey = new KeyModel("0CCFCC20-DAF7-4329-B615-605A54A86014", "Documents docked on the left");
+            public static KeyModel DockedDocumentsTopKey = new KeyModel("5A5AC489-8988-44BE-AC06-AE76CF81FB04", "Documents docked on the top");
+            public static KeyModel DockedDocumentsRightKey = new KeyModel("F9E7580F-2053-49AA-B829-7B7347C65394", "Documents docked on the right");
+            public static KeyModel DockedDocumentsBottomKey = new KeyModel("F6E10E00-1644-40BE-8A9E-0C648FE4B223", "Documents docked on the bottom");
         }
 
         public static class TypeStore
