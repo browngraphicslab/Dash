@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using TypeInfo = DashShared.TypeInfo;
 
 namespace Dash
 {
@@ -264,7 +265,7 @@ namespace Dash
             }
             var typesToString = sortedParams.Select(kv => kv.Value).ToList();
 
-            throw new ScriptExecutionException(new OverloadErrorModel(ambiguous, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typesToString, allParamCounts));
+            throw new ScriptExecutionException(new OverloadErrorModel(ambiguous, funcName.ToString(), args.Select(ct => (ct != null) ? ct.TypeInfo : TypeInfo.None).ToList(), typesToString, allParamCounts));
         }
 
         public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, Op.Name funcName)

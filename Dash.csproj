@@ -188,7 +188,6 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
-    <Compile Include="Controllers\Operators\Binary\NumNegateOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />

@@ -17,7 +17,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var inputs = _parameters.Select(v => v.Execute(scope)).ToList();
+            var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
 
             try
             {

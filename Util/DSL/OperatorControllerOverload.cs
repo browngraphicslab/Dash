@@ -21,14 +21,14 @@ namespace Dash
             var distances = new List<int>(checkAgainst.Count);
             for (var i = 0; i < checkAgainst.Count; i++)
             {
-                var checkType = checkAgainst[i].TypeInfo;
+                var checkType = checkAgainst[i]?.TypeInfo;
                 var thisType = ParamTypes[i].Value.Type;
 
                 if (checkType == thisType)
                 {
                     distances.Add(0);
                 }
-                else if (thisType.HasFlag(checkType))
+                else if (checkType != null && thisType.HasFlag(checkType))
                 {
                     distances.Add(1);
                 }
