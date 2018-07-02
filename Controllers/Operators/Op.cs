@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 // ReSharper disable once CheckNamespace
@@ -45,6 +46,9 @@ namespace Dash
 
             remove_first_char,
             remove_char,
+
+            substring,
+            index,
 
             // BINARY COMPARISONS
 
@@ -147,8 +151,36 @@ namespace Dash
             // NULL EQUIVALENT
 
             invalid,
+
+            // HELP
+
+            help,
         }
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
+
+        public static Dictionary<Name, string> FuncDescriptions = new Dictionary<Name, string>()
+        {
+            [Name.operator_add] = "",
+            [Name.add] = "",
+            [Name.concat] = "",
+            [Name.ambiguous_add_test] = "",
+
+            [Name.operator_subtract] = "",
+            [Name.subtract] = "",
+            [Name.minus] = "",
+
+            [Name.operator_multiply] = "",
+            [Name.multiply] = "",
+            [Name.mult] = "",
+
+            [Name.operator_divide] = "",
+            [Name.div] = "",
+            [Name.divide] = "",
+
+            [Name.operator_modulo] = " Computes the remainder given by the dividend A and divisor B (A % B).\n Example: 10 % 5 = 0, 11 % 6 = 5",
+            [Name.modulo] = "",
+            [Name.mod] = ""
+        };
     }
 }

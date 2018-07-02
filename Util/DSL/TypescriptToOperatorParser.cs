@@ -134,7 +134,7 @@ namespace Dash
                 try
                 {
                     var exec = se?.Execute(scope ?? new Scope());
-                    return new TextController("");
+                    return exec;
                 }
                 catch (ReturnException)
                 {
@@ -466,11 +466,11 @@ namespace Dash
                         new LiteralExpression(new TextController((fieldName as VariableExpression).GetVariableName())),
                     });
                 case SyntaxKind.ElementAccessExpression:
-                    var elemAcessChildren = (node as ElementAccessExpression).Children;
-                    var elemVar = ParseToExpression(elemAcessChildren[0]);
-                    var elemIndex = ParseToExpression(elemAcessChildren[1]);
+                    var elemAcessChildren = (node as ElementAccessExpression)?.Children;
+                    var elemVar = ParseToExpression(elemAcessChildren?[0]);
+                    var elemIndex = ParseToExpression(elemAcessChildren?[1]);
 
-                    return new FunctionExpression(DSL.GetFuncName<ElementAccessOperatorController>(), new List<ScriptExpression>()
+                    return new FunctionExpression(Op.Name.element_access, new List<ScriptExpression>()
                     {
                         elemVar,
                         elemIndex,
@@ -976,8 +976,11 @@ namespace Dash
                     var callExpr = node as CallExpression;
                     var parameters = new List<ScriptExpression>();
 
-                    var keys = OperatorScript.GetOrderedKeyControllersForFunction(Op.Parse(callExpr.IdentifierStr)).ToArray();
-                    int keyIndex = 0;
+                    var funcName = Op.Parse(callExpr?.IdentifierStr);
+                    if (funcName == Op.Name.invalid) throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(callExpr?.IdentifierStr));
+
+                    var keys = OperatorScript.GetOrderedKeyControllersForFunction(funcName).ToArray();
+                    var keyIndex = 0;
                     foreach (var arg in callExpr.Arguments)
                     {
                         parameters.Add(ParseToExpression(arg));

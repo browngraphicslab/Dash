@@ -189,8 +189,11 @@
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
+    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
+    <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
+    <Compile Include="Util\DSL\IndexOutOfBoundsErrorModel.cs" />
     <Compile Include="Util\DSL\InvalidListCreationErrorModel.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
@@ -307,6 +310,7 @@
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
+    <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">

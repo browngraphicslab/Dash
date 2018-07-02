@@ -1,16 +1,17 @@
-﻿namespace Dash
+﻿// ReSharper disable once CheckNamespace
+namespace Dash
 {
-    public class FunctionCallMissingScriptErrorModel : ScriptErrorModel
+    public class FunctionCallMissingScriptErrorModel : ScriptExecutionErrorModel
     {
-        public FunctionCallMissingScriptErrorModel(string attemptedFunction)
-        {
-            AttemptedFunction = attemptedFunction;
-        }
+        public FunctionCallMissingScriptErrorModel(string attemptedFunction) => AttemptedFunction = attemptedFunction;
+
         public string AttemptedFunction { get; }
 
         public override string GetHelpfulString()
         {
-            return $"A function was given but not called.  Attemped Function: {AttemptedFunction}";
+            return
+                $" Exception:\n            InvalidFunctionCall\n      Feedback:\n            {AttemptedFunction}() is not currently implemented. Type <return help> for a complete catalog of valid functions." +
+                "\n            Would you like to define this function? <Yes> / <No>";
         }
     }
 
