@@ -17,6 +17,8 @@ namespace Dash
 
         public DSL(Scope scope = null) => _scope = new Scope(scope);
 
+        public DSL(OuterReplScope scope) => _scope = scope;
+
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try

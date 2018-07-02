@@ -68,6 +68,10 @@ namespace Dash
         public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
         public static KeyController SettingsMarkdownModeKey = new KeyController(DashConstants.KeyStore.SettingsMarkdownModeKey);
 
+        public static KeyController ReplInputsKey = new KeyController(DashConstants.KeyStore.ReplInputsKey);
+        public static KeyController ReplOutputsKey = new KeyController(DashConstants.KeyStore.ReplOutputsKey);
+        public static KeyController ReplScopeKey = new KeyController(DashConstants.KeyStore.ReplScopeKey);
+
         public static class SearchResultDocumentOutline
         {
             public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("4ACEB999-6E82-4B40-9602-BD6D362CAC54", "_searchResultTitle"));

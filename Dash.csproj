@@ -294,6 +294,7 @@
     <Compile Include="Util\DSL\AbsentStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\OuterReplScope.cs" />
     <Compile Include="Util\DSL\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />

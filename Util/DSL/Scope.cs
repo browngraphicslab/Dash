@@ -10,7 +10,7 @@ namespace Dash
 
         private FieldControllerBase _returnValue;
 
-        private readonly Dictionary<string, FieldControllerBase> _dictionary;
+        internal Dictionary<string, FieldControllerBase> _dictionary;
         public Scope Parent;
 
         public Scope(IDictionary<string, FieldControllerBase> existingScope = null) { _dictionary = existingScope != null ? new Dictionary<string, FieldControllerBase>(existingScope) : new Dictionary<string, FieldControllerBase>(); }
@@ -30,7 +30,7 @@ namespace Dash
             set => SetVariable(variableName, value);
         }
 
-        public void DeclareVariable(string variableName, FieldControllerBase valueToSet)
+        public virtual void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
             //TODO: Throw exception or provide feedback if attempted duplicate declaration
             if (GetVariable(variableName) != null) return;
@@ -40,7 +40,7 @@ namespace Dash
             DishReplView.NewVariable(variableName);
         }
 
-        public void SetVariable(string variableName, FieldControllerBase valueToSet)
+        public virtual void SetVariable(string variableName, FieldControllerBase valueToSet)
         {
             var child = this;
             while (child != null && !child._dictionary.ContainsKey(variableName)) { child = child.Parent; }

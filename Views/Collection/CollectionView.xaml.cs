@@ -133,7 +133,7 @@ namespace Dash
                 newRepl.Click += (sender, e) =>
                 {
                     var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishReplBox(null, where.X, where.Y, 300, 200).Document;
+                    var note = new DishReplBox(where.X, where.Y, 300, 200).Document;
                     Actions.DisplayDocument(ViewModel, note, where);
                 };
                 contextMenu.Items.Add(newRepl);
