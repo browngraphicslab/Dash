@@ -1,4 +1,10 @@
 ﻿
+using Dash.Controllers;
+using Dash.FontIcons;
+using Dash.Models.DragModels;
+using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Animations;
+using Syncfusion.UI.Xaml.Controls.Media;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,9 +12,7 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -16,37 +20,20 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using Dash.Annotations;
-using Dash.Controllers;
-using Dash.Converters;
-using Dash.FontIcons;
-using Dash.Models.DragModels;
-using DashShared;
-using Flurl.Util;
-using Microsoft.Office.Interop.Word;
-using Microsoft.Toolkit.Uwp.UI.Animations;
-using Syncfusion.Pdf.Graphics;
-using Syncfusion.UI.Xaml.Controls.Media;
-using Border = Windows.UI.Xaml.Controls.Border;
-using FontAwesomeIcon = Dash.FontIcons.FontAwesomeIcon;
 using Point = Windows.Foundation.Point;
-using Task = System.Threading.Tasks.Task;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-	public sealed partial class TemplateEditorView : UserControl
+    public sealed partial class TemplateEditorView : UserControl
 	{
 		public DocumentController LayoutDocument { get; set; }
 		public DocumentController DataDocument { get; set; }
@@ -221,8 +208,13 @@ namespace Dash
 			xItemsControl.ItemsSource = DocumentViewModels;
 
 			xOuterPanel.BorderThickness = new Thickness(0, 2, 0, 0);
+		    Bounds = new Rect(0, 0, 70, 70);
+		    var resizer = new ResizingControls(this);
 
-			DataDocument.SetField(KeyStore.DocumentContextKey,
+            xOuterWorkspace.Children.Add(resizer);
+		    RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
+		    RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
+            DataDocument.SetField(KeyStore.DocumentContextKey,
 				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
 			//listen for any changes to the collection
 			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
@@ -1231,5 +1223,49 @@ namespace Dash
 			}
 
 		}
+
+	    public Rect Bounds;
+
+	    public void ResizeCanvas(Size newSize)
+	    {
+	        var oldSize = new Size(xWorkspace.Width, xWorkspace.Height);
+	        xWorkspace.Width = newSize.Width;
+	        xWorkspace.Height = newSize.Height;
+	        var rect = new Rect(0, 0, newSize.Width, newSize.Height);
+	        var rectGeo = new RectangleGeometry { Rect = rect };
+	        xWorkspace.Clip = rectGeo;
+	        double maxOffsetX = 70;
+	        double maxOffsetY = 70;
+	        foreach (var docview in DocumentViews)
+	        {
+	            var point = docview.ViewModel.DocumentController.GetPosition();
+	            var newPoint = point.Value;
+	            newPoint.X += (newSize.Width - oldSize.Width) / 2;
+	            newPoint.Y += (newSize.Height - oldSize.Height) / 2;
+                docview.ViewModel.DocumentController.SetPosition(newPoint);
+	            if (newSize.Width / 2 - newPoint.X > maxOffsetX)
+	            {
+                    maxOffsetX = newSize.Width / 2 - newPoint.X;
+	            } else if (-(newSize.Width / 2 - newPoint.X - docview.ActualWidth) > maxOffsetX)
+	            {
+	                maxOffsetX = -(newSize.Width / 2 - newPoint.X - docview.ActualWidth);
+                }
+
+	            if (newSize.Height / 2 - newPoint.Y > maxOffsetY)
+	            {
+	                maxOffsetY = newSize.Height / 2 - newPoint.Y;
+	            } else if (-(newSize.Height / 2 - newPoint.Y - docview.ActualHeight) > maxOffsetY)
+	            {
+	                maxOffsetY = -(newSize.Height / 2 - newPoint.Y - docview.ActualHeight);
+                }
+
+                var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docview.ActualWidth,
+	                xWorkspace.Clip.Rect.Height - docview.ActualHeight);
+	            docview.Bounds = new RectangleGeometry { Rect = bounds };
+            }
+
+	        Bounds.Width = maxOffsetX;
+	        Bounds.Height = maxOffsetY;
+	    }
 	}
 }

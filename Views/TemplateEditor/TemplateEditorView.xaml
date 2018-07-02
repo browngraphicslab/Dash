@@ -45,14 +45,13 @@
             </ScrollViewer>
 
             <!--Panel that holds Canvas-->
-                <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"  >
-                    <Canvas  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Width="300" Height="400" Background="White" HorizontalAlignment="Center"
+                <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}" x:Name="xOuterWorkspace" >
+                    <Canvas  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public"
                     x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <ItemsControl x:Name="xItemsControl"
                               x:FieldModifier="public"
-                              ItemsSource="{Binding DocumentViewModels}"
-                              >
+                              ItemsSource="{Binding DocumentViewModels}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Canvas x:Name="xCollectionCanvas"

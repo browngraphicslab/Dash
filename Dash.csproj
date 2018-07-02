@@ -783,6 +783,9 @@
     <Compile Include="Views\TemplateEditor\KeyValueTemplatePane.xaml.cs">
       <DependentUpon>KeyValueTemplatePane.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TemplateEditor\ResizingControls.xaml.cs">
+      <DependentUpon>ResizingControls.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
       <DependentUpon>TemplateEditorView.xaml</DependentUpon>
     </Compile>
@@ -1240,6 +1243,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TemplateEditor\KeyValueTemplatePane.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemplateEditor\ResizingControls.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
