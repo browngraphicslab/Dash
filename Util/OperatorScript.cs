@@ -212,62 +212,8 @@ namespace Dash
                 distances = distances.Where(pair => pair.Value[j] == min).ToList();
             }
 
-            if (distances.Count == 0)
-            {
-                //No valid overloads
-                var properNumParams = false;
-                var typeSublists = new List<KeyValuePair<int, string>>();
-                var allParamCounts = new List<int>();
-                var overloadUnpacking = overloads.Select(ct => ct.ParamTypes).ToList();
-                foreach (var listKv in overloadUnpacking)
-                {
-                    var typeInfoList = listKv.Select(kv => kv.Value.Type).ToList();
-                    var numParams = typeInfoList.Count;
-                    if (args.Count == numParams) properNumParams = true;
-                    if (!allParamCounts.Contains(numParams)) allParamCounts.Add(numParams);
-                    typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})"));
-                }
-
-                var oneElement = typeSublists.Count == 1;
-                var sortedParams = typeSublists.OrderBy(x => x.Key).ToList();
-
-                if (properNumParams)
-                {
-                    var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
-                    sortedParams.RemoveAll(kv => kv.Key == args.Count);
-                    if (!oneElement) properTypes.Add(new KeyValuePair<int, string>(0, "\n      ^^"));
-                    properTypes.AddRange(sortedParams);
-                    sortedParams = properTypes;
-                }
-                else
-                {
-                    var ordered = new List<KeyValuePair<int, string>>();
-                    var below = sortedParams.Where(kv => kv.Key < args.Count).ToList();
-                    var above = sortedParams.Where(kv => kv.Key > args.Count).ToList();
-                    ordered.AddRange(below);
-                    if (!oneElement) ordered.Add(new KeyValuePair<int, string>(0, "\n      --> ?"));
-                    ordered.AddRange(above);
-                    sortedParams = ordered;
-                }
-                var typesToString = sortedParams.Select(kv => kv.Value).ToList();
-
-                throw new ScriptExecutionException(new OverloadErrorModel(false, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typesToString, allParamCounts));
-            }
-
-            if (distances.Count > 1)
-            {
-                //Ambiguous overloads
-                var typeSublists = new List<string>();
-                var paramCounts = new List<int>();
-                var overloadUnpacking = overloads.Select(ct => ct.ParamTypes).ToList();
-                foreach (var listKv in overloadUnpacking)
-                {
-                    var typeInfoList = listKv.Select(kv => kv.Value.Type).ToList();
-                    typeSublists.Add($"\n            ({string.Join(", ", typeInfoList)})");
-                    if (!paramCounts.Contains(typeInfoList.Count)) paramCounts.Add(typeInfoList.Count);
-                }
-                throw new ScriptExecutionException(new OverloadErrorModel(true, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typeSublists, paramCounts));
-            }
+            if (distances.Count == 0) ProcessOverloadErrors(false, overloads, args, funcName);
+            if (distances.Count > 1) ProcessOverloadErrors(true, distances.Select(kv => kv.Key).ToList(), args, funcName);
 
             var t = distances[0].Key.OperatorType;
             var op = (OperatorController)Activator.CreateInstance(t);
@@ -277,6 +223,48 @@ namespace Dash
 
             op.Execute(inputs, outDict, null, scope);
             return outDict.Count == 0 ? null : outDict.First().Value;
+        }
+
+        private static void ProcessOverloadErrors(bool ambiguous, IEnumerable<OperatorControllerOverload> overloads, IReadOnlyCollection<FieldControllerBase> args, Op.Name funcName)
+        {
+            var properNumParams = false;
+            var typeSublists = new List<KeyValuePair<int, string>>();
+            var allParamCounts = new List<int>();
+
+            foreach (var overload in overloads)
+            {
+                var typeInfoList = overload.ParamTypes.Select(kv => kv.Value.Type).ToList();
+                var numParams = typeInfoList.Count;
+                if (args.Count == numParams) properNumParams = true;
+                if (!allParamCounts.Contains(numParams)) allParamCounts.Add(numParams);
+                var operatorInfo = ambiguous ? $" -> {overload.OperatorType.ToString().Substring(5)}" : "";
+                typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})" + operatorInfo));
+            }
+
+            var oneElement = typeSublists.Count == 1;
+            var sortedParams = typeSublists.OrderBy(x => x.Key).ToList();
+
+            if (properNumParams)
+            {
+                var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
+                sortedParams.RemoveAll(kv => kv.Key == args.Count);
+                if (!oneElement && !ambiguous) properTypes.Add(new KeyValuePair<int, string>(0, "\n      ^^"));
+                properTypes.AddRange(sortedParams);
+                sortedParams = properTypes;
+            }
+            else
+            {
+                var ordered = new List<KeyValuePair<int, string>>();
+                var below = sortedParams.Where(kv => kv.Key < args.Count).ToList();
+                var above = sortedParams.Where(kv => kv.Key > args.Count).ToList();
+                ordered.AddRange(below);
+                if (!oneElement && !ambiguous) ordered.Add(new KeyValuePair<int, string>(0, "\n      --> ?"));
+                ordered.AddRange(above);
+                sortedParams = ordered;
+            }
+            var typesToString = sortedParams.Select(kv => kv.Value).ToList();
+
+            throw new ScriptExecutionException(new OverloadErrorModel(ambiguous, funcName.ToString(), args.Select(ct => ct.TypeInfo).ToList(), typesToString, allParamCounts));
         }
 
         public static ReferenceController CreateDocumentForOperator(IEnumerable<KeyValuePair<KeyController, FieldControllerBase>> parameters, Op.Name funcName)

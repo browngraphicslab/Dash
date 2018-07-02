@@ -191,7 +191,7 @@
     <Compile Include="Controllers\Operators\Binary\NumNegateOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
-    <Compile Include="Controllers\Operators\TestAddOperatorControllerFour.cs" />
+    <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Util\DSL\InvalidListCreationErrorModel.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
     <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
