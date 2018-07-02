@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Converters;
 using DashShared;
+using Color = Windows.UI.Color;
+using Point = Windows.Foundation.Point;
+using Size = Windows.Foundation.Size;
 
 namespace Dash
 {
@@ -18,7 +22,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("21D67C5E-9A2E-42C8-975A-AD60C728DDAE", "Template Box");
         private static readonly string PrototypeId = "159D2321-FBB4-4A2D-9902-9BDE105CABEF";
-	    public static Grid grid;
+	    //public static Grid grid;
 
         public TemplateBox(double x = 0, double y = 0, double w = 200, double h = 200)
         {
@@ -26,15 +30,27 @@ namespace Dash
             SetupDocument(DocumentType, PrototypeId, "Template Prototype Layout", fields);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
-        {
-	        grid = new Grid()
+	    public static SolidColorBrush GetSolidColorBrush(string hex)
+	    {
+		    if (hex == null) return new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
+		    hex = hex.Replace("#", string.Empty);
+		    byte a = (byte)(Convert.ToUInt32(hex.Substring(0, 2), 16));
+		    byte r = (byte)(Convert.ToUInt32(hex.Substring(2, 2), 16));
+		    byte g = (byte)(Convert.ToUInt32(hex.Substring(4, 2), 16));
+		    byte b = (byte)(Convert.ToUInt32(hex.Substring(6, 2), 16));
+		    SolidColorBrush myBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(a, r, g, b));
+		    return myBrush;
+	    }
+
+		public static FrameworkElement MakeView(DocumentController docController, Context context)
+		{
+			var grid = new Grid()
 	        {
 		        // default size of the template editor box's workspace
 		        Width = 300,
 		        Height = 400,
-				Background = new SolidColorBrush(Colors.White),
-	        };
+				Background = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data)
+			};
             
             LayoutDocuments(docController, context, grid);
 
@@ -74,7 +90,7 @@ namespace Dash
             return grid;
         }
 
-        private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
+	    private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
         {
             // get the list of layout documents and layout each one on the grid
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();

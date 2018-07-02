@@ -1181,8 +1181,8 @@ namespace Dash
 				xWorkspace.Background = brush;
 				//update color preview box
 				xBackgroundColorPreviewBox.Fill = brush;
-
-				_backgroundColor = brush;
+				//update key
+				DataDocument.SetField<TextController>(KeyStore.BackgroundColorKey, color.ToString(), true);
 			}
 		}
 
