@@ -862,10 +862,10 @@ namespace Dash
                         var exprs = new List<ScriptExpression>();
                         for (int i = 0; i < children.Length - 1; i++)
                         {
-                            var expr = ParseToExpression(node.Children[i]);
+                             var expr = ParseToExpression(node.Children[i]);
                             if (expr != null)
                             {
-                                exprs.Add(ParseToExpression(node.Children[i]));
+                                exprs.Add(expr);
                             }
                         }
                         return new ExpressionChain(exprs);

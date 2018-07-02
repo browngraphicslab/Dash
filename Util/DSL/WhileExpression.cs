@@ -23,7 +23,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var inputs = new Dictionary<KeyController, FieldControllerBase>
+           var inputs = new Dictionary<KeyController, FieldControllerBase>
             {
                 { WhileOperatorController.BoolKey, _parameters[WhileOperatorController.BoolKey].Execute(scope) }
             };
@@ -53,9 +53,11 @@ namespace Dash
 
                     try
                     {
+                        var newOutput = OperatorScript.Run(_opName, inputs.Values.ToList(), scope);
                         if (_output != _recursiveError)
                         {
-                            //_output = OperatorScript.Run(_opName, inputs, scope);
+
+                            _output = newOutput;
                         }
                     }
                     catch (Exception)

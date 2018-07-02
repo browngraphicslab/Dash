@@ -1,14 +1,23 @@
-﻿using System;
+﻿using Dash.Models.DragModels;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Dash.Models.DragModels;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,7 +31,7 @@ namespace Dash
 
         private int _currentHistoryIndex = 0;
 
-        private static List<string> _dataset;
+        private static List<String> _dataset;
         private bool _textModified;
 
         private string _currentText = "";
@@ -70,11 +79,14 @@ namespace Dash
         {
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
-        private void MoveCursorToEnd(int? end = null)
+
+        private void moveCursorToEnd(int? end = null)
         {
-            if (xTextBox.Text.Length == 0) return;
-            xTextBox.SelectionStart = end ?? xTextBox.Text.Length;
-            xTextBox.SelectionLength = 0;
+            if (xTextBox.Text.Length != 0)
+            {
+                xTextBox.SelectionStart = end ?? xTextBox.Text.Length;
+                xTextBox.SelectionLength = 0;
+            }
         }
 
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
@@ -92,7 +104,7 @@ namespace Dash
                          {
                         _currentHistoryIndex++;
                         xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
-                             MoveCursorToEnd();
+                             moveCursorToEnd();
                          }
 
                         TextHeight = 50;
@@ -105,12 +117,12 @@ namespace Dash
                         {
                             _currentHistoryIndex--;
                             xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
-                            MoveCursorToEnd();
+                            moveCursorToEnd();
                         } else if (index == numItem)
                         {
                             _currentHistoryIndex--;
                             xTextBox.Text = _typedText;
-                            MoveCursorToEnd();
+                            moveCursorToEnd();
                     }
 
                         var numEnter = xTextBox.Text.Split('\r').Length - 1;
@@ -123,7 +135,7 @@ namespace Dash
             _currentText = xTextBox.Text;
         }
 
-        private string StringDiff(string a, string b, bool remove = false)
+        private string stringDiff(string a, string b, bool remove = false)
         {
             //a is the longer string
             var aL = a.ToCharArray();
@@ -159,9 +171,10 @@ namespace Dash
             {
                 var addedText = ' ';
 
-                var textDiff = StringDiff(xTextBox.Text, _currentText);
+                var textDiff = stringDiff(xTextBox.Text, _currentText);
 
-                if (textDiff == "\r" && !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+                if (textDiff == "\r" &&
+                    !Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                 {
                     //enter pressed without shift - send code to terminal
 
@@ -171,7 +184,7 @@ namespace Dash
 
                     _currentHistoryIndex = 0;
                     //get text replacing newlines with spaces
-                    var currentText = StringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
+                    var currentText = stringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
                     xTextBox.Text = "";
                     FieldControllerBase returnValue;
                     try
@@ -188,13 +201,13 @@ namespace Dash
                     //scroll to bottom
                     xScrollViewer.UpdateLayout();
                     xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
-                }
-                else if(textDiff == "\r")
+                } else if(textDiff == "\r")
                 {
                     //if enter is pressed, make text box larger
                     TextHeight = TextHeight + 20;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
+
                 else if (xTextBox.Text != "")
                 {
                     //only give suggestions on last word
@@ -273,7 +286,7 @@ namespace Dash
 
             xTextBox.Text = keepText + selectedItem + functionEnding;
             xTextBox.Focus(FocusState.Pointer);
-            MoveCursorToEnd((keepText + selectedItem).Length + offset);
+            moveCursorToEnd((keepText + selectedItem).Length + offset);
 
             SuggestionsPopup.IsOpen = false;
             SuggestionsPopup.Visibility = Visibility.Collapsed;
@@ -287,7 +300,8 @@ namespace Dash
             var dataBox = new DataBox(outputData).Document;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+            args.Data.RequestedOperation =
+                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
