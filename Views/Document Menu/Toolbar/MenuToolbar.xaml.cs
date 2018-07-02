@@ -152,6 +152,7 @@ namespace Dash
             Loaded += (sender, args) =>
             {
                 xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
+                xFloating.Floating_SizeChanged(null, null);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
