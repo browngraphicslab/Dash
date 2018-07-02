@@ -1203,10 +1203,9 @@ namespace Dash
 			var ellipse = grid?.GetFirstDescendantOfType<Ellipse>();
 			if (ellipse != null)
 			{
-				grid.Width = 34;
-				grid.Height = 34;
+				grid.Width = 29;
+				grid.Height = 29;
 				grid.Opacity = 1;
-				//grid.Margin = new Thickness(0, 0, 0, 0);
 			}
 		}
 
@@ -1217,8 +1216,8 @@ namespace Dash
 			var ellipse = grid?.GetFirstDescendantOfType<Ellipse>();
 			if (ellipse != null)
 			{
-				grid.Width = 30;
-				grid.Height = 30;
+				grid.Width = 25;
+				grid.Height = 25;
 				grid.Opacity = .75;
 			}
 

@@ -18,6 +18,7 @@ namespace Dash
     {
         public static DocumentType DocumentType = new DocumentType("21D67C5E-9A2E-42C8-975A-AD60C728DDAE", "Template Box");
         private static readonly string PrototypeId = "159D2321-FBB4-4A2D-9902-9BDE105CABEF";
+	    public static Grid grid;
 
         public TemplateBox(double x = 0, double y = 0, double w = 200, double h = 200)
         {
@@ -27,12 +28,14 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            // default size of the template editor box's workspace
-            var grid = new Grid
-            {
-                Width = 300,
-                Height = 400,
-            };
+	        grid = new Grid()
+	        {
+		        // default size of the template editor box's workspace
+		        Width = 300,
+		        Height = 400,
+				Background = new SolidColorBrush(Colors.White),
+	        };
+            
             LayoutDocuments(docController, context, grid);
 
             grid.Clip = new RectangleGeometry();

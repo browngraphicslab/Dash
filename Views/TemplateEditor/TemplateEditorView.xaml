@@ -75,12 +75,12 @@
                 </Canvas>
 
                     <!--ELLIPSES-->
-                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="10, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
-                        <StackPanel x:Name="xEllipseStack" Spacing="10" Width="36" Height="120">
+                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                        <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
                             <!--Apply button -->
-                            <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
+                            <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
                             <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
-                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="Apply Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                 />
@@ -88,18 +88,18 @@
                             </Grid>
                             
                          <!--Revert Ellipse -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" VerticalAlignment="Center">
+                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
                             <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
-                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="Revert Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                 />
                             </ToolTipService.ToolTip>
                         </Grid>
                         <!--Clear Template Ellipse -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="30" Height="30" Opacity=".75" VerticalAlignment="Bottom">
+                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Bottom">
                             <Ellipse x:Name="xClearEllipse" Fill="#D64141" />
-                                <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <ToolTipService.ToolTip>
                                     <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                     />
