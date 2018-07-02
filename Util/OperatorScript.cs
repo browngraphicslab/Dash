@@ -70,6 +70,16 @@ namespace Dash
             }
         }
 
+        public static IEnumerable<OperatorControllerOverload> GetOverloadsFor(Op.Name funcName) => _functionMap[funcName];
+
+        public static TextController GetFunctionList()
+        {
+            var functionNames = _functionMap.Select(k => k.Key.ToString()).ToList();
+            functionNames.Sort();
+            var output = functionNames.Aggregate("", (current, functionName) => current + $"\n {functionName} -> +{_functionMap[Op.Parse(functionName)].Count}");
+            return new TextController(output + "\n");
+        }
+
         private static void PrintDocumentation(string funcName, OperatorController op)
         {
             var doc = op.Outputs[0].Value.ToString() + "   " + funcName + "( " + string.Join(',', op.Inputs.Select(i => " " + i.Value.Type.ToString() + "  " + i.Key.Name.ToLower())) + " );";

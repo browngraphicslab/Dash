@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class IOInfo : ISerializable
@@ -35,9 +36,11 @@ namespace Dash
         private readonly Op.Name[] _names;
         public double Version;
 
-        public OperatorTypeAttribute(params Op.Name[] names) //Cant pass enumerable to type attribute consrtructor.  Hacky but it works and shouldn't need to scale much
+        public OperatorTypeAttribute(params Op.Name[] names)
         {
-            _names = names;
+            var namesWithUniversalEnums = names.ToList();
+            //namesWithUniversalEnums.Add(Op.Name.help);
+            _names = namesWithUniversalEnums.ToArray();
 
             // Default value.
             Version = 1.0;

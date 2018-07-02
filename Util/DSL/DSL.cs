@@ -11,11 +11,17 @@ namespace Dash
     /// This class can be instantiated to use local state, 
     /// or can be used as a Public static API for using DSL
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     public class DSL
     {
         private readonly Scope _scope;
 
-        public DSL(Scope scope = null) => _scope = new Scope(scope);
+        public DSL(Scope scope = null)
+        {
+            scope?.DeclareVariable("help", OperatorScript.GetFunctionList());
+            scope?.DeclareVariable("<?>", OperatorScript.GetFunctionList());
+            _scope = new Scope(scope);
+        }
 
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {

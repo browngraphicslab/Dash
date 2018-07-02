@@ -55,6 +55,6 @@ namespace Dash
             outputs[ComputedResultKey] = newList ?? throw new ScriptExecutionException(new InvalidListCreationErrorModel(source.TypeInfo));
         }
 
-        public override FieldControllerBase GetDefaultController() => new RemoveCharOperatorController();
+        public override FieldControllerBase GetDefaultController() => new ToListOperatorController();
     }
 }
