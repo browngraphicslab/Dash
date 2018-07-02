@@ -123,7 +123,7 @@ namespace Dash
         private BitmapImage unpinnedIcon;
         private BitmapImage pinnedIcon;
         private bool containsInternalContent;
-        private TemplateEditorView _temp;
+        
 
         // == CONSTRUCTORS ==
         /// <summary>
@@ -862,13 +862,7 @@ namespace Dash
 
        
 		
-        private void XTemplate_OnChecked(object sender, RoutedEventArgs e)
-        {
-        }
-
-		private void XTemplate_OnUnchecked(object sender, RoutedEventArgs e)
-        {
-        }
+      
 		
 
         private void xRedo_Click(object sender, RoutedEventArgs e)

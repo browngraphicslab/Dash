@@ -462,9 +462,6 @@
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\TemplateSubtoolbar.xaml.cs">
-      <DependentUpon>TemplateSubtoolbar.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
       <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
     </Compile>
@@ -987,10 +984,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Document Menu\Toolbar\MenuToolbar.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\Toolbar\TemplateSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
