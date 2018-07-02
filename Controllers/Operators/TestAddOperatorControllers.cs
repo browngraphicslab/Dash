@@ -92,4 +92,84 @@ namespace Dash
             outputs[OutputKey] = new NumberController(a);
         }
     }
+
+    [OperatorType(Op.Name.ambiguous_add_test)]
+    public class TestAddOperatorControllerInheritanceA : OperatorController
+    {
+        public static readonly KeyController AKey = new KeyController("A4D2EB11-F510-4673-ADBB-3CE7E2B03443", "A");
+        public static readonly KeyController BKey = new KeyController("22A6B883-F8DC-4BEA-BB50-EC07B3CA5389", "B");
+
+        public static readonly KeyController OutputKey = new KeyController("FA30068B-70EA-4AA8-9FEB-3079ED52D526", "Output");
+
+        public TestAddOperatorControllerInheritanceA() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+
+        public TestAddOperatorControllerInheritanceA(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        {
+        }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("21509C51-0134-421B-A1A7-4833DCAFCDC4", "Test Add inheritance-based ambiguity");
+
+        public override FieldControllerBase GetDefaultController() => new TestAddOperatorControllerInheritanceA();
+
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+        {
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Any, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Number, true)),
+        };
+
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        {
+            [OutputKey] = TypeInfo.Number
+        };
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        {
+            var a = ((NumberController)inputs[AKey]).Data;
+            var b = ((NumberController)inputs[BKey]).Data;
+            outputs[OutputKey] = new NumberController(a + b);
+        }
+    }
+
+    [OperatorType(Op.Name.ambiguous_add_test)]
+    public class TestAddOperatorControllerInheritanceB : OperatorController
+    {
+        public static readonly KeyController AKey = new KeyController("EB1A56DB-2CE3-4523-80F0-8CC9148ADAAE", "A");
+        public static readonly KeyController BKey = new KeyController("6B307973-DEF8-444F-B88E-8E5E046AE581", "B");
+
+        public static readonly KeyController OutputKey = new KeyController("313AAE53-B58B-433A-869A-C6C96A4EE345", "Output");
+
+        public TestAddOperatorControllerInheritanceB() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+
+        public TestAddOperatorControllerInheritanceB(OperatorModel operatorFieldModel) : base(operatorFieldModel)
+        {
+        }
+
+        public override KeyController OperatorType { get; } = TypeKey;
+        private static readonly KeyController TypeKey = new KeyController("BC3963BC-9AFC-4122-823F-2427FE54B336", "Test Add inheritance-based ambiguity");
+
+        public override FieldControllerBase GetDefaultController() => new TestAddOperatorControllerInheritanceB();
+
+        public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
+        {
+            new KeyValuePair<KeyController, IOInfo>(AKey, new IOInfo(TypeInfo.Number, true)),
+            new KeyValuePair<KeyController, IOInfo>(BKey, new IOInfo(TypeInfo.Any, true)),
+        };
+
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
+        {
+            [OutputKey] = TypeInfo.Number
+        };
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
+            Dictionary<KeyController, FieldControllerBase> outputs,
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        {
+            var a = ((NumberController)inputs[AKey]).Data;
+            var b = ((NumberController)inputs[BKey]).Data;
+            outputs[OutputKey] = new NumberController(a + b);
+        }
+    }
 }

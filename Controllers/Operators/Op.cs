@@ -20,6 +20,7 @@ namespace Dash
             operator_add,
             add,
             concat,
+            ambiguous_add_test,
 
             operator_subtract,
             subtract,
