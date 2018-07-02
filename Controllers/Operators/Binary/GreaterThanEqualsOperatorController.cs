@@ -1,6 +1,6 @@
 ﻿namespace Dash
 {
-    [OperatorType(Op.Name.greater_than_equals)]
+    [OperatorType(Op.Name.greater_than_equals, Op.Name.operator_greater_than_equals)]
     public class GreaterThanEqualsOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public GreaterThanEqualsOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }

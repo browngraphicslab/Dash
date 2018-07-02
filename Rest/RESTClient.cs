@@ -18,7 +18,7 @@ namespace Dash
         {
             if (!_dict.ContainsKey(typeof(T)))
             {
-                _dict[typeof(T)] = new ContentUpdatingEndpointWrapper<T>(App.Instance.Container.GetRequiredService<IModelEndpoint<T>>());
+                _dict[typeof(T)] = new ContentUpdatingEndpointWrapper<T>((BaseModelEndpoint<T>)App.Instance.Container.GetRequiredService<IModelEndpoint<T>>());
             }
             return (_dict[typeof(T)]) as IModelEndpoint<T>;
         }
