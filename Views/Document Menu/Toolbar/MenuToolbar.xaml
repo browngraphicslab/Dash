@@ -42,7 +42,7 @@
 
                 <AppBarButton x:Name="xCopy" Icon="Copy" IsEnabled="False" Opacity="0.5" Label="Duplicate" Click="Copy"/>
                 <AppBarButton x:Name="xDelete" Icon="Delete" IsEnabled="False" Opacity="0.5" Label="Delete" Click="Delete"/>
-                <AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>
+                <!--<AppBarToggleButton x:Name="xTemplate" Icon="PreviewLink" Label="Template" Checked="XTemplate_OnChecked" Unchecked="XTemplate_OnUnchecked"/>-->
 
                 <AppBarSeparator x:Name="xSepFour"/>
 

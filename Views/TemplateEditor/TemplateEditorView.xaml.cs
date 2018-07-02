@@ -67,6 +67,7 @@ namespace Dash
 		private Windows.UI.Color _color;
 		DataPackage dataPackage = new DataPackage();
 
+
 		public SolidColorBrush _backgroundColor = new SolidColorBrush(Colors.White);
 
 		public TemplateEditorView()
@@ -161,16 +162,18 @@ namespace Dash
 						new PointerReferenceController(
 							doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
 				}
+		    }
 
-				// create new viewmodel with a copy of document, set editor to this
-				var dvm =
-					new DocumentViewModel(doc, new Context(doc));
-				DocumentViewModels.Add(dvm);
-				// adds layout doc to list of layout docs
-				DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).Add(dvm.LayoutDocument);
-			}
+		    // create new viewmodel with a copy of document, set editor to this
+		    var dvm =
+		        new DocumentViewModel(doc, new Context(doc));
+		    DocumentViewModels.Add(dvm);
+            // adds layout doc to list of layout docs
+		    var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+		    datakey.Add(dvm.LayoutDocument);
+		    DataDocument.SetField(KeyStore.DataKey, datakey, true);
 
-			xItemsControl.ItemsSource = DocumentViewModels;
+            xItemsControl.ItemsSource = DocumentViewModels;
 		}
 
 		private void XSwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -226,8 +229,8 @@ namespace Dash
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
 		}
-
-		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
+        
+	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
 		}
@@ -235,7 +238,7 @@ namespace Dash
 		// when the "Add Text" button is clicked, this adds a text box to the template preview
 		private void TextButton_OnClick(object sender, RoutedEventArgs e)
 		{
-			DocumentControllers.Add(new RichTextNote("New text box").Document);
+            DocumentControllers.Add(new RichTextNote("New text box").Document);
 		}
 
 		private async void ImageButton_OnClick(object sender, RoutedEventArgs e)

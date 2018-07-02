@@ -52,7 +52,7 @@ namespace Dash
                 {
                     AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
                 }
-                else
+                else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
                 {
                     LayoutDocuments(sender, newCtxt, grid);
                 }
