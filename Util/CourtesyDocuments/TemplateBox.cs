@@ -47,8 +47,8 @@ namespace Dash
 			var grid = new Grid()
 	        {
 		        // default size of the template editor box's workspace
-		        Width = 300,
-		        Height = 400,
+		        Width = docController.GetField<NumberController>(KeyStore.WidthFieldKey).Data,
+		        Height = docController.GetField<NumberController>(KeyStore.HeightFieldKey).Data,
 				Background = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data)
 			};
             

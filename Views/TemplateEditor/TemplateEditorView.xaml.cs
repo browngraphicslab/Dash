@@ -416,9 +416,13 @@ namespace Dash
 
 			// set the dataDocCopy's document context key to the working document's data document
 			dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc, true);
-			// set the position of the data copy to the working document's position
-			dataDocCopy.SetField(KeyStore.PositionFieldKey,
-				workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+            // set the position of the data copy to the working document's position
+            dataDocCopy.SetField(KeyStore.PositionFieldKey,
+                workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+
+            // set width and height of the new document
+		    dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+		    dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 			// set the active layout of the working document to the dataDocCopy (which is the template)
 			workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
 		}
@@ -434,8 +438,8 @@ namespace Dash
 			}
 
 			//updates and generates bounds for the children inside the template canvas
-			var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
-				xWorkspace.Clip.Rect.Height - docView.ActualHeight);
+			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+				xWorkspace.Height - docView.ActualHeight);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 			docView.DocumentDeleted += DocView_DocumentDeleted;
@@ -444,6 +448,7 @@ namespace Dash
 		private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
 		{
 			DocumentControllers.Remove(sender.ViewModel.DocumentController);
+		    DocumentViews.Remove(sender);
 		}
 
 		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
@@ -1043,7 +1048,6 @@ namespace Dash
 
 		#endregion
 
-
 		private void ExpandButtonOnClick(object sender, RoutedEventArgs e)
 		{
 			var button = sender as StackPanel;
@@ -1093,11 +1097,6 @@ namespace Dash
 				fade?.Begin();
 			}
 		}
-
-
-
-
-
 
 		//sets the thickness for the borders
 		private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -1153,8 +1152,8 @@ namespace Dash
 		    //    docView.Height = docView.Bounds.Rect.Height;
 		    //}
            
-			var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docView.ActualWidth,
-				xWorkspace.Clip.Rect.Height - docView.ActualHeight);
+			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+				xWorkspace.Height - docView.ActualHeight);
 		   
             docView.Bounds = new RectangleGeometry { Rect = bounds };
 		   
@@ -1270,8 +1269,8 @@ namespace Dash
 	                maxOffsetY = -(newSize.Height - newPoint.Y - docview.ActualHeight);
                 }
 
-                var bounds = new Rect(0, 0, xWorkspace.Clip.Rect.Width - docview.ActualWidth,
-	                xWorkspace.Clip.Rect.Height - docview.ActualHeight);
+                var bounds = new Rect(0, 0, xWorkspace.Width - docview.ActualWidth,
+	                xWorkspace.Height - docview.ActualHeight);
 	            docview.Bounds = new RectangleGeometry { Rect = bounds };
             }
 

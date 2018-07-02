@@ -824,6 +824,15 @@ namespace Dash
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
                     var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
+                    if (Bounds != null)
+                    {
+                        if ((ViewModel.XPos + dx > Bounds.Rect.Width) ||
+                            (ViewModel.YPos + dy > Bounds.Rect.Height))
+                        {
+                            return new Size(Math.Floor(Bounds.Rect.Width - ViewModel.XPos), Math.Floor(Bounds.Rect.Height - ViewModel.YPos));
+                        }
+                    }
+
                     ViewModel.Width = Math.Max(w + dx, MinWidth);
                     ViewModel.Height = Math.Max(h + dy, MinHeight);
 
@@ -1349,13 +1358,6 @@ namespace Dash
         public void hideControls()
         {
             ViewModel.DecorationState = false;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleBottomRight.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopLeft.Visibility = Visibility.Collapsed;
-            //ResizeHandleTopRight.Visibility = Visibility.Collapsed;
-            //xTitleIcon.Visibility = Visibility.Collapsed;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Collapsed;
-            //xOperatorEllipseBorder.Visibility = Visibility.Collapsed;
         }
 
         public void hideEllipses()
@@ -1368,13 +1370,6 @@ namespace Dash
         public void showControls()
         {
             ViewModel.DecorationState = true;
-            //ResizeHandleBottomLeft.Visibility = Visibility.Visible;
-            //ResizeHandleBottomRight.Visibility = Visibility.Visible;
-            //ResizeHandleTopLeft.Visibility = Visibility.Visible;
-            //ResizeHandleTopRight.Visibility = Visibility.Visible;
-            //xTitleIcon.Visibility = Visibility.Visible;
-            //xAnnotateEllipseBorder.Visibility = Visibility.Visible;
-            //xOperatorEllipseBorder.Visibility = Visibility.Visible;
         }
 
         private void MenuFlyoutItemPin_Click(object sender, RoutedEventArgs e)
