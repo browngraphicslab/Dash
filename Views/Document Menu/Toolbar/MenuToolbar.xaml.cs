@@ -53,6 +53,17 @@ namespace Dash
         public static readonly DependencyProperty CollapseColorProperty = DependencyProperty.Register(
             "CollapseColor", typeof(SolidColorBrush), typeof(MenuToolbar), new PropertyMetadata(default(SolidColorBrush)));
 
+        public void ChangeVisibility(bool isVisible)
+        {
+            this.Visibility = isVisible? Visibility.Visible : Visibility.Collapsed;
+            if (isVisible)
+            {
+                xToolbar.Visibility = Visibility.Collapsed;
+                xToolbar.Visibility = Visibility.Visible;
+            }
+            xFloating.Floating_SizeChanged(null, null);
+        }
+
         public SolidColorBrush CollapseColor
         {
             get { return (SolidColorBrush)GetValue(CollapseColorProperty); }
