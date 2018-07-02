@@ -10,16 +10,15 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xBounds" Width="Auto" Height="Auto" Background="Transparent" HorizontalAlignment="Left"
-          VerticalAlignment="Top" ManipulationStarted="OnAllManipulationStarted"
-          ManipulationDelta="XLeft_OnManipulationDelta" ManipulationCompleted="OnAllManipulationCompleted">
+    <Grid x:Name="xBounds" Width="Auto" Height="Auto" HorizontalAlignment="Left"
+          VerticalAlignment="Top">
         <!-- creates the four cropping guides -->
         <Rectangle
             x:Name="xLeft" PointerEntered="LeftRightPointerEntered"
             PointerExited="AllPointerExited"
             Fill="Transparent" Width="10" Height="40" Stroke="Black" StrokeThickness="2"
             ManipulationStarted="OnAllManipulationStarted" ManipulationDelta="XLeft_OnManipulationDelta"
-            ManipulationCompleted="OnAllManipulationCompleted"
+            ManipulationCompleted="OnAllManipulationCompleted" PointerPressed="OnPointerPressed"
             ManipulationMode="TranslateX" HorizontalAlignment="Left"
             VerticalAlignment="Center" />
         <Rectangle
@@ -29,7 +28,7 @@
             PointerExited="AllPointerExited"
             Height="40" ManipulationDelta="XRight_OnManipulationDelta"
             ManipulationCompleted="OnAllManipulationCompleted"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateX" PointerPressed="OnPointerPressed"/>
         <Rectangle
             x:Name="xTop" HorizontalAlignment="Center" VerticalAlignment="Top" Fill="Transparent" Width="40"
             Stroke="Black" StrokeThickness="2"
@@ -37,7 +36,7 @@
             PointerExited="AllPointerExited"
             Height="10" ManipulationDelta="XTop_OnManipulationDelta"
             ManipulationCompleted="OnAllManipulationCompleted"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" PointerPressed="OnPointerPressed" />
         <Rectangle
             PointerEntered="TopBottomPointerEntered"
             PointerExited="AllPointerExited"
@@ -45,6 +44,6 @@
             Stroke="Black" StrokeThickness="2"
             Height="10" ManipulationDelta="XBottom_OnManipulationDelta"
             ManipulationCompleted="OnAllManipulationCompleted"
-            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" />
+            ManipulationStarted="OnAllManipulationStarted" ManipulationMode="TranslateY" PointerPressed="OnPointerPressed" />
     </Grid>
 </UserControl>
