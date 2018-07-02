@@ -183,8 +183,18 @@
                             <Rectangle x:Name="xBackgroundColorPreviewBox" Width="20" Height="20" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
                                 <!--colorpicker flyout-->
                                 <FlyoutBase.AttachedFlyout>
-                                    <Flyout x:Name="xBackgroundColorFlyout">
-                                        <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
+                                    <Flyout x:Name="xBackgroundColorFlyout" >
+                                        <StackPanel>
+                                            <!--<Slider x:Name="xBackgroundOpacitySlider" Header="Opacity" Minimum="0" Maximum="1" ValueChanged="XBackgroundOpacitySlider_OnValueChanged" >
+                            <Slider.Foreground>
+                                <LinearGradientBrush >
+                                    <GradientStop Color="#ff0000" Offset="0.0" />
+                                   <GradientStop Color="#ff0000" Offset="1.0" Opacity="1"/>
+                                                    </LinearGradientBrush>
+                                                </Slider.Foreground>
+                                            </Slider>-->
+                                            <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
+                                        </StackPanel>
                                     </Flyout>
                                 </FlyoutBase.AttachedFlyout>
                             </Rectangle>

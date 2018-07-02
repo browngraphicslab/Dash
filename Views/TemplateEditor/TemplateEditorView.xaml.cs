@@ -1214,6 +1214,10 @@ namespace Dash
 		private void XBackgroundColorPreviewBox_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
 			FlyoutBase.ShowAttachedFlyout(xBackgroundColorPreviewBox);
+			//xBackgroundOpacitySlider.Width = xBackgroundColorPicker.ActualWidth;
+			//xBackgroundOpacitySlider.Foreground = new LinearGradientBrush();
+
+
 		}
 		
 		//highlights ellipse on pointer entered
@@ -1286,5 +1290,13 @@ namespace Dash
 	        Bounds.Width = maxOffsetX;
 	        Bounds.Height = maxOffsetY;
 	    }
+
+		private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+		{
+			//update opacity of background
+			xWorkspace.Background.Opacity = e.NewValue;
+			xBackgroundColorPreviewBox.Opacity = e.NewValue;
+			//TODO: store opacity key
+		}
 	}
 }
