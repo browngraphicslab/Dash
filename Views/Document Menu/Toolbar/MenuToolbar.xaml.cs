@@ -55,13 +55,16 @@ namespace Dash
 
         public void ChangeVisibility(bool isVisible)
         {
-            this.Visibility = isVisible? Visibility.Visible : Visibility.Collapsed;
+            //Making the command bar collapsed while it is open causes a bug with making it visible again, so we close it first
+            if (!isVisible)
+            {
+                xToolbar.IsOpen = false;
+            }
+            Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             if (isVisible)
             {
-                xToolbar.Visibility = Visibility.Collapsed;
-                xToolbar.Visibility = Visibility.Visible;
+                xToolbar.IsOpen = true;
             }
-            xFloating.Floating_SizeChanged(null, null);
         }
 
         public SolidColorBrush CollapseColor
@@ -163,7 +166,6 @@ namespace Dash
             Loaded += (sender, args) =>
             {
                 xFloating.ManipulateControlPosition(ToolbarConstants.DefaultXOnLoaded, ToolbarConstants.DefaultYOnLoaded, xToolbar.ActualWidth, xToolbar.ActualHeight);
-                xFloating.Floating_SizeChanged(null, null);
             };
 
             // list of buttons that are enabled only if there is 1 or more selected documents
@@ -789,15 +791,6 @@ namespace Dash
             //toggle night mode styles
             xToolbar.Foreground = (nightModeOn) ? new SolidColorBrush(Colors.White) : new SolidColorBrush(Colors.Black);
             xToolbar.RequestedTheme = ElementTheme.Light;
-
-            EnsureVisible();
-        }
-
-        public void EnsureVisible()
-        {
-            //ensure toolbar is visible
-            xToolbar.IsEnabled = true;
-            xToolbar.Visibility = Visibility.Visible;
         }
 
         /// <summary>
