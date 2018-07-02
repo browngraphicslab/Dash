@@ -489,12 +489,12 @@ namespace Dash
                     switch (preUnEx.Operator)
                     {
                         case SyntaxKind.MinusToken:
-                            return new FunctionExpression(DSL.GetFuncName<NumNegateOperatorController>(), new List<ScriptExpression>()
+                            return new FunctionExpression(DSL.GetFuncName<SubtractOperatorController>(), new List<ScriptExpression>()
                             {
-                                null,
+                                new LiteralExpression(new NumberController(0)),
                                 body,
                             });
-                    }
+                    } 
                     break;
                 case SyntaxKind.PostfixUnaryExpression:
                     var postUnEx = (PostfixUnaryExpression) node;

@@ -1,6 +1,7 @@
 ﻿using Dash.Models.DragModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -39,6 +40,9 @@ namespace Dash
 
         private int _textHeight = 50;
 
+        private ListController<TextController> inputList;
+        private ListController<FieldControllerBase> outputList;
+
         private int TextHeight
         {
             get => _textHeight;
@@ -49,16 +53,29 @@ namespace Dash
             }
         }
 
-        public DishReplView()
+        public DishReplView(DocumentController dataDoc)
         {
             this.InitializeComponent();
             this.DataContext = new DishReplViewModel();
-            _dsl = new DSL(new Scope());
+            OuterReplScope scope = new OuterReplScope(dataDoc);
+            _dsl = new DSL(scope);
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
+
+            //intialize lists to save data
+            inputList = dataDoc.GetField<ListController<TextController>>(KeyStore.ReplInputsKey);
+            outputList = dataDoc.GetField<ListController<FieldControllerBase>>(KeyStore.ReplOutputsKey);
+            //var scopeDoc = dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey);
+            //add items from lists to Repl
+            var replItems = new ObservableCollection<ReplLineViewModel>();
+            for(var i = 0; i < inputList.Length; i++)
+            {
+                var newReplLine = new ReplLineViewModel(inputList[i].Data, outputList[i], new TextController("test"));
+                replItems.Add(newReplLine);
+            }
+
+            ViewModel.Items = replItems;
         }
-        public FieldControllerBase TargetFieldController { get; set; }
-        public Context TargetDocContext { get; set; }
 
         public static void SetDataset(List<string> data)
         {
@@ -197,6 +214,10 @@ namespace Dash
                     }
 
                     ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+
+                    //save input and output data
+                    inputList.Add(new TextController(currentText));
+                    outputList.Add(returnValue);
 
                     //scroll to bottom
                     xScrollViewer.UpdateLayout();

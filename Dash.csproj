@@ -188,7 +188,6 @@
     <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
-    <Compile Include="Controllers\Operators\Binary\NumNegateOperatorController.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
@@ -297,6 +296,7 @@
     <Compile Include="Util\DSL\AbsentStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\OuterReplScope.cs" />
     <Compile Include="Util\DSL\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />

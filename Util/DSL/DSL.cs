@@ -23,6 +23,8 @@ namespace Dash
             _scope = new Scope(scope);
         }
 
+        public DSL(OuterReplScope scope) => _scope = scope;
+
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try
