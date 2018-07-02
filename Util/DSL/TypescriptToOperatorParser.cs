@@ -438,7 +438,21 @@ namespace Dash
                     }
                     return new ArrayExpression(new List<ScriptExpression>(parsedList));
                 case SyntaxKind.ObjectLiteralExpression:
-                    break;
+                    var objectProps = (node as ObjectLiteralExpression)?.Children;
+
+                    //TODO: make object expression that does below code so finding value can use .Execute(scope)
+
+                    DocumentController result = new DocumentController();
+                    foreach (var property in objectProps)
+                    {
+                        var propChildren = property.Children;
+                        Debug.Assert(propChildren[0] is Identifier);
+                        var keyString = ((Identifier) propChildren[0]).Text;
+                        var key = new KeyController(keyString, keyString);
+                        var value = (ParseToExpression(propChildren[1]) as LiteralExpression)?.GetField();
+                        result.SetField(key, value, true);
+                    }
+                    return new LiteralExpression(result);
                 case SyntaxKind.PropertyAccessExpression:
                     var propAccessExpr = node as PropertyAccessExpression;
                     Debug.Assert(node.Children.Count == 2);
@@ -775,7 +789,7 @@ namespace Dash
 
                     if (varDeclList.Declarations.Count > 1)
                     {
-                        return new ExpressionChain(varDeclList.Declarations.Select(ParseToExpression));
+                        return new ExpressionChain(varDeclList.Declarations.Select(ParseToExpression), false);
                     }
 
                     //Debug.Assert(varDeclList.Declarations.Any());
@@ -848,6 +862,7 @@ namespace Dash
                 case SyntaxKind.CatchClause:
                     break;
                 case SyntaxKind.PropertyAssignment:
+                    var propAssign = (node as PropertyAssignment);
                     break;
                 case SyntaxKind.ShorthandPropertyAssignment:
                     break;
@@ -868,7 +883,7 @@ namespace Dash
                                 exprs.Add(expr);
                             }
                         }
-                        return new ExpressionChain(exprs);
+                        return new ExpressionChain(exprs, false);
                     }
                     return ParseToExpression(node.Children.First());
                     break;
@@ -959,7 +974,6 @@ namespace Dash
                     return new LiteralExpression(new TextController(parsedString));
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
-
                     var parameters = new List<ScriptExpression>();
 
                     var keys = OperatorScript.GetOrderedKeyControllersForFunction(Op.Parse(callExpr.IdentifierStr)).ToArray();
@@ -993,7 +1007,7 @@ namespace Dash
             public override FieldControllerBase Execute(Scope scope)
             {
                 var val = _value.Execute(scope);
-                scope.DeclareVariable(_variableName, val);
+                scope?.DeclareVariable(_variableName, val);
 
                 return val;
             }
