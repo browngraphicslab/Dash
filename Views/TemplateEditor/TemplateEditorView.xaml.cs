@@ -27,6 +27,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Converters;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -220,6 +221,13 @@ namespace Dash
 			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
+
+			//set background color
+			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data;
+			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
+			xWorkspace.Background = backgroundColor
+				?? new SolidColorBrush(Colors.White);
+			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 		}
         
 	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
@@ -1205,6 +1213,10 @@ namespace Dash
 		private void XBackgroundColorPreviewBox_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
 			FlyoutBase.ShowAttachedFlyout(xBackgroundColorPreviewBox);
+			//xBackgroundOpacitySlider.Width = xBackgroundColorPicker.ActualWidth;
+			//xBackgroundOpacitySlider.Foreground = new LinearGradientBrush();
+
+
 		}
 		
 		//highlights ellipse on pointer entered
@@ -1277,5 +1289,13 @@ namespace Dash
 	        Bounds.Width = maxOffsetX;
 	        Bounds.Height = maxOffsetY;
 	    }
+
+		private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+		{
+			//update opacity of background
+			xWorkspace.Background.Opacity = e.NewValue;
+			xBackgroundColorPreviewBox.Opacity = e.NewValue;
+			//TODO: store opacity key
+		}
 	}
 }
