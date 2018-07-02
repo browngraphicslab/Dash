@@ -27,6 +27,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Converters;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -220,6 +221,13 @@ namespace Dash
 			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
+
+			//set background color
+			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data;
+			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
+			xWorkspace.Background = backgroundColor
+				?? new SolidColorBrush(Colors.White);
+			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 		}
         
 	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
