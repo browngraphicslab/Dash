@@ -19,12 +19,15 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class ImageRegionBox : UserControl
+    /// <summary>
+    /// A generic class for box-like annotations/regions that go over controls.
+    /// </summary>
+    public sealed partial class RegionBox : UserControl
     {
         public DocumentController LinkTo;
-	    public EditableImage _image;
+	    public VisualAnnotationManager Manager;
 
-        public ImageRegionBox()
+        public RegionBox()
         {
             this.InitializeComponent();
         }
@@ -50,10 +53,11 @@ namespace Dash
             Row3.Height = new GridLength(row3 * 100, GridUnitType.Star);
         }
 
+        // TODO rewrite this (would need to write DeleteRegion into VisualAnnotationManager)
 	    private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
-		    _image?.DeleteRegion(_image._selectedRegion);
+		    //AnnotationManager?.DeleteRegion(this);
 	    }
 
 	    public void Hide()

@@ -14,7 +14,7 @@ namespace Dash
 {
 	public class AnnotationManager
 	{
-		private UIElement    _element = null;
+		private UIElement    _element;
 		private MenuFlyout   _linkFlyout;
 
 		public AnnotationManager(UIElement uiElement)
@@ -24,10 +24,12 @@ namespace Dash
 		}
 
         //navigation and toggling of linked annotations to the pressed region
-        public void RegionPressed(DocumentController theDoc, Windows.Foundation.Point pos, DocumentController chosenDC = null)
+        public void RegionPressed(DocumentController theDoc, Point pos, DocumentController chosenDC = null)
         {
             if (chosenDC != null)
+            {
                 showTargetDoc(chosenDC, pos);
+            }
             else
             {
                 var multiToLinks = showLinks(theDoc, KeyStore.LinkToKey, chosenDC);
@@ -37,16 +39,15 @@ namespace Dash
                 {
                     showTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
                 }
-                else
-                    if (_linkFlyout.Items.Count == 0)
+                else if (_linkFlyout.Items.Count == 0)
                 {
                     if (multiToLinks != null)
-                        this.AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
+                        AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
                     if (multiFromLinks != null)
-                        this.AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
+                        AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
 
                     if (_linkFlyout.Items.Count > 0)
-                        _linkFlyout.ShowAt((FrameworkElement)_element);
+                        _linkFlyout.ShowAt((FrameworkElement) _element);
                 }
             }
         }
@@ -93,29 +94,32 @@ namespace Dash
         //finds the nearest document view of the desired document controller that is displayed on the canvas
         DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
         {
-            double dist = double.MaxValue;
+            var dist = double.MaxValue;
             DocumentView nearest = null;
-            foreach (var presenter in
-                (_element.GetFirstAncestorOfType<CollectionView>().CurrentView as CollectionFreeformView).xItemsControl
-                .ItemsPanelRoot.Children.Select((c) => (c as ContentPresenter)))
-            {
-                var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
-                if (dvm?.ViewModel.DataDocument.Id == targetData?.Id)
+            var itemsPanelRoot = ((CollectionFreeformView) _element.GetFirstAncestorOfType<CollectionView>().CurrentView).xItemsControl
+                .ItemsPanelRoot;
+            if (itemsPanelRoot != null)
+                foreach (var presenter in
+                    itemsPanelRoot.Children.Select(c => c as ContentPresenter))
                 {
-                    var mprect = dvm.GetBoundingRect(MainPage.Instance);
-                    var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
-                    if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
+                    var dvm = presenter.GetFirstDescendantOfType<DocumentView>();
+                    if (dvm?.ViewModel.DataDocument.Id == targetData?.Id)
                     {
-                        var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) +
-                                          (where.Y - center.Y) * (where.Y - center.Y));
-                        if (d < dist)
+                        var mprect = dvm.GetBoundingRect(MainPage.Instance);
+                        var center = new Point((mprect.Left + mprect.Right) / 2, (mprect.Top + mprect.Bottom) / 2);
+                        if (!onlyOnPage || MainPage.Instance.GetBoundingRect().Contains(center))
                         {
-                            d = dist;
-                            nearest = dvm;
+                            var d = Math.Sqrt((where.X - center.X) * (where.X - center.X) +
+                                              (where.Y - center.Y) * (where.Y - center.Y));
+                            if (d < dist)
+                            {
+                                d = dist;
+                                nearest = dvm;
+                            }
                         }
                     }
                 }
-            }
+
             return nearest;
         }
 
@@ -158,11 +162,9 @@ namespace Dash
                     if (_element is EditableImage)
                     {
                         var image = (EditableImage)_element;
-                        image.UpdateHighlight(nearestOnCollection);
+                        image.AnnotationManager.UpdateHighlight(nearestOnCollection);
                     }
-
                 }
-
             }
             else
             {

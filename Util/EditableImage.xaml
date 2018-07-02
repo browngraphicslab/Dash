@@ -15,12 +15,9 @@
 
 
     <Grid x:Name="xGrid" PointerMoved="OnPointerMoved" PointerReleased="OnPointerReleased"
-          PointerPressed="OnPointerPressed" Loaded="OnLoaded">
+          PointerPressed="OnPointerPressed">
         <Image x:Name="xImage" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" CacheMode="BitmapCache" />
-        <Grid x:Name="xRegionsGrid" x:FieldModifier="public"/>
-        <dash:ImageRegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed" />
-        <Rectangle x:Name="xRegionDuringManipulationPreview" Fill="AntiqueWhite" Opacity="0.4" StrokeThickness="2" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>
-
+        <dash:AnnotationOverlay x:Name="xAnnotations"/>
         <!--<StackPanel x:Name="xLinkStack" Visibility="Collapsed"/>-->
         <FlyoutBase.AttachedFlyout>
             <MenuFlyout x:Name="xLinkFlyout"/>

@@ -164,11 +164,10 @@ namespace Dash
             await _currentImage.MirrorHorizontal();
         }
 
-
 	    private void ToggleAnnotations_Checked(object sender, RoutedEventArgs e)
 	    {
 		    xImageCommandbar.IsOpen = true;
-			_currentImage?.ShowRegions();
+			_currentImage?.AnnotationManager.ShowRegions();
 		    xToggleAnnotations.Label = "Hide";
 	
 	    }
@@ -176,7 +175,7 @@ namespace Dash
 	    private void ToggleAnnotations_Unchecked(object sender, RoutedEventArgs e)
 	    {
 		    xImageCommandbar.IsOpen = true;
-			_currentImage?.HideRegions();
+			_currentImage?.AnnotationManager.HideRegions();
 		    xToggleAnnotations.Label = "Show";
 	    }
 

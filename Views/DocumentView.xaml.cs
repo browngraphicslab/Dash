@@ -1240,11 +1240,9 @@ namespace Dash
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
 
-		    if (ViewModel.Content is IAnnotationEnabled)
+		    if (ViewModel.Content is IAnnotatable element)
 		    {
-			    var element = (IAnnotationEnabled) ViewModel.Content;
-			    element?.RegionSelected(element, new Point(0, 0), null);
-
+		        element.RegionSelected(element, new Point(0, 0));
 			}
 		    else
 		    {

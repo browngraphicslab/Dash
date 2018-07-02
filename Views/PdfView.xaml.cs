@@ -19,7 +19,7 @@ using Syncfusion.Pdf.Interactive;
 
 namespace Dash
 {
-    public sealed partial class PdfView
+    public sealed partial class PdfView : IVisualAnnotatable
     {
         /// <summary>
         /// The pdf viewer from xaml
@@ -307,34 +307,37 @@ namespace Dash
 
         private void XRegionsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(xRegionsGrid).Position;
-            _anchor = pos;
-            xTemporaryRegionMarker.SetSize(new Size(0, 0), _anchor, new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
-            xTemporaryRegionMarker.Visibility = Visibility.Visible;
-            _isDragging = true;
-            _selectedRegion = null;
+            NewRegionStarted?.Invoke(this, e);
+            //var pos = e.GetCurrentPoint(xRegionsGrid).Position;
+            //_anchor = pos;
+            //xTemporaryRegionMarker.SetSize(new Size(0, 0), _anchor, new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
+            //xTemporaryRegionMarker.Visibility = Visibility.Visible;
+            //_isDragging = true;
+            //_selectedRegion = null;
         }
 
         private void XRegionsGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (_isDragging)
-            {
-                var pos = e.GetCurrentPoint(xRegionsGrid).Position;
-                var x = Math.Min(pos.X, _anchor.X);
-                var y = Math.Min(pos.Y, _anchor.Y);
+            NewRegionMoved?.Invoke(this, e);
+            //if (_isDragging)
+            //{
+            //    var pos = e.GetCurrentPoint(xRegionsGrid).Position;
+            //    var x = Math.Min(pos.X, _anchor.X);
+            //    var y = Math.Min(pos.Y, _anchor.Y);
 
-                xTemporaryRegionMarker.SetSize(new Size(Math.Abs(_anchor.X - pos.X), Math.Abs(_anchor.Y - pos.Y)), new Point(x, y), new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
-            }
+            //    xTemporaryRegionMarker.SetSize(new Size(Math.Abs(_anchor.X - pos.X), Math.Abs(_anchor.Y - pos.Y)), new Point(x, y), new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
+            //}
         }
 
         private void XRegionsGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            _isDragging = false;
-            var pos = e.GetCurrentPoint(xRegionsGrid).Position;
-            if (Math.Abs(_anchor.Y - pos.Y) < 30 && (Math.Abs(_anchor.X - pos.X)) < 30)
-            {
-                xTemporaryRegionMarker.Visibility = Visibility.Collapsed;
-            }
+            NewRegionEnded?.Invoke(this, e);
+            //_isDragging = false;
+            //var pos = e.GetCurrentPoint(xRegionsGrid).Position;
+            //if (Math.Abs(_anchor.Y - pos.Y) < 30 && (Math.Abs(_anchor.X - pos.X)) < 30)
+            //{
+            //    xTemporaryRegionMarker.Visibility = Visibility.Collapsed;
+            //}
         }
 
         private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -378,6 +381,41 @@ namespace Dash
         private void xRegionsScrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             xAnnotationNavigation.Opacity = 0;
+        }
+
+        public void DisplayFlyout(MenuFlyout linkFlyout)
+        {
+            linkFlyout.ShowAt(this);
+        }
+
+        public DocumentController GetDocControllerFromSelectedRegion()
+        {
+            throw new NotImplementedException();
+        }
+
+        public UIElement Self()
+        {
+            return this;
+        }
+
+        public Size GetTotalDocumentSize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public FrameworkElement GetPositionReference()
+        {
+            // TODO: get rid of this when the grid gets refactored somewhere else?
+            return xRegionsGrid;
+        }
+
+        public event PointerEventHandler NewRegionStarted;
+        public event PointerEventHandler NewRegionMoved;
+        public event PointerEventHandler NewRegionEnded;
+
+        public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
+        {
+            throw new NotImplementedException();
         }
     }
     
