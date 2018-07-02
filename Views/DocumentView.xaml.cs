@@ -383,7 +383,8 @@ namespace Dash
             {
                 var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
                     (RenderTransform as MatrixTransform).Matrix.OffsetY);
-                _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1004, 540)).Document;
+                _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
+	            _templateEditor
                 ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
                 //creates a doc controller for the image(s)
                 Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);

@@ -32,7 +32,6 @@ namespace Dash
             {
                 Width = 300,
                 Height = 400,
-                Background = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255))
             };
             LayoutDocuments(docController, context, grid);
 

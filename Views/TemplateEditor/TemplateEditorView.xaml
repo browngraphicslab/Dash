@@ -18,7 +18,7 @@
     d:DesignWidth="1000">
 
 
-    <StackPanel Orientation="Vertical" Height="540" BorderBrush="#223a31" BorderThickness="2 2 2 2" Background="#416857">
+    <StackPanel Orientation="Vertical" Height="540" Background="#416857">
 
         <!--Header-->
         <Grid>
@@ -35,7 +35,7 @@
         </Grid>
 
         <!--StackPanel for panes-->
-        <StackPanel Orientation="Horizontal" BorderBrush="#223a31" Height="500" BorderThickness="0 2 0 0" x:Name="xOuterPanel">
+        <StackPanel Orientation="Horizontal"  BorderThickness="0 0 0 0" x:Name="xOuterPanel">
 
             <!--Panel that holds Key Value Pane-->
             <ScrollViewer Width="300" Height="500" Visibility="Visible" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalScrollBarVisibility="Hidden">
@@ -43,8 +43,8 @@
             </ScrollViewer>
 
             <!--Panel that holds Canvas-->
-                <Grid VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"  HorizontalAlignment="Left">
-                    <Canvas VerticalAlignment="Center" Width="300" Height="400" Background="White" HorizontalAlignment="Center"
+                <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"  >
+                    <Canvas  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Width="300" Height="400" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public"
                     x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <ItemsControl x:Name="xItemsControl"
@@ -72,7 +72,27 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Canvas>
-            </Grid>
+
+                    <!--ELLIPSES-->
+                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Width="30" Height="30" Margin="10, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                        <StackPanel x:Name="xEllipseStack">
+                            <!--Clear button -->
+                            <Grid>
+                            <Ellipse x:Name="xClearEllipse" Fill="#8E2929" Height="30" Width="30" PointerEntered="Ellipse_OnPointerEntered"/>
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="5" VerticalOffset="0"
+                                />
+                            </ToolTipService.ToolTip>
+                            </Grid>
+
+                         <!--Revert button -->
+
+                           <!--Apply Template button -->
+
+                    </StackPanel>
+                    </RelativePanel>
+            </RelativePanel>
 
             <!--Formatting Panel-->
             <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" Height="500">
@@ -85,8 +105,6 @@
                         <local:EditableTextBlock Width="170" FontSize="14" HorizontalAlignment="Left" x:Name="xKeyBox" Foreground="White"></local:EditableTextBlock>
 
                     </StackPanel>
-
-
 
                 <!--Add Items Drop Down-->
                 <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
@@ -127,16 +145,39 @@
                     <!--Header-->
                     <StackPanel  x:Name="xFormatItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Items</TextBlock>
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format</TextBlock>
                     </StackPanel>
                     <!--StackPanel for Format buttons-->
                     <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
-                            <AppBarButton Icon="AlignCenter" x:Name="xAlignCenterButton" Height="50" Width="60" Click="AlignmentButton_OnChecked"></AppBarButton>
-                            <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
+                            <fontIcons:FontAwesome x:Name="xAlignLeft" Icon="AlignLeft" Foreground="LightGray" Height="40" Width="60" Tapped="AlignmentButton_OnChecked" />
+                            <fontIcons:FontAwesome x:Name="xAlignCenter" Icon="AlignCenter" Foreground="LightGray" Height="40" Width="60" Tapped="AlignmentButton_OnChecked" FocusVisualPrimaryBrush="White"/>
+                            <fontIcons:FontAwesome x:Name="xAlignRight" Icon="AlignRight" Foreground="LightGray" Height="40" Width="60"  Tapped="AlignmentButton_OnChecked"/>
                         </StackPanel>
+
+                        <!-- BACKGROUND -->
+                        <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" >
+                            <TextBlock Foreground="LightGray" FontSize="13"  > Background </TextBlock>
+                            <Rectangle x:Name="xBackgroundColorPreviewBox" Width="20" Height="20" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+                                <!--colorpicker flyout-->
+                                <FlyoutBase.AttachedFlyout>
+                                    <Flyout x:Name="xBackgroundColorFlyout">
+                                        <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
+                                    </Flyout>
+                                </FlyoutBase.AttachedFlyout>
+                            </Rectangle>
+                            
+                           
+
+                        </StackPanel>
+
+                        <!-- BORDERS -->
+                        <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left">
+                            <TextBlock Foreground="LightGray" FontSize="13"  > Border </TextBlock>
+                            <Rectangle x:Name="xBorderColorPreviewBox" Width="20" Height="20" Fill="White" Margin="70,0,0,0"></Rectangle>
+                        </StackPanel>
+
                     </StackPanel>
                 </StackPanel>
 
@@ -160,8 +201,8 @@
                     <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <Button Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontSize="13" Foreground="White">Upload Template</TextBlock>
-                                <TextBlock FontSize="18" Foreground="White"
+                                <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
+                                <TextBlock FontSize="18" Foreground="LightGray"
                                            FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
                             </StackPanel>
                         </Button>
