@@ -115,9 +115,9 @@
             <x:String x:Key="FavoriteIcon">&#xf006;</x:String>
             <x:String x:Key="RightCaretIcon">&#xf0da;</x:String>
             <x:String x:Key="LeftCaretIcon">&#xf0d9;</x:String>
-            <x:String x:Key="ImageIcon">&#xf1c5;</x:String>
-            <x:String x:Key="VideoIcon">&#xf1c8;</x:String>
-            <x:String x:Key="AudioIcon">&#xf1c7;</x:String>
+            <x:String x:Key="ImageDocumentIcon">&#xf1c5;</x:String>
+            <x:String x:Key="VideoDocumentIcon">&#xf1c8;</x:String>
+            <x:String x:Key="AudioDocumentIcon">&#xf1c7;</x:String>
             <x:String x:Key="TextIcon">&#xf15c;</x:String>
             <x:String x:Key="DefaultIcon">&#xf1c3;</x:String>
             <x:String x:Key="SaveIcon">&#xf0c7;</x:String>
@@ -125,7 +125,11 @@
             <x:String x:Key="MinusIcon">&#xf068;</x:String>
             <x:String x:Key="UploadIcon">&#xf093;</x:String>
             <x:String x:Key="CheckIcon">&#xf00c;</x:String>
-            
+            <x:String x:Key="FontIcon">&#xf031;</x:String>
+            <x:String x:Key="ImageIcon">&#xf03e;</x:String>
+            <x:String x:Key="VideoIcon">&#xf03d;</x:String>
+            <x:String x:Key="AudioIcon">&#xf025;</x:String>
+
 
             <!-- DEFAULT STYLES-->
             <Style TargetType="Button">

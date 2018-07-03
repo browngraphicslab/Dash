@@ -446,13 +446,13 @@ namespace Dash
             switch (type)
             {
                 case TypeInfo.Image:
-                    xTitleBlock.Text = Application.Current.Resources["ImageIcon"] as string;
+                    xTitleBlock.Text = Application.Current.Resources["ImageTemplateIcon"] as string;
                     break;
                 case TypeInfo.Audio:
-                    xTitleBlock.Text = Application.Current.Resources["AudioIcon"] as string;
+                    xTitleBlock.Text = Application.Current.Resources["AudioDocumentIcon"] as string;
                     break;
                 case TypeInfo.Video:
-                    xTitleBlock.Text = Application.Current.Resources["VideoIcon"] as string;
+                    xTitleBlock.Text = Application.Current.Resources["VideoDocumentIcon"] as string;
                     break;
                 case TypeInfo.RichText:
                 case TypeInfo.Text:
