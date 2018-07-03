@@ -77,8 +77,22 @@ namespace Dash
         {
             var functionNames = _functionMap.Select(k => k.Key.ToString()).ToList();
             functionNames.Sort();
-            var output = functionNames.Aggregate("", (current, functionName) => current + $"\n {functionName} -> +{_functionMap[Op.Parse(functionName)].Count}");
+            var output = functionNames.Aggregate("", (current, functionName) => current + $"\n {functionName}");
             return new TextController(output + "\n");
+        }
+
+        public static string GetStringFormattedTypeListsFor(Op.Name functionName)
+        {
+            var typeSublists = new List<KeyValuePair<int, string>>();
+            foreach (var overload in _functionMap[functionName])
+            {
+                var typeInfoList = overload.ParamTypes.Select(kv => kv.Value.Type).ToList();
+                var numParams = typeInfoList.Count;
+                typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n            ({string.Join(", ", typeInfoList)})"));
+            }
+
+            var sortedParams = typeSublists.OrderBy(x => x.Key).ToList();
+            return string.Join("", sortedParams.Select(kv => kv.Value).ToList());
         }
 
         private static void PrintDocumentation(string funcName, OperatorController op)

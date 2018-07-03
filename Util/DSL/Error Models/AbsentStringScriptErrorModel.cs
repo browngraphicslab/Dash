@@ -12,6 +12,6 @@ namespace Dash
             _formattedAbsentees = formattedAbsentees;
         }
 
-        public override string GetHelpfulString() => $"\'{_targetText}\' does not contain any of the specified phrases: {_formattedAbsentees}";
+        public override string GetHelpfulString() => $" Exception:\n            AbsentPhrases\n      Feedback:\n            \'{_targetText}\' does not contain any of the specified phrases: {_formattedAbsentees}";
     }
 }

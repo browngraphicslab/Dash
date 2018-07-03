@@ -47,44 +47,37 @@ namespace Dash
             [ResultDocKey] = TypeInfo.Document,
         };
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
-            var fieldName = inputs[KeyNameKey] as TextController;
+            var keyName = (inputs[KeyNameKey] as TextController)?.Data;
             var fieldValue = inputs[FieldValueKey];
-            if (inputDoc != null && fieldName != null && fieldValue != null)
+
+            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.GetName(), fieldValue.GetValue(null).ToString()));
+
+            try
             {
-                var inps = new Dictionary<KeyController, FieldControllerBase>();
-                inps[GetFieldOperatorController.KeyNameKey] = fieldName;
-                inps[GetFieldOperatorController.InputDocumentKey] = inputDoc;
-                var outs = new Dictionary<KeyController, FieldControllerBase>();
-                var getFieldController = new GetFieldOperatorController();
-                getFieldController.Execute(inps, outs, args);
-
-                var outValue = outs[GetFieldOperatorController.ResultFieldKey];
-                var set = false;
-                if (outValue != null)
+                foreach (var field in inputDoc.EnumFields()) //check exact string equality
                 {
-                    foreach(var field in inputDoc.EnumFields())
-                    {
-                        if (field.Value.Equals(outValue))
-                        {
-                            inputDoc.SetField(field.Key, fieldValue, true);
-                            set = true;
-                            break;
-                        }
-                    }
+                    if (!field.Key.Name.Replace(" ", "").Equals(keyName)) continue;
+                    inputDoc.SetField(field.Key, fieldValue, true);
+                    return;
                 }
 
-                if (!set)
+                foreach (var field in inputDoc.EnumFields()) //check lower case string equality
                 {
-                    inputDoc.SetField(new KeyController(UtilShared.GenerateNewId(), fieldName.Data), fieldValue, true);
+                    if (!field.Key.Name.Replace(" ", "").ToLower().Equals(keyName?.ToLower())) continue;
+                    inputDoc.SetField(field.Key, fieldValue, true);
+                    return;
                 }
+
+                inputDoc.SetField(new KeyController(UtilShared.GenerateNewId(), keyName), fieldValue, true);
+            }
+            finally
+            {
+                outputs[ResultDocKey] = inputDoc;
             }
 
-            outputs[ResultDocKey] = inputDoc;
         }
     }
 }

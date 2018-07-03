@@ -17,6 +17,8 @@ namespace Dash
 
     public class ListController<T> : BaseListController, IList<T> where T : FieldControllerBase
     {
+        private const bool AvoidDuplicates = false; 
+
         #region // DATA //
 
         // @BaseListController //
@@ -330,7 +332,7 @@ namespace Dash
 
         private bool AddHelper(T element)
         {
-            if (TypedData.Contains(element)) return false; // Avoid duplicate addition
+            if (AvoidDuplicates) if (TypedData.Contains(element)) return false; // Conditionally avoid duplicate addition
 
             element.FieldModelUpdated += ContainedFieldUpdated;
 

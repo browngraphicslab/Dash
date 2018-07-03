@@ -5,7 +5,7 @@ using DashShared;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.element_access, Op.Name.index)]
+    [OperatorType(Op.Name.element_access, Op.Name.index, Op.Name.operator_modulo)]
     public sealed class ElementAccessOperatorController : OperatorController
     {
         //Input keys
@@ -50,6 +50,7 @@ namespace Dash
                     break;
                 case TextController stringToIndex:
                     var length = stringToIndex.Data.Length;
+                    if (varIndex < 0) varIndex = varIndex % length + length;
                     if (varIndex >= length) throw new ScriptExecutionException(new IndexOutOfBoundsErrorModel((int)varIndex, length));
                     outputs[ResultsKey] = new TextController(stringToIndex.Data[(int)varIndex].ToString());
                     break;
