@@ -288,7 +288,7 @@ namespace Dash
                 {
                     SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
                     {
-                        d.ViewModel.DecorationState = d.IsPointerOver();
+                        d.ViewModel.DecorationState = d.IsPointerOver() && (d.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail) || d.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None));
                         d.ViewModel.Position =
                             d.ViewModel
                                 .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel

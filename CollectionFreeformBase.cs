@@ -849,16 +849,18 @@ namespace Dash
 
         #endregion
 
-        // TODO: likely to need to modify for standard view (should note typing be enabled in standard?)
         #region Activation
 
         protected void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (XInkCanvas.IsTopmost())
+            if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                _isMarqueeActive = false;
-                if (!this.IsShiftPressed())
-                    RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (XInkCanvas.IsTopmost())
+                {
+                    _isMarqueeActive = false;
+                    if (!this.IsShiftPressed())
+                        RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                }
             }
         }
 
