@@ -11,9 +11,14 @@ namespace Dash
 {
     class ObjectExpression : ScriptExpression
     {
-        private readonly Dictionary<string, FieldControllerBase> dictionary;
+        private readonly List<Node> dictionary;
+        //private readonly ScriptExpression value;
 
-        public ObjectExpression(Dictionary<string, FieldControllerBase> dic) => this.dictionary = dic;
+        public ObjectExpression(List<Node> dic/*, ScriptExpression val*/)
+        {
+            this.dictionary = dic;
+            //this.value = val;
+        }
 
         public override TypeInfo Type => TypeInfo.Any;
 
@@ -24,18 +29,18 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            DocumentController result = new DocumentController();
+            foreach (var property in dictionary)
+            {
+                var propChildren = property.Children;
+                Debug.Assert(propChildren[0] is Identifier);
+                var keyString = ((Identifier)propChildren[0]).Text;
+                var key = new KeyController(keyString, keyString);
+                var value = TypescriptToOperatorParser.ParseToExpression(propChildren[1]).Execute(scope);
+                result.SetField(key, value, true);
+            }
 
-            //DocumentController result = new DocumentController();
-            //foreach (var property in dictionary)
-            //{
-            //    var propChildren = property.Children;
-            //    Debug.Assert(propChildren[0] is Identifier);
-            //    var keyString = ((Identifier)propChildren[0]).Text;
-            //    var key = new KeyController(keyString, keyString);
-            //    var value = (ParseToExpression(propChildren[1]) as LiteralExpression)?.GetField();
-            //    result.SetField(key, value, true);
-            //}
-            return null;
+            return result;
         }
     }
 }

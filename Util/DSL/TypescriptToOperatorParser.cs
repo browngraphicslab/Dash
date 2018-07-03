@@ -181,7 +181,7 @@ namespace Dash
             return ParseToExpression(root);
         }
 
-        private static ScriptExpression ParseToExpression(INode node)
+        public static ScriptExpression ParseToExpression(INode node)
         {
             //this converts node to ScriptExpression - most cases call ParseToExpression
             //on individual inner pieces of node
@@ -440,19 +440,7 @@ namespace Dash
                 case SyntaxKind.ObjectLiteralExpression:
                     var objectProps = (node as ObjectLiteralExpression)?.Children;
 
-                    //TODO: make object expression that does below code so finding value can use .Execute(scope)
-
-                    DocumentController result = new DocumentController();
-                    foreach (var property in objectProps)
-                    {
-                        var propChildren = property.Children;
-                        Debug.Assert(propChildren[0] is Identifier);
-                        var keyString = ((Identifier) propChildren[0]).Text;
-                        var key = new KeyController(keyString, keyString);
-                        var value = (ParseToExpression(propChildren[1]) as LiteralExpression)?.GetField();
-                        result.SetField(key, value, true);
-                    }
-                    return new LiteralExpression(result);
+                    return new ObjectExpression(objectProps);
                 case SyntaxKind.PropertyAccessExpression:
                     var propAccessExpr = node as PropertyAccessExpression;
                     Debug.Assert(node.Children.Count == 2);
