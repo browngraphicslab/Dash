@@ -92,7 +92,7 @@ namespace Dash
             }
             return script + string.Join(",", middle) + ")";
         }
-
+         
 
 
         /// <summary>

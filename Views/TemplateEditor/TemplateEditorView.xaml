@@ -287,11 +287,19 @@
                             <Rectangle x:Name="xBorderColorPreviewBox" Width="20" Height="20" Fill="White" Margin="70,0,0,0"></Rectangle>
                         </StackPanel>
 
+                        <Button  Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
+                                <TextBlock FontSize="18" Foreground="LightGray"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                            </StackPanel>
+                        </Button>
+
                     </StackPanel>
                 </StackPanel>
 
                 <!--Options Drop Down-->
-                <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
+                <!--<StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
                     <StackPanel.Resources>
                         <Storyboard x:Name="xFadeAnimationOptions">
                             <DoubleAnimation
@@ -301,25 +309,19 @@
                             />
                         </Storyboard>
                     </StackPanel.Resources>
-                    <!--Header-->
+                    --><!--Header--><!--
                     <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                     </StackPanel>
-                    <!--StackPanel for Format buttons-->
+                    --><!--StackPanel for Format buttons--><!--
                     <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                        <Button Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
-                                <TextBlock FontSize="18" Foreground="LightGray"
-                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
-                            </StackPanel>
-                        </Button>
+                       
                     </StackPanel>
-                </StackPanel>
+                </StackPanel>-->
 
                 <!--Apply Template button!-->
-                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 
                     <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
                         <StackPanel Orientation="Horizontal">
@@ -328,8 +330,21 @@
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource SaveIcon}"/>
                         </StackPanel>
                     </Button>
+                </StackPanel>-->
+
+                <StackPanel x:Name="xActivate" Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+
+                    <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="xTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
+                            <TextBlock x:Name="xIcon" FontSize="18" Foreground="White"
+                                       FontFamily="{StaticResource FontAwesome}" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-                
+
+            
+
                 <!--Upload template button-->
                 <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 

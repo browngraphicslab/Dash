@@ -37,7 +37,9 @@ namespace Dash
         {
             get => _templateBorder;
             set => _templateBorder = value;
-        } 
+        }
+
+        public bool yeet;
 
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
@@ -151,10 +153,10 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                if (ViewModel?.DataDocument.GetField(KeyStore.TemplateDocumentKey) != null)
-                {
-                    ViewModel?.DataDocument.RemoveField(KeyStore.TemplateDocumentKey);
-                }
+                //if (ViewModel?.DataDocument.GetField(KeyStore.TemplateDocumentKey) != null)
+                //{
+                //    ViewModel?.DataDocument.RemoveField(KeyStore.TemplateDocumentKey);
+                //}
                 SetZLayer();
 
                 var type = ViewModel?.DocumentController.GetDereferencedField(KeyStore.DataKey, null)?.TypeInfo;
@@ -383,6 +385,14 @@ namespace Dash
             {
                 var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
                     (RenderTransform as MatrixTransform).Matrix.OffsetY);
+                if (_templateEditor != null)
+                {
+                    Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+                    _templateEditor.SetHidden(!_templateEditor.GetHidden());
+                    ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
+                    return;
+                }
+
                 _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
 	           
                 ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
@@ -392,6 +402,7 @@ namespace Dash
             else
             {
                 _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey);
+                ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
                 _templateEditor.SetHidden(!_templateEditor.GetHidden());
             }
         }

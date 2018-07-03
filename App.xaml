@@ -129,6 +129,8 @@
             <x:String x:Key="ImageIcon">&#xf03e;</x:String>
             <x:String x:Key="VideoIcon">&#xf03d;</x:String>
             <x:String x:Key="AudioIcon">&#xf025;</x:String>
+            <x:String x:Key="ActivateIcon">&#xf0e7;</x:String>
+            <x:String x:Key="PreviewIcon">&#xf06e;</x:String>
 
 
             <!-- DEFAULT STYLES-->

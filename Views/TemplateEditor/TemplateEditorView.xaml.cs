@@ -29,6 +29,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Office.Interop.Word;
+using Application = Microsoft.Office.Interop.Word.Application;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -462,24 +463,38 @@ namespace Dash
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
-			// layout document's data key holds the document that we are currently working on
-			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-			// TODO: working doc should be able to be null
-			// make a copy of the data document
-			var dataDocCopy = DataDocument.GetDataInstance();
-			// loop through each layout document and try to abstract it out when necessary
 
-			// set the dataDocCopy's document context key to the working document's data document
-			dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc, true);
-            // set the position of the data copy to the working document's position
-            dataDocCopy.SetField(KeyStore.PositionFieldKey,
-                workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+		    if (xTitle.Text == "Activate")
+		    {
+		        xTitle.Text = "Preview";
+		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
+		        // layout document's data key holds the document that we are currently working on
+		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		        // TODO: working doc should be able to be null
+		        // make a copy of the data document
+		        var dataDocCopy = DataDocument.GetDataInstance();
+		        // loop through each layout document and try to abstract it out when necessary
 
-            // set width and height of the new document
-		    dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
-		    dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
-			// set the active layout of the working document to the dataDocCopy (which is the template)
-			workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
+		        // set the dataDocCopy's document context key to the working document's data document
+		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc, true);
+		        // set the position of the data copy to the working document's position
+		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
+		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+
+		        // set width and height of the new document
+		        dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
+		        // set the active layout of the working document to the dataDocCopy (which is the template)
+		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
+		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateDocumentKey,
+		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+            }
+		    else
+		    {
+		        xTitle.Text = "Activate";
+		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["ActivateIcon"] as string);
+		    }
+            
 		}
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -1179,11 +1194,7 @@ namespace Dash
 					arrow = xFormatTemplateArrow;
 					animation = xFadeAnimationFormatTemplate;
 					break;
-				case "xOptionsHeader":
-					stack = xOptionsButtonStack;
-					arrow = xOptionsArrow;
-					animation = xFadeAnimationOptions;
-					break;
+				
 			}
 
 			if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
@@ -1401,5 +1412,7 @@ namespace Dash
 			xBackgroundColorPreviewBox.Opacity = e.NewValue / 255;
 		    DataDocument?.SetField(KeyStore.OpacitySliderValueKey, new NumberController(e.NewValue), true);
 		}
+
+	 
 	}
 }
