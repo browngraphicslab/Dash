@@ -113,36 +113,152 @@ namespace Dash
         {
             foreach (var layoutDoc in docs)
             {
+
+
                 // create the view for the document controller
                 var layoutView = layoutDoc.MakeViewUI(context);
+
+                var vertBinding = new FieldMultiBinding<VerticalAlignment>(
+                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc.Id, KeyStore.VerticalAlignmentKey))
+                {
+                    Mode = BindingMode.OneTime,
+                    Converter = new VerticalAlignmentMultiBinding(),
+                    Context = null, //TODO
+                    CanBeNull = true
+                };
+                layoutView.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, vertBinding);
+
+                var horizBinding =
+                    new FieldMultiBinding<HorizontalAlignment>(
+                        new DocumentFieldReference(layoutDoc.Id, KeyStore.UseHorizontalAlignmentKey),
+                        new DocumentFieldReference(layoutDoc.Id, KeyStore.HorizontalAlignmentKey))
+                    {
+                        Mode = BindingMode.OneTime,
+                        Converter = new HorizontalAlignmentMultiBinding(),
+                        Context = null, //TODO
+                        CanBeNull = true
+                    };
+                layoutView.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, horizBinding);
+
+                var renderBinding = new FieldMultiBinding<TranslateTransform>(
+                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseHorizontalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc.Id, KeyStore.PositionFieldKey))
+                {
+                    Mode = BindingMode.OneTime,
+                    Converter = new PositionWithAlignmentMultiBinding(),
+                    Context = null,
+                    CanBeNull = true
+                };
+                layoutView.AddFieldBinding(UIElement.RenderTransformProperty, renderBinding);
+
                 // set width and render transform appropriately
                 layoutDoc.SetField(KeyStore.WidthFieldKey,
                     new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
-                var transformations = new TranslateTransform();
-                if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey) != null)
-                {
-                    layoutDoc.SetHorizontalAlignment(layoutDoc.GetDataDocument().GetHorizontalAlignment());
-                }
-                else
-                {
-                    layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
-                    transformations.X = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.X;
-                }
+                //var transformations = new TranslateTransform();
+                //if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey) != null)
+                //{
+                //    layoutDoc.SetHorizontalAlignment(layoutDoc.GetDataDocument().GetHorizontalAlignment());
+                //}
+                //else
+                //{
+                //    layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
+                //    transformations.X = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.X;
+                //}
 
-                if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.VerticalAlignmentKey) != null)
-                {
-                    layoutDoc.SetVerticalAlignment(layoutDoc.GetDataDocument().GetVerticalAlignment());
-                }
-                else
-                {
-                    layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
-                    transformations.Y = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y;
-                }
+                //if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.VerticalAlignmentKey) != null)
+                //{
+                //    layoutDoc.SetVerticalAlignment(layoutDoc.GetDataDocument().GetVerticalAlignment());
+                //}
+                //else
+                //{
+                //    layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
+                //    transformations.Y = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y;
+                //}
 
-                layoutView.RenderTransform = transformations;
+                //layoutView.RenderTransform = transformations;
                 grid.Children.Add(layoutView);
             }
         }
-    }
 
+        private class VerticalAlignmentMultiBinding : SafeDataToXamlConverter<List<object>, VerticalAlignment>
+        {
+            public override VerticalAlignment ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                if (data[0] is bool useVert && useVert)
+                {
+                    if (Enum.TryParse<VerticalAlignment>((string) data[1], out var alignment))
+                    {
+                        return alignment;
+                    }
+
+                    return VerticalAlignment.Top;
+                }
+
+                return VerticalAlignment.Top;
+            }
+
+            public override List<object> ConvertXamlToData(VerticalAlignment xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class HorizontalAlignmentMultiBinding : SafeDataToXamlConverter<List<object>, HorizontalAlignment>
+        {
+            public override HorizontalAlignment ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                if (data[0] is bool useHoriz && useHoriz)
+                {
+                    if (Enum.TryParse<HorizontalAlignment>((string)data[1], out var alignment))
+                    {
+                        return alignment;
+                    }
+                }
+
+                return HorizontalAlignment.Left;
+            }
+
+            public override List<object> ConvertXamlToData(HorizontalAlignment xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class PositionWithAlignmentMultiBinding : SafeDataToXamlConverter<List<object>, TranslateTransform>
+        {
+            public override TranslateTransform ConvertDataToXaml(List<object> data, object parameter = null)
+            {
+                var transformations = new TranslateTransform();
+                if (data[2] is Point pt)
+                {
+                    if ((data[0] is bool useHoriz && !(useHoriz)) || data[0] == null)
+                    {
+                        transformations.X = pt.X;
+                    }
+                    else
+                    {
+                        transformations.X = 0;
+                    }
+
+                    if ((data[1] is bool useVert && !(useVert)) || data[1] == null)
+                    {
+                        transformations.Y = pt.Y;
+                    }
+                    else
+                    {
+                        transformations.Y = 0;
+                    }
+                }
+
+                return transformations;
+            }
+
+            public override List<object> ConvertXamlToData(TranslateTransform xaml, object parameter = null)
+            {
+                throw new NotImplementedException();
+            }
+        }
+    }
 }

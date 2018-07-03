@@ -69,6 +69,8 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
         public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
         public static KeyController SettingsMarkdownModeKey = new KeyController(DashConstants.KeyStore.SettingsMarkdownModeKey);
+        public static KeyController UseVerticalAlignmentKey = new KeyController("3F94F0DD-9412-4571-A89B-4694F83AF534", "Use Vertical Alignment");
+        public static KeyController UseHorizontalAlignmentKey = new KeyController("D58E7E8E-D1C1-476F-ADC3-DF61B1F62239", "Use Horzontal Alignment");
 
         public static class SearchResultDocumentOutline
         {
@@ -97,6 +99,5 @@ namespace Dash
         public delegate DocumentController MakeRegionFunc(DocumentView view);
         public static Dictionary<DocumentType, MakeViewFunc>   TypeRenderer  = new Dictionary<DocumentType, MakeViewFunc>();
         public static Dictionary<DocumentType, MakeRegionFunc> RegionCreator = new Dictionary<DocumentType, MakeRegionFunc>();
-
     }
 }

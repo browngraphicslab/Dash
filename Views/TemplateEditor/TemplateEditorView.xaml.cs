@@ -358,22 +358,25 @@ namespace Dash
 				{
 					case "xAlignLeft":
 						point = new PointController(0, point.Data.Y);
-					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
 					        new TextController(HorizontalAlignment.Left.ToString()), true);
-						break;
+					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+                        break;
 
 					case "xAlignCenter":
 						var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
                         point = new PointController(centerX, point.Data.Y);
-					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
 					        new TextController(HorizontalAlignment.Center.ToString()), true);
+					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
                         break;
 
 					case "xAlignRight":
 						var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
 						point = new PointController(rightX, point.Data.Y);
-					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
 					        new TextController(HorizontalAlignment.Right.ToString()), true);
+					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
                         break;
 				}
 
@@ -480,28 +483,31 @@ namespace Dash
 	    private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
 	        Context context)
 	    {
-            switch (sender.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data)
+	        if (sender.GetField<BoolController>(KeyStore.UseHorizontalAlignmentKey)?.Data ?? false)
 	        {
-                case nameof(HorizontalAlignment.Left):
-                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X != 0)
-                    {
-                        sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
-                    }
-                    break;
-	            case nameof(HorizontalAlignment.Center):
-	                if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
-	                    (xWorkspace.Width - sender.GetActualSize().Value.X) / 2)
-	                {
-	                    sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
-	                }
-                    break;
-	            case nameof(HorizontalAlignment.Right):
-	                if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
-	                    xWorkspace.Width - sender.GetActualSize().Value.X)
-	                {
-	                    sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
-	                }
-                    break;
+	            switch (sender.GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data)
+	            {
+	                case nameof(HorizontalAlignment.Left):
+	                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X != 0)
+	                    {
+	                        sender.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(false), true);
+	                    }
+	                    break;
+	                case nameof(HorizontalAlignment.Center):
+	                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
+	                        (xWorkspace.Width - sender.GetActualSize().Value.X) / 2)
+	                    {
+	                        sender.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(false), true);
+                        }
+	                    break;
+	                case nameof(HorizontalAlignment.Right):
+	                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
+	                        xWorkspace.Width - sender.GetActualSize().Value.X)
+	                    {
+	                        sender.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(false), true);
+                        }
+	                    break;
+	            }
             }
 	    }
 
