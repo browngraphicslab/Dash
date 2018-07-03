@@ -1127,6 +1127,11 @@ namespace Dash
 					arrow = xFormatItemsArrow;
 					animation = xFadeAnimationFormat;
 					break;
+				case "xFormatTemplateHeader":
+					stack = xFormatTemplateButtonStack;
+					arrow = xFormatTemplateArrow;
+					animation = xFadeAnimationFormatTemplate;
+					break;
 				case "xOptionsHeader":
 					stack = xOptionsButtonStack;
 					arrow = xOptionsArrow;

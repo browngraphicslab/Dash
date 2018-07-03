@@ -147,6 +147,8 @@
                     </StackPanel>
                 </StackPanel>
 
+                
+
                 <!--Format Items Drop Down-->
                 <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
                     <StackPanel.Resources>
@@ -161,10 +163,62 @@
                     <!--Header-->
                     <StackPanel  x:Name="xFormatItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format</TextBlock>
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Item</TextBlock>
                     </StackPanel>
                     <!--StackPanel for Format buttons-->
                     <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <!--ALIGNMENT-->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
+                            <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                            </AppBarButton>
+                            <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                            </AppBarButton>
+                            <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
+                            </AppBarButton>
+                        </StackPanel>
+
+                        <!-- ARRANGEMENT TODO: NEED TO CHANGE SYMBOLS FOR ARRANGEMENT-->
+                        <StackPanel Orientation="Horizontal" Width="170" HorizontalAlignment="Left" >
+                            <AppBarButton x:Name="xPushForward" Height="40" Width="58" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AngleRight" Foreground="LightGray" />
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="5"
+                                    />
+                                </ToolTipService.ToolTip>
+                            </AppBarButton>
+                            <AppBarButton x:Name="xSendToFront" Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome  Icon="AngleDoubleRight" Foreground="LightGray"  />
+                            </AppBarButton>
+                            <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                                <fontIcons:FontAwesome Icon="AngleDoubleLeft" Foreground="LightGray"   />
+                            </AppBarButton>
+
+                        </StackPanel>
+
+                    </StackPanel>
+                </StackPanel>
+
+                <!--Format Template Drop Down-->
+                <StackPanel x:Name="XFormatTemplateGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                    <StackPanel.Resources>
+                        <Storyboard x:Name="xFadeAnimationFormatTemplate">
+                            <DoubleAnimation
+                                Storyboard.TargetName="xFormatItemsButtonStack"
+                                Storyboard.TargetProperty="Opacity"
+                                From="0.0" To="1.0" Duration="0:0:.5"
+                            />
+                        </Storyboard>
+                    </StackPanel.Resources>
+                    <!--Header-->
+                    <StackPanel  x:Name="xFormatTemplateHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <fontIcons:FontAwesome x:Name="xFormatTemplateArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Template</TextBlock>
+                    </StackPanel>
+                    <!--StackPanel for Format buttons-->
+                    <StackPanel x:Name="xFormatTemplateButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
                             <AppBarButton x:Name="xAlignLeft"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
@@ -180,7 +234,7 @@
 
                         <!-- BACKGROUND -->
                         <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" >
-                            <TextBlock Foreground="LightGray" FontSize="13"  > Background </TextBlock>
+                            <TextBlock Foreground="LightGray" FontSize="13"  > Background</TextBlock>
                             <Rectangle x:Name="xBackgroundColorPreviewBox" Width="20" Height="20" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
                                 <!--colorpicker flyout-->
                                 <FlyoutBase.AttachedFlyout>
@@ -202,14 +256,14 @@
                                     </Flyout>
                                 </FlyoutBase.AttachedFlyout>
                             </Rectangle>
-                            
-                           
+
+
 
                         </StackPanel>
 
                         <!-- BORDERS -->
                         <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left">
-                            <TextBlock Foreground="LightGray" FontSize="13"  > Border </TextBlock>
+                            <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
                             <Rectangle x:Name="xBorderColorPreviewBox" Width="20" Height="20" Fill="White" Margin="70,0,0,0"></Rectangle>
                         </StackPanel>
 
