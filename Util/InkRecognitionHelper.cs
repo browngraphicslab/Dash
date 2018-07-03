@@ -315,7 +315,7 @@ namespace Dash
             foreach (var key in keysToRemove) TextBoundsDictionary.Remove(key);
             if (list != null)
             {
-                doc.SetField(KeyStore.ParsedFieldKey, list, true);
+                doc.SetField(KeyStore.ParsedFieldsKey, list, true);
             }
             var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
