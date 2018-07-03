@@ -223,10 +223,9 @@ namespace Dash
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
 
 			//set background color
-			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true).Data;
+			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
 			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
-			xWorkspace.Background = backgroundColor
-				?? new SolidColorBrush(Colors.White);
+			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 		}
         
@@ -1293,9 +1292,9 @@ namespace Dash
 		private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			//update opacity of background
-			xWorkspace.Background.Opacity = e.NewValue;
-			xBackgroundColorPreviewBox.Opacity = e.NewValue;
-			//TODO: store opacity key
+			xWorkspace.Background.Opacity = e.NewValue / 255;
+			xBackgroundColorPreviewBox.Opacity = e.NewValue / 255;
+		    DataDocument?.SetField(KeyStore.OpacitySliderValueKey, new NumberController(e.NewValue), true);
 		}
 	}
 }

@@ -44,12 +44,12 @@ namespace Dash
 
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
-			var grid = new Grid()
+		    var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
+		    color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
+            var grid = new Grid()
 	        {
 		        // default size of the template editor box's workspace
-		        Width = docController.GetField<NumberController>(KeyStore.WidthFieldKey).Data,
-		        Height = docController.GetField<NumberController>(KeyStore.HeightFieldKey).Data,
-				Background = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data)
+				Background = color
 			};
             
             LayoutDocuments(docController, context, grid);
@@ -86,6 +86,8 @@ namespace Dash
             {
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
             };
+
+            CourtesyDocument.SetupBindings(grid, docController, context);
 
             return grid;
         }

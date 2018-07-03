@@ -45,8 +45,9 @@
             </ScrollViewer>
 
             <!--Panel that holds Canvas-->
-                <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}" x:Name="xOuterWorkspace" >
-                    <Canvas  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
+            <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
+                           x:Name="xOuterWorkspace">
+                <Canvas  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public"
                     x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <ItemsControl x:Name="xItemsControl"
@@ -185,14 +186,17 @@
                                 <FlyoutBase.AttachedFlyout>
                                     <Flyout x:Name="xBackgroundColorFlyout" >
                                         <StackPanel>
-                                            <!--<Slider x:Name="xBackgroundOpacitySlider" Header="Opacity" Minimum="0" Maximum="1" ValueChanged="XBackgroundOpacitySlider_OnValueChanged" >
-                            <Slider.Foreground>
-                                <LinearGradientBrush >
-                                    <GradientStop Color="#ff0000" Offset="0.0" />
-                                   <GradientStop Color="#ff0000" Offset="1.0" Opacity="1"/>
+                                            <Slider x:Name="xBackgroundOpacitySlider" Header="Opacity"
+                                                    Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1"
+                                                    SnapsTo="StepValues" Value="255"
+                                                    ValueChanged="XBackgroundOpacitySlider_OnValueChanged">
+                                                <Slider.Foreground>
+                                                    <LinearGradientBrush >
+                                                        <GradientStop Color="#ff0000" Offset="0.0" />
+                                                        <GradientStop Color="#ff0000" Offset="1.0" />
                                                     </LinearGradientBrush>
                                                 </Slider.Foreground>
-                                            </Slider>-->
+                                            </Slider>
                                             <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
                                         </StackPanel>
                                     </Flyout>

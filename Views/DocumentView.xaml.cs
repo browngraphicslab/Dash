@@ -843,31 +843,6 @@ namespace Dash
 
             this.Measure(new Size(newSize.Width, 5000));
             newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
-            // TODO: Make sure that resizing works within boundaries - sy
-            //if (Bounds != null)
-            //{
-            //    if (ViewModel.XPos + newSize.Width > Bounds.Rect.Width || ViewModel.YPos + newSize.Height > Bounds.Rect.Height)
-            //    {
-            //        var maxOffsetX = ViewModel.XPos + newSize.Width - Bounds.Rect.Width;
-            //        var maxOffsetY = ViewModel.YPos + newSize.Height - Bounds.Rect.Height;
-            //        if (maxOffsetX >= maxOffsetY)
-            //        {
-            //            this.Measure(new Size(Bounds.Rect.Width - ViewModel.XPos, 5000));
-            //            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
-            //        }
-            //        else
-            //        {
-            //            var prop = oldSize.Width / oldSize.Height;
-            //            var newSizeSquared = new Size(Bounds.Rect.Width - ViewModel.XPos * prop, Bounds.Rect.Height - ViewModel.YPos);
-            //            this.Measure(newSizeSquared);
-            //        }
-
-            //        this.Measure(oldSize);
-            //        e.Handled = true;
-            //        return;
-            //    }
-            //}
-            // if one of the scales is 0, it means that dimension doesn't get repositioned (differs depending on handle)
             ViewModel.Position = new Point(
                 ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
                 ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);

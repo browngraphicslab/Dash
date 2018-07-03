@@ -695,7 +695,7 @@ namespace Dash
             ParentDocument.ManipulationDelta -= ElementOnManipulationDelta;
             ParentDocument.PointerWheelChanged -= ElementOnPointerWheelChanged;
         }
-        private bool ClampScale(double scaleFactor)
+        public bool ClampScale(double scaleFactor)
         {
             if (ElementScale > MaxScale)
             {
