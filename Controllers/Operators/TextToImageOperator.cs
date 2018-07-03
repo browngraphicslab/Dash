@@ -52,7 +52,7 @@ namespace Dash.Controllers.Operators
             }
             catch (Exception)
             {
-                return;
+                throw new ScriptExecutionException(new ImageCreationFailureErrorModel(uri));
             }   
         }
 
