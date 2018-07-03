@@ -28,6 +28,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Office.Interop.Word;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -54,6 +55,11 @@ namespace Dash
 		private bool _isDataDocKVP = true;
 		private Windows.UI.Color _color;
 		DataPackage dataPackage = new DataPackage();
+
+		private enum Alignment
+		{
+			Left, Right, Center, None
+		}
 
 
 		public SolidColorBrush _backgroundColor = new SolidColorBrush(Colors.White);
@@ -346,42 +352,77 @@ namespace Dash
 			}
 		}
 
-		private void AlignmentButton_OnChecked(object sender, RoutedEventArgs e)
+		private void TemplateAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
 			var button = sender as AppBarButton;
+			Alignment alignment = this.ButtonNameToAlignment(button?.Name); 
 
 			//for each document, align according to what button was pressed
 			foreach (var dvm in DocumentViewModels)
 			{
-				var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
-				switch (button.Name)
-				{
-					case "xAlignLeft":
-						point = new PointController(0, point.Data.Y);
-					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-					        new TextController(HorizontalAlignment.Left.ToString()), true);
-					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
-                        break;
-
-					case "xAlignCenter":
-						var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
-                        point = new PointController(centerX, point.Data.Y);
-					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-					        new TextController(HorizontalAlignment.Center.ToString()), true);
-					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
-                        break;
-
-					case "xAlignRight":
-						var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
-						point = new PointController(rightX, point.Data.Y);
-					    dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-					        new TextController(HorizontalAlignment.Right.ToString()), true);
-					    dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
-                        break;
-				}
-
-				dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
+				AlignItem(alignment, dvm);
 			}
+		}
+
+		
+		private void ItemAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			var button = sender as AppBarButton;
+			Alignment alignment = this.ButtonNameToAlignment(button?.Name);
+
+			AlignItem(alignment, _selectedDocument.ViewModel);
+		}
+
+		private Alignment ButtonNameToAlignment(string name)
+		{
+			if (name == "xAlignLeft" || name == "xAlignItemLeft")
+			{
+				return Alignment.Left;
+			}
+			else if (name == "xAlignCenter" || name == "xAlignItemCenter")
+			{
+				return Alignment.Center;
+			}
+			else if (name == "xAlignRight" || name == "xAlignItemRight")
+			{
+				return Alignment.Right;
+			}
+			else
+			{
+				return Alignment.None;
+			}
+		}
+
+		private void AlignItem(Alignment alignment, DocumentViewModel dvm)
+		{
+			var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
+			switch (alignment)
+			{
+				case Alignment.Left:
+					point = new PointController(0, point.Data.Y);
+					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
+						new TextController(HorizontalAlignment.Left.ToString()), true);
+					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+					break;
+
+				case Alignment.Center:
+					var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
+					point = new PointController(centerX, point.Data.Y);
+					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
+						new TextController(HorizontalAlignment.Center.ToString()), true);
+					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+					break;
+
+				case Alignment.Right:
+					var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
+					point = new PointController(rightX, point.Data.Y);
+					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
+						new TextController(HorizontalAlignment.Right.ToString()), true);
+					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
+					break;
+			}
+
+			dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
 		}
 
         private void BorderOption_OnChanged(object sender, RoutedEventArgs e)

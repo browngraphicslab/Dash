@@ -181,31 +181,39 @@
                     <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <!--ALIGNMENT-->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
-                            <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
                             </AppBarButton>
-                            <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
                             </AppBarButton>
-                            <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="ItemAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
                             </AppBarButton>
                         </StackPanel>
 
                         <!-- ARRANGEMENT TODO: NEED TO CHANGE SYMBOLS FOR ARRANGEMENT-->
                         <StackPanel Orientation="Horizontal" Width="170" HorizontalAlignment="Left" >
-                            <AppBarButton x:Name="xPushForward" Height="40" Width="58" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xPushForward" Height="40" Width="58" >
                                 <fontIcons:FontAwesome  Icon="AngleRight" Foreground="LightGray" />
                                 <ToolTipService.ToolTip>
-                                    <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="5"
+                                    <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
                                     />
                                 </ToolTipService.ToolTip>
                             </AppBarButton>
-                            <AppBarButton x:Name="xSendToFront" Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xSendToFront" Height="40" Width="57" >
                                 <fontIcons:FontAwesome  Icon="AngleDoubleRight" Foreground="LightGray"  />
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Send Item to Front" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
+                                    />
+                                </ToolTipService.ToolTip>
                             </AppBarButton>
-                            <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" >
                                 <fontIcons:FontAwesome Icon="AngleDoubleLeft" Foreground="LightGray"   />
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="Send Item to Back" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
+                                    />
+                                </ToolTipService.ToolTip>
                             </AppBarButton>
 
                         </StackPanel>
@@ -233,13 +241,13 @@
                     <StackPanel x:Name="xFormatTemplateButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
-                            <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
                             </AppBarButton>
-                            <AppBarButton x:Name="xAlignCenter" Height="48" Width="57" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignCenter" Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
                             </AppBarButton>
-                            <AppBarButton x:Name="xAlignRight" Height="48" Width="58" Tapped="AlignmentButton_OnChecked">
+                            <AppBarButton x:Name="xAlignRight" Height="48" Width="58" Tapped="TemplateAlignmentButton_OnChecked">
                                 <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
                             </AppBarButton>
                         </StackPanel>
@@ -274,13 +282,8 @@
                         </StackPanel>
 
                         <!-- BORDERS -->
-<<<<<<< HEAD
                         <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
-                            <TextBlock Foreground="LightGray" FontSize="13"  > Border </TextBlock>
-=======
-                        <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left">
                             <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
->>>>>>> 2fa764ab27cd3f96ad944164a6cd6c279a6285be
                             <Rectangle x:Name="xBorderColorPreviewBox" Width="20" Height="20" Fill="White" Margin="70,0,0,0"></Rectangle>
                         </StackPanel>
 
