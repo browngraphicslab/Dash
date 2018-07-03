@@ -1,5 +1,6 @@
 ﻿
 using Dash.Controllers;
+using Dash.Converters;
 using Dash.FontIcons;
 using Dash.Models.DragModels;
 using DashShared;
@@ -27,7 +28,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-using Dash.Converters;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -47,7 +47,7 @@ namespace Dash
 
 		public Collection<DocumentView> DocumentViews { get; set; }
 
-		private KeyValueTemplatePane _keyValuePane;
+        private KeyValueTemplatePane _keyValuePane;
 		private DocumentView _selectedDocument;
 		private Point _pasteWhereHack;
 		private double _thickness;
@@ -222,8 +222,8 @@ namespace Dash
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
 
-			//set background color
-			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
+            //set background color
+            var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
 			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
 			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
@@ -346,7 +346,6 @@ namespace Dash
 			}
 		}
 
-
 		private void AlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
 			var button = sender as AppBarButton;
@@ -359,25 +358,30 @@ namespace Dash
 				{
 					case "xAlignLeft":
 						point = new PointController(0, point.Data.Y);
+					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					        new TextController(HorizontalAlignment.Left.ToString()), true);
 						break;
 
 					case "xAlignCenter":
 						var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
-						point = new PointController(centerX, point.Data.Y);
-						break;
+                        point = new PointController(centerX, point.Data.Y);
+					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					        new TextController(HorizontalAlignment.Center.ToString()), true);
+                        break;
 
 					case "xAlignRight":
 						var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
 						point = new PointController(rightX, point.Data.Y);
-						break;
+					    dvm.DataDocument.SetField(KeyStore.HorizontalAlignmentKey,
+					        new TextController(HorizontalAlignment.Right.ToString()), true);
+                        break;
 				}
 
 				dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
 			}
 		}
 
-
-		private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
+        private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
 		{
 			// TODO: Consider if we really need this and want to put in the work to save borders for documents -sy
 			//double left = 0;
@@ -442,17 +446,66 @@ namespace Dash
 				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
 				DocumentViews.Add(docView);
 				docView.hideEllipses();
-			}
+		    }
 
-			//updates and generates bounds for the children inside the template canvas
-			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+		    var currPos = docView.ViewModel.DocumentController
+		        .GetField<PointController>(KeyStore.PositionFieldKey).Data;
+		    if (docView.ActualWidth > xWorkspace.Width)
+		    {
+		        docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width);
+		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(0, currPos.Y), true);
+		    }
+		    else if (currPos.X + docView.ActualWidth > xWorkspace.Width)
+		    {
+		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
+		            new PointController(xWorkspace.Width - docView.ActualWidth - 1, currPos.Y), true);
+		    }
+
+		    currPos = docView.ViewModel.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data;
+            if (currPos.Y + docView.ActualHeight > xWorkspace.Height)
+		    {
+		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
+		            new PointController(currPos.X, xWorkspace.Height - docView.ActualHeight - 1), true);
+		    }
+
+            //updates and generates bounds for the children inside the template canvas
+            var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
 				xWorkspace.Height - docView.ActualHeight);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 			docView.DocumentDeleted += DocView_DocumentDeleted;
+            docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 		}
 
-		private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
+	    private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+	        Context context)
+	    {
+            switch (sender.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data)
+	        {
+                case nameof(HorizontalAlignment.Left):
+                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X != 0)
+                    {
+                        sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
+                    }
+                    break;
+	            case nameof(HorizontalAlignment.Center):
+	                if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
+	                    (xWorkspace.Width - sender.GetActualSize().Value.X) / 2)
+	                {
+	                    sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
+	                }
+                    break;
+	            case nameof(HorizontalAlignment.Right):
+	                if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X !=
+	                    xWorkspace.Width - sender.GetActualSize().Value.X)
+	                {
+	                    sender.GetDataDocument().RemoveField(KeyStore.HorizontalAlignmentKey);
+	                }
+                    break;
+            }
+	    }
+
+	    private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
 		{
 			DocumentControllers.Remove(sender.ViewModel.DocumentController);
 		    DocumentViews.Remove(sender);
@@ -550,7 +603,7 @@ namespace Dash
 
 				//RemoveDragDropIndication(sender as UserControl);
 
-				var where = e.GetPosition(sender as Canvas);
+				var where = e.GetPosition(sender as Grid);
 				if (DocumentViewModels.Count > 0)
 				{
 					var lastPos = DocumentViewModels.Last().Position;
@@ -873,10 +926,10 @@ namespace Dash
 					else if (dragModel.CanDrop(sender as FrameworkElement))
 					{
 						var dropDoc = dragModel.GetDropDocument(where);
-						DocumentControllers.Add(dropDoc.GetViewCopy(new Point(0, 0)));
-						// kinda hacky lol -sy
-						DocumentViewModels.Last().DocumentController
-							.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
+						DocumentControllers.Add(dropDoc.GetViewCopy(where));
+						//// kinda hacky lol -sy
+						//DocumentViewModels.Last().DocumentController
+						//	.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
 					}
 				}
 			}

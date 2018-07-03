@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
 using Color = Windows.UI.Color;
+using HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
 using Point = Windows.Foundation.Point;
 using Size = Windows.Foundation.Size;
 
@@ -117,15 +118,28 @@ namespace Dash
                 // set width and render transform appropriately
                 layoutDoc.SetField(KeyStore.WidthFieldKey,
                     new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
-                layoutView.AddFieldBinding(UIElement.RenderTransformProperty, new FieldBinding<PointController>
+                var transformations = new TranslateTransform();
+                if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey) != null)
                 {
-                    Document = layoutDoc,
-                    Key = KeyStore.PositionFieldKey,
-                    Mode = BindingMode.OneWay,
-                    Converter = new PointToTranslateTransformConverter()
-                });
-                layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
-                layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
+                    layoutDoc.SetHorizontalAlignment(layoutDoc.GetDataDocument().GetHorizontalAlignment());
+                }
+                else
+                {
+                    layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
+                    transformations.X = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.X;
+                }
+
+                if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.VerticalAlignmentKey) != null)
+                {
+                    layoutDoc.SetVerticalAlignment(layoutDoc.GetDataDocument().GetVerticalAlignment());
+                }
+                else
+                {
+                    layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
+                    transformations.Y = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y;
+                }
+
+                layoutView.RenderTransform = transformations;
                 grid.Children.Add(layoutView);
             }
         }
