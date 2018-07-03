@@ -38,7 +38,8 @@
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Duplicate" Icon="Copy" Click="MenuFlyoutItemCopy_Click"/>
                     <MenuFlyoutItem Text="Alias" Icon="TwoPage" Click="MenuFlyoutItemAlias_Click"/>
-                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Apply Template" Icon="MoveToFolder" Click="MenuFlyoutItemApplyTemplate_Click"/>
+                <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Fields" Icon="ShowResults"  Click="MenuFlyoutItemFields_Click"/>
                     <MenuFlyoutItem Text="Context" Icon="SetLockScreen" Click="MenuFlyoutItemContext_Click"/>
                     <MenuFlyoutSeparator/>
@@ -47,7 +48,8 @@
                     <MenuFlyoutItem Text="Screen Capture" Icon="WebCam" Click="MenuFlyoutItemScreenCap_Click"/>
                     <MenuFlyoutItem Text="Launch App" Icon="Go"  Click="MenuFlyoutLaunch_Click"/>
                     <MenuFlyoutItem Text="Copy History to Clipboard" Icon="Paste" Click="MenuFlyoutItemCopyHistory_Click"/>
-                </MenuFlyout>
+                    
+            </MenuFlyout>
             </Grid.ContextFlyout>
 
             <!--<Grid.ColumnDefinitions>

@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Provider;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -371,7 +372,7 @@ namespace Dash
 			var button = sender as AppBarButton;
 			Alignment alignment = this.ButtonNameToAlignment(button?.Name);
 
-			AlignItem(alignment, _selectedDocument.ViewModel);
+			AlignItem(alignment, _selectedDocument?.ViewModel);
 		}
 
 		private Alignment ButtonNameToAlignment(string name)
@@ -426,7 +427,11 @@ namespace Dash
 			dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
 		}
 
-        private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
+
+
+#region Borders
+
+		private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
 		{
 			// TODO: Consider if we really need this and want to put in the work to save borders for documents -sy
 			//double left = 0;
@@ -460,6 +465,7 @@ namespace Dash
 			//}
 		}
 
+#endregion
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
@@ -1320,18 +1326,9 @@ namespace Dash
 			}
 		}
 
-		private void BackgroundButton_OnTapped(object sender, TappedRoutedEventArgs e)
-		{
-			//xBackgroundColorFlyout.Open;
-		}
-
 		private void XBackgroundColorPreviewBox_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
 			FlyoutBase.ShowAttachedFlyout(xBackgroundColorPreviewBox);
-			//xBackgroundOpacitySlider.Width = xBackgroundColorPicker.ActualWidth;
-			//xBackgroundOpacitySlider.Foreground = new LinearGradientBrush();
-
-
 		}
 		
 		//highlights ellipse on pointer entered
@@ -1412,7 +1409,47 @@ namespace Dash
 			xBackgroundColorPreviewBox.Opacity = e.NewValue / 255;
 		    DataDocument?.SetField(KeyStore.OpacitySliderValueKey, new NumberController(e.NewValue), true);
 		}
+        
+		private void BringToFront()
+		{
+			//find item
+			/*
+			var selected = _selectedDocument;
+			foreach (DocumentView item in xItemsControl.Items)
+			{
+				_selectedDocument = item;
+			}
+			*/
+			//TODO: Number should be highest (# of children?)y
+			_selectedDocument.SetValue(Canvas.ZIndexProperty, 0);
 
-	 
+		}
+
+		private void XDesignGridVisibilityButton_OnClick(object sender, RoutedEventArgs e)
+		{
+			this.ToggleDesignGridVisibility();
+		}
+
+		private void ToggleDesignGridVisibility()
+		{
+			if (xDesignGridVisibilityText.Text == "OFF")
+			{
+				//TODO:ADD GRID-PATTERN TO CANVAS & MAKE IT VISIBLE
+				//update button
+				xDesignGridVisibilityText.Text = "ON";
+			}
+			else
+			{
+				//TODO: COLLAPSE GRID
+				//update button
+				xDesignGridVisibilityText.Text = "OFF";
+			}
+
+		}
+
+		private void XSendToFront_OnClick(object sender, RoutedEventArgs e)
+		{
+			this.BringToFront();
+		}
 	}
 }

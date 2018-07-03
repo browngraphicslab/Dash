@@ -1378,5 +1378,11 @@ namespace Dash
 			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
 		}
+
+        private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            TemplateApplier applier = new TemplateApplier(this);
+            xContextCanvas.Children.Add(applier);
+        }
     }
 }
