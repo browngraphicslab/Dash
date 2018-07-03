@@ -219,7 +219,7 @@ namespace Dash
                     //if enter is pressed, make text box larger
                     TextHeight = TextHeight + 20;
                     TextGrid.Height = new GridLength(TextHeight);
-                }
+                } 
 
                 else if (xTextBox.Text != "")
                 {

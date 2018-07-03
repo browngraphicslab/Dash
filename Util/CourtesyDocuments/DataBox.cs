@@ -55,7 +55,7 @@ namespace Dash
             {
                 // hack to check if the dc is a view document
                 FrameworkElement view = null;
-                if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
+                if (KeyStore.TypeRenderer.ContainsKey(dc.DocumentType))
                 {
                     view =  dc.MakeViewUI(context);
                 }
