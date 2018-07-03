@@ -21,7 +21,7 @@ namespace Dash
         {
             var fref = documentController.GetField(KeyStore.DataKey) as DocumentReferenceController;
             var ebox = new EditableScriptView();
-            ebox.ViewModel = new EditableScriptViewModel(new DocumentFieldReference(fref.DocumentId, fref.FieldKey));
+            ebox.ViewModel = new EditableScriptViewModel(fref.GetFieldReference());
             ebox.Tag = "Auto TextBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
             ebox.HorizontalAlignment = HorizontalAlignment.Stretch;
             ebox.VerticalAlignment = VerticalAlignment.Stretch;

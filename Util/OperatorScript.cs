@@ -209,7 +209,7 @@ namespace Dash
                 }
                 doc.SetField(KeyStore.OperatorKey, new ListController<OperatorController>(new OperatorController[] { op }), true);
 
-                return new DocumentReferenceController(doc.Id, op.Outputs.FirstOrDefault().Key);
+                return new DocumentReferenceController(doc, op.Outputs.FirstOrDefault().Key);
                 
             }
 

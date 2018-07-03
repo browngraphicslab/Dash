@@ -106,12 +106,12 @@ namespace Dash
                     if (dataValue != null)
                     {
                         fields[variableKey] = new TextController(dataKey.Name);
-                        fields[valueKey] = new DocumentReferenceController(originalDoc.Id, dataKey);
+                        fields[valueKey] = new DocumentReferenceController(originalDoc, dataKey);
                     }
 
                     foreach (var columnKey in columnKeys)
                     {
-                        fields[columnKey] = new DocumentReferenceController(originalDoc.Id, columnKey);
+                        fields[columnKey] = new DocumentReferenceController(originalDoc, columnKey);
                     }
 
 

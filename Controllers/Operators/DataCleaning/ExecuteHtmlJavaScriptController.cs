@@ -51,7 +51,7 @@ namespace Dash
             execOp.SetField(ScriptKey,    new TextController(""), true);
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
-            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp.Id, KeyStore.OperatorKey)).Document;
+            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp, KeyStore.OperatorKey)).Document;
             execOp.SetActiveLayout(layoutDoc, true, true);
             return execOp;
         }
