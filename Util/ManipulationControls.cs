@@ -122,7 +122,6 @@ namespace Dash
             return lines;
         }
 
-
         //START OF NEW SNAPPING
 
         private static AlignmentLine[] GetAlignableLines(AlignmentLine line)
@@ -241,12 +240,12 @@ namespace Dash
             MainPage.Instance.HorizontalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             MainPage.Instance.VerticalAlignmentLine.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
-			//Don't do any alignment if simply panning the collection
+			//Don't do any alignment if simply panning the collection or
 			var collectionFreeformView =
 				ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionFreeformBase;
-			if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView))
+            var collectionStandaradView = ParentDocument.GetFirstAncestorOfType<CollectionView>()?.CurrentView as CollectionStandardView;
+            if (collectionFreeformView == null || ParentDocument.Equals(collectionFreeformView) || collectionStandaradView?.ViewModel.ViewLevel != CollectionViewModel.StandardViewLevel.Detail)
 				return originalTranslate;
-
             var boundsBeforeTranslation = InteractiveBounds(ParentDocument.ViewModel);
             var parentDocumentLinesBefore = AlignmentLinesFromRect(boundsBeforeTranslation);
 
