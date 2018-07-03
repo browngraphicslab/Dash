@@ -371,7 +371,7 @@ namespace Dash
 			var button = sender as AppBarButton;
 			Alignment alignment = this.ButtonNameToAlignment(button?.Name);
 
-			AlignItem(alignment, _selectedDocument?.ViewModel);
+			if (_selectedDocument != null) AlignItem(alignment, _selectedDocument?.ViewModel);
 		}
 
 		private Alignment ButtonNameToAlignment(string name)
