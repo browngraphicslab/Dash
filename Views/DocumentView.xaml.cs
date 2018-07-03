@@ -319,12 +319,6 @@ namespace Dash
 
         private async void GetDocPreview()
         {
-            //if (ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
-            //{
-            //    var pdfBox = xContentPresenter.GetFirstDescendantOfType<SfPdfViewerControl>();
-            //    var img = pdfBox.GetPage(0);
-            //    DocPreview = img.Source;
-            //}
             xIconBorder.BorderThickness = new Thickness(1);
             xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
             {
@@ -338,8 +332,6 @@ namespace Dash
             if (DocPreview == null)
                 DocPreview = await this.GetPreview();
             xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
-            OpenIcon();
-
         }
 
         public async Task<RenderTargetBitmap> GetPreview()
@@ -367,12 +359,17 @@ namespace Dash
 
         private void OpenIcon()
         {
+            xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
             xIcon.Visibility = Visibility.Visible;
             xContentPresenter.Visibility = Visibility.Collapsed;
+            xIconImage.Width = xIconImage.Height = 60 / ManipulationControls.ElementScale;
+            xSmallIconImage.Width = xSmallIconImage.Height = 20 / ManipulationControls.ElementScale;
         }
 
         private void OpenFreeform()
         {
+            if (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
+                xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             xContentPresenter.Visibility = Visibility.Visible;
             xIcon.Visibility = Visibility.Collapsed;
         }
@@ -434,6 +431,7 @@ namespace Dash
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
                     GetDocPreview();
+                    OpenIcon();
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
                     CloseDocPreview();

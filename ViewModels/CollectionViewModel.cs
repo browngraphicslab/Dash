@@ -85,8 +85,10 @@ namespace Dash
         {
             foreach (var dvm in DocumentViewModels)
             {
-                var name = dvm.ToString();
-                dvm.ViewLevel = ViewLevel;
+                if (!dvm.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
+                {
+                    dvm.ViewLevel = ViewLevel;
+                }
             }
         }
         #endregion
@@ -347,7 +349,8 @@ namespace Dash
 
                     ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                 }
-
+                if (ViewLevel.Equals(StandardViewLevel.Overview) || ViewLevel.Equals(StandardViewLevel.Region))
+                    UpdateViewLevel();
             }
         }
 
