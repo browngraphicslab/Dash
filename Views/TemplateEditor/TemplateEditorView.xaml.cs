@@ -1315,18 +1315,9 @@ namespace Dash
 			}
 		}
 
-		private void BackgroundButton_OnTapped(object sender, TappedRoutedEventArgs e)
-		{
-			//xBackgroundColorFlyout.Open;
-		}
-
 		private void XBackgroundColorPreviewBox_OnTapped(object sender, TappedRoutedEventArgs e)
 		{
 			FlyoutBase.ShowAttachedFlyout(xBackgroundColorPreviewBox);
-			//xBackgroundOpacitySlider.Width = xBackgroundColorPicker.ActualWidth;
-			//xBackgroundOpacitySlider.Foreground = new LinearGradientBrush();
-
-
 		}
 		
 		//highlights ellipse on pointer entered
@@ -1411,7 +1402,17 @@ namespace Dash
 		//
 		private void BringToFront()
 		{
-			
+			//find item
+			/*
+			var selected = _selectedDocument;
+			foreach (DocumentView item in xItemsControl.Items)
+			{
+				_selectedDocument = item;
+			}
+			*/
+			//TODO: Number should be highest (# of children?)y
+			_selectedDocument.SetValue(Canvas.ZIndexProperty, 0);
+
 		}
 
 		private void XDesignGridVisibilityButton_OnClick(object sender, RoutedEventArgs e)
@@ -1434,6 +1435,11 @@ namespace Dash
 				xDesignGridVisibilityText.Text = "OFF";
 			}
 
+		}
+
+		private void XSendToFront_OnClick(object sender, RoutedEventArgs e)
+		{
+			this.BringToFront();
 		}
 	}
 }
