@@ -15,7 +15,7 @@ namespace Dash
             {
                 _documentController = value;
                 (Model as DocumentReferenceModel).DocumentId = value.Id;
-                UpdateOnServer(null);//TODO Add update and undo
+                UpdateOnServer(null);//TODO Add FieldUpdate and undo
             }
         }
 
