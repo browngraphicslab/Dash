@@ -51,7 +51,7 @@ namespace Dash
                     .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
                 if (dataRegions != null)
                 {
-                    var totalOffset = DataDocument.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+                    var totalOffset = DataDocument.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey)?.Data ?? 0;
                     xRegionsGrid.Height = totalOffset;
                     foreach (var region in dataRegions.TypedData)
                     {
@@ -307,12 +307,17 @@ namespace Dash
 
         private void XRegionsGrid_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(xRegionsGrid).Position;
-            _anchor = pos;
-            xTemporaryRegionMarker.SetSize(new Size(0, 0), _anchor, new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
-            xTemporaryRegionMarker.Visibility = Visibility.Visible;
-            _isDragging = true;
-            _selectedRegion = null;
+            if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+            {
+                var pos = e.GetCurrentPoint(xRegionsGrid).Position;
+                _anchor = pos;
+                xTemporaryRegionMarker.SetSize(new Size(0, 0), _anchor, new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
+                xTemporaryRegionMarker.Visibility = Visibility.Visible;
+                _isDragging = true;
+                _selectedRegion = null;
+            }
+            else
+                _isDragging = false;
         }
 
         private void XRegionsGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
