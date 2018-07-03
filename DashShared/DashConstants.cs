@@ -165,7 +165,7 @@ namespace DashShared
             public static KeyModel ActiveLayoutKey = new KeyModel("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA", "ActiveLayout");
             public static KeyModel TitleKey = new KeyModel("0C074CB4-6D05-4363-A867-C0A061C1573F", "Title");
             public static KeyModel CaptionKey = new KeyModel("D01D6702-A3AD-4546-9BFB-C5263F8D5599", "Caption");
-            public static KeyModel PrototypeKey = new KeyModel("866A6CC9-0B8D-49A3-B45F-D7954631A682", "_Prototype");
+            public static KeyModel PrototypeKey = new KeyModel("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
             public static KeyModel DelegatesKey = new KeyModel("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "_Delegates");
             public static KeyModel UserSetWidthKey = new KeyModel("7D3E7CDB-D0C7-4316-BA3B-3C032F24B5AA", "_userSetWidth");
             public static KeyModel WidthFieldKey = new KeyModel("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
