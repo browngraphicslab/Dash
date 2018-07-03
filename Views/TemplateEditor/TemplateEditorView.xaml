@@ -192,8 +192,8 @@
                                                     ValueChanged="XBackgroundOpacitySlider_OnValueChanged">
                                                 <Slider.Foreground>
                                                     <LinearGradientBrush >
-                                                        <GradientStop Color="#ff0000" Offset="0.0" />
-                                                        <GradientStop Color="#ff0000" Offset="1.0" />
+                                                        <GradientStop Color="White" Offset="0.0" />
+                                                        <GradientStop Color="Black" Offset="1.0" />
                                                     </LinearGradientBrush>
                                                 </Slider.Foreground>
                                             </Slider>
