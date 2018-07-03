@@ -35,13 +35,13 @@ namespace Dash
 
         public override void Init()
         {
-            base.Init();
             if (_documentController == null)
             {
                 _documentController =
                     ContentController<FieldModel>.GetController<DocumentController>((Model as DocumentReferenceModel)
                         .DocumentId);
             }
+            base.Init();
         }
 
         public void ChangeFieldDoc(DocumentController doc, bool withUndo = true)

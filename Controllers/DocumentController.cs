@@ -89,13 +89,7 @@ namespace Dash
             set
             {
                 DocumentModel.DocumentType = value;
-                //Dear future coder,
-                //
-                //I knew you'd eventually find this line, probably because I set 'enforceTypeCheck' to false.
-                //Before you change it, remember that Types Really Only Lessen Loads in the short term.
-                //
-                //Enjoy your day,
-                //-Tyler
+                //If there is an issue here it is probably because 'enforceTypeCheck' is set to false.
                 this.SetField<TextController>(KeyStore.DocumentTypeKey, value.Type, true, false);
             }
         }
