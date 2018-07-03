@@ -11,6 +11,7 @@
     xmlns:input="using:Syncfusion.UI.Xaml.Controls.Input"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:behaviors="using:Microsoft.Toolkit.Uwp.UI.Animations.Behaviors"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
@@ -50,6 +51,7 @@
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public"
                     x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
+                    <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                     <ItemsControl x:Name="xItemsControl"
                               x:FieldModifier="public"
                               ItemsSource="{Binding DocumentViewModels}">
@@ -159,8 +161,6 @@
                     </StackPanel>
                 </StackPanel>
 
-                
-
                 <!--Format Items Drop Down-->
                 <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
                     <StackPanel.Resources>
@@ -235,7 +235,7 @@
                     <!--Header-->
                     <StackPanel  x:Name="xFormatTemplateHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xFormatTemplateArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Template</TextBlock>
+                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Template</TextBlock>
                     </StackPanel>
                     <!--StackPanel for Format buttons-->
                     <StackPanel x:Name="xFormatTemplateButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
@@ -255,7 +255,7 @@
                         <!-- BACKGROUND -->
                         <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
                             <TextBlock Foreground="LightGray" FontSize="13"  > Background</TextBlock>
-                            <Rectangle x:Name="xBackgroundColorPreviewBox" Width="20" Height="20" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+                            <Rectangle x:Name="xBackgroundColorPreviewBox" Width="18" Height="18" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
                                 <!--colorpicker flyout-->
                                 <FlyoutBase.AttachedFlyout>
                                     <Flyout x:Name="xBackgroundColorFlyout" >
@@ -284,10 +284,11 @@
                         <!-- BORDERS -->
                         <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
                             <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
-                            <Rectangle x:Name="xBorderColorPreviewBox" Width="20" Height="20" Fill="White" Margin="70,0,0,0"></Rectangle>
+                            <Rectangle x:Name="xBorderColorPreviewBox" Width="18" Height="18" Fill="White" Margin="70,0,0,0"></Rectangle>
                         </StackPanel>
+                        
 
-                    </StackPanel>
+                </StackPanel>
                 </StackPanel>
 
                 <!--Options Drop Down-->
@@ -306,7 +307,7 @@
                         <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                     </StackPanel>
-                    <!--StackPanel for Format buttons-->
+                    <!--StackPanel for Option buttons-->
                     <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                         <Button Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
                             <StackPanel Orientation="Horizontal">
@@ -315,6 +316,13 @@
                                            FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
                             </StackPanel>
                         </Button>
+                        <!--GRID-->
+                        <StackPanel Orientation="Horizontal" Margin="4,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                            <TextBlock Foreground="LightGray" FontSize="13"  > Design Grid </TextBlock>
+                            <Button x:Name="xDesignGridVisibilityButton" Width="45" Height="23" Background="{StaticResource WindowsBlue}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0" Click="XDesignGridVisibilityButton_OnClick">
+                                <TextBlock x:Name="xDesignGridVisibilityText" Foreground="White"  FontSize="13"  Width="40" HorizontalTextAlignment="Center" VerticalAlignment="Center" Margin="-4,-1,0,0"> OFF</TextBlock>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
 

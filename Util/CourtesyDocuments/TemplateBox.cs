@@ -113,8 +113,6 @@ namespace Dash
         {
             foreach (var layoutDoc in docs)
             {
-
-
                 // create the view for the document controller
                 var layoutView = layoutDoc.MakeViewUI(context);
 
