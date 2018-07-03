@@ -85,10 +85,8 @@ namespace Dash
         {
             foreach (var dvm in DocumentViewModels)
             {
-                if (!dvm.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType))
-                {
-                    dvm.ViewLevel = ViewLevel;
-                }
+                dvm.ViewLevel = ViewLevel;
+                dvm.DecorationState = false;
             }
         }
         #endregion

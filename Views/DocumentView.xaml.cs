@@ -325,13 +325,12 @@ namespace Dash
                 Opacity = 0.5
             };
             var type = ViewModel.DocumentController.DocumentType;
-            WebViewBrush webBrush = null;
-            WebBoxView web = null;
             xSmallIconImage.Visibility = Visibility.Visible;
             xSmallIconImage.Source = GetTypeIcon();
             if (DocPreview == null)
-                DocPreview = await this.GetPreview();
+                DocPreview = await GetPreview();
             xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
+            OpenIcon();
         }
 
         public async Task<RenderTargetBitmap> GetPreview()
@@ -421,6 +420,7 @@ namespace Dash
 
         private async void UpdateView()
         {
+            if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
@@ -431,7 +431,6 @@ namespace Dash
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
                     GetDocPreview();
-                    OpenIcon();
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
                     CloseDocPreview();
