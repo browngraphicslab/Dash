@@ -466,7 +466,7 @@ namespace Dash
 			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			// TODO: working doc should be able to be null
 			// make a copy of the data document
-			var dataDocCopy = DataDocument.MakeCopy();
+			var dataDocCopy = DataDocument.GetDataInstance();
 			// loop through each layout document and try to abstract it out when necessary
 
 			// set the dataDocCopy's document context key to the working document's data document

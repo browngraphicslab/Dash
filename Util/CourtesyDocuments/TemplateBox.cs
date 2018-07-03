@@ -122,7 +122,7 @@ namespace Dash
                     new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
                     new DocumentFieldReference(layoutDoc.Id, KeyStore.VerticalAlignmentKey))
                 {
-                    Mode = BindingMode.OneTime,
+                    Mode = BindingMode.OneWay,
                     Converter = new VerticalAlignmentMultiBinding(),
                     Context = null, //TODO
                     CanBeNull = true
@@ -134,7 +134,7 @@ namespace Dash
                         new DocumentFieldReference(layoutDoc.Id, KeyStore.UseHorizontalAlignmentKey),
                         new DocumentFieldReference(layoutDoc.Id, KeyStore.HorizontalAlignmentKey))
                     {
-                        Mode = BindingMode.OneTime,
+                        Mode = BindingMode.OneWay,
                         Converter = new HorizontalAlignmentMultiBinding(),
                         Context = null, //TODO
                         CanBeNull = true
@@ -146,7 +146,7 @@ namespace Dash
                     new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
                     new DocumentFieldReference(layoutDoc.Id, KeyStore.PositionFieldKey))
                 {
-                    Mode = BindingMode.OneTime,
+                    Mode = BindingMode.OneWay,
                     Converter = new PositionWithAlignmentMultiBinding(),
                     Context = null,
                     CanBeNull = true
