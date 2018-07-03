@@ -52,7 +52,7 @@ namespace Dash
                         //return new DocumentFieldModel(data.ToString());
                     case TypeInfo.DocumentReference:
                         DocumentFieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
-                        return new DocumentReferenceModel(docFieldRefence.DocumentId, docFieldRefence.FieldKey.Model.Id, false);
+                        return new DocumentReferenceModel(docFieldRefence.DocumentController.Id, docFieldRefence.FieldKey.Model.Id, false);
                     case TypeInfo.PointerReference:
                         throw new NotImplementedException();
                     case TypeInfo.Operator: //TODO What should this do?

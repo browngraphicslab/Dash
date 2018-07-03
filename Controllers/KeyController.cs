@@ -123,7 +123,7 @@ namespace Dash
 
         }
 
-        static public KeyController LookupKeyByName(string name, bool createIfNull = false)
+        public static KeyController LookupKeyByName(string name, bool createIfNull = false)
         {
             foreach (var k in ContentController<FieldModel>.GetControllers<KeyController>())
             {

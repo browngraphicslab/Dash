@@ -155,7 +155,7 @@ namespace Dash
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
                         containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
-                        var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                        var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                         dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);

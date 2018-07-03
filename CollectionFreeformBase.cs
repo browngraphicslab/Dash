@@ -997,7 +997,7 @@ namespace Dash
                 var keycontroller = KeyController.LookupKeyByName(keyname, true);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                 dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
                 dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                 Actions.DisplayDocument(ViewModel, dbox, where);

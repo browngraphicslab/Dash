@@ -125,7 +125,7 @@ namespace Dash
                     if (!keyFieldPair.Key.Name.StartsWith("_"))
                         ListItemSource.Add(
                             new EditableScriptViewModel(
-                                new DocumentFieldReference(activeContextDoc.Id, keyFieldPair.Key)));
+                                new DocumentFieldReference(activeContextDoc, keyFieldPair.Key)));
             }
         }
 

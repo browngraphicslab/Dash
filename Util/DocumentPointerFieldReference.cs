@@ -19,10 +19,10 @@ namespace Dash
 
         public override FieldReference Resolve(Context context)
         {
-            var docController = GetDocumentController(context)?.Id;
+            var docController = GetDocumentController(context);
             Debug.Assert(docController != null);
-            string docId = context.GetDeepestDelegateOf(docController) ?? docController;
-            return new DocumentFieldReference(docId, FieldKey);
+            var doc = context.GetDeepestDelegateOf(docController) ?? docController;
+            return new DocumentFieldReference(doc, FieldKey);
         }
         public override FieldReference Copy()
         {

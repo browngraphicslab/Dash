@@ -525,7 +525,7 @@ namespace Dash
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     //DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc, pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
@@ -533,7 +533,7 @@ namespace Dash
 
             if (obj != null)
             {
-                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj], pivotKey), true);
                 return dictionary[obj];
             }
             return null;
@@ -1078,7 +1078,7 @@ namespace Dash
                         var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
                         if (k != null)
                         {
-                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().Id, k), p.X, p.Y, w, h).Document);
+                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument(), k), p.X, p.Y, w, h).Document);
                         }
                     }
                     else

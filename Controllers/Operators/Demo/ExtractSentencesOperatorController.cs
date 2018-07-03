@@ -77,7 +77,7 @@ namespace Dash
                         outputDoc.SetField(SentenceLengthKey, new NumberController(sentence.Length), true);
                         outputDoc.SetField(SentenceScoreKey, new NumberController((int) (new Random().NextDouble() * 100)), true);
 
-                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc.Id, SentenceKey), 0, 0, 200, 200).Document;
+                        var docLayout = new RichTextBox(new DocumentReferenceController(dataDoc, SentenceKey), 0, 0, 200, 200).Document;
                         docLayout.SetField(KeyStore.DocumentContextKey, outputDoc, true);
                         outputDocs.Add(docLayout);
 

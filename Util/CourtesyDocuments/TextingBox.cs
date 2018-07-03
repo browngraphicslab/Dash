@@ -121,8 +121,8 @@ namespace Dash
         }
         protected static void BindTextAlignment(EditableTextBlock element, DocumentController docController, Context context)
         {
-            var dataRef = new DocumentFieldReference(docController.Id, TextAlignmentKey);
-            var sideCountRef = new DocumentFieldReference(docController.Id, KeyStore.DataKey);
+            var dataRef = new DocumentFieldReference(docController, TextAlignmentKey);
+            var sideCountRef = new DocumentFieldReference(docController, KeyStore.DataKey);
 
             var alignmentBinding = new FieldMultiBinding<TextAlignment>(dataRef, sideCountRef)
             {
