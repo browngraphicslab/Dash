@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
+    /// <summary>
+    /// This goes over the view, in the same grid. Having one is required to instantiate a VisualAnnotationManager.
+    /// </summary>
     public sealed partial class AnnotationOverlay : UserControl
     {
         public double PostColumn1ActualWidth => xRegionPostManipulationPreview.Column1.ActualWidth;

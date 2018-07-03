@@ -11,6 +11,14 @@ using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
+    /// <summary>
+    /// These EventArgs are used for regioning-related events.
+    /// </summary>
+    public class RegionEventArgs : EventArgs
+    {
+        public DocumentController Link { get; set; }
+    }
+
     public class VisualAnnotationManager : AnnotationManager
     {
         private Point _anchorPoint;
@@ -25,6 +33,8 @@ namespace Dash
         private DocumentController _docCtrl;
         private IVisualAnnotatable _element;
         private AnnotationOverlay _overlay;
+        public event EventHandler<RegionEventArgs> NewRegionMade;
+        public event EventHandler<RegionEventArgs> RegionRemoved;
 
         private enum RegionVisibilityState
         {
@@ -54,18 +64,21 @@ namespace Dash
             {
                 foreach (var region in _dataRegions.TypedData)
                 {
-                    var pos = region.GetPositionField().Data;
-                    var width = region.GetWidthField().Data;
-                    var height = region.GetHeightField().Data;
-                    var imageSize = _docCtrl.GetField<PointController>(KeyStore.ActualSizeKey).Data;
+                    var pos = region.GetDataDocument().GetField<PointController>(KeyStore.PositionFieldKey).Data;
+                    var width = region.GetDataDocument().GetField<NumberController>(KeyStore.WidthFieldKey).Data;
+                    var height = region.GetDataDocument().GetField<NumberController>(KeyStore.HeightFieldKey).Data;
+                    //var pos = region.GetPositionField().Data;
+                    //var width = region.GetWidthField().Data;
+                    //var height = region.GetHeightField().Data;
+                    var totalSize = _docCtrl.GetField<PointController>(KeyStore.ActualSizeKey).Data;
 
-                    if (pos.X + width <= imageSize.X && pos.Y + height <= imageSize.Y)
+                    if (pos.X + width <= totalSize.X && pos.Y + height <= totalSize.Y)
                     {
                         MakeNewRegionBox(
                             region,
                             pos,
                             new Size(width, height),
-                            new Size(imageSize.X, imageSize.Y)).Hide();
+                            new Size(totalSize.X, totalSize.Y)).Hide();
                     }
                 }
             }
@@ -107,7 +120,7 @@ namespace Dash
         {
             var properties = e.GetCurrentPoint(_element.Self()).Properties;
 
-            if (_isDragging && properties.IsRightButtonPressed == false)
+            if (_isDragging && properties.IsRightButtonPressed == false && properties.IsLeftButtonPressed == true)
             {
                 //update size of preview region box according to mouse movement
 
@@ -170,13 +183,13 @@ namespace Dash
 
             DocumentController theDoc;
 
-            if (region is RegionBox imageRegion)
+            if (region is RegionBox regionBox)
             {
                 //get the linked doc of the selected region
-                theDoc = imageRegion.LinkTo;
+                theDoc = regionBox.LinkTo;
                 if (theDoc == null) return;
 
-                SelectRegion(imageRegion);
+                SelectRegion(regionBox);
             }
             else
             {
@@ -208,6 +221,7 @@ namespace Dash
                 _overlay.RemoveRegion(region);
                 _visualRegions?.Remove(region);
                 _dataRegions?.Remove(region.LinkTo);
+                OnRegionRemoved(region.LinkTo);
             }
 
             //if region is selected, unhighlight the linked doc
@@ -235,7 +249,7 @@ namespace Dash
             MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
         }
 
-        //deselects all regions on an image
+        //deselects all regions on a view
         private void DeselectRegions()
         {
             _isPreviousRegionSelected = false;
@@ -263,6 +277,16 @@ namespace Dash
             _overlay.PostRow3Height = region.Row3.Height;
             _overlay.PostVisibility = Visibility.Visible;
             //xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        }
+
+        public void SelectRegion(DocumentController dc)
+        {
+            foreach (var d in _visualRegions)
+            {
+                if (!d.LinkTo.Equals(dc)) continue;
+                SelectRegion(d);
+                return;
+            }
         }
 
         //ensures all regions are visible
@@ -319,18 +343,20 @@ namespace Dash
                 note = _element.GetDocControllerFromSelectedRegion();
 
                 //add to regions list
-                var regions = _docCtrl.GetDataDocument()
-                    .GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-                if (regions == null)
+                if (_dataRegions == null)
                 {
-                    var dregions = new List<DocumentController> {note};
-                    _docCtrl.GetDataDocument()
-                        .SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
+                    var dregions = new ListController<DocumentController>(note);
+                    _docCtrl.GetDataDocument().SetField(KeyStore.RegionsKey, dregions, true);
                 }
                 else
                 {
-                    regions.Add(note);
+                    _dataRegions.Add(note);
                 }
+                note.GetDataDocument().SetField<NumberController>(KeyStore.WidthFieldKey, _overlay.GetDuringPreviewSize().Width, true);
+                note.GetDataDocument().SetField<NumberController>(KeyStore.HeightFieldKey, _overlay.GetDuringPreviewSize().Height, true);
+                note.GetDataDocument().SetField<PointController>(KeyStore.PositionFieldKey, _overlay.GetTopLeftPoint(), true);
+
+                OnNewRegionMade(note);
 
                 // use During Preview here because it's the one with actual pixel measurements
                 MakeNewRegionBox(note, _overlay.GetTopLeftPoint(), _overlay.GetDuringPreviewActualSize(), _element.GetTotalDocumentSize());
@@ -357,6 +383,23 @@ namespace Dash
         {
             _overlay.PostVisibility = vis;
             _overlay.DuringVisibility = vis;
+        }
+
+        /// <summary>
+        /// Fired whenever a new region is made, for viewers like PDFView who then need to do further things.
+        /// </summary>
+        protected virtual void OnNewRegionMade(DocumentController dc)
+        {
+            NewRegionMade?.Invoke(this, new RegionEventArgs {Link = dc });
+        }
+
+        /// <summary>
+        /// Fired whenever a region is removed, for viewers like PDFView who then need to do further things.
+        /// </summary>
+        /// <param name="dc"></param>
+        protected virtual void OnRegionRemoved(DocumentController dc)
+        {
+            RegionRemoved?.Invoke(this, new RegionEventArgs { Link = dc });
         }
     }
 }

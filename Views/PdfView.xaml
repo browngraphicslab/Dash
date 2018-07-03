@@ -23,9 +23,10 @@
                                                   HorizontalScrollBarVisibility="Hidden"
                                               VerticalScrollBarVisibility="Hidden"
                                                   IsTextSelectionEnabled="False" DocumentLoaded="XPdfView_OnDocumentLoaded"/>
-                <ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanging="ScrollViewer_OnViewChanging" HorizontalAlignment="Stretch">
-                    <Grid x:Name="xRegionsGrid" Opacity="0.4" Background="Transparent" PointerPressed="XRegionsGrid_OnPointerPressed" PointerMoved="XRegionsGrid_OnPointerMoved" PointerReleased="XRegionsGrid_OnPointerReleased"  HorizontalAlignment="Stretch">
-                        <dash:PDFRegionMarker x:Name="xTemporaryRegionMarker" Visibility="Collapsed"/>
+
+                <ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanging="ScrollViewer_OnViewChanging" PointerPressed="xScrollViewer_OnPointerPressed" PointerMoved="xScrollViewer_OnPointerMoved" PointerReleased="xScrollViewer_OnPointerReleased" HorizontalAlignment="Stretch">
+                    <Grid x:Name="xGridForStretching">
+                        <dash:AnnotationOverlay x:Name="xAnnotations"/>
                     </Grid>
                 </ScrollViewer>
             </Canvas>
