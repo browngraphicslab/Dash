@@ -82,7 +82,7 @@ namespace Dash
         private async void CleanupDocuments()
         {
             var fields = new HashSet<FieldModel>();
-            await TrackDownReferences(MainPage.Instance.MainDocument.Model, fields);
+            await TrackDownReferences(MainPage.Instance.MainDocument?.Model, fields);
             DeleteDocumentsExcept(fields, null, null);
         }
 

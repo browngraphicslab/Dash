@@ -1,25 +1,16 @@
-﻿using Dash.Models.DragModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Dash.Annotations;
+using Dash.Models.DragModels;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,7 +21,7 @@ namespace Dash
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private readonly DSL _dsl;
 
-        private int _currentHistoryIndex = 0;
+        private int _currentHistoryIndex;
 
         private static List<String> _dataset;
         private bool _textModified;
@@ -55,9 +46,10 @@ namespace Dash
 
         public DishReplView(DocumentController dataDoc)
         {
-            this.InitializeComponent();
-            this.DataContext = new DishReplViewModel();
-            OuterReplScope scope = new OuterReplScope(dataDoc);
+            InitializeComponent();
+            DataContext = new DishReplViewModel();
+            var scope = new OuterReplScope(dataDoc);
+            scope.DeclareVariable("help", OperatorScript.GetFunctionList());
             _dsl = new DSL(scope);
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
@@ -68,7 +60,7 @@ namespace Dash
             //var scopeDoc = dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey);
             //add items from lists to Repl
             var replItems = new ObservableCollection<ReplLineViewModel>();
-            for(var i = 0; i < inputList.Length; i++)
+            for(var i = 0; i < inputList.Count; i++)
             {
                 var newReplLine = new ReplLineViewModel(inputList[i].Data, outputList[i], new TextController("test"));
                 replItems.Add(newReplLine);

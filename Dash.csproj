@@ -312,6 +312,7 @@
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\SetFieldFailedScriptErrorModel.cs" />
     <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>

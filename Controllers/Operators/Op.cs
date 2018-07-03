@@ -178,7 +178,10 @@ namespace Dash
             [Name.div] = "",
             [Name.divide] = "",
 
-            [Name.operator_modulo] = " Computes the remainder given by the dividend A and divisor B (A % B).\n Example: 10 % 5 = 0, 11 % 6 = 5",
+            [Name.operator_modulo] = 
+                "Computes the remainder given by the dividend A and divisor B.\n            " +
+                "Invoked by the % token in the REPL, formatted as A % B.\n      " +
+                "EXAMPLES:\n            10 % 5 = 0\n            11 % 6 = 5",
             [Name.modulo] = "",
             [Name.mod] = ""
         };
