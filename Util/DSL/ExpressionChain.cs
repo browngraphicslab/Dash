@@ -10,15 +10,17 @@ namespace Dash
     public class ExpressionChain : ScriptExpression
     {
         private IEnumerable<ScriptExpression> _expressions;
+        private bool _newScope;
 
-        public ExpressionChain(IEnumerable<ScriptExpression> expressions)
+        public ExpressionChain(IEnumerable<ScriptExpression> expressions, bool newScope = true)
         {
             _expressions = expressions;
+            _newScope = newScope;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            var newScope = new Scope(scope);
+            var newScope = _newScope ? new Scope(scope) : scope;
 
             var exps = _expressions.ToArray();
             var length = exps.Count();
