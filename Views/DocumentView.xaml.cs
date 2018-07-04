@@ -82,6 +82,7 @@ namespace Dash
         private UIElement _selectedContextPreview;
 
         private DocumentController _templateEditor;
+       
 
         public static readonly DependencyProperty BindRenderTransformProperty = DependencyProperty.Register(
             "BindRenderTransform", typeof(bool), typeof(DocumentView), new PropertyMetadata(default(bool)));
@@ -580,7 +581,7 @@ namespace Dash
             {
                 return;
             }
-
+            
             ViewModel.InteractiveManipulationPosition = translate;
             ViewModel.InteractiveManipulationScale = scaleAmount;
             RenderTransform = TransformGroupMultiConverter.ConvertDataToXamlHelper(new List<object> { translate, scaleAmount });
@@ -1381,8 +1382,11 @@ namespace Dash
 
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
-            TemplateApplier applier = new TemplateApplier(this);
+            TemplateApplier applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
             xContextCanvas.Children.Add(applier);
         }
+
+     
+
     }
 }

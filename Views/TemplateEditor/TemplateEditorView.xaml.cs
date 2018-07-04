@@ -235,6 +235,9 @@ namespace Dash
 			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
 			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
+
+		    xLayoutPanel.Children.Add(new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
+		        this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels));
 		}
         
 	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
