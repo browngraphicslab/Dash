@@ -167,17 +167,18 @@ namespace Dash
             }
         }
 
-        private static ScriptExpression ParseToExpression(string script)
+        public static ScriptExpression ParseToExpression(string script, bool returnNode = false)
         {
             //this formats string to INode and sends it to below function
             script = script.EndsWith(';') ? script : script + ";";
             var ast = new TypeScriptAST(script);
             var root = ast.RootNode;
 
+
             return ParseToExpression(root);
         }
 
-        public static ScriptExpression ParseToExpression(INode node)
+        private static ScriptExpression ParseToExpression(INode node)
         {
             //this converts node to ScriptExpression - most cases call ParseToExpression
             //on individual inner pieces of node
@@ -436,8 +437,17 @@ namespace Dash
                     return new ArrayExpression(new List<ScriptExpression>(parsedList));
                 case SyntaxKind.ObjectLiteralExpression:
                     var objectProps = (node as ObjectLiteralExpression)?.Children;
+                    var parsedObList = new List<ScriptExpression>();
+                    foreach (var element in objectProps)
+                    {
+                        parsedObList.Add(ParseToExpression(element.Children[1]));
+                    }
 
-                    return new ObjectExpression(objectProps);
+                    var names = objectProps.Select(n => ((Identifier) n.Children[0]).Text).ToList();
+                    var dict = new Dictionary<string, ScriptExpression>(names.Zip(parsedObList,
+                        (s, expression) => new KeyValuePair<string, ScriptExpression>(s, expression)));
+
+                    return new ObjectExpression(dict);
                 case SyntaxKind.PropertyAccessExpression:
                     var propAccessExpr = node as PropertyAccessExpression;
                     Debug.Assert(node.Children.Count == 2);
@@ -775,6 +785,15 @@ namespace Dash
 
                     return ParseToExpression(varDeclList.Declarations[0]);
                 case SyntaxKind.FunctionDeclaration:
+                    var funDec = (node as FunctionDeclaration);
+
+                    return new FunctionDeclarationExpression(funDec.IdentifierStr, funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None);
+
+                    //return new FunctionExpression(DSL.GetFuncName<FunctionOperatorController>(), new List<ScriptExpression>()
+                    //{
+                    //   new LiteralExpression(new TextController(funDec.SourceStr)),
+                    //    new LiteralExpression(new TextController(funDec.IdentifierStr))
+                    //});
                     break;
                 case SyntaxKind.ClassDeclaration:
                     break;
@@ -955,18 +974,30 @@ namespace Dash
                     var parameters = new List<ScriptExpression>();
 
                     var funcName = Op.Parse(callExpr?.IdentifierStr);
-                    if (funcName == Op.Name.invalid) throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(callExpr?.IdentifierStr));
-
-                    var keys = OperatorScript.GetOrderedKeyControllersForFunction(funcName).ToArray();
-                    var keyIndex = 0;
-                    foreach (var arg in callExpr.Arguments)
+                    if (funcName == Op.Name.invalid)
                     {
-                        parameters.Add(ParseToExpression(arg));
-                        keyIndex++;
+                        //no operator, check if it is a user defined function saved as a variable
+                        return new FunctionExpression(DSL.GetFuncName<FunctionCallOperatorController>(), new List<ScriptExpression>()
+                        {
+                            new LiteralExpression(new TextController(callExpr?.IdentifierStr))
+                        });
+
+                        throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(callExpr?.IdentifierStr));
+                    }
+                    else
+                    {
+                        var keys = OperatorScript.GetOrderedKeyControllersForFunction(funcName).ToArray();
+                        var keyIndex = 0;
+                        foreach (var arg in callExpr.Arguments)
+                        {
+                            parameters.Add(ParseToExpression(arg));
+                            keyIndex++;
+                        }
+
+                        var func = new FunctionExpression(Op.Parse(callExpr.IdentifierStr), parameters);
+                        return func;
                     }
 
-                    var func = new FunctionExpression(Op.Parse(callExpr.IdentifierStr), parameters);
-                    return func;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -1004,5 +1035,7 @@ namespace Dash
             //TODO tyler is this correct?
             public override TypeInfo Type => TypeInfo.Any;
         }
+
     }
+
 }

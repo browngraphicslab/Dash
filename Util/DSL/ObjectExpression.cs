@@ -1,23 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using Flurl.Util;
+using Syncfusion.Drawing;
 using Zu.TypeScript.TsTypes;
 
 namespace Dash
 {
     class ObjectExpression : ScriptExpression
     {
-        private readonly List<Node> dictionary;
-        //private readonly ScriptExpression value;
+        private readonly Dictionary<string, ScriptExpression> _dictionary;
 
-        public ObjectExpression(List<Node> dic/*, ScriptExpression val*/)
+        private List<KeyController> _docKeys;
+
+        public ObjectExpression(Dictionary<string, ScriptExpression> sc)
         {
-            this.dictionary = dic;
-            //this.value = val;
+            _dictionary = sc;
         }
 
         public override TypeInfo Type => TypeInfo.Any;
@@ -29,18 +32,40 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            DocumentController result = new DocumentController();
-            foreach (var property in dictionary)
+            DocumentController doc;
+            if (_dictionary.ContainsKey(KeyStore.DataKey.Name))
             {
-                var propChildren = property.Children;
-                Debug.Assert(propChildren[0] is Identifier);
-                var keyString = ((Identifier)propChildren[0]).Text;
-                var key = new KeyController(keyString, keyString);
-                var value = TypescriptToOperatorParser.ParseToExpression(propChildren[1]).Execute(scope);
-                result.SetField(key, value, true);
+                FieldControllerBase dataVal = _dictionary[KeyStore.DataKey.Name].Execute(scope);
+
+                switch (dataVal.TypeInfo)
+                {
+                    case TypeInfo.Text:
+                        doc = new TextingBox(dataVal).Document;
+                        break;
+                    case TypeInfo.Image:
+                        doc = new ImageBox(dataVal).Document;
+                        break;
+                    default:
+                        doc = new DocumentController();
+                        break;
+                }
+                
+            }
+            else
+            {
+                doc = new DocumentController();
             }
 
-            return result;
+            foreach (var scriptExpression in _dictionary)
+            {
+                var keyString = scriptExpression.Key;
+                if (keyString == KeyStore.DataKey.Name) continue;
+                var key = KeyController.LookupKeyByName(keyString, true);
+                var value = scriptExpression.Value.Execute(scope);
+                doc.SetField(key, value, true);
+            }
+
+            return doc;
         }
     }
 }
