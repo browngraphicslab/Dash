@@ -10,10 +10,10 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("2515150F-3AF7-4840-AE45-B6951EF628C6", "Query");
+        public static readonly KeyController QueryKey = new KeyController("Query");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C0EBD4D8-C922-4CAC-81FE-0FB8D8A8AE36", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public SimplifiedSearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -43,7 +43,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("F0D6FCB0-4635-4ECF-880F-81D2738A1350", "Simple Search");
+            new KeyController("Simple Search", "F0D6FCB0-4635-4ECF-880F-81D2738A1350");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

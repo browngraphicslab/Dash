@@ -275,7 +275,7 @@ namespace Dash
         }
 
         /// </summary>
-        public static KeyController HeaderListKey = new KeyController("7C3F0C3F-F065-4094-8802-F572B35C4D42", "HeaderList");
+        public static KeyController HeaderListKey = new KeyController("HeaderList", "7C3F0C3F-F065-4094-8802-F572B35C4D42");
         private bool SchemaHeadersContains(KeyController field)
         {
             foreach (var s in SchemaHeaders)
@@ -518,7 +518,7 @@ namespace Dash
         private void AddColumn_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             // Add a new field to the schema view
-            _schemaFieldsNotInDocs.Add(new KeyController(UtilShared.GenerateNewId(), "New Field"));
+            _schemaFieldsNotInDocs.Add(new KeyController("New Field", UtilShared.GenerateNewId()));
             UpdateFields(new Context(ParentDocument));
         }
     }

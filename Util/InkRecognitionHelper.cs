@@ -486,12 +486,12 @@ namespace Dash
                 var splitstring = str.Split(':');
                 value = splitstring[1].TrimEnd(' ').TrimStart(' ');
                 string keystring = splitstring[0].TrimEnd(' ').TrimStart(' ');
-                key = new KeyController(Guid.NewGuid().ToString(), keystring);
+                key = new KeyController(keystring, Guid.NewGuid().ToString());
             }
             else
             {
                 value = str;
-                key = new KeyController(Guid.NewGuid().ToString(), $"Document Field {suffix}");
+                key = new KeyController($"Document Field {suffix}", Guid.NewGuid().ToString());
             }
 
         }

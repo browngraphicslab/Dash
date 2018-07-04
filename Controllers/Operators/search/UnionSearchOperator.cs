@@ -12,11 +12,11 @@ namespace Dash
     public class UnionSearchOperator : OperatorController
     {
         //Input keys
-        public static readonly KeyController Dict1Key = new KeyController("B4E22985 - 2C5E - 4C02 - 8E69 - 6DD35F339576", "Dict1");
-        public static readonly KeyController Dict2Key = new KeyController("203DD674-8F3E-45FC-B40F-DA2A9C706A6E", "Dict2");
+        public static readonly KeyController Dict1Key = new KeyController("Dict1");
+        public static readonly KeyController Dict2Key = new KeyController("Dict2");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C935C101-78D6-4041-B614-C189F28D4BC5", "DictionaryResults");
+        public static readonly KeyController ResultsKey = new KeyController("DictionaryResults");
 
         public UnionSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -27,7 +27,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C814865A-0173-4581-8533-9CB045E0338F", "Union Search");
+        private static readonly KeyController TypeKey = new KeyController("Union Search", "C814865A-0173-4581-8533-9CB045E0338F");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {

@@ -314,7 +314,6 @@
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />

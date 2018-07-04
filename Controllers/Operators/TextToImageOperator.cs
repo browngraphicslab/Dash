@@ -27,13 +27,13 @@ namespace Dash.Controllers.Operators
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1", "Text To Image");
+            new KeyController("Text To Image", "5DF53FC2-1ADC-446E-98AE-D7F8764C0FA1");
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("CFCA1C0E-CA76-4C58-8A6C-42838BD26C90", "Text");
+        public static readonly KeyController TextKey = new KeyController("Text");
 
         //Output keys
-        public static readonly KeyController ImageKey = new KeyController("C378E154-B035-4D30-A2D6-000B608EA677", "Image");
+        public static readonly KeyController ImageKey = new KeyController("Image");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

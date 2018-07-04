@@ -148,7 +148,7 @@ namespace Dash
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    var keycontroller = KeyController.LookupKeyByName(key, true);
+                    var keycontroller = new KeyController(key);
                     var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
                     if (containerDoc != null)
                     {
