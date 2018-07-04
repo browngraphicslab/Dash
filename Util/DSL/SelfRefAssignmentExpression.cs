@@ -41,55 +41,6 @@ namespace Dash
                 assignCtrl
             };
 
-            //if (varCtrl.CheckTypeEquality(assignCtrl))
-            //{
-            //    switch (varCtrl.TypeInfo)
-            //    {
-            //        case TypeInfo.Number:
-            //            var varNum = ((NumberController) varCtrl).Data;
-            //            var assignNum = ((NumberController) assignCtrl).Data;
-            //            double outNum = 0;
-
-            //            switch (_selfRefOp)
-            //            {
-            //                case SelfRefAssignment.Addition:
-            //                    _opName = DSL.GetFuncName<AddOperatorController>();
-            //                    break;
-            //                case SelfRefAssignment.Subtraction:
-            //                    _opName = DSL.GetFuncName<SubtractOperatorController>();
-            //                    break;
-            //                case SelfRefAssignment.Multiplication:
-            //                    _opName = DSL.GetFuncName<MultiplyOperatorController>();
-            //                    break;
-            //                case SelfRefAssignment.Division:
-            //                    _opName = DSL.GetFuncName<AddOperatorController>();
-            //                    break;
-            //                case SelfRefAssignment.Modulo:
-            //                    outNum = varNum % assignNum;
-            //                    break;
-            //            }
-
-            //            scope.SetVariable(_varName, new NumberController(outNum));
-            //            break;
-            //        case TypeInfo.Text:
-            //            var varText = ((TextController) varCtrl).Data;
-            //            var assignText = ((TextController) assignCtrl).Data;
-            //            var outString = "";
-
-            //            switch (_selfRefOp)
-            //            {
-            //                case SelfRefAssignment.Addition:
-            //                    outString = varText + assignText; break;
-            //                case SelfRefAssignment.Division:
-
-            //                case SelfRefAssignment.StringSearch:
-            //                    varEditor = new StringBuilder(varText);
-            //                    var toFind = assignText.ToCharArray();
-            //                    foreach (var c in toFind)
-            //                    {
-            //                        varEditor.Replace(c, '_');
-            //                    }
-
             FieldControllerBase output;
             try
             {

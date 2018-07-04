@@ -13,6 +13,7 @@ namespace Dash
         public ScriptHelpExcerpt(Op.Name funcName)
         {
             _functionName = funcName;
+            if (!Op.FuncDescriptions.ContainsKey(funcName)) throw new ScriptExecutionException(new DocumentationNotFoundErrorModel(funcName));
             _description = Op.FuncDescriptions[funcName];
         }
 

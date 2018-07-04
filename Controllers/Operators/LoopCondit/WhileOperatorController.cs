@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType(Op.Name._while)]
+    [OperatorType(Op.Name.while_lp)]
     public class WhileOperatorController : OperatorController
     {
         public WhileOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

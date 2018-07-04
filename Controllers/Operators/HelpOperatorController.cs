@@ -25,7 +25,7 @@ namespace Dash
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
-            new KeyValuePair<KeyController, IOInfo>(FuncNameKey, new IOInfo(TypeInfo.Text, true)),
+            new KeyValuePair<KeyController, IOInfo>(FuncNameKey, new IOInfo(TypeInfo.Text, false)),
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -35,8 +35,14 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
+            if (!inputs.ContainsKey(FuncNameKey))
+            {
+                outputs[ComputedResultKey] = OperatorScript.GetFunctionList();
+                return;
+            }
             if (!(inputs[FuncNameKey] is TextController enumAsString)) return;
             var enumOut = Op.Parse(enumAsString.Data);
+            if (enumOut == Op.Name.invalid) throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(enumAsString.Data));
             if (!_constructedExcerpts.ContainsKey(enumOut)) _constructedExcerpts.Add(enumOut, new ScriptHelpExcerpt(enumOut));
             outputs[ComputedResultKey] = _constructedExcerpts[enumOut].GetExcerpt();
         }

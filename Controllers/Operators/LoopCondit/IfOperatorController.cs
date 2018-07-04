@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType(Op.Name._if)]
+    [OperatorType(Op.Name.if_st)]
     class IfOperatorController : OperatorController
     {
         public IfOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

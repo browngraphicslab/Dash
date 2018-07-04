@@ -344,7 +344,7 @@ namespace Dash
 
         public override void AddRange(IList<FieldControllerBase> elements)
         {
-            if (elements is IList<T> checkedElements && !IsReadOnly) AddRangeManager(checkedElements);
+            if (!IsReadOnly) AddRangeManager(elements.OfType<T>().ToList());
         }
 
         public override void SetValue(int index, FieldControllerBase field)
@@ -440,7 +440,7 @@ namespace Dash
             element.FieldModelUpdated -= ContainedFieldUpdated;
 
             var removed = TypedData.Remove(element);
-            ListModel.Data.Remove(element.Id );
+            ListModel.Data.Remove(element.Id);
 
             return removed;
         }
@@ -489,8 +489,10 @@ namespace Dash
             var prevList = TypedData;
             foreach (var element in TypedData)
             {
-                RemoveHelper(element);
+                element.FieldModelUpdated -= ContainedFieldUpdated;
+                ListModel.Data.Remove(element.Id);
             }
+            TypedData.Clear();
 
             var newEvent = new UndoCommand(() => ClearManager(false), () => TypedData = prevList);
 

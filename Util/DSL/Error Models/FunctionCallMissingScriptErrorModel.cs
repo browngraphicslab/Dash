@@ -9,7 +9,7 @@ namespace Dash
 
         public override string GetHelpfulString()
         {
-            return $" Exception:\n            InvalidFunctionCall\n      Feedback:\n            {AttemptedFunction}() is not currently implemented. Type <help> for a complete catalog of valid functions.";
+            return $" Exception:\n            InvalidFunctionCall\n      Feedback:\n            {AttemptedFunction}() is not currently implemented. Enter <help> for a complete catalog of valid functions.";
         }
     }
 

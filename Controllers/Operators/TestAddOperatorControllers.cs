@@ -2,9 +2,10 @@
 using System.Collections.ObjectModel;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.add)]
+    [OperatorType()]
     public class TestAddOperatorControllerFour : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("5B15A261-18BF-479C-8F11-BF167A11B5DC", "A");
@@ -53,7 +54,7 @@ namespace Dash
         }
     }
 
-    [OperatorType(Op.Name.add)]
+    [OperatorType()]
     public class TestAddOperatorControllerOne : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("CCA5E3CC-FDB7-4583-A70C-EF0723ED6F8F", "A");
@@ -93,7 +94,7 @@ namespace Dash
         }
     }
 
-    [OperatorType(Op.Name.ambiguous_add_test)]
+    [OperatorType()]
     public class TestAddOperatorControllerInheritanceA : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("A4D2EB11-F510-4673-ADBB-3CE7E2B03443", "A");
@@ -133,7 +134,7 @@ namespace Dash
         }
     }
 
-    [OperatorType(Op.Name.ambiguous_add_test)]
+    [OperatorType()]
     public class TestAddOperatorControllerInheritanceB : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("EB1A56DB-2CE3-4523-80F0-8CC9148ADAAE", "A");

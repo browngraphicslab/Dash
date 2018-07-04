@@ -2,9 +2,10 @@
 using System.Collections.ObjectModel;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name._for_in)]
+    [OperatorType(Op.Name.for_in_lp)]
     public class ForInOperatorController : OperatorController
     {
         public ForInOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

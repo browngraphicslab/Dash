@@ -14,7 +14,7 @@ namespace Dash
 
         public OuterReplScope(DocumentController doc)
         {
-            variableDoc = doc.GetField<DocumentController>(KeyStore.ReplScopeKey);
+            variableDoc = doc;
 
             _dictionary = new Dictionary<string, FieldControllerBase>();
             foreach (var var in variableDoc.EnumFields())
