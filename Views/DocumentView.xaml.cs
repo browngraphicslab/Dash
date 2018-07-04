@@ -1383,7 +1383,8 @@ namespace Dash
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
             TemplateApplier applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
-            xContextCanvas.Children.Add(applier);
+            
+            MainPage.Instance.xCanvas.Children.Add(applier);
         }
 
      
