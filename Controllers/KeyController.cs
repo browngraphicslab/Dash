@@ -61,6 +61,11 @@ namespace Dash
             });
         }
 
+        /// <summary>
+        /// Use this contructor only if you really need to give this key a specific ID, otherwise use the constructor where you just pass in a name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="guid"></param>
         public KeyController(string name, string guid) : base(new KeyModel(name, guid))
         {
             IsOnServer(delegate (bool onServer)
