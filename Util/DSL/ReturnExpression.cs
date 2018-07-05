@@ -19,21 +19,23 @@ namespace Dash
         public override FieldControllerBase Execute(Scope scope)
         {
             var val = _value.Execute(scope);
-            scope.GetFirstAncestor().SetReturn(val);
-            throw new ReturnException();
-            //return val;
+            //now return val
+            scope.SetReturn(val);
+
+            return val;
+
+            //throw new ReturnException();
         }
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
             throw new NotImplementedException();
-            //TODO tfs help with operator/doc stuff
         }
 
         public override DashShared.TypeInfo Type
         {
             get { return TypeInfo.Any; }
-        } //TODO tyler is this correct?
+        }
     }
 }
 

@@ -56,7 +56,17 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            Scope newScope = new Scope(scope);
+            //if parent scope is return scope, we have a function within function and want to branch off higher up
+            ReturnScope newScope;
+            if (scope?.Parent is ReturnScope)
+            {
+                newScope = new ReturnScope(scope.Parent.Parent);
+            }
+            else
+            {
+                newScope = new ReturnScope(scope);
+            }
+            
             for (int i = 0; i < _inputNames.Count; i++)
             {
                 newScope.DeclareVariable(_inputNames[i], inputs[KeyController.LookupKeyByName(i.ToString())]);

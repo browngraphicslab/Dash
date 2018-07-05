@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public class OuterReplScope : Scope
+    public class OuterReplScope : ReturnScope
     {
-        //private readonly Dictionary<string, FieldControllerBase> _dictionary;
+         private DocumentController variableDoc;
 
-        private DocumentController variableDoc;
-
-        public OuterReplScope(DocumentController doc)
+        public OuterReplScope(DocumentController doc) : base(null)
         {
             variableDoc = doc.GetField<DocumentController>(KeyStore.ReplScopeKey);
 

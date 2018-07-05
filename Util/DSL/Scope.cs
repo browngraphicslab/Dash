@@ -56,7 +56,7 @@ namespace Dash
         }
 
         public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
-        public void SetReturn(FieldControllerBase ret) { _returnValue = ret; }
-        public FieldControllerBase GetReturn => _returnValue;
+        public virtual void SetReturn(FieldControllerBase ret) { Parent.SetReturn(ret); }
+        public virtual FieldControllerBase GetReturn => Parent.GetReturn;
     }
 }

@@ -137,11 +137,11 @@ namespace Dash
                     var exec = se?.Execute(scope ?? new Scope());
                     return exec;
                 }
-                catch (ReturnException)
-                {
-                    var ret = scope?.GetFirstAncestor().GetReturn;
-                    return ret;
-                }
+                //catch (ReturnException)
+                //{
+                //    var ret = scope?.GetFirstAncestor().GetReturn;
+                //    return ret;
+                //}
             }
             catch (ScriptException scriptException)
             {
@@ -763,9 +763,6 @@ namespace Dash
                     //return still works by outputting an empty text controller if it isn't called, and is storing
                     //itself as a variable- if we could find a way to break out of the recursive loop that would 
                     //be a lot more elegant instead of using an error statement
-                    var returnStatement = node as ReturnStatement;
-                    var c1 = node.Children;
-                    //TODO: throw empty return error
                     return new ReturnExpression(ParseToExpression(node.Children[0]));
                 case SyntaxKind.WithStatement:
                     break;
@@ -798,13 +795,6 @@ namespace Dash
                     var funDec = (node as FunctionDeclaration);
 
                     return new FunctionDeclarationExpression(funDec.IdentifierStr, funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None);
-
-                    //return new FunctionExpression(DSL.GetFuncName<FunctionOperatorController>(), new List<ScriptExpression>()
-                    //{
-                    //   new LiteralExpression(new TextController(funDec.SourceStr)),
-                    //    new LiteralExpression(new TextController(funDec.IdentifierStr))
-                    //});
-                    break;
                 case SyntaxKind.ClassDeclaration:
                     break;
                 case SyntaxKind.InterfaceDeclaration:

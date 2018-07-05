@@ -285,7 +285,7 @@ namespace Dash
             var numInputs = OperatorScript.GetAmountInputs(Op.Parse(selectedItem));
             var functionEnding = " ";
             var offset = 1;
-            if (numInputs != null)
+            if (numInputs != null && numInputs != 0)
             {
                 functionEnding = "(";
                 offset = 2;
