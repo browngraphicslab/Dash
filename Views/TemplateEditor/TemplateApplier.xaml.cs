@@ -118,7 +118,7 @@ namespace Dash
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var matchingItems = TemplateRecords.Where(tr =>
-                tr.Title.StartsWith((sender as TextBox).Text, StringComparison.OrdinalIgnoreCase)).ToArray();
+                tr.Title.Contains((sender as TextBox).Text, StringComparison.OrdinalIgnoreCase)).ToArray();
             xListView.ItemsSource = matchingItems.Any()
                 ? matchingItems
                 : new Collection<TemplateRecord>() {new TemplateRecord(null)}.ToArray();

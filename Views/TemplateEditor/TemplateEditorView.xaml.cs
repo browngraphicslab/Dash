@@ -236,6 +236,7 @@ namespace Dash
 			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 
+            // TODO: @laura
 		    xLayoutPanel.Children.Add(new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
 		        this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels));
 		}
