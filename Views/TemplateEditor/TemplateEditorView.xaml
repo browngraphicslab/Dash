@@ -46,9 +46,89 @@
             <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
                            x:Name="xOuterWorkspace">
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
-                    x:FieldModifier="public"
-                    x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
-                    <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
+                    <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+
+                    <!--DESIGN GRID -->
+                    <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 3x3 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+                    <Grid x:Name="xDesignGridSmall" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 9x9 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+
+                        <Border Grid.Column="3" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+
                     <ItemsControl x:Name="xItemsControl"
                               x:FieldModifier="public"
                               ItemsSource="{Binding DocumentViewModels}">
@@ -71,22 +151,24 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+
                 </Grid>
 
-                    <!--ELLIPSES-->
-                    <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
-                        <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
-                            <!--Apply button -->
-                            <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
+                <!--ELLIPSES-->
+                <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                    <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
+                        <!--Apply button -->
+                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
                             <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
                             <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="Apply Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                 />
                             </ToolTipService.ToolTip>
-                            </Grid>
-                            
-                         <!--Revert Ellipse -->
+                        </Grid>
+
+                        <!--Revert Ellipse -->
                         <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
                             <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
                             <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -98,236 +180,251 @@
                         <!--Clear Template Ellipse -->
                         <Grid PointerPressed="XClearButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Bottom">
                             <Ellipse x:Name="xClearEllipse" Fill="#D64141" />
-                                <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
+                            <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <ToolTipService.ToolTip>
+                                <ToolTip Content="Clear Template" Placement="Right" HorizontalOffset="10" VerticalOffset="0"
                                     />
-                                </ToolTipService.ToolTip>
-                            </Grid>
+                            </ToolTipService.ToolTip>
+                        </Grid>
                     </StackPanel>
-                    </RelativePanel>
+                </RelativePanel>
+
+
             </RelativePanel>
-            
+
             <!--Formatting Panel-->
             <ScrollViewer Visibility="Visible" VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto" Width="200" Height="500">
-            
 
-            <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Height="500" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" >
 
-                <!--Data Key Header-->
+                <StackPanel Orientation="Vertical" x:Name="xLayoutPanel" Width="200" Height="500" Background="{StaticResource AccentGreenLight}" Padding="10 10 10 10" >
 
-                <StackPanel Width="170" Background="#334f43" HorizontalAlignment="Center" Margin="0,5,0,10">
+                    <!--Data Key Header-->
+
+                    <StackPanel Width="170" Background="#334f43" HorizontalAlignment="Center" Margin="0,5,0,10">
 
                         <TextBlock FontSize="15"  HorizontalAlignment="Left" Foreground="White">Data Key</TextBlock>
                         <local:EditableTextBlock Width="170" FontSize="14" HorizontalAlignment="Left" x:Name="xKeyBox" Foreground="White"></local:EditableTextBlock>
 
                     </StackPanel>
 
-                <!--Add Items Drop Down-->
-                <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
-                    <StackPanel.Resources>
-                        <Storyboard x:Name="xFadeAnimation">
-                            <DoubleAnimation
+                    <!--Add Items Drop Down-->
+                    <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimation">
+                                <DoubleAnimation
                                 Storyboard.TargetName="xAddItemsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
-                        </Storyboard>
-                    </StackPanel.Resources>
-                    <!--Header-->
-                    <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                        <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
-                    </StackPanel>
-                    <!--StackPanel for buttons-->
-                    <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                        <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick" >
-                            <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
+                        </StackPanel>
+                        <!--StackPanel for buttons-->
+                        <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick" >
+                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FontIcon}"/>
-                        </AppBarButton>
-                        <AppBarButton Height="46" Width="42.5" Click="ImageButton_OnClick" >
-                            <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                            </AppBarButton>
+                            <AppBarButton Height="46" Width="42.5" Click="ImageButton_OnClick" >
+                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ImageIcon}"/>
-                        </AppBarButton>
-                        <AppBarButton  Height="46" Width="42.5" Click="VideoButton_OnClick" >
-                            <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                            </AppBarButton>
+                            <AppBarButton  Height="46" Width="42.5" Click="VideoButton_OnClick" >
+                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource VideoIcon}"/>
-                        </AppBarButton>
-                        <AppBarButton Height="46" Width="42.5" Click="AudioButton_OnClick" >
-                            <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                            </AppBarButton>
+                            <AppBarButton Height="46" Width="42.5" Click="AudioButton_OnClick" >
+                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource AudioIcon}"/>
-                        </AppBarButton>
+                            </AppBarButton>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
 
-                <!--Format Items Drop Down-->
-                <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
-                    <StackPanel.Resources>
-                        <Storyboard x:Name="xFadeAnimationFormat">
-                            <DoubleAnimation
+                    <!--Format Items Drop Down-->
+                    <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationFormat">
+                                <DoubleAnimation
                                 Storyboard.TargetName="xFormatItemsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
-                        </Storyboard>
-                    </StackPanel.Resources>
-                    <!--Header-->
-                    <StackPanel  x:Name="xFormatItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                        <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Item</TextBlock>
-                    </StackPanel>
-                    <!--StackPanel for Format buttons-->
-                    <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                        <!--ALIGNMENT-->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
-                            <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
-                            </AppBarButton>
-                            <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
-                            </AppBarButton>
-                            <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="ItemAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
-                            </AppBarButton>
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel  x:Name="xFormatItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Item</TextBlock>
                         </StackPanel>
+                        <!--StackPanel for Format buttons-->
+                        <StackPanel x:Name="xFormatItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <!--ALIGNMENT-->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
+                                <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemCenter" Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignItemRight" Height="40" Width="58" Tapped="ItemAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
+                                </AppBarButton>
+                            </StackPanel>
 
-                        <!-- ARRANGEMENT TODO: NEED TO CHANGE SYMBOLS FOR ARRANGEMENT-->
-                        <StackPanel Orientation="Horizontal" Width="170" HorizontalAlignment="Left" >
-                            <AppBarButton x:Name="xPushForward" Height="40" Width="58" >
-                                <fontIcons:FontAwesome  Icon="AngleRight" Foreground="LightGray" />
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
+                            <!-- ARRANGEMENT TODO: NEED TO CHANGE SYMBOLS FOR ARRANGEMENT-->
+                            <StackPanel Orientation="Horizontal" Width="170" HorizontalAlignment="Left" >
+                                <AppBarButton x:Name="xPushForward" Height="40" Width="58" >
+                                    <fontIcons:FontAwesome  Icon="AngleRight" Foreground="LightGray" />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Push Item Forward" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
                                     />
-                                </ToolTipService.ToolTip>
-                            </AppBarButton>
-                            <AppBarButton x:Name="xSendToFront" Height="40" Width="57" >
-                                <fontIcons:FontAwesome  Icon="AngleDoubleRight" Foreground="LightGray"  />
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Send Item to Front" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xSendToFront" Height="40" Width="57" >
+                                    <fontIcons:FontAwesome  Icon="AngleDoubleRight" Foreground="LightGray"  />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Send Item to Front" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
                                     />
-                                </ToolTipService.ToolTip>
-                            </AppBarButton>
-                            <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" >
-                                <fontIcons:FontAwesome Icon="AngleDoubleLeft" Foreground="LightGray"   />
-                                <ToolTipService.ToolTip>
-                                    <ToolTip Content="Send Item to Back" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+                                <AppBarButton x:Name="xSendToBack"  Height="40" Width="57" >
+                                    <fontIcons:FontAwesome Icon="AngleDoubleLeft" Foreground="LightGray"   />
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="Send Item to Back" Placement="Top" HorizontalOffset="0" VerticalOffset="10"
                                     />
-                                </ToolTipService.ToolTip>
-                            </AppBarButton>
+                                    </ToolTipService.ToolTip>
+                                </AppBarButton>
+
+                            </StackPanel>
 
                         </StackPanel>
-
                     </StackPanel>
-                </StackPanel>
 
-                <!--Format Template Drop Down-->
-                <StackPanel x:Name="XFormatTemplateGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
-                    <StackPanel.Resources>
-                        <Storyboard x:Name="xFadeAnimationFormatTemplate">
-                            <DoubleAnimation
+                    <!--Format Template Drop Down-->
+                    <StackPanel x:Name="XFormatTemplateGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationFormatTemplate">
+                                <DoubleAnimation
                                 Storyboard.TargetName="xFormatTemplateButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
-                        </Storyboard>
-                    </StackPanel.Resources>
-                    <!--Header-->
-                    <StackPanel  x:Name="xFormatTemplateHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                        <fontIcons:FontAwesome x:Name="xFormatTemplateArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Template</TextBlock>
-                    </StackPanel>
-                    <!--StackPanel for Format buttons-->
-                    <StackPanel x:Name="xFormatTemplateButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                        <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
-                            <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
-                            </AppBarButton>
-                            <AppBarButton x:Name="xAlignCenter" Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
-                            </AppBarButton>
-                            <AppBarButton x:Name="xAlignRight" Height="48" Width="58" Tapped="TemplateAlignmentButton_OnChecked">
-                                <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
-                            </AppBarButton>
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel  x:Name="xFormatTemplateHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <fontIcons:FontAwesome x:Name="xFormatTemplateArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Template</TextBlock>
                         </StackPanel>
+                        <!--StackPanel for Format buttons-->
+                        <StackPanel x:Name="xFormatTemplateButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
+                                <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome Icon="AlignLeft" Foreground="LightGray"   />
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignCenter" Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignCenter" Foreground="LightGray"  />
+                                </AppBarButton>
+                                <AppBarButton x:Name="xAlignRight" Height="48" Width="58" Tapped="TemplateAlignmentButton_OnChecked">
+                                    <fontIcons:FontAwesome  Icon="AlignRight" Foreground="LightGray" />
+                                </AppBarButton>
+                            </StackPanel>
 
-                        <!-- BACKGROUND -->
-                        <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
-                            <TextBlock Foreground="LightGray" FontSize="13"  > Background</TextBlock>
-                            <Rectangle x:Name="xBackgroundColorPreviewBox" Width="18" Height="18" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
-                                <!--colorpicker flyout-->
-                                <FlyoutBase.AttachedFlyout>
-                                    <Flyout x:Name="xBackgroundColorFlyout" >
-                                        <StackPanel>
-                                            <Slider x:Name="xBackgroundOpacitySlider" Header="Opacity"
+                            <!-- BACKGROUND -->
+                            <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
+                                <TextBlock Foreground="LightGray" FontSize="13"  > Background</TextBlock>
+                                <Rectangle x:Name="xBackgroundColorPreviewBox" Width="18" Height="18" Fill="White" Margin="40,0,0,0" Tapped="XBackgroundColorPreviewBox_OnTapped">
+                                    <!--colorpicker flyout-->
+                                    <FlyoutBase.AttachedFlyout>
+                                        <Flyout x:Name="xBackgroundColorFlyout" >
+                                            <StackPanel>
+                                                <Slider x:Name="xBackgroundOpacitySlider" Header="Opacity"
                                                     Minimum="0" Maximum="255" TickFrequency="1" StepFrequency="1"
                                                     SnapsTo="StepValues" Value="255"
                                                     ValueChanged="XBackgroundOpacitySlider_OnValueChanged">
-                                                <Slider.Foreground>
-                                                    <LinearGradientBrush >
-                                                        <GradientStop Color="White" Offset="0.0" />
-                                                        <GradientStop Color="Black" Offset="1.0" />
-                                                    </LinearGradientBrush>
-                                                </Slider.Foreground>
-                                            </Slider>
-                                            <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
-                                        </StackPanel>
-                                    </Flyout>
-                                </FlyoutBase.AttachedFlyout>
-                            </Rectangle>
+                                                    <Slider.Foreground>
+                                                        <LinearGradientBrush >
+                                                            <GradientStop Color="White" Offset="0.0" />
+                                                            <GradientStop Color="Black" Offset="1.0" />
+                                                        </LinearGradientBrush>
+                                                    </Slider.Foreground>
+                                                </Slider>
+                                                <media:SfColorPicker x:Name="xBackgroundColorPicker" SelectedColorChanged="xBackground_SelectedColorChanged"/>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </FlyoutBase.AttachedFlyout>
+                                </Rectangle>
 
 
+
+                            </StackPanel>
+
+                            <!-- BORDERS TODO: ADD POPOUT AND SLIDER FOR THICKNESS -->
+                            <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
+                                <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
+                                <Rectangle x:Name="xBorderColorPreviewBox" Width="18" Height="18" Fill="White" Margin="70,0,0,0"></Rectangle>
+                            </StackPanel>
+
+                            <!--TEMPLATE STYLE -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" Margin="10,0,0,0" Spacing="12">
+                                <AppBarToggleButton x:Name="xFreeFormButton" Icon="Caption"  Height="43" Width="40" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" Checked="XFreeFormButton_OnChecked" />
+                                <AppBarToggleButton x:Name="xListButton" Height="43" Width="43" Icon="List" Checked="XListButton_OnChecked"/>
+                                <AppBarToggleButton x:Name="xGridButton" Height="43" Width="43" Icon="ViewAll" Checked="XGridButton_OnChecked"/>
+                            </StackPanel>
 
                         </StackPanel>
-
-                        <!-- BORDERS -->
-                        <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
-                            <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
-                            <Rectangle x:Name="xBorderColorPreviewBox" Width="18" Height="18" Fill="White" Margin="70,0,0,0"></Rectangle>
-                        </StackPanel>
-
                     </StackPanel>
-                </StackPanel>
 
-                <!--Options Drop Down-->
-                <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
-                    <StackPanel.Resources>
-                        <Storyboard x:Name="xFadeAnimationOptions">
-                            <DoubleAnimation
+                    <!--Options Drop Down-->
+                    <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
+                        <StackPanel.Resources>
+                            <Storyboard x:Name="xFadeAnimationOptions">
+                                <DoubleAnimation
                                 Storyboard.TargetName="xOptionsButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
-                        </Storyboard>
-                    </StackPanel.Resources>
-                    <!--Header-->
-                    <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
-                        <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
-                        <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
-                    </StackPanel>
-                    <!--StackPanel for Option buttons-->
-                     <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                        <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
-                            <Button.Flyout>
-                                 <Flyout x:Name="xUploadTemplateFlyout"/>
-                            </Button.Flyout>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
-                                <TextBlock FontSize="18" Foreground="LightGray"
+                            </Storyboard>
+                        </StackPanel.Resources>
+                        <!--Header-->
+                        <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                            <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
+                            <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
+                        </StackPanel>
+                        <!--StackPanel for Option buttons-->
+                        <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
+                                <Button.Flyout>
+                                    <Flyout x:Name="xUploadTemplateFlyout"/>
+                                </Button.Flyout>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
+                                    <TextBlock FontSize="18" Foreground="LightGray"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
-                            </StackPanel>
-                        </Button>
-                    <!--GRID-->
-                    <StackPanel Orientation="Horizontal" Margin="4,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
-                        <TextBlock Foreground="LightGray" FontSize="13"  > Design Grid</TextBlock>
-                        <Button x:Name="xDesignGridVisibilityButton" Width="45" Height="23" Background="{StaticResource WindowsBlue}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0" Click="XDesignGridVisibilityButton_OnClick">
-                            <TextBlock x:Name="xDesignGridVisibilityText" Foreground="White"  FontSize="13"  Width="40" HorizontalTextAlignment="Center" VerticalAlignment="Center" Margin="-4,-1,0,0"> OFF</TextBlock>
-                        </Button>
-                    </StackPanel>
-                     </StackPanel>
+                                </StackPanel>
+                            </Button>
 
-                <!--Apply Template button!-->
-                <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                            <!-- DESIGN GRID-->
+                            <StackPanel Orientation="Horizontal" Margin="8,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
+                                <!--<TextBlock Foreground="LightGray" FontSize="13"  >Grid</TextBlock>-->
+                                <AppBarToggleButton x:Name="xDesignGridVisibilityButton"  Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" Background="Gray">
+                                    <SymbolIcon Symbol="ViewAll" Width="25" Height="25" Margin="1,-15,0,0" Visibility="Visible"/>
+                                </AppBarToggleButton>
+                                <!--GRID SIZE DROP DOWN -->
+                                <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="12" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
+                                    <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
+                                    <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!--Apply Template button!-->
+                        <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 
                     <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
                         <StackPanel Orientation="Horizontal">
@@ -338,19 +435,19 @@
                     </Button>
                 </StackPanel>-->
 
-                <StackPanel x:Name="xActivate" Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <StackPanel x:Name="xActivate" Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 
-                    <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="xTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
-                            <TextBlock x:Name="xIcon" FontSize="18" Foreground="White"
+                            <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="xTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
+                                    <TextBlock x:Name="xIcon" FontSize="18" Foreground="White"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ActivateIcon}"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
-                    </Button>
-                </StackPanel>
 
-            <!--Upload template button-->
-                <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                        <!--Upload template button-->
+                        <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 
                     <Button Height="40" Width="170" Background="#334f43">
                         <StackPanel Orientation="Horizontal">
@@ -361,13 +458,17 @@
                     </Button>
                 </StackPanel>-->
 
-                <!--<StackPanel Orientation="Vertical" HorizontalAlignment="Left" >
+                        <!--<StackPanel Orientation="Vertical" HorizontalAlignment="Left" >
                     <Grid Name="xTemplateGrid">
                       
-                        --><!--key listview--><!--
+                        -->
+                        <!--key listview-->
+                        <!--
                         <ListView Name="xTemplateListView" 
                    HorizontalAlignment="Stretch" VerticalAlignment="Top" SelectionMode="Single"  Background="White"
-                    > --><!--ItemsSource="{x:Bind Labels}"--><!--
+                    > -->
+                        <!--ItemsSource="{x:Bind Labels}"-->
+                        <!--
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem" x:Name="CollapseBox">
                                     <Setter Property="MinHeight" Value="20" />
@@ -390,7 +491,7 @@
 
 
 
-                <!--
+                        <!--
                 <controls:Expander x:Name="xItemsExpander" Grid.Column="1" Header="Add Items" HeaderStyle="{StaticResource ExpanderBackgroundColor}"
                                Foreground="White"
                                ExpandDirection="Down"  Width="180" HorizontalAlignment="Center"
@@ -404,7 +505,7 @@
                     </StackPanel>
                 </controls:Expander>
                 -->
-                <!--
+                        <!--
                 <TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="White">Horizontal Alignment</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <AppBarButton Icon="AlignLeft" x:Name="xAlignLeftButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
@@ -412,7 +513,7 @@
                     <AppBarButton Icon="AlignRight" x:Name="xAlignRightButton" Height="50" Width="60" Click="AlignmentButton_OnChecked" ></AppBarButton>
                 </StackPanel>
 -->
-                <!--<TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
+                        <!--<TextBlock FontSize="16" FontWeight="Bold" HorizontalAlignment="Right" Foreground="Black">Border</TextBlock>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <AppBarToggleButton Icon="Import" Height="50" Width="50" x:Name="xLeftBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
                 <AppBarToggleButton Icon="Up" Height="50" Width="50" x:Name="xTopBorderChecker" Checked="BorderOption_OnChanged" Unchecked="BorderOption_OnChanged"></AppBarToggleButton>
@@ -423,7 +524,7 @@
             <Slider x:Name="xThicknessSlider" Header="Border Thickness" Width="200" Maximum="10"
                     ValueChanged="XThicknessSlider_OnValueChanged" />
             <media:SfColorPicker x:Name="xColorPicker" PointerReleased="XColorPicker_OnPointerReleased"/>-->
-<!--
+                        <!--
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <AppBarButton Icon="Undo"  x:Name="xUndoButton" Height="50" Width="50" Click="XUndoButton_OnClick" ></AppBarButton>
                     <AppBarButton Icon="Redo"  x:Name="xRedoButton" Height="50" Width="50" Click="XRedoButton_OnClick" ></AppBarButton>
@@ -453,12 +554,12 @@
                 </StackPanel>
 -->
 
-            
-            </StackPanel>
-            </StackPanel>
+
+                    </StackPanel>
+                </StackPanel>
             </ScrollViewer>
 
         </StackPanel>
-                
+
     </StackPanel>
 </UserControl>

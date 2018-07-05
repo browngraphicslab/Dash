@@ -31,6 +31,7 @@ using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Office.Interop.Word;
 using Application = Microsoft.Office.Interop.Word.Application;
+using Border = Microsoft.Office.Interop.Word.Border;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -235,8 +236,10 @@ namespace Dash
 			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
 			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
-
 		    this.FormatUploadTemplateFlyout();
+			xDesignGridSizeComboBox.SelectedIndex = 0;
+			xDesignGridVisibilityButton.IsChecked = false;
+			xFreeFormButton.IsChecked = true;
 
             // TODO: Add number indicating which template perhoops -sy
 		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
@@ -253,17 +256,17 @@ namespace Dash
 		    xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
         }
 
-        private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            var etb = sender as EditableTextBlock;
-            if (!etb.TextBoxLoaded && etb.Text.Any())
-            {
-                xTitleBlock.Text = etb.Text;
-                DataDocument.SetField(KeyStore.TitleKey, new TextController(etb.Text), true);
-            }
-        }
-        
-	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
+		private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			var etb = sender as EditableTextBlock;
+			if (!etb.TextBoxLoaded && etb.Text.Any())
+			{
+				xTitleBlock.Text = etb.Text;
+				DataDocument.SetField(KeyStore.TitleKey, new TextController(etb.Text), true);
+			}
+		}
+
+		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
 		}
@@ -1458,47 +1461,114 @@ namespace Dash
 			xBackgroundColorPreviewBox.Opacity = e.NewValue / 255;
 		    DataDocument?.SetField(KeyStore.OpacitySliderValueKey, new NumberController(e.NewValue), true);
 		}
-        
-		private void BringToFront()
-		{
-			//find item
-			/*
-			var selected = _selectedDocument;
-			foreach (DocumentView item in xItemsControl.Items)
-			{
-				_selectedDocument = item;
-			}
-			*/
-			//TODO: Number should be highest (# of children?)y
-			_selectedDocument.SetValue(Canvas.ZIndexProperty, 0);
+   
 
+		/*
+		private void CustomizeDesignGrid(int selectedSizeIndex)
+		{
+			var numDiv = 0;
+			switch (selectedSizeIndex)
+			{
+				case 0:
+					numDiv = 3;
+					break;
+				case 1:
+					numDiv = 9;
+					break;
+				case 2:
+					numDiv = 16;
+					break;
+
+			}
+			//add columns
+			for (var i = 0; i < numDiv; i++)
+			{
+					ColumnDefinition col = new ColumnDefinition();
+					xDesignGrid.ColumnDefinitions.Add(col);
+					col.Width = new GridLength(1, GridUnitType.Star);
+
+					RowDefinition row = new RowDefinition();
+					xDesignGrid.RowDefinitions.Add(row);
+					row.Height = new GridLength(1, GridUnitType.Star);
+
+					//format border
+					var border = new Windows.UI.Xaml.Controls.Border();
+					border.BorderBrush = new SolidColorBrush(Colors.Gray);
+					border.BorderThickness = new Thickness(3);
+
+					Grid.SetColumn(border, i);
+					Grid.SetRow(border, i);
+				
+			}
 		}
 
-		private void XDesignGridVisibilityButton_OnClick(object sender, RoutedEventArgs e)
+*/
+
+		//changes size of grid when user selects size from drop down
+		private void XDesignGridSizeComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			this.ToggleDesignGridVisibility();
+			var combo = sender as ComboBox;
+			xDesignGridVisibilityButton.IsChecked = true;
+			if (combo != null)
+			{
+				//if they select "SMALL"
+				if (xDesignGridSizeComboBox.SelectedIndex == 0)
+				{
+					xDesignGridSmall.Visibility = Visibility.Visible;
+					xDesignGridLarge.Visibility = Visibility.Collapsed;
+				}
+				//if they select "LARGE"
+				else 
+				{
+					xDesignGridLarge.Visibility = Visibility.Visible;
+					xDesignGridSmall.Visibility = Visibility.Collapsed;
+				}
+			}
+			
 		}
 
-		private void ToggleDesignGridVisibility()
+		//makes chosen grid visible
+		private void XDesignGridVisibilityButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			if (xDesignGridVisibilityText.Text == "OFF")
+			//if small grid is chosen
+			if (xDesignGridSizeComboBox.SelectedIndex == 0)
 			{
-				//TODO:ADD GRID-PATTERN TO CANVAS & MAKE IT VISIBLE
-				//update button
-				xDesignGridVisibilityText.Text = "ON";
+				xDesignGridSmall.Visibility = Visibility.Visible;
 			}
+			//if large grid is chosen
 			else
 			{
-				//TODO: COLLAPSE GRID
-				//update button
-				xDesignGridVisibilityText.Text = "OFF";
+				xDesignGridLarge.Visibility = Visibility.Visible;
 			}
 
+			xDesignGridSizeComboBox.Background = new SolidColorBrush(Colors.LightGray);
 		}
 
-		private void XSendToFront_OnClick(object sender, RoutedEventArgs e)
+		//collapses both design grids
+		private void XDesignGridVisibilityButton_OnUnchecked(object sender, RoutedEventArgs e)
 		{
-			this.BringToFront();
+			xDesignGridSmall.Visibility = Visibility.Collapsed;
+			xDesignGridLarge.Visibility = Visibility.Collapsed;
+
+			xDesignGridSizeComboBox.Background = new SolidColorBrush(Colors.Gray);
+		}
+
+
+		// TEMPLATE STYLE BUTTON HANDLERS //
+		private void XFreeFormButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xGridButton.IsChecked = false;
+			xListButton.IsChecked = false;
+		}
+		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xFreeFormButton.IsChecked = false;
+			xGridButton.IsChecked = false;
+		}
+		private void XGridButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xFreeFormButton.IsChecked = false;
+			xListButton.IsChecked = false;
 		}
 
 	    private void CloseButton_OnClick(object sender, RoutedEventArgs e)
