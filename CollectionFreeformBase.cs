@@ -589,7 +589,7 @@ namespace Dash
         private MarqueeInfo mInfo;
         object _marqueeKeyHandler = null;
 
-        protected void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
             {
@@ -613,7 +613,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
             {
@@ -670,7 +670,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())

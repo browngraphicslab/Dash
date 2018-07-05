@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -100,6 +101,26 @@ namespace Dash
             return InkHostCanvas;
         }
 
+        protected override void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            base.OnPointerPressed(sender, e);
+        }
+
+        protected override void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (ViewModel.ViewLevel == CollectionViewModel.StandardViewLevel.Detail)
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            else
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+            base.OnPointerReleased(sender, e);
+        }
+
+        protected override void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
+            base.OnPointerMoved(sender, args);
+        }
         private int zoom = 0;
         private Storyboard _storyboard;
         private MatrixTransform _animatedTransform;
@@ -170,7 +191,12 @@ namespace Dash
             {
                 ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
                 MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = (CollectionViewModel.StandardViewLevel)newView;
             }
+            if (newView == 3)
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            else
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
         }
 
         /// <summary>
@@ -272,21 +298,23 @@ namespace Dash
         private void UpdateViewLevel()
         {
             var scale = ViewModel.PrevScale;
+            CollectionViewModel.StandardViewLevel level;
             if (scale <= 0.5)
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Overview;
+                level = CollectionViewModel.StandardViewLevel.Overview;
             }
             else if (scale <= 1)
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Region;
+                level = CollectionViewModel.StandardViewLevel.Region;
             }
             else
             {
-                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
-                MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.Detail;
+                level = CollectionViewModel.StandardViewLevel.Detail;
             }
+            ViewModel.ViewLevel = level;
+            MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = level;
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = level;
         }
+
     }
 }
