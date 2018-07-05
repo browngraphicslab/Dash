@@ -50,23 +50,26 @@ namespace Dash
             var tr = sender as TemplateRecord;
             var template = tr.TemplateViewModel;
             if (template == null) return;
+            var newDataDoc = template.DataDocument.GetDataCopy();
+            var newLayoutDoc = template.LayoutDocument.GetViewCopy();
+            newDataDoc.SetField(KeyStore.DocumentContextKey, Document, true);
 
-            foreach (var doc in template.LayoutDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey)
+            foreach (var doc in newLayoutDoc.GetField<ListController<DocumentController>>(KeyStore.DataKey)
                 .TypedData)
             {
                 // if either is true, then the layout doc needs to be abstracted
-                if (doc.GetDataDocument().Equals(Document.GetDataDocument()) || doc.GetDataDocument().Equals(Document))
+                if (doc.GetField<PointerReferenceController>(KeyStore.DataKey) != null || doc.GetDataDocument().Equals(Document))
                 {
                     var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
                     if (specificKey == null) continue;
 
-                    if (template.DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey)
+                    if (newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey)
                             .GetField(specificKey) != null)
                     {
                         // set the layout doc's context to a reference of the data doc's context
                         doc.SetField(KeyStore.DocumentContextKey,
                             new DocumentReferenceController(
-                                template.DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+                                newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
                                 KeyStore.DocumentContextKey),
                             true);
                     }
@@ -74,7 +77,7 @@ namespace Dash
                     {
                         // set the layout doc's context to a reference of the data doc's context
                         doc.SetField(KeyStore.DocumentContextKey,
-                            new DocumentReferenceController(template.DataDocument.Id,
+                            new DocumentReferenceController(newDataDoc.Id,
                                 KeyStore.DocumentContextKey),
                             true);
                     }
@@ -96,10 +99,10 @@ namespace Dash
                 //    .SetField(KeyStore.DataKey, datakey, true);
             }
 
-            var dataDocCopy = template.DataDocument.GetDataCopy();
-            dataDocCopy.SetField(KeyStore.PositionFieldKey,
+            newLayoutDoc.SetField(KeyStore.DocumentContextKey, Document, true);
+            newLayoutDoc.SetField(KeyStore.PositionFieldKey,
                 Document.GetField<PointController>(KeyStore.PositionFieldKey), true);
-            Document.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
+            Document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
         }
 
         private void XApply_OnClick(object sender, RoutedEventArgs e)

@@ -12,6 +12,7 @@ using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -32,14 +33,6 @@ namespace Dash
         public event DocumentViewSelectedHandler DocumentSelected;
         public event DocumentDeletedHandler DocumentDeleted;
         public CollectionView ParentCollection => this.GetFirstAncestorOfType<CollectionView>();
-        public Border _templateBorder;
-        public Border TemplateBorder
-        {
-            get => _templateBorder;
-            set => _templateBorder = value;
-        }
-
-        public bool yeet;
 
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvass
@@ -107,22 +100,21 @@ namespace Dash
         }
 
         private ImageSource DocPreview = null;
+        private Flyout _flyout;
 
         // == CONSTRUCTORs ==
 
         public DocumentView()
         {
             InitializeComponent();
-            
-            
+
+            _flyout = new Flyout {Placement = FlyoutPlacementMode.Right};
 
             Util.InitializeDropShadow(xShadowHost, xDocumentBackground);
 
             // set bounds
             MinWidth = 35;
             MinHeight = 35;
-
-            _templateBorder = xTemplateBorder;
 
             RegisterPropertyChangedCallback(BindRenderTransformProperty, updateBindings);
 
@@ -1382,12 +1374,16 @@ namespace Dash
 
         private void MenuFlyoutItemApplyTemplate_Click(object sender, RoutedEventArgs e)
         {
-            TemplateApplier applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
-            
-            MainPage.Instance.xCanvas.Children.Add(applier);
+            var applier = new TemplateApplier(ViewModel.LayoutDocument, ParentCollection.ViewModel.DocumentViewModels);
+            _flyout.Content = applier;
+            if (_flyout.IsInVisualTree())
+            {
+                _flyout.Hide();
+            }
+            else
+            {
+                _flyout.ShowAt(this);
+            }
         }
-
-     
-
     }
 }

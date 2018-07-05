@@ -494,7 +494,7 @@ namespace Dash
 		        dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
 		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 		        // set the active layout of the working document to the dataDocCopy (which is the template)
-		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true);
+		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
 		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateDocumentKey,
 		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
             }
