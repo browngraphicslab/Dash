@@ -136,7 +136,7 @@ namespace Dash
 					// set the layout doc's context to a reference of the data doc's context
 					doc.SetField(KeyStore.DocumentContextKey,
 						new DocumentReferenceController(
-							DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+							DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey),
 							KeyStore.DocumentContextKey),
 						true);
 				}
@@ -144,7 +144,7 @@ namespace Dash
 				{
 					// set the layout doc's context to a reference of the data doc's context
 					doc.SetField(KeyStore.DocumentContextKey,
-						new DocumentReferenceController(DataDocument.Id,
+						new DocumentReferenceController(DataDocument,
 							KeyStore.DocumentContextKey),
 						true);
 				}
@@ -634,13 +634,13 @@ namespace Dash
 							DocumentReferenceController docRef;
 							if (workingDoc.GetField(specificKey) != null)
 							{
-								docRef = new DocumentReferenceController(LayoutDocument.Id, KeyStore.DataKey);
+								docRef = new DocumentReferenceController(LayoutDocument, KeyStore.DataKey);
 								newRef = new PointerReferenceController(docRef, specificKey);
 							}
 							else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
 							{
 								docRef = new DocumentReferenceController(
-									LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).Id, KeyStore.DataKey);
+									LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), KeyStore.DataKey);
 								newRef = new PointerReferenceController(docRef, specificKey);
 							}
 						}
@@ -825,10 +825,10 @@ namespace Dash
 					foreach (var match in matches)
 					{
 						var pair = new Regex(":").Split(match.ToString());
-						t.Document.GetDataDocument()
-							.SetField<TextController>(KeyController.LookupKeyByName(pair[0], true), pair[1].Trim('\r'),
-								true);
-					}
+					    t.Document.GetDataDocument()
+					        .SetField<TextController>(new KeyController(pair[0]), pair[1].Trim('\r'),
+					            true);
+                    }
 
 					DocumentControllers.Add(t.Document.GetViewCopy(new Point(0, 0)));
 				}
@@ -1161,7 +1161,7 @@ namespace Dash
 					}
 
 					//DBTest.DBDoc.AddChild(pivotDoc);
-					d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
+					d.SetField(pivotKey, new DocumentReferenceController(pivotDoc, pivotKey), true);
 				}
 
 				pivotDictionary.Add(obj, pivotDoc);
@@ -1170,7 +1170,7 @@ namespace Dash
 
 			if (obj != null)
 			{
-				d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
+				d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj], pivotKey), true);
 				return dictionary[obj];
 			}
 

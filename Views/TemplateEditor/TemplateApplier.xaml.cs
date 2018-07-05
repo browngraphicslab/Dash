@@ -69,7 +69,7 @@ namespace Dash
                         // set the layout doc's context to a reference of the data doc's context
                         doc.SetField(KeyStore.DocumentContextKey,
                             new DocumentReferenceController(
-                                newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey).Id,
+                                newDataDoc.GetField<DocumentController>(KeyStore.DocumentContextKey),
                                 KeyStore.DocumentContextKey),
                             true);
                     }
@@ -77,7 +77,7 @@ namespace Dash
                     {
                         // set the layout doc's context to a reference of the data doc's context
                         doc.SetField(KeyStore.DocumentContextKey,
-                            new DocumentReferenceController(newDataDoc.Id,
+                            new DocumentReferenceController(newDataDoc,
                                 KeyStore.DocumentContextKey),
                             true);
                     }

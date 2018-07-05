@@ -117,8 +117,8 @@ namespace Dash
                 var layoutView = layoutDoc.MakeViewUI(context);
 
                 var vertBinding = new FieldMultiBinding<VerticalAlignment>(
-                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
-                    new DocumentFieldReference(layoutDoc.Id, KeyStore.VerticalAlignmentKey))
+                    new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc, KeyStore.VerticalAlignmentKey))
                 {
                     Mode = BindingMode.OneWay,
                     Converter = new VerticalAlignmentMultiBinding(),
@@ -129,8 +129,8 @@ namespace Dash
 
                 var horizBinding =
                     new FieldMultiBinding<HorizontalAlignment>(
-                        new DocumentFieldReference(layoutDoc.Id, KeyStore.UseHorizontalAlignmentKey),
-                        new DocumentFieldReference(layoutDoc.Id, KeyStore.HorizontalAlignmentKey))
+                        new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
+                        new DocumentFieldReference(layoutDoc, KeyStore.HorizontalAlignmentKey))
                     {
                         Mode = BindingMode.OneWay,
                         Converter = new HorizontalAlignmentMultiBinding(),
@@ -140,9 +140,9 @@ namespace Dash
                 layoutView.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, horizBinding);
 
                 var renderBinding = new FieldMultiBinding<TranslateTransform>(
-                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseHorizontalAlignmentKey),
-                    new DocumentFieldReference(layoutDoc.Id, KeyStore.UseVerticalAlignmentKey),
-                    new DocumentFieldReference(layoutDoc.Id, KeyStore.PositionFieldKey))
+                    new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
+                    new DocumentFieldReference(layoutDoc, KeyStore.PositionFieldKey))
                 {
                     Mode = BindingMode.OneWay,
                     Converter = new PositionWithAlignmentMultiBinding(),
