@@ -75,8 +75,35 @@ namespace Dash
 
         public static TextController GetFunctionList()
         {
-            var functionNames = _functionMap.Select(k => k.Key.ToString()).ToList();
+            var functionNames = _functionMap.Select(k => "            " + k.Key.ToString()).ToList();
             functionNames.Sort();
+            const string alphString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var alphabet = alphString.GetEnumerator();
+            alphabet.MoveNext();
+            functionNames.Insert(0, "      " + alphabet.Current);
+            for (var index = 1; index < functionNames.Count; index++)
+            {
+                var name = functionNames[index];
+                var alphaCurr = alphabet.Current.ToString();
+                var alphaCurrLow = alphaCurr.ToLower();
+                var startInd = 12;
+                var firstLet = name[startInd].ToString();
+                while (!alphString.ToLower().Contains(firstLet))
+                {
+                    startInd++;
+                    firstLet = name[startInd].ToString();
+                }
+                if (alphaCurr.Equals(firstLet) || alphaCurrLow.Equals(firstLet)) continue;
+                while (!alphaCurr.Equals(firstLet) && !alphaCurrLow.Equals(firstLet))
+                {
+                    alphabet.MoveNext();
+                    alphaCurr = alphabet.Current.ToString();
+                    alphaCurrLow = alphaCurr.ToLower();
+                }
+                functionNames.Insert(index, "      " + alphabet.Current);
+                index++;
+            }
+            alphabet.Dispose();
             var output = functionNames.Aggregate("", (current, functionName) => current + $"\n {functionName}");
             return new TextController(output + "\n");
         }
@@ -158,10 +185,7 @@ namespace Dash
         /// </summary>
         /// <param name="funcName"></param>
         /// <returns></returns>
-        public static bool FuncNameExists(Op.Name funcName)
-        {
-            return _functionMap.ContainsKey(funcName);
-        }
+        public static bool FuncNameExists(Op.Name funcName) => _functionMap.ContainsKey(funcName);
 
         //TODO With overloads we need more info to have this make sense
         public static DashShared.TypeInfo GetOutputType(Op.Name funcName)

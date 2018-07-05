@@ -32,8 +32,8 @@ namespace Dash
 
         public virtual void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
-            //TODO: Throw exception or provide feedback if attempted duplicate declaration
-            if (GetVariable(variableName) != null) return;
+            var value = GetVariable(variableName);
+            if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(variableName, value));
             _dictionary[variableName] = valueToSet;
 
             //add varible to autosuggest option

@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType(Op.Name._for)]
+    [OperatorType(Op.Name.for_lp)]
     public class ForOperatorController : OperatorController
     {
         public ForOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)

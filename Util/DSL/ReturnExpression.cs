@@ -1,23 +1,17 @@
 ﻿using DashShared;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
     public class ReturnExpression : ScriptExpression
     {
-        private ScriptExpression _value;
+        private readonly ScriptExpression _value;
 
-        public ReturnExpression(ScriptExpression value)
-        {
-            _value = value;
-        }
+        public ReturnExpression(ScriptExpression value) => _value = value;
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            if (_value == null) throw new ScriptExecutionException(new InvalidReturnStatementErrorModel());
             var val = _value.Execute(scope);
             //now return val
             scope.SetReturn(val);
@@ -32,10 +26,7 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override DashShared.TypeInfo Type
-        {
-            get { return TypeInfo.Any; }
-        }
+        public override DashShared.TypeInfo Type => TypeInfo.Any;
     }
 }
 

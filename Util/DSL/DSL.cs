@@ -15,15 +15,25 @@ namespace Dash
     public class DSL
     {
         private readonly Scope _scope;
+        private readonly DishReplView _replView;
 
         public DSL(Scope scope = null) => _scope = new Scope(scope);
 
-        public DSL(OuterReplScope scope) => _scope = scope;
+        public DSL(OuterReplScope scope, DishReplView replView)
+        {
+            _scope = scope;
+            _replView = replView;
+        }
 
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try
             {
+                if (script.Trim().Equals("clear") || script.Trim().Equals("clear all"))
+                {
+                    _replView.Clear(script.Equals("clear all"));
+                    return new TextController();
+                }
                 var interpreted = TypescriptToOperatorParser.Interpret(script, _scope);
                 return interpreted;
             }
