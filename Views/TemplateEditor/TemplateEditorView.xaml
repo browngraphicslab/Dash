@@ -18,9 +18,6 @@
     d:DesignHeight="535"
     d:DesignWidth="1000">
 
-    
-
-
     <StackPanel Orientation="Vertical" Height="536" Width="1000" Background="#416857">
 
         <!--Header-->
@@ -49,9 +46,89 @@
             <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
                            x:Name="xOuterWorkspace">
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
-                    x:FieldModifier="public"
-                    x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
-                    <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
+                    <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+
+                    <!--DESIGN GRID -->
+                    <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 3x3 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+                    <Grid x:Name="xDesignGridSmall" Width="Auto" Height="Auto" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!-- creates the 9x9 lines -->
+                        <Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="1" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="2" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="0" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="0" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="1" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="2" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+
+                        <Border Grid.Column="3" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="1" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="2" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="4" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 0 1" />
+                        <Border Grid.Column="5" Grid.Row="3" BorderBrush="LightGray" BorderThickness="1 1 1 1" />
+                        <Border Grid.Column="3" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="4" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                        <Border Grid.Column="3" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="4" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 0 1" />
+                        <Border Grid.Column="5" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
+                    </Grid>
+
                     <ItemsControl x:Name="xItemsControl"
                               x:FieldModifier="public"
                               ItemsSource="{Binding DocumentViewModels}">
@@ -75,6 +152,8 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    
                 </Grid>
 
                     <!--ELLIPSES-->
@@ -110,6 +189,8 @@
                             </Grid>
                     </StackPanel>
                     </RelativePanel>
+
+               
             </RelativePanel>
             
             <!--Formatting Panel-->
@@ -321,16 +402,22 @@
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
                             </StackPanel>
                         </Button>
-                    <!--GRID-->
-                    <StackPanel Orientation="Horizontal" Margin="4,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
-                        <TextBlock Foreground="LightGray" FontSize="13"  > Design Grid</TextBlock>
-                        <Button x:Name="xDesignGridVisibilityButton" Width="45" Height="23" Background="{StaticResource WindowsBlue}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20,0,0,0" Click="XDesignGridVisibilityButton_OnClick">
-                            <TextBlock x:Name="xDesignGridVisibilityText" Foreground="White"  FontSize="13"  Width="40" HorizontalTextAlignment="Center" VerticalAlignment="Center" Margin="-4,-1,0,0"> OFF</TextBlock>
-                        </Button>
-                    </StackPanel>
+
+                         <!-- DESIGN GRID-->
+                         <StackPanel Orientation="Horizontal" Margin="8,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 14" >
+                             <!--<TextBlock Foreground="LightGray" FontSize="13"  >Grid</TextBlock>-->
+                             <AppBarToggleButton x:Name="xDesignGridVisibilityButton"  Height="30" Width="30" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,10,0" Checked="XDesignGridVisibilityButton_OnChecked" Unchecked="XDesignGridVisibilityButton_OnUnchecked" Background="Gray">
+                                     <SymbolIcon Symbol="ViewAll" Width="25" Height="25" Margin="1,-15,0,0" Visibility="Visible"/>
+                             </AppBarToggleButton>
+                             <!--GRID SIZE DROP DOWN -->
+                             <ComboBox x:Name="xDesignGridSizeComboBox" Height="30" Width ="100" Background="LightGray" BorderThickness="0"  Foreground="Black" VerticalAlignment="Center" FontSize="12" SelectionChanged="XDesignGridSizeComboBox_OnSelectionChanged">
+                                    <ComboBoxItem x:Name="xSmallGridOption">Small</ComboBoxItem>
+                                    <ComboBoxItem  x:Name="xLargeGridOption">Large</ComboBoxItem>
+                             </ComboBox>
+                         </StackPanel>
                      </StackPanel>
 
-                <!--Apply Template button!-->
+                        <!--Apply Template button!-->
                 <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
 
                     <Button Height="40" Width="170" Background="#334f43" Click="ApplyChanges_OnClicked">
