@@ -134,6 +134,7 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;

@@ -17,7 +17,7 @@ namespace Dash
 
     public interface IVisualAnnotatable : IAnnotatable
     {
-        UIElement Self();
+        FrameworkElement Self();
         Size GetTotalDocumentSize();
         // the UIElement to figure out where the pointer is relative to
         FrameworkElement GetPositionReference();

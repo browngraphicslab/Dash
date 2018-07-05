@@ -67,6 +67,9 @@ namespace Dash
         public static KeyController BackgroundImageOpacityKey = new KeyController(DashConstants.KeyStore.BackgroundImageOpacityKey);
         public static KeyController SettingsUpwardPanningKey = new KeyController(DashConstants.KeyStore.SettingsUpwardPanningKey);
         public static KeyController SettingsMarkdownModeKey = new KeyController(DashConstants.KeyStore.SettingsMarkdownModeKey);
+        public static KeyController PdfRegionVerticalOffsetKey = new KeyController(DashConstants.KeyStore.PdfRegionVerticalOffsetKey);
+        public static KeyController VisualRegionTopLeftPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionTopLeftPercentileKey);
+        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionBottomRightPercentileKey);
 
         public static class SearchResultDocumentOutline
         {

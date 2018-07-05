@@ -30,6 +30,11 @@ namespace Dash
         private ScrollViewer _internalViewer;
         private bool _isResizing;
 
+        // events to communicate with the VisualAnnotationManager
+        public event PointerEventHandler NewRegionStarted;
+        public event PointerEventHandler NewRegionMoved;
+        public event PointerEventHandler NewRegionEnded;
+
         public PdfView()
         {
             InitializeComponent();
@@ -55,7 +60,7 @@ namespace Dash
                     foreach (var region in dataRegions.TypedData)
                     {
                         var offset = region.GetDataDocument()
-                            .GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
+                            .GetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey).Data;
                         MakeRegionMarker(offset, totalOffset, region);
                     }
                 }
@@ -282,13 +287,13 @@ namespace Dash
         public DocumentController GetDocControllerFromSelectedRegion()
         {
             var dc = new RichTextNote("PDF " + xRegionsScrollviewer.VerticalOffset).Document;
-            dc.GetDataDocument().SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, xRegionsScrollviewer.VerticalOffset, true);
+            dc.GetDataDocument().SetField<NumberController>(KeyStore.PdfRegionVerticalOffsetKey, xRegionsScrollviewer.VerticalOffset, true);
             dc.SetRegionDefinition(LayoutDocument);
             
             return dc;
         }
 
-        public UIElement Self()
+        public FrameworkElement Self()
         {
             return this;
         }
@@ -307,10 +312,6 @@ namespace Dash
             // TODO: this may not work because it encloses the larger rectangle we actually want to reference. May have to bring the Grid back.
             return xGridForStretching;
         }
-
-        public event PointerEventHandler NewRegionStarted;
-        public event PointerEventHandler NewRegionMoved;
-        public event PointerEventHandler NewRegionEnded;
 
         public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
         {

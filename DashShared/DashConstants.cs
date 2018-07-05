@@ -214,6 +214,9 @@ namespace DashShared
             public static KeyModel BackgroundImageOpacityKey = new KeyModel("0A1CA35C-5A6F-4C8A-AF00-6C82D5DA0FEC", "Background Image Opacity");
             public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
             public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
+            public static KeyModel PdfRegionVerticalOffsetKey = new KeyModel("806A9F4F-1258-4630-A272-B325DC7503EC", "Region on PDF vertical offset");
+            public static KeyModel VisualRegionTopLeftPercentileKey = new KeyModel("FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C", "Top-left % of region");
+            public static KeyModel VisualRegionBottomRightPercentileKey = new KeyModel("05BA4856-AAA4-4212-9A52-650C85F4A4D6", "Bottom-right & of region");
         }
 
         public static class TypeStore

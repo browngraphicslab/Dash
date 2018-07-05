@@ -26,6 +26,8 @@ namespace Dash
     {
         public DocumentController LinkTo;
 	    public VisualAnnotationManager Manager;
+        public Point TopLeftPercentile;
+        public Point BottomRightPercentile;
 
         public RegionBox()
         {
@@ -45,6 +47,29 @@ namespace Dash
             var column2 = size.Width / imageSize.Width;
             var column3 = 1 - column1 - column2;
 
+            TopLeftPercentile = new Point(column1, row1);
+            BottomRightPercentile = new Point(column2 + column1, row2 + row1);
+
+            Column1.Width = new GridLength(column1 * 100, GridUnitType.Star);
+            Column2.Width = new GridLength(column2 * 100, GridUnitType.Star);
+            Column3.Width = new GridLength(column3 * 100, GridUnitType.Star);
+            Row1.Height = new GridLength(row1 * 100, GridUnitType.Star);
+            Row2.Height = new GridLength(row2 * 100, GridUnitType.Star);
+            Row3.Height = new GridLength(row3 * 100, GridUnitType.Star);
+        }
+
+        internal void SetPosition(Point topLeft, Point bottomRight)
+        {
+            var row1 = topLeft.Y;
+            var row3 = 1 - bottomRight.Y;
+            var row2 = 1 - row1 - row3;
+            var column1 = topLeft.X;
+            var column3 = 1 - bottomRight.X;
+            var column2 = 1 - column1 - column3;
+
+            TopLeftPercentile = new Point(column1, row1);
+            BottomRightPercentile = new Point(column2 + column1, row2 + row1);
+
             Column1.Width = new GridLength(column1 * 100, GridUnitType.Star);
             Column2.Width = new GridLength(column2 * 100, GridUnitType.Star);
             Column3.Width = new GridLength(column3 * 100, GridUnitType.Star);
@@ -54,7 +79,7 @@ namespace Dash
         }
 
         // TODO rewrite this (would need to write DeleteRegion into VisualAnnotationManager)
-	    private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void XCloseRegionButton_OnPointerPressed(object sender, PointerRoutedEventArgs e)
 	    {
 			//deletes the selected region (if the XClose button is pressed, the selected region will always be the desired one)
 		    //AnnotationManager?.DeleteRegion(this);
@@ -70,7 +95,5 @@ namespace Dash
 		    xRegionBox.Opacity = 1;
 		    xRegionBoxFill.Opacity = 0.1;
 	    }
-
-		
-	}
+    }
 }

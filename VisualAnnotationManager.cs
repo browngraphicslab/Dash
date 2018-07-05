@@ -45,43 +45,29 @@ namespace Dash
         /// <summary>
         /// To instantiate a VisualAnnotationManager, note that you must supply an AnnotationOverlay UserControl where the annotation fields go. This is usually in the same Grid as the view you're annotating.
         /// </summary>
-        /// <param name="uiElement"></param>
+        /// <param name="element"></param>
         /// <param name="dc"></param>
         /// <param name="overlay"></param>
-        public VisualAnnotationManager(IVisualAnnotatable uiElement, DocumentController dc, AnnotationOverlay overlay) : base(uiElement.Self())
+        public VisualAnnotationManager(IVisualAnnotatable element, DocumentController dc, AnnotationOverlay overlay) : base(element.Self())
         {
             _visualRegions = new List<RegionBox>();
             _regionState = RegionVisibilityState.Hidden;
             _docCtrl = dc;
-            _element = uiElement;
+            _element = element;
             _element.NewRegionStarted += Element_OnNewRegionStarted;
             _element.NewRegionMoved += Element_OnNewRegionMoved;
             _element.NewRegionEnded += Element_OnNewRegionEnded;
+            //_element.ContentLoaded += Element_OnLoaded;
             _overlay = overlay;
 
             _dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-            if (_dataRegions != null)
+            if (_dataRegions == null) return;
+            foreach (var region in _dataRegions.TypedData)
             {
-                foreach (var region in _dataRegions.TypedData)
-                {
-                    var pos = region.GetDataDocument().GetField<PointController>(KeyStore.PositionFieldKey).Data;
-                    var width = region.GetDataDocument().GetField<NumberController>(KeyStore.WidthFieldKey).Data;
-                    var height = region.GetDataDocument().GetField<NumberController>(KeyStore.HeightFieldKey).Data;
-                    //var pos = region.GetPositionField().Data;
-                    //var width = region.GetWidthField().Data;
-                    //var height = region.GetHeightField().Data;
-                    var totalSize = _docCtrl.GetField<PointController>(KeyStore.ActualSizeKey).Data;
+                var topLeft = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey).Data;
+                var bottomRight = region.GetDataDocument().GetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey).Data;
 
-                    if (pos.X + width <= totalSize.X && pos.Y + height <= totalSize.Y)
-                    {
-                        MakeNewRegionBox(
-                            region,
-                            pos,
-                            new Size(width, height),
-                            new Size(totalSize.X, totalSize.Y - 10)).Hide();
-                        Debug.WriteLine("passed");
-                    }
-                }
+                MakeNewRegionBox(topLeft, bottomRight, region).Hide();
             }
         }
 
@@ -353,24 +339,39 @@ namespace Dash
                 {
                     _dataRegions.Add(note);
                 }
-                note.GetDataDocument().SetField<NumberController>(KeyStore.WidthFieldKey, _overlay.GetDuringPreviewSize().Width, true);
-                note.GetDataDocument().SetField<NumberController>(KeyStore.HeightFieldKey, _overlay.GetDuringPreviewSize().Height, true);
-                note.GetDataDocument().SetField<PointController>(KeyStore.PositionFieldKey, _overlay.GetTopLeftPoint(), true);
 
                 OnNewRegionMade(note);
 
                 // use During Preview here because it's the one with actual pixel measurements
-                MakeNewRegionBox(note, _overlay.GetTopLeftPoint(), _overlay.GetDuringPreviewActualSize(), _element.GetTotalDocumentSize());
+                var box = MakeNewRegionBox(note, _overlay.GetTopLeftPoint(), _overlay.GetDuringPreviewActualSize(), _element.GetTotalDocumentSize());
+                note.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionTopLeftPercentileKey,
+                    box.TopLeftPercentile, true);
+                note.GetDataDocument().SetField<PointController>(KeyStore.VisualRegionBottomRightPercentileKey,
+                    box.BottomRightPercentile, true);
+
                 _overlay.PostVisibility = Visibility.Collapsed;
             }
 
             return note;
         }
 
+        // Only adds the region box, visually
         private RegionBox MakeNewRegionBox(DocumentController region, Point pos, Size boxSize, Size totalSize)
         {
             var newBox = new RegionBox { LinkTo = region, Manager = this };
             newBox.SetPosition(pos, boxSize, totalSize);
+            return SetUpNewRegionBox(newBox);
+        }
+
+        private RegionBox MakeNewRegionBox(Point topLeft, Point bottomRight, DocumentController region)
+        {
+            var newBox = new RegionBox { LinkTo = region, Manager = this };
+            newBox.SetPosition(topLeft, bottomRight);
+            return SetUpNewRegionBox(newBox);
+        }
+
+        private RegionBox SetUpNewRegionBox(RegionBox newBox)
+        {
             _overlay.AddRegion(newBox);
             newBox.PointerPressed += xRegion_OnPointerPressed;
             newBox.PointerEntered += Region_OnPointerEntered;

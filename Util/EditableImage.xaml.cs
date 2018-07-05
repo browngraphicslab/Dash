@@ -43,6 +43,11 @@ namespace Dash
 		public bool IsCropping;
 		private DocumentView _docview;
 	    public VisualAnnotationManager AnnotationManager;
+        
+        // interface-required events to communicate with the AnnotationManager
+        public event PointerEventHandler NewRegionStarted;
+	    public event PointerEventHandler NewRegionMoved;
+	    public event PointerEventHandler NewRegionEnded;
 
         public Image Image => xImage;
 
@@ -423,7 +428,7 @@ namespace Dash
 	        return imNote;
 	    }
 
-	    public UIElement Self()
+	    public FrameworkElement Self()
 	    {
 	        return this;
 	    }
@@ -437,11 +442,5 @@ namespace Dash
 	    {
 	        return xImage;
 	    }
-
-	    public event PointerEventHandler NewRegionStarted;
-	    public event PointerEventHandler NewRegionMoved;
-	    public event PointerEventHandler NewRegionEnded;
-
-        
 	}
 }
