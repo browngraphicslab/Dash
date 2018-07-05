@@ -188,7 +188,7 @@ namespace Dash
             _animatedTransform = new MatrixTransform() { Matrix = (Matrix)oldMatrix };
             var newMatrix = new MatrixTransform() { Matrix = matrix };
 
-            var milliseconds = 300;
+            var milliseconds = 250;
             var duration = new Duration(TimeSpan.FromMilliseconds(milliseconds));
 
             _storyboard?.SkipToFill();
@@ -212,8 +212,8 @@ namespace Dash
             var endScaleX = newMatrix.Matrix.M11;
             var endScaleY = newMatrix.Matrix.M22;
 
-            var zoomAnimationX = MakeAnimationElement(_animatedTransform, startScaleX, Math.Max(0.2, endScaleX), "MatrixTransform.Matrix.M11", duration);
-            var zoomAnimationY = MakeAnimationElement(_animatedTransform, startScaleY, Math.Max(0.2, endScaleY), "MatrixTransform.Matrix.M22", duration);
+            var zoomAnimationX = MakeAnimationElement(_animatedTransform, startScaleX, endScaleX, "MatrixTransform.Matrix.M11", duration);
+            var zoomAnimationY = MakeAnimationElement(_animatedTransform, startScaleY, endScaleY, "MatrixTransform.Matrix.M22", duration);
 
             zoomAnimationX.AutoReverse = false;
             zoomAnimationY.AutoReverse = false;
@@ -226,7 +226,7 @@ namespace Dash
             CompositionTarget.Rendering -= CompositionTargetRendering;
             CompositionTarget.Rendering += CompositionTargetRendering;
 
-            _storyboard.FillBehavior = FillBehavior.HoldEnd;
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
             _storyboard.Begin();
             _storyboard.Completed -= StoryboardCompleted;
             _storyboard.Completed += StoryboardCompleted;
@@ -235,6 +235,7 @@ namespace Dash
 
         private void StoryboardCompleted(object sender, object e)
         {
+            ViewManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             CompositionTarget.Rendering -= CompositionTargetRendering;
             _storyboard.Completed -= StoryboardCompleted;
         }
