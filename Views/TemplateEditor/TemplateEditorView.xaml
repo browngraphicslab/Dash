@@ -229,7 +229,7 @@
                     <StackPanel.Resources>
                         <Storyboard x:Name="xFadeAnimationFormatTemplate">
                             <DoubleAnimation
-                                Storyboard.TargetName="xFormatItemsButtonStack"
+                                Storyboard.TargetName="xFormatTemplateButtonStack"
                                 Storyboard.TargetProperty="Opacity"
                                 From="0.0" To="1.0" Duration="0:0:.5"
                             />
@@ -294,7 +294,7 @@
                 </StackPanel>
 
                 <!--Options Drop Down-->
-                <!--<StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
+                <StackPanel x:Name="XOptionsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" >
                     <StackPanel.Resources>
                         <Storyboard x:Name="xFadeAnimationOptions">
                             <DoubleAnimation
@@ -304,20 +304,23 @@
                             />
                         </Storyboard>
                     </StackPanel.Resources>
-                    --><!--Header-->
+                    <!--Header-->
                     <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                         <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                         <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                     </StackPanel>
                     <!--StackPanel for Option buttons-->
-                <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
-                    <Button Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
-                            <TextBlock FontSize="18" Foreground="LightGray"
-                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
-                        </StackPanel>
-                    </Button>
+                     <StackPanel x:Name="xOptionsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
+                            <Button.Flyout>
+                                 <Flyout x:Name="xUploadTemplateFlyout"/>
+                            </Button.Flyout>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontSize="13" Foreground="LightGray">Upload Template</TextBlock>
+                                <TextBlock FontSize="18" Foreground="LightGray"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                            </StackPanel>
+                        </Button>
                     <!--GRID-->
                     <StackPanel Orientation="Horizontal" Margin="4,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4" >
                         <TextBlock Foreground="LightGray" FontSize="13"  > Design Grid</TextBlock>
@@ -325,7 +328,7 @@
                             <TextBlock x:Name="xDesignGridVisibilityText" Foreground="White"  FontSize="13"  Width="40" HorizontalTextAlignment="Center" VerticalAlignment="Center" Margin="-4,-1,0,0"> OFF</TextBlock>
                         </Button>
                     </StackPanel>
-                </StackPanel>
+                     </StackPanel>
 
                 <!--Apply Template button!-->
                 <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
@@ -454,8 +457,9 @@
                 </StackPanel>
 -->
 
+            
             </StackPanel>
-
+            </StackPanel>
             </ScrollViewer>
 
         </StackPanel>
