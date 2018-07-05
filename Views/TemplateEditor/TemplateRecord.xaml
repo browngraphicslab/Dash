@@ -10,6 +10,28 @@
     d:DesignWidth="400">
 
     <StackPanel Orientation="Horizontal" x:Name="xPanel" Width="170" Height="40" Background="White">
-        <TextBlock x:Name="xTemplateTitle" Width="120"></TextBlock>
+        <TextBlock x:Name="xTemplateTitle" Width="100"></TextBlock>
+        <StackPanel x:Name="xApply" Orientation="Horizontal"  HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <Button Height="20" Width="30" Background="{StaticResource AccentGreenLight}" Margin="0 0 6 0">
+                <StackPanel Orientation="Horizontal">
+                    <!--<TextBlock  FontSize="10" Foreground="White" Text="Apply"></TextBlock>-->
+                    <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="White" VerticalAlignment="Center"
+                               FontFamily="{StaticResource FontAwesome}" Text="&#xf00c;"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <StackPanel x:Name="xDelete" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+            <Button Height="20" Width="30" Background="#D64141">
+              
+                <StackPanel Orientation="Horizontal">
+                    <!--<TextBlock  FontSize="10" Foreground="White" Text="Delete"></TextBlock>-->
+                    <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="White" VerticalAlignment="Center"
+                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
     </StackPanel>
 </UserControl>
