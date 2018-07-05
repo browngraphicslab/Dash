@@ -1487,5 +1487,15 @@ namespace Dash
 		{
 			this.BringToFront();
 		}
+
+	    private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+	        throw new NotImplementedException();
+	    }
+
+	    private void MinusButton_OnClick(object sender, RoutedEventArgs e)
+	    {
+	        this.LayoutDocument.SetHidden(true);
+	    }
 	}
 }

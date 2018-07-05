@@ -23,12 +23,12 @@
         <!--Header-->
         <Grid>
             <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"
-                    Width="1000" Height="30">
-                <Button Background="Transparent" Width="30" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="-1">
-                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="16" Text="{StaticResource ClearIcon}" />
+                    Width="1000" Height="40">
+                <Button Background="Transparent" Width="40" Height="40"   HorizontalAlignment="Right" VerticalAlignment="Center"  Click="CloseButton_OnClick">
+                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource ClearIcon}" />
                 </Button>
-                <Button Background="Transparent" Width="30" HorizontalAlignment="Right" VerticalAlignment="Center" >
-                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="16" Text="{StaticResource MinusIcon}" />
+                <Button Background="Transparent" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Center" Click="MinusButton_OnClick" >
+                    <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="20" Text="{StaticResource MinusIcon}" />
                 </Button>
             </StackPanel>
             <local:EditableTextBlock Foreground="White" Width="200" FontSize="16" HorizontalAlignment="Center" x:Name="xTitleBlock" />
