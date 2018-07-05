@@ -26,12 +26,9 @@ namespace Dash
         /// </summary>
         public SfPdfViewerControl Pdf => xPdfView;
         private VisualAnnotationManager _annotationManager;
-        private List<PDFRegionMarker> _dataRegions = new List<PDFRegionMarker>();
+        private List<PDFRegionMarker> _markers = new List<PDFRegionMarker>();
         private ScrollViewer _internalViewer;
-        private Point _anchor;
-        private bool _isDragging;
         private bool _isResizing;
-        private PDFRegionMarker _selectedRegion;
 
         public PdfView()
         {
@@ -70,7 +67,7 @@ namespace Dash
         {
             var offsetCollection = xPdfView.PageOffsetCollection;
             offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
-            MakeRegionMarker(xPdfView.VerticalOffset, endOffset, e.Link);
+            MakeRegionMarker(xRegionsScrollviewer.VerticalOffset, endOffset, e.Link);
         }
 
         private void OnRegionRemoved(object sender, RegionEventArgs e)
@@ -82,6 +79,12 @@ namespace Dash
                     if (box.LinkTo.Equals(e.Link))
                     {
                         xAnnotationMarkers.Children.Remove(child);
+                        _markers.Remove(box);
+
+                        if (_markers.Count == 0)
+                        {
+                            xAnnotationMarkers.Visibility = Visibility.Collapsed;
+                        }
                     }
                 }
             }
@@ -103,7 +106,7 @@ namespace Dash
             if (region is PDFRegionMarker pregion)
             {
                 xRegionsScrollviewer.ChangeView(null, pregion.Offset, null);
-                GetInternalScrollViewer().ChangeView(null, pregion.Offset, null);
+                GetInternalScrollViewer().ChangeView(null, xRegionsScrollviewer.VerticalOffset, null);
                 _annotationManager.SelectRegion(pregion.LinkTo);
             }
 
@@ -158,6 +161,8 @@ namespace Dash
             newMarker.Offset = offset;
             newMarker.PointerPressed += xMarker_OnPointerPressed;
             xAnnotationMarkers.Children.Add(newMarker);
+            _markers.Add(newMarker);
+            xAnnotationMarkers.Visibility = Visibility.Visible;
         }
 
         public bool Freeze()
@@ -166,8 +171,8 @@ namespace Dash
         }
         public bool UnFreeze()
         {
-            var native = this.DataDocument.GetActualSize().Value;
-            var size = this.LayoutDocument.GetActualSize().Value;
+            var native = DataDocument.GetField<PointController>(KeyStore.ActualSizeKey).Data;
+            var size = LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             xPdfView.Width = native.X;
             xRegionsScrollviewer.Width = native.X;
             if (native.X < size.X)
@@ -241,11 +246,11 @@ namespace Dash
 
         private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(_dataRegions.Count);
-            var currOffset = xPdfView.VerticalOffset;
+            Debug.WriteLine(_markers.Count);
+            var currOffset = xRegionsScrollviewer.VerticalOffset;
             PDFRegionMarker nextOffset = null;
 
-            foreach (var region in _dataRegions)
+            foreach (var region in _markers)
             {
                 if (region.Offset > currOffset && Math.Abs(region.Offset - currOffset) > 1 && (nextOffset == null || region.Offset < nextOffset.Offset))
                 {
@@ -257,10 +262,10 @@ namespace Dash
 
         private void xPrevAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var currOffset = xPdfView.VerticalOffset;
-            PDFRegionMarker prevOffset = _dataRegions.First();
+            var currOffset = xRegionsScrollviewer.VerticalOffset;
+            PDFRegionMarker prevOffset = _markers.First();
 
-            foreach (var region in _dataRegions)
+            foreach (var region in _markers)
             {
                 if (region.Offset < currOffset && Math.Abs(region.Offset - currOffset) > 1 && (prevOffset == null || region.Offset > prevOffset.Offset))
                 {
@@ -287,8 +292,8 @@ namespace Dash
 
         public DocumentController GetDocControllerFromSelectedRegion()
         {
-            var dc = new RichTextNote("PDF " + xPdfView.VerticalOffset).Document;
-            dc.GetDataDocument().SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, xPdfView.VerticalOffset, true);
+            var dc = new RichTextNote("PDF " + xRegionsScrollviewer.VerticalOffset).Document;
+            dc.GetDataDocument().SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, xRegionsScrollviewer.VerticalOffset, true);
             dc.SetRegionDefinition(LayoutDocument);
             
             return dc;

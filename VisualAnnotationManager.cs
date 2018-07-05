@@ -78,7 +78,7 @@ namespace Dash
                             region,
                             pos,
                             new Size(width, height),
-                            new Size(totalSize.X, totalSize.Y)).Hide();
+                            new Size(totalSize.X, totalSize.Y - 10)).Hide();
                     }
                 }
             }

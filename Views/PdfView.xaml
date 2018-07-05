@@ -32,7 +32,7 @@
             </Canvas>
         </Grid>
         <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed"/>
-        <Grid x:Name="xAnnotationMarkers" Margin="-20, 0, 0, 0"/>
+        <Grid x:Name="xAnnotationMarkers" Margin="-20, 0, 0, 0" Visibility="Collapsed"/>
         <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Margin="0, 0, -20, 0">
             <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
                 <Ellipse Fill="#221111" Width="18" Height="18" PointerPressed="xNextAnnotation_OnPointerPressed"/>

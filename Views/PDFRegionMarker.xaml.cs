@@ -17,6 +17,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
+    /// <summary>
+    /// This class is the little yellow indicator to the sides of PDFs that shows where annotations have been made.
+    /// </summary>
     public sealed partial class PDFRegionMarker : UserControl
     {
         public DocumentController LinkTo;
