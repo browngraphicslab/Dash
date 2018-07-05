@@ -18,9 +18,6 @@
     d:DesignHeight="535"
     d:DesignWidth="1000">
 
-    
-
-
     <StackPanel Orientation="Vertical" Height="536" Width="1000" Background="#416857">
 
         <!--Header-->
@@ -34,7 +31,7 @@
                     <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="16" Text="{StaticResource MinusIcon}" />
                 </Button>
             </StackPanel>
-            <TextBlock Foreground="White"  HorizontalAlignment="Center" FontSize="16" >Template Editor</TextBlock>
+            <local:EditableTextBlock Foreground="White" Width="200" FontSize="16" HorizontalAlignment="Center" x:Name="xTitleBlock" />
         </Grid>
 
         <!--StackPanel for panes-->

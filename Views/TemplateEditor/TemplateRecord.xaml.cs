@@ -37,7 +37,13 @@ namespace Dash
                 var templateView = template.MakeViewUI(null);
                 templateView.Loaded += TemplateView_Loaded;
                 xPanel.Children.Add(templateView);
-                xTemplateTitle.Text = templateViewModel.DataDocument.Title;
+                var binding = new FieldBinding<TextController>()
+                {
+                    Mode = BindingMode.TwoWay,
+                    Document = templateViewModel.LayoutDocument,
+                    Key = KeyStore.TitleKey
+                };
+                xTemplateTitle.AddFieldBinding(TextBlock.TextProperty, binding);
                 TemplateViewModel = templateViewModel;
             }
             else

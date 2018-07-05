@@ -239,9 +239,32 @@ namespace Dash
             // TODO: @laura
 		    xLayoutPanel.Children.Add(new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
 		        this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels));
-		}
-        
-	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
+
+		    // TODO: Add number indicating which template perhoops -sy
+		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey)?.Data.Any() ?? false)
+		    {
+		        var title = "MyTemplate";
+		        xTitleBlock.Text = title;
+		        DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+            }
+		    else
+		    {
+		        xTitleBlock.Text = DataDocument.GetField<TextController>(KeyStore.TitleKey).Data;
+		    }
+		    xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
+        }
+
+        private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            var etb = sender as EditableTextBlock;
+            if (!etb.TextBoxLoaded && etb.Text.Any())
+            {
+                xTitleBlock.Text = etb.Text;
+                DataDocument.SetField(KeyStore.TitleKey, new TextController(etb.Text), true);
+            }
+        }
+
+        private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
 		}
