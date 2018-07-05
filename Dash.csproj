@@ -189,7 +189,6 @@
     <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
-    <Compile Include="Controllers\Operators\FunctionCallOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
     <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
@@ -299,6 +298,7 @@
     <Compile Include="Util\DSL\Error Models\AbsentStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\FunctionCallExpression.cs" />
     <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
@@ -315,6 +315,7 @@
     <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
     <Compile Include="Util\DSL\ReturnException.cs" />
     <Compile Include="Util\DSL\ReturnExpression.cs" />
+    <Compile Include="Util\DSL\ReturnScope.cs" />
     <Compile Include="Util\DSL\Scope.cs" />
     <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
     <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />

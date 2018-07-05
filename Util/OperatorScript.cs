@@ -242,6 +242,11 @@ namespace Dash
 
             var t = distances[0].Key.OperatorType;
             var op = (OperatorController)Activator.CreateInstance(t);
+            return Run(op, args, scope);
+        }
+
+        public static FieldControllerBase Run(OperatorController op, List<FieldControllerBase> args, Scope scope)
+        {
             var outDict = new Dictionary<KeyController, FieldControllerBase>();
 
             var inputs = new Dictionary<KeyController, FieldControllerBase>(args.Zip(op.Inputs, (arg, pair) => new KeyValuePair<KeyController, FieldControllerBase>(pair.Key, arg)));

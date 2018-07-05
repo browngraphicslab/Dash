@@ -77,7 +77,12 @@ namespace Dash
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new WhileOperatorController();
+            return new FunctionOperatorController();
+        }
+
+        public string getFunctionString()
+        {
+            return _block.ToString();
         }
     }
 }

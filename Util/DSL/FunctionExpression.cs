@@ -6,23 +6,48 @@ namespace Dash
 {
     public class FunctionExpression : ScriptExpression
     {
-        private readonly Op.Name _opName;
         private readonly List<ScriptExpression> _parameters;
+        private readonly string _funcName;
+        private readonly Op.Name _opName;
 
-        public FunctionExpression(Op.Name opName, List<ScriptExpression> parameters)
+        public FunctionExpression(List<ScriptExpression> parameters, string func)
         {
-            _opName = opName;
+            _funcName = func;
+            _parameters = parameters;
+        }
+
+        public FunctionExpression(Op.Name op, List<ScriptExpression> parameters)
+        {
+            _funcName = op.ToString();
             _parameters = parameters;
         }
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
+            var opName = Op.Parse(_funcName);
 
             try
             {
-                var output = OperatorScript.Run(_opName, inputs, scope);
-                return output;
+                //use user defined function
+                if (userFunction != null)
+                {
+                    //check if user defiend function
+                    var output = OperatorScript.Run(userFunction, inputs, scope);
+                    return output;
+                }
+
+                if (opName != Op.Name.invalid)
+                {
+
+                    var output = OperatorScript.Run(opName, inputs, scope);
+                    return output;
+                }
+            }
+            catch (ReturnException)
+            {
+                throw;
             }
             catch (ScriptExecutionException)
             {
@@ -30,11 +55,13 @@ namespace Dash
             }
             catch (Exception)
             {
-                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(_opName));
+                throw new ScriptExecutionException(new GeneralScriptExecutionFailureModel(opName));
             }
+
+            return new TextController("");
         }
 
-        public Op.Name GetOperatorName() => _opName;
+        public Op.Name GetOperatorName() => Op.Parse(_funcName);
 
 
         public List<ScriptExpression> GetFuncParams() => _parameters;
@@ -48,7 +75,7 @@ namespace Dash
             //        kvp => new KeyValuePair<KeyController, FieldControllerBase>(kvp.CreateReference(scope))), _opName); //recursive linq
         }
 
-        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(_opName);
+        public override DashShared.TypeInfo Type => OperatorScript.GetOutputType(Op.Parse(_funcName));
 
         public override string ToString()
         {

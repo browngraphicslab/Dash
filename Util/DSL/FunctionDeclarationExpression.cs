@@ -43,7 +43,7 @@ namespace Dash
 
             scope?.DeclareVariable(_funcName, functionOperator);
 
-            return new TextController("");
+            return functionOperator;
         }
 
   

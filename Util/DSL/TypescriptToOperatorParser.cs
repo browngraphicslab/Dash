@@ -102,7 +102,8 @@ namespace Dash
                 if (field is ReferenceController refField)
                 {
                     middle.Add(GetScriptForOperatorTree(refField, context));
-                } else
+                }
+                else
                 {
                     middle.Add($"this.{inputKey.Name}");
                 }
@@ -446,7 +447,7 @@ namespace Dash
                         parsedObList.Add(ParseToExpression(element.Children[1]));
                     }
 
-                    var names = objectProps.Select(n => ((Identifier) n.Children[0]).Text).ToList();
+                    var names = objectProps.Select(n => ((Identifier)n.Children[0]).Text).ToList();
                     var dict = new Dictionary<string, ScriptExpression>(names.Zip(parsedObList,
                         (s, expression) => new KeyValuePair<string, ScriptExpression>(s, expression)));
 
@@ -496,7 +497,7 @@ namespace Dash
                 case SyntaxKind.AwaitExpression:
                     break;
                 case SyntaxKind.PrefixUnaryExpression:
-                    var preUnEx = (PrefixUnaryExpression) node;
+                    var preUnEx = (PrefixUnaryExpression)node;
                     var body = ParseToExpression(preUnEx.Children[0]);
                     switch (preUnEx.Operator)
                     {
@@ -506,10 +507,10 @@ namespace Dash
                                 new LiteralExpression(new NumberController(0)),
                                 body,
                             });
-                    } 
+                    }
                     break;
                 case SyntaxKind.PostfixUnaryExpression:
-                    var postUnEx = (PostfixUnaryExpression) node;
+                    var postUnEx = (PostfixUnaryExpression)node;
                     var res = postUnEx.Children[0].GetText();
                     switch (postUnEx.Operator)
                     {
@@ -604,7 +605,7 @@ namespace Dash
                                     rightBinExpr,
                                 });
                             }
-                           else if (leftBinExpr is FunctionExpression lefttBinFuncExpr2 && lefttBinFuncExpr2.GetOperatorName() == DSL.GetFuncName<ElementAccessOperatorController>())
+                            else if (leftBinExpr is FunctionExpression lefttBinFuncExpr2 && lefttBinFuncExpr2.GetOperatorName() == DSL.GetFuncName<ElementAccessOperatorController>())
                             {
                                 return new FunctionExpression(DSL.GetFuncName<SetListFieldOperatorController>(), new List<ScriptExpression>()
                                 {
@@ -700,7 +701,7 @@ namespace Dash
                                 {IfOperatorController.IfBlockKey,  ifBlock},
                                 {IfOperatorController.ElseBlockKey,  elseBlock},
                             });
-                    
+
                 case SyntaxKind.DoStatement:
                     var doStatement = (node as DoStatement).Children;
                     var doBlock = ParseToExpression(doStatement[0]);
@@ -721,7 +722,7 @@ namespace Dash
                     var whilBinary = ParseToExpression(whilChild[0]);
                     var whilBlock = ParseToExpression(whilChild[1]);
 
-                  //  make a while operator and call it in this function
+                    //  make a while operator and call it in this function
                     return new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>()
                     {
                         {WhileOperatorController.BoolKey,  whilBinary},
@@ -765,7 +766,7 @@ namespace Dash
                     var returnStatement = node as ReturnStatement;
                     var c1 = node.Children;
                     //TODO: throw empty return error
-                   return new ReturnExpression(ParseToExpression(node.Children[0]));
+                    return new ReturnExpression(ParseToExpression(node.Children[0]));
                 case SyntaxKind.WithStatement:
                     break;
                 case SyntaxKind.SwitchStatement:
@@ -780,7 +781,7 @@ namespace Dash
                     break;
                 case SyntaxKind.VariableDeclaration:
                     var variableDeclaration = node as VariableDeclaration;
-                   
+
                     return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]));
                 case SyntaxKind.VariableDeclarationList:
                     var varDeclList = node as VariableDeclarationList;
@@ -884,7 +885,7 @@ namespace Dash
                         var exprs = new List<ScriptExpression>();
                         for (int i = 0; i < children.Length - 1; i++)
                         {
-                             var expr = ParseToExpression(node.Children[i]);
+                            var expr = ParseToExpression(node.Children[i]);
                             if (expr != null)
                             {
                                 exprs.Add(expr);
@@ -982,31 +983,16 @@ namespace Dash
                 case SyntaxKind.CallExpression:
                     var callExpr = node as CallExpression;
                     var parameters = new List<ScriptExpression>();
+                    var test = callExpr.Expression;
 
-                    var funcName = Op.Parse(callExpr?.IdentifierStr);
-                    if (funcName == Op.Name.invalid)
+
+                    foreach (var arg in callExpr.Arguments)
                     {
-                        //no operator, check if it is a user defined function saved as a variable
-                        return new FunctionExpression(DSL.GetFuncName<FunctionCallOperatorController>(), new List<ScriptExpression>()
-                        {
-                            new LiteralExpression(new TextController(callExpr?.IdentifierStr))
-                        });
-
-                        throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(callExpr?.IdentifierStr));
+                        parameters.Add(ParseToExpression(arg));
                     }
-                    else
-                    {
-                        var keys = OperatorScript.GetOrderedKeyControllersForFunction(funcName).ToArray();
-                        var keyIndex = 0;
-                        foreach (var arg in callExpr.Arguments)
-                        {
-                            parameters.Add(ParseToExpression(arg));
-                            keyIndex++;
-                        }
 
-                        var func = new FunctionExpression(Op.Parse(callExpr.IdentifierStr), parameters);
-                        return func;
-                    }
+                    var func = new FunctionExpression(parameters, callExpr?.IdentifierStr);
+                    return func;
 
                 default:
                     throw new ArgumentOutOfRangeException();
