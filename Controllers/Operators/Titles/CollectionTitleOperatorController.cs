@@ -17,7 +17,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("775EE4CC-D2A8-4A11-AC3F-EC36C91355DE", "Collection Title");
+        private static readonly KeyController TypeKey = new KeyController("Collection Title", "775EE4CC-D2A8-4A11-AC3F-EC36C91355DE");
 
         protected virtual string Prefix() { return "COLLECTION: ";  }
 
@@ -26,7 +26,7 @@ namespace Dash
        // public static readonly KeyController CollectionDocsKey = new KeyController("FB7EE0B1-004E-4FE0-B316-FFB909CBEBF2", "Collection Docs");
 
         //Output keys
-        public static readonly KeyController ComputedTitle = new KeyController("B8F9AC2E-02F8-4C95-82D8-401BA57053C3", "Computed Title");
+        public static readonly KeyController ComputedTitle = new KeyController("Computed Title");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

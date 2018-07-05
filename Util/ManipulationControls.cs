@@ -484,7 +484,7 @@ namespace Dash
                     ParentDocument.ViewModel.XPos = ManipulationStartX;
                     ParentDocument.ViewModel.YPos = ManipulationStartY;
                     MainPage.Instance.UnhighlightDock();
-                    MainPage.Instance.Dock(ParentDocument, overlappedDirection);
+                    MainPage.Instance.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
                 }
             }
             else

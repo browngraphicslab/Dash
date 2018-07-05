@@ -123,8 +123,8 @@ namespace Dash
                 var doc = ViewModel?.LayoutDocument;
 
                 var binding = !BindRenderTransform || doc == null ? null :
-                        new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
-                                                               new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey))
+                        new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                                                               new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
                         {
                             Converter = new TransformGroupMultiConverter(),
                             Context = new Context(doc),
@@ -961,8 +961,8 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
@@ -1108,7 +1108,7 @@ namespace Dash
                     var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
 
                     operatorDoc.SetField(SearchOperatorController.InputCollection,
-                        new DocumentReferenceController(ViewModel.DataDocument.Id,
+                        new DocumentReferenceController(ViewModel.DataDocument,
                             SearchOperatorController.ResultsKey), true);
 
                     // TODO connect output to input

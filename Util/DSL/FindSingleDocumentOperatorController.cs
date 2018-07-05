@@ -12,10 +12,10 @@ namespace Dash
     public class FindSingleDocumentOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("E3513B99-2375-4BB5-8643-F3BB5DB26312", "Query");
+        public static readonly KeyController QueryKey = new KeyController("Query");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("A8E9A428-C76C-47CA-A1C0-C4B4F1FB0E05", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public FindSingleDocumentOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -44,7 +44,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("C35B553E-F12A-483A-AED9-30927606B897", "Simple Single Search");
+            new KeyController("Simple Single Search", "C35B553E-F12A-483A-AED9-30927606B897");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

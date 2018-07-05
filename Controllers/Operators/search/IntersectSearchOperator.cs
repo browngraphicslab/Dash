@@ -12,11 +12,11 @@ namespace Dash
     public class IntersectSearchOperator : OperatorController
     {
         //Input keys
-        public static readonly KeyController Dict1Key = new KeyController("4DD8F9C5-4266-4279-9D24-FD5AFBC44369", "Dict1");
-        public static readonly KeyController Dict2Key = new KeyController("420EB524-8373-4144-9433-87C0AF6D6CA7", "Dict2");
+        public static readonly KeyController Dict1Key = new KeyController("Dict1");
+        public static readonly KeyController Dict2Key = new KeyController("Dict2");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("8E3931E4-6332-4A52-85F2-EC79031CB520", "DictionaryResults");
+        public static readonly KeyController ResultsKey = new KeyController("DictionaryResults");
 
         public IntersectSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -27,7 +27,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("835EDA32-5D1A-4C4B-B597-B664EC83C348", "Intersect Search");
+        private static readonly KeyController TypeKey = new KeyController("Intersect Search", "835EDA32-5D1A-4C4B-B597-B664EC83C348");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {

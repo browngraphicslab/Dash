@@ -9,10 +9,10 @@ namespace Dash
     public class GetKeysOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController CollectionKey = new KeyController("2EA230C0-CDED-4B0F-AE3F-0129E89CC211", "Collection");
+        public static readonly KeyController CollectionKey = new KeyController("Collection");
 
         //Output keys
-        public static readonly KeyController ResultDocumentKey = new KeyController("C3F0663C-3797-4F90-BD9E-0F2DC9908C5B", "ResultDocument");
+        public static readonly KeyController ResultDocumentKey = new KeyController("ResultDocument");
 
         public GetKeysOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -38,7 +38,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("0FE2858F-CB94-4163-B4CD-CA84F99438E4", "Get Keys");
+        private static KeyController TypeKey = new KeyController("Get Keys", "0FE2858F-CB94-4163-B4CD-CA84F99438E4");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

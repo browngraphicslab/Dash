@@ -10,10 +10,10 @@ namespace Dash
     public class GetScriptValueAsStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ScriptKey = new KeyController("7C56D13F-007A-45B3-AD42-E62DD14E802B", "Script");
+        public static readonly KeyController ScriptKey = new KeyController("Script");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("D56D3217-88ED-4BB2-A192-A3DB3F6427C2", "Result");
+        public static readonly KeyController ResultKey = new KeyController("Result");
 
 
         public GetScriptValueAsStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -40,7 +40,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("99E9328B-7341-403F-819B-26CDAB2F9A51", "Exec to string");
+        private static readonly KeyController TypeKey = new KeyController("Exec to string", "99E9328B-7341-403F-819B-26CDAB2F9A51");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

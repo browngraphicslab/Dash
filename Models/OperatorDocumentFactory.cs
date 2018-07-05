@@ -44,7 +44,7 @@ namespace Dash
         /// <param name="docContainingOp"></param>
         public static void SetOperatorLayout(Func<ReferenceController, CourtesyDocument> layoutFunc, DocumentController docContainingOp)
         {
-            var layoutDoc = layoutFunc(new DocumentReferenceController(docContainingOp.Id, KeyStore.OperatorKey)).Document;
+            var layoutDoc = layoutFunc(new DocumentReferenceController(docContainingOp, KeyStore.OperatorKey)).Document;
             docContainingOp.SetActiveLayout(layoutDoc, true, true);
 
         }

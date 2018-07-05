@@ -173,7 +173,7 @@ namespace Dash
                 LayoutDocument.DocumentType.Equals(GridLayout.DocumentType) ||
                 LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType))
             {
-                if (args?.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
+                if (args != null && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs largs &&
                     (largs.ListAction == ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content ))
                     ;
                 else

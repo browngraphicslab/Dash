@@ -20,16 +20,16 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("EA5FD353-F99A-4F99-B0BC-5D2C88A51019", "Search");
+        private static readonly KeyController TypeKey = new KeyController("Search", "EA5FD353-F99A-4F99-B0BC-5D2C88A51019");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new SearchOperatorBox(rfmc);
 
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("69DDED67-894A-41F0-81B2-FF6A8357B0DA", /*"Search Text"*/"Term");
-        public static readonly KeyController InputCollection = new KeyController("4ECAFE47-0E2D-4A04-B24D-42C6668A4962", /*"Input"*/"InputCollection");
+        public static readonly KeyController TextKey = new KeyController("Term");
+        public static readonly KeyController InputCollection = new KeyController("InputCollection");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", /*"Results"*/"Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

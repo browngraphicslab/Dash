@@ -17,11 +17,11 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController KeyQueryKey = new KeyController("B0006F0F-82E3-4C95-93D4-C988702F2382", "KeyQuery");
-        public static readonly KeyController ValueQueryKey = new KeyController("A602049B-922B-4444-960A-690498691F21", "ValueQuery");
+        public static readonly KeyController KeyQueryKey = new KeyController("KeyQuery");
+        public static readonly KeyController ValueQueryKey = new KeyController("ValueQuery");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("207CAD1E-40D0-4590-8C63-083D147B1794", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -44,7 +44,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9", "Key Field Query");
+        private static readonly KeyController TypeKey = new KeyController("Key Field Query", "DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

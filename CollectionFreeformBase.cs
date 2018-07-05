@@ -567,7 +567,7 @@ namespace Dash
 
                 if (key == null)
                 {
-                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                    TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
                 }
                 else
                 {
@@ -994,10 +994,10 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = KeyController.LookupKeyByName(keyname, true);
+                var keycontroller = new KeyController(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                 dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
                 dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                 Actions.DisplayDocument(ViewModel, dbox, where);
