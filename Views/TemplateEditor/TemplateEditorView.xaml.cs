@@ -239,6 +239,7 @@ namespace Dash
 		    this.FormatUploadTemplateFlyout();
 			xDesignGridSizeComboBox.SelectedIndex = 0;
 			xDesignGridVisibilityButton.IsChecked = false;
+			xFreeFormButton.IsChecked = true;
 
             // TODO: Add number indicating which template perhoops -sy
 		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
@@ -1537,6 +1538,24 @@ namespace Dash
 			xDesignGridLarge.Visibility = Visibility.Collapsed;
 
 			xDesignGridSizeComboBox.Background = new SolidColorBrush(Colors.Gray);
+		}
+
+
+		// TEMPLATE STYLE BUTTON HANDLERS //
+		private void XFreeFormButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xGridButton.IsChecked = false;
+			xListButton.IsChecked = false;
+		}
+		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xFreeFormButton.IsChecked = false;
+			xGridButton.IsChecked = false;
+		}
+		private void XGridButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			xFreeFormButton.IsChecked = false;
+			xListButton.IsChecked = false;
 		}
 	}
 }
