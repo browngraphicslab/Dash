@@ -31,6 +31,7 @@ namespace Dash
                 //restrict types based on user input
                 var inputType = TypeInfo.Any;
                 var parType = param.Type?.GetText().ToLower();
+                //this now only handles numbers, text and bool. If another type is needed, add a case
                 switch (parType)
                 {
                     case "number":
