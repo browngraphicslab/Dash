@@ -234,7 +234,7 @@ namespace Dash
         {
             var native = this.DataDocument.GetActualSize().Value;
             var size = this.LayoutDocument.GetActualSize().Value;
-            xPdfView.Width = native.X;
+            xPdfView.Width = native.X + 1;//Syncfusion rounds down to 99 zoom instead of 100, this prevents that
             xRegionsScrollviewer.Width = native.X;
             if (native.X < size.X)
             {
