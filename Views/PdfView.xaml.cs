@@ -236,8 +236,8 @@ namespace Dash
                 var offsetCollection = xPdfView.PageOffsetCollection;
                 offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
                 if (endOffset == 0) return;
-                DataDocument.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, endOffset - xPdfView.PageGap, true);
-                xGridForStretching.Height = endOffset - xPdfView.PageGap;
+                DataDocument.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, endOffset, true);
+                xGridForStretching.Height = endOffset;
             }
             xRegionsScrollviewer.ChangeView(null, GetInternalScrollViewer().VerticalOffset, null);
             GetInternalScrollViewer().ChangeView(null, xRegionsScrollviewer.VerticalOffset, null);
@@ -308,7 +308,7 @@ namespace Dash
         {
             var offsetCollection = xPdfView.PageOffsetCollection;
             offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
-            var height = endOffset - xPdfView.PageGap;
+            var height = endOffset;
 
             return new Size(xPdfView.Width, height);
         }
