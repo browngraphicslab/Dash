@@ -175,19 +175,9 @@ namespace Dash
             var size = LayoutDocument.GetField<PointController>(KeyStore.ActualSizeKey).Data;
             xPdfView.Width = native.X;
             xRegionsScrollviewer.Width = native.X;
-            if (native.X < size.X)
-            {
-                var scaling = size.X / native.X;
-                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, 0, 0) };
-                xPdfView.Height = size.Y / scaling;
-            }
-            else
-            {
-                var scaling = size.X / native.X;
-                var val = 0;
-                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, val, 0) };
-                xPdfView.Height = size.Y / scaling;
-            }
+            var scaling = size.X / native.X;
+            xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, 0, 0) };
+            xPdfView.Height = size.Y / scaling;
 
             xRegionsScrollviewer.Height = xPdfView.Height;
             SetUpAnnotationsOverlay();
@@ -246,7 +236,6 @@ namespace Dash
 
         private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(_markers.Count);
             var currOffset = xRegionsScrollviewer.VerticalOffset;
             PDFRegionMarker nextOffset = null;
 
@@ -277,7 +266,7 @@ namespace Dash
 
         private void xRegionsScrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            xAnnotationNavigation.Opacity = 0.8;
+            if (_markers.Count > 0) xAnnotationNavigation.Opacity = 0.8;
         }
 
         private void xRegionsScrollviewer_OnPointerExited(object sender, PointerRoutedEventArgs e)

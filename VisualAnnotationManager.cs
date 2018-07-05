@@ -79,6 +79,7 @@ namespace Dash
                             pos,
                             new Size(width, height),
                             new Size(totalSize.X, totalSize.Y - 10)).Hide();
+                        Debug.WriteLine("passed");
                     }
                 }
             }
@@ -345,8 +346,8 @@ namespace Dash
                 //add to regions list
                 if (_dataRegions == null)
                 {
-                    var dregions = new ListController<DocumentController>(note);
-                    _docCtrl.GetDataDocument().SetField(KeyStore.RegionsKey, dregions, true);
+                    _dataRegions = new ListController<DocumentController>(note);
+                    _docCtrl.GetDataDocument().SetField(KeyStore.RegionsKey, _dataRegions, true);
                 }
                 else
                 {
