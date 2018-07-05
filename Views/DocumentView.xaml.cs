@@ -569,7 +569,7 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
 
-            if (Bounds != null && !Bounds.Rect.Contains(translate))
+            if (Bounds != null && (!Bounds.Rect.Contains(translate) || !Bounds.Rect.Contains(new Point(translate.X + ActualWidth, translate.Y + ActualHeight))))
             {
                 return;
             }
@@ -794,7 +794,7 @@ namespace Dash
 
             // set old and new sizes for change in height/width comparisons
             Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
-            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * oldSize.Width : oldSize.Height;
+            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y : oldSize.Height;
             Size newSize = new Size();
 
             // sets directions/weights depending on which handle was dragged as mathematical manipulations
@@ -816,10 +816,12 @@ namespace Dash
                 newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
 
             }
+
+            var testSize = newSize;
             // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
-            newSize.Height = double.IsNaN(newSize.Height)
-               ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * newSize.Width
-               : newSize.Height;
+            testSize.Height = double.IsNaN(testSize.Height)
+               ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * testSize.Width
+               : testSize.Height;
 
             Size Resize(double dx = 0, double dy = 0)
             {
@@ -828,28 +830,46 @@ namespace Dash
                     // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
                     var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
                     var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
-                    if (Bounds != null)
-                    {
-                        if ((ViewModel.XPos + dx > Bounds.Rect.Width) ||
-                            (ViewModel.YPos + dy > Bounds.Rect.Height))
-                        {
-                            return new Size(Math.Floor(Bounds.Rect.Width - ViewModel.XPos), Math.Floor(Bounds.Rect.Height - ViewModel.YPos));
-                        }
-                    }
 
-                    ViewModel.Width = Math.Max(w + dx, MinWidth);
-                    ViewModel.Height = Math.Max(h + dy, MinHeight);
-
-                    return new Size(ViewModel.Width, ViewModel.Height);
+                    return new Size(Math.Max(w + dx, MinWidth), Math.Max(h + dy, MinHeight));
                 }
                 return new Size();
             }
 
-            this.Measure(new Size(newSize.Width, 5000));
-            newSize.Height = Math.Max(newSize.Height, this.DesiredSize.Height);
-            ViewModel.Position = new Point(
-                ViewModel.XPos - moveXScale * (newSize.Width - oldSize.Width) * ViewModel.Scale.X,
-                ViewModel.YPos - moveYScale * (newSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+            this.Measure(new Size(testSize.Width, 5000));
+            //testSize.Height = Math.Max(testSize.Height, this.DesiredSize.Height);
+            var newPos = new Point(
+                ViewModel.XPos - moveXScale * (testSize.Width - oldSize.Width) * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (testSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+
+            //BoundsCheck
+            if (Bounds != null)
+            {
+                var rect = Bounds.Rect;
+                if (newPos.X < rect.Left)
+                {
+                    newSize.Width -= rect.Left - newPos.X;
+                    newPos.X = rect.Left;
+                }
+                if (newPos.Y < rect.Top)
+                {
+                    newSize.Height -= rect.Top - newPos.Y;
+                    newPos.Y = rect.Top;
+                }
+
+                if (newPos.X + newSize.Width > rect.Right)
+                {
+                    newSize.Width = rect.Right - newPos.X;
+                }
+                if (newPos.Y + newSize.Height > rect.Bottom)
+                {
+                    newSize.Height = rect.Bottom - newPos.Y;
+                }
+            }
+
+            ViewModel.Width = newSize.Width;
+            ViewModel.Height = newSize.Height;
+            ViewModel.Position = newPos;
 
             e.Handled = true;
         }

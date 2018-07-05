@@ -564,7 +564,6 @@ namespace Dash
 		        var scale = xWorkspace.Height / docView.ActualHeight;
 
                 docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width * scale);
-                docView.ViewModel.DocumentController.SetHeight(xWorkspace.Height);
                 //docView.ViewModel.DocumentController.SetActualSize(new Point(xWorkspace.Width * scale, xWorkspace.Height));
                 docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(currPos.X, 0), true);
 		    }
@@ -576,8 +575,8 @@ namespace Dash
 		    }
 
             //updates and generates bounds for the children inside the template canvas
-            var bounds = new Rect(0, 0, xWorkspace.Width - docView.ViewModel.Width,
-				xWorkspace.Height - docView.ActualHeight);
+            var bounds = new Rect(0, 0, xWorkspace.Width,
+				xWorkspace.Height);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 			docView.DocumentDeleted += DocView_DocumentDeleted;
@@ -1331,10 +1330,10 @@ namespace Dash
 		    //    docView.Height = docView.Bounds.Rect.Height;
 		    //}
            
-			var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
-				xWorkspace.Height - docView.ActualHeight);
+			//var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+			//	xWorkspace.Height - docView.ActualHeight);
 		   
-            docView.Bounds = new RectangleGeometry { Rect = bounds };
+   //         docView.Bounds = new RectangleGeometry { Rect = bounds };
 		   
         }
 
@@ -1445,7 +1444,7 @@ namespace Dash
 
                 var bounds = new Rect(0, 0, xWorkspace.Width - docview.ActualWidth,
 	                xWorkspace.Height - docview.ActualHeight);
-	            docview.Bounds = new RectangleGeometry { Rect = bounds };
+	            //docview.Bounds = new RectangleGeometry { Rect = bounds };
             }
 
 	        Bounds.Width = maxOffsetX;

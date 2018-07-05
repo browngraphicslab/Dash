@@ -15,10 +15,10 @@
     mc:Ignorable="d"
     x:Name="xEditorControl"
     AllowDrop="True"
-    d:DesignHeight="535"
+    d:DesignHeight="600"
     d:DesignWidth="1000">
 
-    <StackPanel Orientation="Vertical" Height="536" Width="1000" Background="#416857">
+    <StackPanel Orientation="Vertical" Height="550" Width="1000" Background="#416857">
 
         <!--Header-->
         <Grid>
