@@ -31,7 +31,7 @@
                     <TextBlock FontFamily="{StaticResource FontAwesome}" Foreground="White" FontSize="16" Text="{StaticResource MinusIcon}" />
                 </Button>
             </StackPanel>
-            <TextBlock Foreground="White"  HorizontalAlignment="Center" FontSize="16" >Template Editor</TextBlock>
+            <local:EditableTextBlock Foreground="White" Width="200" FontSize="16" HorizontalAlignment="Center" x:Name="xTitleBlock" />
         </Grid>
 
         <!--StackPanel for panes-->
