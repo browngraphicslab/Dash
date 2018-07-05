@@ -117,6 +117,7 @@ namespace Dash
             switch (args.VirtualKey)
             {
                 case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed():
+                    //get last terminal input entered
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
                     {
@@ -125,6 +126,7 @@ namespace Dash
                     if (numItem > index1 && index1 >= 0)
                     {
                         _currentHistoryIndex++;
+                        _textModified = true;
                         xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
                          MoveCursorToEnd();
                     }
@@ -140,12 +142,14 @@ namespace Dash
                     if (numItem > index && index >= 0)
                     {
                         _currentHistoryIndex--;
+                        _textModified = true;
                         xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
                         MoveCursorToEnd();
                     }
                     else if (index == numItem)
                     {
                         _currentHistoryIndex--;
+                        _textModified = true;
                         xTextBox.Text = _typedText;
                         MoveCursorToEnd();
                     }
@@ -203,7 +207,7 @@ namespace Dash
 
             if (!_textModified)
             {
-                var addedText = ' ';
+                _currentHistoryIndex = 0;
 
                 var textDiff = StringDiff(xTextBox.Text, _currentText);
 

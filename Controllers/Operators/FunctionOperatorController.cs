@@ -56,22 +56,13 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            
-            
             for (int i = 0; i < _inputNames.Count; i++)
             {
                 scope.DeclareVariable(_inputNames[i], inputs[KeyController.LookupKeyByName(i.ToString())]);
             }
 
             var result = _block.Execute(scope);
-           
-
-
-            //var functionString = inputs[StringKey];
-            //var functionName = (inputs[NameKey] as TextController).Data;
-
-            ////add function as variable
-            //scope?.DeclareVariable(functionName, this);
+          
 
             outputs[ResultKey] = result;
         }

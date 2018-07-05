@@ -482,6 +482,9 @@ namespace Dash
                     Debug.Assert(parenthesizedExpr.Children.Count == 1);
                     return ParseToExpression(parenthesizedExpr.Children[0]);
                 case SyntaxKind.FunctionExpression:
+                    var funExpr = (node as FunctionExpression);
+
+                    //return new FunctionDeclarationExpression(funExpr.Parameters, ParseToExpression(funDec.Body), TypeInfo.None);
                     break;
                 case SyntaxKind.ArrowFunction:
                     break;
