@@ -27,8 +27,26 @@ namespace Dash
             {
                 var newKey = KeyController.LookupKeyByName(_inputNames.Count.ToString(), true);
                 _inputNames.Add(param.IdentifierStr);
-                //TODO: get types of each parameter and set it in making IOInfo
-                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(TypeInfo.Any, true)));
+                
+                //restrict types based on user input
+                var inputType = TypeInfo.Any;
+                var parType = param.Type?.GetText().ToLower();
+                switch (parType)
+                {
+                    case "number":
+                        inputType = TypeInfo.Number;
+                        break;
+                    case "string":
+                        inputType = TypeInfo.Text;
+                        break;
+                    case "boolean":
+                        inputType = TypeInfo.Bool;
+                        break;
+                    default:
+                        break;
+                }
+
+                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(inputType, true)));
             }
             
 
@@ -58,13 +76,22 @@ namespace Dash
         {
             for (int i = 0; i < _inputNames.Count; i++)
             {
-                scope.DeclareVariable(_inputNames[i], inputs[KeyController.LookupKeyByName(i.ToString())]);
+                var value = inputs[KeyController.LookupKeyByName(i.ToString())];
+                
+                var expectedType = Inputs[i].Value.Type;
+
+                //if not expected type , don't run
+                if (expectedType != TypeInfo.Any && value.TypeInfo != expectedType)
+                {
+                    throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType));
+                }
+                scope?.DeclareVariable(_inputNames[i], value);
             }
 
             var result = _block.Execute(scope);
-          
 
             outputs[ResultKey] = result;
+          
         }
 
         public override FieldControllerBase GetDefaultController()

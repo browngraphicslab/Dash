@@ -305,6 +305,7 @@
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
     <Compile Include="Util\DSL\Error Models\InvalidReturnStatementErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\TextErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />
     <Compile Include="Util\DSL\ObjectExpression.cs" />
@@ -335,7 +336,6 @@
     <Compile Include="Util\DSL\Error Models\EmptyScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\Error Models\FunctionCallMissingScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\Error Models\FunctionNotFoundScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
     <Compile Include="Util\DSL\Error Models\GeneralScriptExecutionFailureModel.cs" />
     <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
