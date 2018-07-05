@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -9,11 +10,13 @@ using Syncfusion.Windows.PdfViewer;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Linq;
-using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
+using Syncfusion.Pdf.Graphics;
 using Syncfusion.Pdf.Interactive;
+using Point = Windows.Foundation.Point;
+using Size = Windows.Foundation.Size;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -42,6 +45,8 @@ namespace Dash
             xPdfView.IsThumbnailViewEnabled = false;
             xPdfView.Loaded += (sender, e) =>
             {
+                var sp = xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel");
+                sp.SizeChanged += PdfView_SizeChanged;
                 xTemporaryRegionMarker.SetColor(new SolidColorBrush(Colors.Gold));
                 var doc = DataContext as DocumentController;
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
@@ -79,7 +84,6 @@ namespace Dash
                 //    }
                 //}
             };
-            SizeChanged += PdfView_SizeChanged;
             
             
         }
@@ -136,9 +140,9 @@ namespace Dash
 
         private void PdfView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
+                var sp = sender as FrameworkElement;
             if (DataDocument.GetActualSize() == null)
             {
-                var sp = xPdfView.GetDescendantsOfType<Canvas>().Where((d) => d.Name == "PdfDocumentPanel").FirstOrDefault();
                 var native = sp.DesiredSize;
                 if (native.Width > 0)
                 {
@@ -149,7 +153,7 @@ namespace Dash
             else
             {
                 UnFreeze();
-                SizeChanged -= PdfView_SizeChanged;
+                sp.SizeChanged -= PdfView_SizeChanged;
             }
         }
 
