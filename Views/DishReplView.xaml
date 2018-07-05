@@ -39,14 +39,14 @@
                             PlaceholderText="Enter Command" 
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true">
             </TextBox>
-            <Popup x:Name="SuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
+            <Popup x:Name="xSuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
                 <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
-                    <Border x:Name="SuggestionsContainer" Background="LightGray">
+                    <Border x:Name="xSuggestionsContainer" Background="LightGray">
                     <Border.RenderTransform>
-                        <TranslateTransform x:Name="UpwardTransform"/>
+                        <TranslateTransform x:Name="xUpwardTransform"/>
                     </Border.RenderTransform>
-                    <ListView x:Name="Suggestions" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
+                    <ListView x:Name="xSuggestions" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
