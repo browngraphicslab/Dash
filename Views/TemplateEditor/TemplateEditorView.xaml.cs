@@ -552,25 +552,36 @@ namespace Dash
 		        docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width);
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(0, currPos.Y), true);
 		    }
-		    else if (currPos.X + docView.ActualWidth > xWorkspace.Width)
+            else if (currPos.X + docView.ActualWidth > xWorkspace.Width)
 		    {
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
 		            new PointController(xWorkspace.Width - docView.ActualWidth - 1, currPos.Y), true);
 		    }
 
 		    currPos = docView.ViewModel.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-            if (currPos.Y + docView.ActualHeight > xWorkspace.Height)
+		    if (docView.ActualHeight > xWorkspace.Height)
+		    {
+		        var scale = xWorkspace.Height / docView.ActualHeight;
+
+                docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width * scale);
+                docView.ViewModel.DocumentController.SetHeight(xWorkspace.Height);
+                //docView.ViewModel.DocumentController.SetActualSize(new Point(xWorkspace.Width * scale, xWorkspace.Height));
+                docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(currPos.X, 0), true);
+		    }
+		    else if (currPos.Y + docView.ActualHeight > xWorkspace.Height)
 		    {
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
 		            new PointController(currPos.X, xWorkspace.Height - docView.ActualHeight - 1), true);
+
 		    }
 
             //updates and generates bounds for the children inside the template canvas
-            var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+            var bounds = new Rect(0, 0, xWorkspace.Width - docView.ViewModel.Width,
 				xWorkspace.Height - docView.ActualHeight);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
 			docView.DocumentDeleted += DocView_DocumentDeleted;
+		    docView.SizeChanged += DocumentView_OnSizeChanged;
             docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 		}
 
@@ -1283,24 +1294,27 @@ namespace Dash
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
 		}
 
-		private void XUndoButton_OnClick(object sender, RoutedEventArgs e)
-		{
-			//TODO: implement undo
-		}
-
-		private void XRedoButton_OnClick(object sender, RoutedEventArgs e)
-		{
-			//TODO: implement redo
-		}
+		
 
 		private void XClearButton_OnClick(object sender, RoutedEventArgs e)
 		{
-			//TODO: implement clear
+		    Clear();
 		}
+
+	    private void Clear()
+	    {
+	        DocumentViewModels.Clear();
+	      
+	        
+	        DocumentControllers.Clear();
+	        DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
+        }
 
 		private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
 		{
-			xUploadTemplateFlyout.ShowAt(xUploadTemplateButton);
+            xUploadTemplateFlyout.Content = new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
+                this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+            xUploadTemplateFlyout.ShowAt(xUploadTemplateButton);
 		}
 
 		//updates the bounding when an element changes size
@@ -1490,8 +1504,9 @@ namespace Dash
 
 	    private void CloseButton_OnClick(object sender, RoutedEventArgs e)
 	    {
-	        throw new NotImplementedException();
-	    }
+	        Clear();
+	        this.LayoutDocument.SetHidden(true);
+        }
 
 	    private void MinusButton_OnClick(object sender, RoutedEventArgs e)
 	    {

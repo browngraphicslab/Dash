@@ -67,8 +67,7 @@
                             <DataTemplate>
                                 <local:DocumentView
                                 BindRenderTransform="True"
-                                Loaded="DocumentView_OnLoaded"
-                                SizeChanged="DocumentView_OnSizeChanged"/>
+                                Loaded="DocumentView_OnLoaded" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -97,7 +96,7 @@
                             </ToolTipService.ToolTip>
                         </Grid>
                         <!--Clear Template Ellipse -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Bottom">
+                        <Grid PointerPressed="XClearButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Bottom">
                             <Ellipse x:Name="xClearEllipse" Fill="#D64141" />
                                 <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ClearIcon}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 <ToolTipService.ToolTip>
