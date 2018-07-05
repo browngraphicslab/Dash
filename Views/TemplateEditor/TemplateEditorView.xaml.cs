@@ -236,17 +236,16 @@ namespace Dash
 			xWorkspace.Background = backgroundColor;
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 
-            // TODO: @laura
-		    xLayoutPanel.Children.Add(new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-		        this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels));
+		    this.FormatUploadTemplateFlyout();
 
-		    // TODO: Add number indicating which template perhoops -sy
-		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey)?.Data.Any() ?? false)
+            // TODO: Add number indicating which template perhoops -sy
+		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
+		        !DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
 		    {
 		        var title = "MyTemplate";
 		        xTitleBlock.Text = title;
 		        DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-            }
+		    }
 		    else
 		    {
 		        xTitleBlock.Text = DataDocument.GetField<TextController>(KeyStore.TitleKey).Data;
@@ -263,10 +262,16 @@ namespace Dash
                 DataDocument.SetField(KeyStore.TitleKey, new TextController(etb.Text), true);
             }
         }
-
-        private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
+        
+	    private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
+		}
+
+		private void FormatUploadTemplateFlyout()
+		{
+			xUploadTemplateFlyout.Content = new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
+				this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
 		}
 
 		// when the "Add Text" button is clicked, this adds a text box to the template preview
@@ -1227,7 +1232,11 @@ namespace Dash
 					arrow = xFormatTemplateArrow;
 					animation = xFadeAnimationFormatTemplate;
 					break;
-				
+				case "xOptionsHeader":
+					stack = xOptionsButtonStack;
+					arrow = xOptionsArrow;
+					animation = xFadeAnimationOptions;
+					break;
 			}
 
 			if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
@@ -1291,7 +1300,7 @@ namespace Dash
 
 		private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
 		{
-			//TODO: implement
+			xUploadTemplateFlyout.ShowAt(xUploadTemplateButton);
 		}
 
 		//updates the bounding when an element changes size
