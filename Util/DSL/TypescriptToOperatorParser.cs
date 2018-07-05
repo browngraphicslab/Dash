@@ -133,12 +133,12 @@ namespace Dash
                     var exec = se?.Execute(scope ?? new Scope());
                     return exec;
                 }
-                //catch (ReturnException)
-                //{
-                //    var ret = scope?.GetFirstAncestor().GetReturn;
-                //    return ret;
-                //}
-            }
+                catch (ReturnException)
+                {
+                    var ret = scope?.GetReturn;
+                    return ret;
+                }
+        }
             catch (ScriptException scriptException)
             {
                 throw new InvalidDishScriptException(script, scriptException.Error, scriptException);

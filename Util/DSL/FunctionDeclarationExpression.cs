@@ -27,17 +27,6 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
-            //var boolKey = ForOperatorController.BoolKey;
-            //var blockKey = ForOperatorController.ForBlockKey;
-            //var incrementKey = ForOperatorController.IncrementKey;
-            //var countDecKey = ForOperatorController.CounterDeclarationKey;
-
-            //var inputs = new Dictionary<KeyController, FieldControllerBase>
-            //{
-            //    { countDecKey, _parameters[countDecKey].Execute(scope) },
-            //    { boolKey, _parameters[boolKey].Execute(scope) }
-            //};
-
             var functionOperator = new FunctionOperatorController(_parameters, _funcBlock, _returnType);
 
 

@@ -16,9 +16,7 @@ namespace Dash
             //now return val
             scope.SetReturn(val);
 
-            return val;
-
-            //throw new ReturnException();
+            throw new ReturnException();
         }
 
         public override FieldControllerBase CreateReference(Scope scope)

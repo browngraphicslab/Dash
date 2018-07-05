@@ -304,7 +304,6 @@
     <Compile Include="Util\DSL\Error Models\AbsentStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\BreakLoopExpression.cs" />
     <Compile Include="Util\DSL\ArrayExpression.cs" />
-    <Compile Include="Util\DSL\FunctionCallExpression.cs" />
     <Compile Include="Util\DSL\Error Models\InvalidReturnStatementErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
     <Compile Include="Util\DSL\FunctionExpression.cs" />

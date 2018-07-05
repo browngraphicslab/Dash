@@ -27,6 +27,7 @@ namespace Dash
             var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
             var opName = Op.Parse(_funcName);
+            scope = new ReturnScope(scope.GetFirstAncestor());
 
             try
             {
@@ -47,7 +48,7 @@ namespace Dash
             }
             catch (ReturnException)
             {
-                throw;
+                return scope.GetReturn;
             }
             catch (ScriptExecutionException)
             {
