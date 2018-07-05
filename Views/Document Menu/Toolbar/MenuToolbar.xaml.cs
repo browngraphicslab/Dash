@@ -324,15 +324,12 @@ namespace Dash
                     {
                         containsInternalContent = true;
                         baseLevelContentToolbar = xTextToolbar;
-                        if (FocusManager.GetFocusedElement() is RichEditBox reb)
-                        {
-                            xTextToolbar.SetMenuToolBarBinding(reb);
-                            //give toolbar access to the most recently selected text box for editing purposes
-                            xTextToolbar.SetCurrTextBox(reb);
-                            xTextToolbar.SetDocs(selection);
-                            subtoolbarElement = xTextToolbar;
-                            xGroupToolbar.TryMakeGroupEditable(false);
-                        }
+                        xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                        //give toolbar access to the most recently selected text box for editing purposes
+                        xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+                        xTextToolbar.SetDocs(selection);
+                        subtoolbarElement = xTextToolbar;
+                        xGroupToolbar.TryMakeGroupEditable(false);
                     }
 
                     // Group controls  
