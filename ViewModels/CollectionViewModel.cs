@@ -698,8 +698,8 @@ namespace Dash
 
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
-                if (senderView is CollectionFreeformView)
-                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
+                if (senderView is CollectionFreeformBase)
+                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
                         e.GetPosition(MainPage.Instance));
                 else if (DocumentViewModels.Count > 0)
                 {
