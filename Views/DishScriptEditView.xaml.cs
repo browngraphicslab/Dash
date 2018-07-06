@@ -35,7 +35,8 @@ namespace Dash
         public DishScriptEditView(DocumentController dataDoc)
         {
             _dataDoc = dataDoc;
-           InitializeComponent();
+            _scope = new OuterReplScope();
+            InitializeComponent();
 
             //intialize lists to save data
             xTextBox.Text = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
@@ -65,49 +66,39 @@ namespace Dash
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
+            var place = xTextBox.SelectionStart;
+            var length1 = 0;
+            var length2 = 0;
+            var newText = "";
+            var selectLength = 0;
             if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
             {
                 while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 4)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 4, "\r");
-                    place++;
-                }
+
+                length1 = 4;
+                length2 = 16;
+                selectLength = 5;
                 var ct = Alphabet[_forIndex];
                 _takenLetters.Add(ct);
-                xTextBox.Text += $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
-                xTextBox.SelectionStart = place + 16; //36 to get to body
-                xTextBox.SelectionLength = 5;
+                newText = xTextBox.Text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
             }
             else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
             {
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 6)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                    place++;
-                }
+                length1 = 6;
+                length2 = 12;
                 var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
-                xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
-                xTextBox.SelectionStart = place + 12;
+                newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
             }
             else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
             {
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 7)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 7, "\r");
-                    place++;
-                }
+                length1 = 7;
+                length2 = 11;
+                selectLength = 8;
                 var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\"\"))" + " {\r      res. = \r}";
-                xTextBox.SelectionStart = place + 12;
+                newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\"\"))" + " {\r      res. = \r}";
             }
             else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
             {
-                var place = xTextBox.SelectionStart;
-
                 var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
                 while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
@@ -121,39 +112,37 @@ namespace Dash
             }
             else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
             {
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 8)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 8, "\r");
-                    place++;
-                }
-                xTextBox.Text += "(condition) {\r      \r}";
-                xTextBox.SelectionStart = place + 1;
-                xTextBox.SelectionLength = 9;
+                length1 = 8;
+                length2 = 1;
+                newText = xTextBox.Text + "(condition) {\r      \r}";
+                selectLength = 9;
             }
             else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
             {
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 6)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                    place++;
-                }
-                xTextBox.Text += "(condition) {\r      \r}";
-                xTextBox.SelectionStart = place + 1;
-                xTextBox.SelectionLength = 9;
+                length1 = 6;
+                length2 = 1;
+                newText = xTextBox.Text + "(condition) {\r      \r}";
+                selectLength = 9;
             }
             else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
             {
-                var place = xTextBox.SelectionStart;
-                if (xTextBox.Text.TrimStart().Length != 3)
+                length1 = 3;
+                length2 = 1;
+                newText = xTextBox.Text + "(condition) {\r      \r}";
+                selectLength = 9;
+            }
+
+            if (length1 != 0)
+            {
+                if (xTextBox.Text.TrimStart().Length != length1)
                 {
-                    xTextBox.Text = xTextBox.Text.Insert(place - 3, "\r");
+                    xTextBox.Text = xTextBox.Text.Insert(place - length1, "\r");
                     place++;
                 }
-                xTextBox.Text += "(condition) {\r      \r}";
-                xTextBox.SelectionStart = place + 1;
-                xTextBox.SelectionLength = 9;
+
+                xTextBox.Text = newText;
+                xTextBox.SelectionStart = place + length2;
+                xTextBox.SelectionLength = selectLength;
             }
         }
     }

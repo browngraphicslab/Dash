@@ -270,122 +270,98 @@ namespace Dash
                     _editingLoop = false;
                 }
 
+                var place1 = xTextBox.SelectionStart;
+                var length1 = 0;
+                var length2 = 0;
+                var newText = "";
+                var selectLength = 0;
                 if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
                 {
                     _editingLoop = true;
                     while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 4)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 4, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+
+                    length1 = 4;
+                    
                     var ct = Alphabet[_forIndex];
                     _takenLetters.Add(ct);
-                    xTextBox.Text += $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
-                    xTextBox.SelectionStart = place + 16; //36 to get to body
-                    xTextBox.SelectionLength = 5;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
+                    length2 =  16; //36 to get to body
+                    selectLength = 5;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 6)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+                    length1 = 6;
+                    
                     var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
-                    xTextBox.SelectionStart = place + 12;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
+                    length2=  12;
+                    
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 7)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 7, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+                    length1 = 7;
                     var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in kv(\"k\", \"v\"))" + " {\r      data_doc(res). = \r}";
-                    xTextBox.SelectionStart = place + 11;
-                    xTextBox.SelectionLength = 8;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in kv(\"k\", \"v\"))" + " {\r      data_doc(res). = \r}";
+                    length2 = 11;
+                    selectLength = 8;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
 
                     var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
                     while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
                     var newList = "myList" + _forInIndex;
                     _takenNumbers.Add(_forInIndex);
-                    xTextBox.Text = xTextBox.Text.Insert(place - 7, $"{ret}var {newList} = []\r");
+                    xTextBox.Text = xTextBox.Text.Insert(place1 - 7, $"{ret}var {newList} = []\r");
                     TextHeight += StratOffset * 2;
                     var offset = _forInIndex.ToString().Length + ret.Length - 1;
 
                     xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
-                    xTextBox.SelectionStart = place + 8 + offset;
+                    xTextBox.SelectionStart = place1 + 8 + offset;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 8)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 8, "\r");
-                        TextHeight += StratOffset + 20;
-                        place++;
-                    }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    length1 = 8;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    length2 =  1;
+                    selectLength = 9;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 6)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    length1 = 6;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    length2 =  1;
+                    selectLength = 9;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
                 {
                     _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 3)
+                    length1 = 3;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    length2 = 1;
+                    selectLength = 9;
+                }
+
+                if (length1 != 0)
+                {
+                    if (xTextBox.Text.TrimStart().Length != length1)
                     {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 3, "\r");
+                        xTextBox.Text = xTextBox.Text.Insert(place1 - length1, "\r");
                         TextHeight += StratOffset;
-                        place++;
+                        place1++;
                     }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
+
+                    xTextBox.Text = newText;
+                    xTextBox.SelectionStart = place1 + length2;
+                    xTextBox.SelectionLength = selectLength;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
