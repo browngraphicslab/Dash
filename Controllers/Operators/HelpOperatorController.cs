@@ -15,13 +15,13 @@ namespace Dash
         public HelpOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("2D95083C-03E1-4FFA-80FA-881C0ECBD3D7", "Get information on functions");
+        private static readonly KeyController TypeKey = new KeyController("Get information on functions", "2D95083C-03E1-4FFA-80FA-881C0ECBD3D7");
 
         //Input keys
-        public static readonly KeyController FuncNameKey = new KeyController("70DAB6E3-6F15-4D4C-AC8C-7A1484D92C24", "Name of function to explore");
+        public static readonly KeyController FuncNameKey = new KeyController("Name of function to explore");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("310267DE-AA85-4F9B-9131-E5AC5B799B27", "Computed Result");
+        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

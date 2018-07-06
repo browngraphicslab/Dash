@@ -9,7 +9,7 @@ namespace Dash
         public MultiplyOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("9F4CB18B-2B00-457F-AA36-69F5CFE70CC6", "Multiply");
+        private static readonly KeyController TypeKey = new KeyController("Multiply", "9F4CB18B-2B00-457F-AA36-69F5CFE70CC6");
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new NumberController(left.Data * right.Data);
 
