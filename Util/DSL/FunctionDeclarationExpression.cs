@@ -28,8 +28,6 @@ namespace Dash
         {
             var functionOperator = new FunctionOperatorController(_parameters, _funcBlock, _returnType);
 
-            //scope?.DeclareVariable(_funcName, functionOperator);
-
             return functionOperator;
         }
 
