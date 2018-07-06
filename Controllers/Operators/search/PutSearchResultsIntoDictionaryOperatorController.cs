@@ -9,10 +9,10 @@ namespace Dash
     public class PutSearchResultsIntoDictionaryOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("1EB7C160-A53C-4497-9BC5-212E30594C1C", "ListResults");
+        public static readonly KeyController ListKey = new KeyController("ListResults");
 
         //Output keys
-        public static readonly KeyController DictionaryResultsKey = new KeyController("57014D2A-E4DA-461C-8064-C9E3EF215A9A", "DictionaryResults");
+        public static readonly KeyController DictionaryResultsKey = new KeyController("DictionaryResults");
 
         public PutSearchResultsIntoDictionaryOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -24,7 +24,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C6AF317A-08AB-417B-B9C2-19A3764374A4", "Put Search Results into Dictionary");
+        private static readonly KeyController TypeKey = new KeyController("Put Search Results into Dictionary", "C6AF317A-08AB-417B-B9C2-19A3764374A4");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()

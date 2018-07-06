@@ -19,14 +19,14 @@ namespace Dash
         public override FieldControllerBase GetDefaultController() => new ToLowerOperator();
 
         // input keys
-        public static readonly KeyController InputStringKey = new KeyController("EF3A262E-BE6F-4584-B5B0-822EF14242FB", "Input String");
+        public static readonly KeyController InputStringKey = new KeyController("Input String");
 
         // output keys
-        public static readonly KeyController OutputStringKey = new KeyController("C13CF242-F8CF-405E-BF85-6BE27A7E09BB", "Output String");
+        public static readonly KeyController OutputStringKey = new KeyController("Output String");
 
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("502F54E3-D2AF-46FF-91E9-42B9A00C7E9D", "ToLower");
+        private static readonly KeyController TypeKey = new KeyController("ToLower", "502F54E3-D2AF-46FF-91E9-42B9A00C7E9D");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController,IOInfo>>
         {

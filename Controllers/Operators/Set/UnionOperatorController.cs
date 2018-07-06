@@ -8,11 +8,11 @@ namespace Dash
     public class UnionOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController AKey = new KeyController("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
-        public static readonly KeyController BKey = new KeyController("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
+        public static readonly KeyController AKey = new KeyController("Input A");
+        public static readonly KeyController BKey = new KeyController("Input B");
 
         //Output keys
-        public static readonly KeyController UnionKey = new KeyController("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
+        public static readonly KeyController UnionKey = new KeyController("Union");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -37,7 +37,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("CAEA115E-BE19-4796-B225-51AC4122C168", "Union");
+        private static readonly KeyController TypeKey = new KeyController("Union operator", "CAEA115E-BE19-4796-B225-51AC4122C168");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

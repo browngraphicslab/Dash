@@ -54,7 +54,7 @@ namespace Dash
             {
                 return true;
             }
-            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First().Id);
+            var deepestRelative = GetDeepestDelegateOf(doc.GetAllPrototypes().First());
             return doc.IsDelegateOf(deepestRelative); 
         }
 
@@ -141,25 +141,23 @@ namespace Dash
         /// Returns the id of the deepest delegate of the document associated with the passed in id.
         /// Returns the passed in id if there is no deeper delegate
         /// </summary>
-        /// <param name="referenceDocId"></param>
+        /// <param name="referenceDoc"></param>
         /// <returns></returns>
-        public string GetDeepestDelegateOf(string referenceDocId)
+        public DocumentController GetDeepestDelegateOf(DocumentController referenceDoc)
         {
-            Debug.Assert(ContentController<FieldModel>.GetController<DocumentController>(referenceDocId) != null, "the passed in documentId is not actually associated with any document in the system!");
-
             // flag to say if we found a delegate
             var found = false;    
             foreach (var doc in _documentContextList)
             {
                 // set the flag if we find a delegate or the document with the passed in id
-                if (doc.Id == referenceDocId || doc.IsDelegateOf(referenceDocId))
+                if (doc == referenceDoc || doc.IsDelegateOf(referenceDoc))
                 {
                     found = true;
-                    referenceDocId = doc.Id;
+                    referenceDoc = doc;
                 }
             }
 
-            return found ? referenceDocId : null;
+            return found ? referenceDoc : null;
         }
 
         /// <summary>

@@ -9,11 +9,11 @@ namespace Dash
     public sealed class ListZipOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController ListAKey = new KeyController("A5166155-A69E-431E-8636-B5108409B66B", "List A");
-        public static readonly KeyController ListBKey = new KeyController("A4F2C32E-2D2F-40DB-9779-2C2F15A11749", "List B");
+        public static readonly KeyController ListAKey = new KeyController("List A");
+        public static readonly KeyController ListBKey = new KeyController("List B");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("5D45C3CB-B03C-4F41-B915-9E8688882D03", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public ListZipOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
@@ -34,7 +34,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("2F2C4A08-C81D-426E-913D-A5FBE5436619", "List appending");
+        private static readonly KeyController TypeKey = new KeyController("List appending", "B4F07219-AA26-4E71-965E-CBDF6D44708E");
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var listA = (BaseListController) inputs[ListAKey];

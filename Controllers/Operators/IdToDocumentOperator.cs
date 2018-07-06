@@ -22,13 +22,13 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-    new KeyController("8B10EEF4-9B0A-4015-A8A6-4DE189D9F70B", "Id to Document");
+    new KeyController("Id to Document", "8B10EEF4-9B0A-4015-A8A6-4DE189D9F70B");
 
         //Input keys
-        public static readonly KeyController IdKey = new KeyController("5F8A64B9-410F-4543-85B9-C986E47C5DF8", "Text");
+        public static readonly KeyController IdKey = new KeyController("Text");
 
         //Output keys
-        public static readonly KeyController DocKey = new KeyController("3AB1D330-6137-4254-A18E-3E157BF54BE6", "Document");
+        public static readonly KeyController DocKey = new KeyController("Document");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
             new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

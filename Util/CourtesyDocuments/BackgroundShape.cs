@@ -61,8 +61,8 @@ namespace Dash
 
         private static void BindPathShape(Path corePath, DocumentController docController, Context context)
         {
-            var dataRef = new DocumentFieldReference(docController.Id, KeyStore.DataKey);
-            var sideCountRef = new DocumentFieldReference(docController.Id, KeyStore.SideCountKey);
+            var dataRef = new DocumentFieldReference(docController, KeyStore.DataKey);
+            var sideCountRef = new DocumentFieldReference(docController, KeyStore.SideCountKey);
 
             var shapeBinding = new FieldMultiBinding<Geometry>(dataRef, sideCountRef)
             {

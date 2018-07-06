@@ -14,14 +14,14 @@ namespace Dash
         public RemoveCharOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("A1AE7EAF-4C95-42C9-AFF9-845673B87042", "Remove all of specified char");
+        private static readonly KeyController TypeKey = new KeyController("Remove all of specified char", "A1AE7EAF-4C95-42C9-AFF9-845673B87042");
 
         //Input keys
-        public static readonly KeyController SourceKey = new KeyController("C91910E2-E3C8-4B71-A5FF-3765E7B3AC16", "Source string");
-        public static readonly KeyController ToRemoveKey = new KeyController("7D4EEE8C-57DC-4663-A78D-B126C3DFF731", "Char(s) to Remove");
+        public static readonly KeyController SourceKey = new KeyController("Source string");
+        public static readonly KeyController ToRemoveKey = new KeyController( "Char(s) to Remove");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("61232552-7337-42C7-AA6C-58A16893849D", "Computed Result");
+        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

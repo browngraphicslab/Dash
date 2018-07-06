@@ -120,11 +120,11 @@ namespace Dash
             return TextingBox.MakeView(tb.Document, context);
         }
 
-        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, string id)
+        public virtual void MakeAllViewUI(DocumentController container, KeyController kc, Context context, Panel sp, DocumentController doc)
         {
             var hstack = new StackPanel { Orientation = Orientation.Horizontal };
             var label = new TextBlock { Text = kc.Name + ": " };
-            var refField = new DocumentReferenceController(id, kc);
+            var refField = new DocumentReferenceController(doc, kc);
             var dBox = this is ImageController
                 ? new ImageBox(refField).Document
                 : new TextingBox(refField).Document;

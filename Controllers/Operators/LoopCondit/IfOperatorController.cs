@@ -20,16 +20,16 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("144E6E9D-E430-443E-85A9-29F87CE99DF5", "If");
+        private static readonly KeyController TypeKey = new KeyController("If", "144E6E9D-E430-443E-85A9-29F87CE99DF5");
 
         //Input keys
         //public static readonly KeyController BinaryKey 
-        public static readonly KeyController BoolKey = new KeyController("EDCCAA98-F90A-490B-8F07-ECFF8342C3B3", "Bool");
-        public static readonly KeyController IfBlockKey = new KeyController("5DF879DC-04DF-467D-93C9-38F4A2AB98CF", "IfBlock");
-        public static readonly KeyController ElseBlockKey = new KeyController("21F74EB3-0152-455E-AEAE-2E1B93351B21", "ElseBlock");
+        public static readonly KeyController BoolKey = new KeyController("Bool");
+        public static readonly KeyController IfBlockKey = new KeyController("IfBlock");
+        public static readonly KeyController ElseBlockKey = new KeyController("ElseBlock");
 
         //Output keys
-        public static readonly KeyController ResultKey = new KeyController("982DB305-A593-40B2-A75B-2D65C9212FBD", "Result");
+        public static readonly KeyController ResultKey = new KeyController("Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

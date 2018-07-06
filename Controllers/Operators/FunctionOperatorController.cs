@@ -25,7 +25,7 @@ namespace Dash
             //set document keys
             foreach (var param in paramss)
             {
-                var newKey = KeyController.LookupKeyByName(_inputNames.Count.ToString(), true);
+                var newKey = new KeyController(_inputNames.Count.ToString());
                 _inputNames.Add(param.IdentifierStr);
                 
                 //restrict types based on user input
@@ -77,7 +77,7 @@ namespace Dash
         {
             for (int i = 0; i < _inputNames.Count; i++)
             {
-                var value = inputs[KeyController.LookupKeyByName(i.ToString())];
+                var value = inputs[new KeyController(i.ToString())];
                 
                 var expectedType = Inputs[i].Value.Type;
 

@@ -14,13 +14,13 @@ namespace Dash
         public ToListOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("65BA31AB-16AF-44A8-AA8E-4D760D204E52", "Create a list from a single number");
+        private static readonly KeyController TypeKey = new KeyController("Create a list from a single number", "65BA31AB-16AF-44A8-AA8E-4D760D204E52");
 
         //Input keys
-        public static readonly KeyController SourceKey = new KeyController("C2FA9317-FF46-40BD-B70B-4ECE223F45DB", "Source content");
+        public static readonly KeyController SourceKey = new KeyController("Source content");
 
         //Output keys
-        public static readonly KeyController ComputedResultKey = new KeyController("7ADB39FF-009C-46DE-AF49-A2A456E26B6D", "Computed Result");
+        public static readonly KeyController ComputedResultKey = new KeyController("Computed Result");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

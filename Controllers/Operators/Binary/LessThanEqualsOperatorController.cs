@@ -8,7 +8,7 @@
         public LessThanEqualsOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("99DD70C8-A755-4C62-BE3F-839F62302C5D", "Less Than Equals");
+        private static readonly KeyController TypeKey = new KeyController("Less Than Equals", "99DD70C8-A755-4C62-BE3F-839F62302C5D");
 
         public override FieldControllerBase Compute(NumberController left, NumberController right) => new BoolController(left.Data <= right.Data);
 

@@ -10,7 +10,9 @@ namespace Dash
     {
         private FieldControllerBase _returnValue;
 
-        public ReturnScope(Scope parentScope) { Parent = parentScope; _dictionary = new Dictionary<string, FieldControllerBase>(); }
+        public ReturnScope() { _dictionary = new Dictionary<string, FieldControllerBase>(); }
+
+        public ReturnScope(Scope parentScope) { Parent = parentScope; _dictionary = new Dictionary<string, FieldControllerBase>(); }       
 
         public override void SetReturn(FieldControllerBase ret) { _returnValue = ret; }
 
