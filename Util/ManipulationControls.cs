@@ -467,7 +467,7 @@ namespace Dash
         {
             if (!Window.Current.CoreWindow.GetKeyState(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
             {
-                MainPage.Instance.UnhighlightDock();
+                MainPage.Instance.DockManager.UnhighlightDock();
                 return;
             }
 
@@ -477,19 +477,19 @@ namespace Dash
             {
                 if (preview)
                 {
-                    MainPage.Instance.HighlightDock(overlappedDirection);
+                    MainPage.Instance.DockManager.HighlightDock(overlappedDirection);
                 }
                 else
                 {
                     ParentDocument.ViewModel.XPos = ManipulationStartX;
                     ParentDocument.ViewModel.YPos = ManipulationStartY;
-                    MainPage.Instance.UnhighlightDock();
-                    MainPage.Instance.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
+                    MainPage.Instance.DockManager.UnhighlightDock();
+                    MainPage.Instance.DockManager.Dock(ParentDocument.ViewModel.DocumentController, overlappedDirection);
                 }
             }
             else
             {
-                MainPage.Instance.UnhighlightDock();
+                MainPage.Instance.DockManager.UnhighlightDock();
             }
         }
 
@@ -505,35 +505,8 @@ namespace Dash
             var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(actualX, actualY));
 
-            var dockRightBounds = new Rect(MainPage.Instance.xDockRight.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockRight.ActualWidth, MainPage.Instance.xDockRight.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockRightBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Right;
-            }
+            return MainPage.Instance.DockManager.GetDockIntersection(currentBoundingBox);
 
-            var dockLeftBounds = new Rect(MainPage.Instance.xDockLeft.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockLeft.ActualWidth, MainPage.Instance.xDockLeft.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockLeftBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Left;
-            }
-
-            var dockTopBounds = new Rect(MainPage.Instance.xDockTop.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockTop.ActualWidth, MainPage.Instance.xDockTop.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockTopBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Top;
-            }
-
-            var dockBottomBounds = new Rect(MainPage.Instance.xDockBottom.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
-                new Size(MainPage.Instance.xDockBottom.ActualWidth, MainPage.Instance.xDockBottom.ActualHeight));
-            if (RectHelper.Intersect(currentBoundingBox, dockBottomBounds) != RectHelper.Empty)
-            {
-                return DockDirection.Bottom;
-            }
-
-            return DockDirection.None;
         }
 
 
