@@ -8,7 +8,7 @@
         public AddOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("5C121004-6C32-4BB7-9CBF-C4A6573376EF", "Add");
+        private static readonly KeyController TypeKey = new KeyController("Add", "5C121004-6C32-4BB7-9CBF-C4A6573376EF");
 
         public override FieldControllerBase Compute(FieldControllerBase left, FieldControllerBase right)
         {

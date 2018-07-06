@@ -20,6 +20,14 @@ namespace Dash
                 _dictionary.Add(var.Key.Name, var.Value);
             }
         }
+
+        public OuterReplScope() : base(null)
+        {
+            variableDoc = new DocumentController();
+
+            _dictionary = new Dictionary<string, FieldControllerBase>();
+        }
+
         public override void DeclareVariable(string variableName, FieldControllerBase valueToSet)
         {
             if (GetVariable(variableName) != null) return;

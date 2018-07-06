@@ -25,6 +25,11 @@ namespace Dash
             _replView = replView;
         }
 
+        public DSL(OuterReplScope scope)
+        {
+            _scope = scope;
+        }
+
         public FieldControllerBase Run(string script, bool catchErrors =  false)
         {
             try
