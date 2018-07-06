@@ -43,8 +43,11 @@ namespace Dash
         private OuterReplScope _scope;
 
         private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-        private readonly List<char> _taken = new List<char>();
+        private readonly List<char> _takenLetters = new List<char>();
+        private readonly List<int> _takenNumbers = new List<int>();
+
         private int _forIndex = 0;
+        private int _forInIndex = 0;
 
         private int TextHeight
         {
@@ -234,13 +237,15 @@ namespace Dash
                 {
                     TextHeight = 50;
                     TextGrid.Height = new GridLength(TextHeight);
+                    _takenNumbers.Clear();
+                    _takenLetters.Clear();
                     _editingLoop = false;
                 }
 
                 if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
                 {
                     _editingLoop = true;
-                    while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _taken.Contains(Alphabet[_forIndex])) { _forIndex++; }
+                    while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
                     var place = xTextBox.SelectionStart;
                     if (xTextBox.Text.TrimStart().Length != 4)
                     {
@@ -249,7 +254,7 @@ namespace Dash
                         place++;
                     }
                     var ct = Alphabet[_forIndex];
-                    _taken.Add(ct);
+                    _takenLetters.Add(ct);
                     xTextBox.Text += $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
                     xTextBox.SelectionStart = place + 16; //36 to get to body
                     xTextBox.SelectionLength = 5;
@@ -288,6 +293,25 @@ namespace Dash
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
+                else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+
+                    var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
+                    while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
+
+                    var newList = "myList" + _forInIndex;
+                    _takenNumbers.Add(_forInIndex);
+                    xTextBox.Text = xTextBox.Text.Insert(place - 7, $"{ret}var {newList} = []\r");
+                    TextHeight += StratOffset * 2;
+                    var offset = _forInIndex.ToString().Length + ret.Length - 1;
+
+                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
+                    xTextBox.SelectionStart = place + 8 + offset;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
                 else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
                 {
                     _editingLoop = true;
@@ -295,7 +319,7 @@ namespace Dash
                     if (xTextBox.Text.TrimStart().Length != 8)
                     {
                         xTextBox.Text = xTextBox.Text.Insert(place - 8, "\r");
-                        TextHeight += StratOffset;
+                        TextHeight += StratOffset + 20;
                         place++;
                     }
                     xTextBox.Text += "(condition) {\r      \r}";
@@ -350,7 +374,8 @@ namespace Dash
                         {
                             //enter pressed without key modifiers - send code to terminal
                             _editingLoop = false;
-                            _taken.Clear();
+                            _takenLetters.Clear();
+                            _takenNumbers.Clear();
                             //_scope.SetVariable(Alphabet[_forIndex].ToString(), null);
 
                             //put textbox size back to default
@@ -464,7 +489,7 @@ namespace Dash
             _textModified = false;
         }
 
-        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{';
+        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
