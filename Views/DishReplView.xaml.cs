@@ -40,7 +40,6 @@ namespace Dash
         private readonly ListController<TextController> _inputList;
         private readonly ListController<FieldControllerBase> _outputList;
 
-        private bool _editingLoop;
         private OuterReplScope _scope;
 
         private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
@@ -49,6 +48,9 @@ namespace Dash
 
         private int _forIndex = 0;
         private int _forInIndex = 0;
+
+        private bool wayUp;
+        private bool wayDown;
 
         private int TextHeight
         {
@@ -189,7 +191,7 @@ namespace Dash
             var numItem = ViewModel.Items.Count;
             switch (args.VirtualKey)
             {
-                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
+                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayUp:
                     //get last terminal input entered
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
@@ -210,7 +212,7 @@ namespace Dash
                 case VirtualKey.Up when MainPage.Instance.IsCtrlPressed():
                     if (xSuggestions.SelectedIndex > -1 && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex--;
                     break;
-                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
+                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayDown:
                     var index = numItem - (_currentHistoryIndex - 1);
                     if (numItem > index && index >= 0)
                     {
@@ -242,6 +244,12 @@ namespace Dash
                     xTextBox.Text = "";
                     break;
             }
+            
+            var beforeCursor = xTextBox.Text.Substring(0, xTextBox.SelectionStart);
+            wayUp = !(beforeCursor.Contains('\r'));
+            var afterCursor = xTextBox.Text.Substring(xTextBox.SelectionStart, xTextBox.Text.Length - xTextBox.SelectionStart);
+            wayDown = !(afterCursor.Contains('\r'));
+
             _currentText = xTextBox.Text;
         }
 
@@ -267,124 +275,92 @@ namespace Dash
                     TextGrid.Height = new GridLength(TextHeight);
                     _takenNumbers.Clear();
                     _takenLetters.Clear();
-                    _editingLoop = false;
                 }
 
+                var place1 = xTextBox.SelectionStart;
+                var stringLength = 0;
+                var selectOffset = 0;
+                var newText = "";
+                var selectLength = 0;
                 if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
                 {
-                    _editingLoop = true;
                     while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 4)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 4, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+
+                    stringLength = 4;
+                    
                     var ct = Alphabet[_forIndex];
                     _takenLetters.Add(ct);
-                    xTextBox.Text += $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
-                    xTextBox.SelectionStart = place + 16; //36 to get to body
-                    xTextBox.SelectionLength = 5;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
+                    selectOffset =  16; //36 to get to body
+                    selectLength = 5;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 6)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+                    stringLength = 6;
+                    
                     var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
-                    xTextBox.SelectionStart = place + 12;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
+                    selectOffset=  12;
+                    
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 7)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 7, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
+                    stringLength = 7;
                     var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
-                    xTextBox.SelectionStart = place + 12;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
+                    selectOffset = 12;
+                    selectLength = 0;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-
                     var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
                     while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
                     var newList = "myList" + _forInIndex;
                     _takenNumbers.Add(_forInIndex);
-                    xTextBox.Text = xTextBox.Text.Insert(place - 7, $"{ret}var {newList} = []\r");
-                    TextHeight += StratOffset;
+                    xTextBox.Text = xTextBox.Text.Insert(place1 - 7, $"{ret}var {newList} = []\r");
+                    TextHeight += StratOffset * 2;
                     var offset = _forInIndex.ToString().Length + ret.Length - 1;
 
                     xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
-                    xTextBox.SelectionStart = place + 8 + offset;
+                    xTextBox.SelectionStart = place1 + 8 + offset;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 8)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 8, "\r");
-                        TextHeight += StratOffset + 20;
-                        place++;
-                    }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    stringLength = 8;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    selectOffset =  1;
+                    selectLength = 9;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 6)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
-                        TextHeight += StratOffset;
-                        place++;
-                    }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
+                    stringLength = 6;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    selectOffset =  1;
+                    selectLength = 9;
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
                 {
-                    _editingLoop = true;
-                    var place = xTextBox.SelectionStart;
-                    if (xTextBox.Text.TrimStart().Length != 3)
+                    stringLength = 3;
+                    newText = xTextBox.Text + "(condition) {\r      \r}";
+                    selectOffset = 1;
+                    selectLength = 9;
+                }
+
+                if (stringLength != 0)
+                {
+                    if (xTextBox.Text.TrimStart().Length != stringLength)
                     {
-                        xTextBox.Text = xTextBox.Text.Insert(place - 3, "\r");
+                        xTextBox.Text = xTextBox.Text.Insert(place1 - stringLength, "\r");
                         TextHeight += StratOffset;
-                        place++;
+                        place1++;
                     }
-                    xTextBox.Text += "(condition) {\r      \r}";
-                    xTextBox.SelectionStart = place + 1;
-                    xTextBox.SelectionLength = 9;
+
+                    xTextBox.Text = newText;
+                    xTextBox.SelectionStart = place1 + selectOffset;
+                    xTextBox.SelectionLength = selectLength;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
@@ -401,7 +377,6 @@ namespace Dash
                         else
                         {
                             //enter pressed without key modifiers - send code to terminal
-                            _editingLoop = false;
                             _takenLetters.Clear();
                             _takenNumbers.Clear();
                             //_scope.SetVariable(Alphabet[_forIndex].ToString(), null);
