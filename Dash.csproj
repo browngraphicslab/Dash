@@ -786,6 +786,7 @@
     <Compile Include="Views\TemplateEditor\TemplateApplier.xaml.cs">
       <DependentUpon>TemplateApplier.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TemplateEditor\TemplateConstants.cs" />
     <Compile Include="Views\TemplateEditor\TemplateEditorView.xaml.cs">
       <DependentUpon>TemplateEditorView.xaml</DependentUpon>
     </Compile>

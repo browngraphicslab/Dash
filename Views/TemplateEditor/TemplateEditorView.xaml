@@ -45,10 +45,12 @@
             <!--Panel that holds Canvas-->
             <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
                            x:Name="xOuterWorkspace">
+                
+                
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
-
+                    
                     <!--DESIGN GRID -->
                     <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
                         <Grid.ColumnDefinitions>
@@ -137,8 +139,6 @@
                                 <Canvas x:Name="xCollectionCanvas"
                                     x:FieldModifier="public"
                                     Background="Transparent"
-                                    Width="0"
-                                    Height="0"
                                     VerticalAlignment="Top"
                                     HorizontalAlignment="Left" />
                             </ItemsPanelTemplate>
@@ -151,9 +151,9 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    </Grid>
 
-
-                </Grid>
+              
 
                 <!--ELLIPSES-->
                 <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
@@ -224,23 +224,43 @@
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                         </StackPanel>
                         <!--StackPanel for buttons-->
-                        <StackPanel x:Name="xAddItemsButtonStack" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xAddItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                            <StackPanel Orientation="Horizontal" >
                             <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick" >
-                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FontIcon}"/>
                             </AppBarButton>
                             <AppBarButton Height="46" Width="42.5" Click="ImageButton_OnClick" >
-                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ImageIcon}"/>
                             </AppBarButton>
                             <AppBarButton  Height="46" Width="42.5" Click="VideoButton_OnClick" >
-                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource VideoIcon}"/>
                             </AppBarButton>
                             <AppBarButton Height="46" Width="42.5" Click="AudioButton_OnClick" >
-                                <TextBlock FontSize="18" Foreground="White" Padding="0 0 0 0"
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                        FontFamily="{StaticResource FontAwesome}" Text="{StaticResource AudioIcon}"/>
                             </AppBarButton>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" >
+                                <AppBarButton Height="46" Width="42.5"  >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
+                                </AppBarButton>
+                                <AppBarButton  Height="46" Width="42.5" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
+                                </AppBarButton>
+                                <AppBarButton Height="46" Width="42.5" >
+                                    <TextBlock FontSize="18" Foreground="Gray" Padding="0 0 0 0"
+                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource DocumentIcon}"/>
+                                </AppBarButton>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
 
@@ -364,17 +384,17 @@
 
                             </StackPanel>
 
-                            <!-- BORDERS TODO: ADD POPOUT AND SLIDER FOR THICKNESS -->
+                            <!-- BORDERS TODO: ADD POPOUT AND SLIDER FOR THICKNESS 
                             <StackPanel Orientation="Horizontal" Margin="6,0,0,0" Width="160" HorizontalAlignment="Left" Padding="0 4 0 4">
                                 <TextBlock Foreground="LightGray" FontSize="13"  > Border</TextBlock>
                                 <Rectangle x:Name="xBorderColorPreviewBox" Width="18" Height="18" Fill="White" Margin="70,0,0,0"></Rectangle>
-                            </StackPanel>
+                            </StackPanel> -->
 
                             <!--TEMPLATE STYLE -->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170" Margin="10,0,0,0" Spacing="12">
-                                <AppBarToggleButton x:Name="xFreeFormButton" Icon="Caption"  Height="43" Width="40" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" Checked="XFreeFormButton_OnChecked" />
-                                <AppBarToggleButton x:Name="xListButton" Height="43" Width="43" Icon="List" Checked="XListButton_OnChecked"/>
-                                <AppBarToggleButton x:Name="xGridButton" Height="43" Width="43" Icon="ViewAll" Checked="XGridButton_OnChecked"/>
+                                <AppBarButton x:Name="xFreeFormButton" Icon="Caption"  Height="43" Width="40" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Center" Click="XFreeFormButton_OnChecked" />
+                                <AppBarButton x:Name="xListButton" Height="43" Width="43" Icon="List" Click="XListButton_OnChecked"/>
+                                <AppBarButton x:Name="xGridButton" Height="43" Width="43" Icon="ViewAll" Click="XGridButton_OnChecked"/>
                             </StackPanel>
 
                         </StackPanel>

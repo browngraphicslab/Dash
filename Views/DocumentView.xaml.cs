@@ -146,9 +146,9 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
-                //if (ViewModel?.DataDocument.GetField(KeyStore.TemplateDocumentKey) != null)
+                //if (ViewModel?.DataDocument.GetField(KeyStore.TemplateEditorKey) != null)
                 //{
-                //    ViewModel?.DataDocument.RemoveField(KeyStore.TemplateDocumentKey);
+                //    ViewModel?.DataDocument.RemoveField(KeyStore.TemplateEditorKey);
                 //}
                 SetZLayer();
 
@@ -374,7 +374,7 @@ namespace Dash
 
         public void ToggleTemplateEditor()
         {
-            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey) == null)
+            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
             {
                 var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
                     (RenderTransform as MatrixTransform).Matrix.OffsetY);
@@ -382,20 +382,20 @@ namespace Dash
                 {
                     Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
                     _templateEditor.SetHidden(!_templateEditor.GetHidden());
-                    ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
+                    ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                     return;
                 }
 
                 _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
 	           
-                ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
+                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                 //creates a doc controller for the image(s)
                 Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
             }
             else
             {
-                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateDocumentKey);
-                ViewModel.DataDocument.SetField(KeyStore.TemplateDocumentKey, _templateEditor, true);
+                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                 _templateEditor.SetHidden(!_templateEditor.GetHidden());
             }
         }

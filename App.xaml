@@ -131,6 +131,9 @@
             <x:String x:Key="AudioIcon">&#xf025;</x:String>
             <x:String x:Key="ActivateIcon">&#xf0e7;</x:String>
             <x:String x:Key="PreviewIcon">&#xf06e;</x:String>
+            <x:String x:Key="ListIcon">&#xf03a;</x:String>
+            <x:String x:Key="FreeFormIcon">&#xf247;</x:String>
+            <x:String x:Key="GridIcon">&#xf00a;</x:String>
 
 
             <!-- DEFAULT STYLES-->
