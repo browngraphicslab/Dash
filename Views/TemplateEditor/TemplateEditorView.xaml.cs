@@ -215,7 +215,7 @@ namespace Dash
 			TemplateLayout.Width = xWorkspace.Width;
 			TemplateLayout.Height = xWorkspace.Height;
 			TemplateLayout.Drop += XWorkspace_OnDrop;
-			xWorkspace.Children.Add(TemplateLayout);
+			//xWorkspace.Children.Add(TemplateLayout);
 
 			//initialize layout documents on workspace
 			DocumentViewModels.Clear();

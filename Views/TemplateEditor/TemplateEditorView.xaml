@@ -139,8 +139,6 @@
                                 <Canvas x:Name="xCollectionCanvas"
                                     x:FieldModifier="public"
                                     Background="Transparent"
-                                    Width="0"
-                                    Height="0"
                                     VerticalAlignment="Top"
                                     HorizontalAlignment="Left" />
                             </ItemsPanelTemplate>
