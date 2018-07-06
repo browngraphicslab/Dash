@@ -145,6 +145,7 @@ namespace Dash
             rich_document_text,
             alias,
             key_field_query,
+            kv,
 
             // MISC & MUTATORS
 

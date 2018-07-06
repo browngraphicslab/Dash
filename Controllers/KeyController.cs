@@ -75,7 +75,7 @@ namespace Dash
                     SaveOnServer();
                 }
             });
-            Debug.Assert(!_nameDictionary.ContainsKey(name));
+            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
             _nameDictionary[name] = guid;
         }
 

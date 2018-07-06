@@ -34,7 +34,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("List appending", "B4F07219-AA26-4E71-965E-CBDF6D44708E");
+        private static readonly KeyController TypeKey = new KeyController("List zip", "B4F07219-AA26-4E71-965E-CBDF6D44708E");
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var listA = (BaseListController) inputs[ListAKey];
