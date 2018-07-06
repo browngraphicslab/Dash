@@ -85,8 +85,8 @@ namespace Dash
         {
             foreach (var dvm in DocumentViewModels)
             {
-                var name = dvm.ToString();
                 dvm.ViewLevel = ViewLevel;
+                dvm.DecorationState = false;
             }
         }
         #endregion
@@ -347,7 +347,8 @@ namespace Dash
 
                     ContainerDocument.GetDataDocument().AddToListField(CollectionKey, doc);
                 }
-
+                if (ViewLevel.Equals(StandardViewLevel.Overview) || ViewLevel.Equals(StandardViewLevel.Region))
+                    UpdateViewLevel();
             }
         }
 
@@ -697,8 +698,8 @@ namespace Dash
 
                 var senderView = (sender as CollectionView)?.CurrentView as ICollectionView;
                 var where = new Point();
-                if (senderView is CollectionFreeformView)
-                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformView,
+                if (senderView is CollectionFreeformBase)
+                    where = Util.GetCollectionFreeFormPoint(senderView as CollectionFreeformBase,
                         e.GetPosition(MainPage.Instance));
                 else if (DocumentViewModels.Count > 0)
                 {
