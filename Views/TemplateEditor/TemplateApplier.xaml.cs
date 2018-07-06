@@ -23,14 +23,14 @@ namespace Dash
     {
         public ObservableCollection<DocumentViewModel> Templates;
         public ObservableCollection<TemplateRecord> TemplateRecords;
-        private DocumentController Document;
+        private DocumentController _document;
 
         public TemplateApplier(DocumentController doc,
             ObservableCollection<DocumentViewModel> documentViewModels)
         {
             this.InitializeComponent();
 
-            Document = doc;
+            _document = doc;
             Templates = new ObservableCollection<DocumentViewModel>();
             TemplateRecords = new ObservableCollection<TemplateRecord>();
 
@@ -108,10 +108,10 @@ namespace Dash
                 //    .SetField(KeyStore.DataKey, datakey, true);
             //}
 
-            newLayoutDoc.SetField(KeyStore.DocumentContextKey, Document.GetDataDocument(), true);
+            newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
             newLayoutDoc.SetField(KeyStore.PositionFieldKey,
-                Document.GetField<PointController>(KeyStore.PositionFieldKey), true);
-            Document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
+                _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
+            _document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
         }
 
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)

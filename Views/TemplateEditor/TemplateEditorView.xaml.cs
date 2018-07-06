@@ -196,6 +196,15 @@ namespace Dash
 
 		private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
 		{
+		    var docView = this.GetFirstAncestorOfType<DocumentView>();
+
+            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).DocumentType.Equals(TemplateBox.DocumentType))
+            {
+                DataDocument.SetField(KeyStore.DataKey,
+                    LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+                        .GetField<ListController<DocumentController>>(KeyStore.DataKey),
+                    true);
+            }
 			//initialize UI of workspace
 			this.FormatPanes();
 			var rect = new Rect(0, 0, 300, 400);
@@ -203,8 +212,8 @@ namespace Dash
 			xWorkspace.Clip = rectGeo;
 
 			//hide resize and ellipse controls for template editor
-			this.GetFirstAncestorOfType<DocumentView>().ViewModel.DisableDecorations = true;
-			this.GetFirstAncestorOfType<DocumentView>().hideControls();
+			docView.ViewModel.DisableDecorations = true;
+			docView.hideControls();
 			DocumentViewModels.Clear();
 			//initialize layout documents on workspace
 			foreach (var layoutDoc in DataDocument
