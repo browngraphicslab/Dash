@@ -63,13 +63,15 @@ namespace Dash
 
             }
 
-            DishReplView.SetDataset(_functionMap.Keys.Select(k => k.ToString()).ToList());
+            DishReplView.SetDataset(GetDataset());
 
             if (PrintAllFuncDocumentation)
             {
                 Debug.WriteLine("\n\n\n\n\n");
             }
         }
+
+        public static List<string> GetDataset() => _functionMap.Keys.Select(k => k.ToString()).ToList();
 
         public static IEnumerable<OperatorControllerOverload> GetOverloadsFor(Op.Name funcName) => _functionMap[funcName];
 
@@ -156,15 +158,11 @@ namespace Dash
 
         private static OperatorController GetOperatorWithName(Op.Name funcName)
         {
-            if (_functionMap.ContainsKey(funcName))
-            {
-                //TODO With overloading this isn't correct
-                var t = _functionMap[funcName].First().OperatorType;
-                var op = (OperatorController)Activator.CreateInstance(t);
-                return op;
-            }
-
-            return null;
+            if (!_functionMap.ContainsKey(funcName)) return null;
+            //TODO With overloading this isn't correct
+            var t = _functionMap[funcName].OrderBy(x => x.ParamTypes.Count).First().OperatorType;
+            var op = (OperatorController)Activator.CreateInstance(t);
+            return op;
         }
 
         /// <summary>
@@ -199,7 +197,15 @@ namespace Dash
             return GetOperatorWithName(funcName)?.Inputs?.ElementAt(0).Value.Type ?? DashShared.TypeInfo.None;
         }
 
-        public static int? GetAmountInputs(Op.Name funcName) => GetOperatorWithName(funcName)?.Inputs?.Count;
+        public static List<TypeInfo> GetDefaultInputTypeListFor(Op.Name funcName) => GetOperatorWithName(funcName)?.Inputs.ToList().Select(kv => kv.Value.Type).ToList();
+
+        public static bool IsOverloaded(Op.Name funcName)
+        {
+            if (!_functionMap.ContainsKey(funcName)) return false;
+            var overloads = _functionMap[funcName].OrderBy(x => x.ParamTypes.Count).ToList();
+            if (overloads.Count == 1) return false;
+            return overloads[0].ParamTypes.Count == overloads[1].ParamTypes.Count;
+        }
 
 
         /// <summary>

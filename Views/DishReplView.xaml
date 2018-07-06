@@ -37,7 +37,7 @@
             </ScrollViewer>
             <TextBox Name="xTextBox" Grid.Row="1" Height="{x:Bind TextHeight, Mode=OneWay}" Background="White" FontSize="18"
                             PlaceholderText="Enter Command" 
-                TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true">
+                TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
             </TextBox>
             <Popup x:Name="xSuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
                 <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 

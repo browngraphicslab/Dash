@@ -180,6 +180,7 @@
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ExponentialOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\GreaterThanOperatorController.cs" />
     <Compile Include="Controllers\Operators\Binary\InverseEqualityOperatorController.cs" />
@@ -199,6 +200,8 @@
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
+    <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
     <Compile Include="Util\DSL\DuplicateVariableDeclarationErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\DocumentationNotFoundErrorModel.cs" />
     <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />

@@ -40,6 +40,9 @@ namespace Dash
             modulo,
             mod,
 
+            operator_exponential,
+            exp,
+
             // STRING MANIPULATION
 
             remove_first_exp,
@@ -50,10 +53,10 @@ namespace Dash
 
             // BINARY COMPARISONS
 
-            operator_equal, //needed?
+            operator_equal,
             equal,
 
-            operator_not_equal, //needed?
+            operator_not_equal,
             not_equal,
 
             operator_negate,
@@ -208,6 +211,7 @@ namespace Dash
                 "removes all occurences of each phrase in the list if present.\n            " +
                 "Invoked by the / token in the REPL, formatted as A / B or \"A\" / [\"B\", \"C\", ... , \"n\"].\n      " +
                 "EXAMPLES:\n            36 / 12 = 3\n            \"foo one bar one foo two bar two\" / [\"foo\", \"bar\"] = \" one  one  two  two\"",
+
             [Name.div] =
                 "Binary - given two numbers, computes the quotient of divident A and divisor B.\n            " +
                 "Invoked by its function call in the REPL, formatted as div(A, B).\n      " +
@@ -228,25 +232,144 @@ namespace Dash
                 "Binary - given two numbers, computes the remainder of divident A and divisor B.\n            " +
                 "Invoked by its function call in the REPL, formatted as mod(A, B).\n      " +
                 "EXAMPLES:\n            mod(35, 7) = 0\n            mod(18, 5) = 3",
+            [Name.operator_exponential] =
+                "Binary - given two numbers, computes the result given by raising A to the Bth power.\n            " +
+                "Invoked by the ^ token in the REPL, formatted as A ^ B.\n      " +
+                "EXAMPLES:\n            3 ^ 3 = 27\n            6 ^ 6.3 = 79,864.3",
+            [Name.exp] =
+                "Binary - given two numbers, computes the result given by raising A to the Bth power.\n            " +
+                "Invoked by the ^ token in the REPL, formatted as A ^ B.\n      " +
+                "EXAMPLES:\n            3 ^ 3 = 27\n            6 ^ 6.3 = 79,864.3",
             [Name.remove_first_exp] =
-                "Given a target string and a list of string phrases,\n" +
-                "removes the first occurence of each phrase in the list if present\n            " +
-                "Invoked by its function call in the REPL, formatted as remove_first_exp(\"A\", [\"B\", \"C\", ... , \"n\"]).\n            " +
+                "Given a target string and a list of string phrases,\n            " +
+                "removes the first occurence of each phrase in the list if present.\n            " +
+                "Invoked by its function call in the REPL, formatted as remove_first_exp(\"A\", [\"B\", \"C\", ... , \"n\"]).\n      " +
                 "EXAMPLES:\n            remove_first_exp(\"foo one bar one foo two bar two\", [\"foo\", \"bar\"]) = \" one  one foo two bar two\"" +
                 "\n            remove_first_exp(\"foo bar foo bar\", [\"fo\", \"b\"]) = \"o ar foo bar\"",
             [Name.remove_exp] =
-                "Given a target string and a list of string phrases, removes the all occurences of each phrase in the list if present\n            " +
+                "Given a target string and a list of string phrases,\n            " +
+                "removes the all occurences of each phrase in the list if present.\n            " +
                 "Invoked by its function call in the REPL, formatted as remove_exp(\"A\", [\"B\", \"C\", ... , \"n\"]).\n      " +
                 "EXAMPLES:\n            remove_exp(\"foo one bar one foo two bar two\", [\"foo\", \"bar\"]) = \" one  one  two  two\"" +
                 "\n            remove_exp(\"foo bar foo bar\", [\"o\", \"ar\"]) = \"f b f b\"",
             [Name.substring] =
-                "Binary - given two numbers, computes the remainder of divident A and divisor B.\n            " +
-                "Invoked by its function call in the REPL, formatted as mod(A, B).\n      " +
-                "EXAMPLES:\n            mod(35, 7) = 0\n            mod(18, 5) = 3",
+                "Computes and returns the portion of the given string that resides between the given starting index and its end.\n" +
+                "            You can optionally specify the length of the computed substring by passing in a third (integer) argument.\n            " +
+                "Invoked by its function call in the REPL, formatted as substring(\"A\", startindex) or substring(\"A\", startindex, length).\n      " +
+                "EXAMPLES:\n            substring(\"foo bar foo bar\", 2) = \"o bar foo bar\"\n            substring(\"foo bar foo bar\", 4, 3) = \"bar\"",
+
             [Name.index] =
-                "Binary - given two numbers, computes the remainder of divident A and divisor B.\n            " +
-                "Invoked by its function call in the REPL, formatted as mod(A, B).\n      " +
-                "EXAMPLES:\n            mod(35, 7) = 0\n            mod(18, 5) = 3",
+                "Given a list or a string, returns the element occurring at the specified zero-based index.\n            " +
+                "Invoked by bracket notation or its function call in the REPL, formatted as A[index] and index(A, index), respectively.\n      " +
+                "EXAMPLES:\n            [a, b, c, d, e][3] = d\n            \"foo bar\"[5] = \"a\"",
+            [Name.operator_equal] =
+                "Binary, comparative - given two objects, returns true if the two are equal and false if not.\n            " +
+                "Invoked by the == token in the REPL, formatted as A == B.\n      " +
+                "EXAMPLES:\n            5 == 5 = true\n            \"cat\" == \"dog\" = false",
+            [Name.equal] =
+                "Binary, comparative - given two objects, returns true if the two are equal and false if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as equals(A, B).\n      " +
+                "EXAMPLES:\n            equals(5, 5) = true\n            equals(\"cat\", \"dog\") = false",
+            [Name.operator_not_equal] =
+                "Binary, comparative - given two objects, returns false if the two are equal and true if not.\n            " +
+                "Invoked by the != token in the REPL, formatted as A != B.\n      " +
+                "EXAMPLES:\n            5 != 5 = false\n            \"cat\" != \"dog\" = true",
+            [Name.not_equal] =
+                "Binary, comparative - given two objects, returns false if the two are equal and true if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as not_equal(A, B).\n      " +
+                "EXAMPLES:\n            not_equals(5, 5) = false\n            not_equals(\"cat\", \"dog\") = true",
+            [Name.operator_negate] =
+                "Unary - negates, or inverts the sign, of its sole numerical input\n            " +
+                "Invoked by preceeding any number in the REPL, formatted as -A.\n      " +
+                "EXAMPLES:\n            -5 = -5 \n            var a = -8; -a = 8",
+            [Name.negate] =
+                "Unary - negates, or inverts the sign, of its sole numerical input\n            " +
+                "Invoked by its functio call in the REPL, formatted as negate(A).\n      " +
+                "EXAMPLES:\n            negate(5) = -5 \n            var a = -8; negate(a) = 8",
+            [Name.operator_greater_than] =
+                "Binary, comparative - given two numbers, returns true if A is greater than B and returns false if not.\n            " +
+                "Invoked by the > in the REPL, formatted as A > B.\n      " +
+                "EXAMPLES:\n            2 > 0 = true\n            3 > 3 = false",
+            [Name.greater_than] =
+                "Binary, comparative - given two numbers, returns true if A is greater than B and returns false if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as greater_than(A, B).\n      " +
+                "EXAMPLES:\n            greater_than(2, 0) = true\n            greater_than(3, 3) = false",
+            [Name.operator_greater_than_equals] =
+                "Binary, comparative - given two numbers, returns true if A is greater than or equivalent to B and returns false if not.\n            " +
+                "Invoked by the >= in the REPL, formatted as A >= B.\n      " +
+                "EXAMPLES:\n            2^3 >= 3^2 = false\n            3 >= 3 = true",
+            [Name.greater_than_equals] =
+                "Binary, comparative - given two numbers, returns true if A is greater than or equivalent to B and returns false if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as greater_than_equals(A, B).\n      " +
+                "EXAMPLES:\n            greater_than_equals(2^3, 3^2) = false\n            greater_than_equals(3, 3) = true",
+            [Name.operator_less_than] =
+                "Binary, comparative - given two numbers, returns true if A is less than B and returns false if not.\n            " +
+                "Invoked by the < in the REPL, formatted as A < B.\n      " +
+                "EXAMPLES:\n            2 < 0 = false\n            18 < 6 * 3 = false",
+            [Name.less_than] =
+                "Binary, comparative - given two numbers, returns true if A is less than B and returns false if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as less_than(A, B).\n      " +
+                "EXAMPLES:\n            less_than(2, 0) = false\n            less_than(3, 3) = false",
+            [Name.operator_less_than_equals] =
+                "Binary, comparative - given two numbers, returns true if A is less than or equivalent to B and returns false if not.\n            " +
+                "Invoked by the <= in the REPL, formatted as A >= B.\n      " +
+                "EXAMPLES:\n            2^3 <= 3^2 = true\n            3 <= 3 = true",
+            [Name.less_than_equals] =
+                "Binary, comparative - given two numbers, returns true if A is less than than or equivalent to B and returns false if not.\n            " +
+                "Invoked by its function call in the REPL, formatted as less_than_equals(A, B).\n      " +
+                "EXAMPLES:\n            less_than_equals(2^3, 3^2) = true\n            less_than_equals(3, 3) = true",
+            [Name.for_in_lp] =
+                "A specialty, indexless for-loop, a 'for in' loop sequentially iterates through a list allowing repetitive operations.\n            " +
+                "Invoked by its function call in the REPL, formatted as for (var <arbitrary_name> in [1, 2, 3, 4, 5]) { <perform_task> }.\n      " +
+                "EXAMPLE:\n            var scores = [35, 49, 18, 72]; for (var sc in scores) { sc *= 2 } return scores = [70, 98, 36, 144]",
+            [Name.do_while_lp] = "",
+            [Name.while_lp] = "",
+            [Name.for_lp] = "",
+            [Name.if_st] = "",
+            [Name.let] = "",
+            [Name.to_list] = "",
+            [Name.to_string] = "",
+            [Name.data_document] = "",
+            [Name.data_doc] = "",
+            [Name.coll] = "",
+            [Name.coll_title] = "",
+            [Name.rtf_title] = "",
+            [Name.inside] = "",
+            [Name.image] = "",
+            [Name.zip] = "",
+            [Name.f] = "",
+            [Name.fs] = "",
+            [Name.find] = "",
+            [Name.find_s] = "",
+            [Name.find_single] = "",
+            [Name.search] = "",
+            [Name.union_search] = "",
+            [Name.intersect_search] = "",
+            [Name.negation_search] = "",
+            [Name.intersect_by_value] = "",
+            [Name.process_search_results] = "",
+            [Name.parse_search_string] = "",
+            [Name.map] = "",
+            [Name.exec] = "",
+            [Name.exec_to_string] = "",
+            [Name.element_access] = "",
+            [Name.keys] = "",
+            [Name.get_keys] = "",
+            [Name.get_field] = "",
+            [Name.before] = "",
+            [Name.after] = "",
+            [Name.id_to_document] = "",
+            [Name.rich_document_text] = "",
+            [Name.alias] = "",
+            [Name.key_field_query] = "",
+            [Name.set_field] = "",
+            [Name.set_list_field] = "",
+            [Name.var_assign] = "",
+            [Name.function] = "",
+            [Name.function_call] = "",
+            [Name.invalid] = "",
+            [Name.help] = "",
+            [Name.print] = "",
         };
     }
 }

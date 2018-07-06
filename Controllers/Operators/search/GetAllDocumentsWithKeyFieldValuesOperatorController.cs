@@ -13,7 +13,7 @@ namespace Dash
     /// operator to get all documents with a given field and value of that field
     /// </summary>
     [OperatorType(Op.Name.key_field_query)]
-    public class GetAllDocumentsWithKeyFieldValuesOperatorController : OperatorController
+    public sealed class GetAllDocumentsWithKeyFieldValuesOperatorController : OperatorController
     {
 
         //Input keys
@@ -23,10 +23,8 @@ namespace Dash
         //Output keys
         public static readonly KeyController ResultsKey = new KeyController("207CAD1E-40D0-4590-8C63-083D147B1794", "Results");
 
-        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetAllDocumentsWithKeyFieldValuesOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
+
         public GetAllDocumentsWithKeyFieldValuesOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }

@@ -498,11 +498,7 @@ namespace Dash
                     switch (preUnEx.Operator)
                     {
                         case SyntaxKind.MinusToken:
-                            return new FunctionExpression(DSL.GetFuncName<SubtractOperatorController>(), new List<ScriptExpression>
-                            {
-                                new LiteralExpression(new NumberController(0)),
-                                body
-                            });
+                            return new FunctionExpression(Op.Name.operator_negate, new List<ScriptExpression> { body });
                     } 
                     break;
                 case SyntaxKind.PostfixUnaryExpression:
@@ -591,6 +587,12 @@ namespace Dash
                                 leftBinExpr,
                                 rightBinExpr
                             });
+                        case SyntaxKind.CaretToken:
+                            return new FunctionExpression(Op.Name.operator_exponential, new List<ScriptExpression>
+                            {
+                                leftBinExpr,
+                                rightBinExpr
+                            });
                         case SyntaxKind.EqualsToken:
                             switch (leftBinExpr)
                             {
@@ -631,6 +633,9 @@ namespace Dash
                             break;
                         case SyntaxKind.PercentEqualsToken:
                             if (leftBinExpr is VariableExpression varExpMod) return new SelfRefAssignmentExpression(varExpMod, rightBinExpr, Op.Name.operator_modulo);
+                            break;
+                        case SyntaxKind.CaretEqualsToken:
+                            if (leftBinExpr is VariableExpression varExpExp) return new SelfRefAssignmentExpression(varExpExp, rightBinExpr, Op.Name.operator_exponential);
                             break;
                         default:
                             throw new Exception("Unkown binary expression type");
@@ -713,7 +718,7 @@ namespace Dash
                     var whilBlock = ParseToExpression(whilChild[1]);
 
                   //  make a while operator and call it in this function
-                    return new WhileExpression(DSL.GetFuncName<WhileOperatorController>(), new Dictionary<KeyController, ScriptExpression>
+                    return new WhileExpression(Op.Name.while_lp, new Dictionary<KeyController, ScriptExpression>
                     {
                         {WhileOperatorController.BoolKey,  whilBinary},
                         {WhileOperatorController.BlockKey,  whilBlock}
@@ -723,15 +728,9 @@ namespace Dash
                     var countDeclaration = ParseToExpression(forChild?[0]);
                     var forBinary = ParseToExpression(forChild?[1]);
                     var forIncrement = ParseToExpression(forChild?[2]);
-                    var forBody = ParseToExpression(forChild?[3]);
+                    var forBody = ParseToExpression(forChild?[3]) as ExpressionChain;
 
-                    return new ForExpression(DSL.GetFuncName<ForOperatorController>(), new Dictionary<KeyController, ScriptExpression>
-                    {
-                        [ForOperatorController.CounterDeclarationKey] = countDeclaration,
-                        [ForOperatorController.BoolKey] = forBinary,
-                        [ForOperatorController.IncrementKey] = forIncrement,
-                        [ForOperatorController.ForBlockKey] = forBody
-                    });
+                    return new ForExpression(Op.Name.for_lp, countDeclaration, forBinary, forIncrement, forBody);
                 case SyntaxKind.ForInStatement:
                     var forInChild = (node as ForInStatement)?.Children;
 
@@ -739,7 +738,7 @@ namespace Dash
                     var listNameExpr = ParseToExpression(forInChild?[1]);
                     var forInBody = ParseToExpression(forInChild?[2]) as ExpressionChain;
 
-                    return new ForInExpression(DSL.GetFuncName<ForInOperatorController>(), subVarName, listNameExpr, forInBody);
+                    return new ForInExpression(Op.Name.for_in_lp, subVarName, listNameExpr, forInBody);
                 case SyntaxKind.ForOfStatement:
                     break;
                 case SyntaxKind.ContinueStatement:
@@ -873,9 +872,9 @@ namespace Dash
                     {
                         var children = node.Children.ToArray();
                         var exprs = new List<ScriptExpression>();
-                        for (int i = 0; i < children.Length - 1; i++)
+                        for (var i = 0; i < children.Length - 1; i++)
                         {
-                             var expr = ParseToExpression(node.Children[i]);
+                            var expr = ParseToExpression(node.Children[i]);
                             if (expr != null)
                             {
                                 exprs.Add(expr);
@@ -1014,6 +1013,7 @@ namespace Dash
                 Debug.Assert(variableName != null);
                 _variableName = variableName;
                 _value = value;
+                if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
             }
 
             public override FieldControllerBase Execute(Scope scope)

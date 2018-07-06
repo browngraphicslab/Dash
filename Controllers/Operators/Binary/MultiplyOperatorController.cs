@@ -1,7 +1,8 @@
-﻿namespace Dash
+﻿// ReSharper disable once CheckNamespace
+namespace Dash
 {
-    [OperatorType(Op.Name.mult)]
-    public class MultiplyOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
+    [OperatorType(Op.Name.mult, Op.Name.operator_multiply)]
+    public sealed class MultiplyOperatorController : BinaryOperatorControllerBase<NumberController, NumberController>
     {
         public MultiplyOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel) { }
 

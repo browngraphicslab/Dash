@@ -18,7 +18,7 @@ namespace Dash
             {
                 [KeyStore.ReplInputsKey] = new ListController<TextController>(),
                 [KeyStore.ReplOutputsKey] = new ListController<FieldControllerBase>(),
-                [KeyStore.ReplScopeKey] = new DocumentController()
+                [KeyStore.ReplScopeKey] = new DocumentController(),
             }, DocumentType.DefaultType);
             Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
         }

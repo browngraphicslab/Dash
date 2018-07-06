@@ -41,6 +41,11 @@ namespace Dash
                 return;
             }
             if (!(inputs[FuncNameKey] is TextController enumAsString)) return;
+            if (enumAsString.Data == "")
+            {
+                outputs[ComputedResultKey] = OperatorScript.GetFunctionList();
+                return;
+            }
             var enumOut = Op.Parse(enumAsString.Data);
             if (enumOut == Op.Name.invalid) throw new ScriptExecutionException(new FunctionCallMissingScriptErrorModel(enumAsString.Data));
             if (!_constructedExcerpts.ContainsKey(enumOut)) _constructedExcerpts.Add(enumOut, new ScriptHelpExcerpt(enumOut));

@@ -41,7 +41,7 @@ namespace Dash
             var startingIndex = (int)((NumberController)inputs[StartingIndexKey]).Data;
             var length = (int)((NumberController)inputs[LengthKey]).Data;
 
-            if (startingIndex >= stringToEdit?.Length) throw new ScriptExecutionException(new IndexOutOfBoundsErrorModel((int)startingIndex, stringToEdit.Length));
+            if (startingIndex + length > stringToEdit?.Length) throw new ScriptExecutionException(new IndexOutOfBoundsErrorModel(startingIndex, stringToEdit.Length, length));
 
             FieldControllerBase output = null;
             if (stringToEdit != null) output = new TextController(stringToEdit.Substring(startingIndex, length));

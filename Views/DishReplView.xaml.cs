@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash.Annotations;
 using Dash.Models.DragModels;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,9 +34,17 @@ namespace Dash
         private string _typedText = "";
 
         private int _textHeight = 50;
+        private const int StratOffset = 32;
 
         private readonly ListController<TextController> _inputList;
         private readonly ListController<FieldControllerBase> _outputList;
+
+        private bool _editingLoop;
+        private OuterReplScope _scope;
+
+        private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+        private readonly List<char> _taken = new List<char>();
+        private int _forIndex = 0;
 
         private int TextHeight
         {
@@ -55,6 +64,8 @@ namespace Dash
             NewBlankScopeAndDSL();
             xTextBox.GotFocus += XTextBoxOnGotFocus;
             xTextBox.LostFocus += XTextBoxOnLostFocus;
+            var dataset = OperatorScript.GetDataset();
+            if (dataset != null) SetDataset(dataset);
 
             //intialize lists to save data
             _inputList =_dataDoc.GetField<ListController<TextController>>(KeyStore.ReplInputsKey);
@@ -75,8 +86,8 @@ namespace Dash
         // ReSharper disable once InconsistentNaming
         private void NewBlankScopeAndDSL()
         {
-            var scope = new OuterReplScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey));
-            _dsl = new DSL(scope, this);
+            _scope = new OuterReplScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey));
+            _dsl = new DSL(_scope, this);
         }
 
         public void Clear(bool clearData)
@@ -116,7 +127,7 @@ namespace Dash
             var numItem = ViewModel.Items.Count;
             switch (args.VirtualKey)
             {
-                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed():
+                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
                     {
@@ -133,9 +144,9 @@ namespace Dash
                     TextGrid.Height = new GridLength(50);
                     break;
                 case VirtualKey.Up when MainPage.Instance.IsCtrlPressed():
-                    if (xSuggestions.SelectedIndex > -1) xSuggestions.SelectedIndex--;
+                    if (xSuggestions.SelectedIndex > -1 && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex--;
                     break;
-                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed():
+                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
                     var index = numItem - (_currentHistoryIndex - 1);
                     if (numItem > index && index >= 0)
                     {
@@ -155,11 +166,14 @@ namespace Dash
                     TextGrid.Height = new GridLength(newTextSize);
                     break;
                 case VirtualKey.Down when MainPage.Instance.IsCtrlPressed():
-                    if (xSuggestions.SelectedIndex + 1 < xSuggestions.Items?.Count) xSuggestions.SelectedIndex++;
+                    if (xSuggestions.SelectedIndex + 1 < xSuggestions.Items?.Count && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex++;
                     break;
                 case VirtualKey.Right:
                     if (xSuggestions.SelectedIndex > -1) SelectPopup(xSuggestions.SelectedItem?.ToString());
                     xSuggestions.SelectedIndex = -1;
+                    break;
+                case VirtualKey.Delete when MainPage.Instance.IsCtrlPressed():
+                    xTextBox.Text = "";
                     break;
             }
             _currentText = xTextBox.Text;
@@ -194,7 +208,7 @@ namespace Dash
         public void ScrollToBottom()
         {
             xScrollViewer.UpdateLayout();
-            xScrollViewer.ChangeView(0, xScrollViewer.ScrollableHeight, 1);
+            xScrollViewer.ChangeView(0, float.MaxValue, 1);
         }
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
@@ -203,97 +217,248 @@ namespace Dash
 
             if (!_textModified)
             {
-                var addedText = ' ';
-
                 var textDiff = StringDiff(xTextBox.Text, _currentText);
 
-                if (textDiff == "\r")
+                //if (xTextBox.Text == "\r")
+                //{
+                //    xTextBox.Text = "";
+                //    return;
+                //}
+                if (xTextBox.Text.Equals(""))
                 {
-                    if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+                    TextHeight = 50;
+                    TextGrid.Height = new GridLength(TextHeight);
+                    _editingLoop = false;
+                }
+
+                if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
+                {
+                    _editingLoop = true;
+                    while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _taken.Contains(Alphabet[_forIndex])) { _forIndex++; }
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 4)
                     {
-                        //if enter is pressed with shift, make text box larger
-                        TextHeight = TextHeight + 20;
-                        TextGrid.Height = new GridLength(TextHeight);
+                        xTextBox.Text = xTextBox.Text.Insert(place - 4, "\r");
+                        TextHeight += StratOffset;
+                        place++;
                     }
-                    else
+                    var ct = Alphabet[_forIndex];
+                    _taken.Add(ct);
+                    xTextBox.Text += $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
+                    xTextBox.SelectionStart = place + 16; //36 to get to body
+                    xTextBox.SelectionLength = 5;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 6)
                     {
-                        //enter pressed without key modifiers - send code to terminal
+                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
+                        TextHeight += StratOffset;
+                        place++;
+                    }
+                    var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
+                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
+                    xTextBox.SelectionStart = place + 12;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 7)
+                    {
+                        xTextBox.Text = xTextBox.Text.Insert(place - 7, "\r");
+                        TextHeight += StratOffset;
+                        place++;
+                    }
+                    var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
+                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\"\"))" + " {\r      res. = \r}";
+                    xTextBox.SelectionStart = place + 12;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 8)
+                    {
+                        xTextBox.Text = xTextBox.Text.Insert(place - 8, "\r");
+                        TextHeight += StratOffset;
+                        place++;
+                    }
+                    xTextBox.Text += "(condition) {\r      \r}";
+                    xTextBox.SelectionStart = place + 1;
+                    xTextBox.SelectionLength = 9;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 6)
+                    {
+                        xTextBox.Text = xTextBox.Text.Insert(place - 6, "\r");
+                        TextHeight += StratOffset;
+                        place++;
+                    }
+                    xTextBox.Text += "(condition) {\r      \r}";
+                    xTextBox.SelectionStart = place + 1;
+                    xTextBox.SelectionLength = 9;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
+                {
+                    _editingLoop = true;
+                    var place = xTextBox.SelectionStart;
+                    if (xTextBox.Text.TrimStart().Length != 3)
+                    {
+                        xTextBox.Text = xTextBox.Text.Insert(place - 3, "\r");
+                        TextHeight += StratOffset;
+                        place++;
+                    }
+                    xTextBox.Text += "(condition) {\r      \r}";
+                    xTextBox.SelectionStart = place + 1;
+                    xTextBox.SelectionLength = 9;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
 
-                        //put textbox size back to default
-                        TextHeight = 50;
-                        TextGrid.Height = new GridLength(50);
-
-                        _currentHistoryIndex = 0;
-                        //get text replacing newlines with spaces
-                        var currentText = StringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
-                        xTextBox.Text = "";
-                        FieldControllerBase returnValue;
-                        try
+                switch (textDiff)
+                {
+                    case "\r" when xTextBox.Text.Length > _currentText.Length:
+                        if (Window.Current.CoreWindow.GetKeyState(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
                         {
-                            returnValue = _dsl.Run(currentText, true);
+                            //if enter is pressed with shift, make text box larger
+                            TextHeight += 20;
+                            TextGrid.Height = new GridLength(TextHeight);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            returnValue = new TextController("There was an error: " + ex.StackTrace);
-                        }
+                            //enter pressed without key modifiers - send code to terminal
+                            _editingLoop = false;
+                            _taken.Clear();
+                            //_scope.SetVariable(Alphabet[_forIndex].ToString(), null);
 
-                        ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+                            //put textbox size back to default
+                            TextHeight = 50;
+                            TextGrid.Height = new GridLength(50);
 
-                        //save input and output data
-                        if (returnValue != null)
-                        {
+                            _currentHistoryIndex = 0;
+                            //get text replacing newlines with spaces
+                            var currentText = StringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
+                            xTextBox.Text = "";
+                            FieldControllerBase returnValue;
+                            try
+                            {
+                                returnValue = _dsl.Run(currentText, true);
+                            }
+                            catch (Exception ex)
+                            {
+                                returnValue = new TextController("There was an error: " + ex.StackTrace);
+                            }
+
+                            if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+
+                            ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+
+                            //save input and output data
                             _inputList.Add(new TextController(currentText));
                             _outputList.Add(returnValue);
+
+                            ScrollToBottom();
                         }
 
-                        ScrollToBottom();
-                    }
+                        break;
+                    case "\"" when xTextBox.Text.Length > _currentText.Length:
+                        var place = xTextBox.SelectionStart;
+                        var offset = 0;
+
+                        while (place + offset < xTextBox.Text.Length && IsProperLetter(xTextBox.Text[place + offset])) { offset++; }
+                        place += offset;
+
+                        xTextBox.Text = xTextBox.Text.Insert(place, "\"");
+                        xTextBox.SelectionStart = place;
+                        break;
+                    case "(" when xTextBox.Text.Length > _currentText.Length:
+                        place = xTextBox.SelectionStart;
+                        offset = 0;
+
+                        while (place + offset < xTextBox.Text.Length && IsProperLetter(xTextBox.Text[place + offset])) { offset++; }
+                        place += offset;
+
+                        xTextBox.Text = xTextBox.Text.Insert(place, ")");
+                        xTextBox.SelectionStart = place;
+                        break;
+                    case "\'" when xTextBox.Text.Length > _currentText.Length:
+                        place = xTextBox.SelectionStart;
+                        offset = 0;
+
+                        while (place + offset < xTextBox.Text.Length && IsProperLetter(xTextBox.Text[place + offset])) { offset++; }
+                        place += offset;
+
+                        xTextBox.Text = xTextBox.Text.Insert(place, "\'");
+                        xTextBox.SelectionStart = place;
+                        break;
+                    case "{" when xTextBox.Text.Length > _currentText.Length:
+                        place = xTextBox.SelectionStart;
+                        xTextBox.Text += "\r      \r}";
+                        xTextBox.SelectionStart = place + 7;
+                        TextHeight += 40;
+                        TextGrid.Height = new GridLength(TextHeight);
+                        break;
+                    default:
+                        if (xTextBox.Text != "")
+                        {
+                            //only give suggestions on last word
+                            var allText = xTextBox.Text.Replace('\r', ' ').Split(' ');
+                            var lastWord = "";
+                            if (allText.Length > 0)
+                            {
+                                lastWord = allText[allText.Length - 1];
+                            }
+
+                            if (_dataset == null)
+                            {
+                                OperatorScript.Instance.Init();
+                            }
+
+                            var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+                            xSuggestions.ItemsSource = suggestions;
+
+                            var numSug = suggestions?.Count;
+                            if (numSug > 0)
+                            {
+                                xSuggestionsPopup.IsOpen = true;
+                                xSuggestionsPopup.Visibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                xSuggestionsPopup.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                        else
+                        {
+                            xSuggestionsPopup.IsOpen = false;
+                            xSuggestionsPopup.Visibility = Visibility.Collapsed;
+                        }
+
+                        break;
                 }
-
-                else if (xTextBox.Text != "")
-                {
-                    //only give suggestions on last word
-                    var allText = xTextBox.Text.Replace('\r', ' ').Split(' ');
-                    var lastWord = "";
-                    if (allText.Length > 0)
-                    {
-                        lastWord = allText[allText.Length - 1];
-                    }
-
-                    if (_dataset == null)
-                    {
-                        OperatorScript.Instance.Init();
-                    }
-
-                    var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
-
-                    xSuggestions.ItemsSource = suggestions;
-
-                    var numSug = suggestions.Count;
-
-                    if (numSug > 0)
-                    {
-                        xSuggestionsPopup.IsOpen = true;
-                        xSuggestionsPopup.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        xSuggestionsPopup.Visibility = Visibility.Collapsed;
-                    }
-                }
-                else
-                {
-                    xSuggestionsPopup.IsOpen = false;
-                    xSuggestionsPopup.Visibility = Visibility.Collapsed;
-                }
-
-                
             }
 
             _currentText = xTextBox.Text;
             _textModified = false;
-            
         }
+
+        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{';
 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
@@ -316,26 +481,41 @@ namespace Dash
             }
 
             //if it is function, set up sample inputs
-            var numInputs = OperatorScript.GetAmountInputs(Op.Parse(selectedItem));
+            var funcName = Op.Parse(selectedItem);
+            var isOverloaded = OperatorScript.IsOverloaded(funcName);
+            var inputTypes = OperatorScript.GetDefaultInputTypeListFor(funcName);
+            var numInputs = inputTypes.Count;
+
             var functionEnding = " ";
             var offset = 1;
-            if (numInputs != null)
+            if (numInputs > 0)
             {
-                offset = 2;
-                if (selectedItem != "help")
+                functionEnding = "(";
+                if (inputTypes[0] == TypeInfo.Text) offset++;
+
+                for (var i = 0; i < numInputs; i++)
                 {
-                    functionEnding = "(";
-                    for (var i = 0; i < numInputs; i++)
+                    var symbol = "_";
+                    if (!isOverloaded)
                     {
-                        functionEnding = functionEnding + "_, ";
+                        switch (inputTypes[i])
+                        {
+                            case TypeInfo.Text:
+                                symbol = "\"\"";
+                                break;
+                            case TypeInfo.Number:
+                                symbol = "#";
+                                break;
+                        }
                     }
-                    //delete last comma and space and add ending paranthesis
-                    functionEnding = functionEnding.Substring(0, functionEnding.Length - 2) + ")";
+                    functionEnding = functionEnding + $"{symbol}, ";
                 }
-                else
-                {
-                    functionEnding = "(\"\")";
-                }
+                //delete last comma and space and add ending paranthesis
+                functionEnding = functionEnding.Substring(0, functionEnding.Length - 2) + ")";
+            }
+            else
+            {
+                functionEnding = "()";
             }
 
             xTextBox.Text = keepText + selectedItem + functionEnding;
