@@ -29,6 +29,9 @@ namespace Dash
                     {
                         var r = (ReferenceController)controller;
                         result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
+                    } else if (controller is FunctionOperatorController)
+                    {
+                        result = (controller as FunctionOperatorController).getFunctionString();
                     }
                     else
                     {

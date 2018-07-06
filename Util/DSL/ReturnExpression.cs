@@ -13,20 +13,18 @@ namespace Dash
         {
             if (_value == null) throw new ScriptExecutionException(new InvalidReturnStatementErrorModel());
             var val = _value.Execute(scope);
-            scope.GetFirstAncestor().SetReturn(val);
+            //now return val
+            scope.SetReturn(val);
+
             throw new ReturnException();
-            //return val;
         }
 
         public override FieldControllerBase CreateReference(Scope scope)
         {
             throw new NotImplementedException();
-            //TODO tfs help with operator/doc stuff
         }
 
-        public override DashShared.TypeInfo Type
-            //TODO tyler is this correct?
-            => TypeInfo.Any;
+        public override DashShared.TypeInfo Type => TypeInfo.Any;
     }
 }
 

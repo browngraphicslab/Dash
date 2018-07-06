@@ -27,8 +27,27 @@ namespace Dash
             {
                 var newKey = KeyController.LookupKeyByName(_inputNames.Count.ToString(), true);
                 _inputNames.Add(param.IdentifierStr);
-                //TODO: get types of each parameter and set it in making IOInfo
-                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(TypeInfo.Any, true)));
+                
+                //restrict types based on user input
+                var inputType = TypeInfo.Any;
+                var parType = param.Type?.GetText().ToLower();
+                //this now only handles numbers, text and bool. If another type is needed, add a case
+                switch (parType)
+                {
+                    case "number":
+                        inputType = TypeInfo.Number;
+                        break;
+                    case "string":
+                        inputType = TypeInfo.Text;
+                        break;
+                    case "boolean":
+                        inputType = TypeInfo.Bool;
+                        break;
+                    default:
+                        break;
+                }
+
+                Inputs.Add(new KeyValuePair<KeyController, IOInfo>(newKey, new IOInfo(inputType, true)));
             }
             
 
@@ -56,28 +75,34 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            Scope newScope = new Scope(scope);
             for (int i = 0; i < _inputNames.Count; i++)
             {
-                newScope.DeclareVariable(_inputNames[i], inputs[KeyController.LookupKeyByName(i.ToString())]);
+                var value = inputs[KeyController.LookupKeyByName(i.ToString())];
+                
+                var expectedType = Inputs[i].Value.Type;
+
+                //if not expected type , don't run
+                if (expectedType != TypeInfo.Any && value.TypeInfo != expectedType)
+                {
+                    throw new ScriptExecutionException(new TextErrorModel("Parameter #" + (i + 1) + " must be of type " + expectedType));
+                }
+                scope?.DeclareVariable(_inputNames[i], value);
             }
 
-            var result = _block.Execute(newScope);
-           
-
-
-            //var functionString = inputs[StringKey];
-            //var functionName = (inputs[NameKey] as TextController).Data;
-
-            ////add function as variable
-            //scope?.DeclareVariable(functionName, this);
+            var result = _block.Execute(scope);
 
             outputs[ResultKey] = result;
+          
         }
 
         public override FieldControllerBase GetDefaultController()
         {
-            return new WhileOperatorController();
+            return new FunctionOperatorController();
+        }
+
+        public string getFunctionString()
+        {
+            return _block.ToString();
         }
     }
 }
