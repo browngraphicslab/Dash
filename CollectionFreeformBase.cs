@@ -35,7 +35,7 @@ using Dash.Views;
 
 namespace Dash
 {
-    public abstract class CollectionFreeformBase: UserControl, ICollectionView
+    public abstract class CollectionFreeformBase : UserControl, ICollectionView
     {
         MatrixTransform _transformBeingAnimated;// Transform being updated during animation
         Canvas _itemsPanelCanvas => GetCanvas();
@@ -56,7 +56,7 @@ namespace Dash
         //SET BACKGROUND IMAGE OPACITY
         public delegate void SetBackgroundOpacity(float opacity);
         private static event SetBackgroundOpacity setBackgroundOpacity;
-    
+
         // TODO: get canvas in derived class
         public abstract Canvas GetCanvas();
         // TODO: get itemscontrol of derived class
@@ -678,7 +678,7 @@ namespace Dash
                 if (XInkCanvas.IsTopmost() &&
                     (args.KeyModifiers & VirtualKeyModifiers.Control) == 0 &&
                     ( // bcz: the next line makes right-drag pan within nested collections instead of moving them -- that doesn't seem right to me since MouseMode feels like it applies to left-button dragging only
-                        // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
+                      // MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast || 
                         ((!args.GetCurrentPoint(GetOuterGrid()).Properties.IsRightButtonPressed)) && MenuToolbar.Instance.GetMouseMode() != MenuToolbar.MouseMode.PanFast))
                 {
                     if ((args.KeyModifiers & VirtualKeyModifiers.Shift) == 0)
@@ -707,7 +707,7 @@ namespace Dash
         }
 
         public bool IsMarqueeActive => _isMarqueeActive;
-        
+
         // called by SelectionManager to reset this collection's internal selection-based logic
         public void ResetMarquee()
         {
@@ -767,36 +767,41 @@ namespace Dash
         /// <param name="fromMarquee">True if we select from the marquee, false if from currently selecte documents</param>
         public void TriggerActionFromSelection(VirtualKey modifier, bool fromMarquee)
         {
-            Point where;
-            Rectangle marquee;
-            CollectionView.CollectionViewType type = CollectionView.CollectionViewType.Freeform;
-            IEnumerable<DocumentView> viewsToSelectFrom;
-
-            if (fromMarquee)
+            void DoAction(Action<List<DocumentView>, Point, Size> action)
             {
-                where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
-                    SelectionCanvas, GetItemsControl().ItemsPanelRoot);
-                marquee = _marquee;
-                viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
-                OnPointerReleased(null, null);
-            }
-            else
-            {
-                var bounds = GetBoundingRectFromSelection();
+                Point where;
+                Rectangle marquee;
+                IEnumerable<DocumentView> viewsToSelectFrom;
 
-                // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
-                if (bounds == Rect.Empty) return;
-
-                where = new Point(bounds.X, bounds.Y);
-                marquee = new Rectangle
+                if (fromMarquee)
                 {
-                    Height = bounds.Height,
-                    Width = bounds.Width
-                };
-                viewsToSelectFrom = SelectionManager.SelectedDocs;
+                    where = Util.PointTransformFromVisual(new Point(Canvas.GetLeft(_marquee), Canvas.GetTop(_marquee)),
+                        SelectionCanvas, GetItemsControl().ItemsPanelRoot);
+                    marquee = _marquee;
+                    viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                    OnPointerReleased(null, null);
+                }
+                else
+                {
+                    var bounds = GetBoundingRectFromSelection();
+
+                    // hack to escape when CoreWindow fires the event a second time when it's actually from the marquee
+                    if (bounds == Rect.Empty) return;
+
+                    where = new Point(bounds.X, bounds.Y);
+                    marquee = new Rectangle
+                    {
+                        Height = bounds.Height,
+                        Width = bounds.Width
+                    };
+                    viewsToSelectFrom = SelectionManager.SelectedDocs;
+                }
+
+                var toSelectFrom = viewsToSelectFrom.ToList();
+                action(toSelectFrom, where, new Size(marquee.Width, marquee.Height));
             }
 
-            var toSelectFrom = viewsToSelectFrom.ToList();
+            var type = CollectionView.CollectionViewType.Freeform;
 
             bool deselect = false;
             using (UndoManager.GetBatchHandle())
@@ -805,31 +810,50 @@ namespace Dash
                 {
                     //create a viewcopy of everything selected
                     case VirtualKey.A:
-                        var docs = toSelectFrom.Select(dv => dv.ViewModel.DocumentController.GetViewCopy()).ToList();
-                        ViewModel.AddDocument(new CollectionNote(where, type, marquee.Width, marquee.Height, docs)
-                            .Document);
+                        DoAction((dvs, where, size) =>
+                        {
+                            var docs = dvs.Select(dv => dv.ViewModel.DocumentController.GetViewCopy())
+                                .ToList();
+                            ViewModel.AddDocument(new CollectionNote(where, type, size.Width, size.Height, docs)
+                                .Document);
+                        });
                         deselect = true;
                         break;
                     case VirtualKey.T:
                         type = CollectionView.CollectionViewType.Schema;
                         goto case VirtualKey.C;
                     case VirtualKey.C:
-                        var docss = toSelectFrom.Select(dvm => dvm.ViewModel.DocumentController).ToList();
-                        ViewModel.AddDocument(
-                            new CollectionNote(where, type, marquee.Width, marquee.Height, docss).Document);
-                        goto case VirtualKey.Delete;
+                        DoAction((views, where, size) =>
+                        {
+                            var docss = views.Select(dvm => dvm.ViewModel.DocumentController).ToList();
+                            ViewModel.AddDocument(
+                                new CollectionNote(where, type, size.Width, size.Height, docss).Document);
+
+                            foreach (var v in views)
+                            {
+                                v.DeleteDocument();
+                            }
+                        });
+                        deselect = true;
+                        break;
                     case VirtualKey.Back:
                     case VirtualKey.Delete:
-                        foreach (var v in toSelectFrom)
+                        DoAction((views, where, size) =>
                         {
-                            v.DeleteDocument();
-                        }
+                            foreach (var v in views)
+                            {
+                                v.DeleteDocument();
+                            }
+                        });
 
                         deselect = true;
                         break;
                     case VirtualKey.G:
-                        ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
-                            where, marquee.Width, marquee.Height));
+                        DoAction((views, where, size) =>
+                        {
+                            ViewModel.AddDocument(Util.AdornmentWithPosition(BackgroundShape.AdornmentShape.Rectangular,
+                                where, size.Width, size.Height));
+                        });
                         deselect = true;
                         break;
                 }
