@@ -10,7 +10,7 @@ namespace Dash
         public static readonly KeyController AKey = new KeyController("A");
         public static readonly KeyController BKey = new KeyController("B");
 
-        public static readonly KeyController OutputKey = new KeyController("Output", "A7D02B59-7D8C-4518-BFEB-06BA17CA28FC");
+        public static readonly KeyController OutputKey = new KeyController("Output");
 
 
         public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();

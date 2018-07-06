@@ -50,14 +50,16 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
-            var keyName = (inputs[KeyNameKey] as TextController)?.Data;
+            var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
             var fieldValue = inputs[FieldValueKey];
 
             if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.GetName(), fieldValue.GetValue(null).ToString()));
 
-            inputDoc.SetField(new KeyController(keyName), fieldValue, true);
-            
-            outputs[ResultDocKey] = fieldValue;
+            var success = inputDoc.SetField(new KeyController(keyName), fieldValue, true);
+
+            var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
+
+            outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
 
         }
     }

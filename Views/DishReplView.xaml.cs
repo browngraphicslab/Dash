@@ -316,8 +316,9 @@ namespace Dash
                         place++;
                     }
                     var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\"\"))" + " {\r      res. = \r}";
-                    xTextBox.SelectionStart = place + 12;
+                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in kv(\"k\", \"v\"))" + " {\r      data_doc(res). = \r}";
+                    xTextBox.SelectionStart = place + 11;
+                    xTextBox.SelectionLength = 8;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
