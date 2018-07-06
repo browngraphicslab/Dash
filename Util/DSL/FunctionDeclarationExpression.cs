@@ -16,10 +16,9 @@ namespace Dash
         private readonly DashShared.TypeInfo _returnType;
 
 
-        public FunctionDeclarationExpression(string name, NodeArray<ParameterDeclaration> param, 
+        public FunctionDeclarationExpression(NodeArray<ParameterDeclaration> param, 
             ScriptExpression fB, DashShared.TypeInfo retur)
         {
-            _funcName = name;
             _parameters = param;
             _funcBlock = fB;
             _returnType = retur;
@@ -29,7 +28,7 @@ namespace Dash
         {
             var functionOperator = new FunctionOperatorController(_parameters, _funcBlock, _returnType);
 
-            scope?.DeclareVariable(_funcName, functionOperator);
+            //scope?.DeclareVariable(_funcName, functionOperator);
 
             return functionOperator;
         }
