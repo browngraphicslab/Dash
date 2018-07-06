@@ -32,11 +32,13 @@ namespace Dash.Views
         public DockedView NestedView { get; set; }
         public DockedView PreviousView { get; set; }
         public DockDirection Direction { get; set; }
+        public DocumentController ContainedDocumentController { get; set; }
 
-        public DockedView(DockDirection direction)
+        public DockedView(DockDirection direction, DocumentController dc)
         {
             this.InitializeComponent();
             Direction = direction;
+            ContainedDocumentController = dc;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)

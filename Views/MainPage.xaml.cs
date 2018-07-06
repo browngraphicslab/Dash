@@ -654,7 +654,7 @@ namespace Dash
             copiedView.ViewModel.Height = Double.NaN;
             copiedView.ViewModel.DisableDecorations = true;
 
-            DockedView dockedView = new DockedView(dir);
+            DockedView dockedView = new DockedView(dir, toDock);
             dockedView.ChangeView(copiedView);
             dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockedView.VerticalAlignment = VerticalAlignment.Stretch;
@@ -743,6 +743,7 @@ namespace Dash
 
         public void Undock(DockedView undock)
         {
+            _dockControllers[(int) undock.Direction].Remove(undock.ContainedDocumentController);
             // means it's the last NestedView
             if (undock.NestedView == null)
             {
