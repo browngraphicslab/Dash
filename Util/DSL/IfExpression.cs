@@ -38,7 +38,7 @@ namespace Dash
             {
                 inputs.Add(ifKey, null);
                 //inputs.Add(elseKey, _parameters[elseKey].Execute(scope));
-                return _parameters[elseKey].Execute(scope);
+                return _parameters[elseKey] != null ? _parameters[elseKey].Execute(scope) : new TextController("");
             }
 
             try
