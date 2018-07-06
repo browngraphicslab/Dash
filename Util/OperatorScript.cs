@@ -335,14 +335,14 @@ namespace Dash
             var op = (OperatorController)Activator.CreateInstance(t);
 
             var doc = new DocumentController();
-
+            
             foreach (var parameter in parameters)
             {
                 doc.SetField(parameter.Key, parameter.Value, true);
             }
             doc.SetField(KeyStore.OperatorKey, new ListController<OperatorController>(new OperatorController[] { op }), true);
 
-            return new DocumentReferenceController(doc.Id, op.Outputs.FirstOrDefault().Key);
+            return new DocumentReferenceController(doc, op.Outputs.FirstOrDefault().Key);
 
         }
     }

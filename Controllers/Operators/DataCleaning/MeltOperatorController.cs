@@ -15,32 +15,32 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController InputCollection =
-            new KeyController("DCED5F30-1C96-4BD9-8DE9-6C9DDC37C239", "Input Collection");
+            new KeyController("Input Collection");
 
         /// <summary>
         /// This key contains a list of key ids which correspond to the keys which are
         /// going to be used as columns in the output
         /// </summary>
         public static readonly KeyController ColumnVariables =
-            new KeyController("AA00C8E9-EEAB-44BC-97C1-BF82FEA1B428", "Column Variables");
+            new KeyController("Column Variables");
 
         /// <summary>
         /// The key contains a text field model controller which is the name
         /// of variables column in the output
         /// </summary>
         public static readonly KeyController VariableName =
-            new KeyController("02D82E59-54C3-4BCD-B45B-78416FE08163", "Variable Name");
+            new KeyController("Variable Name");
 
         /// <summary>
         /// This key contaisn a text field model controller which is the name
         /// of the values column in the output
         /// </summary>
         public static readonly KeyController ValueName =
-            new KeyController("A2AD0B50-7CC9-48B4-9D68-CA17AA3DC741", "Value Name");
+            new KeyController("Value Name");
 
         // Output Keys
         public static readonly KeyController OutputCollection =
-            new KeyController("4ECAF1CB-5FEF-4B6D-8A84-C134BD90C750", "Output Collection");
+            new KeyController("Output Collection");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } =
@@ -70,7 +70,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("871A8ADC-5D15-4B31-9BE7-6256D9C961EE", "Melt");
+        private static readonly KeyController TypeKey = new KeyController("Melt", "871A8ADC-5D15-4B31-9BE7-6256D9C961EE");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
@@ -86,8 +86,8 @@ namespace Dash
             var dataKeys = allHeaderKeys.Keys.Except(columnKeys);
 
             var docType = new DocumentType(DashShared.UtilShared.GenerateNewId());
-            var variableKey = new KeyController(DashShared.UtilShared.GenerateNewId(), variableName.Data);
-            var valueKey = new KeyController(DashShared.UtilShared.GenerateNewId(), valueName.Data);
+            var variableKey = new KeyController(variableName.Data, DashShared.UtilShared.GenerateNewId());
+            var valueKey = new KeyController(valueName.Data, DashShared.UtilShared.GenerateNewId());
 
             var outputDocs = new List<DocumentController>();
 
@@ -106,12 +106,12 @@ namespace Dash
                     if (dataValue != null)
                     {
                         fields[variableKey] = new TextController(dataKey.Name);
-                        fields[valueKey] = new DocumentReferenceController(originalDoc.Id, dataKey);
+                        fields[valueKey] = new DocumentReferenceController(originalDoc, dataKey);
                     }
 
                     foreach (var columnKey in columnKeys)
                     {
-                        fields[columnKey] = new DocumentReferenceController(originalDoc.Id, columnKey);
+                        fields[columnKey] = new DocumentReferenceController(originalDoc, columnKey);
                     }
 
 

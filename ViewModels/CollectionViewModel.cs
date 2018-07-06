@@ -522,7 +522,7 @@ namespace Dash
                         pivotDoc.SetField(pivotKey, new ListController<DocumentController>(obj as List<DocumentController>), true);
                     }
                     //DBTest.DBDoc.AddChild(pivotDoc);
-                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc.Id, pivotKey), true);
+                    d.SetField(pivotKey, new DocumentReferenceController(pivotDoc, pivotKey), true);
                 }
                 pivotDictionary.Add(obj, pivotDoc);
                 dictionary.Add(obj, new Dictionary<KeyController, List<object>>());
@@ -530,7 +530,7 @@ namespace Dash
 
             if (obj != null)
             {
-                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj].Id, pivotKey), true);
+                d.SetField(pivotKey, new DocumentReferenceController(pivotDictionary[obj], pivotKey), true);
                 return dictionary[obj];
             }
             return null;
@@ -866,7 +866,7 @@ namespace Dash
                     {
                         var pair = new Regex(":").Split(match.ToString());
                         t.Document.GetDataDocument()
-                            .SetField<TextController>(KeyController.LookupKeyByName(pair[0], true), pair[1].Trim('\r'),
+                            .SetField<TextController>(new KeyController(pair[0]), pair[1].Trim('\r'),
                                 true);
                     }
 
@@ -1072,10 +1072,10 @@ namespace Dash
                     var templateFieldDataRef = (templateField as DocumentController)?.GetDataDocument().GetDereferencedField<TextController>(KeyStore.DocumentTextKey, null)?.Data;
                     if (!string.IsNullOrEmpty(templateFieldDataRef) && templateFieldDataRef.StartsWith("#"))
                     {
-                        var k = KeyController.LookupKeyByName(templateFieldDataRef.Substring(1));
+                        var k = new KeyController(templateFieldDataRef.Substring(1));
                         if (k != null)
                         {
-                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument().Id, k), p.X, p.Y, w, h).Document);
+                            listOfFields.Add(new DataBox(new DocumentReferenceController(doc.GetDataDocument(), k), p.X, p.Y, w, h).Document);
                         }
                     }
                     else

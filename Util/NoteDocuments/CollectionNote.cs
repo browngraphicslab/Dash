@@ -21,7 +21,7 @@ namespace Dash
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "CollectionNote Data Prototype" };
 
             protoDoc.SetField(KeyStore.TitleKey,
-                new DocumentReferenceController(protoDoc.Id, CollectionTitleOperatorController.ComputedTitle), true);
+                new DocumentReferenceController(protoDoc, CollectionTitleOperatorController.ComputedTitle), true);
 
             return protoDoc;
         }

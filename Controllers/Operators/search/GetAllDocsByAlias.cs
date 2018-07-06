@@ -16,10 +16,10 @@ namespace Dash
     public class GetAllDocsByAlias : OperatorController
     {
         //Input keys
-        public static readonly KeyController IdKey = new KeyController("53A28F84-359F-4E51-B1FA-87E8C09B8485", "Id");
+        public static readonly KeyController IdKey = new KeyController("Id");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("6EADF73F-B86E-45F3-A3AB-2F5963AC58EC", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public GetAllDocsByAlias() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -40,7 +40,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("DB543B75-15D3-467A-A9DE-9F262F496C25", "Alias");
+        private static readonly KeyController TypeKey = new KeyController("Alias", "DB543B75-15D3-467A-A9DE-9F262F496C25");
 
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases

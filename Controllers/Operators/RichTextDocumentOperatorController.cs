@@ -23,7 +23,7 @@ namespace Dash
         //Input key   KeyStore.DataKey;
 
         //Output key
-        public static readonly KeyController ReadableTextKey = new KeyController("AAAA064D-C4BC-4623-AAD3-402077433C46", "ReadableText");
+        public static readonly KeyController ReadableTextKey = new KeyController("ReadableText");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>>  Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -36,7 +36,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static KeyController TypeKey = new KeyController("A0BB0580-31E8-441E-907A-8A9C74224964", "Doc Text");
+        private static KeyController TypeKey = new KeyController("Doc Text", "A0BB0580-31E8-441E-907A-8A9C74224964");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

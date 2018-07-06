@@ -111,8 +111,8 @@ namespace Dash
                 var doc = ViewModel?.LayoutDocument;
 
                 var binding = !BindRenderTransform || doc == null ? null :
-                        new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc.Id, KeyStore.PositionFieldKey),
-                                                               new DocumentFieldReference(doc.Id, KeyStore.ScaleAmountFieldKey))
+                        new FieldMultiBinding<MatrixTransform>(new DocumentFieldReference(doc, KeyStore.PositionFieldKey),
+                                                               new DocumentFieldReference(doc, KeyStore.ScaleAmountFieldKey))
                         {
                             Converter = new TransformGroupMultiConverter(),
                             Context = new Context(doc),
@@ -982,7 +982,7 @@ namespace Dash
                     var operatorDoc = OperationCreationHelper.Operators["Search"].OperationDocumentConstructor();
 
                     operatorDoc.SetField(SearchOperatorController.InputCollection,
-                        new DocumentReferenceController(ViewModel.DataDocument.Id,
+                        new DocumentReferenceController(ViewModel.DataDocument,
                             SearchOperatorController.ResultsKey), true);
 
                     // TODO connect output to input

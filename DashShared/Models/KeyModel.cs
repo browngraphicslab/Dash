@@ -11,15 +11,7 @@ namespace DashShared
         /// </summary>
         public string Name { get; set; }
 
-        public KeyModel() : this(Guid.NewGuid().ToString())
-        {
-        }
-
-        public KeyModel(string guid) : base(guid) {
-            Name = guid;
-        }
-
-        public KeyModel(string guid, string name) : base(guid) {
+        public KeyModel(string name, string guid) : base(guid) {
             Name = name;
         }
 

@@ -34,7 +34,7 @@ namespace Dash
         /// <returns></returns>
         protected DocumentReferenceController getDataReference(DocumentController dataDoc)
         {
-            return new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey);
+            return new DocumentReferenceController(dataDoc, KeyStore.DataKey);
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace Dash
             if (!string.IsNullOrEmpty(title))
                 dataDocument.SetTitle(title);
             layout.SetField(KeyStore.DocumentContextKey, dataDocument, true);
-            layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout.Id, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
+            layout.SetField(KeyStore.DataKey,  new PointerReferenceController(new DocumentReferenceController(layout, KeyStore.DocumentContextKey), KeyStore.DataKey), true);
             // layout.SetField(KeyStore.DataKey,  new DocumentReferenceController(dataDocument.Id, KeyStore.DataKey), true);
-            layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument.Id, KeyStore.TitleKey), true);
+            layout.SetField(KeyStore.TitleKey, new DocumentReferenceController(dataDocument, KeyStore.TitleKey), true);
             return layout;
         }
     }

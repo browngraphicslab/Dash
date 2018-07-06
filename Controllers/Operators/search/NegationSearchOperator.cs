@@ -12,10 +12,10 @@ namespace Dash
     public class NegationSearchOperator : OperatorController
     {
         //Input keys
-        public static readonly KeyController DictKey = new KeyController("7A24D7D3-9E1B-412A-89E8-C6DE395B5C52", "Dict");
+        public static readonly KeyController DictKey = new KeyController("Dict");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("5A5C3D40-CEEE-4787-80FB-3922D2A6C663", "DictionaryResults");
+        public static readonly KeyController ResultsKey = new KeyController("DictionaryResults");
 
         public NegationSearchOperator() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -26,7 +26,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("60B8F4DA-A150-4600-A3EE-D92503413811", "Negation Search");
+        private static readonly KeyController TypeKey = new KeyController("Negation Search", "60B8F4DA-A150-4600-A3EE-D92503413811");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>()
         {

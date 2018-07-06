@@ -56,16 +56,11 @@ namespace Dash.Controllers
             return new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
         }
 
-        public override string GetDocumentId(Context context)
-        {
-            return GetDocumentController(context).Id;
-        }
-
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {
             if (mapping.ContainsKey(DocumentReference.GetDocumentController(null)))
             {
-                return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)].Id, DocumentReference.FieldKey), FieldKey);
+                return new PointerReferenceController(new DocumentReferenceController(mapping[DocumentReference.GetDocumentController(null)] as DocumentController, DocumentReference.FieldKey), FieldKey);
             }
             return null;
         }
