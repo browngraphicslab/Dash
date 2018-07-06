@@ -68,22 +68,22 @@ namespace Dash
             return OperatorScript.GetDishOperatorName<NegationSearchOperator>() + "(" + search + ")";
         }
 
-        private string WrapInParameterizedFunction(Op.Name funcName, string paramName)
+        private string WrapInParameterizedFunction(string name, string paramName)
         {
             //this returns a string that more closely follows function syntax
             //TODO check if func exists
 
-            if (!DSL.FuncNameExists(funcName))
+            if (!DSL.FuncNameExists(name))
             {
-                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + funcName + "\",\"" + paramName + "\")";
+                return OperatorScript.GetDishOperatorName<GetAllDocumentsWithKeyFieldValuesOperatorController>() + "(\"" + name + "\",\"" + paramName + "\")";
             }
 
-            if (OperatorScript.GetFirstInputType(funcName) == DashShared.TypeInfo.Text)
+            if (OperatorScript.GetFirstInputType(Op.Parse(name)) == DashShared.TypeInfo.Text)
             {
-                return funcName + "(\"" + paramName + "\")";
+                return name + "(\"" + paramName + "\")";
             }
 
-            return funcName + "(" + paramName + ")";
+            return name + "(" + paramName + ")";
         }
 
         private string GetBasicSearchResultsFromSearchPart(string searchPart)
@@ -98,7 +98,7 @@ namespace Dash
                 var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
 
-                return WrapInParameterizedFunction(Op.Parse(parts[0]), parts[1]);
+                return WrapInParameterizedFunction(parts[0], parts[1]);
             }
             else
             {
@@ -229,12 +229,12 @@ namespace Dash
                 {
                     if (functionString.Substring(i, 1).Equals("\""))
                     {
-                        if (!(functionString.Substring(i - 1, 2).Equals("(\"") || functionString.Substring(i, 2).Equals("\")")))
-                        {
+                        //if (!(functionString.Substring(i - 1, 2).Equals("(\"") || functionString.Substring(i, 2).Equals("\")")))
+                        //{
                             functionString = functionString.Insert(i, "\\");
                             i += 1;
                             len += 1;
-                        }
+                        //}
                     }
                 }
                 return functionString;
@@ -318,7 +318,7 @@ namespace Dash
         {
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
             string functionString = Parse(inputString);
-            functionString = EscapeQuotes(functionString).Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r"); ;
+            functionString = functionString.Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r"); ;
             outputs[ScriptKey] = new TextController(functionString);
         }
     }

@@ -167,6 +167,8 @@ namespace Dash
 
         public static Name Parse(string toParse) => Enum.TryParse<Name>(toParse, out var interpretedName) ? interpretedName : Name.invalid;
 
+        public static bool TryParse(string toParse, out Name result) => Enum.TryParse(toParse, out result);
+
         public static Dictionary<Name, string> FuncDescriptions = new Dictionary<Name, string>()
         {
             [Name.operator_add] =

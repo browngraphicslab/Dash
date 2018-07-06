@@ -104,10 +104,7 @@ namespace Dash
         /// </summary>
         /// <param name="funcName"></param>
         /// <returns></returns>
-        public static bool FuncNameExists(Op.Name funcName)
-        {
-            return OperatorScript.FuncNameExists(funcName);
-        }
+        public static bool FuncNameExists(string funcName) => Op.TryParse(funcName, out var funcEnum) && OperatorScript.FuncNameExists(funcEnum);
 
         /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.

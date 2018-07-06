@@ -316,9 +316,8 @@ namespace Dash
                         place++;
                     }
                     var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in kv(\"k\", \"v\"))" + " {\r      data_doc(res). = \r}";
-                    xTextBox.SelectionStart = place + 11;
-                    xTextBox.SelectionLength = 8;
+                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
+                    xTextBox.SelectionStart = place + 12;
                     TextHeight += 40;
                     TextGrid.Height = new GridLength(TextHeight);
                 }
@@ -333,7 +332,7 @@ namespace Dash
                     var newList = "myList" + _forInIndex;
                     _takenNumbers.Add(_forInIndex);
                     xTextBox.Text = xTextBox.Text.Insert(place - 7, $"{ret}var {newList} = []\r");
-                    TextHeight += StratOffset * 2;
+                    TextHeight += StratOffset;
                     var offset = _forInIndex.ToString().Length + ret.Length - 1;
 
                     xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
