@@ -29,6 +29,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views.TemplateEditor;
 using Microsoft.Office.Interop.Word;
 using Application = Microsoft.Office.Interop.Word.Application;
 using Border = Microsoft.Office.Interop.Word.Border;
@@ -82,9 +83,9 @@ namespace Dash
 			DocumentView.DocumentViewDeletedEventArgs args)
 		{
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
-					.GetField(KeyStore.TemplateDocumentKey) != null)
+					.GetField(KeyStore.TemplateEditorKey) != null)
 				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
-					.RemoveField(KeyStore.TemplateDocumentKey);
+					.RemoveField(KeyStore.TemplateEditorKey);
 		}
 
 		private void DocumentControllers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -202,10 +203,54 @@ namespace Dash
 			var rectGeo = new RectangleGeometry { Rect = rect };
 			xWorkspace.Clip = rectGeo;
 
+			/*
+			//set DataDoc to existing template copy or create new
+			//TODO: might have to ensure that opening template editor on a template knows its a template (template key of a template should be itself)
+			
+			//if there is a template associated with this document
+			if (workingDoc.GetField<DocumentController>(KeyStore.TemplateKey) == null)
+			{
+				DataDocument = new TemplateBox().Document;
+				workingDoc.SetField(KeyStore.TemplateKey, DataDocument, true);
+			}
+			else
+			{
+				DataDocument = workingDoc.GetField<DocumentController>(KeyStore.TemplateKey);
+			}
+			
+			//set template style, default is freeform
+			if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey) == null)
+			{
+				DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+				//this.StyleWorkspace(TemplateConstants.FreeformView);
+			}
+			else
+			{
+				//this.StyleWorkspace((int) DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey).Data);
+			}
+			*/
+	
+			// layout document's data key holds the document that we are currently working on
+			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+			var template = workingDoc.GetField<DocumentController>(KeyStore.DocumentContextKey);
+			// TODO: working doc should be able to be null
+			// make a copy of the data document
+			//var dataDocCopy = DataDocument.GetDataInstance();
+			// loop through each layout document and try to abstract it out when necessary
+
+			// set the dataDocCopy's document context key to the working document's data document
+			//dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+
+			// set width and height of the new document
+			//dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+			//dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
+			//xOuterWorkspace.Children.Add(templateCopy.MakeViewUI(new Context()));
+
 			//hide resize and ellipse controls for template editor
 			this.GetFirstAncestorOfType<DocumentView>().ViewModel.DisableDecorations = true;
 			this.GetFirstAncestorOfType<DocumentView>().hideControls();
 			DocumentViewModels.Clear();
+
 			//initialize layout documents on workspace
 			foreach (var layoutDoc in DataDocument
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
@@ -230,7 +275,7 @@ namespace Dash
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
 
-            //set background color
+            //formatting
             var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
 			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
 			xWorkspace.Background = backgroundColor;
@@ -238,7 +283,7 @@ namespace Dash
 		    this.FormatUploadTemplateFlyout();
 			xDesignGridSizeComboBox.SelectedIndex = 0;
 			xDesignGridVisibilityButton.IsChecked = false;
-			xFreeFormButton.IsChecked = true;
+			//xFreeFormButton.IsChecked = true;
 
             // TODO: Add number indicating which template perhoops -sy
 		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
@@ -254,6 +299,19 @@ namespace Dash
 		    }
 		    xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
         }
+
+		private void StyleWorkspace(int style)
+		{
+			switch (style)
+			{
+				case TemplateConstants.FreeformView:
+					break;
+				case TemplateConstants.ListView:
+					break;
+				case TemplateConstants.GridView:
+					break;
+			}
+		}
 
 		private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
@@ -526,7 +584,7 @@ namespace Dash
 		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 		        // set the active layout of the working document to the dataDocCopy (which is the template)
 		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateDocumentKey,
+		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
 		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
             }
 		    else
@@ -1573,24 +1631,31 @@ namespace Dash
 		}
 
 
-		// TEMPLATE STYLE BUTTON HANDLERS //
+		#region Template Style Handlers
+
 		private void XFreeFormButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			xGridButton.IsChecked = false;
-			xListButton.IsChecked = false;
-		}
-		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
-		{
-			xFreeFormButton.IsChecked = false;
-			xGridButton.IsChecked = false;
-		}
-		private void XGridButton_OnChecked(object sender, RoutedEventArgs e)
-		{
-			xFreeFormButton.IsChecked = false;
-			xListButton.IsChecked = false;
+			//set TemplateStyle key to FreeForm
+			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
 		}
 
-	    private void CloseButton_OnClick(object sender, RoutedEventArgs e)
+		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			//set TemplateStyle key to List
+			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+			
+		}
+
+		private void XGridButton_OnChecked(object sender, RoutedEventArgs e)
+		{
+			//set TemplateStyle key to Grid
+			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
+		}
+
+#endregion
+
+
+		private void CloseButton_OnClick(object sender, RoutedEventArgs e)
 	    {
 	        Clear();
 	        this.LayoutDocument.SetHidden(true);
@@ -1600,5 +1665,7 @@ namespace Dash
 	    {
 	        this.LayoutDocument.SetHidden(true);
 	    }
+
+
 	}
 }

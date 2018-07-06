@@ -101,10 +101,10 @@ namespace Dash
                 //var dvm =
                 //    new DocumentViewModel(doc, new Context(doc));
                 //// adds layout doc to list of layout docs
-                //var datakey = Document.GetField<DocumentController>(KeyStore.TemplateDocumentKey)
+                //var datakey = Document.GetField<DocumentController>(KeyStore.TemplateEditorKey)
                 //    .GetField<ListController<DocumentController>>(KeyStore.DataKey);
                 //datakey.Add(dvm.LayoutDocument);
-                //Document.GetField<DocumentController>(KeyStore.TemplateDocumentKey)
+                //Document.GetField<DocumentController>(KeyStore.TemplateEditorKey)
                 //    .SetField(KeyStore.DataKey, datakey, true);
             //}
 

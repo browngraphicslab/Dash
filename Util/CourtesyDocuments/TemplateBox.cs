@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
+using Dash.Views.TemplateEditor;
 using DashShared;
 using Color = Windows.UI.Color;
 using HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment;
@@ -47,6 +49,11 @@ namespace Dash
 		{
 		    var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
 		    color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
+			//var templateStyle =
+				//docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ?? TemplateConstants.FreeformView;
+
+			//Debug.WriteLine(templateStyle);
+
             var grid = new Grid()
 	        {
 		        // default size of the template editor box's workspace

@@ -19,7 +19,8 @@ namespace Dash
         {
             // template editor box data key = working doc
             var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), workingDoc);
-            fields[KeyStore.DocumentContextKey] = new TemplateBox().Document;
+	        fields[KeyStore.DocumentContextKey] = new TemplateBox().Document;
+	       // workingDoc?.SetField(KeyStore.TemplateKey, template, true);
 
             SetupDocument(DocumentType, PrototypeId, "TemplateEditorBox Prototype Layout", fields);
         }
