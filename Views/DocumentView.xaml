@@ -85,9 +85,9 @@
 
                             <Border x:Name="xIconBorder" BorderBrush="DarkGray" Grid.Row="0" Grid.Column="0">
                                 <Grid>
-                                    <Image x:Name="xIconImage" Height="150" HorizontalAlignment="Center" Width="150"  Source="ms-appx:///Assets/Icons/doc-icon.png">
-                                        <ToolTipService.ToolTip ToolTipBackground="{StaticResource AccentGreen}">
-                                            <Image x:Name="xToolTipPreview" Height="300" Width="300" Source="ms-appx:///Assets/Icons/Unavailable.png"></Image>
+                                    <Image x:Name="xIconImage" Height="100" HorizontalAlignment="Center"  Source="ms-appx:///Assets/Icons/doc-icon.png">
+                                        <ToolTipService.ToolTip>
+                                            <Image x:Name="xToolTipPreview" Height="200" Source="ms-appx:///Assets/Icons/Unavailable.png"></Image>
                                         </ToolTipService.ToolTip>
                                     </Image>
                                     <Image x:Name="xSmallIconImage" Height="35" Width="35" HorizontalAlignment="Right" VerticalAlignment="Bottom" Source="ms-appx:///Assets/Icons/doc-icon.png"/>

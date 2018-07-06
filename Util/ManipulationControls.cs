@@ -544,8 +544,9 @@ namespace Dash
 
         void ElementOnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            var viewlevel = ParentDocument.ViewModel.ViewLevel;
             // pointer wheel changed on document when collection is in standardview falls through to the collection and zooms the collection in/out to a different standard zoom level
-            if (!ParentDocument.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None))
+            if (!viewlevel.Equals(CollectionViewModel.StandardViewLevel.None) && !viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
                 return;
             if (e.KeyModifiers.HasFlag(VirtualKeyModifiers.Control))
             {

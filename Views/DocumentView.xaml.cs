@@ -346,7 +346,7 @@ namespace Dash
         {
             RenderTargetBitmap bitmap = new RenderTargetBitmap();
             xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement);
+            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement,1000,1000);
             xContentPresenter.Visibility = Visibility.Collapsed;
             return bitmap;
         }
@@ -932,7 +932,7 @@ namespace Dash
                 MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
             }
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            if (MainPage.Instance.MainDocView == this)
+            if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
             {
                 var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;     
                 if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) || level.Equals(CollectionViewModel.StandardViewLevel.Region))
