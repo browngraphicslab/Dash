@@ -137,15 +137,24 @@
                 <Ellipse x:Name="OperatorEllipseUnhighlight"  Style="{StaticResource xFieldHandle}"/>
                 <Ellipse x:Name="OperatorEllipseHighlight"  Style="{StaticResource xFieldHandleHighlighted}"
                          Visibility="Collapsed"/>
-                <TextBlock Text="i" FontFamily="MingLiU-ExtB" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="18" FontWeight="Bold" Margin="1,-1,0,0" Foreground="Black" />
+
+                <TextBlock Text="i" FontFamily="MingLiU-ExtB" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="18" FontWeight="Bold" Margin="1,-1,0,0" Foreground="Black"/>
             </Grid>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="Document"></ToolTip>
+            </ToolTipService.ToolTip>
         </Border>
         <Border x:Name="xAnnotateEllipseBorder" Grid.Column ="0" CanDrag="True" Background="Transparent" Opacity="{Binding DecorationState, Converter={StaticResource BoolToOpacityConverter}}" HorizontalAlignment="Right" VerticalAlignment="Top" Width="30" Height="30" Margin="0, 30, -33, 0" Tapped="XAnnotateEllipseBorder_OnTapped_">
             <Grid  >
                 <Ellipse x:Name="AnnotateEllipseUnhighlight"  Style="{StaticResource xFieldLinkHandle}"/>
                 <Ellipse x:Name="AnnotateEllipseHighlight"  Style="{StaticResource xFieldLinkHandleHighlighted}"
                          Visibility="Collapsed"/>
-                <SymbolIcon Symbol="Link" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0" />
+
+                <SymbolIcon Symbol="Link" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,6,0,0"/>
+                <ToolTipService.ToolTip>
+                    <ToolTip Content="Annotate"></ToolTip>
+                </ToolTipService.ToolTip>
+
             </Grid>
         </Border>
 

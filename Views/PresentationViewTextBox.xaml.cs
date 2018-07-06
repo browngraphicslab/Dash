@@ -55,16 +55,17 @@ namespace Dash.Views
         // binding to the title of the corresponding document
         private void FrameworkElement_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (args.NewValue is DocumentViewModel dvm)
+            if (args.NewValue is PresentationPinnedNode pinnedNode)
             {
-                SetTitleBinding(dvm);
+                SetTitleBinding(pinnedNode.Data.Key);
             }
         }
 
         public void ResetTitle()
         {
             HasBeenCustomRenamed = false;
-            SetTitleBinding((DocumentViewModel) DataContext);
+            var docScale = (PresentationPinnedNode)DataContext;
+            SetTitleBinding(docScale.Data.Key);
         }
 
         private void SetTitleBinding(DocumentViewModel dvm)

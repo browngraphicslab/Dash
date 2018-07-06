@@ -411,7 +411,7 @@ namespace Dash
                 {
                     var containerViewModel = rootViewModel ?? dm;
                     var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+                    var center = new Point((MainDocView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
                     var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
                         new Point(
                             containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
@@ -430,7 +430,15 @@ namespace Dash
             return false;
         }
 
-        private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
+        public bool ZoomToLevel(CollectionFreeformBase root, DocumentViewModel rootViewModel, double zoomLevel)
+        {
+            if (!root.IsInVisualTree()) return false;
+            var scaleCenter = new Point((MainDocView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+            root.Scale(zoomLevel, zoomLevel, scaleCenter);
+            return true;
+        }
+
+        private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e) 
         {
             Debug.WriteLine(e.KeyStatus.RepeatCount);
             if (e.Handled || xMainSearchBox.GetDescendants().Contains(FocusManager.GetFocusedElement()))
@@ -874,9 +882,9 @@ namespace Dash
             xUtilTabColumn.Width = IsPresentationModeToggled ? new GridLength(330) : new GridLength(0);
         }
 
-        public void PinToPresentation(DocumentViewModel viewModel)
+        public void PinToPresentation(DocumentViewModel viewModel, double scale)
         {
-            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel);
+            xPresentationView.ViewModel.AddToPinnedNodesCollection(viewModel, scale);
             if (!IsPresentationModeToggled)
                 TogglePresentationMode();
         }

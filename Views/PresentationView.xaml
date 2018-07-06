@@ -47,7 +47,7 @@
                         </MenuFlyout>
                     </ListView.Resources>
                     <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="dash:DocumentViewModel">
+                        <DataTemplate x:DataType="dash:PresentationPinnedNode">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>

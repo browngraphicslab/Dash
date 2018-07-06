@@ -170,6 +170,25 @@ namespace Dash
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
 
+        bool _scale = false;
+        public void Scale(double scaleX, double scaleY, Point scaleCenter)
+        {
+            var currentScale = ViewManipulationControls.ElementScale;
+            // if the current scale of the collection view is already at the anticipated scale, return (otherwise tapping on the same item in presentation mode would continue to zoom in/ zoom out by factor of scaleX and scaleY)
+            if ((currentScale == scaleX && currentScale == scaleY)) return;
+            // scale is equal is scaleX and scaleY after transform
+            var scale = new ScaleTransform() { ScaleX = scaleX / ViewManipulationControls.ElementScale, ScaleY = scaleY / ViewManipulationControls.ElementScale, CenterX = scaleCenter.X, CenterY = scaleCenter.Y};
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add((GetItemsControl()?.ItemsPanelRoot as Canvas).RenderTransform); // get the current transform
+            composite.Children.Add(scale); // add the new scaling
+
+            var matrix = composite.Value;
+            ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
+            ViewManipulationControls.ElementScale = scaleX = scaleY;
+            _scale = true;
+        }
+
         public void MoveAnimated(TranslateTransform translate)
         {
             var old = (_itemsPanelCanvas?.RenderTransform as MatrixTransform)?.Matrix;
@@ -218,10 +237,10 @@ namespace Dash
 
             _storyboard1.Children.Add(translateAnimationX);
             _storyboard1.Children.Add(translateAnimationY);
-            if (scaleFactor < 0.8)
+            if (scaleFactor < 0.8 || _scale)
             {
                 _storyboard1.Children.Add(zoomOutAnimationX);
-                _storyboard1.Children.Add(zoomOutAnimationY);
+            _storyboard1.Children.Add(zoomOutAnimationY);
             }
 
             CompositionTarget.Rendering -= CompositionTargetOnRendering;
@@ -231,6 +250,7 @@ namespace Dash
             _storyboard1.Begin();
             _storyboard1.Completed -= Storyboard1OnCompleted;
             _storyboard1.Completed += Storyboard1OnCompleted;
+            _scale = false;
         }
 
         protected void Storyboard1OnCompleted(object sender, object e)
@@ -244,6 +264,7 @@ namespace Dash
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
+
         DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
         {
 
