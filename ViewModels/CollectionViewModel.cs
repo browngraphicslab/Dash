@@ -115,9 +115,12 @@ namespace Dash
                 PanZoomFieldChanged(null, null, null); // bcz: setting the TransformGroup scale before this view is loaded causes a hard crash at times.
                 ActualSizeFieldChanged(null, null, null);
                 //Stuff may have changed in the collection while we weren't listening, so remake the list
-                //TODO Not sure if this should happen - tfs
-                DocumentViewModels.Clear();
-                addViewModels(CollectionController.TypedData);
+                if (CollectionController != null)
+                {
+                    DocumentViewModels.Clear();
+                    addViewModels(CollectionController.TypedData);
+                }
+
                 _lastDoc = ContainerDocument;
             }
             else
@@ -175,11 +178,9 @@ namespace Dash
         {
             var wasLoaded = _isLoaded;
             Loaded(false);
-            DocumentViewModels.Clear();
 
             ContainerDocument = containerDocument;
             CollectionKey = fieldKey;
-            addViewModels(CollectionController?.TypedData);
             if (_isLoaded && wasLoaded)
             {
                 Loaded(true);
@@ -276,7 +277,6 @@ namespace Dash
 
         void addViewModels(List<DocumentController> documents)
         {
-            if (documents != null)
                 using (BindableDocumentViewModels.DeferRefresh())
                 {
                     foreach (var documentController in documents)

@@ -40,8 +40,8 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             if (data != null)
             {
-                var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
-                Debug.Assert(collectionController != null);
+                //var collectionController = data.DereferenceToRoot<ListController<DocumentController>>(context);
+                //Debug.Assert(collectionController != null);
                 var collectionViewModel = new CollectionViewModel(docController, KeyStore.DataKey)
                 {
                     InkController = docController.GetField(KeyStore.InkDataKey) as InkController

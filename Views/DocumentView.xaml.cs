@@ -785,93 +785,104 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        /// <param name="shiftTop"></param>
+        /// <param name="shiftLeft"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
             if (this.IsRightBtnPressed())
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
-            var p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-
-            // set old and new sizes for change in height/width comparisons
-            Size oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
-            oldSize.Height = double.IsNaN(oldSize.Height) ? ViewModel.ActualSize.Y : oldSize.Height;
-            Size newSize = new Size();
-
-            // sets directions/weights depending on which handle was dragged as mathematical manipulations
-            int cursorXDirection = shiftLeft ? -1 : 1;
-            int cursorYDirection = shiftTop ? -1 : 1;
-            int moveXScale = shiftLeft ? 1 : 0;
-            int moveYScale = shiftTop ? 1 : 0;
-
-            if (this.IsCtrlPressed() || this.IsShiftPressed())
-            {
-                // proportional resizing
-                var diffX = cursorXDirection * p.X;
-                newSize = Resize(diffX, ViewModel.ActualSize.Y / ViewModel.ActualSize.X * diffX);
-            }
-            else
-            {
-                // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
-                // So flip the negative sign by multiplying by -1.
-                newSize = Resize(cursorXDirection * p.X, cursorYDirection * p.Y);
-
-            }
-
-            var testSize = newSize;
-            // can't have undefined heights for calculating delta-h for adjusting XPos and YPos
-            testSize.Height = double.IsNaN(testSize.Height)
-               ? ViewModel.ActualSize.Y / ViewModel.ActualSize.X * testSize.Width
-               : testSize.Height;
-
-            Size Resize(double dx = 0, double dy = 0)
-            {
-                if (ViewModel != null && !(MainPage.Instance.Content as Grid).Children.Contains(this))
-                {
-                    // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
-                    var w = !double.IsNaN(ViewModel.Height) ? (double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width) : ViewModel.ActualSize.X;
-                    var h = double.IsNaN(ViewModel.Height) && !(ViewModel.Content is EditableImage) ? ViewModel.ActualSize.Y : ViewModel.Height;
-
-                    return new Size(Math.Max(w + dx, MinWidth), Math.Max(h + dy, MinHeight));
-                }
-                return new Size();
-            }
-
-            this.Measure(new Size(testSize.Width, 5000));
-            //testSize.Height = Math.Max(testSize.Height, this.DesiredSize.Height);
-            var newPos = new Point(
-                ViewModel.XPos - moveXScale * (testSize.Width - oldSize.Width) * ViewModel.Scale.X,
-                ViewModel.YPos - moveYScale * (testSize.Height - oldSize.Height) * ViewModel.Scale.Y);
-
-            //BoundsCheck
-            if (Bounds != null)
-            {
-                var rect = Bounds.Rect;
-                if (newPos.X < rect.Left)
-                {
-                    newSize.Width -= rect.Left - newPos.X;
-                    newPos.X = rect.Left;
-                }
-                if (newPos.Y < rect.Top)
-                {
-                    newSize.Height -= rect.Top - newPos.Y;
-                    newPos.Y = rect.Top;
-                }
-
-                if (newPos.X + newSize.Width > rect.Right)
-                {
-                    newSize.Width = rect.Right - newPos.X;
-                }
-                if (newPos.Y + newSize.Height > rect.Bottom)
-                {
-                    newSize.Height = rect.Bottom - newPos.Y;
-                }
-            }
-
-            ViewModel.Width = newSize.Width;
-            ViewModel.Height = newSize.Height;
-            ViewModel.Position = newPos;
 
             e.Handled = true;
+            var delta = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            var oldSize = new Size(ViewModel.ActualSize.X, ViewModel.ActualSize.Y);
+            var origSize = new Size(ViewModel.Width, ViewModel.Height);
+            var origPos  = ViewModel.Position;
+
+            // sets directions/weights depending on which handle was dragged as mathematical manipulations
+            var cursorXDirection = shiftLeft ? -1 : 1;
+            var cursorYDirection = shiftTop ? -1 : 1;
+            var moveXScale = shiftLeft ? 1 : 0;
+            var moveYScale = shiftTop ? 1 : 0;
+
+            // clamp the drag position to the available Bounds
+            if (Bounds != null)
+            {
+                var width   = double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width;
+                var height  = double.IsNaN(ViewModel.Height) ? ViewModel.ActualSize.Y : ViewModel.Height;
+                var pos     = new Point(ViewModel.XPos + width * (1 - moveXScale), ViewModel.YPos + height * (1 - moveYScale));
+                if (!Bounds.Rect.Contains((new Point(pos.X + delta.X, pos.Y + delta.Y))))
+                    return;
+                var clamped = Clamp(new Point(pos.X + delta.X, pos.Y + delta.Y), Bounds.Rect);
+                delta = new Point(clamped.X - pos.X, clamped.Y - pos.Y);
+            }
+
+            // if Height is NaN but width isn't, then we want to keep Height as NaN and just change width.  This happens for some images to coerce proportional scaling.
+            var w = double.IsNaN(ViewModel.Width) ? ViewModel.ActualSize.X : ViewModel.Width;
+            var h = ViewModel.Height;
+
+            // significance of the direction weightings: if the left handles are dragged to the left, should resize larger instead of smaller as p.X would say. 
+            // So flip the negative sign by multiplying by -1.
+            var aspect = ViewModel.ActualSize.Y / ViewModel.ActualSize.X;
+            var diffX = cursorXDirection * delta.X;
+            var diffY = (this.IsCtrlPressed() || this.IsShiftPressed()) ? diffX : cursorYDirection * delta.Y; // proportional resizing if Shift or Ctrl is presssed
+            var newSize = new Size(Math.Max(w + diffX, MinWidth), Math.Max(h + aspect * diffY, MinHeight));
+
+            // test for changes to height based on changes to width (eg. images to maintain aspect, text boxes that wrap
+            ViewModel.Width = newSize.Width;
+            ViewModel.Height = newSize.Height;
+            this.UpdateLayout(); // bcz: text boxes seem to need the ActualWidth/Height set to measure properly
+            this.Measure(new Size(newSize.Width, 5000));
+
+            // set the position of the doc based on how much it resized (if Top and/or Left is being dragged)
+            var newPos = new Point(
+                ViewModel.XPos - moveXScale * (newSize.Width      - oldSize.Width)  * ViewModel.Scale.X,
+                ViewModel.YPos - moveYScale * (DesiredSize.Height - oldSize.Height) * ViewModel.Scale.Y);
+            // re-clamp the position to keep it in bounds
+            if (Bounds != null)
+            {
+                if (!Bounds.Rect.Contains(newPos) ||
+                    !Bounds.Rect.Contains(new Point(newPos.X + newSize.Width, newPos.Y + DesiredSize.Height)))
+                {
+                    ViewModel.Position = origPos;
+                    ViewModel.Width = origSize.Width;
+                    ViewModel.Height = origSize.Height;
+                    return;
+                }
+                var clamp = Clamp(newPos, Bounds.Rect);
+                newSize.Width += newPos.X - clamp.X;
+                newSize.Height += newPos.Y - clamp.Y;
+                newPos = clamp;
+                var br = Clamp(new Point(newPos.X + newSize.Width, newPos.Y + newSize.Height), Bounds.Rect);
+                newSize = new Size(br.X - newPos.X, br.Y - newPos.Y);
+            }
+
+            ViewModel.Position = newPos;
+            ViewModel.Width = newSize.Width;
+            ViewModel.Height = newSize.Height;
+
+            Point Clamp(Point point, Rect rect)
+            {
+                if (point.X < rect.Left)
+                {
+                    point.X = rect.Left;
+                }
+                else if (point.X > rect.Right)
+                {
+                    point.X = rect.Right;
+                }
+
+                if (point.Y < rect.Top)
+                {
+                    point.Y = rect.Top;
+                }
+                else if (point.Y > rect.Bottom)
+                {
+                    point.Y = rect.Bottom;
+                }
+
+                return point;
+            }
         }
 
         // Controls functionality for the Right-click context menu
