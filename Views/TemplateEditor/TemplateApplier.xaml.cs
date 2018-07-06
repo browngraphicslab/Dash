@@ -58,9 +58,12 @@ namespace Dash
 
         public void Apply_Template(TemplateRecord tr)
         {
+            // retrieve the layout document of the template box from the template record
             var template = tr.TemplateViewModel;
             if (template == null) return;
             var newLayoutDoc = template.LayoutDocument.GetDataInstance();
+
+            // TODO: can we delete this code or should we leave it here just in case? -sy
             //newDataDoc.SetField(KeyStore.DocumentContextKey, Document.GetDataDocument(), true);
 
             //foreach (var doc in newLayoutDoc.GetField<ListController<DocumentController>>(KeyStore.DataKey)
@@ -108,16 +111,22 @@ namespace Dash
                 //    .SetField(KeyStore.DataKey, datakey, true);
             //}
 
+            // set the new layout document's context to the selected document's data doc
             newLayoutDoc.SetField(KeyStore.DocumentContextKey, _document.GetDataDocument(), true);
+            // set the position to match the old position
             newLayoutDoc.SetField(KeyStore.PositionFieldKey,
                 _document.GetField<PointController>(KeyStore.PositionFieldKey), true);
+            // set the selected document's active layout to the new layout document
             _document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
         }
 
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)
         {
+            // when the text box text is changed, find all the matching template records
             var matchingItems = TemplateRecords.Where(tr =>
                 tr.Title.Contains((sender as TextBox).Text, StringComparison.OrdinalIgnoreCase)).ToArray();
+            // update the items source to matching items if there is anything in it
+            // otherwise, use a new collection with one null template record
             xListView.ItemsSource = matchingItems.Any()
                 ? matchingItems
                 : new Collection<TemplateRecord>() {new TemplateRecord(null, this)}.ToArray();

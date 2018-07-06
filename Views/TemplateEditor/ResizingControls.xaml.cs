@@ -29,7 +29,6 @@ namespace Dash
         // initializes the cropping guides and cropping box
         private void ResizingControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // TODO: stop using canvas as method for x and y positions
             Canvas.SetLeft(xRight, 290);
             Canvas.SetTop(xRight, 180);
             Canvas.SetLeft(xLeft, 0);

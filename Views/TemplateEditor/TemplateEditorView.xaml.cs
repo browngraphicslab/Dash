@@ -25,13 +25,11 @@ using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-using Microsoft.Office.Interop.Word;
-using Application = Microsoft.Office.Interop.Word.Application;
-using Border = Microsoft.Office.Interop.Word.Border;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -54,18 +52,8 @@ namespace Dash
         private KeyValueTemplatePane _keyValuePane;
 		private DocumentView _selectedDocument;
 		private Point _pasteWhereHack;
-		private double _thickness;
-		private bool _isDataDocKVP = true;
-		private Windows.UI.Color _color;
+		private bool _isDataDocKvp = true;
 		DataPackage dataPackage = new DataPackage();
-
-		private enum Alignment
-		{
-			Left, Right, Center, None
-		}
-
-
-		public SolidColorBrush _backgroundColor = new SolidColorBrush(Colors.White);
 
 		public TemplateEditorView()
 		{
@@ -108,11 +96,13 @@ namespace Dash
 
 		private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
 		{
+            // find a matching docment view model and remove it
 			foreach (var doc in oldDocs)
 			{
 				DocumentViewModels.Remove(DocumentViewModels.First(i => i.DocumentController.Equals(doc)));
 			}
-
+            
+            // reset the data document's data key to the modified list
 			DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(DocumentControllers),
 				true);
 			xItemsControl.ItemsSource = DocumentViewModels;
@@ -131,38 +121,26 @@ namespace Dash
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             // if either is true, then the layout doc needs to be abstracted
 		    var doc = addedDoc;
-            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-            {
-                if (false && _isDataDocKVP)
-                {
-                    // set the layout doc's context to a reference of the data doc's context
-                    doc.SetField(KeyStore.DocumentContextKey,
-                        new DocumentReferenceController(
-                            DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey),
-                            KeyStore.DocumentContextKey),
-                        true);
-                }
-                else
-                {
-                    // set the layout doc's context to a reference of the data doc's context
-                    doc.SetField(KeyStore.DocumentContextKey,
-                        new DocumentReferenceController(DataDocument,
-                            KeyStore.DocumentContextKey),
-                        true);
-                }
+            // if the document is related to the working document
+		    if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+		    {
+		        // set the layout document's context to a reference of the data document's context
+		        doc.SetField(KeyStore.DocumentContextKey,
+		            new DocumentReferenceController(DataDocument,
+		                KeyStore.DocumentContextKey),
+		            true);
+                
+		        var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+		        if (specificKey != null)
+		        {
+		            // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
+		            doc.SetField(KeyStore.DataKey,
+		                new PointerReferenceController(
+		                    doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
+		        }
+		    }
 
-                var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
-
-                if (specificKey != null)
-                {
-                    // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
-                    doc.SetField(KeyStore.DataKey,
-                        new PointerReferenceController(
-                            doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
-                }
-            }
-
-            // create new viewmodel with a copy of document, set editor to this
+		    // create new viewmodel with a copy of document, set editor to this
             var dvm =
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
@@ -174,7 +152,7 @@ namespace Dash
 
 		private void XSwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
 		{
-			_isDataDocKVP = !_isDataDocKVP;
+			_isDataDocKvp = !_isDataDocKvp;
 		}
 
 		public void FormatPanes()
@@ -194,103 +172,127 @@ namespace Dash
 
 		}
 
-		private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
-		{
-		    var docView = this.GetFirstAncestorOfType<DocumentView>();
+	    private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
+	    {
+	        // if the working document is already a template box, initialize with that template
+	        if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).DocumentType
+	            .Equals(TemplateBox.DocumentType))
+	        {
+	            DataDocument.SetField(KeyStore.DataKey,
+	                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+	                    .GetField<ListController<DocumentController>>(KeyStore.DataKey),
+	                true);
+	        }
 
-            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).DocumentType.Equals(TemplateBox.DocumentType))
-            {
-                DataDocument.SetField(KeyStore.DataKey,
-                    LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-                        .GetField<ListController<DocumentController>>(KeyStore.DataKey),
-                    true);
-            }
-			//initialize UI of workspace
-			this.FormatPanes();
-			var rect = new Rect(0, 0, 300, 400);
-			var rectGeo = new RectangleGeometry { Rect = rect };
-			xWorkspace.Clip = rectGeo;
+	        //initialize UI of workspace
+	        this.FormatPanes();
+	        this.FormatUploadTemplateFlyout();
+	        var rect = new Rect(0, 0, 300, 400);
+	        var rectGeo = new RectangleGeometry {Rect = rect};
+	        xWorkspace.Clip = rectGeo;
 
-			//hide resize and ellipse controls for template editor
-			docView.ViewModel.DisableDecorations = true;
-			docView.hideControls();
-			DocumentViewModels.Clear();
-			//initialize layout documents on workspace
-			foreach (var layoutDoc in DataDocument
-				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
-			{
-				DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
-			}
+	        // sets the minimum bounds and adds the resizing tool
+	        Bounds = new Rect(0, 0, 70, 70);
+	        var resizer = new ResizingControls(this);
+	        xOuterWorkspace.Children.Add(resizer);
+	        RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
+	        RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
 
-			//update item source
-			xItemsControl.ItemsSource = DocumentViewModels;
+	        //hide resize and ellipse controls for template editor
+	        var docView = this.GetFirstAncestorOfType<DocumentView>();
+	        docView.ViewModel.DisableDecorations = true;
+	        docView.hideControls();
 
-			xOuterPanel.BorderThickness = new Thickness(0, 2, 0, 0);
-		    Bounds = new Rect(0, 0, 70, 70);
-		    var resizer = new ResizingControls(this);
+	        //initialize layout documents on workspace
+	        DocumentViewModels.Clear();
+	        foreach (var layoutDoc in DataDocument
+	            .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData)
+	        {
+	            DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
+	        }
 
-            xOuterWorkspace.Children.Add(resizer);
-		    RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
-		    RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
-            DataDocument.SetField(KeyStore.DocumentContextKey,
-				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
-			//listen for any changes to the collection
-			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
-			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
-			this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted += TemplateEditorView_DocumentDeleted;
+	        // update item source
+	        xItemsControl.ItemsSource = DocumentViewModels;
 
-            //set background color
-            var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
-			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
-			xWorkspace.Background = backgroundColor;
-			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
-		    this.FormatUploadTemplateFlyout();
-			xDesignGridSizeComboBox.SelectedIndex = 0;
-			xDesignGridVisibilityButton.IsChecked = false;
-			xFreeFormButton.IsChecked = true;
+	        // set the document context of the data doc to the working document's data doc
+	        DataDocument.SetField(KeyStore.DocumentContextKey,
+	            LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
 
-            // TODO: Add number indicating which template perhoops -sy
-		    if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
-		        !DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
-		    {
-		        var title = "MyTemplate";
-		        xTitleBlock.Text = title;
-		        DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-		    }
-		    else
-		    {
-		        xTitleBlock.Text = DataDocument.GetField<TextController>(KeyStore.TitleKey).Data;
-		    }
-		    xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
-        }
+	        //set background color
+	        var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
+	        var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
+	        xWorkspace.Background = backgroundColor;
+	        xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
+	        xDesignGridSizeComboBox.SelectedIndex = 0;
+	        xDesignGridVisibilityButton.IsChecked = false;
+	        xFreeFormButton.IsChecked = true;
 
-		private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+	        // TODO: Add number indicating which template perhoops -sy
+
+	        // if the title key doesn't exist or is empty
+	        if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
+	            !DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
+	        {
+	            // use a default title
+	            var title = "MyTemplate";
+	            xTitleBlock.Text = title;
+	            DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+	        }
+
+            // create a new field binding to link the title with the editable text block
+	        var templateEditorBinding = new FieldBinding<TextController>
+	        {
+	            Document = DataDocument,
+	            Key = KeyStore.TitleKey,
+	            Mode = BindingMode.TwoWay
+	        };
+	        xTitleBlock.AddFieldBinding(EditableTextBlock.TextProperty, templateEditorBinding);
+
+	        // add event handlers
+	        DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
+	        xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+	        docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
+	        xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
+	    }
+
+	    private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			var etb = sender as EditableTextBlock;
 			if (!etb.TextBoxLoaded && etb.Text.Any())
 			{
-				xTitleBlock.Text = etb.Text;
-				DataDocument.SetField(KeyStore.TitleKey, new TextController(etb.Text), true);
 			}
 		}
 
 		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
+            // unload all event handlers
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
-		}
+		    xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
+		    this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
+		    xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
+        }
 
 		private void FormatUploadTemplateFlyout()
 		{
-			xUploadTemplateFlyout.Content = new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
-				this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
+		    xUploadTemplateFlyout.Content = new TemplateApplier(LayoutDocument.GetField<DocumentController>(KeyStore.DataKey),
+		        this.GetFirstAncestorOfType<DocumentView>().ParentCollection.ViewModel.DocumentViewModels);
 		}
-
-		// when the "Add Text" button is clicked, this adds a text box to the template preview
+        
+        /// <summary>
+        ///     adds a rich text note to the template preview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
 		private void TextButton_OnClick(object sender, RoutedEventArgs e)
 		{
             DocumentControllers.Add(new RichTextNote("New text box").Document);
 		}
 
+        /// <summary>
+        ///     opens a file picker for images and adds an image to the template preview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
 		private async void ImageButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//opens file picker and limits search by listed image extensions
@@ -325,6 +327,11 @@ namespace Dash
 			}
 		}
 
+        /// <summary>
+        ///     opens a file picker for videos and adds a new video to the template preview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
 		private async void VideoButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//instantiates a file picker, set to open in user's video library
@@ -362,6 +369,11 @@ namespace Dash
 			}
 		}
 
+        /// <summary>
+        ///     opens a file picker for audio and adds the audio to the template preview
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
 		private async void AudioButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//instantiates a file picker, set to open in user's audio library
@@ -400,7 +412,7 @@ namespace Dash
 		private void TemplateAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
 			var button = sender as AppBarButton;
-			Alignment alignment = this.ButtonNameToAlignment(button?.Name); 
+			var alignment = this.ButtonNameToAlignment(button?.Name); 
 
 			//for each document, align according to what button was pressed
 			foreach (var dvm in DocumentViewModels)
@@ -408,61 +420,66 @@ namespace Dash
 				AlignItem(alignment, dvm);
 			}
 		}
-
-		
+        
 		private void ItemAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
 		{
 			var button = sender as AppBarButton;
-			Alignment alignment = this.ButtonNameToAlignment(button?.Name);
+			HorizontalAlignment alignment = this.ButtonNameToAlignment(button?.Name);
 
 			if (_selectedDocument != null) AlignItem(alignment, _selectedDocument?.ViewModel);
 		}
 
-		private Alignment ButtonNameToAlignment(string name)
+        /// <summary>
+        ///     determines which horizontal alignment enum to return
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+		private HorizontalAlignment ButtonNameToAlignment(string name)
 		{
 			if (name == "xAlignLeft" || name == "xAlignItemLeft")
 			{
-				return Alignment.Left;
+				return HorizontalAlignment.Left;
 			}
 			else if (name == "xAlignCenter" || name == "xAlignItemCenter")
 			{
-				return Alignment.Center;
+				return HorizontalAlignment.Center;
 			}
 			else if (name == "xAlignRight" || name == "xAlignItemRight")
 			{
-				return Alignment.Right;
+				return HorizontalAlignment.Right;
 			}
 			else
 			{
-				return Alignment.None;
+				return HorizontalAlignment.Stretch;
 			}
 		}
 
-		private void AlignItem(Alignment alignment, DocumentViewModel dvm)
+		private void AlignItem(HorizontalAlignment alignment, DocumentViewModel dvm)
 		{
+            // aligns the item to the appropriate side and sets the position value of that item appropriately
 			var point = dvm.LayoutDocument.GetField<PointController>(KeyStore.PositionFieldKey);
 			switch (alignment)
 			{
-				case Alignment.Left:
+				case HorizontalAlignment.Left:
 					point = new PointController(0, point.Data.Y);
 					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-						new TextController(HorizontalAlignment.Left.ToString()), true);
+						new TextController(alignment.ToString()), true);
 					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
 					break;
 
-				case Alignment.Center:
+				case HorizontalAlignment.Center:
 					var centerX = (xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X) / 2;
 					point = new PointController(centerX, point.Data.Y);
 					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-						new TextController(HorizontalAlignment.Center.ToString()), true);
+						new TextController(alignment.ToString()), true);
 					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
 					break;
 
-				case Alignment.Right:
+				case HorizontalAlignment.Right:
 					var rightX = xWorkspace.Width - dvm.LayoutDocument.GetActualSize().Value.X;
 					point = new PointController(rightX, point.Data.Y);
 					dvm.LayoutDocument.SetField(KeyStore.HorizontalAlignmentKey,
-						new TextController(HorizontalAlignment.Right.ToString()), true);
+						new TextController(alignment.ToString()), true);
 					dvm.LayoutDocument.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true), true);
 					break;
 			}
@@ -472,7 +489,7 @@ namespace Dash
 
 
 
-#region Borders
+        #region Borders
 
 		private void BorderOption_OnChanged(object sender, RoutedEventArgs e)
 		{
@@ -509,6 +526,8 @@ namespace Dash
 		}
 
 #endregion
+
+
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
@@ -519,7 +538,6 @@ namespace Dash
 		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
 		        // layout document's data key holds the document that we are currently working on
 		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-		        // TODO: working doc should be able to be null
 		        // make a copy of the data document
 		        var dataDocCopy = DataDocument.GetDataInstance();
 		        // loop through each layout document and try to abstract it out when necessary
@@ -537,11 +555,14 @@ namespace Dash
 		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
 		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateDocumentKey,
 		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-            }
+		        // let the working doc's title be the template's title
+		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+		            true);
+		    }
 		    else
 		    {
 		        xTitle.Text = "Activate";
-		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["ActivateIcon"] as string);
+		        xIcon.Text = (Application.Current.Resources["ActivateIcon"] as string);
 		    }
             
 		}
@@ -556,6 +577,7 @@ namespace Dash
 				docView.hideEllipses();
 		    }
 
+            // hacky way of resizing bounds, bob and tyler are working on improving resizing in general
 		    var currPos = docView.ViewModel.DocumentController
 		        .GetField<PointController>(KeyStore.PositionFieldKey).Data;
 		    if (docView.ActualWidth > xWorkspace.Width)
@@ -598,13 +620,16 @@ namespace Dash
 	    private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
 	        Context context)
 	    {
+            // determine if a horizontal alignment key exists
 	        if (sender.GetField<BoolController>(KeyStore.UseHorizontalAlignmentKey)?.Data ?? false)
 	        {
 	            switch (sender.GetField<TextController>(KeyStore.HorizontalAlignmentKey)?.Data)
 	            {
 	                case nameof(HorizontalAlignment.Left):
+                        // determine if the position field is appropriate for the alignment it uses
 	                    if (sender.GetField<PointController>(KeyStore.PositionFieldKey).Data.X != 0)
 	                    {
+                            // if the position is invalid, then remove the alignment
 	                        sender.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(false), true);
 	                    }
 	                    break;
@@ -636,18 +661,23 @@ namespace Dash
 		{
 			xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 			_selectedDocument = sender;
+            // get the pointer reference of the selected document
 			var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
+            // use the pointer reference to determine what key it is pointed to
 			var specificKey = pRef.FieldKey;
-			string text = "";
+			var text = "";
 			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			var doc = _selectedDocument.ViewModel.DocumentController;
+            // if the document is related to the working document
 			if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
 			{
+                // display a # before displaying what key it is
 				text = "#";
 				text += specificKey;
 			}
 			else
 			{
+                // otherwise, just display the title of the document
 				text = _selectedDocument.ViewModel.DocumentController.Title;
 			}
 
@@ -657,19 +687,24 @@ namespace Dash
 
 		private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
+            // determines if the keybox is in a state where the user has submitted the inputted text
 			if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
 			{
 				var text = xKeyBox.Text;
+                // determine if the text says that it references some key
 				if (text.StartsWith("#"))
 				{
 					var possibleKeyString = text.Substring(1);
+                    // loop through each key value pair and find a matching key
 					var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
 						.EnumFields();
 					var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString))
 						.Key;
 					var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+                    // determine if there is a matching key
 					if (specificKey != null)
 					{
+                        // if so, create a new reference to that matching key and re-apply it to the doc
 						var newRef =
 							_selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
 								KeyStore.DataKey);
@@ -1067,10 +1102,6 @@ namespace Dash
 					    }
 
 					    DocumentControllers.Add(dropDoc);
-
-						//// kinda hacky lol -sy
-						//DocumentViewModels.Last().DocumentController
-						//	.SetField(KeyStore.PositionFieldKey, new PointController(where), true);
 					}
 				}
 			}
@@ -1304,27 +1335,10 @@ namespace Dash
 			}
 		}
 
-		//sets the thickness for the borders
-		private void XThicknessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-		{
-			if (sender is Slider slider)
-			{
-				_thickness = slider.Value;
-			}
-		}
-
-		//sets the colors for the borders
-		private void XColorPicker_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-		{
-			//_color = xColorPicker.SelectedColor;    
-		}
-
 		private void XResetButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
 		}
-
-		
 
 		private void XClearButton_OnClick(object sender, RoutedEventArgs e)
 		{
