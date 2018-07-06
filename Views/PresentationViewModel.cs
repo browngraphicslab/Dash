@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash.Views
+namespace Dash
 {
     public class PresentationViewModel
     {

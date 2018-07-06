@@ -16,7 +16,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public enum DockDirection
     {
@@ -32,16 +32,18 @@ namespace Dash.Views
         public DockedView NestedView { get; set; }
         public DockedView PreviousView { get; set; }
         public DockDirection Direction { get; set; }
+        public DocumentController ContainedDocumentController { get; set; }
 
-        public DockedView(DockDirection direction)
+        public DockedView(DockDirection direction, DocumentController dc)
         {
             this.InitializeComponent();
             Direction = direction;
+            ContainedDocumentController = dc;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.Undock(this);
+            MainPage.Instance.DockManager.Undock(this);
         }
 
         public void ChangeView(FrameworkElement view)
