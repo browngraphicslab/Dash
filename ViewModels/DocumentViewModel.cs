@@ -16,6 +16,7 @@ namespace Dash
         TransformGroupData _normalGroupTransform = new TransformGroupData(new Point(), new Point(1, 1));
         bool _showLocalContext;
         bool _decorationState = false;
+        public bool _isDeletedTemplate;
         private CollectionViewModel.StandardViewLevel _standardViewLevel = CollectionViewModel.StandardViewLevel.None;
         Thickness _searchHighlightState = new Thickness(0);
         FrameworkElement _content = null;
@@ -27,7 +28,7 @@ namespace Dash
             DocumentController.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_ActiveLayoutChanged);
             LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
             _lastLayout = LayoutDocument;
-
+            _isDeletedTemplate = false;
             InteractiveManipulationPosition = Position; // update the interaction caches in case they are accessed outside of a Manipulation
             InteractiveManipulationScale = Scale;
             

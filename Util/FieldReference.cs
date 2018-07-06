@@ -51,7 +51,6 @@ namespace Dash
 
         public FieldControllerBase Dereference(Context context)
         {
-            context = null;
             FieldControllerBase controller;
             if (context != null)
             {
@@ -81,7 +80,6 @@ namespace Dash
         {
             context = new Context(context);
             context.AddDocumentContext(GetDocumentController(context));
-            context = null;
             FieldControllerBase reference = Dereference(context);
             while (reference is ReferenceController)
             {

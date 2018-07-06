@@ -126,51 +126,50 @@ namespace Dash
 			}
 		}
 
-		private void AddDoc(DocumentController doc)
+		private void AddDoc(DocumentController addedDoc)
 		{
-			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-			// if either is true, then the layout doc needs to be abstracted
-			if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
-			{
-				if (_isDataDocKVP)
-				{
-					// set the layout doc's context to a reference of the data doc's context
-					doc.SetField(KeyStore.DocumentContextKey,
-						new DocumentReferenceController(
-							DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey),
-							KeyStore.DocumentContextKey),
-						true);
-				}
-				else
-				{
-					// set the layout doc's context to a reference of the data doc's context
-					doc.SetField(KeyStore.DocumentContextKey,
-						new DocumentReferenceController(DataDocument,
-							KeyStore.DocumentContextKey),
-						true);
-				}
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            // if either is true, then the layout doc needs to be abstracted
+		    var doc = addedDoc;
+            if (doc.GetDataDocument().Equals(workingDoc.GetDataDocument()) || doc.GetDataDocument().Equals(workingDoc))
+            {
+                if (false && _isDataDocKVP)
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(
+                            DataDocument.GetField<DocumentController>(KeyStore.DocumentContextKey),
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
+                else
+                {
+                    // set the layout doc's context to a reference of the data doc's context
+                    doc.SetField(KeyStore.DocumentContextKey,
+                        new DocumentReferenceController(DataDocument,
+                            KeyStore.DocumentContextKey),
+                        true);
+                }
 
-				var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
+                var specificKey = doc.GetField<ReferenceController>(KeyStore.DataKey).FieldKey;
 
-				if (specificKey != null)
-				{
-					// set the field of the document's data key to a pointer reference to this documents' docContext's specific key
-					doc.SetField(KeyStore.DataKey,
-						new PointerReferenceController(
-							doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
-				}
-		    }
+                if (specificKey != null)
+                {
+                    // set the field of the document's data key to a pointer reference to this documents' docContext's specific key
+                    doc.SetField(KeyStore.DataKey,
+                        new PointerReferenceController(
+                            doc.GetField<DocumentReferenceController>(KeyStore.DocumentContextKey), specificKey), true);
+                }
+            }
 
-		    // create new viewmodel with a copy of document, set editor to this
-		    var dvm =
+            // create new viewmodel with a copy of document, set editor to this
+            var dvm =
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
             // adds layout doc to list of layout docs
 		    var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-		    datakey.Add(dvm.LayoutDocument);
-		    DataDocument.SetField(KeyStore.DataKey, datakey, true);
+		    datakey.Add(doc);
 
-            xItemsControl.ItemsSource = DocumentViewModels;
 		}
 
 		private void XSwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -225,7 +224,7 @@ namespace Dash
 		    RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
 		    RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
             DataDocument.SetField(KeyStore.DocumentContextKey,
-				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), true);
+				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
 			//listen for any changes to the collection
 			DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
@@ -517,7 +516,7 @@ namespace Dash
 		        // loop through each layout document and try to abstract it out when necessary
 
 		        // set the dataDocCopy's document context key to the working document's data document
-		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc, true);
+		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
 		        // set the position of the data copy to the working document's position
 		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
 		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
@@ -1038,8 +1037,28 @@ namespace Dash
 					}
 					else if (dragModel.CanDrop(sender as FrameworkElement))
 					{
-						var dropDoc = dragModel.GetDropDocument(where);
-						DocumentControllers.Add(dropDoc.GetViewCopy(where));
+					    DocumentController dropDoc;
+                        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+					    var workingDataDoc = workingDoc.GetDataDocument();
+					    if (dragModel.DraggedDocument.Equals(workingDoc) || dragModel.DraggedDocument.Equals(workingDataDoc))
+					    {
+					        
+					        dropDoc = new DataBox(null, where.X, where.Y).Document;
+					        dropDoc.SetField(KeyStore.DataKey, new PointerReferenceController(
+					            new DocumentReferenceController(dropDoc, KeyStore.DocumentContextKey), dragModel.DraggedKey), true);
+                            dropDoc.Tag = "DraggedKey doc";
+					        dropDoc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument, KeyStore.DocumentContextKey), true);
+                            //dbox.SetField(KeyStore.DataKey,
+                            //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
+					        dropDoc.SetTitle(dragModel.DraggedKey.Name);
+                        }
+					    else
+					    {
+					        dropDoc = dragModel.GetDropDocument(where);
+					    }
+
+					    DocumentControllers.Add(dropDoc);
+
 						//// kinda hacky lol -sy
 						//DocumentViewModels.Last().DocumentController
 						//	.SetField(KeyStore.PositionFieldKey, new PointController(where), true);

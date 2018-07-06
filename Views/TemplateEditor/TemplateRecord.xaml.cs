@@ -24,12 +24,14 @@ namespace Dash
 
         public DocumentViewModel TemplateViewModel { get; private set; }
         private TemplateApplier _applier;
+        private DocumentViewModel _dvm;
 
         public TemplateRecord(DocumentViewModel templateViewModel, TemplateApplier applier)
         {
             this.InitializeComponent();
 
             _applier = applier;
+            _dvm = templateViewModel;
 
             if (templateViewModel != null)
             {
@@ -73,6 +75,7 @@ namespace Dash
         private void xDelete_OnClick(object sender, RoutedEventArgs e)
         {
             _applier.TemplateRecords.Remove(this);
+            _applier.Templates.Remove(_dvm);
         }
 
         private void XApply_OnClick(object sender, RoutedEventArgs e)
