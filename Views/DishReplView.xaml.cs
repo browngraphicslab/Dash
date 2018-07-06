@@ -21,6 +21,7 @@ namespace Dash
 {
     public sealed partial class DishReplView : UserControl, INotifyPropertyChanged
     {
+        #region Defintions and Intilization  
         private readonly DocumentController _dataDoc;
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private DSL _dsl;
@@ -84,6 +85,7 @@ namespace Dash
 
             ViewModel.Items = replItems;
             ScrollToBottom();
+
         }
 
         // ReSharper disable once InconsistentNaming
@@ -91,6 +93,27 @@ namespace Dash
         {
             _scope = new OuterReplScope(_dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey));
             _dsl = new DSL(_scope, this);
+        }
+        #endregion
+
+        #region Helper Functions
+        private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
+            var outputData = output.Value;
+            var dataBox = new DataBox(outputData).Document;
+            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
+            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
+            args.Data.RequestedOperation =
+                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void Clear(bool clearData)
@@ -125,6 +148,42 @@ namespace Dash
             xTextBox.SelectionLength = 0;
         }
 
+        public void ScrollToBottom()
+        {
+            xScrollViewer.UpdateLayout();
+            xScrollViewer.ChangeView(0, float.MaxValue, 1);
+        }
+
+        private static string StringDiff(string a, string b, bool remove = false)
+        {
+            //a is the longer string
+            var aL = a.ToCharArray();
+            var bL = b.ToCharArray();
+            for (var i = 0; i < aL.Length; i++)
+            {
+                if (i < bL.Length && aL[i] == bL[i]) continue;
+                //remove last character if it was enter
+                if (remove && aL[i] == '\r')
+                {
+                    //remove new character
+                    var aL2 = aL.ToList();
+                    aL2.RemoveAt(i);
+                    return new string(aL2.ToArray());
+                }
+
+                if (!remove)
+                {
+                    return aL[i].ToString();
+                }
+            }
+
+            return a;
+        }
+
+        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
+        #endregion
+
+        #region On Type Actions
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
         {
             var numItem = ViewModel.Items.Count;
@@ -186,37 +245,6 @@ namespace Dash
             _currentText = xTextBox.Text;
         }
 
-        private static string StringDiff(string a, string b, bool remove = false)
-        {
-            //a is the longer string
-            var aL = a.ToCharArray();
-            var bL = b.ToCharArray();
-            for(var i = 0; i < aL.Length; i++)
-            {
-                if (i < bL.Length && aL[i] == bL[i]) continue;
-                //remove last character if it was enter
-                if (remove && aL[i] == '\r')
-                {
-                    //remove new character
-                    var aL2 = aL.ToList();
-                    aL2.RemoveAt(i);
-                    return new string(aL2.ToArray());
-                }
-
-                if (!remove)
-                {
-                    return aL[i].ToString();
-                }
-            }
-
-            return a;
-        }
-
-        public void ScrollToBottom()
-        {
-            xScrollViewer.UpdateLayout();
-            xScrollViewer.ChangeView(0, float.MaxValue, 1);
-        }
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
@@ -489,9 +517,9 @@ namespace Dash
             _currentText = xTextBox.Text;
             _textModified = false;
         }
+        #endregion
 
-        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
-
+        #region Sugestions 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
             //get selected item
@@ -557,24 +585,7 @@ namespace Dash
             xSuggestionsPopup.IsOpen = false;
             xSuggestionsPopup.Visibility = Visibility.Collapsed;
         }
+        #endregion
 
-        private void UIElement_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            var output = (sender as FrameworkElement).DataContext as ReplLineViewModel;
-            var outputData = output.Value;
-            var dataBox = new DataBox(outputData).Document;
-            args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation =
-                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }

@@ -223,6 +223,8 @@ namespace DashShared
             public static KeyModel ReplOutputsKey = new KeyModel("6FE39D8B-933D-4478-8499-71C8AAE887BA", "Repl Outputs");
             public static KeyModel ReplScopeKey = new   KeyModel("D4390CDC-FD08-4A69-912F-54A6C6FA9304", "Repl Scope");
 
+            public static KeyModel ScriptTextKey = new KeyModel("9F34AB80-5ACA-4981-823A-45FD481507CE", "Script Text");
+
             public static KeyModel DockedDocumentsLeftKey = new KeyModel("0CCFCC20-DAF7-4329-B615-605A54A86014", "Documents docked on the left");
             public static KeyModel DockedDocumentsTopKey = new KeyModel("5A5AC489-8988-44BE-AC06-AE76CF81FB04", "Documents docked on the top");
             public static KeyModel DockedDocumentsRightKey = new KeyModel("F9E7580F-2053-49AA-B829-7B7347C65394", "Documents docked on the right");

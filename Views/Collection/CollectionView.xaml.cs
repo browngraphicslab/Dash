@@ -128,17 +128,6 @@ namespace Dash
                 contextMenu.Items.Add(newCollection);
                 elementsToBeRemoved.Add(newCollection);
 
-                // add the item to create a repl
-                var newRepl = new MenuFlyoutItem() { Text = "Create Scripting REPL"};
-                newRepl.Click += (sender, e) =>
-                {
-                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishReplBox(where.X, where.Y, 300, 200).Document;
-                    Actions.DisplayDocument(ViewModel, note, where);
-                };
-                contextMenu.Items.Add(newRepl);
-                elementsToBeRemoved.Add(newRepl);
-
                 var tagMode = new MenuFlyoutItem() { Text = "Tag Notes" };
 
                 void EnterTagMode(object sender, RoutedEventArgs e)
@@ -173,6 +162,34 @@ namespace Dash
                 var separatorTwo = new MenuFlyoutSeparator();
                 contextMenu.Items.Add(separatorTwo);
                 elementsToBeRemoved.Add(separatorTwo);
+
+                // add the item to create a repl
+                var newRepl = new MenuFlyoutItem() { Text = "Create Scripting REPL" };
+                newRepl.Click += (sender, e) =>
+                {
+                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+                    var note = new DishReplBox(where.X, where.Y, 300, 200).Document;
+                    Actions.DisplayDocument(ViewModel, note, where);
+                };
+                contextMenu.Items.Add(newRepl);
+                elementsToBeRemoved.Add(newRepl);
+
+
+                // add the item to create a scripting view
+                var newScriptEdit = new MenuFlyoutItem() { Text = "Create Script Editor" };
+                newScriptEdit.Click += (sender, e) =>
+                {
+                    var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
+                    var note = new DishScriptBox(where.X, where.Y, 300, 200).Document;
+                    Actions.DisplayDocument(ViewModel, note, where);
+                };
+                contextMenu.Items.Add(newScriptEdit);
+                elementsToBeRemoved.Add(newScriptEdit);
+
+                // add another horizontal separator
+                var separatorThree = new MenuFlyoutSeparator();
+                contextMenu.Items.Add(separatorThree);
+                elementsToBeRemoved.Add(separatorThree);
 
                 // add the outer SubItem to "View collection as" to the context menu, and then add all the different view options to the submenu 
                 var viewCollectionAs = new MenuFlyoutSubItem() { Text = "View Collection As" };

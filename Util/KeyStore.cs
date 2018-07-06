@@ -76,6 +76,8 @@ namespace Dash
         public static KeyController ReplOutputsKey = new KeyController(DashConstants.KeyStore.ReplOutputsKey);
         public static KeyController ReplScopeKey = new KeyController(DashConstants.KeyStore.ReplScopeKey);
 
+        public static KeyController ScriptTextKey = new KeyController(DashConstants.KeyStore.ScriptTextKey);
+
         public static class SearchResultDocumentOutline
         {
             public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));
