@@ -84,8 +84,6 @@ namespace Dash
                 //    }
                 //}
             };
-            
-            
         }
 
         // when the sidebar marker gets pressed
