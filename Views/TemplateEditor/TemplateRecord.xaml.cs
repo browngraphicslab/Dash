@@ -23,10 +23,13 @@ namespace Dash
         public string Title => xTemplateTitle.Text;
 
         public DocumentViewModel TemplateViewModel { get; private set; }
+        private TemplateApplier _applier;
 
-        public TemplateRecord(DocumentViewModel templateViewModel)
+        public TemplateRecord(DocumentViewModel templateViewModel, TemplateApplier applier)
         {
             this.InitializeComponent();
+
+            _applier = applier;
 
             if (templateViewModel != null)
             {
@@ -65,6 +68,29 @@ namespace Dash
                     ScaleY = 0.5
                 };
             }
+        }
+
+        private void xDelete_OnClick(object sender, RoutedEventArgs e)
+        {
+            _applier.TemplateRecords.Remove(this);
+        }
+
+        private void XApply_OnClick(object sender, RoutedEventArgs e)
+        {
+            _applier.Apply_Template(this);
+        }
+
+        public void showButtons()
+        {
+            xApply.Visibility = Visibility.Visible;
+            xDelete.Visibility = Visibility.Visible;
+        }
+
+
+        public void hideButtons()
+        {
+            xApply.Visibility = Visibility.Collapsed;
+            xDelete.Visibility = Visibility.Collapsed;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class TemplateApplier : UserControl
     {
         private ObservableCollection<DocumentViewModel> Templates;
-        private ObservableCollection<TemplateRecord> TemplateRecords;
+        public ObservableCollection<TemplateRecord> TemplateRecords;
         private DocumentController Document;
 
         public TemplateApplier(DocumentController doc,
@@ -38,7 +38,7 @@ namespace Dash
             {
                 if (dvm.LayoutDocument.DocumentType.Equals(TemplateBox.DocumentType) && !Templates.Contains(dvm))
                 {
-                    var tr = new TemplateRecord(dvm);
+                    var tr = new TemplateRecord(dvm, this);
                     TemplateRecords.Add(tr);
                     tr.Tapped += Template_Picked;
                 }
@@ -48,6 +48,12 @@ namespace Dash
         private void Template_Picked(object sender, TappedRoutedEventArgs args)
         {
             var tr = sender as TemplateRecord;
+            tr.showButtons();
+           
+        }
+
+        public void Apply_Template(TemplateRecord tr)
+        {
             var template = tr.TemplateViewModel;
             if (template == null) return;
             var newDataDoc = template.DataDocument.GetDataCopy();
@@ -105,23 +111,13 @@ namespace Dash
             Document.SetField(KeyStore.ActiveLayoutKey, newLayoutDoc, true);
         }
 
-        private void XApply_OnClick(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void XDelete_OnClick(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private void Search_Entered(object sender, TextChangedEventArgs textChangedEventArgs)
         {
             var matchingItems = TemplateRecords.Where(tr =>
                 tr.Title.Contains((sender as TextBox).Text, StringComparison.OrdinalIgnoreCase)).ToArray();
             xListView.ItemsSource = matchingItems.Any()
                 ? matchingItems
-                : new Collection<TemplateRecord>() {new TemplateRecord(null)}.ToArray();
+                : new Collection<TemplateRecord>() {new TemplateRecord(null, this)}.ToArray();
         }
     }
 }

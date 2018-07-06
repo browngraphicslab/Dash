@@ -9,16 +9,17 @@
     d:DesignHeight="300"
     d:DesignWidth="280">
 
-    <Grid Width="250" Height="Auto" Background="White" Margin="0 10 0 0">
+    <Grid Width="250" Height="300" Background="White" Margin="0 10 0 0">
         <StackPanel Width= "250" Height="300" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Center">
             
             <TextBox x:Name="xSearchBox" PlaceholderText="Search"
+                            Margin="0 20 0 0"
                             TextChanged="Search_Entered"
                             Style="{StaticResource AutoFontSize}"
-                            Width="250" Margin="0 50 0 0" RelativePanel.AlignTopWithPanel="True"
+                            Width="230" RelativePanel.AlignTopWithPanel="True"
                             VerticalAlignment="Top"
                             AllowDrop="True" />
-            <ListView x:Name="xListView" Width="170" RelativePanel.Below="xSearchBox" Margin="0 10 0 0"  ItemsSource="{x:Bind TemplateRecords}">
+            <ListView x:Name="xListView" Width="230" RelativePanel.Below="xSearchBox" Margin="0 10 0 0"  ItemsSource="{x:Bind TemplateRecords}">
             </ListView>
 
                 <!--TextChanged="AutoSuggestBox_TextChanged"
