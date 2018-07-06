@@ -47,21 +47,24 @@ namespace Dash
 
 		public static FrameworkElement MakeView(DocumentController docController, Context context)
 		{
+            // retrieve the color and opacity (if existent) from the layout document passed in
 		    var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
 		    color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
+
 			//var templateStyle =
 				//docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ?? TemplateConstants.FreeformView;
 
 			//Debug.WriteLine(templateStyle);
 
-            var grid = new Grid()
+            // create a grid to use for the main panel of the view
+		    var grid = new Grid()
 	        {
-		        // default size of the template editor box's workspace
 				Background = color
 			};
             
             LayoutDocuments(docController, context, grid);
 
+            // add a clip to the grid and add functionality to update the clip
             grid.Clip = new RectangleGeometry();
             grid.SizeChanged += delegate(object sender, SizeChangedEventArgs args)
             {
@@ -123,6 +126,7 @@ namespace Dash
                 // create the view for the document controller
                 var layoutView = layoutDoc.MakeViewUI(context);
 
+                // creates a multibinding to figure out to figure out if we should use vertical alignment
                 var vertBinding = new FieldMultiBinding<VerticalAlignment>(
                     new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
                     new DocumentFieldReference(layoutDoc, KeyStore.VerticalAlignmentKey))
@@ -134,6 +138,7 @@ namespace Dash
                 };
                 layoutView.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, vertBinding);
 
+                // creates a multibinding to figure out to figure out if we should use horizontal alignment
                 var horizBinding =
                     new FieldMultiBinding<HorizontalAlignment>(
                         new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
@@ -146,6 +151,7 @@ namespace Dash
                     };
                 layoutView.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, horizBinding);
 
+                // creates a multibinding to figure out to figure out if we should use both the x or the y positions
                 var renderBinding = new FieldMultiBinding<TranslateTransform>(
                     new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
                     new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
@@ -161,28 +167,7 @@ namespace Dash
                 // set width and render transform appropriately
                 layoutDoc.SetField(KeyStore.WidthFieldKey,
                     new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
-                //var transformations = new TranslateTransform();
-                //if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.HorizontalAlignmentKey) != null)
-                //{
-                //    layoutDoc.SetHorizontalAlignment(layoutDoc.GetDataDocument().GetHorizontalAlignment());
-                //}
-                //else
-                //{
-                //    layoutDoc.SetHorizontalAlignment(HorizontalAlignment.Left);
-                //    transformations.X = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.X;
-                //}
 
-                //if (layoutDoc.GetDataDocument().GetField<TextController>(KeyStore.VerticalAlignmentKey) != null)
-                //{
-                //    layoutDoc.SetVerticalAlignment(layoutDoc.GetDataDocument().GetVerticalAlignment());
-                //}
-                //else
-                //{
-                //    layoutDoc.SetVerticalAlignment(VerticalAlignment.Top);
-                //    transformations.Y = layoutDoc.GetField<PointController>(KeyStore.PositionFieldKey).Data.Y;
-                //}
-
-                //layoutView.RenderTransform = transformations;
                 grid.Children.Add(layoutView);
             }
         }
@@ -191,16 +176,16 @@ namespace Dash
         {
             public override VerticalAlignment ConvertDataToXaml(List<object> data, object parameter = null)
             {
+                // if we are told to use the vertical alignment, return it
                 if (data[0] is bool useVert && useVert)
                 {
                     if (Enum.TryParse<VerticalAlignment>((string) data[1], out var alignment))
                     {
                         return alignment;
                     }
-
-                    return VerticalAlignment.Top;
                 }
 
+                // otherwise, default to top so the render transform applies properly
                 return VerticalAlignment.Top;
             }
 
@@ -214,6 +199,7 @@ namespace Dash
         {
             public override HorizontalAlignment ConvertDataToXaml(List<object> data, object parameter = null)
             {
+                // if we are told to use the horizontal alignment, return it
                 if (data[0] is bool useHoriz && useHoriz)
                 {
                     if (Enum.TryParse<HorizontalAlignment>((string)data[1], out var alignment))
@@ -222,6 +208,7 @@ namespace Dash
                     }
                 }
 
+                // otherwise default to left so the render transform applies properly
                 return HorizontalAlignment.Left;
             }
 
@@ -238,12 +225,15 @@ namespace Dash
                 var transformations = new TranslateTransform();
                 if (data[2] is Point pt)
                 {
+                    // if we aren't told to use the horizontal alignment or if there isn't a horizontal alignment key
                     if ((data[0] is bool useHoriz && !(useHoriz)) || data[0] == null)
                     {
+                        // transform to the point's x value
                         transformations.X = pt.X;
                     }
                     else
                     {
+                        // otherwise don't transform it at all
                         transformations.X = 0;
                     }
 
