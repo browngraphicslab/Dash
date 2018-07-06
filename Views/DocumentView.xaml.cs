@@ -83,14 +83,23 @@ namespace Dash
 
         public CollectionViewModel.StandardViewLevel StandardViewLevel
         {
-            get { return (CollectionViewModel.StandardViewLevel) GetValue(StandardViewLevelProperty); }
+            get { return (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty); }
             set
             {
                 SetValue(StandardViewLevelProperty, value);
             }
         }
 
-        private ImageSource DocPreview = null;
+        private ImageSource _docPreview = null;
+        private ImageSource DocPreview
+        {
+            get { return _docPreview; }
+            set
+            {
+                _docPreview = value;
+                xToolTipPreview.Source = value;
+            }
+        }
 
         // == CONSTRUCTORs ==
 
@@ -422,8 +431,7 @@ namespace Dash
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
-                    if (DocPreview == null)
-                        DocPreview = await GetPreview();
+                    DocPreview = await GetPreview();
                     CloseDocPreview();
                     OpenFreeform();
                     break;
