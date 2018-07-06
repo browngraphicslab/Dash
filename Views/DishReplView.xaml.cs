@@ -40,7 +40,6 @@ namespace Dash
         private readonly ListController<TextController> _inputList;
         private readonly ListController<FieldControllerBase> _outputList;
 
-        private bool _editingLoop;
         private OuterReplScope _scope;
 
         private static readonly char[] Alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
@@ -49,6 +48,9 @@ namespace Dash
 
         private int _forIndex = 0;
         private int _forInIndex = 0;
+
+        private bool wayUp;
+        private bool wayDown;
 
         private int TextHeight
         {
@@ -189,7 +191,7 @@ namespace Dash
             var numItem = ViewModel.Items.Count;
             switch (args.VirtualKey)
             {
-                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
+                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayUp:
                     //get last terminal input entered
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
@@ -210,7 +212,7 @@ namespace Dash
                 case VirtualKey.Up when MainPage.Instance.IsCtrlPressed():
                     if (xSuggestions.SelectedIndex > -1 && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex--;
                     break;
-                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && !_editingLoop:
+                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayDown:
                     var index = numItem - (_currentHistoryIndex - 1);
                     if (numItem > index && index >= 0)
                     {
@@ -242,6 +244,12 @@ namespace Dash
                     xTextBox.Text = "";
                     break;
             }
+            
+            var beforeCursor = xTextBox.Text.Substring(0, xTextBox.SelectionStart);
+            wayUp = !(beforeCursor.Contains('\r'));
+            var afterCursor = xTextBox.Text.Substring(xTextBox.SelectionStart, xTextBox.Text.Length - xTextBox.SelectionStart);
+            wayDown = !(afterCursor.Contains('\r'));
+
             _currentText = xTextBox.Text;
         }
 
@@ -267,7 +275,6 @@ namespace Dash
                     TextGrid.Height = new GridLength(TextHeight);
                     _takenNumbers.Clear();
                     _takenLetters.Clear();
-                    _editingLoop = false;
                 }
 
                 var place1 = xTextBox.SelectionStart;
@@ -277,7 +284,6 @@ namespace Dash
                 var selectLength = 0;
                 if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
                 {
-                    _editingLoop = true;
                     while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
 
                     length1 = 4;
@@ -290,7 +296,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
                 {
-                    _editingLoop = true;
                     length1 = 6;
                     
                     var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
@@ -300,7 +305,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
                 {
-                    _editingLoop = true;
                     length1 = 7;
                     var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
                     newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in kv(\"k\", \"v\"))" + " {\r      data_doc(res). = \r}";
@@ -309,8 +313,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
                 {
-                    _editingLoop = true;
-
                     var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
                     while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
 
@@ -327,7 +329,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
                 {
-                    _editingLoop = true;
                     length1 = 8;
                     newText = xTextBox.Text + "(condition) {\r      \r}";
                     length2 =  1;
@@ -335,7 +336,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
                 {
-                    _editingLoop = true;
                     length1 = 6;
                     newText = xTextBox.Text + "(condition) {\r      \r}";
                     length2 =  1;
@@ -343,7 +343,6 @@ namespace Dash
                 }
                 else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
                 {
-                    _editingLoop = true;
                     length1 = 3;
                     newText = xTextBox.Text + "(condition) {\r      \r}";
                     length2 = 1;
@@ -378,7 +377,6 @@ namespace Dash
                         else
                         {
                             //enter pressed without key modifiers - send code to terminal
-                            _editingLoop = false;
                             _takenLetters.Clear();
                             _takenNumbers.Clear();
                             //_scope.SetVariable(Alphabet[_forIndex].ToString(), null);
