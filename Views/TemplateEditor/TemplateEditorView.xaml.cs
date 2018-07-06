@@ -1682,6 +1682,29 @@ namespace Dash
 	        this.LayoutDocument.SetHidden(true);
 	    }
 
+		//adds a freeform collection to the template on click
+		private void AddFreeform_OnClick(object sender, RoutedEventArgs e)
+		{
+			DocumentControllers.Add(new CollectionNote(new Point(0,0), CollectionView.CollectionViewType.Freeform).Document);
+		}
 
+		//adds a grid collection to the template on click
+		private void AddGrid_OnClick(object sender, RoutedEventArgs e)
+		{
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid).Document);
+		}
+
+		//adds a stackpanel to the template on click
+		private void AddList_OnClick(object sender, RoutedEventArgs e)
+		{
+			// TODO: MAKE A DOCUMENT CONTROLLER FOR A STACK PANEL & FORMAT (OR MAKE USER CONTROL??)
+			/*
+			 var list = new StackPanel();
+			 
+			 list.PointerEntered
+			 DocumentControllers.Add(new DocumentController(new ListModel() as DocumentModel));
+			*/
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Page).Document);
+		}
 	}
 }

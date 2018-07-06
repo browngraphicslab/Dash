@@ -244,15 +244,15 @@
                             </AppBarButton>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" >
-                                <AppBarButton Height="46" Width="42.5"  >
-                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
+                                <AppBarButton Height="46" Width="42.5" Click="AddList_OnClick" >
+                                    <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0" 
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ListIcon}"/>
                                 </AppBarButton>
-                                <AppBarButton Height="46" Width="42.5" >
+                                <AppBarButton Height="46" Width="42.5" Click="AddGrid_OnClick" >
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource GridIcon}"/>
                                 </AppBarButton>
-                                <AppBarButton  Height="46" Width="42.5" >
+                                <AppBarButton  Height="46" Width="42.5" Click="AddFreeform_OnClick">
                                     <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FreeFormIcon}"/>
                                 </AppBarButton>
