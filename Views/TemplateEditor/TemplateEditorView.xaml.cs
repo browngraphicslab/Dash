@@ -1635,6 +1635,7 @@ namespace Dash
 			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
 
 			xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
+			
 		}
 
 		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
@@ -1643,6 +1644,12 @@ namespace Dash
 			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
 
 			xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
+			//align all in center
+			foreach (var dvm in DocumentViewModels)
+			{
+				AlignItem(HorizontalAlignment.Center, dvm);
+			}
+
 			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
 
 		}
@@ -1661,7 +1668,7 @@ namespace Dash
 			var itemsPanelTemplateXaml =
 				$@"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                                   xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-                   <{panelType.Name} />
+                   <{panelType.Name}/>
                </ItemsPanelTemplate>";
 
 			return (ItemsPanelTemplate)XamlReader.Load(itemsPanelTemplateXaml);
@@ -1685,13 +1692,14 @@ namespace Dash
 		//adds a freeform collection to the template on click
 		private void AddFreeform_OnClick(object sender, RoutedEventArgs e)
 		{
-			DocumentControllers.Add(new CollectionNote(new Point(0,0), CollectionView.CollectionViewType.Freeform).Document);
+			var freeform = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 100, 100).Document;
+			DocumentControllers.Add(freeform);
 		}
 
 		//adds a grid collection to the template on click
 		private void AddGrid_OnClick(object sender, RoutedEventArgs e)
 		{
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid).Document);
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 100, 100).Document);
 		}
 
 		//adds a stackpanel to the template on click
@@ -1704,7 +1712,7 @@ namespace Dash
 			 list.PointerEntered
 			 DocumentControllers.Add(new DocumentController(new ListModel() as DocumentModel));
 			*/
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Page).Document);
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Page, 100, 100).Document);
 		}
 	}
 }

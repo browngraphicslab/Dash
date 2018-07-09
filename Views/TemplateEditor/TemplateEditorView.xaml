@@ -135,7 +135,7 @@
                               x:FieldModifier="public"
                               ItemsSource="{Binding DocumentViewModels}">
                         <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
+                            <ItemsPanelTemplate x:Name="xItemsPanelTemplate">
                                 <Canvas x:Name="xCollectionCanvas"
                                     x:FieldModifier="public"
                                     Background="Transparent"
