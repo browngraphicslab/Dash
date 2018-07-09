@@ -74,6 +74,7 @@ namespace Dash
             };
 
             DockedView dockedView = new DockedView(dir, toDock);
+            dockedView.NestedLengthChanged += OnNestedLengthChanged;
             dockedView.ChangeView(copiedView);
             dockedView.HorizontalAlignment = HorizontalAlignment.Stretch;
             dockedView.VerticalAlignment = VerticalAlignment.Stretch;
@@ -117,7 +118,6 @@ namespace Dash
                         break;
                 }
 
-
                 xMainGrid.Children.Add(dockedView);
                 _firstDock[(int)dir] = false;
                 _lastDockedViews[(int)dir] = dockedView;
@@ -136,6 +136,11 @@ namespace Dash
                 else
                     tail.SetNestedViewSize(toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data);
             }
+        }
+
+        private void OnNestedLengthChanged(object sender, GridSplitterEventArgs e)
+        {
+            e.DocumentToUpdate.SetField(KeyStore.DockedLength, new NumberController(e.NewLength), true);
         }
 
         private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)

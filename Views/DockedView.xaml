@@ -39,9 +39,9 @@
                 <SymbolIcon Symbol="Cancel"/>
             </Button>
         </Grid>
-        <controls:GridSplitter Grid.Column="3" Grid.Row="0" Grid.RowSpan="5"/>
-        <controls:GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="5"/>
-        <controls:GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5"/>
-        <controls:GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5"/>
+        <controls:GridSplitter Grid.Column="3" Grid.Row="0" Grid.RowSpan="5" PointerReleased="xSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Column="1" Grid.Row="0" Grid.RowSpan="5" PointerReleased="xSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" PointerReleased="xSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5" PointerReleased="xSplitter_OnPointerReleased"/>
     </Grid>
 </UserControl>

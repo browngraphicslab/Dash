@@ -34,6 +34,7 @@ namespace Dash
         public DockedView PreviousView { get; set; }
         public DockDirection Direction { get; set; }
         public DocumentController ContainedDocumentController { get; set; }
+        public event EventHandler<GridSplitterEventArgs> NestedLengthChanged;
 
         public DockedView(DockDirection direction, DocumentController dc)
         {
@@ -193,5 +194,16 @@ namespace Dash
             NestedView = null;
             return toReturn;
         }
+
+        private void xSplitter_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            NestedLengthChanged?.Invoke(this, new GridSplitterEventArgs { NewLength = GetNestedViewSize(), DocumentToUpdate = NestedView.ContainedDocumentController });
+        }
+    }
+
+    public class GridSplitterEventArgs : EventArgs
+    {
+        public double NewLength;
+        public DocumentController DocumentToUpdate;
     }
 }
