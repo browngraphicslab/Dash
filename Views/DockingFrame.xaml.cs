@@ -277,5 +277,25 @@ namespace Dash
 
             return DockDirection.None;
         }
+
+        private void xRightSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[1].GetElements().First(), NewLength = xRightDockColumn.Width.Value });
+        }
+
+        private void xLeftSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[0].GetElements().First(), NewLength = xLeftDockColumn.Width.Value });
+        }
+
+        private void xTopSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[2].GetElements().First(), NewLength = xTopDockRow.Height.Value });
+        }
+
+        private void xBottomSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = _dockControllers[3].GetElements().First(), NewLength = xBottomDockRow.Height.Value });
+        }
     }
 }

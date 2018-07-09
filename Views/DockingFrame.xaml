@@ -26,10 +26,10 @@
             <RowDefinition Height="0" x:Name="xBottomDockRow"/>
         </Grid.RowDefinitions>
 
-        <controls:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
-        <controls:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="1"/>
-        <controls:GridSplitter Grid.Row="1" Grid.Column="2"/>
-        <controls:GridSplitter Grid.Row="3" Grid.Column="2"/>
+        <controls:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3" ManipulationCompleted="xRightSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="1" ManipulationCompleted="xLeftSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Row="1" Grid.Column="2" ManipulationCompleted="xTopSplitter_OnPointerReleased"/>
+        <controls:GridSplitter Grid.Row="3" Grid.Column="2" ManipulationCompleted="xBottomSplitter_OnPointerReleased"/>
 
         <Grid Grid.Row="2" Grid.Column="2">
             <Grid.ColumnDefinitions>
