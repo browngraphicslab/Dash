@@ -856,8 +856,8 @@ namespace Dash
 
         public void SetSelectionBorder(bool selected)
         {
-            this.xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
-            this.xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
+            xTargetBorder.BorderThickness = selected ? new Thickness(3) : new Thickness(0);
+            xTargetBorder.Margin = selected ? new Thickness(-3) : new Thickness(0);
             xTargetBorder.BorderBrush = selected ? GroupSelectionBorderColor : new SolidColorBrush(Colors.Transparent);
         }
 
@@ -870,8 +870,10 @@ namespace Dash
             {
                 ToFront();
             }
-            if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
+
+            if ((ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
+                var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
@@ -883,7 +885,7 @@ namespace Dash
                 }
                 if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                 {
-                    cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    cfview?.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
 
                 //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
