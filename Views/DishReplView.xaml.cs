@@ -6,13 +6,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Dash.Models.DragModels;
 using DashShared;
+using Microsoft.Toolkit.Uwp.UI.Extensions;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -23,6 +26,8 @@ namespace Dash
     {
         #region Defintions and Intilization  
         private readonly DocumentController _dataDoc;
+        private readonly DocumentController _viewDoc;
+
         private DishReplViewModel ViewModel => DataContext as DishReplViewModel;
         private DSL _dsl;
 
@@ -64,9 +69,11 @@ namespace Dash
             }
         }
 
-        public DishReplView(DocumentController dataDoc)
+        public DishReplView(DocumentController doc)
         {
-            _dataDoc = dataDoc;
+            _dataDoc = doc.GetDataDocument();
+            _viewDoc = doc;
+
             InitializeComponent();
             DataContext = new DishReplViewModel();
             NewBlankScopeAndDSL();
@@ -175,6 +182,58 @@ namespace Dash
         }
 
         public static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
+        #endregion
+
+        #region Toolbar
+
+        private string InsertEnter(string text, char value, bool before = false)
+        {
+            var chars = text.ToCharArray();
+            var resultChars = new List<char>();
+            foreach (var ch in chars)
+            {
+                if (ch == value && before)
+                {
+                    resultChars.Add('\r');
+                    resultChars.Add(ch);
+                    resultChars.Add('\r');
+
+                } else if (ch == value)
+                {
+                    resultChars.Add(ch);
+                    resultChars.Add('\r');
+                }
+                else
+                {
+                    resultChars.Add(ch);
+                }
+            }
+
+            return new string(resultChars.ToArray());
+        }
+
+        private void XScript_OnClick(object sender, RoutedEventArgs e)
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+            if (collection == null) return;
+            //open DishScriptEditView with repl text
+            string allCode = "";
+            foreach (var line in _inputList)
+            {
+                var result1 = InsertEnter(line.Data, '{');
+                var result2 = InsertEnter(result1, '}', true);
+
+                allCode += result2 + "\r";
+            }
+
+            var pt = _viewDoc.GetPositionField().Data;
+            var width = _viewDoc.GetWidthField().Data;
+            var height = _viewDoc.GetHeightField().Data;
+
+            var note = new DishScriptBox(pt.X + width + 15, pt.Y, width, height, allCode);
+                
+            Actions.DisplayDocument(collection, note.Document);
+        }
         #endregion
 
         #region On Type Actions
@@ -571,6 +630,8 @@ namespace Dash
             xSuggestionsPopup.Visibility = Visibility.Collapsed;
         }
         #endregion
+
+ 
 
     }
 }

@@ -32,7 +32,7 @@ namespace Dash
 
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var tb = new DishReplView(docController.GetDataDocument());
+            var tb = new DishReplView(docController);
             SetupBindings(tb, docController, context);
 
             return tb;

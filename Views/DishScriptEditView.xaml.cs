@@ -22,6 +22,7 @@ namespace Dash
 {
     public sealed partial class DishScriptEditView : UserControl
     {
+        #region Definitions and Initailization
         private DSL _dsl;
 
         private readonly DocumentController _dataDoc;
@@ -50,7 +51,10 @@ namespace Dash
             _currentText = dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
             xTextBox.Text = _currentText ?? "";
         }
+        #endregion
 
+
+        #region Button click
         private void XRun_OnClick(object sender, RoutedEventArgs e)
         {
             //make new scope
@@ -81,9 +85,12 @@ namespace Dash
         //    {
         //        throw new ScriptExecutionException(new TextErrorModel("run cancelled"));
         //    }
-           
+
         //}
 
+        #endregion
+
+        #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
             var place1 = xTextBox.SelectionStart;
@@ -243,6 +250,7 @@ namespace Dash
           _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data = _currentText;
 
         }
+         #endregion
 
 
 
