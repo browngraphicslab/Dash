@@ -17,9 +17,9 @@
                 <RowDefinition Height="*"  />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="True" OverflowButtonVisibility="Collapsed" 
+            <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
                         Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
-                <AppBarButton x:Name="xRun"  Icon="Play"  Label="Run" Click="XRun_OnClick"></AppBarButton>
+                <AppBarButton x:Name="xRun"  Icon="Play"  Label="Run" Click="XRun_OnClick" ></AppBarButton>
             </CommandBar>
             <ScrollViewer Name="xScrollViewer" Grid.Row="1" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                           HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  

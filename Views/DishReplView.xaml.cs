@@ -376,6 +376,9 @@ namespace Dash
                         }
                         else
                         {
+                            //get rid of enter
+                            xTextBox.Text = _currentText;
+
                             //enter pressed without key modifiers - send code to terminal
                             _takenLetters.Clear();
                             _takenNumbers.Clear();
@@ -387,8 +390,8 @@ namespace Dash
 
                             _currentHistoryIndex = 0;
                             //get text replacing newlines with spaces
-                            var currentText = StringDiff(xTextBox.Text, _currentText, true).Replace('\r', ' ');
-                            xTextBox.Text = "";
+                            var currentText = xTextBox.Text.Replace('\r', ' ');
+                            
                             FieldControllerBase returnValue;
                             try
                             {
@@ -401,6 +404,7 @@ namespace Dash
 
                             if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
+                            xTextBox.Text = ""; xTextBox.Text = "";
                             ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
                             //save input and output data
