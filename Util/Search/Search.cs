@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
-    public static class Search
+    public class Search
     {
-        public static IEnumerable<SearchResult> CreateSearchResultsFromString(string query) => LocalSearch(query).Select(i => new SearchResult(i.ViewModel.DocumentController));
-
-        public IEnumerable<DocumentNode> SearchByKey(string key, string value)
+        public IEnumerable<DocumentNode> SearchByKeyValuePair(string key, string value)
         {
-            return DocumentTree.MainPageTree.Where(doc => doc.DataDocument?.GetDereferencedField(new KeyController(key), null)?.SearchForString(value) != StringSearchModel.False).ToList();
+            return DocumentTree.MainPageTree.Where(node => node.DataDocument?.GetDereferencedField(new KeyController(key), null)?.SearchForString(value) != StringSearchModel.False).ToList();
         }
 
         public IEnumerable<DocumentNode> SearchByQuery(string query)
@@ -31,6 +26,10 @@ namespace Dash
             }).ToList();
         }
 
+        private IEnumerable<SearchResult> Results(IEnumerable<DocumentNode> nodes)
+        {
+            return null;
+        }
 
         /*
          * Conducts a search of the content controller
@@ -146,5 +145,4 @@ namespace Dash
             return vms.ToArray();
         }
     }
-}
 }

@@ -393,6 +393,7 @@
     <Compile Include="Util\OperatorScript.cs" />
     <Compile Include="Util\RichTextFormattingHelper.cs" />
     <Compile Include="Util\DotNetRPC.cs" />
+    <Compile Include="Util\Search\Search.cs" />
     <Compile Include="Util\SerializableExtensions.cs" />
     <Compile Include="Util\StateCropControl.xaml.cs">
       <DependentUpon>StateCropControl.xaml</DependentUpon>

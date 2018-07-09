@@ -303,20 +303,20 @@ namespace Dash
         /// <summary>
         /// Called when we drag the entire search collection
         /// </summary>
-        private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
-        {
-            // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
-            var docs = SearchHelper.SearchOverCollection(_currentSearch)
-                .Select((srvm) => srvm.ViewDocument.GetViewCopy());
+        //private void XCollDragIcon_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        //{
+        //    // the drag contains an IEnumberable of view documents, we add it as a collection note displayed as a grid
+        //    var docs = SearchHelper.SearchOverCollection(_currentSearch)
+        //        .Select((srvm) => srvm.ViewDocument.GetViewCopy());
 
-            args.Data.Properties[nameof(DragCollectionFieldModel)] =
-                new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
+        //    args.Data.Properties[nameof(DragCollectionFieldModel)] =
+        //        new DragCollectionFieldModel(docs.ToList(), null, null, CollectionView.CollectionViewType.Grid);
 
-            // set the allowed operations
-            args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
-            args.Data.RequestedOperation = DataPackageOperation.Copy;
+        //    // set the allowed operations
+        //    args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Copy;
+        //    args.Data.RequestedOperation = DataPackageOperation.Copy;
 
-        }
+        //}
 
         /// <summary>
         /// Called when we drag a single result from search
