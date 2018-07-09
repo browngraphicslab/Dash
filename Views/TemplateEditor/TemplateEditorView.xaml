@@ -150,9 +150,10 @@
                         <Border Grid.Column="5" Grid.Row="5" BorderBrush="LightGray" BorderThickness="1 0 1 1" />
                     </Grid>
 
-                    <ItemsControl x:Name="xItemsControl"
+                    <ItemsControl x:Name="xItemsControlCanvas"
                               x:FieldModifier="public"
-                              ItemsSource="{Binding DocumentViewModels}">
+                              ItemsSource="{Binding DocumentViewModels}"
+                              Visibility ="Visible">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <Grid x:Name="xCollectionCanvas"
@@ -167,7 +168,7 @@
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                 </Grid>
-                            </ItemsPanelTemplate>
+                                </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -177,7 +178,52 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    </Grid>
+
+                    <!--
+                    <ItemsControl x:Name="xItemsControlList"
+                                  x:FieldModifier="public"
+                                  ItemsSource="{Binding DocumentViewModels}"
+                                  Visibility ="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate >
+                                <StackPanel x:Name="xCollectionList"
+                                        x:FieldModifier="public"
+                                        Background="Transparent"
+                                        VerticalAlignment="Top"
+                                        HorizontalAlignment="Center" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:DocumentView
+                                    BindRenderTransform="True"
+                                    Loaded="DocumentView_OnLoaded" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    -->
+
+                    
+                    <ListView x:Name="xItemsControlList"
+                              x:FieldModifier="public"
+                              ItemsSource="{Binding DocumentViewModels}"
+                              Visibility ="Collapsed"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              Background="Transparent">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <local:DocumentView
+                                        BindRenderTransform="True"
+                                        Loaded="DocumentView_OnLoaded_ListView" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+
+                </Grid>
 
               
 

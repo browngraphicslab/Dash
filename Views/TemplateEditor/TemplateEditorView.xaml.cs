@@ -7,6 +7,7 @@ using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using Syncfusion.UI.Xaml.Controls.Media;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -54,6 +55,9 @@ namespace Dash
 		//item source for xWorkspace
 		public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
+		public ObservableCollection<DocumentViewModel> ViewCopiesList { get;set;}
+
+
 		public Collection<DocumentView> DocumentViews { get; set; }
 
         private KeyValueTemplatePane _keyValuePane;
@@ -71,6 +75,7 @@ namespace Dash
 
 			DocumentControllers = new ObservableCollection<DocumentController>();
 			DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+			ViewCopiesList = new ObservableCollection<DocumentViewModel>();
 			DocumentViews = new Collection<DocumentView>();
 		}
 
@@ -100,6 +105,8 @@ namespace Dash
 				case NotifyCollectionChangedAction.Reset:
 					break;
 			}
+
+			
 		}
 
 		private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
@@ -107,13 +114,29 @@ namespace Dash
             // find a matching docment view model and remove it
 			foreach (var doc in oldDocs)
 			{
-				DocumentViewModels.Remove(DocumentViewModels.First(i => i.DocumentController.Equals(doc)));
+				//ViewCopiesList.Removedoc.GetDelegates().Remove();
+				var rightDoc = DocumentViewModels.First(i => i.DocumentController.Equals(doc));
+				if (rightDoc != null)
+				{
+					DocumentViewModels.Remove(rightDoc);
+					//delete corresponding copy
+					foreach (var copy in ViewCopiesList)
+					{
+						if (copy.DataDocument.Equals(rightDoc.DataDocument)) ViewCopiesList.Remove(copy);
+						break;
+					}
+				}
+				
 			}
             
             // reset the data document's data key to the modified list
 			DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(DocumentControllers),
 				true);
-			xItemsControl.ItemsSource = DocumentViewModels;
+			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+
+			//find copy and delete that too
+
+			
 		}
 
 		private void AddDocs(IEnumerable<DocumentController> newDocs)
@@ -155,6 +178,11 @@ namespace Dash
             // adds layout doc to list of layout docs
 		    var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
 		    datakey.Add(doc);
+
+			//add copy for list view
+			var copy = doc.GetViewCopy();
+			copy.SetPosition(new Point(0, 0));
+			ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
 
 		}
 
@@ -229,7 +257,7 @@ namespace Dash
 			}
 
 			// update item source
-			xItemsControl.ItemsSource = DocumentViewModels;
+			xItemsControlCanvas.ItemsSource = DocumentViewModels;
 
 			// set the document context of the data doc (template) to the working document's data doc
 			DataDocument.SetField(KeyStore.DocumentContextKey,
@@ -682,7 +710,7 @@ namespace Dash
                 docView.ViewModel.DocumentController.SetWidth(xWorkspace.ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
                 docView.ViewModel.DocumentController.SetHeight(xWorkspace.RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
 		    }
-
+			
             //updates and generates bounds for the children inside the template canvas
             var bounds = new Rect(0, 0, xWorkspace.Width,
 				xWorkspace.Height);
@@ -692,6 +720,22 @@ namespace Dash
 		    docView.SizeChanged += DocumentView_OnSizeChanged;
             docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
             xWorkspace.SizeChanged += XWorkspace_SizeChanged;
+		}
+
+		private void DocumentView_OnLoaded_ListView(object sender, RoutedEventArgs e)
+		{
+			var docView = sender as DocumentView;
+			if (!DocumentViews.Contains(docView))
+			{
+				//adds any children in the template canvas, and hides the template canvas' ellipse functionality
+				DocumentViews.Add(docView);
+				docView.hideEllipses();
+			}
+			
+			docView.DocumentSelected += DocView_DocumentSelected;
+			docView.DocumentDeleted += DocView_DocumentDeleted;
+			docView.SizeChanged += DocumentView_OnSizeChanged;
+			
 		}
 
         private void XWorkspace_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -748,7 +792,7 @@ namespace Dash
             // get the pointer reference of the selected document
 			var pRef = _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(KeyStore.DataKey);
             // use the pointer reference to determine what key it is pointed to
-			var specificKey = pRef.FieldKey;
+			var specificKey = pRef?.FieldKey;
 			var text = "";
 			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			var doc = _selectedDocument.ViewModel.DocumentController;
@@ -849,6 +893,8 @@ namespace Dash
 					var lastPos = DocumentViewModels.Last().Position;
 					where = e.GetPosition(xWorkspace);
 				}
+
+				if (xItemsControlList.Visibility == Visibility.Visible) where = new Point(0, 0);
 
 				// if we drag from the file system
 				if (e.DataView?.Contains(StandardDataFormats.StorageItems) == true)
@@ -1186,6 +1232,7 @@ namespace Dash
 					    }
 
 					    DocumentControllers.Add(dropDoc);
+						xItemsControlCanvas.ItemsSource = DocumentViewModels;
 					}
 				}
 			}
@@ -1697,10 +1744,21 @@ namespace Dash
 		{
             //set TemplateStyle key to FreeForm
             //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+<<<<<<< HEAD
 
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
+=======
+		    xGridBottomDragger.Visibility = Visibility.Collapsed;
+>>>>>>> b9de02c309bbe15bef39236ae956f580946686d5
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
-            xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
+			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
+			xItemsControlCanvas.Visibility = Visibility.Visible;
+			xItemsControlList.Visibility = Visibility.Collapsed;
+			//update
+			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+			//button ui
+			xListButton.Background = new SolidColorBrush(Colors.Transparent);
+			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
 		}
 
 		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
@@ -1710,8 +1768,35 @@ namespace Dash
 
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
-            xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
+
+			/*xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
+			//align all in center
+			foreach (var dvm in DocumentViewModels)
+			{
+				AlignItem(HorizontalAlignment.Center, dvm);
+			}*/
+
 			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
+			
+			xItemsControlCanvas.Visibility = Visibility.Collapsed;
+			xItemsControlList.Visibility = Visibility.Visible;
+
+			/*
+			//make a list of copies
+			
+			foreach (var doc in DocumentControllers)
+			{
+				var copy = doc.GetViewCopy();
+				copy.SetPosition(new Point(0,0));
+				list.Add(new DocumentViewModel(copy, new Context(copy)));
+			}
+			*/
+			xItemsControlList.ItemsSource = ViewCopiesList;
+			
+
+			//button ui
+			xFreeFormButton.Background = new SolidColorBrush(Colors.Transparent);
+			xListButton.Background = new SolidColorBrush(Colors.White);
 
 		}
 
@@ -1731,7 +1816,7 @@ namespace Dash
 			var itemsPanelTemplateXaml =
 				$@"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
                                   xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-                   <{panelType.Name} />
+                   <{panelType.Name}/>
                </ItemsPanelTemplate>";
 
 			return (ItemsPanelTemplate)XamlReader.Load(itemsPanelTemplateXaml);
@@ -1755,13 +1840,14 @@ namespace Dash
 		//adds a freeform collection to the template on click
 		private void AddFreeform_OnClick(object sender, RoutedEventArgs e)
 		{
-			DocumentControllers.Add(new CollectionNote(new Point(0,0), CollectionView.CollectionViewType.Freeform).Document);
+			var freeform = new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Freeform, 100, 100).Document;
+			DocumentControllers.Add(freeform);
 		}
 
 		//adds a grid collection to the template on click
 		private void AddGrid_OnClick(object sender, RoutedEventArgs e)
 		{
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid).Document);
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Schema, 100, 100).Document);
 		}
 
 		//adds a stackpanel to the template on click
@@ -1774,7 +1860,9 @@ namespace Dash
 			 list.PointerEntered
 			 DocumentControllers.Add(new DocumentController(new ListModel() as DocumentModel));
 			*/
-			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Page).Document);
+			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Grid, 100, 100).Document);
+			//IList<DocumentController> layoutList = new ObservableCollection<DocumentController>();
+			//DocumentControllers.Add(new ListViewLayout(layoutList, new Point(0,0), new Size(100,200)).Document);
 		}
 
 	    private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
