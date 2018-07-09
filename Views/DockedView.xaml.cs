@@ -195,7 +195,7 @@ namespace Dash
             return toReturn;
         }
 
-        private void xSplitter_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        private void xSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
         {
             NestedLengthChanged?.Invoke(this, new GridSplitterEventArgs { NewLength = GetNestedViewSize(), DocumentToUpdate = NestedView.ContainedDocumentController });
         }
