@@ -149,11 +149,11 @@ namespace Dash
         {
             e.Handled = true;
 
-            var top = Canvas.GetTop(xBottom);
-            top -= Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
+            var bottom = Canvas.GetTop(xBottom);
+            bottom -= Util.DeltaTransformFromVisual(e.Delta.Translation, this).Y;
             if (Canvas.GetTop(xBottom) + xBottom.Height > 500 ||
-                Math.Abs(top - Canvas.GetTop(xTop)) <= _parent.Bounds.Height) return;
-            Canvas.SetTop(xBottom, top);
+                Math.Abs(bottom - Canvas.GetTop(xTop)) <= _parent.Bounds.Height) return;
+            Canvas.SetTop(xBottom, bottom);
 
             var topBounds = Canvas.GetTop(xTop);
             var bottomBounds = Canvas.GetTop(xBottom);
