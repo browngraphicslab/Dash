@@ -106,22 +106,8 @@ namespace Dash
         {
             Debug.WriteLine("LOCAL FILE: " + localFile);
 
-            // create a backing document for the audio
-            var fields = new Dictionary<KeyController, FieldControllerBase>
-            {
-                //set data key to audio controller with Uri of the file
-                [KeyStore.DataKey] = new AudioController(new Uri(localFile.Path)),
-                //set width and height --> should change to accomodate for different audio ratios
-                [KeyStore.WidthFieldKey] = new NumberController(350),
-                [KeyStore.HeightFieldKey] = new NumberController(200),
-            };
-            //set title and data document to doc controller
-            if (title != null) fields[KeyStore.TitleKey] = new TextController(title);
-            var dataDoc = new DocumentController(fields, DocumentType.DefaultType);
-
-            // return a audio box, by setting the height to NaN the audio height automatically sizes
-            // based on the width according to the aspect ratio
-            return new AudioBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey), h: double.NaN).Document;
+            // return a audio note
+            return new AudioNote(new Uri(localFile.Path)).Document;
         }
 
     }

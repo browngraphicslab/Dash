@@ -283,7 +283,7 @@
                         <!--StackPanel for buttons-->
                         <StackPanel x:Name="xAddItemsButtonStack" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                             <StackPanel Orientation="Horizontal" >
-                            <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick" >
+                            <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick"  >
                                 <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
                                                FontFamily="{StaticResource FontAwesome}" Text="{StaticResource FontIcon}"/>
                             </AppBarButton>
@@ -322,7 +322,7 @@
                     </StackPanel>
 
                     <!--Format Items Drop Down-->
-                    <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
+                    <StackPanel x:Name="XFormatItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857" Tapped="TappedHandler">
                         <StackPanel.Resources>
                             <Storyboard x:Name="xFadeAnimationFormat">
                                 <DoubleAnimation

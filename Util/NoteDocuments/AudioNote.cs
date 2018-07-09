@@ -31,7 +31,7 @@ namespace Dash
         public AudioNote(Uri location, Point where = new Point(), Size size = new Size(), string title = "") :
             base(_prototypeID)
         {
-            var dataDocument = makeDataDelegate(new ImageController(location));
+            var dataDocument = makeDataDelegate(new AudioController(location));
             Document = initSharedLayout(CreateLayout(dataDocument, where, size), dataDocument, title);
             Document.Tag = "Audio Note Layout " + vcount;
             dataDocument.Tag = "Audio Note Data" + vcount++;
