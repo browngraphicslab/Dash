@@ -83,14 +83,23 @@ namespace Dash
 
         public CollectionViewModel.StandardViewLevel StandardViewLevel
         {
-            get { return (CollectionViewModel.StandardViewLevel) GetValue(StandardViewLevelProperty); }
+            get { return (CollectionViewModel.StandardViewLevel)GetValue(StandardViewLevelProperty); }
             set
             {
                 SetValue(StandardViewLevelProperty, value);
             }
         }
 
-        private ImageSource DocPreview = null;
+        private ImageSource _docPreview = null;
+        private ImageSource DocPreview
+        {
+            get { return _docPreview; }
+            set
+            {
+                _docPreview = value;
+                xToolTipPreview.Source = value;
+            }
+        }
 
         // == CONSTRUCTORs ==
 
@@ -288,7 +297,7 @@ namespace Dash
                 {
                     SelectionManager.GetSelectedSiblings(this).ForEach((d) =>
                     {
-                        d.ViewModel.DecorationState = d.IsPointerOver();
+                        d.ViewModel.DecorationState = d.IsPointerOver() && (d.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail) || d.ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None));
                         d.ViewModel.Position =
                             d.ViewModel
                                 .InteractiveManipulationPosition; // write the cached values of position and scale back to the viewModel
@@ -319,34 +328,25 @@ namespace Dash
 
         private async void GetDocPreview()
         {
-            //if (ViewModel.DocumentController.DocumentType.Equals(PdfBox.DocumentType))
-            //{
-            //    var pdfBox = xContentPresenter.GetFirstDescendantOfType<SfPdfViewerControl>();
-            //    var img = pdfBox.GetPage(0);
-            //    DocPreview = img.Source;
-            //}
             xIconBorder.BorderThickness = new Thickness(1);
             xIconBorder.Background = new SolidColorBrush(Colors.WhiteSmoke)
             {
                 Opacity = 0.5
             };
             var type = ViewModel.DocumentController.DocumentType;
-            WebViewBrush webBrush = null;
-            WebBoxView web = null;
             xSmallIconImage.Visibility = Visibility.Visible;
             xSmallIconImage.Source = GetTypeIcon();
             if (DocPreview == null)
-                DocPreview = await this.GetPreview();
+                DocPreview = await GetPreview();
             xIconImage.Source = DocPreview ?? new BitmapImage(new Uri("ms-appx:///Assets/Icons/Unavailable.png"));
             OpenIcon();
-
         }
 
         public async Task<RenderTargetBitmap> GetPreview()
         {
             RenderTargetBitmap bitmap = new RenderTargetBitmap();
             xContentPresenter.Visibility = Visibility.Visible;
-            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement);
+            await bitmap.RenderAsync(xContentPresenter.Content as FrameworkElement,1000,1000);
             xContentPresenter.Visibility = Visibility.Collapsed;
             return bitmap;
         }
@@ -367,12 +367,15 @@ namespace Dash
 
         private void OpenIcon()
         {
+            xDocumentBackground.Fill = new SolidColorBrush(Colors.Transparent);
             xIcon.Visibility = Visibility.Visible;
             xContentPresenter.Visibility = Visibility.Collapsed;
         }
 
         private void OpenFreeform()
         {
+            if (ViewModel.DocumentController.DocumentType.Equals(CollectionBox.DocumentType))
+                xDocumentBackground.Fill = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]);
             xContentPresenter.Visibility = Visibility.Visible;
             xIcon.Visibility = Visibility.Collapsed;
         }
@@ -424,18 +427,20 @@ namespace Dash
 
         private async void UpdateView()
         {
+            if (ViewModel.DocumentController.DocumentType.Equals(BackgroundShape.DocumentType)) return;
             switch (StandardViewLevel)
             {
                 case CollectionViewModel.StandardViewLevel.Detail:
-                    if (DocPreview == null)
-                        DocPreview = await GetPreview();
+                    DocPreview = await GetPreview();
                     CloseDocPreview();
                     OpenFreeform();
                     break;
                 case CollectionViewModel.StandardViewLevel.Region:
+                    xIconLabel.FontSize = 11;
                     GetDocPreview();
                     break;
                 case CollectionViewModel.StandardViewLevel.Overview:
+                    xIconLabel.FontSize = 25;
                     CloseDocPreview();
                     OpenIcon();
                     xIconImage.Source = GetTypeIcon();
@@ -898,10 +903,18 @@ namespace Dash
         {
             if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed))
+                if (e == null || (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) && ViewModel != null)
                     ViewModel.DecorationState = false;
             }
             MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, false);
+            if (MainPage.Instance.MainDocView != this)
+            {
+                var viewlevel = MainPage.Instance.MainDocView.ViewModel.ViewLevel;
+                if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Overview) || viewlevel.Equals(CollectionViewModel.StandardViewLevel.Region))
+                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+                else if (viewlevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
+                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            }
         }
         public void DocumentView_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
@@ -910,10 +923,23 @@ namespace Dash
 
         public void DocumentView_PointerEntered()
         {
-            if (StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
-                ViewModel.DecorationState = ViewModel?.Undecorated == false;
+            if (ViewModel != null)
+            {
+                if ((StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || StandardViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail)) && ViewModel != null)
+                {
+                    ViewModel.DecorationState = ViewModel?.Undecorated == false;
+                }
+                MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
+            }
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 1);
-            MainPage.Instance.HighlightTreeView(ViewModel.DocumentController, true);
+            if (MainPage.Instance.MainDocView == this && MainPage.Instance.MainDocView.ViewModel != null)
+            {
+                var level = MainPage.Instance.MainDocView.ViewModel.ViewLevel;     
+                if (level.Equals(CollectionViewModel.StandardViewLevel.Overview) || level.Equals(CollectionViewModel.StandardViewLevel.Region))
+                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.SizeAll, 0);
+                else if (level.Equals(CollectionViewModel.StandardViewLevel.Detail))
+                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.IBeam, 0);
+            }
         }
 
         #region UtilityFuncions

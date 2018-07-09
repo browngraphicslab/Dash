@@ -571,7 +571,7 @@ namespace Dash
                     }
                 }
 
-                if (e == null || !e.Handled)
+                if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
                     TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
