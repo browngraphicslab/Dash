@@ -197,6 +197,7 @@
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\SearchResult.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
