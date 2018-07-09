@@ -349,16 +349,24 @@ namespace Dash
 					var docController = await parser.ParseFileAsync(thisImage);
 					if (docController != null)
 					{
-					    if (docController.GetWidthField().Data >= xWorkspace.Width)
-					    {
-					        docController.SetWidth(xWorkspace.Width - 20);
-					    }
+					    var fileProperties = await thisImage.Properties.GetImagePropertiesAsync();
+                        var originalHeight = (double) fileProperties.Height;
+					    var originalWidth = (double) fileProperties.Width;
+					    var calculatedHeight = originalHeight;
+                        if (docController.GetWidthField().Data > xWorkspace.Width)
+                        {
+                            docController.SetWidth(xWorkspace.Width * 0.8);
+                            var ratio = originalHeight / originalWidth;
+                            calculatedHeight = ratio * xWorkspace.Width;
+                        }
 
-					    if (docController.GetActualSize().Value.Y >= xWorkspace.Height)
-					    {
-
-					    }
-
+                        if (calculatedHeight > xWorkspace.Height)
+                        {
+                            var scale = xWorkspace.Height / originalHeight;
+                            var calculatedWidth = originalWidth * scale;
+                            docController.SetWidth(calculatedWidth * 0.8);
+                            //docView.ViewModel.DocumentController.SetActualSize(new Point(xWorkspace.Width * scale, xWorkspace.Height));
+                        }
 
                         // TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
                         DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
@@ -463,10 +471,11 @@ namespace Dash
 
 		}
         
-		private void ItemAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
+		private void ItemAlignmentButton_OnChecked(object sender, TappedRoutedEventArgs e)
 		{
+		    e.Handled = true;
 			var button = sender as AppBarButton;
-			HorizontalAlignment alignment = this.ButtonNameToAlignment(button?.Name);
+			var alignment = this.ButtonNameToAlignment(button?.Name);
 
 			if (_selectedDocument != null) AlignItem(alignment, _selectedDocument?.ViewModel);
 		}
@@ -622,10 +631,13 @@ namespace Dash
             // hacky way of resizing bounds, bob and tyler are working on improving resizing in general
 		    var currPos = docView.ViewModel.DocumentController
 		        .GetField<PointController>(KeyStore.PositionFieldKey).Data;
+		    var calculatedHeight = docView.ActualHeight;
 		    if (docView.ActualWidth > xWorkspace.Width)
 		    {
-		        docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width);
+		        docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width * 0.8);
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(0, currPos.Y), true);
+		        var ratio = docView.ActualHeight / docView.ActualWidth;
+		        calculatedHeight = ratio * xWorkspace.Width;
 		    }
             else if (currPos.X + docView.ActualWidth > xWorkspace.Width)
 		    {
@@ -634,18 +646,18 @@ namespace Dash
 		    }
 
 		    currPos = docView.ViewModel.DocumentController.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-		    if (docView.ActualHeight > xWorkspace.Height)
+		    if (calculatedHeight > xWorkspace.Height)
 		    {
 		        var scale = xWorkspace.Height / docView.ActualHeight;
-
-                docView.ViewModel.DocumentController.SetWidth(xWorkspace.Width * scale);
+		        var calculatedWidth = docView.ActualWidth * scale;
+                docView.ViewModel.DocumentController.SetWidth(calculatedWidth * 0.8);
                 //docView.ViewModel.DocumentController.SetActualSize(new Point(xWorkspace.Width * scale, xWorkspace.Height));
                 docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey, new PointController(currPos.X, 0), true);
 		    }
-		    else if (currPos.Y + docView.ActualHeight > xWorkspace.Height)
+		    else if (currPos.Y + calculatedHeight > xWorkspace.Height)
 		    {
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
-		            new PointController(currPos.X, xWorkspace.Height - docView.ActualHeight - 1), true);
+		            new PointController(currPos.X, xWorkspace.Height - calculatedHeight - 1), true);
 
 		    }
 
@@ -657,9 +669,15 @@ namespace Dash
 			docView.DocumentDeleted += DocView_DocumentDeleted;
 		    docView.SizeChanged += DocumentView_OnSizeChanged;
             docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
+            xWorkspace.SizeChanged += XWorkspace_SizeChanged;
 		}
 
-	    private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
+        private void XWorkspace_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+
+        }
+
+        private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
 	        Context context)
 	    {
             // determine if a horizontal alignment key exists
@@ -701,6 +719,8 @@ namespace Dash
 
 		private void DocView_DocumentSelected(DocumentView sender, DocumentView.DocumentViewSelectedEventArgs args)
 		{
+		    sender.Bounds = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
+
 			xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 			_selectedDocument = sender;
             // get the pointer reference of the selected document
@@ -1498,44 +1518,34 @@ namespace Dash
 
 	    public void ResizeCanvas(Size newSize)
 	    {
+	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
+	        {
+	            xWorkspace.Width = 300;
+	            xWorkspace.Height = 400;
+	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, 300, 400) };
+
+	            Bounds.Width = 70;
+	            Bounds.Height = 70;
+	            return;
+	        }
+
 	        var oldSize = new Size(xWorkspace.Width, xWorkspace.Height);
-	        xWorkspace.Width = newSize.Width;
-	        xWorkspace.Height = newSize.Height;
-	        var rect = new Rect(0, 0, newSize.Width, newSize.Height);
-	        var rectGeo = new RectangleGeometry { Rect = rect };
-	        xWorkspace.Clip = rectGeo;
-	        double maxOffsetX = 70;
-	        double maxOffsetY = 70;
+
 	        foreach (var docview in DocumentViews)
 	        {
 	            var point = docview.ViewModel.DocumentController.GetPosition();
 	            var newPoint = point.Value;
 	            newPoint.X += (newSize.Width - oldSize.Width) / 2;
 	            newPoint.Y += (newSize.Height - oldSize.Height) / 2;
-                docview.ViewModel.DocumentController.SetPosition(newPoint);
-	            if (newSize.Width - newPoint.X > maxOffsetX)
-	            {
-                    maxOffsetX = newSize.Width - newPoint.X;
-	            } else if (-(newSize.Width - newPoint.X - docview.ActualWidth) > maxOffsetX)
-	            {
-	                maxOffsetX = -(newSize.Width - newPoint.X - docview.ActualWidth);
-                }
-
-	            if (newSize.Height - newPoint.Y > maxOffsetY)
-	            {
-	                maxOffsetY = newSize.Height - newPoint.Y;
-	            } else if (-(newSize.Height - newPoint.Y - docview.ActualHeight) > maxOffsetY)
-	            {
-	                maxOffsetY = -(newSize.Height - newPoint.Y - docview.ActualHeight);
-                }
-
-                var bounds = new Rect(0, 0, xWorkspace.Width - docview.ActualWidth,
-	                xWorkspace.Height - docview.ActualHeight);
-	            //docview.Bounds = new RectangleGeometry { Rect = bounds };
+	            docview.ViewModel.DocumentController.SetPosition(newPoint);
             }
 
-	        Bounds.Width = maxOffsetX;
-	        Bounds.Height = maxOffsetY;
+            xWorkspace.Width = newSize.Width;
+	        xWorkspace.Height = newSize.Height;
+	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
+
+	        Bounds.Width = 70;
+	        Bounds.Height = 70;
 	    }
 
 		private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -1747,6 +1757,11 @@ namespace Dash
 
 	    private void XGridBottomDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
+	    }
+
+	    private void TappedHandler(object sender, TappedRoutedEventArgs e)
+	    {
+	        e.Handled = true;
 	    }
 	}
 }
