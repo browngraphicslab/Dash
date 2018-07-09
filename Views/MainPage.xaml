@@ -25,21 +25,22 @@
         <!-- MainDocView -->
         <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <local:DockingFrame.DocumentContent>
-                <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+                <Grid>
+                    <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+                            <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
+                        </Grid>
+                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
+                        </Button>
+                        <Button Name="xBackButton" VerticalAlignment="Stretch">
+                            <SymbolIcon Symbol="Back"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </local:DockingFrame.DocumentContent>
         </local:DockingFrame>
-
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="2">
-            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
-                <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
-            </Grid>
-            <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
-                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
-            </Button>
-            <Button Name="xBackButton" VerticalAlignment="Stretch">
-                <SymbolIcon Symbol="Back"></SymbolIcon>
-            </Button>
-        </StackPanel>
 
         <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 

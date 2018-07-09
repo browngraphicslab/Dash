@@ -218,6 +218,10 @@ namespace DashShared
             public static KeyModel DockedDocumentsTopKey = new KeyModel("5A5AC489-8988-44BE-AC06-AE76CF81FB04", "Documents docked on the top");
             public static KeyModel DockedDocumentsRightKey = new KeyModel("F9E7580F-2053-49AA-B829-7B7347C65394", "Documents docked on the right");
             public static KeyModel DockedDocumentsBottomKey = new KeyModel("F6E10E00-1644-40BE-8A9E-0C648FE4B223", "Documents docked on the bottom");
+            public static KeyModel DockedDocumentsLengthLeftKey = new KeyModel("0CCFCC20-DAF7-4329-B615-605A54A86014", "Dock left column widths");
+            public static KeyModel DockedDocumentsLengthTopKey = new KeyModel("5A5AC489-8988-44BE-AC06-AE76CF81FB04", "Dock top row heights");
+            public static KeyModel DockedDocumentsLengthRightKey = new KeyModel("F9E7580F-2053-49AA-B829-7B7347C65394", "Dock right column widths");
+            public static KeyModel DockedDocumentsLengthBottomKey = new KeyModel("F6E10E00-1644-40BE-8A9E-0C648FE4B223", "Dock bottom row heights");
         }
 
         public static class TypeStore

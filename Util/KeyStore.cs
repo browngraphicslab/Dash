@@ -71,6 +71,10 @@ namespace Dash
         public static KeyController DockedDocumentsTopKey = new KeyController(DashConstants.KeyStore.DockedDocumentsTopKey);
         public static KeyController DockedDocumentsRightKey = new KeyController(DashConstants.KeyStore.DockedDocumentsRightKey);
         public static KeyController DockedDocumentsBottomKey = new KeyController(DashConstants.KeyStore.DockedDocumentsBottomKey);
+        public static KeyController DockedDocumentsLengthLeftKey = new KeyController(DashConstants.KeyStore.DockedDocumentsLengthLeftKey);
+        public static KeyController DockedDocumentsLengthRightKey = new KeyController(DashConstants.KeyStore.DockedDocumentsLengthRightKey);
+        public static KeyController DockedDocumentsLengthTopKey = new KeyController(DashConstants.KeyStore.DockedDocumentsLengthTopKey);
+        public static KeyController DockedDocumentsLengthBottomKey = new KeyController(DashConstants.KeyStore.DockedDocumentsLengthBottomKey);
 
         public static class SearchResultDocumentOutline
         {

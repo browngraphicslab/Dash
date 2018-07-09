@@ -35,6 +35,7 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 xPdfView.ScrollToVerticalOffset(curOffset ?? 0.0);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
+                PdfView_SizeChanged(null, null);
             };
             SizeChanged += PdfView_SizeChanged;
 

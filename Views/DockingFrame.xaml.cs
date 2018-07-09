@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -42,6 +43,7 @@ namespace Dash
         private readonly bool[] _firstDock = { true, true, true, true };
         private readonly DockedView[] _lastDockedViews = { null, null, null, null };
         private readonly ListController<DocumentController>[] _dockControllers = { null, null, null, null };
+        private readonly ListController<NumberController>[] _dockLengthControllers = {null, null, null, null};
         private Rectangle[] _highlightRecs;
         private readonly DockDirection[] _directions = { DockDirection.Left, DockDirection.Right, DockDirection.Top, DockDirection.Bottom };
         public DocumentController DocController;
@@ -80,6 +82,7 @@ namespace Dash
             {
                 // make a new ListController
                 _dockControllers[(int)dir] = new ListController<DocumentController>(toDock);
+                _dockLengthControllers[(int) dir] = new ListController<NumberController>(new NumberController(300));
 
                 switch (dir)
                 {
@@ -88,24 +91,32 @@ namespace Dash
                         xLeftDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 0, 1, 0, 5);
                         DocController.SetField(KeyStore.DockedDocumentsLeftKey, _dockControllers[(int)dir], true);
+                        DocController.SetField(KeyStore.DockedDocumentsLengthLeftKey, _dockLengthControllers[(int) dir],
+                            true);
                         break;
                     case DockDirection.Right:
                         xRightDockSplitterColumn.Width = new GridLength(MainPage.GridSplitterThickness);
                         xRightDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 4, 1, 0, 5);
                         DocController.SetField(KeyStore.DockedDocumentsRightKey, _dockControllers[(int)dir], true);
+                        DocController.SetField(KeyStore.DockedDocumentsLengthRightKey, _dockLengthControllers[(int)dir],
+                            true);
                         break;
                     case DockDirection.Top:
                         xTopDockSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
                         xTopDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 2, 1, 0, 1);
                         DocController.SetField(KeyStore.DockedDocumentsTopKey, _dockControllers[(int)dir], true);
+                        DocController.SetField(KeyStore.DockedDocumentsLengthTopKey, _dockLengthControllers[(int)dir],
+                            true);
                         break;
                     case DockDirection.Bottom:
                         xBottomDockSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
                         xBottomDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 2, 1, 4, 1);
                         DocController.SetField(KeyStore.DockedDocumentsBottomKey, _dockControllers[(int)dir], true);
+                        DocController.SetField(KeyStore.DockedDocumentsLengthBottomKey, _dockLengthControllers[(int)dir],
+                            true);
                         break;
                 }
 
@@ -120,6 +131,7 @@ namespace Dash
                 dockedView.PreviousView = tail;
                 _lastDockedViews[(int)dir] = dockedView;
                 _dockControllers[(int)dir].Add(toDock);
+                _dockLengthControllers[(int) dir].Add(new NumberController(tail.GetNestedViewSize()));
             }
         }
 
