@@ -156,7 +156,7 @@ namespace Dash
             xScrollViewer.ChangeView(0, float.MaxValue, 1);
         }
 
-        private static string StringDiff(string a, string b, bool remove = false)
+        public static string StringDiff(string a, string b)
         {
             //a is the longer string
             var aL = a.ToCharArray();
@@ -165,24 +165,15 @@ namespace Dash
             {
                 if (i < bL.Length && aL[i] == bL[i]) continue;
                 //remove last character if it was enter
-                if (remove && aL[i] == '\r')
-                {
-                    //remove new character
-                    var aL2 = aL.ToList();
-                    aL2.RemoveAt(i);
-                    return new string(aL2.ToArray());
-                }
-
-                if (!remove)
-                {
-                    return aL[i].ToString();
-                }
+          
+                 return aL[i].ToString();
+               
             }
 
             return a;
         }
 
-        private static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
+        public static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
         #endregion
 
         #region On Type Actions

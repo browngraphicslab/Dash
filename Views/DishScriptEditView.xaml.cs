@@ -6,6 +6,8 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -32,6 +34,10 @@ namespace Dash
         private int _forIndex = 0;
         private int _forInIndex = 0;
 
+        private bool _running;
+
+        private string _currentText = "";
+
         public DishScriptEditView(DocumentController dataDoc)
         {
             _dataDoc = dataDoc;
@@ -50,6 +56,7 @@ namespace Dash
             _dsl = new DSL(_scope);
 
             FieldControllerBase returnValue;
+            _running = true;
             try
             {
                 returnValue = _dsl.Run(xTextBox.Text, true);
@@ -59,14 +66,25 @@ namespace Dash
                 returnValue = new TextController("There was an error: " + ex.StackTrace);
             }
 
+            _running = false;
+
             if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
             xResult.Text = "Output: " + returnValue;
         }
 
+        //private void XStop_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    if (_running)
+        //    {
+        //        throw new ScriptExecutionException(new TextErrorModel("run cancelled"));
+        //    }
+           
+        //}
+
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var place = xTextBox.SelectionStart;
+            var place1 = xTextBox.SelectionStart;
             var length1 = 0;
             var length2 = 0;
             var newText = "";
@@ -104,11 +122,11 @@ namespace Dash
 
                 var newList = "myList" + _forInIndex;
                 _takenNumbers.Add(_forInIndex);
-                xTextBox.Text = xTextBox.Text.Insert(place - 7, $"{ret}var {newList} = []\r");
+                xTextBox.Text = xTextBox.Text.Insert(place1 - 7, $"{ret}var {newList} = []\r");
                 var offset = _forInIndex.ToString().Length + ret.Length - 1;
 
                 xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
-                xTextBox.SelectionStart = place + 8 + offset;
+                xTextBox.SelectionStart = place1 + 8 + offset;
             }
             else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
             {
@@ -136,14 +154,78 @@ namespace Dash
             {
                 if (xTextBox.Text.TrimStart().Length != length1)
                 {
-                    xTextBox.Text = xTextBox.Text.Insert(place - length1, "\r");
-                    place++;
+                    xTextBox.Text = xTextBox.Text.Insert(place1 - length1, "\r");
+                    place1++;
                 }
 
                 xTextBox.Text = newText;
-                xTextBox.SelectionStart = place + length2;
+                xTextBox.SelectionStart = place1 + length2;
                 xTextBox.SelectionLength = selectLength;
             }
+
+
+            var textDiff = DishReplView.StringDiff(xTextBox.Text, _currentText);
+            switch (textDiff)
+            {
+                case "\"" when xTextBox.Text.Length > _currentText.Length:
+                    var place = xTextBox.SelectionStart;
+                    var offset = 0;
+
+                    while (place + offset < xTextBox.Text.Length &&
+                           DishReplView.IsProperLetter(xTextBox.Text[place + offset]))
+                    {
+                        offset++;
+                    }
+
+                    place += offset;
+
+                    xTextBox.Text = xTextBox.Text.Insert(place, "\"");
+                    xTextBox.SelectionStart = place;
+                    break;
+                case "(" when xTextBox.Text.Length > _currentText.Length:
+                    place = xTextBox.SelectionStart;
+                    offset = 0;
+
+                    while (place + offset < xTextBox.Text.Length &&
+                           DishReplView.IsProperLetter(xTextBox.Text[place + offset]))
+                    {
+                        offset++;
+                    }
+
+                    place += offset;
+
+                    xTextBox.Text = xTextBox.Text.Insert(place, ")");
+                    xTextBox.SelectionStart = place;
+                    break;
+                case "\'" when xTextBox.Text.Length > _currentText.Length:
+                    place = xTextBox.SelectionStart;
+                    offset = 0;
+
+                    while (place + offset < xTextBox.Text.Length &&
+                           DishReplView.IsProperLetter(xTextBox.Text[place + offset]))
+                    {
+                        offset++;
+                    }
+
+                    place += offset;
+
+                    xTextBox.Text = xTextBox.Text.Insert(place, "\'");
+                    xTextBox.SelectionStart = place;
+                    break;
+                case "{" when xTextBox.Text.Length > _currentText.Length:
+                    place = xTextBox.SelectionStart;
+                    xTextBox.Text += "\r      \r}";
+                    xTextBox.SelectionStart = place + 7;
+                    break;
+                default:
+                    break;
+            }
+
+            _currentText = xTextBox.Text;
+
         }
+
+
+
     }
 }
