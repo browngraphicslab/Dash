@@ -210,28 +210,35 @@ namespace Dash
                     var newFirst = undock.ClearNestedView();
                     newFirst.PreviousView = null;
                     xMainGrid.Children.Remove(undock);
+                    double newLength = 0;
                     switch (undock.Direction)
                     {
                         case DockDirection.Left:
                             SetGridPosition(newFirst, 0, 1, 0, 5);
+                            newLength = xLeftDockColumn.Width.Value;
                             break;
                         case DockDirection.Right:
                             SetGridPosition(newFirst, 4, 1, 0, 5);
+                            newLength = xRightDockColumn.Width.Value;
                             break;
                         case DockDirection.Top:
                             SetGridPosition(newFirst, 2, 1, 0, 1);
+                            newLength = xTopDockRow.Height.Value;
                             break;
                         case DockDirection.Bottom:
                             SetGridPosition(newFirst, 2, 1, 4, 1);
+                            newLength = xBottomDockRow.Height.Value;
                             break;
                     }
                     xMainGrid.Children.Add(newFirst);
+                    OnNestedLengthChanged(this, new GridSplitterEventArgs {DocumentToUpdate = newFirst.ContainedDocumentController, NewLength = newLength });
                 }
                 else
                 {
                     var newNext = undock.ClearNestedView();
                     newNext.PreviousView = undock.PreviousView;
                     undock.PreviousView.ChangeNestedView(newNext);
+                    OnNestedLengthChanged(this, new GridSplitterEventArgs { DocumentToUpdate = newNext.ContainedDocumentController, NewLength = undock.PreviousView.GetNestedViewSize() });
                 }
             }
         }
