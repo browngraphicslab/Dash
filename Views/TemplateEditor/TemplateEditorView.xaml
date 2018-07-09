@@ -69,6 +69,12 @@
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
                     <!--DESIGN GRID -->
                     <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
@@ -156,18 +162,12 @@
                               Visibility ="Visible">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid x:Name="xCollectionCanvas"
+                                <Canvas x:Name="xCollectionGrid"
                                       x:FieldModifier="public"
                                       Background="Transparent"
                                       VerticalAlignment="Top"
                                       HorizontalAlignment="Left" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                </Grid>
+                                </Canvas>
                                 </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
