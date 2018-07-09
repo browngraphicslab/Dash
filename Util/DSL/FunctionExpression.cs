@@ -28,8 +28,6 @@ namespace Dash
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
             var opName = Op.Parse(_funcName);
             
-            scope = new ReturnScope(scope.GetFirstAncestor());
-
             try
             {
                 //use user defined function
@@ -45,6 +43,7 @@ namespace Dash
 
                 if (opName != Op.Name.invalid)
                 {
+                    scope = new ReturnScope(scope);
 
                     var output = OperatorScript.Run(opName, inputs, scope);
                     return output;
