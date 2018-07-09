@@ -44,7 +44,9 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             //TODO: get rid of output necesary
-            outputs[ResultKey] = new NumberController(0);
+            FieldControllerBase result;
+            inputs.TryGetValue(BlockKey, out result);
+            outputs[ResultKey] = result;
         }
 
         public override FieldControllerBase GetDefaultController()

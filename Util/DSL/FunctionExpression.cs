@@ -27,14 +27,17 @@ namespace Dash
             var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
             var opName = Op.Parse(_funcName);
-            //functions shouldn't have acess to any variables outside function
-            scope = new ReturnScope(/*scope.GetFirstAncestor()*/);
+            
+            scope = new ReturnScope(scope.GetFirstAncestor());
 
             try
             {
                 //use user defined function
                 if (userFunction != null)
                 {
+                    //functions shouldn't have acess to any variables outside function
+                    scope = new ReturnScope();
+
                     //check if user defiend function
                     var output = OperatorScript.Run(userFunction, inputs, scope);
                     return output;
