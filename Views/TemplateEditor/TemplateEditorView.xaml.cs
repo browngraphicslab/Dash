@@ -1631,18 +1631,22 @@ namespace Dash
 
 		private void XFreeFormButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			//set TemplateStyle key to FreeForm
-			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+            //set TemplateStyle key to FreeForm
+            //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
 
-			xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
+		    xGridBottomDragger.Visibility = Visibility.Collapsed;
+		    xGridTopDragger.Visibility = Visibility.Collapsed;
+            xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
 		}
 
 		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			//set TemplateStyle key to List
-			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+            //set TemplateStyle key to List
+            //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
 
-			xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
+		    xGridBottomDragger.Visibility = Visibility.Collapsed;
+		    xGridTopDragger.Visibility = Visibility.Collapsed;
+            xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
 			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
 
 		}
@@ -1653,7 +1657,9 @@ namespace Dash
 			//set TemplateStyle key to Grid
 			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
 
-			xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
+		    xGridBottomDragger.Visibility = Visibility.Visible;
+		    xGridTopDragger.Visibility = Visibility.Visible;
+		    //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
 		}
 
 		ItemsPanelTemplate ItemsPanelTemplateType(Type panelType)
@@ -1706,5 +1712,30 @@ namespace Dash
 			*/
 			DocumentControllers.Add(new CollectionNote(new Point(0, 0), CollectionView.CollectionViewType.Page).Document);
 		}
+
+	    private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+	    {
+	        e.Handled = true;
+	    }
+
+	    private void XGridTopDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+	    {
+	    }
+
+	    private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+	    {
+	    }
+
+	    private void XGridBottomDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+	    {
+	    }
+
+	    private void XGridBottomDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+	    {
+	    }
+
+	    private void XGridBottomDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+	    {
+	    }
 	}
 }
