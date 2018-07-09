@@ -59,9 +59,10 @@ namespace Dash
 
         public void Dock(DocumentController toDock, DockDirection dir)
         {
+            toDock = toDock.GetViewCopy();
             DocumentView copiedView = new DocumentView
             {
-                DataContext = new DocumentViewModel(toDock.GetViewCopy()),
+                DataContext = new DocumentViewModel(toDock),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 ViewModel =
@@ -81,35 +82,41 @@ namespace Dash
             {
                 // make a new ListController
                 _dockControllers[(int)dir] = new ListController<DocumentController>(toDock);
-                toDock.SetField(KeyStore.DockedLength, new NumberController(300), true);
+                double length = 300;
+
+                if (toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null) == null)
+                    toDock.SetField(KeyStore.DockedLength, new NumberController(length), true);
+                else
+                    length = toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data;
 
                 switch (dir)
                 {
                     case DockDirection.Left:
                         xLeftDockSplitterColumn.Width = new GridLength(MainPage.GridSplitterThickness);
-                        xLeftDockColumn.Width = new GridLength(300);
+                        xLeftDockColumn.Width = new GridLength(length);
                         SetGridPosition(dockedView, 0, 1, 0, 5);
                         DocController.SetField(KeyStore.DockedDocumentsLeftKey, _dockControllers[(int)dir], true);
                         break;
                     case DockDirection.Right:
                         xRightDockSplitterColumn.Width = new GridLength(MainPage.GridSplitterThickness);
-                        xRightDockColumn.Width = new GridLength(300);
+                        xRightDockColumn.Width = new GridLength(length);
                         SetGridPosition(dockedView, 4, 1, 0, 5);
                         DocController.SetField(KeyStore.DockedDocumentsRightKey, _dockControllers[(int)dir], true);
                         break;
                     case DockDirection.Top:
                         xTopDockSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
-                        xTopDockRow.Height = new GridLength(200);
+                        xTopDockRow.Height = new GridLength(length);
                         SetGridPosition(dockedView, 2, 1, 0, 1);
                         DocController.SetField(KeyStore.DockedDocumentsTopKey, _dockControllers[(int)dir], true);
                         break;
                     case DockDirection.Bottom:
                         xBottomDockSplitterRow.Height = new GridLength(MainPage.GridSplitterThickness);
-                        xBottomDockRow.Height = new GridLength(200);
+                        xBottomDockRow.Height = new GridLength(length);
                         SetGridPosition(dockedView, 2, 1, 4, 1);
                         DocController.SetField(KeyStore.DockedDocumentsBottomKey, _dockControllers[(int)dir], true);
                         break;
                 }
+
 
                 xMainGrid.Children.Add(dockedView);
                 _firstDock[(int)dir] = false;
@@ -122,7 +129,12 @@ namespace Dash
                 dockedView.PreviousView = tail;
                 _lastDockedViews[(int)dir] = dockedView;
                 _dockControllers[(int)dir].Add(toDock);
-                toDock.SetField(KeyStore.DockedLength, new NumberController(tail.GetNestedViewSize()), true);
+
+                // if there's no previous saved length, then set it. Otherwise, set it to that length.
+                if (toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null) == null)
+                    toDock.SetField(KeyStore.DockedLength, new NumberController(tail.GetNestedViewSize()), true);
+                else
+                    tail.SetNestedViewSize(toDock.GetDereferencedField<NumberController>(KeyStore.DockedLength, null).Data);
             }
         }
 
