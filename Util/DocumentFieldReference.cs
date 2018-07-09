@@ -38,6 +38,7 @@ namespace Dash
         /// <returns></returns>
         public override DocumentController GetDocumentController(Context context)
         {
+            return DocumentController;
             return context?.GetDeepestDelegateOf(DocumentController) ?? DocumentController;
         }
 
