@@ -351,12 +351,17 @@ namespace Dash
 					{
 					    if (docController.GetWidthField().Data >= xWorkspace.Width)
 					    {
-					        //docController.SetWidth(xWorkspace.Width - docController.Docum);
-                        }
-					 
-							
-						// TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
-						DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
+					        docController.SetWidth(xWorkspace.Width - 20);
+					    }
+
+					    if (docController.GetActualSize().Value.Y >= xWorkspace.Height)
+					    {
+
+					    }
+
+
+                        // TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
+                        DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
 				}
 			}
@@ -454,6 +459,8 @@ namespace Dash
 			{
 				AlignItem(alignment, dvm);
 			}
+            
+
 		}
         
 		private void ItemAlignmentButton_OnChecked(object sender, RoutedEventArgs e)
@@ -1121,12 +1128,12 @@ namespace Dash
 					    var workingDataDoc = workingDoc.GetDataDocument();
 					    if (dragModel.DraggedDocument.Equals(workingDoc) || dragModel.DraggedDocument.Equals(workingDataDoc))
 					    {
-					        
 					        dropDoc = new DataBox(null, where.X, where.Y).Document;
 					        dropDoc.SetField(KeyStore.DataKey, new PointerReferenceController(
 					            new DocumentReferenceController(dropDoc, KeyStore.DocumentContextKey), dragModel.DraggedKey), true);
                             dropDoc.Tag = "DraggedKey doc";
-					        dropDoc.SetField(KeyStore.DocumentContextKey, new DocumentReferenceController(DataDocument, KeyStore.DocumentContextKey), true);
+					        dropDoc.SetField(KeyStore.DocumentContextKey,
+					            new DocumentReferenceController(DataDocument, KeyStore.DocumentContextKey), true);
                             //dbox.SetField(KeyStore.DataKey,
                             //    new PointerReferenceController(new DocumentReferenceController(dbox.Id, KeyStore.DocumentContextKey), DraggedKey), true);
 					        dropDoc.SetTitle(dragModel.DraggedKey.Name);
