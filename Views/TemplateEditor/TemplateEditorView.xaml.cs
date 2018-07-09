@@ -349,8 +349,12 @@ namespace Dash
 					var docController = await parser.ParseFileAsync(thisImage);
 					if (docController != null)
 					{
-						if (docController.GetWidthField().Data >= xWorkspace.Width)
-							docController.SetWidth(xWorkspace.Width - 20);
+					    if (docController.GetWidthField().Data >= xWorkspace.Width)
+					    {
+					        //docController.SetWidth(xWorkspace.Width - docController.Docum);
+                        }
+					 
+							
 						// TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
 						DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
