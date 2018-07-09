@@ -1744,12 +1744,8 @@ namespace Dash
 		{
             //set TemplateStyle key to FreeForm
             //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
-<<<<<<< HEAD
 
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
-=======
-		    xGridBottomDragger.Visibility = Visibility.Collapsed;
->>>>>>> b9de02c309bbe15bef39236ae956f580946686d5
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
 			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
 			xItemsControlCanvas.Visibility = Visibility.Visible;
