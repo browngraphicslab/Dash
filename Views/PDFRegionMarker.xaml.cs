@@ -59,7 +59,7 @@ namespace Dash
             xDown.Height = new GridLength(downRatio, GridUnitType.Star);
             xLeft.Width = new GridLength(leftRatio, GridUnitType.Star);
             xRegionColumn.Width = new GridLength(regionWidthRatio, GridUnitType.Star);
-            xRight.Width = new GridLength(rightRatio, GridUnitType.Star);
+            xRight.Width = new GridLength(rightRatio < 0 ? 1 : rightRatio, GridUnitType.Star);
         }
 
         public void SetColor(SolidColorBrush color)

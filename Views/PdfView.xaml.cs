@@ -36,6 +36,22 @@ namespace Dash
         private bool _isResizing;
         private PDFRegionMarker _selectedRegion;
 
+        public double VerticalOffset {
+            get => NativeOffset * xPdfView.Zoom / 100.0;
+            set => NativeOffset = value / (xPdfView.Zoom / 100.0);
+        }
+        public double NativeOffset
+        {
+            get => LayoutDocument.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data ?? 0;
+            set
+            {
+                LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, value, true);
+                // PSA: do not use the PDFView's own scroll method. It's broken.
+                GetInternalScrollViewer().ChangeView(null, value * xPdfView.Zoom / 100.0, null);
+                xRegionsScrollviewer.ChangeView(null, value * xPdfView.Zoom / 100.0, null);
+            }
+        }
+
         public PdfView()
         {
             InitializeComponent();
@@ -45,27 +61,29 @@ namespace Dash
             xPdfView.IsThumbnailViewEnabled = false;
             xPdfView.Loaded += (sender, e) =>
             {
-                var sp = xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel");
-                sp.SizeChanged += PdfView_SizeChanged;
+                // setup the scroll viewers based on the ActualSize of the PDF.  If we know it, we can just unfreeze the document,
+                // otherwise, we wait for the PdfDocumentPanel to get sized and then we unfreeze the document.
+                if ((DataDocument.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null)?.Data.X ?? 0) > 0)
+                {
+                    UnFreeze();
+                }
+                xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel").SizeChanged += PdfView_SizeChanged;
+                xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel").LayoutUpdated += PdfView_LayoutUpdated;
+
                 xTemporaryRegionMarker.SetColor(new SolidColorBrush(Colors.Gold));
-                var doc = DataContext as DocumentController;
-                var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
-                GetInternalScrollViewer().ChangeView(null, curOffset ?? 0.0, null);
+                
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
-                var dataRegions = DataDocument.GetDataDocument()
-                    .GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
+                var dataRegions = DataDocument.GetDataDocument().GetRegions();
                 if (dataRegions != null)
                 {
-                    var totalOffset = DataDocument.GetField<NumberController>(KeyStore.BackgroundImageOpacityKey)?.Data ?? 0;
+                    var totalOffset = DataDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
                     xRegionsGrid.Height = totalOffset;
                     foreach (var region in dataRegions.TypedData)
                     {
-                        var offset = region.GetDataDocument()
-                            .GetField<NumberController>(KeyStore.BackgroundImageOpacityKey).Data;
                         var width = region.GetDataDocument().GetField<NumberController>(KeyStore.WidthFieldKey).Data;
                         var height = region.GetDataDocument().GetField<NumberController>(KeyStore.HeightFieldKey).Data;
                         var pos = region.GetDataDocument().GetField<PointController>(KeyStore.PositionFieldKey).Data;
-                        MakeRegionMarker(offset, totalOffset, pos, new Size(width, height), region);
+                        MakeRegionMarker(pos.Y / (xPdfView.Zoom / 100.0), totalOffset, pos, new Size(width, height), region);
                     }
                 }
                 //if (_dataRegions != null)
@@ -105,14 +123,10 @@ namespace Dash
         // moves to the region's offset
         private void MarkerSelected(object region)
         {
-            if (region == null) return;
-
             if (region is PDFRegionMarker pregion)
             {
-                xRegionsScrollviewer.ChangeView(null, pregion.Offset, null);
-                GetInternalScrollViewer().ChangeView(null, pregion.Offset, null);
+                NativeOffset = pregion.Offset;
             }
-
         }
 
         // toggles annotation visibility
@@ -136,22 +150,42 @@ namespace Dash
             _annotationManager.RegionPressed(theDoc, pos);
         }
 
-        private void PdfView_SizeChanged(object sender, SizeChangedEventArgs e)
+
+        private void PdfView_LayoutUpdated(object sender, object e)
         {
-                var sp = sender as FrameworkElement;
+            var pdfDocPanel = xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel");
             if (DataDocument.GetActualSize() == null)
             {
-                var native = sp.DesiredSize;
-                if (native.Width > 0)
+                if (pdfDocPanel.DesiredSize.Width > 0)
                 {
-                    this.DataDocument.SetActualSize(new Windows.Foundation.Point(native.Width, native.Height));
+                    this.DataDocument.SetActualSize(new Windows.Foundation.Point(pdfDocPanel.DesiredSize.Width, pdfDocPanel.DesiredSize.Height));
+                    pdfDocPanel.LayoutUpdated -= PdfView_LayoutUpdated;
                     UnFreeze();
                 }
             }
             else
             {
+                pdfDocPanel.LayoutUpdated -= PdfView_LayoutUpdated;
                 UnFreeze();
-                sp.SizeChanged -= PdfView_SizeChanged;
+            }
+        }
+
+        private void PdfView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var pdfDocPanel = xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel");
+            if (DataDocument.GetActualSize() == null)
+            {
+                if (pdfDocPanel.DesiredSize.Width > 0)
+                {
+                    this.DataDocument.SetActualSize(new Windows.Foundation.Point(pdfDocPanel.DesiredSize.Width, pdfDocPanel.DesiredSize.Height));
+                    pdfDocPanel.SizeChanged -= PdfView_SizeChanged;
+                    UnFreeze();
+                }
+            }
+            else
+            {
+                pdfDocPanel.SizeChanged -= PdfView_SizeChanged;
+                UnFreeze();
             }
         }
 
@@ -180,30 +214,17 @@ namespace Dash
 
             if (xTemporaryRegionMarker.Visibility == Visibility.Visible)
             {
+                var region = new RichTextNote("PDF " + xPdfView.VerticalOffset).Document;
+                region.GetDataDocument().SetField<NumberController>(KeyStore.WidthFieldKey, xTemporaryRegionMarker.Size.Width, true);
+                region.GetDataDocument().SetField<NumberController>(KeyStore.HeightFieldKey, xTemporaryRegionMarker.Size.Height, true);
+                region.GetDataDocument().SetField<PointController>(KeyStore.PositionFieldKey, xTemporaryRegionMarker.Position, true);
+                region.SetRegionDefinition(LayoutDocument);
+                xPdfView.PageOffsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
 
-                var dc = new RichTextNote("PDF " + xPdfView.VerticalOffset).Document;
-                dc.GetDataDocument().SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, xPdfView.VerticalOffset, true);
-                dc.GetDataDocument().SetField<NumberController>(KeyStore.WidthFieldKey, xTemporaryRegionMarker.Size.Width, true);
-                dc.GetDataDocument().SetField<NumberController>(KeyStore.HeightFieldKey, xTemporaryRegionMarker.Size.Height, true);
-                dc.GetDataDocument().SetField<PointController>(KeyStore.PositionFieldKey, xTemporaryRegionMarker.Position, true);
-                dc.SetRegionDefinition(LayoutDocument);
-                var regions = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-                var offsetCollection = xPdfView.PageOffsetCollection;
-                offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
+                this.DataDocument.AddToRegions(new List<DocumentController>(new DocumentController[] { region }));
 
-                //otherwise, make a new doc controller for the selection
-                if (regions == null)
-                {
-                    var dregions = new ListController<DocumentController>(dc);
-                    DataDocument.SetField(KeyStore.RegionsKey, dregions, true);
-                }
-                else
-                {
-                    regions.Add(dc);
-                }
-
-                MakeRegionMarker(xPdfView.VerticalOffset, endOffset, xTemporaryRegionMarker.Position, xTemporaryRegionMarker.Size, dc);
-                return dc;
+                MakeRegionMarker(xTemporaryRegionMarker.Position.Y / (xPdfView.Zoom / 100.0), endOffset, xTemporaryRegionMarker.Position, xTemporaryRegionMarker.Size, region);
+                return region;
             }
 
             return null;
@@ -212,13 +233,13 @@ namespace Dash
         // adds to the side of the PDFView
         private void MakeRegionMarker(double offset, double endOffset, Point pos, Size size, DocumentController dc)
         {
-            PDFRegionMarker newMarker = new PDFRegionMarker();
+            var newMarker = new PDFRegionMarker();
             newMarker.SetPosition(offset, endOffset);
             newMarker.LinkTo = dc;
             newMarker.Offset = offset;
             newMarker.PointerPressed += xMarker_OnPointerPressed;
             xAnnotationMarkers.Children.Add(newMarker);
-            PDFRegionMarker newRegion = new PDFRegionMarker();
+            var newRegion = new PDFRegionMarker();
             newRegion.SetSize(size, pos, new Size(xRegionsGrid.ActualWidth, xRegionsGrid.Height));
             newRegion.LinkTo = dc;
             newRegion.Offset = offset;
@@ -237,73 +258,57 @@ namespace Dash
             var native = this.DataDocument.GetActualSize().Value;
             var size = this.LayoutDocument.GetActualSize().Value;
             xPdfView.Width = native.X + 1;//Syncfusion rounds down to 99 zoom instead of 100, this prevents that
-            xRegionsScrollviewer.Width = native.X;
-            if (native.X < size.X)
+            var scaling = size.X / native.X;
+            if (scaling > 1)
             {
-                var scaling = size.X / native.X;
-                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, 0, 0) };
-                xPdfView.Height = size.Y / scaling;
+                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(1, 0, 0, 1, 0, 0) };
+                xPdfView.ZoomTo((int)(scaling * 100));
+                var desired = xPdfView.GetDescendantsOfType<Canvas>().FirstOrDefault(d => d.Name == "PdfDocumentPanel").DesiredSize;
+                xPdfView.Width = desired.Width*scaling;
+                xPdfView.Height = size.Y;
             }
             else
             {
-                var scaling = size.X / native.X;
-                var val = 0;
-                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, val, 0) };
+                xPdfView.ZoomTo(100);
+                xZoom.RenderTransform = new MatrixTransform() { Matrix = new Matrix(scaling, 0, 0, scaling, 0, 0) };
                 xPdfView.Height = size.Y / scaling;
             }
 
             xRegionsScrollviewer.Height = xPdfView.Height;
-            SetUpAnnotationsOverlay();
-
+            xRegionsScrollviewer.Width = xPdfView.Width;
+            NativeOffset = NativeOffset;
             return true;
         }
 
-        private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
+        private void xRegionsScrollviewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            var newOffset = xRegionsScrollviewer.VerticalOffset;
-            // PSA: do not use the PDFView's own scroll method. It's broken.
-            GetInternalScrollViewer().ChangeView(null, newOffset, null);
+            VerticalOffset = xRegionsScrollviewer.VerticalOffset;
         }
 
         private ScrollViewer GetInternalScrollViewer()
         {
             if (_internalViewer == null)
             {
-                _internalViewer = xPdfView.GetDescendantsOfType<ScrollViewer>()
-                    .First(t => t.Name == "documentScrollViewer");
-                _internalViewer.ViewChanged += InternalViewer_ViewChanged;
+                _internalViewer = xPdfView.GetDescendantsOfType<ScrollViewer>().First(t => t.Name == "documentScrollViewer");
             }
 
             return _internalViewer;
         }
 
-        private void InternalViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (_isResizing)
-            {
-                xRegionsScrollviewer.ChangeView(null, GetInternalScrollViewer().VerticalOffset, null);
-            }
-            _isResizing = false;
-        }
-
         private void XPdfView_OnDocumentLoaded(object sender, DocumentLoadedEventArgs e)
         {
-            SetUpAnnotationsOverlay();
-        }
-
-        private void SetUpAnnotationsOverlay()
-        {
+            // configure annotations overlay grid (xRegionsGrid)
             if (double.IsNaN(xRegionsGrid.Height))
             {
                 xRegionsScrollviewer.Height = xPdfView.Height;
-                var offsetCollection = xPdfView.PageOffsetCollection;
-                offsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
-                if (endOffset == 0) return;
-                DataDocument.SetField<NumberController>(KeyStore.BackgroundImageOpacityKey, endOffset - xPdfView.PageGap, true);
-                xRegionsGrid.Height = endOffset - xPdfView.PageGap;
+                xRegionsScrollviewer.Width = xPdfView.Width;
+                xPdfView.PageOffsetCollection.TryGetValue(xPdfView.PageCount, out var endOffset);
+                if (endOffset != 0)
+                {
+                    DataDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, endOffset - xPdfView.PageGap, true);
+                    xRegionsGrid.Height = endOffset - xPdfView.PageGap;
+                }
             }
-            xRegionsScrollviewer.ChangeView(null, GetInternalScrollViewer().VerticalOffset, null);
-            GetInternalScrollViewer().ChangeView(null, xRegionsScrollviewer.VerticalOffset, null);
             _isResizing = true;
         }
 
@@ -347,7 +352,7 @@ namespace Dash
         private void xNextAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             Debug.WriteLine(_dataRegions.Count);
-            var currOffset = xPdfView.VerticalOffset;
+            var currOffset = NativeOffset;
             PDFRegionMarker nextOffset = null;
 
             foreach (var region in _dataRegions)
@@ -363,8 +368,8 @@ namespace Dash
 
         private void xPrevAnnotation_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var currOffset = xPdfView.VerticalOffset;
-            PDFRegionMarker prevOffset = _dataRegions.First();
+            var currOffset =NativeOffset;
+            PDFRegionMarker prevOffset = null;
 
             foreach (var region in _dataRegions)
             {
@@ -374,7 +379,8 @@ namespace Dash
                 }
             }
             
-            MarkerSelected(prevOffset);
+            if (prevOffset != null)
+                MarkerSelected(prevOffset);
         }
 
         private void xRegionsScrollviewer_OnPointerEntered(object sender, PointerRoutedEventArgs e)

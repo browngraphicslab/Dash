@@ -334,6 +334,20 @@ namespace Dash
             else
                 todocs.AddRange(docs);
         }
+        public static ListController<DocumentController> GetRegions(this DocumentController document)
+        {
+            return document.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
+        }
+        public static void AddToRegions(this DocumentController document, List<DocumentController> regions)
+        {
+            var curRegions = document.GetLinks(KeyStore.RegionsKey);
+            if (curRegions == null)
+            {
+                document.SetField(KeyStore.RegionsKey, new ListController<DocumentController>(regions), true);
+            }
+            else
+                curRegions.AddRange(regions);
+        }
 
         public static DocumentController GetRegionDefinition(this DocumentController document)
         {
