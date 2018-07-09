@@ -182,9 +182,6 @@ namespace Dash
         }
 
         public static bool IsProperLetter(char c) => c != ')' && c != '(' && c != ',' && c != ' ' && c != '}' && c != '{' && c != '\r' && c != '\n';
-        #endregion
-
-        #region Toolbar
 
         private string InsertEnter(string text, char value, bool before = false)
         {
@@ -198,7 +195,8 @@ namespace Dash
                     resultChars.Add(ch);
                     resultChars.Add('\r');
 
-                } else if (ch == value)
+                }
+                else if (ch == value)
                 {
                     resultChars.Add(ch);
                     resultChars.Add('\r');
@@ -211,6 +209,35 @@ namespace Dash
 
             return new string(resultChars.ToArray());
         }
+
+        private string AddSemicolons(string code)
+        {
+            var chars = code.ToCharArray();
+            var resultChars = new List<char>();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (chars[i] == '\r' && i > 0 && (Char.IsLetterOrDigit(chars[i - 1]) || chars[i-1] == '-' || chars[i-1] == '+'))
+                {
+                   resultChars.Add(';');
+                   resultChars.Add(chars[i]);
+                } else if (i == chars.Length - 1 && i > 0 &&
+                           (Char.IsLetterOrDigit(chars[i - 1]) || chars[i - 1] == '-' || chars[i - 1] == '+'))
+                {
+                    resultChars.Add(chars[i]);
+                    resultChars.Add(';');
+                }
+                else
+                {
+                    resultChars.Add(chars[i]);
+                }
+            }
+
+            return new string(resultChars.ToArray());
+
+        }
+        #endregion
+
+        #region Toolbar
 
         private void XScript_OnClick(object sender, RoutedEventArgs e)
         {
@@ -307,19 +334,14 @@ namespace Dash
 
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            //get most recent char typed
-
             if (!_textModified)
             {
                 _currentHistoryIndex = 0;
 
+                //get most recent char typed
                 var textDiff = StringDiff(xTextBox.Text, _currentText);
 
-                //if (xTextBox.Text == "\r")
-                //{
-                //    xTextBox.Text = "";
-                //    return;
-                //}
+
                 if (xTextBox.Text.Equals(""))
                 {
                     TextHeight = 50;
@@ -441,13 +463,12 @@ namespace Dash
                             TextGrid.Height = new GridLength(50);
 
                             _currentHistoryIndex = 0;
-                            //get text replacing newlines with spaces
-                            var currentText = xTextBox.Text.Replace('\r', ' ');
+                            
                             
                             FieldControllerBase returnValue;
                             try
                             {
-                                returnValue = _dsl.Run(currentText, true);
+                                returnValue = _dsl.Run(xTextBox.Text, true);
                             }
                             catch (Exception ex)
                             {
@@ -455,6 +476,10 @@ namespace Dash
                             }
 
                             if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+
+                            //get text replacing newlines with spaces
+
+                            var currentText = AddSemicolons(xTextBox.Text).Replace('\r', ' ');
 
                             xTextBox.Text = ""; xTextBox.Text = "";
                             ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
