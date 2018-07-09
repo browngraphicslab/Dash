@@ -52,6 +52,8 @@ namespace Dash
         private bool wayUp;
         private bool wayDown;
 
+        private bool _oneStar;
+
         private int TextHeight
         {
             get => _textHeight;
@@ -164,10 +166,9 @@ namespace Dash
             for (var i = 0; i < aL.Length; i++)
             {
                 if (i < bL.Length && aL[i] == bL[i]) continue;
-                //remove last character if it was enter
-          
-                 return aL[i].ToString();
-               
+             
+                return aL[i].ToString();
+              
             }
 
             return a;
@@ -356,6 +357,7 @@ namespace Dash
                     TextGrid.Height = new GridLength(TextHeight);
                 }
 
+                
                 switch (textDiff)
                 {
                     case "\r" when xTextBox.Text.Length > _currentText.Length:
@@ -438,12 +440,26 @@ namespace Dash
                         break;
                     case "{" when xTextBox.Text.Length > _currentText.Length:
                         place = xTextBox.SelectionStart;
-                        xTextBox.Text += "\r      \r}";
+                        xTextBox.Text = xTextBox.Text.Insert(place, "\r      \r}");
                         xTextBox.SelectionStart = place + 7;
                         TextHeight += 40;
                         TextGrid.Height = new GridLength(TextHeight);
                         break;
+                    case "*":
+                        if (_oneStar)
+                        {
+                            place = xTextBox.SelectionStart;
+                            xTextBox.Text += "      */";
+                            xTextBox.SelectionStart = place + 1;
+                            _oneStar = false;
+                        }
+                        else
+                        {
+                            _oneStar = true;
+                        }
+                        break;
                     default:
+                        _oneStar = false;
                         if (xTextBox.Text != "")
                         {
                             //only give suggestions on last word

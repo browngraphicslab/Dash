@@ -683,7 +683,8 @@ namespace Dash
 
                     return ParseToExpression(varStatement.DeclarationList);
                 case SyntaxKind.EmptyStatement:
-                    break;
+                    //return empty string
+                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                 case SyntaxKind.ExpressionStatement:
                     var exp = (node as ExpressionStatement).Expression;
                     return ParseToExpression(exp);

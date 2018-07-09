@@ -38,6 +38,8 @@ namespace Dash
 
         private string _currentText = "";
 
+        private bool _oneStar;
+
         public DishScriptEditView(DocumentController dataDoc)
         {
             _dataDoc = dataDoc;
@@ -214,10 +216,24 @@ namespace Dash
                     break;
                 case "{" when xTextBox.Text.Length > _currentText.Length:
                     place = xTextBox.SelectionStart;
-                    xTextBox.Text += "\r      \r}";
+                    xTextBox.Text = xTextBox.Text.Insert(place, "\r      \r}");
                     xTextBox.SelectionStart = place + 7;
                     break;
+                case "*":
+                    if (_oneStar)
+                    {
+                        place = xTextBox.SelectionStart;
+                        xTextBox.Text = xTextBox.Text.Insert(place, "      */");
+                        xTextBox.SelectionStart = place + 1;
+                        _oneStar = false;
+                    }
+                    else
+                    {
+                        _oneStar = true;
+                    }
+                    break;
                 default:
+                    _oneStar = false;
                     break;
             }
 
