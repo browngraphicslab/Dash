@@ -241,6 +241,7 @@
     <Compile Include="Models\StringSearchModel.cs" />
     <Compile Include="Models\VideoModel.cs" />
     <Compile Include="Properties\Annotations1.cs" />
+    <Compile Include="Rest\Endpoints\BaseModelEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ContentUpdatingEndpointWrapper.cs" />
     <Compile Include="Rest\Endpoints\EverythingQuery.cs" />
     <Compile Include="Rest\Endpoints\IFieldEndpoint.cs" />
@@ -313,7 +314,6 @@
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
@@ -467,12 +467,6 @@
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
-    <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
-      <DependentUpon>TreeMenuNode.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
-      <DependentUpon>TreeNode.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
@@ -532,6 +526,9 @@
     </Compile>
     <Compile Include="Views\Operators\SearchOperatorView.xaml.cs">
       <DependentUpon>SearchOperatorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PDFRegionMarker.xaml.cs">
+      <DependentUpon>PDFRegionMarker.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\PdfView.xaml.cs">
       <DependentUpon>PdfView.xaml</DependentUpon>
@@ -987,14 +984,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\EditableScriptView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1064,6 +1053,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Operators\SearchOperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\PDFRegionMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

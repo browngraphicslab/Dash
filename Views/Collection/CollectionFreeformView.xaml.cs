@@ -60,6 +60,7 @@ namespace Dash
                 ViewManipulationControls.ElementScale = ViewModel.PrevScale;
             ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
         }
 
         public override Canvas GetCanvas()

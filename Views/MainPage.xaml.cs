@@ -41,6 +41,7 @@ namespace Dash
 
         private bool[] _firstDock = {true, true, true, true};
         private DockedView[] _lastDockedViews = {null, null, null, null};
+        private ListController<DocumentController>[] _dockControllers = {null, null, null, null};
 
         public static int GridSplitterThickness { get; } = 7;
 
@@ -90,7 +91,7 @@ namespace Dash
                     MainDocument = ContentController<FieldModel>.GetController<DocumentController>(doc.Id);
                     if (MainDocument.GetActiveLayout() == null)
                     {
-                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument.Id, KeyStore.DataKey)).Document;
+                        var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
                         MainDocument.SetActiveLayout(layout, true, true);
                     }
                 }
@@ -101,10 +102,11 @@ namespace Dash
                         [KeyStore.DataKey] = new ListController<DocumentController>(),
                     };
                     MainDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
-                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument.Id, KeyStore.DataKey)).Document;
+                    var layout = new CollectionBox(new DocumentReferenceController(MainDocument, KeyStore.DataKey)).Document;
                     MainDocument.SetActiveLayout(layout, true, true);
                 }
                 LoadSettings();
+                SetDockedItems();
 
                 var col = MainDocument.GetFieldOrCreateDefault<ListController<DocumentController>>(KeyStore.DataKey);
                 var history =
@@ -569,7 +571,7 @@ namespace Dash
                     }
                 }
 
-                if (e == null || !e.Handled)
+                if (e == null || !e.Handled && this.IsCtrlPressed())
                 {
                     TabMenu.ConfigureAndShow(freeformView, pos, xCanvas, true);
                     TabMenu.Instance?.AddGoToTabItems();
@@ -635,16 +637,15 @@ namespace Dash
                 mapTimer.Tick += (ss, ee) => xMapDocumentView.GetFirstDescendantOfType<CollectionView>()?.ViewModel?.FitContents();
             }
             xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DocumentContextKey, mainDocumentCollection.GetDataDocument(), true);
-            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument().Id, KeyStore.DataKey), true);
+            xMapDocumentView.ViewModel.LayoutDocument.SetField(KeyStore.DataKey, new DocumentReferenceController(mainDocumentCollection.GetDataDocument(), KeyStore.DataKey), true);
             mapTimer.Start();
         }
 
-        public void Dock(DocumentView toDock, DockDirection dir)
+        public void Dock(DocumentController toDock, DockDirection dir)
         {
-            DocumentController context = toDock.ViewModel.DocumentController;
             DocumentView copiedView = new DocumentView()
             {
-                DataContext = new DocumentViewModel(context.GetViewCopy()),
+                DataContext = new DocumentViewModel(toDock.GetViewCopy()),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
@@ -660,30 +661,37 @@ namespace Dash
 
             if (_firstDock[(int) dir])
             {
+                // make a new ListController
+                _dockControllers[(int)dir] = new ListController<DocumentController>(toDock);
+
                 switch (dir)
                 {
                     case DockDirection.Left:
                         xLeftDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xLeftDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 2, 1, 0, 5);
+                        MainDocument.SetField(KeyStore.DockedDocumentsLeftKey, _dockControllers[(int) dir], true);
                         break;
                     case DockDirection.Right:
                         xRightDockSplitterColumn.Width = new GridLength(GridSplitterThickness);
                         xRightDockColumn.Width = new GridLength(300);
                         SetGridPosition(dockedView, 6, 1, 0, 5);
+                        MainDocument.SetField(KeyStore.DockedDocumentsRightKey, _dockControllers[(int)dir], true);
                         break;
                     case DockDirection.Top:
                         xTopDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xTopDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 0, 1);
+                        MainDocument.SetField(KeyStore.DockedDocumentsTopKey, _dockControllers[(int)dir], true);
                         break;
                     case DockDirection.Bottom:
                         xBottomDockSplitterRow.Height = new GridLength(GridSplitterThickness);
                         xBottomDockRow.Height = new GridLength(200);
                         SetGridPosition(dockedView, 4, 1, 4, 1);
+                        MainDocument.SetField(KeyStore.DockedDocumentsBottomKey, _dockControllers[(int)dir], true);
                         break;
                 }
-                
+
                 xOuterGrid.Children.Add(dockedView);
                 _firstDock[(int) dir] = false;
                 _lastDockedViews[(int) dir] = dockedView;
@@ -694,8 +702,8 @@ namespace Dash
                 tail.ChangeNestedView(dockedView);
                 dockedView.PreviousView = tail;
                 _lastDockedViews[(int) dir] = dockedView;
+                _dockControllers[(int) dir].Add(toDock);
             }
-            
         }
 
         private void SetGridPosition(FrameworkElement e, int col, int colSpan, int row, int rowSpan)
@@ -804,16 +812,49 @@ namespace Dash
             }
         }
         
+        private void SetDockedItems()
+        {
+            var docs = new List<ListController<DocumentController>>
+            {
+                MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsLeftKey,
+                    null),
+                MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsRightKey,
+                    null),
+                MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsTopKey,
+                    null),
+                MainDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DockedDocumentsBottomKey,
+                    null)
+            };
+            var dir = new List<DockDirection>
+            {
+                DockDirection.Left,
+                DockDirection.Right,
+                DockDirection.Top,
+                DockDirection.Bottom
+            };
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (docs[i] != null)
+                {
+                    foreach (var d in docs[i].TypedData)
+                    {
+                        Dock(d, dir[i]);
+                    }
+                }
+            }
+        }
+
         private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ToggleSettingsVisibility(xSettingsView.Visibility == Visibility.Collapsed);
-			Toolbar.EnsureVisible();
         }
 
         public void ToggleSettingsVisibility(bool changeToVisible)
         {
             xSettingsView.Visibility = changeToVisible ? Visibility.Visible : Visibility.Collapsed;
-            Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
+            //Toolbar.Visibility = changeToVisible ? Visibility.Collapsed : Visibility.Visible;
+            Toolbar.ChangeVisibility(!changeToVisible);
         }
 
         private void xSettingsButton_PointerEntered(object sender, PointerRoutedEventArgs e)

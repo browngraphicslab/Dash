@@ -198,16 +198,16 @@ namespace Dash
             var startY = _transformBeingAnimated.Matrix.OffsetY;
 
             // Create a DoubleAnimation for translating
-            var translateAnimationX = MakeAnimationElement(startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
-            var translateAnimationY = MakeAnimationElement(startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
+            var translateAnimationX = MakeAnimationElement(_transformBeingAnimated, startX, startX + translate.X, "MatrixTransform.Matrix.OffsetX", duration);
+            var translateAnimationY = MakeAnimationElement(_transformBeingAnimated, startY, Math.Min(0, startY + translate.Y), "MatrixTransform.Matrix.OffsetY", duration);
             translateAnimationX.AutoReverse = false;
             translateAnimationY.AutoReverse = false;
 
 
             var scaleFactor = Math.Max(0.45, 3000 / Math.Sqrt(translate.X * translate.X + translate.Y * translate.Y));
             //Create a Double Animation for zooming in and out. Unfortunately, the AutoReverse bool does not work as expected.
-            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
-            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
+            var zoomOutAnimationX = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M11, _transformBeingAnimated.Matrix.M11 * 0.5, "MatrixTransform.Matrix.M11", halfDuration);
+            var zoomOutAnimationY = MakeAnimationElement(_transformBeingAnimated, _transformBeingAnimated.Matrix.M22, _transformBeingAnimated.Matrix.M22 * 0.5, "MatrixTransform.Matrix.M22", halfDuration);
 
             zoomOutAnimationX.AutoReverse = true;
             zoomOutAnimationY.AutoReverse = true;
@@ -244,13 +244,13 @@ namespace Dash
             var matrix = _transformBeingAnimated.Matrix;
             ViewModel.TransformGroup = new TransformGroupData(new Point(matrix.OffsetX, matrix.OffsetY), new Point(matrix.M11, matrix.M22));
         }
-        DoubleAnimation MakeAnimationElement(double from, double to, String name, Duration duration)
+        protected DoubleAnimation MakeAnimationElement(MatrixTransform matrix, double from, double to, String name, Duration duration)
         {
 
             var toReturn = new DoubleAnimation();
             toReturn.EnableDependentAnimation = true;
             toReturn.Duration = duration;
-            Storyboard.SetTarget(toReturn, _transformBeingAnimated);
+            Storyboard.SetTarget(toReturn, matrix);
             Storyboard.SetTargetProperty(toReturn, name);
 
             toReturn.From = from;
@@ -567,7 +567,7 @@ namespace Dash
 
                 if (key == null)
                 {
-                    TagKey = new KeyController(Guid.NewGuid().ToString(), args.QueryText);
+                    TagKey = new KeyController(args.QueryText, Guid.NewGuid().ToString());
                 }
                 else
                 {
@@ -589,7 +589,7 @@ namespace Dash
         private MarqueeInfo mInfo;
         object _marqueeKeyHandler = null;
 
-        protected void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        protected virtual void OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_marquee != null)
             {
@@ -600,12 +600,12 @@ namespace Dash
                 MainPage.Instance.RemoveHandler(KeyDownEvent, new KeyEventHandler(_marquee_KeyDown));
                 _marquee = null;
                 _isMarqueeActive = false;
-                e.Handled = true;
+                if (e != null) e.Handled = true;
             }
 
             SelectionCanvas?.Children.Clear();
             GetOuterGrid().PointerMoved -= OnPointerMoved;
-            GetOuterGrid().ReleasePointerCapture(e.Pointer);
+            if (e != null) GetOuterGrid().ReleasePointerCapture(e.Pointer);
         }
 
         /// <summary>
@@ -613,7 +613,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerMoved(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerMoved(object sender, PointerRoutedEventArgs args)
         {
             if (_isMarqueeActive)
             {
@@ -670,7 +670,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        protected void OnPointerPressed(object sender, PointerRoutedEventArgs args)
+        protected virtual void OnPointerPressed(object sender, PointerRoutedEventArgs args)
         {
             // marquee on left click by default
             if (MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.TakeNote)// bcz:  || args.IsRightPressed())
@@ -778,6 +778,7 @@ namespace Dash
                     SelectionCanvas, GetItemsControl().ItemsPanelRoot);
                 marquee = _marquee;
                 viewsToSelectFrom = DocsInMarquee(new Rect(where, new Size(_marquee.Width, _marquee.Height)));
+                OnPointerReleased(null, null);
             }
             else
             {
@@ -848,15 +849,18 @@ namespace Dash
 
         #endregion
 
-        // TODO: likely to need to modify for standard view (should note typing be enabled in standard?)
         #region Activation
 
         protected void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (XInkCanvas.IsTopmost())
+            if (ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.None) || ViewModel.ViewLevel.Equals(CollectionViewModel.StandardViewLevel.Detail))
             {
-                _isMarqueeActive = false;
-                RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                if (XInkCanvas.IsTopmost())
+                {
+                    _isMarqueeActive = false;
+                    if (!this.IsShiftPressed())
+                        RenderPreviewTextbox(e.GetPosition(_itemsPanelCanvas));
+                }
             }
         }
 
@@ -938,6 +942,11 @@ namespace Dash
 
         void PreviewTextbox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                PreviewTextbox_LostFocus(null, null);
+                return;
+            }
             previewTextbox.LostFocus -= PreviewTextbox_LostFocus;
             var text = KeyCodeToUnicode(e.Key);
             if (string.IsNullOrEmpty(text))
@@ -987,10 +996,10 @@ namespace Dash
                     previewTextBuffer = "";
                 loadingPermanentTextbox = true;
                 var containerData = ViewModel.ContainerDocument.GetDataDocument();
-                var keycontroller = KeyController.LookupKeyByName(keyname, true);
+                var keycontroller = new KeyController(keyname);
                 if (containerData.GetField(keycontroller, true) == null)
                     containerData.SetField(keycontroller, containerData.GetField(keycontroller) ?? new TextController("<default>"), true);
-                var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                 dbox.Tag = "Auto DataBox " + DateTime.Now.Second + "." + DateTime.Now.Millisecond;
                 dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                 Actions.DisplayDocument(ViewModel, dbox, where);

@@ -56,6 +56,14 @@ namespace Dash
         void DeleteDocument(T document, Action success, Action<Exception> error);
 
         /// <summary>
+        ///     Deletes all input documents from the server.
+        /// </summary>
+        /// <param name="documents"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        void DeleteDocuments(IEnumerable<T> documents, Action success, Action<Exception> error);
+
+        /// <summary>
         ///     Deletes all documents from the server.
         /// </summary>
         /// <param name="document"></param>

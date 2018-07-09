@@ -11,6 +11,7 @@ using Windows.System;
 using Dash.Views.Collection;
 using Windows.UI;
 using Dash.FontIcons;
+using Windows.UI.Core;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -261,6 +262,11 @@ namespace Dash
         #region Menu
         public void SetView(CollectionViewType viewType)
         {
+            if (_viewType.Equals(CollectionViewType.Standard) && !viewType.Equals(CollectionViewType.Standard))
+            {
+                ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+                this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            }
             _viewType = viewType;
             switch (_viewType)
             {

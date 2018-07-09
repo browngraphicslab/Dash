@@ -31,11 +31,6 @@ namespace Dash
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
 
-        public static bool Contains(DocumentView doc)
-        {
-            return _selectedDocs.Contains(doc);
-        }
-
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
@@ -114,7 +109,7 @@ namespace Dash
 
         public static IEnumerable<DocumentView> GetSelectedDocumentsInCollection(CollectionFreeformBase collection)
         {
-            return SelectedDocs.Where(doc => Equals(doc.ParentCollection.CurrentView, collection));
+            return SelectedDocs.Where(doc => Equals(doc.ParentCollection?.CurrentView, collection));
         }
 
         /*

@@ -148,14 +148,14 @@ namespace Dash
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    var keycontroller = KeyController.LookupKeyByName(key, true);
+                    var keycontroller = new KeyController(key);
                     var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
                     if (containerDoc != null)
                     {
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
                         containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
-                        var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                        var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                         dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);
@@ -418,6 +418,15 @@ namespace Dash
                 xRichEditBox.Document.Selection.Delete(TextRangeUnit.Character, 1);
                 getDocView().HandleCtrlEnter();
                 e.Handled = true;
+            }
+
+            if (e.Key.Equals(VirtualKey.Escape))
+            {
+                var tab = xRichEditBox.IsTabStop;
+                xRichEditBox.IsTabStop = false;
+                xRichEditBox.IsEnabled = false;
+                xRichEditBox.IsEnabled = true;
+                xRichEditBox.IsTabStop = tab;
             }
 
             /**

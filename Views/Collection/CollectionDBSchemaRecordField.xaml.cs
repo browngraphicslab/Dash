@@ -58,7 +58,7 @@ namespace Dash
             Document        = document;
             HeaderViewModel = headerViewModel;
             Row             = row;
-            DataReference   = new DocumentReferenceController(Document.GetDataDocument().Id, headerViewModel.FieldKey);
+            DataReference   = new DocumentReferenceController(Document.GetDataDocument(), headerViewModel.FieldKey);
 
             // hack to expand headers if they contain alot of text
             var tfmc = DataReference.DereferenceToRoot(null);
@@ -76,7 +76,7 @@ namespace Dash
         private void Document_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context c)
         {
             _dataReference = null; // forces the property change to fire-- otherwise, the old and new field references are the same
-            DataReference = new DocumentReferenceController(Document.Id, HeaderViewModel.FieldKey);
+            DataReference = new DocumentReferenceController(Document, HeaderViewModel.FieldKey);
         }
         
     }

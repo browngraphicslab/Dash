@@ -8,9 +8,9 @@ namespace Dash
 {
     public class ContentUpdatingEndpointWrapper<T> : IModelEndpoint<T> where T : EntityBase
     {
-        private IModelEndpoint<T> _endpoint;
+        private BaseModelEndpoint<T> _endpoint;
 
-        public ContentUpdatingEndpointWrapper(IModelEndpoint<T> endpoint) { _endpoint = endpoint; }
+        public ContentUpdatingEndpointWrapper(BaseModelEndpoint<T> endpoint) { _endpoint = endpoint; }
 
         private async Task AddModelsToControllers(IEnumerable<EntityBase> models)
         {
@@ -18,7 +18,7 @@ namespace Dash
             foreach (var entityBase in models.Cast<FieldModel>())
             {
                 entities.Add(entityBase);
-                if (entityBase is FieldModel fieldModel) await TrackDownReferences(fieldModel, entities);
+                if (entityBase is FieldModel fieldModel) await _endpoint.TrackDownReferences(fieldModel, entities);
             }
 
             var entityBases = entities.ToList();
@@ -74,7 +74,7 @@ namespace Dash
             return func;
         }
 
-        public async void AddDocument(T newDocument, Action<T> success, Action<Exception> error)
+        public void AddDocument(T newDocument, Action<T> success, Action<Exception> error)
         {
             //await AddModelsToControllers(new List<EntityBase>() { newDocument });
             _endpoint.AddDocument(newDocument, success, error);
@@ -101,6 +101,16 @@ namespace Dash
              _endpoint.DeleteDocument(document, success, error);
         }
 
+        public void DeleteDocuments(IEnumerable<T> documents, Action success, Action<Exception> error)
+        {
+            foreach (var document in documents)
+            {
+                //TODO make a RemoveControllers in ContentController
+                ContentController<T>.RemoveController(document.Id);
+            }
+            _endpoint.DeleteDocuments(documents, success, error);
+        }
+
         public void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             ContentController<T>.ClearAllControllersAndModels();
@@ -117,7 +127,7 @@ namespace Dash
             return _endpoint.GetDocuments(ids, GetSuccessFunc(success), error);
         }
 
-        public Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error) where V : EntityBase
+        public Task GetDocumentsByQuery<V>(IQuery<T> query, Func<IEnumerable<V>, Task> success, Action<Exception> error)  where V : EntityBase
         {
             return _endpoint.GetDocumentsByQuery(query, GetSuccessFunc(success), error);
         }
@@ -142,62 +152,5 @@ namespace Dash
             return _endpoint.GetBackups();
         }
 
-        protected async Task TrackDownReferences(FieldModel field, HashSet<FieldModel> fields)
-        {
-            fields.Add(field);
-            switch (field)
-            {
-                case DocumentModel doc:
-                    await TrackDownReferences(doc, fields);
-                    break;
-                case ListModel list:
-                    await TrackDownReferences(list, fields);
-                    break;
-                case DocumentReferenceModel dref:
-                    await TrackDownReferences(dref, fields);
-                    break;
-                case PointerReferenceModel pref:
-                    await TrackDownReferences(pref, fields);
-                    break;
-            }
-        }
-
-        private async Task TrackDownReferences(DocumentModel doc, HashSet<FieldModel> fields)
-        {
-            var subFields = new List<string>();
-            subFields.AddRange(doc.Fields.Keys);
-            subFields.AddRange(doc.Fields.Values);
-
-            await AddReferences(fields, subFields);
-        }
-
-        private async Task TrackDownReferences(ListModel list, HashSet<FieldModel> fields)
-        {
-            await AddReferences(fields, list.Data);
-        }
-
-        private async Task TrackDownReferences(PointerReferenceModel pref, HashSet<FieldModel> fields)
-        {
-            await AddReferences(fields, new [] {pref.KeyId, pref.ReferenceFieldModelId});
-        }
-
-        private async Task TrackDownReferences(DocumentReferenceModel dref, HashSet<FieldModel> fields)
-        {
-            await AddReferences(fields, new[] {dref.KeyId, dref.DocumentId});
-        }
-
-        private async Task AddReferences(HashSet<FieldModel> fields, IEnumerable<string> ids)
-        {
-            if (!ids.Any()) return;
-            await _endpoint.GetDocuments(ids, async (args) => {
-                    var results = args.ReturnedObjects.Cast<FieldModel>().ToList();//Even if there are other types of Entity bases, they should never be in a document if they aren't field models
-                    foreach (var res in results)
-                    {
-                        if (fields.Contains(res)) continue;
-                        await TrackDownReferences(res, fields);
-                    }
-                },
-                ex => throw ex);
-        }
     }
 }
