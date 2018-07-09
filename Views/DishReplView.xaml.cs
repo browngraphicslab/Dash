@@ -11,6 +11,7 @@ using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Annotations;
 using Dash.Models.DragModels;
@@ -97,6 +98,7 @@ namespace Dash
             ViewModel.Items = replItems;
             ScrollToBottom();
 
+
         }
 
         // ReSharper disable once InconsistentNaming
@@ -151,12 +153,11 @@ namespace Dash
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
         }
 
-        private void MoveCursorToEnd(int? end = null)
+        private void MoveCursorToEnd(TextBox elem = null, int? end = null)
         {
-            if (xTextBox.Text.Length == 0) return;
-
-            xTextBox.SelectionStart = end ?? xTextBox.Text.Length;
-            xTextBox.SelectionLength = 0;
+            elem = elem ?? xTextBox;
+            elem.SelectionStart = end ?? xTextBox.Text.Length;
+            elem.SelectionLength = 0;
         }
 
         public void ScrollToBottom()
@@ -235,6 +236,14 @@ namespace Dash
             return new string(resultChars.ToArray());
 
         }
+
+        private void DisableAllTextBoxes()
+        {
+            foreach (var item in ViewModel.Items)
+            {
+                item.EditTextValue = false;
+            }
+        }
         #endregion
 
         #region Toolbar
@@ -263,7 +272,62 @@ namespace Dash
         }
         #endregion
 
+        #region Repl Line Editing
+        private void XInputBlock_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            DisableAllTextBoxes();
+
+            ReplLineViewModel data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
+            data.EditTextValue = true;
+
+            //foreach (var item in ViewModel.Items)
+            //{
+            //    if (item == data)
+            //    {
+            //        item.
+            //    }
+            //}
+        }
+
+        private void XInputBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            ReplLineViewModel data = (sender as TextBox)?.DataContext as ReplLineViewModel;
+            data.EditTextValue = false;
+
+            var text = (sender as TextBox)?.Text;
+            data.LineText = text;
+
+            string returnValue;
+            try
+            {
+                //TODO: supress varible redeclaration problems
+                returnValue = (_dsl.Run(text, true) as TextController).Data;
+            }
+            catch (Exception ex)
+            {
+                returnValue = "There was an error: " + ex.StackTrace;
+            }
+
+            if (returnValue == null) returnValue = $" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.";
+            data.LineValueText = returnValue;
+        }
+
+        private void XInputBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                XInputBox_OnLostFocus(sender, null);
+            }
+        }
+        #endregion
+
         #region On Type Actions
+        private void XTextBox_OnGettingFocus(UIElement sender, GettingFocusEventArgs args)
+        {
+            DisableAllTextBoxes();
+            MoveCursorToEnd();
+        }
+
         private void CoreWindowOnKeyUp(CoreWindow sender, KeyEventArgs args)
         {
             var numItem = ViewModel.Items.Count;
@@ -481,7 +545,7 @@ namespace Dash
 
                             var currentText = AddSemicolons(xTextBox.Text).Replace('\r', ' ');
 
-                            xTextBox.Text = ""; xTextBox.Text = "";
+                            xTextBox.Text = ""; 
                             ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
                             //save input and output data
@@ -649,14 +713,14 @@ namespace Dash
 
             xTextBox.Text = keepText + selectedItem + functionEnding;
             xTextBox.Focus(FocusState.Pointer);
-            MoveCursorToEnd((keepText + selectedItem).Length + offset);
+            MoveCursorToEnd(xTextBox, (keepText + selectedItem).Length + offset);
 
             xSuggestionsPopup.IsOpen = false;
             xSuggestionsPopup.Visibility = Visibility.Collapsed;
         }
         #endregion
 
- 
+
 
     }
 }
