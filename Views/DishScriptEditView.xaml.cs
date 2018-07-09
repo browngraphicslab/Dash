@@ -36,7 +36,7 @@ namespace Dash
 
         private bool _running;
 
-        private string _currentText = "";
+        private string _currentText;
 
         private bool _oneStar;
 
@@ -47,8 +47,8 @@ namespace Dash
             InitializeComponent();
 
             //intialize lists to save data
-            xTextBox.Text = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
-
+            _currentText = dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
+            xTextBox.Text = _currentText ?? "";
         }
 
         private void XRun_OnClick(object sender, RoutedEventArgs e)
@@ -238,6 +238,9 @@ namespace Dash
             }
 
             _currentText = xTextBox.Text;
+
+            
+          _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data = _currentText;
 
         }
 

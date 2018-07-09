@@ -162,10 +162,10 @@ namespace Dash
         {
             //a is the longer string
             var aL = a.ToCharArray();
-            var bL = b.ToCharArray();
+            var bL = b?.ToCharArray();
             for (var i = 0; i < aL.Length; i++)
             {
-                if (i < bL.Length && aL[i] == bL[i]) continue;
+                if (i < bL?.Length && aL[i] == bL[i]) continue;
              
                 return aL[i].ToString();
               
