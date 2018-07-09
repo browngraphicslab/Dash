@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     [OperatorType(Op.Name.coll, Op.Name.inside)]
-    public class GetDocumentsInCollectionOperatorController : OperatorController
+    public sealed class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
         public static readonly KeyController TextKey = new KeyController("Term");
@@ -38,26 +36,21 @@ namespace Dash
         {
             [ResultsKey] = TypeInfo.List,
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var searchTerm = inputs[TextKey] as TextController;
-            if (searchTerm != null && searchTerm.Data != null)
-            {
-                var term = searchTerm.Data.ToLower();
-                var tree = DocumentTree.MainPageTree;
-                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
-                var final = allResults.TypedData.Where(doc => doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey) != null &&
-                                                  tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).Parents.Any(
-                                                      p => p?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data?.ToLower()?.Contains(term) == true));
-                outputs[ResultsKey] = new ListController<DocumentController>(final);
-            }
+            if (searchTerm == null || searchTerm.Data == null) return;
+
+            var term = searchTerm.Data.ToLower();
+            var tree = DocumentTree.MainPageTree;
+
+            var final = tree.Where(doc => doc.Parent?.DataDocument?.GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data?.ToLower()?.Contains(term) == true).ToList();
+            outputs[ResultsKey] = new ListController<DocumentController>(final.Select(d => d.ViewDocument));
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new GetDocumentsInCollectionOperatorController();
-        }
+        public override FieldControllerBase GetDefaultController() => new GetDocumentsInCollectionOperatorController();
     }
 }

@@ -44,9 +44,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Key Field Query", "DAB89167-7D62-4EE5-9DCF-D3E0A4ED72F9");
 
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data?.ToLower();
             var toReturn = new ListController<DocumentController>();
@@ -58,27 +56,31 @@ namespace Dash
                 var valueQuery = (inputs[ValueQueryKey] as TextController)?.Data?.ToLower() ?? "";
 
                 var tree = DocumentTree.MainPageTree;
-                var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
 
-                Debug.Assert(allResults != null);
-                var stringContainResults = allResults.TypedData.Where(doc => tree.GetNodeFromViewId(doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data).DataDocument.EnumFields().Any(f => f.Key.Name.ToLower().Contains(keyQuery) && f.Value.SearchForString(valueQuery).StringFound));
+                var positive = new List<DocumentNode>();
+                var negative = new List<DocumentNode>();
 
-                var finalResults = (negateCategory ? allResults.TypedData.Except(stringContainResults) : stringContainResults).ToArray();
-
-                //TODO FURTHER modify the helpful text of these docs so the text is more helpful
-
-                foreach (var resultDoc in finalResults)
+                foreach (var node in tree)
                 {
-                    if (!negateCategory)
+                    foreach (var field in node.DataDocument.EnumFields())
                     {
-                        resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = $"Found the specified key/value: {keyQuery}/{valueQuery} ";
-                    }
-                    else
-                    {
-                        resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = $"Didn't contain the specified negated key/value: {keyQuery}/{valueQuery} ";
+                        var keyOrValueMatch = field.Key.Name.ToLower().Contains(keyQuery) && field.Value.SearchForString(valueQuery).StringFound;
+                        if (keyOrValueMatch) positive.Add(node);
+                        else negative.Add(node);
                     }
                 }
 
+                var finalResults = (negateCategory ? negative.Select(d => d.ViewDocument) : positive.Select(d => d.ViewDocument)).ToArray();
+
+                //TODO FURTHER modify the helpful text of these docs so the text is more helpful
+
+                var found = $"Found the specified key/value: {keyQuery}/{valueQuery} ";
+                var absent = $"Didn't contain the specified negated key/value: {keyQuery}/{valueQuery} ";
+
+                foreach (var resultDoc in finalResults)
+                {
+                    resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = !negateCategory ? found : absent;
+                }
 
                 toReturn.AddRange(finalResults);
             }

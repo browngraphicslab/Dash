@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -42,6 +38,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Alias", "DB543B75-15D3-467A-A9DE-9F262F496C25");
 
+        /// <inheritdoc />
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>
@@ -49,29 +46,19 @@ namespace Dash
         {
             var toReturn = new ListController<DocumentController>();
 
-            String id = (inputs[IdKey] as TextController)?.Data;
-
-            var doc = ContentController<FieldModel>.GetController<DocumentController>(id);
+            var id = (inputs[IdKey] as TextController)?.Data;
 
             if (!string.IsNullOrEmpty(id))
             {
-                var allResults =
-                DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as
-                ListController<DocumentController>;
-
-                Debug.Assert(allResults != null);
-
-                var data = allResults.TypedData;
-
+                var doc = ContentController<FieldModel>.GetController<DocumentController>(id);
+                var dataDoc = doc.GetDataDocument();
                 var tree = DocumentTree.MainPageTree;
 
-                for (int i = 0; i < data.Count; i++)
+                foreach (var d in tree)
                 {
-                    var result = data[i];
-                    var docFromResult = tree.GetNodeFromViewId(result.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data);
-                    if (doc.GetDataDocument() == docFromResult.DataDocument)
+                    if (dataDoc.Equals(d.DataDocument)/* && !doc.Equals(d.ViewDocument)*/)
                     {
-                        toReturn.Add(data[i]);
+                        toReturn.Add(d.ViewDocument);
                     }
                 }
             }
@@ -79,10 +66,6 @@ namespace Dash
             outputs[ResultsKey] = toReturn;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new GetAllDocsByAlias();
-        }
-
+        public override FieldControllerBase GetDefaultController() => new GetAllDocsByAlias();
     }
 }

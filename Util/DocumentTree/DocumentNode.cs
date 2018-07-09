@@ -1,89 +1,56 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public class DocumentNode
+    public class DocumentNode : IEnumerable<DocumentNode>
     {
-        private readonly Dictionary<string,DocumentNode> _children = new Dictionary<string, DocumentNode>();
-        private readonly Dictionary<string, DocumentNode> _parents= new Dictionary<string, DocumentNode>();
+        public IReadOnlyList<DocumentNode> Children { get; }
 
-        public DocumentTree.DocumentNodeGroup Group { get; }
-        public DocumentTree Tree { get; }
+        public DocumentNode Parent { get; }
 
-        /// <summary>
-        /// gets all the members of the group that this node is in
-        /// </summary>
-        public DocumentNode[] GroupPeers
-        {
-            get { return Group?.Members; }
-        }
-
-        public DocumentNode[] Children
-        {
-            get { return _children.Values.ToArray(); }
-        }
-        public DocumentNode[] Parents
-        {
-            get { return _parents.Values.ToArray(); }
-        }
-
-        /// <summary>
-        /// The Id of this DocumentNode
-        /// </summary>
-        public string Id
-        {
-            get { return ViewDocument.Id + DataDocument.Id; }
-        }
-
-        /// <summary>
-        /// the data Document that this tree/graph node represents.
-        /// This can be the same as the view document
-        /// </summary>
+        /*
+         * The data Document that this tree/graph node represents.
+         * This can be the same as the view document
+         */
         public DocumentController DataDocument { get; }
 
-        /// <summary>
-        /// the view Document that this tree/graph node represents.
-        /// This can be the same as the data document
-        /// </summary>
+        /*
+         * the view Document that this tree/graph node represents.
+         * This can be the same as the data document
+         */
         public DocumentController ViewDocument { get; }
 
-        /// <summary>
-        /// Only constructor must have two documents, one for the view and one for the data.
-        /// They can be the same document
-        /// </summary>
-        /// <param name="viewDocument"></param>
-        /// <param name="dataDocument"></param>
-        public DocumentNode(DocumentController viewDocument, DocumentTree.DocumentNodeGroup group, DocumentTree tree)
+        /*
+         * Only constructor must have two documents, one for the view and one for the data.
+         * They can be the same document
+         */
+        public DocumentNode(DocumentController viewDocument, DocumentNode parent, IDictionary<DocumentController, DocumentNode> nodes)
         {
-            Group = group;
-            Tree = tree;
-            group.AddMember(this);
             ViewDocument = viewDocument;
             DataDocument = ViewDocument.GetDataDocument();
+
+            nodes.Add(DataDocument, this);
+
+            Parent = parent;
+            var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            Children = childDocControllers == null ? new List<DocumentNode>() : childDocControllers.Select(child => new DocumentNode(child, this, nodes)).ToList();
         }
 
-        public void AddParent(DocumentNode parent)
+        public IEnumerator<DocumentNode> GetEnumerator()
         {
-            if (!_parents.ContainsKey(parent.Id))
+            yield return this;
+            foreach (var child in Children)
             {
-                _parents[parent.Id] = parent;
-                parent.AddChild(this);
+                foreach (var node in child)
+                {
+                    yield return node;
+                }
             }
         }
 
-        public void AddChild(DocumentNode child)
-        {
-            if (!_children.ContainsKey(child.Id))
-            {
-                _children[child.Id] = child;
-                child.AddParent(this);
-            }
-        }
-
-        public override bool Equals(object obj)
-        {
-            return (obj is DocumentNode) && ((DocumentNode) obj).Id.Equals(Id);
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

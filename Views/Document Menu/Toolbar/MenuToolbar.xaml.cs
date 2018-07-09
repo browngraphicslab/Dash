@@ -531,13 +531,12 @@ namespace Dash
                 {
                     var parser = new ImageToDashUtil();
                     var docController = await parser.ParseFileAsync(thisImage);
-                    if (docController != null)
-                    {
-                        var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
-                        var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
-                        docController.GetPositionField().Data = where;
-                        mainPageCollectionView.ViewModel.AddDocument(docController);
-                    }
+                    if (docController == null) continue;
+
+                    var mainPageCollectionView = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+                    var where = Util.GetCollectionFreeFormPoint(mainPageCollectionView.CurrentView as CollectionFreeformBase, new Point(500, 500));
+                    docController.GetPositionField().Data = @where;
+                    mainPageCollectionView.ViewModel.AddDocument(docController);
                 }
             }
             else

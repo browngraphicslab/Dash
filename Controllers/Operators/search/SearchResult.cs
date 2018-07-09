@@ -7,7 +7,7 @@ namespace Dash
         public int Rank;
         public string RelevantText;
 
-        public SearchResult() : this("", 0, null)
+        public SearchResult() : this(null, "", 0)
         {
         }
 
@@ -18,7 +18,7 @@ namespace Dash
             ComputeAndSetRank();
         }
 
-        public SearchResult(string relevantText, int rank, DocumentController document)
+        public SearchResult(DocumentController document, string relevantText, int rank)
         {
             RelevantText = relevantText;
             Rank = rank;
