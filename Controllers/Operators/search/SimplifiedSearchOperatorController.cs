@@ -5,7 +5,7 @@ using DashShared;
 // ReSharper disable CheckNamespace
 namespace Dash
 {
-    [OperatorType(Op.Name.find, Op.Name.f)]
+    [OperatorType(Op.Name.find, Op.Name.f/*, Op.Name.search*/)]
     public sealed class SimplifiedSearchOperatorController : OperatorController
     {
 
