@@ -738,7 +738,7 @@ namespace Dash
 
         private void XWorkspace_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-
+          
         }
 
         private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
@@ -1494,21 +1494,24 @@ namespace Dash
 		private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 		    var docView = sender as DocumentView;
-      //      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
-		    //{
-		    //    docView.Width = docView.Bounds.Rect.Width;
-		    //}
-
-		    //if (docView.Bounds.Rect.Height != null && docView.ActualHeight + docView.ViewModel.YPos > docView.Bounds.Rect.Height)
-		    //{
-		    //    docView.Height = docView.Bounds.Rect.Height;
-		    //}
            
-			//var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
-			//	xWorkspace.Height - docView.ActualHeight);
 		   
-   //         docView.Bounds = new RectangleGeometry { Rect = bounds };
-		   
+
+            //      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
+            //{
+            //    docView.Width = docView.Bounds.Rect.Width;
+            //}
+
+            //if (docView.Bounds.Rect.Height != null && docView.ActualHeight + docView.ViewModel.YPos > docView.Bounds.Rect.Height)
+            //{
+            //    docView.Height = docView.Bounds.Rect.Height;
+            //}
+
+            //var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+            //	xWorkspace.Height - docView.ActualHeight);
+
+            //         docView.Bounds = new RectangleGeometry { Rect = bounds };
+
         }
 
 		private void XItemsExpander_OnExpanded(object sender, EventArgs e)
