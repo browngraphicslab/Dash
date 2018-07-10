@@ -27,7 +27,7 @@ namespace Dash
         private static readonly string PrototypeId = "159D2321-FBB4-4A2D-9902-9BDE105CABEF";
 	    //public static Grid grid;
 
-        public TemplateBox(double x = 0, double y = 0, double w = 200, double h = 200)
+        public TemplateBox(double x = 0, double y = 0, double w = 300, double h = 400)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), new ListController<DocumentController>());
             SetupDocument(DocumentType, PrototypeId, "Template Prototype Layout", fields);

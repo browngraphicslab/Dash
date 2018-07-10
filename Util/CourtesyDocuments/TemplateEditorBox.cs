@@ -17,7 +17,7 @@ namespace Dash
         private static readonly string PrototypeId = "92230B6B-CE44-495E-A278-EE991A58B91D";
 
 
-        public TemplateEditorBox(DocumentController workingDoc = null, double x = 0, double y = 0, double w = 200, double h = 20)
+        public TemplateEditorBox(DocumentController workingDoc = null, double x = 0, double y = 0, double w = 200, double h = 200)
         {
             // template editor box data key = working doc
             var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), workingDoc);
