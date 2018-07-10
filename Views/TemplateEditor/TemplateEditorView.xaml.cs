@@ -2126,75 +2126,75 @@ namespace Dash
 
 	 
 
-	    private void xButtonStack_OnPointerEntered(object sender, PointerRoutedEventArgs e)
-	    {
-	            var button = sender as StackPanel;
+	    //private void xButtonStack_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+	    //{
+	    //        var button = sender as StackPanel;
 
 	       
 
-            //toggle visibility of sub-buttons according to what header button was pressed
-            switch (button?.Name)
-	            {
-	                case "xAddItemsButtonStack":
-	                   MakeVisible(xAddItemsButtonStack, xAddItemsArrow);
+     //       //toggle visibility of sub-buttons according to what header button was pressed
+     //       switch (button?.Name)
+	    //        {
+	    //            case "xAddItemsButtonStack":
+	    //               MakeVisible(xAddItemsButtonStack, xAddItemsArrow);
                       
-                    break;
-	                case "xFormatItemsButtonStack":
-                        MakeVisible(xFormatItemsButtonStack, xFormatItemsArrow);
-                    break;
-	                case "xFormatTemplateButtonStack":
-	                   MakeVisible(xFormatTemplateButtonStack, xFormatTemplateArrow);
-                    break;
-	                case "xOptionsButtonStack":
-	                   MakeVisible(xOptionsButtonStack, xOptionsArrow);
-                    break;
-	            }
-        }
+     //               break;
+	    //            case "xFormatItemsButtonStack":
+     //                   MakeVisible(xFormatItemsButtonStack, xFormatItemsArrow);
+     //               break;
+	    //            case "xFormatTemplateButtonStack":
+	    //               MakeVisible(xFormatTemplateButtonStack, xFormatTemplateArrow);
+     //               break;
+	    //            case "xOptionsButtonStack":
+	    //               MakeVisible(xOptionsButtonStack, xOptionsArrow);
+     //               break;
+	    //        }
+     //   }
 
-	    private void MakeVisible(StackPanel buttonStack, FontAwesome arrow)
-	    {
-	        if (buttonStack.Visibility == Visibility.Visible)
-	        {
-	            MakeHidden(buttonStack, arrow);
-	        }
+	    //private void MakeVisible(StackPanel buttonStack, FontAwesome arrow)
+	    //{
+	    //    if (buttonStack.Visibility == Visibility.Visible)
+	    //    {
+	    //        MakeHidden(buttonStack, arrow);
+	    //    }
 
-            var centX = (float)xAddItemsArrow.ActualWidth / 2;
-	        var centY = (float)xAddItemsArrow.ActualHeight / 2;
-            arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-	            easingType: EasingType.Default).Start();
-	        buttonStack.Visibility = Visibility.Visible;
+     //       var centX = (float)xAddItemsArrow.ActualWidth / 2;
+	    //    var centY = (float)xAddItemsArrow.ActualHeight / 2;
+     //       arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+	    //        easingType: EasingType.Default).Start();
+	    //    buttonStack.Visibility = Visibility.Visible;
             
-        }
+     //   }
 
-	    private void MakeHidden(StackPanel buttonStack, FontAwesome arrow)
-	    {
-	        var centX = (float)xAddItemsArrow.ActualWidth / 2;
-	        var centY = (float)xAddItemsArrow.ActualHeight / 2;
-	        arrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
-	            easingType: EasingType.Default).Start();
-	        buttonStack.Visibility = Visibility.Collapsed;
-        }
+	    //private void MakeHidden(StackPanel buttonStack, FontAwesome arrow)
+	    //{
+	    //    var centX = (float)xAddItemsArrow.ActualWidth / 2;
+	    //    var centY = (float)xAddItemsArrow.ActualHeight / 2;
+	    //    arrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+	    //        easingType: EasingType.Default).Start();
+	    //    buttonStack.Visibility = Visibility.Collapsed;
+     //   }
 
-        private void xButtonStack_OnPointerExited(object sender, PointerRoutedEventArgs e)
-	    {
-	        var button = sender as StackPanel;
+     //   private void xButtonStack_OnPointerExited(object sender, PointerRoutedEventArgs e)
+	    //{
+	    //    var button = sender as StackPanel;
 
-	        //toggle visibility of sub-buttons according to what header button was pressed
-	        switch (button?.Name)
-	        {
-	            case "xAddItemsButtonStack":
-	                MakeHidden(xAddItemsButtonStack, xAddItemsArrow);
-	                break;
-	            case "xFormatItemsButtonStack":
-	               MakeHidden(xFormatItemsButtonStack, xFormatItemsArrow);
-	                break;
-	            case "xFormatTemplateButtonStack":
-	                MakeHidden(xFormatTemplateButtonStack, xFormatTemplateArrow);
-	                break;
-	            case "xOptionsButtonStack":
-	                MakeHidden(xOptionsButtonStack, xOptionsArrow);
-	                break;
-	        }
-	    }
+	    //    //toggle visibility of sub-buttons according to what header button was pressed
+	    //    switch (button?.Name)
+	    //    {
+	    //        case "xAddItemsButtonStack":
+	    //            MakeHidden(xAddItemsButtonStack, xAddItemsArrow);
+	    //            break;
+	    //        case "xFormatItemsButtonStack":
+	    //           MakeHidden(xFormatItemsButtonStack, xFormatItemsArrow);
+	    //            break;
+	    //        case "xFormatTemplateButtonStack":
+	    //            MakeHidden(xFormatTemplateButtonStack, xFormatTemplateArrow);
+	    //            break;
+	    //        case "xOptionsButtonStack":
+	    //            MakeHidden(xOptionsButtonStack, xOptionsArrow);
+	    //            break;
+	    //    }
+	    //}
     }
 }
