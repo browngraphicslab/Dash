@@ -21,56 +21,102 @@ namespace Dash
 		public AnnotationManager(FrameworkElement uiElement)
 		{
 			_element = uiElement;
-		    _element.GotFocus += Element_OnGotFocus;
-		    _element.LostFocus += Element_OnLostFocus;
-			this.FormatLinkMenu();
+			FormatLinkMenu();
 		}
-
-	    private void Element_OnLostFocus(object sender, RoutedEventArgs e)
-	    {
-	        Debug.WriteLine("### Got focus!");
-	    }
-
-	    private void Element_OnGotFocus(object sender, RoutedEventArgs e)
-	    {
-	        Debug.WriteLine("### Focus lost!");
-	    }
 
         //navigation and toggling of linked annotations to the pressed region
         public void RegionPressed(DocumentController theDoc, Point pos, DocumentController chosenDC = null)
         {
             if (chosenDC != null)
             {
-                ShowTargetDoc(chosenDC, pos);
+                // navigate to the doc if ctrl is pressed, unless if it's super far away, in which case dock it. FollowDocument will take care of that.
+                if (MainPage.Instance.IsCtrlPressed())
+                    FollowDocument(chosenDC, pos);
+                // otherwise, select it
+                else
+                {
+                    bool isAlreadySelected = SelectionManager.IsRegionSelected(chosenDC);
+
+                    // toggle visibility
+                    if (isAlreadySelected)
+                    {
+                        // if it didn't already have a visibility setting, set it to true. The method would execute and revert it.
+                        if (theDoc.GetField<BoolController>(KeyStore.AnnotationVisibilityKey) == null)
+                            theDoc.SetField(KeyStore.AnnotationVisibilityKey, new BoolController(true), true);
+
+                        bool isCurrentlyPinned = theDoc.GetField<BoolController>(KeyStore.AnnotationVisibilityKey).Data;
+                        if (isCurrentlyPinned)
+                        {
+                            // hide everything and keep it hidden
+                        }
+                        else
+                        {
+                            // unhide everything and keep it showing
+                        }
+                    }
+                    // select it and then display it
+                    else
+                    {
+                        SelectionManager.SelectRegion(chosenDC);
+                        ShowTargetDoc(chosenDC, pos);
+                    }
+                }
             }
+            else
+            {
+                // choose link to follow
+                if (MainPage.Instance.IsCtrlPressed())
+                {
 
-            //if (chosenDC != null)
-            //{
-            //    ShowTargetDoc(chosenDC, pos);
-            //}
-            //else
-            //{
-            //    var multiToLinks = showLinks(theDoc, KeyStore.LinkToKey, chosenDC);
-            //    var multiFromLinks = showLinks(theDoc, KeyStore.LinkFromKey, chosenDC);
+                }
+                else
+                {
+                    // should really just show everything
+                }
+                var multiToLinks = showLinks(theDoc, KeyStore.LinkToKey, chosenDC);
+                var multiFromLinks = showLinks(theDoc, KeyStore.LinkFromKey, chosenDC);
+                
+                // if only one doc is associated via linking to this doc
+                if (multiToLinks.Count + multiFromLinks.Count == 1)
+                {
+                    ShowTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
+                }
 
-            //    if (multiToLinks.Count + multiFromLinks.Count == 1)
-            //    {
-            //        ShowTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
-            //    }
-            //    else if (_linkFlyout.Items.Count == 0)
-            //    {
-            //        if (multiToLinks != null)
-            //            AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
-            //        if (multiFromLinks != null)
-            //            AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
+                // link flyouts' items are always cleared upon closing, so this should be true?
+                else if (_linkFlyout.Items.Count == 0)
+                {
+                    if (multiToLinks != null)
+                        AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
+                    if (multiFromLinks != null)
+                        AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
 
-            //        if (_linkFlyout.Items.Count > 0)
-            //            _linkFlyout.ShowAt((FrameworkElement) _element);
-            //    }
-            //}
+                    if (_linkFlyout.Items.Count > 0)
+                        _linkFlyout.ShowAt(_element);
+                }
+            }
         }
 
-        /// <summary>
+        // follows the document in the workspace, and heuristically determines if it's too far away and should be docked
+	    private void FollowDocument(DocumentController target, Point pos)
+	    {
+	        var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+	        var nearestOnScreen = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), true);
+	        var nearestOnCollection = FindNearestDisplayedTarget(pos, target?.GetDataDocument(), false);
+	        var docview = _element.GetFirstAncestorOfType<DocumentView>();
+	        var pt = new Point(docview.ViewModel.XPos + docview.ActualWidth, docview.ViewModel.YPos);
+
+            // TODO: figure out the distance/docking thing
+            MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+
+	        //images have additional highlighting features that should be implemented
+	        if (_element is IVisualAnnotatable)
+	        {
+	            var element = (IVisualAnnotatable)_element;
+	            element.GetAnnotationManager().UpdateHighlight(nearestOnCollection);
+	        }
+        }
+
+	    /// <summary>
         /// shows the (first) document linked from and to the source document.  If there are multiple, then a list is returned and
         /// nothing is shown.
         /// </summary>
@@ -88,27 +134,26 @@ namespace Dash
                 {
                     return linkToDoc.TypedData;
                 }
-                else
-                {
-                    //if there is only 1 link, get that link
-                    if (linkToDoc.Count == 1)
-                    {
-                        var linkToRegionDoc = linkToDoc.TypedData.First();
-                        var targetDoc = linkToRegionDoc.GetDataDocument().GetLinks(toOrFromLinks)?.TypedData.First() ?? linkToRegionDoc;
-                        theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
-                    }
-                    //if a link has been chosen, check if that doc controller has a parent to display instead
-                    else if (linkToDoc.Count > 1 && chosenDC != null)
-                    {
-                        var targetDoc = chosenDC;
-                        theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
-                    }
 
-                    return new List<DocumentController>(new DocumentController[] { theDoc });
+                //if there is only 1 link, get that link
+                if (linkToDoc.Count == 1)
+                {
+                    var linkToRegionDoc = linkToDoc.TypedData.First();
+                    var targetDoc = linkToRegionDoc.GetDataDocument().GetLinks(toOrFromLinks)?.TypedData.First() ?? linkToRegionDoc;
+                    theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
                 }
+                //if a link has been chosen, check if that doc controller has a parent to display instead
+                else if (linkToDoc.Count > 1 && chosenDC != null)
+                {
+                    var targetDoc = chosenDC;
+                    theDoc = targetDoc?.GetRegionDefinition() ?? targetDoc;
+                }
+
+                return new List<DocumentController>(new[] { theDoc });
             }
             return new List<DocumentController>();
         }
+
         //finds the nearest document view of the desired document controller that is displayed on the canvas
         DocumentView FindNearestDisplayedTarget(Point where, DocumentController targetData, bool onlyOnPage = true)
         {
@@ -141,17 +186,31 @@ namespace Dash
             return nearest;
         }
 
+        // shows the document
         private void ShowTargetDoc(DocumentController theDoc, Point pos)
         {
             //find nearest linked doc that is currently displayed
-            var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
-            var nearestOnScreen = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), true);
-            var nearestOnCollection = FindNearestDisplayedTarget(pos, theDoc?.GetDataDocument(), false);
-            var docview = _element.GetFirstAncestorOfType<DocumentView>();
-            var pt = new Point(docview.ViewModel.XPos + docview.ActualWidth, docview.ViewModel.YPos);
+            
+            
+                ////toggle the visibility of the linked doc
+                //if (theDoc != null)
+                //{
+                //    if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
+                //    {
+                //        Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                //    }
 
-            if (nearestOnCollection != null && !nearestOnCollection.Equals(_element.GetFirstAncestorOfType<DocumentView>()))
+                //} //if working with RichTextView, check web context as well
+                //else if (_element is RichTextView)
+                //{
+                //    var richTextView = (RichTextView)_element;
+                //    richTextView.CheckWebContext(nearestOnCollection, pt, theDoc);
+                //}
+
+            if (nearestOnCollection != null &&
+                !nearestOnCollection.Equals(_element.GetFirstAncestorOfType<DocumentView>()))
             {
+                // if ctrl is pressed, navigate to the document
                 if (MainPage.Instance.IsCtrlPressed())
                 {
                     //var viewCopy = theDoc.GetViewCopy(pt);
@@ -171,35 +230,6 @@ namespace Dash
                     //    Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
 
                 }
-                else
-                {
-                    ////navigate to the linked doc
-                    //MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
-
-                    ////images have additional highlighting features that should be implemented
-                    //if (_element is IVisualAnnotatable)
-                    //{
-                    //    var element = (IVisualAnnotatable) _element;
-                    //    element.GetAnnotationManager().UpdateHighlight(nearestOnCollection);
-                    //}
-                }
-            }
-            else
-            {
-                ////toggle the visibility of the linked doc
-                //if (theDoc != null)
-                //{
-                //    if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
-                //    {
-                //        Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
-                //    }
-
-                //} //if working with RichTextView, check web context as well
-                //else if (_element is RichTextView)
-                //{
-                //    var richTextView = (RichTextView)_element;
-                //    richTextView.CheckWebContext(nearestOnCollection, pt, theDoc);
-                //}
             }
         }
 

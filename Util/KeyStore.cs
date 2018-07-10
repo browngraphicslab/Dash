@@ -74,6 +74,7 @@ namespace Dash
         public static KeyController PdfRegionVerticalOffsetKey = new KeyController(DashConstants.KeyStore.PdfRegionVerticalOffsetKey);
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionTopLeftPercentileKey);
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionBottomRightPercentileKey);
+        public static KeyController AnnotationVisibilityKey = new KeyController("Pinned behavior", "4468E97B-508E-4292-84B4-7FB9F643617C");
 
         public static class SearchResultDocumentOutline
         {

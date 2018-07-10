@@ -23,23 +23,6 @@ namespace Dash
         }
     }
 
-    public class RegionSelectionChangedEventArgs
-    {
-        public List<DocumentController> DeselectedRegions, SelectedRegions;
-
-        public RegionSelectionChangedEventArgs()
-        {
-            DeselectedRegions = new List<DocumentController>();
-            SelectedRegions = new List<DocumentController>();
-        }
-
-        public RegionSelectionChangedEventArgs(List<DocumentController> selected, List<DocumentController> deselected)
-        {
-            DeselectedRegions = deselected;
-            SelectedRegions = selected;
-        }
-    }
-
     public static class SelectionManager
     {
         public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
@@ -48,19 +31,13 @@ namespace Dash
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
-        public static event RegionSelectionChangedHandler RegionSelectionChanged;
-        public delegate void RegionSelectionChangedHandler(RegionSelectionChangedEventArgs args);
 
         public static void ToggleSelection(DocumentView doc)
         {
             if (_selectedDocs.Contains(doc))
-            {
                 Deselect(doc);
-            }
             else
-            {
                 Select(doc);
-            }
         }
 
         public static void Select(DocumentView doc)
@@ -74,9 +51,11 @@ namespace Dash
         public static void SelectRegion(DocumentController doc)
         {
             _selectedRegions.Add(doc);
-            var args = new RegionSelectionChangedEventArgs();
-            args.SelectedRegions.Add(doc);
-            RegionSelectionChanged?.Invoke(args);
+        }
+
+        public static bool IsRegionSelected(DocumentController doc)
+        {
+            return _selectedRegions.Contains(doc);
         }
 
         public static void SelectDocuments(List<DocumentView> docs)

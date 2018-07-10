@@ -1264,17 +1264,17 @@ namespace Dash
             MainPage.Instance.PinToPresentation(ViewModel);
         }
 
-	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
+        // TODO: refactor this
+        private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
-
 		    if (ViewModel.Content is IAnnotatable element)
 		    {
 		        element.RegionSelected(element, new Point(0, 0));
 			}
 		    else
 		    {
-			    var ann = new AnnotationManager((Control) ViewModel.Content);
-			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
+			    var ann = new AnnotationManager(ViewModel.Content);
+		        ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
 		}
     }
