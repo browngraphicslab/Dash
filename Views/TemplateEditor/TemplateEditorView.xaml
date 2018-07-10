@@ -182,30 +182,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-                    <!--
-                    <ItemsControl x:Name="xItemsControlList"
-                                  x:FieldModifier="public"
-                                  ItemsSource="{Binding DocumentViewModels}"
-                                  Visibility ="Collapsed">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate >
-                                <StackPanel x:Name="xCollectionList"
-                                        x:FieldModifier="public"
-                                        Background="Transparent"
-                                        VerticalAlignment="Top"
-                                        HorizontalAlignment="Center" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <local:DocumentView
-                                    BindRenderTransform="True"
-                                    Loaded="DocumentView_OnLoaded" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    -->
+                    
                     <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public"
                                   ItemsSource="{Binding DocumentViewModels}" Visibility="Collapsed">
                         <ItemsControl.ItemsPanel>

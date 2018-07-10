@@ -52,7 +52,7 @@ namespace Dash
 		public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
 		public ObservableCollection<DocumentViewModel> ViewCopiesList { get;set;}
-
+	    public Grid GridRoot => xItemsControlGrid.ItemsPanelRoot as Grid;
 
 		public Collection<DocumentView> DocumentViews { get; set; }
 
@@ -235,7 +235,7 @@ namespace Dash
 		                .GetField<ListController<DocumentController>>(KeyStore.DataKey), true);
 				//check template style, override current template format if necessary
 			    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-				        .GetField<NumberController>(KeyStore.TemplateStyleKey).Data == TemplateConstants.ListView)
+				        .GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
 			    {
 					this.FormatTemplateIntoList();
 			    }
@@ -478,9 +478,7 @@ namespace Dash
 
 			//awaits user upload of video 
 			var files = await picker.PickMultipleFilesAsync();
-
-			//TODO just add new images to docs list instead of going through mainPageCollectionView
-			//var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            
 			if (files != null)
 			{
 				foreach (var file in files)
@@ -519,9 +517,7 @@ namespace Dash
 
 			//awaits user upload of audio 
 			var files = await picker.PickMultipleFilesAsync();
-
-			//TODO just add new images to docs list instead of going through mainPageCollectionView
-			//var docs = MainPage.Instance.MainDocument.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
+            
 			if (files != null)
 			{
 				foreach (var file in files)
@@ -694,11 +690,11 @@ namespace Dash
 		        if (xItemsControlGrid.Visibility == Visibility.Visible)
 		        {
 		            var rowInfo = new ListController<NumberController>(
-		                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
+		                GridRoot.RowDefinitions.Select(i =>
 		                    new NumberController(i.ActualHeight)));
 		            dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
 		            var colInfo = new ListController<NumberController>(
-		                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
+		                GridRoot.ColumnDefinitions.Select(i =>
 		                    new NumberController(i.ActualWidth)));
 		            dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
 		        }  
@@ -2039,7 +2035,6 @@ namespace Dash
         private void Line_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var line = sender as Line;
-            var grid = xItemsControlGrid.ItemsPanelRoot as Grid;
 
             // case for vertical lines
             if (line.X1 == line.X2)
@@ -2048,12 +2043,12 @@ namespace Dash
                 var leftCol = FindColumn(line.X1 - 10 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
                 var rightCol = leftCol + 1;
                 // determine if the right column is a valid index
-                if (rightCol <= grid.ColumnDefinitions.Count - 1)
+                if (rightCol <= GridRoot.ColumnDefinitions.Count - 1)
                 {
                     // if so, make the left column's width encapsulate the right column's width
-                    grid.ColumnDefinitions[leftCol].Width =
-                        new GridLength(grid.ColumnDefinitions[leftCol].ActualWidth +
-                                       grid.ColumnDefinitions[rightCol].ActualWidth);
+                    GridRoot.ColumnDefinitions[leftCol].Width =
+                        new GridLength(GridRoot.ColumnDefinitions[leftCol].ActualWidth +
+                                       GridRoot.ColumnDefinitions[rightCol].ActualWidth);
                     // fix the grid columns of everything that was in the right column and move it to the left
                     foreach (var docView in DocumentViews)
                     {
@@ -2063,7 +2058,7 @@ namespace Dash
                         }
                     }
                     // remove the right column
-                    grid.ColumnDefinitions.RemoveAt(rightCol);
+                    GridRoot.ColumnDefinitions.RemoveAt(rightCol);
                 }
                 // remove the line
                 xOuterWorkspace.Children.Remove(line);
@@ -2073,11 +2068,11 @@ namespace Dash
             {
                 var topRow = FindRow(line.Y1 - 10 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
                 var bottomRow = topRow + 1;
-                if (bottomRow <= grid.RowDefinitions.Count - 1)
+                if (bottomRow <= GridRoot.RowDefinitions.Count - 1)
                 {
-                    grid.RowDefinitions[topRow].Height =
-                        new GridLength(grid.RowDefinitions[topRow].ActualHeight +
-                                       grid.RowDefinitions[bottomRow].ActualHeight);
+                    GridRoot.RowDefinitions[topRow].Height =
+                        new GridLength(GridRoot.RowDefinitions[topRow].ActualHeight +
+                                       GridRoot.RowDefinitions[bottomRow].ActualHeight);
                     foreach (var docView in DocumentViews)
                     {
                         if (Grid.GetRow(docView.GetFirstAncestorOfType<ContentPresenter>()) == bottomRow)
@@ -2085,7 +2080,7 @@ namespace Dash
                             Grid.SetRow(docView.GetFirstAncestorOfType<ContentPresenter>(), topRow);
                         }
                     }
-                    grid.RowDefinitions.RemoveAt(bottomRow);
+                    GridRoot.RowDefinitions.RemoveAt(bottomRow);
                 }
                 xOuterWorkspace.Children.Remove(line);
             }
@@ -2112,14 +2107,14 @@ namespace Dash
 	                double calculatedHeight = 0;
 	                for (var i = 0; i < row; i++)
 	                {
-	                    calculatedHeight += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
+	                    calculatedHeight += GridRoot.RowDefinitions[i].ActualHeight;
 	                }
 
                     // subtract that sum from our current height
 	                height -= calculatedHeight;
 	            }
                 // insert a new row at that spot with our calculated height
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Insert(row, new RowDefinition
+	            GridRoot.RowDefinitions.Insert(row, new RowDefinition
 	            {
 	                Height = new GridLength(height)
 	            });
@@ -2170,13 +2165,13 @@ namespace Dash
 	                double calculatedWidth = 0;
 	                for (var i = 0; i < col; i++)
 	                {
-	                    calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
+	                    calculatedWidth += GridRoot.ColumnDefinitions[i].ActualWidth;
 	                }
                     // subtract the sum from our current width
 	                width -= calculatedWidth;
 	            }
                 // create a new column at that specific index with our new width
-                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Insert(col, new ColumnDefinition
+                GridRoot.ColumnDefinitions.Insert(col, new ColumnDefinition
 	            {
 	                Width = new GridLength(width)
 	            });
@@ -2201,24 +2196,24 @@ namespace Dash
 	    {
 	        double currOffset = 0;
             // loop through every row definition
-	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count; i++)
+	        for (var i = 0; i < GridRoot.RowDefinitions.Count; i++)
 	        {
                 // if the y-offset lands between these two numbers, the y-offset is in row i
 	            if (currOffset < offsetY && offsetY <
-	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight)
+	                currOffset + GridRoot.RowDefinitions[i].ActualHeight)
 	            {
 	                return i;
 	            }
 
                 // save the position of this row and go to the next row
-	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
+	            currOffset += GridRoot.RowDefinitions[i].ActualHeight;
 	        }
 
             // if we haven't returned anything, but the offset is between our end offset and the height
 	        if (currOffset < offsetY && offsetY < xWorkspace.Height)
 	        {
                 // the y-offset is in the last row
-	            return (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count;
+	            return GridRoot.RowDefinitions.Count;
 	        }
 
 	        return 0;
@@ -2228,22 +2223,22 @@ namespace Dash
 	    {
 	        double currOffset = 0;
             // loop through every column definition
-	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count; i++)
+	        for (var i = 0; i < GridRoot.ColumnDefinitions.Count; i++)
 	        {
                 // if the x-offset lands between these two numbers, the x-offset is in column i
 	            if (currOffset < offsetX && offsetX <
-	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth)
+	                currOffset + GridRoot.ColumnDefinitions[i].ActualWidth)
 	            {
 	                return i;
 	            }
 
                 // save the position of this column and go to the next
-	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
+	            currOffset += GridRoot.ColumnDefinitions[i].ActualWidth;
 	        }
 
 	        if (currOffset < offsetX && offsetX < xWorkspace.Width)
 	        {
-	            return (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count;
+	            return GridRoot.ColumnDefinitions.Count;
 	        }
 
 	        return 0;
@@ -2259,7 +2254,6 @@ namespace Dash
 	    {
 	        // set up variables
 	        var docView = sender as DocumentView;
-	        var grid = xItemsControlGrid.ItemsPanelRoot as Grid;
 
 	        DocumentViews.Add(docView);
 	        // since we are in a grid, we want to use the horizontal and vertical alignment keys
@@ -2267,6 +2261,7 @@ namespace Dash
 	            true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
 	            true);
+            // stop the document from being able to be manipulated
 	        docView.PreventManipulation = true;
 	        // we also want to make sure the horizontal and vertical alignment are both stretched
 	        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
@@ -2299,15 +2294,15 @@ namespace Dash
 	            .GetField<DocumentController>(KeyStore.ActiveLayoutKey);
 	        // determine if it exists and a row information key exists with a different number of rows than currently
 	        if (layout?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo &&
-	            rowInfo.Data.Count != grid.RowDefinitions.Count)
+	            rowInfo.Data.Count != GridRoot.RowDefinitions.Count)
 	        {
                 // if so, clear the rows
-	            grid.RowDefinitions.Clear();
+	            GridRoot.RowDefinitions.Clear();
                 // start counting the height at the offset determined by the top of xOuterWorkspace
 	            var countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
 	            foreach (NumberController heightInfo in rowInfo.Data)
 	            {
-	                grid.RowDefinitions.Add(
+	                GridRoot.RowDefinitions.Add(
 	                    new RowDefinition
 	                    {
 	                        Height = new GridLength(heightInfo.Data)
@@ -2322,14 +2317,14 @@ namespace Dash
 	        }
 
 	        if (layout?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo &&
-	            colInfo.Data.Count != grid.ColumnDefinitions.Count)
+	            colInfo.Data.Count != GridRoot.ColumnDefinitions.Count)
 	        {
-	            grid.ColumnDefinitions.Clear();
+	            GridRoot.ColumnDefinitions.Clear();
 
 	            double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
 	            foreach (NumberController widthInfo in colInfo.Data)
 	            {
-	                grid.ColumnDefinitions.Add(
+	                GridRoot.ColumnDefinitions.Add(
 	                    new ColumnDefinition
 	                    {
 	                        Width = new GridLength(widthInfo.Data)
@@ -2343,41 +2338,41 @@ namespace Dash
 	            }
 	        }
 
-	        double width = 0;
-	        if (grid.ColumnDefinitions[(int) col]?.Width.IsStar ?? false)
+	        double width;
+	        if (GridRoot.ColumnDefinitions[(int) col]?.Width.IsStar ?? false)
 	        {
 	            double calculatedWidth = 0;
 	            for (var i = 0; i < col; i++)
 	            {
-	                calculatedWidth += grid.ColumnDefinitions[i].Width.Value;
+	                calculatedWidth += GridRoot.ColumnDefinitions[i].Width.Value;
 	            }
 
-	            for (var j = (int) col + 1; j < grid.ColumnDefinitions.Count; j++)
+	            for (var j = (int) col + 1; j < GridRoot.ColumnDefinitions.Count; j++)
 	            {
-	                calculatedWidth += grid.ColumnDefinitions[j].Width.Value;
+	                calculatedWidth += GridRoot.ColumnDefinitions[j].Width.Value;
 	            }
 
 	            width = xWorkspace.Width - calculatedWidth;
 	        }
 	        else
 	        {
-	            width = grid.ColumnDefinitions[(int) col]?.Width.Value ?? xWorkspace.Width;
+	            width = GridRoot.ColumnDefinitions[(int) col]?.Width.Value ?? xWorkspace.Width;
 	        }
 
-	        double height = 0;
-	        if (grid.RowDefinitions[(int) row]?.Height.IsStar ?? false)
+	        double height;
+	        if (GridRoot.RowDefinitions[(int) row]?.Height.IsStar ?? false)
 	        {
 	            double calculatedHeight = 0;
-	            for (var i = 1; i < grid.RowDefinitions.Count; i++)
+	            for (var i = 1; i < GridRoot.RowDefinitions.Count; i++)
 	            {
-	                calculatedHeight += grid.RowDefinitions[i].Height.Value;
+	                calculatedHeight += GridRoot.RowDefinitions[i].Height.Value;
 	            }
 
 	            height = xWorkspace.Height - calculatedHeight;
 	        }
 	        else
 	        {
-	            height = grid.RowDefinitions[(int) row]?.Height.Value ?? xWorkspace.Height;
+	            height = GridRoot.RowDefinitions[(int) row]?.Height.Value ?? xWorkspace.Height;
 
 	        }
 
