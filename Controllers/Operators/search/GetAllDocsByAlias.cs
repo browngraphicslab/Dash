@@ -52,6 +52,7 @@ namespace Dash
             {
                 var doc = ContentController<FieldModel>.GetController<DocumentController>(id);
                 var dataDoc = doc.GetDataDocument();
+
                 var tree = DocumentTree.MainPageTree;
 
                 foreach (var d in tree)
