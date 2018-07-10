@@ -42,9 +42,11 @@ namespace Dash
 	{
 		public DocumentController LayoutDocument { get; set; }
 		public DocumentController DataDocument { get; set; }
+		private DocumentController InitialDataDocument { get; set; }
 
 		//initializing the list of layout documents contained within the template
 		public ObservableCollection<DocumentController> DocumentControllers { get; set; }
+		public ObservableCollection<DocumentController> InitialDocumentControllers { get; set; }
 
 		//item source for xWorkspace
 		public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
@@ -72,6 +74,7 @@ namespace Dash
 			DocumentViewModels = new ObservableCollection<DocumentViewModel>();
 			ViewCopiesList = new ObservableCollection<DocumentViewModel>();
 			DocumentViews = new Collection<DocumentView>();
+			InitialDocumentControllers = new ObservableCollection<DocumentController>();
 		}
 
 		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
@@ -229,6 +232,8 @@ namespace Dash
 					true);
 			}
 
+			
+
 			//initialize UI of workspace
 			this.FormatPanes();
 			this.FormatUploadTemplateFlyout();
@@ -262,7 +267,8 @@ namespace Dash
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
 			foreach (var layoutDoc in layoutDocsList)
 			{
-				DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
+				DocumentControllers.Add(layoutDoc);
+				InitialDocumentControllers.Add(layoutDoc);
 			}
 
 			// update item source
@@ -308,6 +314,8 @@ namespace Dash
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
 			xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
+			InitialDataDocument = DataDocument;
+			InitialDocumentControllers = DocumentControllers;
 		}
 
 
@@ -627,7 +635,8 @@ namespace Dash
 
 		    if (xTitle.Text == "Activate")
 		    {
-		        xTitle.Text = "Preview";
+			    InitialDocumentControllers = DocumentControllers;
+				xTitle.Text = "Preview";
 		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
 		        // layout document's data key holds the document that we are currently working on
 		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
@@ -666,6 +675,7 @@ namespace Dash
 		        // let the working doc's title be the template's title
 		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
 		            true);
+				
 			    //update template style
 			    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
 			        TemplateConstants.ListView)
@@ -679,7 +689,9 @@ namespace Dash
 		        xTitle.Text = "Activate";
 		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["ActivateIcon"] as string);
 		    }
-            
+
+			
+
 		}
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -1492,6 +1504,28 @@ namespace Dash
 		private void XResetButton_OnClick(object sender, RoutedEventArgs e)
 		{
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
+
+			this.Clear();
+
+			foreach (var doc in InitialDocumentControllers)
+			{
+				DocumentControllers.Add(doc);
+			}
+			/*
+			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).DocumentType
+				.Equals(TemplateBox.DocumentType))
+			{
+				DataDocument.SetField(KeyStore.DataKey,
+					LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+						.GetField<ListController<DocumentController>>(KeyStore.DataKey),
+					true);
+			}
+			else
+			{
+				this.Clear();
+			}
+			*/
+			
 		}
 
 		private void XClearButton_OnClick(object sender, RoutedEventArgs e)

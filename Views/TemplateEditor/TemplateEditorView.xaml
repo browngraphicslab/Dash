@@ -268,7 +268,7 @@
                             
                         
                         <!--Revert Ellipse -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
+                        <Grid PointerPressed="XResetButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
                             <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
                             <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>
