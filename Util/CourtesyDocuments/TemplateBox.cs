@@ -112,18 +112,24 @@ namespace Dash
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
             {
-                var cfargs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
-                if (cfargs.ListAction ==
-                    ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
-                {
-                    AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
-	                AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
-				}
-                else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
-                {
-                    LayoutDocuments(sender, newCtxt, grid);
-	                LayoutDocuments(sender, newCtxt, stack);
-				}
+                
+                //if .GetField<BoolController>(KeyStore.ActivationKey).Data == true)
+                //{
+                    
+                    var cfargs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
+                    if (cfargs.ListAction ==
+                        ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
+                    {
+                        AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
+                        AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
+                    }
+                    else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs
+                                 .ListChangedAction.Content)
+                    {
+                        LayoutDocuments(sender, newCtxt, grid);
+                        LayoutDocuments(sender, newCtxt, stack);
+                    }
+                //}
             }
 
             grid.Loaded += delegate

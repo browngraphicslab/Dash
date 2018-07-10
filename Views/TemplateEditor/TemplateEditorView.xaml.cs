@@ -649,67 +649,56 @@ namespace Dash
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
-
-		    if (xTitle.Text == "Activate")
+		    var toggle = sender as ToggleButton;
+		    if ((bool) xActivate.IsChecked)
 		    {
-			    InitialDocumentControllers = DocumentControllers;
-				xTitle.Text = "Preview";
-		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
-		        // layout document's data key holds the document that we are currently working on
-		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-		        // make a copy of the data document
-		        var dataDocCopy = DataDocument.GetDataInstance();
-		        // loop through each layout document and try to abstract it out when necessary
+                // layout document's data key holds the document that we are currently working on
+                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+                // make a copy of the data document
+                var dataDocCopy = DataDocument.GetDataInstance();
+                // loop through each layout document and try to abstract it out when necessary
 
-		        // set the dataDocCopy's document context key to the working document's data document
-		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-		        // set the position of the data copy to the working document's position
-		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
-		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
-				
-				//dataDocCopy.SetField(KeyStore.TemplateStyleKey,
-				//    style, true);
+                // set the dataDocCopy's document context key to the working document's data document
+                dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+                // set the position of the data copy to the working document's position
+                dataDocCopy.SetField(KeyStore.PositionFieldKey,
+                    workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
 
-		        if (xItemsControlGrid.Visibility == Visibility.Visible)
-		        {
-		            var rowInfo = new ListController<NumberController>(
-		                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
-		                    new NumberController(i.ActualHeight)));
-		            dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
-		            var colInfo = new ListController<NumberController>(
-		                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
-		                    new NumberController(i.ActualWidth)));
-		            dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
-		        }  
+                //dataDocCopy.SetField(KeyStore.TemplateStyleKey,
+                //    style, true);
+
+                if (xItemsControlGrid.Visibility == Visibility.Visible)
+                {
+                    var rowInfo = new ListController<NumberController>(
+                        (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
+                            new NumberController(i.ActualHeight)));
+                    dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
+                    var colInfo = new ListController<NumberController>(
+                        (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
+                            new NumberController(i.ActualWidth)));
+                    dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+                }
 
                 // set width and height of the new document
-          //      dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
-		        //dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
-		        // set the active layout of the working document to the dataDocCopy (which is the template)
-		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-		        // let the working doc's title be the template's title
-		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-		            true);
-				
-			    //update template style
-			    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
-			        TemplateConstants.ListView)
-			    {
-					this.FormatTemplateIntoList();
-			    }
-			    
-			}
-		    else
-		    {
-		        xTitle.Text = "Activate";
-		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["ActivateIcon"] as string);
-		    }
+                //      dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+                //dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
+                // set the active layout of the working document to the dataDocCopy (which is the template)
+                workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
+                workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+                    this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+                // let the working doc's title be the template's title
+                workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+                    true);
 
-			
+                //update template style
+                if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+                    TemplateConstants.ListView)
+                {
+                    this.FormatTemplateIntoList();
+                }
 
-		}
+            }
+        }
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
 		{
@@ -2371,6 +2360,35 @@ namespace Dash
 		{
 			Debug.WriteLine("DRAG COMPLETED");
 		}
+
+	  
+
+	    private void ToggleControl_OnChecked(object sender, RoutedEventArgs e)
+	    {
+	        var toggle = sender as ToggleButton;
+	        switch (toggle.Name)
+	        {
+                case "xActivate":
+                    if ((bool) xPreview.IsChecked)
+                    {
+                        xPreview.IsChecked = false;
+                    }
+
+                    xActivate.IsChecked = true;
+                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
+                    break;
+	            case "xPreview":
+	                if ((bool) xActivate.IsChecked)
+	                {
+	                    xActivate.IsChecked = false;
+	                }
+
+	                xPreview.IsChecked = true;
+	                DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
+                    break;
+	        }
+        }
 	}
 
 }

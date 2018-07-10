@@ -72,6 +72,7 @@ namespace Dash
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
         public static KeyController DockedDocumentsBottomKey = new KeyController("Documents docked on the bottom", "F6E10E00-1644-40BE-8A9E-0C648FE4B223");
         public static KeyController TemplateEditorKey = new KeyController("_Template Document", "35624019-4C59-45AD-B44D-77830FD41EA3");
+        public static KeyController ActivationKey = new KeyController("Document Template activation phase", "9BA4DB7E-304A-4F0F-8704-C4E4B970C7B9");
         public static KeyController UseVerticalAlignmentKey = new KeyController("Use Vertical Alignment for TemplateBox View", "3F94F0DD-9412-4571-A89B-4694F83AF534");
         public static KeyController UseHorizontalAlignmentKey = new KeyController("Use Horizontal Alignment for TemplateBox View", "D58E7E8E-D1C1-476F-ADC3-DF61B1F62239");
 	    public static KeyController TemplateStyleKey = new KeyController("Style of Template View", "54FFT93A-D1C1-476F-ADC3-DF61B1F62239");
