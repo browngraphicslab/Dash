@@ -240,7 +240,6 @@
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <local:DocumentView
-                                        BindRenderTransform="True"
                                         Loaded="DocumentView_OnLoaded_ListView"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
