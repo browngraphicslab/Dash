@@ -1522,7 +1522,7 @@ namespace Dash
 		{
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
 
-			this.Clear();
+			Clear();
 
 			foreach (var doc in InitialDocumentControllers)
 			{
