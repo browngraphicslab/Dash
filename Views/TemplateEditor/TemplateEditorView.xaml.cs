@@ -108,26 +108,27 @@ namespace Dash
 		private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
 		{
             // find a matching docment view model and remove it
+		    DocumentViewModel rightDoc = null;
 			foreach (var doc in oldDocs)
 			{
 				//ViewCopiesList.Removedoc.GetDelegates().Remove();
-				var rightDoc = DocumentViewModels.First(i => i.DocumentController.Equals(doc));
+				rightDoc = DocumentViewModels.First(i => i.DocumentController.Equals(doc));
 				if (rightDoc != null)
 				{
 					DocumentViewModels.Remove(rightDoc);
+                    DataDocument.RemoveFromListField(KeyStore.DataKey, rightDoc.DocumentController);
 					//delete corresponding copy
 					foreach (var copy in ViewCopiesList)
 					{
 						if (copy.DataDocument.Equals(rightDoc.DataDocument)) ViewCopiesList.Remove(copy);
-						break;
+						break;//TODO Why is this here?
 					}
+
+				    break;
 				}
 				
 			}
-            
-            // reset the data document's data key to the modified list
-			DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(DocumentControllers),
-				true);
+
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
 			xItemsControlGrid.ItemsSource = DocumentViewModels;
 
@@ -173,8 +174,9 @@ namespace Dash
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
             // adds layout doc to list of layout docs
-		    var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-		    datakey.Add(doc);
+            DataDocument.AddToListField(KeyStore.DataKey, doc);
+		    //var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+		    //datakey.Add(doc);
 
 			//add copy for list view
 			var copy = doc.GetViewCopy();
