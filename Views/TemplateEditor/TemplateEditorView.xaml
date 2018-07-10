@@ -57,13 +57,13 @@
                     x:Name="xVertLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
                     RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
                 <Rectangle x:Name="xGridTopDragger" Visibility="Collapsed" Width="500" Height="20"
-                           RelativePanel.AlignTopWithPanel="True" Fill="DarkSlateGray"
+                           RelativePanel.AlignTopWithPanel="True" Fill="Gray"
                            ManipulationStarted="XGridTopDragger_OnManipulationStarted"
                            ManipulationDelta="XGridTopDragger_OnManipulationDelta"
                            ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
                            ManipulationMode="TranslateY"/>
                 <Rectangle x:Name="xGridLeftDragger" Visibility="Collapsed" Width="20" Height="500"
-                           RelativePanel.AlignLeftWithPanel="True" Fill="DarkSlateGray"
+                           RelativePanel.AlignLeftWithPanel="True" Fill="Gray"
                            ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
                            ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
                            ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
