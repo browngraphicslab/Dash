@@ -221,9 +221,10 @@ namespace Dash
 	    }
 
 	    private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
-	    {
-	        
-		    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		{
+			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
+
+			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			// if the working document is already a template box, initialize with that template
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
@@ -231,6 +232,16 @@ namespace Dash
 		        DataDocument.SetField(KeyStore.DataKey,
 		            workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
 		                .GetField<ListController<DocumentController>>(KeyStore.DataKey), true);
+				//check template style, override current template format if necessary
+			    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+				        .GetField<NumberController>(KeyStore.TemplateStyleKey).Data == TemplateConstants.ListView)
+			    {
+					this.FormatTemplateIntoList();
+			    }
+			    else
+			    {
+				    this.FormatTemplateIntoFreeform();
+			    }
 		    }
 
 			//initialize UI of workspace
@@ -279,6 +290,10 @@ namespace Dash
 				DocumentControllers.Add(layoutDoc);
                 DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 				InitialDocumentControllers.Add(layoutDoc);
+				//add copy for list view
+				var copy = layoutDoc.GetViewCopy();
+				copy.SetPosition(new Point(0, 0));
+				ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
 			}
 
 			// update item source
@@ -323,7 +338,7 @@ namespace Dash
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
 			xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
-			InitialDocumentControllers = DocumentControllers;
+			//InitialDocumentControllers = DocumentControllers;
 
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
@@ -658,7 +673,12 @@ namespace Dash
 
 		    if (xTitle.Text == "Activate")
 		    {
-			    InitialDocumentControllers = DocumentControllers;
+				//update revert checkpoint
+			    InitialDocumentControllers = new ObservableCollection<DocumentController>();
+			    foreach (var doc in DocumentControllers)
+			    {
+					InitialDocumentControllers.Add(doc);
+			    }
 				xTitle.Text = "Preview";
 		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
 		        // layout document's data key holds the document that we are currently working on
@@ -1862,10 +1882,17 @@ namespace Dash
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
 			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
-			xItemsControlCanvas.Visibility = Visibility.Visible;
-			xItemsControlList.Visibility = Visibility.Collapsed;
 			//update
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+
+			this.FormatTemplateIntoFreeform();
+		}
+
+		private void FormatTemplateIntoFreeform()
+		{
+			xItemsControlCanvas.Visibility = Visibility.Visible;
+			xItemsControlList.Visibility = Visibility.Collapsed;
+
 			//button ui
 			xListButton.Background = new SolidColorBrush(Colors.Transparent);
 			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
