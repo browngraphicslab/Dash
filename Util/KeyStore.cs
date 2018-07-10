@@ -71,12 +71,16 @@ namespace Dash
         public static KeyController DockedDocumentsTopKey = new KeyController("Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
         public static KeyController DockedDocumentsBottomKey = new KeyController("Documents docked on the bottom", "F6E10E00-1644-40BE-8A9E-0C648FE4B223");
+        public static KeyController DockedLength = new KeyController("Docked column/row length", "A31E063D-A314-4AF9-973E-595FF70A2592");
+        public static KeyController PdfRegionVerticalOffsetKey = new KeyController("Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
+        public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
+        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
 
-        public static KeyController ReplInputsKey = new KeyController(DashConstants.KeyStore.ReplInputsKey);
-        public static KeyController ReplOutputsKey = new KeyController(DashConstants.KeyStore.ReplOutputsKey);
-        public static KeyController ReplScopeKey = new KeyController(DashConstants.KeyStore.ReplScopeKey);
+        public static KeyController ReplInputsKey = new KeyController("Repl Inputs", "650072AB-1821-4BC6-A7F5-096094CF6EB7");
+        public static KeyController ReplOutputsKey = new KeyController("Repl Outputs", "0676C751-B6DE-480F-A5EB-8362F6238D13");
+        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "0F9B3576-A5B1-458C-89B0-AADC7FD278BC");
 
-        public static KeyController ScriptTextKey = new KeyController(DashConstants.KeyStore.ScriptTextKey);
+        public static KeyController ScriptTextKey = new KeyController("Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
 
         public static class SearchResultDocumentOutline
         {

@@ -25,6 +25,7 @@
 
     <Grid x:Name="xMasterStack" >
         <Grid.ColumnDefinitions>
+
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
         </Grid.ColumnDefinitions>
