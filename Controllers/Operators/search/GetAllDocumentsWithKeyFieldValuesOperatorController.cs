@@ -46,31 +46,16 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data?.ToLower();
+            var keyQuery = (inputs[KeyQueryKey] as TextController)?.Data;
             var toReturn = new ListController<DocumentController>();
+
             if (!string.IsNullOrEmpty(keyQuery))
             {
                 var negateCategory = keyQuery.StartsWith('!');
                 keyQuery = keyQuery.TrimStart('!');
 
                 var valueQuery = (inputs[ValueQueryKey] as TextController)?.Data?.ToLower() ?? "";
-
-                var tree = DocumentTree.MainPageTree;
-
-                var positive = new List<DocumentNode>();
-                var negative = new List<DocumentNode>();
-
-                foreach (var node in tree)
-                {
-                    foreach (var field in node.DataDocument.EnumFields())
-                    {
-                        var keyOrValueMatch = field.Key.Name.ToLower().Contains(keyQuery) && field.Value.SearchForString(valueQuery).StringFound;
-                        if (keyOrValueMatch) positive.Add(node);
-                        else negative.Add(node);
-                    }
-                }
-
-                var finalResults = (negateCategory ? negative.Select(d => d.ViewDocument) : positive.Select(d => d.ViewDocument)).ToArray();
+                var finalResults = Search.SearchByKeyValuePair(new KeyController(keyQuery), valueQuery, negateCategory).Select(res => res.ViewDocument).ToList();
 
                 //TODO FURTHER modify the helpful text of these docs so the text is more helpful
 
@@ -82,14 +67,11 @@ namespace Dash
                     resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = !negateCategory ? found : absent;
                 }
 
-                toReturn.AddRange(finalResults);
+                toReturn.AddRange((IList<DocumentController>) finalResults);
             }
             outputs[ResultsKey] = toReturn;
         }
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            return new GetAllDocumentsWithKeyFieldValuesOperatorController();
-        }
+        public override FieldControllerBase GetDefaultController() => new GetAllDocumentsWithKeyFieldValuesOperatorController();
     }
 }

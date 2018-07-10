@@ -54,16 +54,16 @@ namespace Dash
             var interpreted = DSL.Interpret(stringScriptToExecute);
             var resultDict = interpreted as DocumentController;
 
-            if (resultDict != null)
-            {
-                var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
+            //if (resultDict != null)
+            //{
+            //    var docs = MainSearchBox.GetDocumentControllersFromSearchDictionary(resultDict, searchQuery);
 
-                outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).FirstOrDefault();
-            }
-            else
-            {
+            //    outputs[ResultsKey] = docs.Select(i => ContentController<FieldModel>.GetController<DocumentController>(MainSearchBox.SearchHelper.DocumentSearchResultToViewModel(i).Id)).FirstOrDefault();
+            //}
+            //else
+            //{
                 outputs[ResultsKey] = new TextController();
-            }
+            //}
         }
     }
 }

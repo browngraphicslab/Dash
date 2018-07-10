@@ -7,17 +7,13 @@ using DashShared;
 namespace Dash
 {
     [OperatorType(Op.Name.search)]
-    public class SearchOperatorController : OperatorController
+    public sealed class SearchOperatorController : OperatorController
     {
         public SearchOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-
-        }
+        public SearchOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("Search", "EA5FD353-F99A-4F99-B0BC-5D2C88A51019");
@@ -54,7 +50,7 @@ namespace Dash
 
             var searchText = inputs.ContainsKey(TextKey) ? (inputs[TextKey] as TextController)?.Data : null;
             //search all docs for searchText and get results (list of doc controller)
-            var searchResultDocs = (MainSearchBox.SearchHelper.SearchAllDocumentsForSingleTerm(searchText) ?? new DocumentController[] { }).ToArray();
+            var searchResultDocs = Search.SearchByQuery(searchText).Select(res => res.ViewDocument).ToArray();
             outputs[ResultsKey] = new ListController<DocumentController>(searchResultDocs);
         }
 
