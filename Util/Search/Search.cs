@@ -6,6 +6,11 @@ namespace Dash
 {
     public static class Search
     {
+        public static IEnumerable<DocumentNode> GetAllDocs()
+        {
+            return DocumentTree.MainPageTree;
+        }
+
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
