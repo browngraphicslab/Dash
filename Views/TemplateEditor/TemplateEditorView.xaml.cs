@@ -2218,10 +2218,99 @@ namespace Dash
 	        docView.ViewModel.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(col), true);
 	        docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
 
-	        docView.ViewModel.DocumentController.SetWidth(
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.ActualWidth ?? xWorkspace.Width);
-	        docView.ViewModel.DocumentController.SetHeight((xItemsControlGrid.ItemsPanelRoot as Grid)
-	                                                       .RowDefinitions[(int) row]?.ActualHeight ?? xWorkspace.Height);
+	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+	            .GetField<DocumentController>(KeyStore.ActiveLayoutKey);
+
+	        if (layout?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo &&
+	            rowInfo.Data.Count != (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count)
+	        {
+	            xItemsControlCanvas.Visibility = Visibility.Collapsed;
+	            xItemsControlGrid.Visibility = Visibility.Visible;
+	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Clear();
+                double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Clear();
+	            foreach (NumberController heightInfo in rowInfo.Data)
+	            {
+	                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Add(
+	                    new RowDefinition
+	                    {
+	                        Height = new GridLength(heightInfo.Data)
+	                    });
+	                countingHeight += heightInfo.Data;
+	                if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
+	                {
+	                    var line = NewLine(0, 500, countingHeight, countingHeight);
+	                    xOuterWorkspace.Children.Add(line);
+	                }
+	            }
+	        }
+
+	        if (layout?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo &&
+	            colInfo.Data.Count != (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count)
+	        {
+	            xItemsControlCanvas.Visibility = Visibility.Collapsed;
+	            xItemsControlGrid.Visibility = Visibility.Visible;
+                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Clear();
+
+	            double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+	            foreach (NumberController widthInfo in colInfo.Data)
+	            {
+	                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Add(
+	                    new ColumnDefinition
+	                    {
+	                        Width = new GridLength(widthInfo.Data)
+	                    });
+	                countingWidth += widthInfo.Data;
+	                if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
+	                {
+	                    var line = NewLine(countingWidth, countingWidth, 0, 500);
+	                    xOuterWorkspace.Children.Add(line);
+	                }
+	            }
+	        }
+
+	        double width = 0;
+	        if ((xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.Width.IsStar ?? false)
+	        {
+	            double calculatedWidth = 0;
+	            for (var i = 0; i < col; i++)
+	            {
+	                calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].Width.Value;
+	            }
+
+	            for (var j = (int) col + 1; j < (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count; j++)
+	            {
+	                calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[j].Width.Value;
+                }
+
+	            width = xWorkspace.Width - calculatedWidth;
+	        }
+	        else
+	        {
+	            width = (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.Width.Value ??
+	                    xWorkspace.Width;
+	        }
+
+	        double height = 0;
+	        if ((xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[(int) row]?.Height.IsStar ?? false)
+	        {
+	            double calculatedHeight = 0;
+	            for (var i = 1; i < (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count; i++)
+	            {
+	                calculatedHeight += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].Height.Value;
+	            }
+
+	            height = xWorkspace.Height- calculatedHeight;
+	        }
+	        else
+	        {
+	            height = (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[(int) row]?.Height.Value ??
+	                     xWorkspace.Height;
+
+	        }
+
+            docView.ViewModel.DocumentController.SetWidth(width);
+	        docView.ViewModel.DocumentController.SetHeight(height);
 	    }
 
 	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -2303,105 +2392,105 @@ namespace Dash
 	    {
 	        if (xItemsControlGrid.Visibility == Visibility.Collapsed) return;
 
-            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-                .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-                ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
-            {
-                xItemsControlCanvas.Visibility = Visibility.Collapsed;
-                xItemsControlGrid.Visibility = Visibility.Visible;
-                double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-                (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Clear();
-                foreach (NumberController height in rowInfo.Data)
-                {
-                    (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
-                        new RowDefinition
-                        {
-                            Height = new GridLength(height.Data)
-                        });
-                    countingHeight += height.Data;
-                    if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
-                    {
-                        var line = NewLine(0, 500, countingHeight, countingHeight);
-                        xOuterWorkspace.Children.Add(line);
-                    }
-                }
-            }
+            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+            //    ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
+            //{
+            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
+            //    xItemsControlGrid.Visibility = Visibility.Visible;
+            //    double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+            //    (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Clear();
+            //    foreach (NumberController height in rowInfo.Data)
+            //    {
+            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
+            //            new RowDefinition
+            //            {
+            //                Height = new GridLength(height.Data)
+            //            });
+            //        countingHeight += height.Data;
+            //        if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
+            //        {
+            //            var line = NewLine(0, 500, countingHeight, countingHeight);
+            //            xOuterWorkspace.Children.Add(line);
+            //        }
+            //    }
+            //}
 
-            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-                .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-                ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
-            {
-                xItemsControlCanvas.Visibility = Visibility.Collapsed;
-                xItemsControlGrid.Visibility = Visibility.Visible;
+            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+            //    ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
+            //{
+            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
+            //    xItemsControlGrid.Visibility = Visibility.Visible;
 
-                double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-                foreach (NumberController width in colInfo.Data)
-                {
-                    (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
-                        new ColumnDefinition
-                        {
-                            Width = new GridLength(width.Data)
-                        });
-                    countingWidth += width.Data;
-                    if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
-                    {
-                        var line = NewLine(countingWidth, countingWidth, 0, 500);
-                        xOuterWorkspace.Children.Add(line);
-                    }
-                }
-            }
+            //    double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+            //    foreach (NumberController width in colInfo.Data)
+            //    {
+            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
+            //            new ColumnDefinition
+            //            {
+            //                Width = new GridLength(width.Data)
+            //            });
+            //        countingWidth += width.Data;
+            //        if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
+            //        {
+            //            var line = NewLine(countingWidth, countingWidth, 0, 500);
+            //            xOuterWorkspace.Children.Add(line);
+            //        }
+            //    }
+            //}
         }
 
 	    private void XGrid_OnLoaded(object sender, RoutedEventArgs e)
         {
             if (xItemsControlGrid.Visibility == Visibility.Collapsed) return;
 
-            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-                .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-                ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
-            {
-                xItemsControlCanvas.Visibility = Visibility.Collapsed;
-                xItemsControlGrid.Visibility = Visibility.Visible;
-                double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-                foreach (NumberController height in rowInfo.Data)
-                {
-                    (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
-                        new RowDefinition
-                        {
-                            Height = new GridLength(height.Data)
-                        });
-                    countingHeight += height.Data;
-                    if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
-                    {
-                        var line = NewLine(0, 500, countingHeight, countingHeight);
-                        xOuterWorkspace.Children.Add(line);
-                    }
-                }
-            }
+            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+            //    ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
+            //{
+            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
+            //    xItemsControlGrid.Visibility = Visibility.Visible;
+            //    double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+            //    foreach (NumberController height in rowInfo.Data)
+            //    {
+            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
+            //            new RowDefinition
+            //            {
+            //                Height = new GridLength(height.Data)
+            //            });
+            //        countingHeight += height.Data;
+            //        if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
+            //        {
+            //            var line = NewLine(0, 500, countingHeight, countingHeight);
+            //            xOuterWorkspace.Children.Add(line);
+            //        }
+            //    }
+            //}
 
-            if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-                .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-                ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
-            {
-                xItemsControlCanvas.Visibility = Visibility.Collapsed;
-                xItemsControlGrid.Visibility = Visibility.Visible;
+            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
+            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+            //    ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
+            //{
+            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
+            //    xItemsControlGrid.Visibility = Visibility.Visible;
 
-                double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-                foreach (NumberController width in colInfo.Data)
-                {
-                    (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
-                        new ColumnDefinition
-                        {
-                            Width = new GridLength(width.Data)
-                        });
-                    countingWidth += width.Data;
-                    if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
-                    {
-                        var line = NewLine(countingWidth, countingWidth, 0, 500);
-                        xOuterWorkspace.Children.Add(line);
-                    }
-                }
-            }
+            //    double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+            //    foreach (NumberController width in colInfo.Data)
+            //    {
+            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
+            //            new ColumnDefinition
+            //            {
+            //                Width = new GridLength(width.Data)
+            //            });
+            //        countingWidth += width.Data;
+            //        if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
+            //        {
+            //            var line = NewLine(countingWidth, countingWidth, 0, 500);
+            //            xOuterWorkspace.Children.Add(line);
+            //        }
+            //    }
+            //}
         }
 		private void XItemsControlList_OnDragItemsStartingList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
 		{
