@@ -264,10 +264,14 @@ namespace Dash
 			docView.ViewModel.DisableDecorations = true;
 			docView.hideControls();
             
+            // determine if the active layout exists and has information about rows and columns
 		    var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
 		    if (activeLayout?.GetField(KeyStore.RowInfoKey) != null || activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
 		    {
+                // change the template editor into a grid view
+		        xItemsControlList.Visibility = Visibility.Collapsed;
 		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
+
 		        xItemsControlGrid.Visibility = Visibility.Visible;
 		        xGridLeftDragger.Visibility = Visibility.Visible;
 		        xGridTopDragger.Visibility = Visibility.Visible;
@@ -282,12 +286,15 @@ namespace Dash
 
 			//initialize layout documents on workspace
 			DocumentViewModels.Clear();
-
+            // loop through each layout document in the data document's data key
 			var layoutDocsList = DataDocument
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
 			foreach (var layoutDoc in layoutDocsList)
 			{
+                // add them logically to the document controllers list
 				DocumentControllers.Add(layoutDoc);
+                // add them graphically to the document view models list
+                // we must do both here because as of yet, there are no collection changed handles
                 DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 				InitialDocumentControllers.Add(layoutDoc);
 				//add copy for list view
@@ -313,7 +320,6 @@ namespace Dash
 			xDesignGridVisibilityButton.IsChecked = false;
 
             // TODO: Add number indicating which template perhoops -sy
-
             // if the title key doesn't exist or is empty
             if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
 				!DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
@@ -337,23 +343,22 @@ namespace Dash
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
-			xTitleBlock.PropertyChanged += TitleBlock_TextChanged;
-			//InitialDocumentControllers = DocumentControllers;
 
+            // initialize the size of the workspace based on the working doc's width and height fields
+            // determine if the active layout exists and if it is a template box
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
 		    {
+                // set the width to the working doc's width field if the width field is less than 500, otherwise 500
 		        xWorkspace.Width = workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500;
 		        xWorkspace.Height = workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500;
             }
 		    else
 		    {
+                // otherwise, set the width and height to an arbitrary default
 		        xWorkspace.Width = 300;
 		        xWorkspace.Height = 400;
 		    }
-
-	        
-
         }
 
 
@@ -369,14 +374,6 @@ namespace Dash
 					break;
 			}
 		}
-		
-	    private void TitleBlock_TextChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-			var etb = sender as EditableTextBlock;
-			if (!etb.TextBoxLoaded && etb.Text.Any())
-			{
-			}
-		}
 
 		private void XWorkspace_OnUnloaded(object sender, RoutedEventArgs e)
 		{
@@ -386,9 +383,6 @@ namespace Dash
             //TODO:FIX THIS LINE, DASH CRASHES
             //DataDocument.SetField<DocumentController>(KeyStore.TemplateEditorKey, this, true);
             //this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
-
-
-            xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
         }
 
 		private void FormatUploadTemplateFlyout()
@@ -1548,7 +1542,7 @@ namespace Dash
 		{
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
 
-			this.Clear();
+			Clear();
 
 			foreach (var doc in InitialDocumentControllers)
 			{
@@ -1687,23 +1681,21 @@ namespace Dash
 
 	    public void ResizeCanvas(Size newSize)
 	    {
-
-            
+            // determine if the workspace has a valid width and height
 	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
 	        {
-	            //xWorkspace.Width = 300;
-	            //xWorkspace.Height = 400;
+                // set the workspace clipping
 	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height) };
-
 	            Bounds.Width = 70;
 	            Bounds.Height = 70;
 	            return;
 	        }
 
+            // save the old size as the workspace's width and height
 	        var oldSize = new Size(xWorkspace.Width, xWorkspace.Height);
-
 	        var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
 	        var bottomRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
+            // loop through each document view and find the furthest top left and bottom right points
 	        foreach (var docview in DocumentViews)
 	        {
 	            topLeft.X = Math.Min(topLeft.X, docview.ViewModel.XPos);
@@ -1712,9 +1704,7 @@ namespace Dash
 	            bottomRight.Y = Math.Max(bottomRight.Y, docview.ViewModel.YPos + docview.ViewModel.ActualSize.Y);
             }
           
-
-	       
-
+            // maintain their positions by changing their value's offsets
 	        foreach (var docview in DocumentViews)
 	        {
 	            var point = docview.ViewModel.DocumentController.GetPosition();
@@ -1724,9 +1714,12 @@ namespace Dash
 	            docview.ViewModel.DocumentController.SetPosition(newPoint);
 	        }
 
+            // set the workspace's size to the new size
             xWorkspace.Width = newSize.Width;
 	        xWorkspace.Height = newSize.Height;
 	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
+
+            // try to set the width and height of the active layout to the new width and height
 	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
 	            ?.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
 	        layout?.SetField(KeyStore.WidthFieldKey, new NumberController(newSize.Width), true);
@@ -1744,24 +1737,22 @@ namespace Dash
 	            Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
 	            Bounds.Height = 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
             }
-
-         
-	        
-	        //Bounds.Width = bottomRight.X - topLeft.X;
-	        //Bounds.Height = bottomRight.Y - topLeft.Y;
-
-
-	        PositionEllipses(xWorkspace.ActualWidth, xWorkspace.ActualHeight);
+            
+	        PositionEllipses();
 	    }
 
-	    public void PositionEllipses(double width, double height)
+	    public void PositionEllipses()
 	    {
+	        var width = xWorkspace.ActualWidth;
+	        var height = xWorkspace.ActualHeight;
+            // determine if the width is greater than some arbitrary constant
 	        if (width > 420)
 	        {
+                // if so, move the ellipses to inside of the workspace
 	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, true);
 	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, true);
-	            double offsetY = (500 - height) / 2 + 4;
-	            double offsetX = (500 - width) / 2 + width - xEllipseStack.ActualWidth - 12;
+	            var offsetY = (500 - height) / 2 + 4;
+	            var offsetX = (500 - width) / 2 + width - xEllipseStack.ActualWidth - 12;
 	            xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
 
 	        }
@@ -2027,6 +2018,7 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
+            // on started, make visible the fake guideline and let it move with the mouse
 	        xHorizLine.Visibility = Visibility.Visible;
 	        xHorizLine.Y1 = e.Position.Y;
 	        xHorizLine.Y2 = e.Position.Y;
@@ -2035,6 +2027,7 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 	    {
+            // while dragging, keep the line on the same y-position as the mouse
 	        var top = xHorizLine.Y1;
 	        top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
 	        xHorizLine.Y1 = top;
@@ -2054,22 +2047,86 @@ namespace Dash
 	            Stroke = new SolidColorBrush(Colors.Aqua),
 	            StrokeThickness = 1
 	        };
-	        line.ManipulationStarted += HorizontalLine_ManipulationStarted;
-	        line.ManipulationDelta += HorizontalLine_ManipulationDelta;
-	        line.ManipulationCompleted += HorizontalLine_ManipulationCompleted;
+	        if (manip == ManipulationModes.TranslateY)
+	        {
+	            line.ManipulationStarted += HorizontalLine_ManipulationStarted;
+	            line.ManipulationDelta += HorizontalLine_ManipulationDelta;
+	            line.ManipulationCompleted += HorizontalLine_ManipulationCompleted;
+	            line.PointerEntered += delegate
+	            {
+	                Window.Current.CoreWindow.PointerCursor =
+	                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.SizeNorthSouth, 0);
+	            };
+            }
+            else if (manip == ManipulationModes.TranslateX)
+	        {
+                line.ManipulationStarted += VerticalLine_ManipulationStarted;
+                line.ManipulationDelta += VerticalLine_ManipulationDelta;
+                line.ManipulationCompleted += VerticalLine_ManipulationCompleted;
+	            line.PointerEntered += delegate
+	            {
+	                Window.Current.CoreWindow.PointerCursor =
+	                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.SizeWestEast, 0);
+	            };
+            }
+
 	        line.ManipulationMode = manip;
-	        Canvas.SetZIndex(line, 100);
+            line.PointerExited += delegate
+	        {
+	            Window.Current.CoreWindow.PointerCursor =
+	                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 0);
+	        };
+            Canvas.SetZIndex(line, 100);
 	        return line;
 	    }
 
-	    private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void VerticalLine_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            var column = FindColumn((sender as Line).X1);
+            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column].Width =
+                new GridLength((sender as Line).Y1 -
+                               column > 0 ? (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column - 1].ActualWidth : 0);
+            e.Handled = true;
+        }
+
+        private void VerticalLine_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var line = sender as Line;
+            var left = line.X1;
+            var column = FindColumn(line.X1);
+            double width = 0;
+            for (var i = 0; i < column - 1; i++)
+            {
+                width += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
+            }
+            left += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).X;
+
+            var lowerBound = column == 0 ? width + (xOuterWorkspace.Width - xWorkspace.Width) / 2 : (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+            var upperBound = column == width + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count
+                ? width + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column].ActualWidth + (xOuterWorkspace.Width - xWorkspace.Width) / 2
+                : xWorkspace.ActualWidth + (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+            if (left > lowerBound &&
+                left < upperBound)
+            {
+                line.X1 = left;
+                line.X2 = left;
+            }
+            e.Handled = true;
+        }
+
+        private void VerticalLine_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
             // determine if the line exists inside of the workspace
 	        if (0 < xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 &&
 	            xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 < xWorkspace.Height)
 	        {
                 // create a copy of the line and add it to the outer workspace
-	            var line = NewLine(0, 500, xHorizLine.Y1, xHorizLine.Y2);
+	            var line = NewLine(0, 500, xHorizLine.Y1, xHorizLine.Y2, ManipulationModes.TranslateY);
                 xOuterWorkspace.Children.Add(line);
 
 	            // let the height start at the y position minus the offset created by the outer workspace
@@ -2118,15 +2175,18 @@ namespace Dash
             var top = line.Y1;
             var row = FindRow(line.Y1);
             double height = 0;
-            for (var i = 0; i < row; i++)
+            for (var i = 0; i < row - 1; i++)
             {
                 height += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
             }
             top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
 
-            if (top > height &&
-                top < height + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].ActualHeight
-                    + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row + 1]?.ActualHeight)
+            var lowerBound = row != 0 ? height + (xOuterWorkspace.Height - xWorkspace.Height) / 2 : (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+            var upperBound = row != (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count - 1
+                ? height + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].ActualHeight + (xOuterWorkspace.Height - xWorkspace.Height) / 2
+                : xWorkspace.ActualHeight + (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+            if (top > lowerBound &&
+                top < upperBound)
             {
                 line.Y1 = top;
                 line.Y2 = top;
@@ -2163,7 +2223,7 @@ namespace Dash
 	            xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 < xWorkspace.Width)
 	        {
                 // create a copy of the line and add it to the outer workspace
-                var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500);
+                var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500, ManipulationModes.TranslateX);
 	            xOuterWorkspace.Children.Add(line);
 
                 // determine the width from the left of the workspace to the line
@@ -2264,46 +2324,56 @@ namespace Dash
 
 	    private void DocumentView_OnLoaded_GridView(object sender, RoutedEventArgs e)
 	    {
+	        // set up variables
 	        var docView = sender as DocumentView;
+	        var grid = xItemsControlGrid.ItemsPanelRoot as Grid;
+
 	        DocumentViews.Add(docView);
-            docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
+	        // since we are in a grid, we want to use the horizontal and vertical alignment keys
+	        docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
 	            true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
 	            true);
+	        // we also want to make sure the horizontal and vertical alignment are both stretched
 	        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
 	            new TextController(HorizontalAlignment.Stretch.ToString()), true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.VerticalAlignmentKey,
 	            new TextController(VerticalAlignment.Stretch.ToString()), true);
 	        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
 	        docView.VerticalAlignment = VerticalAlignment.Stretch;
+	        // add event handlers for the document
 	        docView.DocumentDeleted += DocView_DocumentDeleted;
 	        docView.SizeChanged += DocumentView_OnSizeChanged;
 	        docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 
+	        // let the column/row index be the column/row key if it exists, otherwise use the
+	        // viewmodel's x/y position to find the correct column/row
 	        var col = docView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.ColumnKey)?.Data ??
 	                  FindColumn(docView.ViewModel.XPos);
 	        var row = docView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.RowKey)?.Data ??
 	                  FindRow(docView.ViewModel.YPos);
+	        // set the content presenter's grid row and column to that index
 	        Grid.SetColumn(docView.GetFirstAncestorOfType<ContentPresenter>(), (int) col);
 	        Grid.SetRow(docView.GetFirstAncestorOfType<ContentPresenter>(), (int) row);
+	        // set the row and column fields appropriately
 	        docView.ViewModel.DocumentController.SetField(KeyStore.RowKey, new NumberController(row), true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(col), true);
 	        docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
 
+	        // retrieve the template box layout information if possible
 	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
 	            .GetField<DocumentController>(KeyStore.ActiveLayoutKey);
-
+	        // determine if it exists and a row information key exists with a different number of rows than currently
 	        if (layout?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo &&
-	            rowInfo.Data.Count != (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count)
+	            rowInfo.Data.Count != grid.RowDefinitions.Count)
 	        {
-	            xItemsControlCanvas.Visibility = Visibility.Collapsed;
-	            xItemsControlGrid.Visibility = Visibility.Visible;
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Clear();
-                double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Clear();
+                // if so, clear the rows
+	            grid.RowDefinitions.Clear();
+                // start counting the height at the offset determined by the top of xOuterWorkspace
+	            var countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
 	            foreach (NumberController heightInfo in rowInfo.Data)
 	            {
-	                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Add(
+	                grid.RowDefinitions.Add(
 	                    new RowDefinition
 	                    {
 	                        Height = new GridLength(heightInfo.Data)
@@ -2311,23 +2381,21 @@ namespace Dash
 	                countingHeight += heightInfo.Data;
 	                if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
 	                {
-	                    var line = NewLine(0, 500, countingHeight, countingHeight);
+	                    var line = NewLine(0, 500, countingHeight, countingHeight, ManipulationModes.TranslateY);
 	                    xOuterWorkspace.Children.Add(line);
 	                }
 	            }
 	        }
 
 	        if (layout?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo &&
-	            colInfo.Data.Count != (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count)
+	            colInfo.Data.Count != grid.ColumnDefinitions.Count)
 	        {
-	            xItemsControlCanvas.Visibility = Visibility.Collapsed;
-	            xItemsControlGrid.Visibility = Visibility.Visible;
-                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Clear();
+	            grid.ColumnDefinitions.Clear();
 
 	            double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
 	            foreach (NumberController widthInfo in colInfo.Data)
 	            {
-	                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Add(
+	                grid.ColumnDefinitions.Add(
 	                    new ColumnDefinition
 	                    {
 	                        Width = new GridLength(widthInfo.Data)
@@ -2335,170 +2403,58 @@ namespace Dash
 	                countingWidth += widthInfo.Data;
 	                if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
 	                {
-	                    var line = NewLine(countingWidth, countingWidth, 0, 500);
+	                    var line = NewLine(countingWidth, countingWidth, 0, 500, ManipulationModes.TranslateX);
 	                    xOuterWorkspace.Children.Add(line);
 	                }
 	            }
 	        }
 
 	        double width = 0;
-	        if ((xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.Width.IsStar ?? false)
+	        if (grid.ColumnDefinitions[(int) col]?.Width.IsStar ?? false)
 	        {
 	            double calculatedWidth = 0;
 	            for (var i = 0; i < col; i++)
 	            {
-	                calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].Width.Value;
+	                calculatedWidth += grid.ColumnDefinitions[i].Width.Value;
 	            }
 
-	            for (var j = (int) col + 1; j < (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count; j++)
+	            for (var j = (int) col + 1; j < grid.ColumnDefinitions.Count; j++)
 	            {
-	                calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[j].Width.Value;
-                }
+	                calculatedWidth += grid.ColumnDefinitions[j].Width.Value;
+	            }
 
 	            width = xWorkspace.Width - calculatedWidth;
 	        }
 	        else
 	        {
-	            width = (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.Width.Value ??
-	                    xWorkspace.Width;
+	            width = grid.ColumnDefinitions[(int) col]?.Width.Value ?? xWorkspace.Width;
 	        }
 
 	        double height = 0;
-	        if ((xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[(int) row]?.Height.IsStar ?? false)
+	        if (grid.RowDefinitions[(int) row]?.Height.IsStar ?? false)
 	        {
 	            double calculatedHeight = 0;
-	            for (var i = 1; i < (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count; i++)
+	            for (var i = 1; i < grid.RowDefinitions.Count; i++)
 	            {
-	                calculatedHeight += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].Height.Value;
+	                calculatedHeight += grid.RowDefinitions[i].Height.Value;
 	            }
 
-	            height = xWorkspace.Height- calculatedHeight;
+	            height = xWorkspace.Height - calculatedHeight;
 	        }
 	        else
 	        {
-	            height = (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[(int) row]?.Height.Value ??
-	                     xWorkspace.Height;
+	            height = grid.RowDefinitions[(int) row]?.Height.Value ?? xWorkspace.Height;
 
 	        }
 
-            docView.ViewModel.DocumentController.SetWidth(width);
+	        docView.ViewModel.DocumentController.SetWidth(width);
 	        docView.ViewModel.DocumentController.SetHeight(height);
-	        
-        }
+	    }
 
 	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
 	    {
 	        XScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 	    }
-
-	 
-
-
-	    private void XItemsControlGrid_OnLoaded(object sender, RoutedEventArgs e)
-	    {
-	        if (xItemsControlGrid.Visibility == Visibility.Collapsed) return;
-
-            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-            //    ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
-            //{
-            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-            //    xItemsControlGrid.Visibility = Visibility.Visible;
-            //    double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-            //    (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Clear();
-            //    foreach (NumberController height in rowInfo.Data)
-            //    {
-            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
-            //            new RowDefinition
-            //            {
-            //                Height = new GridLength(height.Data)
-            //            });
-            //        countingHeight += height.Data;
-            //        if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
-            //        {
-            //            var line = NewLine(0, 500, countingHeight, countingHeight);
-            //            xOuterWorkspace.Children.Add(line);
-            //        }
-            //    }
-            //}
-
-            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-            //    ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
-            //{
-            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-            //    xItemsControlGrid.Visibility = Visibility.Visible;
-
-            //    double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-            //    foreach (NumberController width in colInfo.Data)
-            //    {
-            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
-            //            new ColumnDefinition
-            //            {
-            //                Width = new GridLength(width.Data)
-            //            });
-            //        countingWidth += width.Data;
-            //        if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
-            //        {
-            //            var line = NewLine(countingWidth, countingWidth, 0, 500);
-            //            xOuterWorkspace.Children.Add(line);
-            //        }
-            //    }
-            //}
-        }
-
-	    private void XGrid_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            
-            if (xItemsControlGrid.Visibility == Visibility.Collapsed) return;
-
-            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-            //    ?.GetField(KeyStore.RowInfoKey) is ListController<NumberController> rowInfo)
-            //{
-            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-            //    xItemsControlGrid.Visibility = Visibility.Visible;
-            //    double countingHeight = (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-            //    foreach (NumberController height in rowInfo.Data)
-            //    {
-            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.RowDefinitions.Add(
-            //            new RowDefinition
-            //            {
-            //                Height = new GridLength(height.Data)
-            //            });
-            //        countingHeight += height.Data;
-            //        if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
-            //        {
-            //            var line = NewLine(0, 500, countingHeight, countingHeight);
-            //            xOuterWorkspace.Children.Add(line);
-            //        }
-            //    }
-            //}
-
-            //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-            //    .GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-            //    ?.GetField(KeyStore.ColumnInfoKey) is ListController<NumberController> colInfo)
-            //{
-            //    xItemsControlCanvas.Visibility = Visibility.Collapsed;
-            //    xItemsControlGrid.Visibility = Visibility.Visible;
-
-            //    double countingWidth = (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-            //    foreach (NumberController width in colInfo.Data)
-            //    {
-            //        (xItemsControlGrid.ItemsPanelRoot as Grid)?.ColumnDefinitions.Add(
-            //            new ColumnDefinition
-            //            {
-            //                Width = new GridLength(width.Data)
-            //            });
-            //        countingWidth += width.Data;
-            //        if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
-            //        {
-            //            var line = NewLine(countingWidth, countingWidth, 0, 500);
-            //            xOuterWorkspace.Children.Add(line);
-            //        }
-            //    }
-            //}
-        }
 		private void XItemsControlList_OnDragItemsStartingList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
 		{
 			Debug.WriteLine("DRAG STARTED");
