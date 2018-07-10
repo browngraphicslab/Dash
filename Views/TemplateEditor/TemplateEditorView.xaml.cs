@@ -274,6 +274,7 @@ namespace Dash
 			foreach (var layoutDoc in layoutDocsList)
 			{
 				DocumentControllers.Add(layoutDoc);
+                DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 				InitialDocumentControllers.Add(layoutDoc);
 			}
 
