@@ -221,7 +221,8 @@ namespace Dash
 	    }
 
 	    private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
-		{
+	    {
+	        
 		    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			// if the working document is already a template box, initialize with that template
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
@@ -257,6 +258,8 @@ namespace Dash
 		    {
 		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
 		        xItemsControlGrid.Visibility = Visibility.Visible;
+		        xGridLeftDragger.Visibility = Visibility.Visible;
+		        xGridTopDragger.Visibility = Visibility.Visible;
 		    }
 
             //MAKE TEMPLATE VIEW
@@ -274,6 +277,7 @@ namespace Dash
 			foreach (var layoutDoc in layoutDocsList)
 			{
 				DocumentControllers.Add(layoutDoc);
+                DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 				InitialDocumentControllers.Add(layoutDoc);
 			}
 
@@ -333,10 +337,12 @@ namespace Dash
 		        xWorkspace.Height = 400;
 		    }
 
-		}
+	        
+
+        }
 
 
-		private void StyleWorkspace(int style)
+        private void StyleWorkspace(int style)
 		{
 			switch (style)
 			{
@@ -1724,23 +1730,27 @@ namespace Dash
 	        //Bounds.Width = bottomRight.X - topLeft.X;
 	        //Bounds.Height = bottomRight.Y - topLeft.Y;
 
-	        if (xWorkspace.ActualWidth > 420)
+
+	        PositionEllipses(xWorkspace.ActualWidth, xWorkspace.ActualHeight);
+	    }
+
+	    public void PositionEllipses(double width, double height)
+	    {
+	        if (width > 420)
 	        {
 	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, true);
 	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, true);
-	            double offsetY = (500 - xWorkspace.ActualHeight) / 2 + 4;
-	            double offsetX = (500 - xWorkspace.ActualWidth) / 2 + xWorkspace.ActualWidth - xEllipseStack.ActualWidth - 12;
-                xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
+	            double offsetY = (500 - height) / 2 + 4;
+	            double offsetX = (500 - width) / 2 + width - xEllipseStack.ActualWidth - 12;
+	            xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
 
 	        }
 	        else
 	        {
 	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, false);
 	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, false);
-	            //double offset = xWorkspace.ActualHeight
 	            xEllipsePanel.Padding = new Thickness(0, 0, 0, 0);
-            }
-
+	        }
         }
 
         private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -2239,6 +2249,9 @@ namespace Dash
 	            new TextController(VerticalAlignment.Stretch.ToString()), true);
 	        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
 	        docView.VerticalAlignment = VerticalAlignment.Stretch;
+	        docView.DocumentDeleted += DocView_DocumentDeleted;
+	        docView.SizeChanged += DocumentView_OnSizeChanged;
+	        docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 
 	        var col = docView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.ColumnKey)?.Data ??
 	                  FindColumn(docView.ViewModel.XPos);
@@ -2343,7 +2356,8 @@ namespace Dash
 
             docView.ViewModel.DocumentController.SetWidth(width);
 	        docView.ViewModel.DocumentController.SetHeight(height);
-	    }
+	        
+        }
 
 	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
 	    {
@@ -2408,6 +2422,7 @@ namespace Dash
 
 	    private void XGrid_OnLoaded(object sender, RoutedEventArgs e)
         {
+            
             if (xItemsControlGrid.Visibility == Visibility.Collapsed) return;
 
             //if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
