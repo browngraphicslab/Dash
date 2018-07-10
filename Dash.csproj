@@ -192,12 +192,15 @@
     <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
     <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
     <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
-    <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
     <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
     <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\IdToDocumentOperator.cs" />
+    <Compile Include="Controllers\Operators\search\ParseSearchStringToDishOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\SearchResult.cs" />
+    <Compile Include="Controllers\Operators\search\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
     <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
     <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
@@ -226,8 +229,6 @@
     <Compile Include="Controllers\Operators\GetKeysOperatorController.cs" />
     <Compile Include="Controllers\Operators\GetScriptValueAsStringOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageToCognitiveServices.cs" />
-    <Compile Include="Controllers\Operators\ParseSearchStringToDishOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsAfterTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsBeforeTime.cs" />
     <Compile Include="Controllers\Operators\search\GetAllDocsByAlias.cs" />
@@ -240,7 +241,6 @@
     <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
-    <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />

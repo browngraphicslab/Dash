@@ -54,10 +54,10 @@ namespace Dash
             }
         }
 
-        private int FindNextDivider(string inputString)
+        private static int FindNextDivider(string inputString)
         {
-            bool inParen = false;
-            int parenCounter = 0;
+            var inParen = false;
+            var parenCounter = 0;
             if (inputString.TrimStart('!').StartsWith("("))
             {
                 inParen = true;
@@ -186,42 +186,38 @@ namespace Dash
             }
 
 
-            IEnumerable<SearchResult> searchDict;
+            IEnumerable<SearchResult> searchResults;
             if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
-                string newInput = modInput.Substring(1, modInput.Length - 2);
-                searchDict = Parse(newInput);
+                var newInput = modInput.Substring(1, modInput.Length - 2);
+                searchResults = Parse(newInput);
             }
             else
             {
-                searchDict = GetBasicSearchResults(modifiedSearchTerm, isNegated);
+                searchResults = GetBasicSearchResults(modifiedSearchTerm, isNegated);
             }
 
-
-            int len = inputString.Length;
+            var len = inputString.Length;
 
             if (dividerIndex == len)
             {
-                return searchDict;
+                return searchResults;
+            }
+
+            char divider = inputString[dividerIndex];
+            string rest = inputString.Substring(dividerIndex + 1);
+
+            if (divider == ' ')
+            {
+                return JoinTwoSearchesWithIntersection(searchResults, Parse(rest));
+            }
+            else if (divider == '|')
+            {
+                return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
             }
             else
             {
-                char divider = inputString[dividerIndex];
-                string rest = inputString.Substring(dividerIndex + 1);
-
-                if (divider == ' ')
-                {
-                    return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
-                }
-                else if (divider == '|')
-                {
-                    return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
-                }
-                else
-                {
-                    throw new Exception("Unknown Divider");
-                }
-
+                throw new Exception("Unknown Divider");
             }
         }
 

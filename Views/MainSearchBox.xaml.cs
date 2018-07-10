@@ -13,7 +13,7 @@ using System.Diagnostics;
 
 namespace Dash
 {
-    public sealed partial class MainSearchBox : UserControl
+    public sealed partial class MainSearchBox
     {
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
@@ -29,7 +29,6 @@ namespace Dash
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-
             if (sender.Text.Equals("Dash.SearchResultViewModel"))
             {
                 sender.Text = _currentSearch;
@@ -63,11 +62,7 @@ namespace Dash
             var text = searchBox.Text; //.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Clear();
 
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                //ExecuteSearch(searchBox);
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(text)) return;
 
             const int maxSearchResultSize = 75;
             DocumentController resultDict = null;
@@ -147,8 +142,7 @@ namespace Dash
 
         public static void UnHighlightDocs(DocumentController coll)
         {
-            var colDocs = coll.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
             //unhighlight each doc in collection
             foreach (var doc in colDocs)
             {
