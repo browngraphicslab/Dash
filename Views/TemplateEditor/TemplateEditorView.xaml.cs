@@ -99,6 +99,7 @@ namespace Dash
 				case NotifyCollectionChangedAction.Replace:
 					break;
 				case NotifyCollectionChangedAction.Reset:
+                    ClearDocs();
 					break;
 			}
 
@@ -120,8 +121,9 @@ namespace Dash
 					//delete corresponding copy
 					foreach (var copy in ViewCopiesList)
 					{
-						if (copy.DataDocument.Equals(rightDoc.DataDocument)) ViewCopiesList.Remove(copy);
-						break;//TODO Why is this here?
+						if (copy.DataDocument.Equals(rightDoc.DataDocument))
+                            ViewCopiesList.Remove(copy);
+					    break; //TODO What is this doing?
 					}
 
 				    break;
@@ -136,6 +138,15 @@ namespace Dash
 
 			
 		}
+
+	    private void ClearDocs()
+	    {
+	        foreach (var documentViewModel in DocumentViewModels)
+	        {
+	            DataDocument.RemoveFromListField(KeyStore.DataKey, documentViewModel.DocumentController);
+	        }
+            DocumentViewModels.Clear();
+	    }
 
 		private void AddDocs(IEnumerable<DocumentController> newDocs)
 		{
@@ -1476,9 +1487,7 @@ namespace Dash
 
 	    private void Clear()
 	    {
-	        DocumentViewModels.Clear();
 	        DocumentControllers.Clear();
-	        DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
         }
 
 		private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
