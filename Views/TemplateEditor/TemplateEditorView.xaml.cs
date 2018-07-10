@@ -661,17 +661,17 @@ namespace Dash
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
-
-		    if (xTitle.Text == "Activate")
+		    var toggle = sender as ToggleButton;
+		    if ((bool) xActivate.IsChecked)
 		    {
+
 				//update revert checkpoint
 			    InitialDocumentControllers = new ObservableCollection<DocumentController>();
 			    foreach (var doc in DocumentControllers)
 			    {
 					InitialDocumentControllers.Add(doc);
 			    }
-				xTitle.Text = "Preview";
-		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["PreviewIcon"] as string);
+				
 		        // layout document's data key holds the document that we are currently working on
 		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 		        // make a copy of the data document
@@ -715,15 +715,10 @@ namespace Dash
 			    }
 			    
 			}
-		    else
-		    {
-		        xTitle.Text = "Activate";
-		        xIcon.Text = (Windows.UI.Xaml.Application.Current.Resources["ActivateIcon"] as string);
-		    }
+		   
 
-			
-
-		}
+            
+        }
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
 		{
@@ -2393,6 +2388,35 @@ namespace Dash
 		{
 			Debug.WriteLine("DRAG COMPLETED");
 		}
+
+	  
+
+	    private void ToggleControl_OnChecked(object sender, RoutedEventArgs e)
+	    {
+	        var toggle = sender as ToggleButton;
+	        switch (toggle.Name)
+	        {
+                case "xActivate":
+                    if ((bool) xPreview.IsChecked)
+                    {
+                        xPreview.IsChecked = false;
+                    }
+
+                    xActivate.IsChecked = true;
+                    DataDocument.SetField<BoolController>(KeyStore.ActivationKey, true, true);
+                    ApplyChanges_OnClicked(toggle, new RoutedEventArgs());
+                    break;
+	            case "xPreview":
+	                if ((bool) xActivate.IsChecked)
+	                {
+	                    xActivate.IsChecked = false;
+	                }
+
+	                xPreview.IsChecked = true;
+	                DataDocument.SetField<BoolController>(KeyStore.ActivationKey, false, true);
+                    break;
+	        }
+        }
 	}
 
 }

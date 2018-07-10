@@ -118,6 +118,10 @@ namespace Dash
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
             {
+
+                    
+                
+               
                 var cfargs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (cfargs.ListAction ==
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
@@ -131,6 +135,7 @@ namespace Dash
                     LayoutDocuments(sender, newCtxt, grid);
                     LayoutDocuments(sender, newCtxt, stack);
                 }
+
             }
 
             grid.Loaded += delegate
