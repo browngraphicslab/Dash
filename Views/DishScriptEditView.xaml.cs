@@ -79,15 +79,6 @@ namespace Dash
             xResult.Text = "Output: " + returnValue;
         }
 
-        //private void XStop_OnClick(object sender, RoutedEventArgs e)
-        //{
-        //    if (_running)
-        //    {
-        //        throw new ScriptExecutionException(new TextErrorModel("run cancelled"));
-        //    }
-
-        //}
-
         #endregion
 
         #region On Type

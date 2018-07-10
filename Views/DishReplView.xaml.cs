@@ -222,7 +222,7 @@ namespace Dash
                    resultChars.Add(';');
                    resultChars.Add(chars[i]);
                 } else if (i == chars.Length - 1 && i > 0 &&
-                           (Char.IsLetterOrDigit(chars[i - 1]) || chars[i - 1] == '-' || chars[i - 1] == '+'))
+                           (Char.IsLetterOrDigit(chars[i]) || chars[i] == '-' || chars[i] == '+'))
                 {
                     resultChars.Add(chars[i]);
                     resultChars.Add(';');
@@ -235,14 +235,6 @@ namespace Dash
 
             return new string(resultChars.ToArray());
 
-        }
-
-        private void DisableAllTextBoxes()
-        {
-            foreach (var item in ViewModel.Items)
-            {
-                item.EditTextValue = false;
-            }
         }
         #endregion
 
@@ -289,35 +281,129 @@ namespace Dash
             //}
         }
 
+        private void InputBoxSubmit(object sender, int? index = null)
+        {
+            if ((sender as TextBox)?.DataContext is ReplLineViewModel data && data.EditTextValue)
+            {
+                //get element num
+                if (index == null)
+                {
+                    for (int i = 0; i < ViewModel.Items.Count; i++)
+                    {
+                        if (ViewModel.Items[i] == data)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+
+                data.EditTextValue = false;
+
+                var text = AddSemicolons((sender as TextBox)?.Text);
+                var oldText = data.LineText;
+                data.LineText = text;
+
+                //undo old variable declarations 
+                _dsl.Run(oldText, true, true);
+
+                FieldControllerBase result;
+                try
+                {
+                    result = _dsl.Run(text, true);
+                }
+                catch (Exception ex)
+                {
+                    result = new TextController("There was an error: " + ex.StackTrace);
+                }
+
+                if (result == null)
+                    result =
+                        new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+
+                data.LineValueText = data.GetValueFromResult(result);
+                data.Value = result;
+
+                //update input and outputs in list
+                if (index != null)
+                {
+                    _outputList[index ?? 0] = result;
+                    _inputList[index ?? 0] = new TextController(text);
+
+                }
+            }
+        }
+
         private void XInputBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            ReplLineViewModel data = (sender as TextBox)?.DataContext as ReplLineViewModel;
-            data.EditTextValue = false;
-
-            var text = (sender as TextBox)?.Text;
-            data.LineText = text;
-
-            string returnValue;
-            try
-            {
-                //TODO: supress varible redeclaration problems
-                returnValue = (_dsl.Run(text, true) as TextController).Data;
-            }
-            catch (Exception ex)
-            {
-                returnValue = "There was an error: " + ex.StackTrace;
-            }
-
-            if (returnValue == null) returnValue = $" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.";
-            data.LineValueText = returnValue;
+            InputBoxSubmit(sender);
         }
 
         private void XInputBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
+            //TODO: possibly use data context/ repl line view model to do suggestions
+
+            var text = (sender as TextBox).Text;
             if (e.Key == VirtualKey.Enter)
             {
-                XInputBox_OnLostFocus(sender, null);
+                InputBoxSubmit(sender);
             }
+           else if (text != "")
+            {
+                //only give suggestions on last word
+                var allText = text.Replace('\r', ' ').Split(' ');
+                var lastWord = "";
+                if (allText.Length > 0)
+                {
+                    lastWord = allText[allText.Length - 1];
+                }
+
+                if (_dataset == null)
+                {
+                    OperatorScript.Instance.Init();
+                }
+
+                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+                xSuggestions.ItemsSource = suggestions;
+
+                var numSug = suggestions?.Count;
+                if (numSug > 0)
+                {
+                    xSuggestionsPopup.IsOpen = true;
+                    xSuggestionsPopup.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    xSuggestionsPopup.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                xSuggestionsPopup.IsOpen = false;
+                xSuggestionsPopup.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void DisableAllTextBoxes()
+        {
+            for (int i = 0; i<ViewModel.Items.Count; i++)
+            {
+                var item = ViewModel.Items[i];
+                if (item.EditTextValue)
+                {
+                    InputBoxSubmit(item, i);
+                }
+            }
+        }
+
+        private void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var a = sender;
+        }
+
+        private void XInputArrow_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            var a = sender;
         }
         #endregion
 
@@ -721,6 +807,6 @@ namespace Dash
         #endregion
 
 
-
+  
     }
 }

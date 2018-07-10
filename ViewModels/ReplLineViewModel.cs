@@ -15,12 +15,8 @@ namespace Dash
     {
 
         //this is the stored value of every line;
-        private FieldControllerBase _value;
 
-        public FieldControllerBase Value
-        {
-            get => _value;
-        }
+        public FieldControllerBase Value { get; set; }
 
         private string _lineText = "";
         public string LineText
@@ -70,13 +66,13 @@ namespace Dash
             _outputValue = outputValue;
             LineText = lineText;
             LineValueText = GetValueFromResult(value);
-            _value = value;
+            Value = value;
 
            
         }
 
 
-        private string GetValueFromResult(FieldControllerBase controller)
+        public string GetValueFromResult(FieldControllerBase controller)
         {
             string result;
             try

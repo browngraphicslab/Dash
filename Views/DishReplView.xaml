@@ -38,11 +38,36 @@
                                             <ColumnDefinition Width="30"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Text=">>" Grid.Column="0" />
+                                        <TextBlock x:Name="xInputArrow" Text=">>" Grid.Column="0" DoubleTapped="XInputArrow_OnDoubleTapped" Tapped="XInputArrow_OnTapped" />
                                         <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
                                                    DoubleTapped="XInputBlock_OnDoubleTapped" />
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
                                                  Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  />
+                                        <Popup x:Name="xSuggestionsPopup2" Grid.Column="1"  Canvas.ZIndex="-1"  Visibility ="{Binding EditTextValue, Mode=OneWay}">
+                                            <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
+                                                          HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
+                                                <Border x:Name="xSuggestionsContainer2" Background="LightGray">
+                                                    <Border.RenderTransform>
+                                                        <TranslateTransform x:Name="xUpwardTransform"/>
+                                                    </Border.RenderTransform>
+                                                    <ListView x:Name="xSuggestions2" IsItemClickEnabled="True" ItemClick="Suggestions_OnItemClick" MaxHeight="200">
+                                                        <ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid>
+                                                                    <Border Height="40">
+                                                                        <TextBlock Text="{Binding}" 
+                                                                                   FontSize="15" Foreground="Black"/>
+                                                                    </Border>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>
+                                                        <ListView.ItemContainerTransitions>
+                                                            <TransitionCollection />
+                                                        </ListView.ItemContainerTransitions>
+                                                    </ListView>
+                                                </Border>
+                                            </ScrollViewer>
+                                        </Popup>
                                     </Grid>
                                     
                                     <TextBlock Grid.Row="1" Text="{Binding LineValueText}" TextWrapping="Wrap" />

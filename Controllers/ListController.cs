@@ -182,7 +182,6 @@ namespace Dash
             get => TypedData[CheckedIndex(index, TypedData)];
             set
             {
-                if (value.GetType() != typeof(T)) return; // cannot replace an element in the list with one of an incongruous type
                 index = CheckedIndex(index, TypedData);
 
                 var prevElement = TypedData[index]; // for undo and event args

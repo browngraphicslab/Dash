@@ -55,6 +55,11 @@ namespace Dash
             return child?._dictionary[variableName];
         }
 
+        public void DeleteVariable(string variableName)
+        {
+            _dictionary.Remove(variableName);
+        }
+
         public Scope GetFirstAncestor() { return Parent == null ? this : Parent.GetFirstAncestor(); }
         public virtual void SetReturn(FieldControllerBase ret) { Parent.SetReturn(ret); }
         public virtual FieldControllerBase GetReturn => Parent.GetReturn;
