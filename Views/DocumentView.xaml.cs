@@ -558,6 +558,7 @@ namespace Dash
         }
 
         public RectangleGeometry Bounds { get; set; }
+        public bool PreventManipulation { get; set; }
 
         /// <summary> 
         /// Updates the cached position and scale of the document without modifying the underlying viewModel.  
@@ -566,6 +567,7 @@ namespace Dash
         /// <param name="delta"></param>
         public void TransformDelta(TransformGroupData delta)
         {
+            if (PreventManipulation) return;
             var currentTranslate = ViewModel.InteractiveManipulationPosition;
             var currentScaleAmount = ViewModel.InteractiveManipulationScale;
 
@@ -795,7 +797,7 @@ namespace Dash
         /// <param name="shiftLeft"></param>
         public void Resize(FrameworkElement sender, ManipulationDeltaRoutedEventArgs e, bool shiftTop, bool shiftLeft)
         {
-            if (this.IsRightBtnPressed())
+            if (this.IsRightBtnPressed() || PreventManipulation)
                 return; // let the manipulation fall through to an ancestor when Rightbutton dragging
 
 

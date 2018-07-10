@@ -2008,8 +2008,8 @@ namespace Dash
 	        e.Handled = true;
 	    }
 
-	    private Line NewLine(double x1 = 0, double x2 = 0, double y1 = 0, double y2 = 0, ManipulationModes manip = ManipulationModes.None)
-	    {
+	    private Line NewLine(double x1 = 0, double x2 = 0, double y1 = 0, double y2 = 0)
+        {
             // creates a new line, useful for creating guidelines
 	        var line = new Line
 	        {
@@ -2020,30 +2020,12 @@ namespace Dash
 	            Stroke = new SolidColorBrush(Colors.Aqua),
 	            StrokeThickness = 1
 	        };
-	        if (manip == ManipulationModes.TranslateY)
-	        {
-	            line.ManipulationStarted += HorizontalLine_ManipulationStarted;
-	            line.ManipulationDelta += HorizontalLine_ManipulationDelta;
-	            line.ManipulationCompleted += HorizontalLine_ManipulationCompleted;
-	            line.PointerEntered += delegate
-	            {
-	                Window.Current.CoreWindow.PointerCursor =
-	                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.SizeNorthSouth, 0);
-	            };
-            }
-            else if (manip == ManipulationModes.TranslateX)
-	        {
-                line.ManipulationStarted += VerticalLine_ManipulationStarted;
-                line.ManipulationDelta += VerticalLine_ManipulationDelta;
-                line.ManipulationCompleted += VerticalLine_ManipulationCompleted;
-	            line.PointerEntered += delegate
-	            {
-	                Window.Current.CoreWindow.PointerCursor =
-	                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.SizeWestEast, 0);
-	            };
-            }
-
-	        line.ManipulationMode = manip;
+            line.PointerEntered += delegate
+            {
+                Window.Current.CoreWindow.PointerCursor =
+                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 0);
+            };
+            line.Tapped += Line_Tapped;
             line.PointerExited += delegate
 	        {
 	            Window.Current.CoreWindow.PointerCursor =
@@ -2053,43 +2035,36 @@ namespace Dash
 	        return line;
 	    }
 
-        private void VerticalLine_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            var column = FindColumn((sender as Line).X1);
-            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column].Width =
-                new GridLength((sender as Line).Y1 -
-                               column > 0 ? (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column - 1].ActualWidth : 0);
-            e.Handled = true;
-        }
-
-        private void VerticalLine_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void Line_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var line = sender as Line;
-            var left = line.X1;
-            var column = FindColumn(line.X1);
-            double width = 0;
-            for (var i = 0; i < column - 1; i++)
+            var grid = xItemsControlGrid.ItemsPanelRoot as Grid;
+            if (line.X1 == line.X2)
             {
-                width += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
+                var leftCol = FindColumn(line.X1 - 10 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
+                var rightCol = leftCol + 1;
+                if (rightCol <= grid.ColumnDefinitions.Count - 1)
+                {
+                    grid.ColumnDefinitions[leftCol].Width =
+                        new GridLength(grid.ColumnDefinitions[leftCol].ActualWidth +
+                                       grid.ColumnDefinitions[rightCol].ActualWidth);
+                    grid.ColumnDefinitions.RemoveAt(rightCol);
+                }
+                xOuterWorkspace.Children.Remove(line);
             }
-            left += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).X;
-
-            var lowerBound = column == 0 ? width + (xOuterWorkspace.Width - xWorkspace.Width) / 2 : (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-            var upperBound = column == width + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count
-                ? width + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[column].ActualWidth + (xOuterWorkspace.Width - xWorkspace.Width) / 2
-                : xWorkspace.ActualWidth + (xOuterWorkspace.Width - xWorkspace.Width) / 2;
-            if (left > lowerBound &&
-                left < upperBound)
+            else if (line.Y1 == line.Y2)
             {
-                line.X1 = left;
-                line.X2 = left;
+                var topRow = FindRow(line.Y1 - 10 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
+                var bottomRow = topRow + 1;
+                if (bottomRow <= grid.RowDefinitions.Count - 1)
+                {
+                    grid.RowDefinitions[topRow].Height =
+                        new GridLength(grid.RowDefinitions[topRow].ActualHeight +
+                                       grid.RowDefinitions[bottomRow].ActualHeight);
+                    grid.RowDefinitions.RemoveAt(bottomRow);
+                }
+                xOuterWorkspace.Children.Remove(line);
             }
-            e.Handled = true;
-        }
-
-        private void VerticalLine_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
         }
 
         private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -2099,7 +2074,7 @@ namespace Dash
 	            xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 < xWorkspace.Height)
 	        {
                 // create a copy of the line and add it to the outer workspace
-	            var line = NewLine(0, 500, xHorizLine.Y1, xHorizLine.Y2, ManipulationModes.TranslateY);
+	            var line = NewLine(0, 500, xHorizLine.Y1, xHorizLine.Y2);
                 xOuterWorkspace.Children.Add(line);
 
 	            // let the height start at the y position minus the offset created by the outer workspace
@@ -2133,45 +2108,6 @@ namespace Dash
 	        e.Handled = true;
 	    }
 
-        private void HorizontalLine_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            var row = FindRow((sender as Line).Y1);
-            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].Height =
-                new GridLength((sender as Line).Y1 -
-                               row > 0 ? (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row - 1].ActualHeight : 0);
-            e.Handled = true;
-        }
-
-        private void HorizontalLine_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var line = sender as Line;
-            var top = line.Y1;
-            var row = FindRow(line.Y1);
-            double height = 0;
-            for (var i = 0; i < row - 1; i++)
-            {
-                height += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
-            }
-            top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
-
-            var lowerBound = row != 0 ? height + (xOuterWorkspace.Height - xWorkspace.Height) / 2 : (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-            var upperBound = row != (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count - 1
-                ? height + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].ActualHeight + (xOuterWorkspace.Height - xWorkspace.Height) / 2
-                : xWorkspace.ActualHeight + (xOuterWorkspace.Height - xWorkspace.Height) / 2;
-            if (top > lowerBound &&
-                top < upperBound)
-            {
-                line.Y1 = top;
-                line.Y2 = top;
-            }
-            e.Handled = true;
-        }
-
-        private void HorizontalLine_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
         private void XGridLeftDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
 	        xVertLine.Visibility = Visibility.Visible;
@@ -2196,7 +2132,7 @@ namespace Dash
 	            xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 < xWorkspace.Width)
 	        {
                 // create a copy of the line and add it to the outer workspace
-                var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500, ManipulationModes.TranslateX);
+                var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500);
 	            xOuterWorkspace.Children.Add(line);
 
                 // determine the width from the left of the workspace to the line
@@ -2307,6 +2243,7 @@ namespace Dash
 	            true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
 	            true);
+	        docView.PreventManipulation = true;
 	        // we also want to make sure the horizontal and vertical alignment are both stretched
 	        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
 	            new TextController(HorizontalAlignment.Stretch.ToString()), true);
@@ -2354,7 +2291,7 @@ namespace Dash
 	                countingHeight += heightInfo.Data;
 	                if (countingHeight < xOuterWorkspace.Height - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
 	                {
-	                    var line = NewLine(0, 500, countingHeight, countingHeight, ManipulationModes.TranslateY);
+	                    var line = NewLine(0, 500, countingHeight, countingHeight);
 	                    xOuterWorkspace.Children.Add(line);
 	                }
 	            }
@@ -2376,7 +2313,7 @@ namespace Dash
 	                countingWidth += widthInfo.Data;
 	                if (countingWidth < xOuterWorkspace.Width - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
 	                {
-	                    var line = NewLine(countingWidth, countingWidth, 0, 500, ManipulationModes.TranslateX);
+	                    var line = NewLine(countingWidth, countingWidth, 0, 500);
 	                    xOuterWorkspace.Children.Add(line);
 	                }
 	            }
