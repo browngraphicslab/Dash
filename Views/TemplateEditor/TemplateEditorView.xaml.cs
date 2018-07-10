@@ -257,6 +257,8 @@ namespace Dash
 		    {
 		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
 		        xItemsControlGrid.Visibility = Visibility.Visible;
+		        xGridLeftDragger.Visibility = Visibility.Visible;
+		        xGridTopDragger.Visibility = Visibility.Visible;
 		    }
 
             //MAKE TEMPLATE VIEW
@@ -2240,6 +2242,9 @@ namespace Dash
 	            new TextController(VerticalAlignment.Stretch.ToString()), true);
 	        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
 	        docView.VerticalAlignment = VerticalAlignment.Stretch;
+	        docView.DocumentDeleted += DocView_DocumentDeleted;
+	        docView.SizeChanged += DocumentView_OnSizeChanged;
+	        docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 
 	        var col = docView.ViewModel.DocumentController.GetField<NumberController>(KeyStore.ColumnKey)?.Data ??
 	                  FindColumn(docView.ViewModel.XPos);
