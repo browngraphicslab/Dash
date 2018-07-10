@@ -497,7 +497,7 @@ namespace Dash
         }
         #endregion
 
-        #region Sugestions 
+        #region Suggestions 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
             //get selected item

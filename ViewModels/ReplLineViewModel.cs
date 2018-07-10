@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dash
 {
     public class ReplLineViewModel : ViewModelBase
     {
-       
-
         public ReplLineViewModel(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
         {
             _outputValue = outputValue;
@@ -28,6 +22,9 @@ namespace Dash
                 {
                     switch (controller)
                     {
+                        case NumberController number:
+                            result = number.Data.ToString("G");
+                            break;
                         case TextController text:
                             result = text.Data;
                             break;

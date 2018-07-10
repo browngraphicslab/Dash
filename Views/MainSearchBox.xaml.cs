@@ -57,7 +57,7 @@ namespace Dash
             if (searchBox == null) return;
 
             //first unhightlight old results
-            unHighlightAllDocs();
+            UnHighlightAllDocs();
 
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             var text = searchBox.Text; //.ToLower();
@@ -130,7 +130,7 @@ namespace Dash
             }
         }
 
-        public static void unHighlightAllDocs()
+        public static void UnHighlightAllDocs()
         {
 
             //TODO:call this when search is unfocused
@@ -141,11 +141,11 @@ namespace Dash
 
             foreach (var coll in allCollections)
             {
-                unHighlightDocs(coll);
+                UnHighlightDocs(coll);
             }
         }
 
-        public static void unHighlightDocs(DocumentController coll)
+        public static void UnHighlightDocs(DocumentController coll)
         {
             var colDocs = coll.GetDataDocument()
                 .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
@@ -155,7 +155,7 @@ namespace Dash
                 MainPage.Instance.HighlightDoc(doc, false, 2);
                 if (doc.DocumentType.ToString() == "Collection Box")
                 {
-                    unHighlightDocs(doc);
+                    UnHighlightDocs(doc);
                 }
             }
         }

@@ -5,14 +5,39 @@ using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.ViewModels
+// ReSharper disable once CheckNamespace
+namespace Dash
 {
-    public sealed partial class ReplLineNode : UserControl
+    public sealed partial class ReplLineNode
     {
-        public ReplLineNode()
+        private FieldControllerBase _outputValue;
+        private FieldControllerBase _value;
+        private ArrowState _arrowState = ArrowState.Closed;
+
+        public enum ArrowState
         {
-            this.InitializeComponent();
+            Open,
+            Closed
         }
+
+        public ReplLineNode(string lineText, FieldControllerBase value, FieldControllerBase outputValue)
+        {
+            InitializeComponent();
+            xArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+            _outputValue = outputValue;
+            LineText = lineText;
+            LineValueText = value;
+            _value = value;
+        }
+
+        private object ComputeTreeFromResult(FieldControllerBase value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object LineValueText { get; set; }
+
+        public string LineText { get; set; }
 
         private void MenuFlyoutItem_OnClick(object sender, RoutedEventArgs e)
         {
@@ -28,16 +53,10 @@ namespace Dash.ViewModels
         {
             e.Handled = true;
             //Toggle visibility
-            if (Visibility == Visibility.Collapsed)
-            {
-                Visibility = Visibility.Visible;
-                xArrowBlock.Text = (string)Application.Current.Resources["ContractArrowIcon"];
-            }
-            else
-            {
-                Visibility = Visibility.Collapsed;
-                xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
-            }
+            _arrowState = _arrowState == ArrowState.Closed ? ArrowState.Open : ArrowState.Closed;
+            xArrowBlock.Text = _arrowState == ArrowState.Open
+                ? (string) Application.Current.Resources["ExpandArrowIcon"]
+                : (string) Application.Current.Resources["ContractArrowIcon"];
         }
 
         private void XSnapshotArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
