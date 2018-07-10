@@ -5,14 +5,19 @@ namespace Dash
 {
     public class Search
     {
+        public IEnumerable<DocumentNode> GetAllDocs()
+        {
+            return DocumentTree.MainPageTree;
+        }
+
         public IEnumerable<DocumentNode> SearchByKeyValuePair(string key, string value)
         {
-            return DocumentTree.MainPageTree.Where(node => node.DataDocument?.GetDereferencedField(new KeyController(key), null)?.SearchForString(value) != StringSearchModel.False).ToList();
+            return GetAllDocs().Where(node => node.DataDocument?.GetDereferencedField(new KeyController(key), null)?.SearchForString(value) != StringSearchModel.False).ToList();
         }
 
         public IEnumerable<DocumentNode> SearchByQuery(string query)
         {
-            return DocumentTree.MainPageTree.Where(doc =>
+            return GetAllDocs().Where(doc =>
             {
                 foreach (var field in doc.ViewDocument.EnumDisplayableFields())
                 {
