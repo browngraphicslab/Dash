@@ -205,11 +205,11 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     -->
-                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public" Loaded="XItemsControlGrid_OnLoaded"
+                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public"
                                   ItemsSource="{Binding DocumentViewModels}" Visibility="Collapsed">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid x:Name="xGrid" x:FieldModifier="public" Loaded="XGrid_OnLoaded">
+                                <Grid x:Name="xGrid" x:FieldModifier="public">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
