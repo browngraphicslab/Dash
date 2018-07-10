@@ -56,8 +56,6 @@ namespace Dash
 
         public abstract FieldReference GetFieldReference();
 
-        public abstract string GetDocumentId(Context context);
-
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
         public override TypeInfo RootTypeInfo => GetFieldReference().GetRootFieldType();

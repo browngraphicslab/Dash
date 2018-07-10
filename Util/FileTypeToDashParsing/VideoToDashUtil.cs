@@ -121,7 +121,7 @@ namespace Dash
 
 			// return a video box, by setting the height to NaN the video height automatically sizes
 			// based on the width according to the aspect ratio
-			return new VideoBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
+			return new VideoBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey), h: double.NaN).Document;
 		}
 
 	}

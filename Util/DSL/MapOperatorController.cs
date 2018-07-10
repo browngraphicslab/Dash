@@ -13,12 +13,12 @@ namespace Dash
     {
 
         //Input keys
-        public static readonly KeyController ListKey = new KeyController("E7F792F8-3AD0-4284-BBF6-B7F2E2799F1A", "List");
-        public static readonly KeyController LambdaVariableNameKey = new KeyController("EDC4CE8E-5F2F-4F8F-AAF9-6749D736285D", "LambdaVariableName");
-        public static readonly KeyController LambdaFuncKey = new KeyController("0DF88C0A-1F18-422F-9D8F-400F526828F9", "LambdaFunc");
+        public static readonly KeyController ListKey = new KeyController("List");
+        public static readonly KeyController LambdaVariableNameKey = new KeyController("LambdaVariableName");
+        public static readonly KeyController LambdaFuncKey = new KeyController("LambdaFunc");
 
         //Output keys
-        public static readonly KeyController ResultListKey = new KeyController("87F48D1A-F958-4020-8F47-2F247BA7D66C", "ResultList");
+        public static readonly KeyController ResultListKey = new KeyController("ResultList", "87F48D1A-F958-4020-8F47-2F247BA7D66C");
 
         public MapOperator(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -49,7 +49,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
 
         private static readonly KeyController TypeKey =
-            new KeyController("E119C98C-6A29-4D10-978C-8E8049330D92", "Map");
+            new KeyController("Lambda Map", "E119C98C-6A29-4D10-978C-8E8049330D92");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

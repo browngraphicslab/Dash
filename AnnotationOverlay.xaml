@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid>
+    <Grid Background="Transparent">
         <Grid x:Name="xRegionsGrid"/>
         <local:RegionBox x:Name="xRegionPostManipulationPreview" Visibility="Collapsed" />
         <Rectangle x:Name="xRegionDuringManipulationPreview" Fill="AntiqueWhite" Opacity="0.4" StrokeThickness="2" Stroke="SaddleBrown" HorizontalAlignment="Left" VerticalAlignment="Top" Visibility="Collapsed"/>

@@ -21,14 +21,14 @@
                                                   HorizontalAlignment="Left" VerticalAlignment="Top" 
                                                   ViewMode="FitWidth" HorizontalContentAlignment="Left"
                                                   HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Hidden"
                                                   IsTextSelectionEnabled="False" DocumentLoaded="XPdfView_OnDocumentLoaded"/>
 
-                <ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanging="ScrollViewer_OnViewChanging" PointerPressed="xScrollViewer_OnPointerPressed" PointerMoved="xScrollViewer_OnPointerMoved" PointerReleased="xScrollViewer_OnPointerReleased" HorizontalAlignment="Stretch">
-                    <Grid x:Name="xGridForStretching">
-                        <dash:AnnotationOverlay x:Name="xAnnotations"/>
+                <!--<ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanged="xRegionsScrollviewer_ViewChanged" PointerPressed="xScrollViewer_OnPointerPressed" PointerMoved="xScrollViewer_OnPointerMoved" PointerReleased="xScrollViewer_OnPointerReleased" HorizontalAlignment="Stretch">
+                    <Grid x:Name="xGridForStretching" Opacity="0.4" Background="Transparent" HorizontalAlignment="Stretch">
+
                     </Grid>
-                </ScrollViewer>
+                </ScrollViewer>-->
             </Canvas>
         </Grid>
         <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed"/>

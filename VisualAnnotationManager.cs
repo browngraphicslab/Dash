@@ -70,10 +70,11 @@ namespace Dash
                 MakeNewRegionBox(topLeft, bottomRight, region).Hide();
             }
         }
-
+        public double Zoom = 1;
         private void Element_OnNewRegionStarted(object sender, PointerRoutedEventArgs e)
         {
-            var pos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+            var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+            var pos = new Point(rawpos.X / Zoom, rawpos.Y / Zoom);
             _anchorPoint = pos;
             _isDragging = true;
 
@@ -110,8 +111,9 @@ namespace Dash
             if (_isDragging && properties.IsRightButtonPressed == false && properties.IsLeftButtonPressed == true)
             {
                 //update size of preview region box according to mouse movement
-
-                var pos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+                
+                var rawpos = e.GetCurrentPoint(_element.GetPositionReference()).Position;
+                var pos = new Point(rawpos.X / Zoom, rawpos.Y / Zoom);
 
                 var x = Math.Min(pos.X, _anchorPoint.X);
                 var y = Math.Min(pos.Y, _anchorPoint.Y);

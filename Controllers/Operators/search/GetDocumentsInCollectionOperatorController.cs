@@ -12,10 +12,10 @@ namespace Dash
     public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController TextKey = new KeyController("57EB542F-D77C-41A3-975C-1E9A571BBD01","Term");
+        public static readonly KeyController TextKey = new KeyController("Term");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("054D019F-665B-4053-9A24-1EE45245920A", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
 
         public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -28,7 +28,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("2A9CC210-795F-416E-B039-7644B59B4CFE", "Get Documents In Collection");
+        private static readonly KeyController TypeKey = new KeyController("Get Documents In Collection", "2A9CC210-795F-416E-B039-7644B59B4CFE");
 
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>

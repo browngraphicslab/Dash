@@ -16,10 +16,10 @@ namespace Dash
     public class GetAllDocsBeforeTime : OperatorController
     {
         //Input keys
-        public static readonly KeyController TimeKey = new KeyController("A7D1E920-8149-4844-B119-D72A831D81AF", "Time");
+        public static readonly KeyController TimeKey = new KeyController("Time");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("9A1C4EFD-8A9F-4117-B9AB-F8C77AD96F41", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public GetAllDocsBeforeTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -41,7 +41,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("27B6978D-F053-480B-8B64-439D334E5C9E", "Before");
+        private static readonly KeyController TypeKey = new KeyController("Before", "27B6978D-F053-480B-8B64-439D334E5C9E");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
