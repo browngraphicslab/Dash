@@ -318,12 +318,12 @@
                             </Storyboard>
                         </StackPanel.Resources>
                         <!--Header-->
-                        <StackPanel  x:Name="xAddItemsHeader" PointerEntered="ExpandButtonOnClick" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <StackPanel  x:Name="xAddItemsHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                             <fontIcons:FontAwesome x:Name="xAddItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Add Items</TextBlock>
                         </StackPanel>
                         <!--StackPanel for buttons-->
-                        <StackPanel x:Name="xAddItemsButtonStack" IsHitTestVisible="True" PointerEntered="xButtonStack_OnPointerEntered" PointerExited="xButtonStack_OnPointerExited" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xAddItemsButtonStack" IsHitTestVisible="True"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                             <StackPanel Orientation="Horizontal" >
                             <AppBarButton Height="46" Width="42.5" Click="TextButton_OnClick"  >
                                 <TextBlock FontSize="18" Foreground="LightGray" Padding="0 0 0 0"
@@ -375,12 +375,12 @@
                             </Storyboard>
                         </StackPanel.Resources>
                         <!--Header-->
-                        <StackPanel  x:Name="xFormatItemsHeader" IsHitTestVisible="True"  PointerEntered="ExpandButtonOnClick"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <StackPanel  x:Name="xFormatItemsHeader" IsHitTestVisible="True"  Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                             <fontIcons:FontAwesome x:Name="xFormatItemsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Format Item</TextBlock>
                         </StackPanel>
                         <!--StackPanel for Format buttons-->
-                        <StackPanel x:Name="xFormatItemsButtonStack" PointerEntered="xButtonStack_OnPointerEntered" PointerExited="xButtonStack_OnPointerExited" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xFormatItemsButtonStack"  Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                             <!--ALIGNMENT-->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
                                 <AppBarButton x:Name="xAlignItemLeft"  Height="40" Width="57" Tapped="ItemAlignmentButton_OnChecked">
@@ -435,12 +435,12 @@
                             </Storyboard>
                         </StackPanel.Resources>
                         <!--Header-->
-                        <StackPanel  x:Name="xFormatTemplateHeader" PointerEntered="ExpandButtonOnClick" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <StackPanel  x:Name="xFormatTemplateHeader" Orientation="Horizontal" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                             <fontIcons:FontAwesome x:Name="xFormatTemplateArrow" Icon="AngleDown" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Template</TextBlock>
                         </StackPanel>
                         <!--StackPanel for Format buttons-->
-                        <StackPanel x:Name="xFormatTemplateButtonStack" IsHitTestVisible="True" PointerEntered="xButtonStack_OnPointerEntered" PointerExited="xButtonStack_OnPointerExited" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xFormatTemplateButtonStack" IsHitTestVisible="True" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                             <!--<TextBlock Foreground="Black" Height="20" FontSize="">Alignment</TextBlock>-->
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Width="170">
                                 <AppBarButton x:Name="xAlignLeft"  Height="48" Width="57" Tapped="TemplateAlignmentButton_OnChecked">
@@ -511,12 +511,12 @@
                             </Storyboard>
                         </StackPanel.Resources>
                         <!--Header-->
-                        <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" PointerEntered="ExpandButtonOnClick" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
+                        <StackPanel Orientation="Horizontal" x:Name="xOptionsHeader" HorizontalAlignment="Left" Tapped="ExpandButtonOnClick" >
                             <fontIcons:FontAwesome x:Name="xOptionsArrow" Icon="AngleDown" Foreground="White" Width="40" />
                             <TextBlock FontSize="15" HorizontalAlignment="Left" Foreground="White">Options</TextBlock>
                         </StackPanel>
                         <!--StackPanel for Option buttons-->
-                        <StackPanel x:Name="xOptionsButtonStack" IsHitTestVisible="True" PointerEntered="xButtonStack_OnPointerEntered" PointerExited="xButtonStack_OnPointerExited" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
+                        <StackPanel x:Name="xOptionsButtonStack" IsHitTestVisible="True" Orientation="Vertical" HorizontalAlignment="Center" Visibility="Collapsed" Background="#334f43">
                             <Button x:Name="xUploadTemplateButton" Height="40" Width="170" Background="#334f43" Click="XUploadTemplate_OnClick">
                                 <Button.Flyout>
                                     <Flyout x:Name="xUploadTemplateFlyout"/>
