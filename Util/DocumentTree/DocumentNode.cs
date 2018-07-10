@@ -32,7 +32,7 @@ namespace Dash
             ViewDocument = viewDocument;
             DataDocument = ViewDocument.GetDataDocument();
 
-            nodes.Add(DataDocument, this);
+            nodes.TryAdd(DataDocument, this);
 
             Parent = parent;
             var childDocControllers = DataDocument.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);

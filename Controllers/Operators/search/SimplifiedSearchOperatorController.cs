@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType(Op.Name.find, Op.Name.f)]
+    [OperatorType(Op.Name.find, Op.Name.f/*, Op.Name.search*/)]
     public class SimplifiedSearchOperatorController : OperatorController
     {
 
