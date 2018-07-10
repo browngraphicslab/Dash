@@ -1674,7 +1674,7 @@ namespace Dash
 	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
 	            ?.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
 	        layout?.SetField(KeyStore.WidthFieldKey, new NumberController(newSize.Width), true);
-	        layout.SetField(KeyStore.HeightFieldKey, new NumberController(newSize.Height), true);
+	        layout?.SetField(KeyStore.HeightFieldKey, new NumberController(newSize.Height), true);
 
 	        var bounds = new Rect(new Point(), newSize);
 	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
@@ -1783,7 +1783,6 @@ namespace Dash
 					xDesignGridSmall.Visibility = Visibility.Collapsed;
 				}
 			}
-			
 		}
 
 		//makes chosen grid visible
@@ -1890,6 +1889,7 @@ namespace Dash
 			//set TemplateStyle key to Grid
 			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
 
+            // make visible the dragging starters on the left and top of the outer workspace
 		    xGridLeftDragger.Visibility = Visibility.Visible;
 		    xGridTopDragger.Visibility = Visibility.Visible;
 
@@ -1898,9 +1898,10 @@ namespace Dash
 		    xItemsControlGrid.Visibility = Visibility.Visible;
 
 		    xItemsControlGrid.ItemsSource = DocumentViewModels;
-			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
+
 			//update key
-			DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+		    DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey,
+		        new NumberController(TemplateConstants.GridView), true);
 		}
 
 		ItemsPanelTemplate ItemsPanelTemplateType(Type panelType)
@@ -1976,6 +1977,7 @@ namespace Dash
 
 	    private Line NewLine(double x1 = 0, double x2 = 0, double y1 = 0, double y2 = 0, ManipulationModes manip = ManipulationModes.None)
 	    {
+            // creates a new line, useful for creating guidelines
 	        var line = new Line
 	        {
 	            X1 = x1,
@@ -1995,23 +1997,39 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
+            // determine if the line exists inside of the workspace
 	        if (0 < xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 &&
 	            xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 < xWorkspace.Height)
 	        {
+                // create a copy of the line and add it to the outer workspace
 	            var line = NewLine(0, 500, xHorizLine.Y1, xHorizLine.Y2);
-
                 xOuterWorkspace.Children.Add(line);
 
-	            var row = FindRow(line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
+	            // let the height start at the y position minus the offset created by the outer workspace
+	            double height = line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2;
+                // find which row we should be inserting at
+                var row = FindRow(height);
+                // if we aren't in the first row
+	            if (row > 0)
+	            {
+                    // find the height of all the rows leading before it
+	                double calculatedHeight = 0;
+	                for (var i = 0; i < row; i++)
+	                {
+	                    calculatedHeight += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
+	                }
 
+                    // subtract that sum from our current height
+	                height -= calculatedHeight;
+	            }
+                // insert a new row at that spot with our calculated height
 	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Insert(row, new RowDefinition
 	            {
-	                Height = new GridLength(row > 0 ? line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2
-	                                                          - (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row - 1].ActualHeight :
-	                    line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
+	                Height = new GridLength(height)
 	            });
             }
 
+            // reset the line that we use as a visual cue of "adding" a new line
 	        xHorizLine.Visibility = Visibility.Collapsed;
 	        xHorizLine.Y1 = 0;
 	        xHorizLine.Y2 = 0;
@@ -2073,43 +2091,73 @@ namespace Dash
 
 	    private void XGridLeftDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
+            // determine if the new line exists inside of the workspace
 	        if (0 < xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 &&
 	            xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 < xWorkspace.Width)
 	        {
-	            var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500);
+                // create a copy of the line and add it to the outer workspace
+                var line = NewLine(xVertLine.X1, xVertLine.X2, 0, 500);
 	            xOuterWorkspace.Children.Add(line);
 
-	            var col = FindColumn(line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
-
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Insert(col, new ColumnDefinition
+                // determine the width from the left of the workspace to the line
+	            double width = line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2;
+                // find the index of the new column given the x offset
+	            var col = FindColumn(width);
+                // if it isn't the first index
+	            if (col > 0)
 	            {
-	                Width = new GridLength(col > 0 ? line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2
-	                                                         - (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[col - 1].ActualWidth :
-	                    line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
+                    // add up the widths of all the columns preceding
+	                double calculatedWidth = 0;
+	                for (var i = 0; i < col; i++)
+	                {
+	                    calculatedWidth += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
+	                }
+                    // subtract the sum from our current width
+	                width -= calculatedWidth;
+	            }
+                // create a new column at that specific index with our new width
+                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Insert(col, new ColumnDefinition
+	            {
+	                Width = new GridLength(width)
 	            });
             }
 
+            // reset the fake guiding line
             xVertLine.Visibility = Visibility.Collapsed;
 	        xVertLine.X1 = 0;
 	        xVertLine.X2 = 0;
 	        e.Handled = true;
 	    }
+
+        /// <summary>
+        ///     given a y-offset relative to the top of xWorkspace, finds the appropriate row
+        ///     that that offset should be in
+        /// </summary>
+        /// <param name="offsetY">
+        ///     double variable representing y-offset relative to the top edge of xWorkspace
+        /// </param>
+        /// <returns></returns>
 	    private int FindRow(double offsetY)
 	    {
 	        double currOffset = 0;
+            // loop through every row definition
 	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count; i++)
 	        {
+                // if the y-offset lands between these two numbers, the y-offset is in row i
 	            if (currOffset < offsetY && offsetY <
 	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight)
 	            {
 	                return i;
 	            }
 
+                // save the position of this row and go to the next row
 	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
 	        }
 
+            // if we haven't returned anything, but the offset is between our end offset and the height
 	        if (currOffset < offsetY && offsetY < xWorkspace.Height)
 	        {
+                // the y-offset is in the last row
 	            return (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count;
 	        }
 
@@ -2119,14 +2167,17 @@ namespace Dash
 	    private int FindColumn(double offsetX)
 	    {
 	        double currOffset = 0;
+            // loop through every column definition
 	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count; i++)
 	        {
+                // if the x-offset lands between these two numbers, the x-offset is in column i
 	            if (currOffset < offsetX && offsetX <
 	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth)
 	            {
 	                return i;
 	            }
 
+                // save the position of this column and go to the next
 	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
 	        }
 
@@ -2140,6 +2191,7 @@ namespace Dash
 
         private void TappedHandler(object sender, TappedRoutedEventArgs e)
 	    {
+            // necessary
 	        e.Handled = true;
 	    }
 
@@ -2172,13 +2224,6 @@ namespace Dash
 	            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[(int) col]?.ActualWidth ?? xWorkspace.Width);
 	        docView.ViewModel.DocumentController.SetHeight((xItemsControlGrid.ItemsPanelRoot as Grid)
 	                                                       .RowDefinitions[(int) row]?.ActualHeight ?? xWorkspace.Height);
-
-	        if (!(xItemsControlGrid.ItemsPanelRoot as Grid).Children.Contains(
-	            docView.GetFirstAncestorOfType<ContentPresenter>()))
-	        {
-	            (xItemsControlGrid.ItemsPanelRoot as Grid).Children.Add(
-	                docView.GetFirstAncestorOfType<ContentPresenter>());
-	        }
 	    }
 
 	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -2190,16 +2235,13 @@ namespace Dash
 
 	    private void xButtonStack_OnPointerEntered(object sender, PointerRoutedEventArgs e)
 	    {
-	            var button = sender as StackPanel;
-
-	       
-
+	        var button = sender as StackPanel;
+            
             //toggle visibility of sub-buttons according to what header button was pressed
             switch (button?.Name)
 	            {
 	                case "xAddItemsButtonStack":
 	                   MakeVisible(xAddItemsButtonStack, xAddItemsArrow);
-                      
                     break;
 	                case "xFormatItemsButtonStack":
                         MakeVisible(xFormatItemsButtonStack, xFormatItemsArrow);
