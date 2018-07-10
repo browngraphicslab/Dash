@@ -29,14 +29,23 @@ namespace Dash
         // initializes the cropping guides and cropping box
         private void ResizingControl_Loaded(object sender, RoutedEventArgs e)
         {
-            Canvas.SetLeft(xRight, 290);
-            Canvas.SetTop(xRight, 180);
+            var doc = _parent.LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            var layout = doc?.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
+            double width = 300;
+            double height = 400;
+            if (layout?.DocumentType.Equals(TemplateBox.DocumentType) ?? false)
+            {
+                width = doc.GetWidthField().Data < 500 ? doc.GetWidthField().Data : 500;
+                height = doc.GetHeightField().Data < 500 ? doc.GetHeightField().Data : 500;
+            }
+            Canvas.SetLeft(xRight, width - xRight.Width);
+            Canvas.SetTop(xRight, (height - xRight.Height) / 2);
             Canvas.SetLeft(xLeft, 0);
-            Canvas.SetTop(xLeft, 180);
-            Canvas.SetLeft(xTop, 130);
+            Canvas.SetTop(xLeft, (height - xLeft.Height) / 2);
+            Canvas.SetLeft(xTop, (width - xTop.Width) / 2);
             Canvas.SetTop(xTop, 0);
-            Canvas.SetLeft(xBottom, 130);
-            Canvas.SetTop(xBottom, 390);
+            Canvas.SetLeft(xBottom, (width - xBottom.Width) / 2);
+            Canvas.SetTop(xBottom, height - xBottom.Height);
 
             UpdateRect();
         }
