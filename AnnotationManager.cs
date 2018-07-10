@@ -28,7 +28,7 @@ namespace Dash
         {
             if (chosenDC != null)
             {
-                showTargetDoc(chosenDC, pos);
+                ShowTargetDoc(chosenDC, pos);
             }
             else
             {
@@ -37,7 +37,7 @@ namespace Dash
 
                 if (multiToLinks.Count + multiFromLinks.Count == 1)
                 {
-                    showTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
+                    ShowTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
                 }
                 else if (_linkFlyout.Items.Count == 0)
                 {
@@ -123,7 +123,7 @@ namespace Dash
             return nearest;
         }
 
-        private void showTargetDoc(DocumentController theDoc, Point pos)
+        private void ShowTargetDoc(DocumentController theDoc, Point pos)
         {
             //find nearest linked doc that is currently displayed
             var cvm = _element.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
@@ -159,10 +159,10 @@ namespace Dash
                     MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
 
                     //images have additional highlighting features that should be implemented
-                    if (_element is EditableImage)
+                    if (_element is IVisualAnnotatable)
                     {
-                        var image = (EditableImage)_element;
-                        image.AnnotationManager.UpdateHighlight(nearestOnCollection);
+                        var element = (IVisualAnnotatable) _element;
+                        element.GetAnnotationManager().UpdateHighlight(nearestOnCollection);
                     }
                 }
             }

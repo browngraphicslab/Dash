@@ -149,6 +149,10 @@ namespace Dash
             };
             xPdfView.PdfProgressRing = progressRing;
         }
+        public VisualAnnotationManager GetAnnotationManager()
+        {
+            return _annotationManager;
+        }
 
         public DocumentController LayoutDocument { get; set; }
         public DocumentController DataDocument { get; set; }

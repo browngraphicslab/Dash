@@ -23,6 +23,7 @@ namespace Dash
         FrameworkElement GetPositionReference();
         // since this is different for every class, they must implement this part themselves
         DocumentController GetDocControllerFromSelectedRegion();
+        VisualAnnotationManager GetAnnotationManager();
 
         // Invoke these when the region preview boxes should be altered
         event PointerEventHandler NewRegionStarted;

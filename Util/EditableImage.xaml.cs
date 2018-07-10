@@ -45,7 +45,7 @@ namespace Dash
 	    public VisualAnnotationManager AnnotationManager;
         
         // interface-required events to communicate with the AnnotationManager
-        public event PointerEventHandler NewRegionStarted;
+	    public event PointerEventHandler NewRegionStarted;
 	    public event PointerEventHandler NewRegionMoved;
 	    public event PointerEventHandler NewRegionEnded;
 
@@ -118,7 +118,13 @@ namespace Dash
 			}
 
 			return file;
-		}
+	    }
+
+	    public VisualAnnotationManager GetAnnotationManager()
+	    {
+	        return AnnotationManager;
+	    }
+
 
         public async void Revert()
         {
