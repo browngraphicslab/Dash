@@ -359,10 +359,11 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate >
                                 <local:DocumentView
                                 BindRenderTransform="True"
-                                Loaded="DocumentView_OnLoaded" />
+                                Loaded="DocumentView_OnLoaded"
+                                   />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -421,12 +422,13 @@
                               Background="Transparent"
                               CanReorderItems="True"  AllowDrop="True" CanDragItems="True" ReorderMode="Enabled"
                               DragItemsStarting="XItemsControlList_OnDragItemsStartingList_DragItemsStarting"
-                              DragItemsCompleted="XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted" >
+                              DragItemsCompleted="XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <local:DocumentView
-                                        BindRenderTransform="True"
-                                        Loaded="DocumentView_OnLoaded_ListView"/>
+                                   
+                                        Loaded="DocumentView_OnLoaded_ListView"
+                                    HorizontalAlignment="Center"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>

@@ -121,25 +121,26 @@ namespace Dash
 				{
 					DocumentViewModels.Remove(rightDoc);
                     DataDocument.RemoveFromListField(KeyStore.DataKey, rightDoc.DocumentController);
-					//delete corresponding copy
-					foreach (var copy in ViewCopiesList)
-					{
-						if (copy.DataDocument.Equals(rightDoc.DataDocument))
-                            ViewCopiesList.Remove(copy);
-					    break; //TODO What is this doing?
-					}
 
-				    break;
+					//delete corresponding copy displayed in ListView
+					ViewCopiesList.Remove(this.FindListViewCopy(rightDoc));
+
+					break;
 				}
 				
 			}
 
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
-			xItemsControlGrid.ItemsSource = DocumentViewModels;
+		}
 
-			//find copy and delete that too
-
-			
+		//finds the copy that has the same data doc as the removed doc & removes it
+		private DocumentViewModel FindListViewCopy(DocumentViewModel origDoc)
+		{
+			foreach (var copy in ViewCopiesList)
+			{
+				if (copy.DataDocument.Equals(origDoc.DataDocument)) return copy;
+			}
+			return null;
 		}
 
 	    private void ClearDocs()
@@ -221,8 +222,10 @@ namespace Dash
 	    }
 
 	    private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
-	    {
-		    var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		{
+			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
+
+			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
 			// if the working document is already a template box, initialize with that template
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
@@ -230,6 +233,16 @@ namespace Dash
 		        DataDocument.SetField(KeyStore.DataKey,
 		            workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
 		                .GetField<ListController<DocumentController>>(KeyStore.DataKey), true);
+				//check template style, override current template format if necessary
+			    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+				        .GetField<NumberController>(KeyStore.TemplateStyleKey).Data == TemplateConstants.ListView)
+			    {
+					this.FormatTemplateIntoList();
+			    }
+			    else
+			    {
+				    this.FormatTemplateIntoFreeform();
+			    }
 		    }
 
 			//initialize UI of workspace
@@ -285,6 +298,10 @@ namespace Dash
                 // we must do both here because as of yet, there are no collection changed handles
                 DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
 				InitialDocumentControllers.Add(layoutDoc);
+				//add copy for list view
+				var copy = layoutDoc.GetViewCopy();
+				copy.SetPosition(new Point(0, 0));
+				ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
 			}
 
 			// update item source
@@ -327,7 +344,6 @@ namespace Dash
             DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 			docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
-			InitialDocumentControllers = DocumentControllers;
 
             // initialize the size of the workspace based on the working doc's width and height fields
             // determine if the active layout exists and if it is a template box
@@ -534,7 +550,6 @@ namespace Dash
 			{
 				AlignItem(alignment, dvm);
 			}
-            
 
 		}
         
@@ -603,6 +618,7 @@ namespace Dash
 			}
 
 			dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
+
 		}
 
 
@@ -652,52 +668,60 @@ namespace Dash
 		    var toggle = sender as ToggleButton;
 		    if ((bool) xActivate.IsChecked)
 		    {
-                // layout document's data key holds the document that we are currently working on
-                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                // make a copy of the data document
-                var dataDocCopy = DataDocument.GetDataInstance();
-                // loop through each layout document and try to abstract it out when necessary
 
-                // set the dataDocCopy's document context key to the working document's data document
-                dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
-                // set the position of the data copy to the working document's position
-                dataDocCopy.SetField(KeyStore.PositionFieldKey,
-                    workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+				//update revert checkpoint
+			    InitialDocumentControllers = new ObservableCollection<DocumentController>();
+			    foreach (var doc in DocumentControllers)
+			    {
+					InitialDocumentControllers.Add(doc);
+			    }
+				
+		        // layout document's data key holds the document that we are currently working on
+		        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		        // make a copy of the data document
+		        var dataDocCopy = DataDocument.GetDataInstance();
+		        // loop through each layout document and try to abstract it out when necessary
 
-                //dataDocCopy.SetField(KeyStore.TemplateStyleKey,
-                //    style, true);
+		        // set the dataDocCopy's document context key to the working document's data document
+		        dataDocCopy.SetField(KeyStore.DocumentContextKey, workingDoc.GetDataDocument(), true);
+		        // set the position of the data copy to the working document's position
+		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
+		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+				
+				//dataDocCopy.SetField(KeyStore.TemplateStyleKey,
+				//    style, true);
 
-                if (xItemsControlGrid.Visibility == Visibility.Visible)
-                {
-                    var rowInfo = new ListController<NumberController>(
-                        (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
-                            new NumberController(i.ActualHeight)));
-                    dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
-                    var colInfo = new ListController<NumberController>(
-                        (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
-                            new NumberController(i.ActualWidth)));
-                    dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
-                }
+		        if (xItemsControlGrid.Visibility == Visibility.Visible)
+		        {
+		            var rowInfo = new ListController<NumberController>(
+		                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
+		                    new NumberController(i.ActualHeight)));
+		            dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
+		            var colInfo = new ListController<NumberController>(
+		                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
+		                    new NumberController(i.ActualWidth)));
+		            dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+		        }  
+                
+		        // set the active layout of the working document to the dataDocCopy (which is the template)
+		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
+		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
+		            this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
+		        // let the working doc's title be the template's title
+		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
+		            true);
+				
+			    //update template style
+			    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+			        TemplateConstants.ListView)
+			    {
+					this.FormatTemplateIntoList();
+			    }
+			    
+			}
+		   
 
-                // set width and height of the new document
-                //      dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
-                //dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
-                // set the active layout of the working document to the dataDocCopy (which is the template)
-                workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
-                workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
-                    this.GetFirstAncestorOfType<DocumentView>().ViewModel.DocumentController, true);
-                // let the working doc's title be the template's title
-                workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
-                    true);
-
-                //update template style
-                if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
-                    TemplateConstants.ListView)
-                {
-                    this.FormatTemplateIntoList();
-                }
-
-            }
+            
         }
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -853,65 +877,65 @@ namespace Dash
 
 		}
 
-		private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-		{
-            // determines if the keybox is in a state where the user has submitted the inputted text
-			if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
-			{
-				var text = xKeyBox.Text;
-                // determine if the text says that it references some key
-				if (text.StartsWith("#"))
-				{
-					var possibleKeyString = text.Substring(1);
-                    // loop through each key value pair and find a matching key
-					var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
-						.EnumFields();
-					var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString))
-						.Key;
-					var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-                    // determine if there is a matching key
-					if (specificKey != null)
-					{
-                        // if so, create a new reference to that matching key and re-apply it to the doc
-						var newRef =
-							_selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
-								KeyStore.DataKey);
-						var selectedDoc = _selectedDocument.ViewModel.DocumentController;
-						if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) ||
-							selectedDoc.GetDataDocument().Equals(workingDoc))
-						{
-							newRef.FieldKey = specificKey;
-						}
-						else
-						{
-							DocumentReferenceController docRef;
-							if (workingDoc.GetField(specificKey) != null)
-							{
-								docRef = new DocumentReferenceController(LayoutDocument, KeyStore.DataKey);
-								newRef = new PointerReferenceController(docRef, specificKey);
-							}
-							else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
-							{
-								docRef = new DocumentReferenceController(
-									LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), KeyStore.DataKey);
-								newRef = new PointerReferenceController(docRef, specificKey);
-							}
-						}
+	    private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+	    {
+	        // determines if the keybox is in a state where the user has submitted the inputted text
+	        if (!xKeyBox.TextBoxLoaded && _selectedDocument != null)
+	        {
+	            var text = xKeyBox.Text;
+	            // determine if the text says that it references some key
+	            if (text.StartsWith("#"))
+	            {
+	                var possibleKeyString = text.Substring(1);
+	                // loop through each key value pair and find a matching key
+	                var keyValuePairs = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
+	                    .EnumFields();
+	                var specificKey = keyValuePairs.FirstOrDefault(kvp => kvp.Key.ToString().Equals(possibleKeyString))
+	                    .Key;
+	                var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+	                // determine if there is a matching key
+	                if (specificKey != null)
+	                {
+	                    // if so, create a new reference to that matching key and re-apply it to the doc
+	                    var newRef =
+	                        _selectedDocument.ViewModel.DocumentController.GetField<ReferenceController>(
+	                            KeyStore.DataKey);
+	                    var selectedDoc = _selectedDocument.ViewModel.DocumentController;
+	                    if (selectedDoc.GetDataDocument().Equals(workingDoc.GetDataDocument()) ||
+	                        selectedDoc.GetDataDocument().Equals(workingDoc))
+	                    {
+	                        newRef.FieldKey = specificKey;
+	                    }
+	                    else
+	                    {
+	                        DocumentReferenceController docRef;
+	                        if (workingDoc.GetField(specificKey) != null)
+	                        {
+	                            docRef = new DocumentReferenceController(LayoutDocument, KeyStore.DataKey);
+	                            newRef = new PointerReferenceController(docRef, specificKey);
+	                        }
+	                        else if (workingDoc.GetDataDocument().GetField(specificKey) != null)
+	                        {
+	                            docRef = new DocumentReferenceController(
+	                                LayoutDocument.GetField<DocumentController>(KeyStore.DataKey), KeyStore.DataKey);
+	                            newRef = new PointerReferenceController(docRef, specificKey);
+	                        }
+	                    }
 
-						var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
-						DocumentViewModels.Remove(dvm);
-						var newDoc = DocumentControllers.First(doc =>
-							doc.Equals(_selectedDocument.ViewModel.DocumentController));
-						newDoc.SetField(KeyStore.DataKey, newRef, true);
-						var newDvm = new DocumentViewModel(newDoc);
-						DocumentViewModels.Add(newDvm);
-						_selectedDocument = null;
-					}
-				}
-			}
-		}
+	                    var dvm = DocumentViewModels.First(vm => vm.Equals(_selectedDocument.ViewModel));
+	                    DocumentViewModels.Remove(dvm);
+	                    var newDoc = DocumentControllers.First(doc =>
+	                        doc.Equals(_selectedDocument.ViewModel.DocumentController));
+	                    newDoc.SetField(KeyStore.DataKey, newRef, true);
+	                    var newDvm = new DocumentViewModel(newDoc);
+	                    DocumentViewModels.Add(newDvm);
+	                    _selectedDocument = null;
+	                }
+	            }
+	        }
+	    }
 
-		#region OnDrop Mechanics
+	    #region OnDrop Mechanics
 
 		private async void XWorkspace_OnDrop(object sender, DragEventArgs e)
 		{
@@ -1452,41 +1476,41 @@ namespace Dash
 
 		#endregion
 
-		private void ExpandButtonOnClick(object sender, RoutedEventArgs e)
-		{
-			var button = sender as StackPanel;
-			StackPanel stack = null;
-			FontAwesome arrow = null;
-			Storyboard animation = null;
-			//toggle visibility of sub-buttons according to what header button was pressed
-			switch (button?.Name)
-			{
-				case "xAddItemsHeader":
-					stack = xAddItemsButtonStack;
-					arrow = xAddItemsArrow;
-					animation = xFadeAnimation;
-					break;
-				case "xFormatItemsHeader":
-					stack = xFormatItemsButtonStack;
-					arrow = xFormatItemsArrow;
-					animation = xFadeAnimationFormat;
-					break;
-				case "xFormatTemplateHeader":
-					stack = xFormatTemplateButtonStack;
-					arrow = xFormatTemplateArrow;
-					animation = xFadeAnimationFormatTemplate;
-					break;
-				case "xOptionsHeader":
-					stack = xOptionsButtonStack;
-					arrow = xOptionsArrow;
-					animation = xFadeAnimationOptions;
-					break;
-			}
+	    private void ExpandButtonOnClick(object sender, RoutedEventArgs e)
+	    {
+	        var button = sender as StackPanel;
+	        StackPanel stack = null;
+	        FontAwesome arrow = null;
+	        Storyboard animation = null;
+	        //toggle visibility of sub-buttons according to what header button was pressed
+	        switch (button?.Name)
+	        {
+	            case "xAddItemsHeader":
+	                stack = xAddItemsButtonStack;
+	                arrow = xAddItemsArrow;
+	                animation = xFadeAnimation;
+	                break;
+	            case "xFormatItemsHeader":
+	                stack = xFormatItemsButtonStack;
+	                arrow = xFormatItemsArrow;
+	                animation = xFadeAnimationFormat;
+	                break;
+	            case "xFormatTemplateHeader":
+	                stack = xFormatTemplateButtonStack;
+	                arrow = xFormatTemplateArrow;
+	                animation = xFadeAnimationFormatTemplate;
+	                break;
+	            case "xOptionsHeader":
+	                stack = xOptionsButtonStack;
+	                arrow = xOptionsArrow;
+	                animation = xFadeAnimationOptions;
+	                break;
+	        }
 
-			if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
-		}
+	        if (stack != null && arrow != null) this.ToggleButtonState(stack, arrow, animation);
+	    }
 
-		private void ToggleButtonState(StackPanel buttonStack, FontAwesome arrow, Storyboard fade)
+	    private void ToggleButtonState(StackPanel buttonStack, FontAwesome arrow, Storyboard fade)
 		{
 			var centX = (float)xAddItemsArrow.ActualWidth / 2;
 			var centY = (float)xAddItemsArrow.ActualHeight / 2;
@@ -1650,23 +1674,21 @@ namespace Dash
 
 	    public void ResizeCanvas(Size newSize)
 	    {
-
-            
+            // determine if the workspace has a valid width and height
 	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
 	        {
-	            //xWorkspace.Width = 300;
-	            //xWorkspace.Height = 400;
+                // set the workspace clipping
 	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height) };
-
 	            Bounds.Width = 70;
 	            Bounds.Height = 70;
 	            return;
 	        }
 
+            // save the old size as the workspace's width and height
 	        var oldSize = new Size(xWorkspace.Width, xWorkspace.Height);
-
 	        var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
 	        var bottomRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
+            // loop through each document view and find the furthest top left and bottom right points
 	        foreach (var docview in DocumentViews)
 	        {
 	            topLeft.X = Math.Min(topLeft.X, docview.ViewModel.XPos);
@@ -1675,9 +1697,7 @@ namespace Dash
 	            bottomRight.Y = Math.Max(bottomRight.Y, docview.ViewModel.YPos + docview.ViewModel.ActualSize.Y);
             }
           
-
-	       
-
+            // maintain their positions by changing their value's offsets
 	        foreach (var docview in DocumentViews)
 	        {
 	            var point = docview.ViewModel.DocumentController.GetPosition();
@@ -1687,9 +1707,12 @@ namespace Dash
 	            docview.ViewModel.DocumentController.SetPosition(newPoint);
 	        }
 
+            // set the workspace's size to the new size
             xWorkspace.Width = newSize.Width;
 	        xWorkspace.Height = newSize.Height;
 	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
+
+            // try to set the width and height of the active layout to the new width and height
 	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
 	            ?.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
 	        layout?.SetField(KeyStore.WidthFieldKey, new NumberController(newSize.Width), true);
@@ -1707,24 +1730,22 @@ namespace Dash
 	            Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
 	            Bounds.Height = 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
             }
-
-         
-	        
-	        //Bounds.Width = bottomRight.X - topLeft.X;
-	        //Bounds.Height = bottomRight.Y - topLeft.Y;
-
-
-	        PositionEllipses(xWorkspace.ActualWidth, xWorkspace.ActualHeight);
+            
+	        PositionEllipses();
 	    }
 
-	    public void PositionEllipses(double width, double height)
+	    public void PositionEllipses()
 	    {
+	        var width = xWorkspace.ActualWidth;
+	        var height = xWorkspace.ActualHeight;
+            // determine if the width is greater than some arbitrary constant
 	        if (width > 420)
 	        {
+                // if so, move the ellipses to inside of the workspace
 	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, true);
 	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, true);
-	            double offsetY = (500 - height) / 2 + 4;
-	            double offsetX = (500 - width) / 2 + width - xEllipseStack.ActualWidth - 12;
+	            var offsetY = (500 - height) / 2 + 4;
+	            var offsetX = (500 - width) / 2 + width - xEllipseStack.ActualWidth - 12;
 	            xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
 
 	        }
@@ -1845,10 +1866,17 @@ namespace Dash
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
 			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
-			xItemsControlCanvas.Visibility = Visibility.Visible;
-			xItemsControlList.Visibility = Visibility.Collapsed;
 			//update
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+
+			this.FormatTemplateIntoFreeform();
+		}
+
+		private void FormatTemplateIntoFreeform()
+		{
+			xItemsControlCanvas.Visibility = Visibility.Visible;
+			xItemsControlList.Visibility = Visibility.Collapsed;
+
 			//button ui
 			xListButton.Background = new SolidColorBrush(Colors.Transparent);
 			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
@@ -1865,41 +1893,17 @@ namespace Dash
 
 		private void FormatTemplateIntoList()
 		{
-			//set TemplateStyle key to List
-			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-
 			xGridLeftDragger.Visibility = Visibility.Collapsed;
 			xGridTopDragger.Visibility = Visibility.Collapsed;
-
-			/*xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
-			//align all in center
-			foreach (var dvm in DocumentViewModels)
-			{
-				AlignItem(HorizontalAlignment.Center, dvm);
-			}*/
-
-			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
-
+			
 			xItemsControlCanvas.Visibility = Visibility.Collapsed;
 			xItemsControlList.Visibility = Visibility.Visible;
 
 			//update key
 			DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-
-
-			/*
-			//make a list of copies
 			
-			foreach (var doc in DocumentControllers)
-			{
-				var copy = doc.GetViewCopy();
-				copy.SetPosition(new Point(0,0));
-				list.Add(new DocumentViewModel(copy, new Context(copy)));
-			}
-			*/
 			xItemsControlList.ItemsSource = ViewCopiesList;
-
-
+			
 			//button ui
 			xFreeFormButton.Background = new SolidColorBrush(Colors.Transparent);
 			xListButton.Background = new SolidColorBrush(Colors.White);
@@ -1983,6 +1987,7 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
+            // on started, make visible the fake guideline and let it move with the mouse
 	        xHorizLine.Visibility = Visibility.Visible;
 	        xHorizLine.Y1 = e.Position.Y;
 	        xHorizLine.Y2 = e.Position.Y;
@@ -1991,6 +1996,7 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 	    {
+            // while dragging, keep the line on the same y-position as the mouse
 	        var top = xHorizLine.Y1;
 	        top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
 	        xHorizLine.Y1 = top;
@@ -1998,8 +2004,8 @@ namespace Dash
 	        e.Handled = true;
 	    }
 
-	    private Line NewLine(double x1 = 0, double x2 = 0, double y1 = 0, double y2 = 0, ManipulationModes manip = ManipulationModes.None)
-	    {
+	    private Line NewLine(double x1 = 0, double x2 = 0, double y1 = 0, double y2 = 0)
+        {
             // creates a new line, useful for creating guidelines
 	        var line = new Line
 	        {
@@ -2010,15 +2016,77 @@ namespace Dash
 	            Stroke = new SolidColorBrush(Colors.Aqua),
 	            StrokeThickness = 1
 	        };
-	        line.ManipulationStarted += HorizontalLine_ManipulationStarted;
-	        line.ManipulationDelta += HorizontalLine_ManipulationDelta;
-	        line.ManipulationCompleted += HorizontalLine_ManipulationCompleted;
-	        line.ManipulationMode = manip;
-	        Canvas.SetZIndex(line, 100);
+            line.PointerEntered += delegate
+            {
+                Window.Current.CoreWindow.PointerCursor =
+                    new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Hand, 0);
+            };
+            line.Tapped += Line_Tapped;
+            line.PointerExited += delegate
+	        {
+	            Window.Current.CoreWindow.PointerCursor =
+	                new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 0);
+	        };
+            Canvas.SetZIndex(line, 100);
 	        return line;
 	    }
 
-	    private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        private void Line_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var line = sender as Line;
+            var grid = xItemsControlGrid.ItemsPanelRoot as Grid;
+
+            // case for vertical lines
+            if (line.X1 == line.X2)
+            {
+                // we subtract ten from the "fixed" point to force it to retrieve the column left of the line
+                var leftCol = FindColumn(line.X1 - 10 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
+                var rightCol = leftCol + 1;
+                // determine if the right column is a valid index
+                if (rightCol <= grid.ColumnDefinitions.Count - 1)
+                {
+                    // if so, make the left column's width encapsulate the right column's width
+                    grid.ColumnDefinitions[leftCol].Width =
+                        new GridLength(grid.ColumnDefinitions[leftCol].ActualWidth +
+                                       grid.ColumnDefinitions[rightCol].ActualWidth);
+                    // fix the grid columns of everything that was in the right column and move it to the left
+                    foreach (var docView in DocumentViews)
+                    {
+                        if (Grid.GetColumn(docView.GetFirstAncestorOfType<ContentPresenter>()) == rightCol)
+                        {
+                            Grid.SetColumn(docView.GetFirstAncestorOfType<ContentPresenter>(), leftCol);
+                        }
+                    }
+                    // remove the right column
+                    grid.ColumnDefinitions.RemoveAt(rightCol);
+                }
+                // remove the line
+                xOuterWorkspace.Children.Remove(line);
+            }
+            // case for horizontal lines
+            else if (line.Y1 == line.Y2)
+            {
+                var topRow = FindRow(line.Y1 - 10 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
+                var bottomRow = topRow + 1;
+                if (bottomRow <= grid.RowDefinitions.Count - 1)
+                {
+                    grid.RowDefinitions[topRow].Height =
+                        new GridLength(grid.RowDefinitions[topRow].ActualHeight +
+                                       grid.RowDefinitions[bottomRow].ActualHeight);
+                    foreach (var docView in DocumentViews)
+                    {
+                        if (Grid.GetRow(docView.GetFirstAncestorOfType<ContentPresenter>()) == bottomRow)
+                        {
+                            Grid.SetRow(docView.GetFirstAncestorOfType<ContentPresenter>(), topRow);
+                        }
+                    }
+                    grid.RowDefinitions.RemoveAt(bottomRow);
+                }
+                xOuterWorkspace.Children.Remove(line);
+            }
+        }
+
+        private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
             // determine if the line exists inside of the workspace
 	        if (0 < xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 &&
@@ -2058,42 +2126,6 @@ namespace Dash
 	        xHorizLine.Y2 = 0;
 	        e.Handled = true;
 	    }
-
-        private void HorizontalLine_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            var row = FindRow((sender as Line).Y1);
-            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].Height =
-                new GridLength((sender as Line).Y1 -
-                               row > 0 ? (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row - 1].ActualHeight : 0);
-            e.Handled = true;
-        }
-
-        private void HorizontalLine_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var line = sender as Line;
-            var top = line.Y1;
-            var row = FindRow(line.Y1);
-            double height = 0;
-            for (var i = 0; i < row; i++)
-            {
-                height += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
-            }
-            top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
-
-            if (top > height &&
-                top < height + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].ActualHeight
-                    + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row + 1]?.ActualHeight)
-            {
-                line.Y1 = top;
-                line.Y2 = top;
-            }
-            e.Handled = true;
-        }
-
-        private void HorizontalLine_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
 
         private void XGridLeftDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
@@ -2230,6 +2262,7 @@ namespace Dash
 	            true);
 	        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
 	            true);
+	        docView.PreventManipulation = true;
 	        // we also want to make sure the horizontal and vertical alignment are both stretched
 	        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
 	            new TextController(HorizontalAlignment.Stretch.ToString()), true);
