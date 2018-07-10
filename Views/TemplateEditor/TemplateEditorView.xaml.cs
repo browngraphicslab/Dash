@@ -235,7 +235,7 @@ namespace Dash
             
 		    var rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height);
 			var rectGeo = new RectangleGeometry { Rect = rect };
-			//xWorkspace.Clip = rectGeo;
+			xWorkspace.Clip = rectGeo;
 
 			// sets the minimum bounds and adds the resizing tool
 			Bounds = new Rect(0, 0, 70, 70);
@@ -248,9 +248,16 @@ namespace Dash
 			var docView = this.GetFirstAncestorOfType<DocumentView>();
 			docView.ViewModel.DisableDecorations = true;
 			docView.hideControls();
+            
+		    var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
+		    if (activeLayout?.GetField(KeyStore.RowInfoKey) != null || activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
+		    {
+		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
+		        xItemsControlGrid.Visibility = Visibility.Visible;
+		    }
 
-			//MAKE TEMPLATE VIEW
-			TemplateLayout = DataDocument.MakeViewUI(new Context());
+            //MAKE TEMPLATE VIEW
+            TemplateLayout = DataDocument.MakeViewUI(new Context());
 			TemplateLayout.Width = xWorkspace.Width;
 			TemplateLayout.Height = xWorkspace.Height;
 			TemplateLayout.Drop += XWorkspace_OnDrop;
@@ -281,15 +288,6 @@ namespace Dash
 			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
 			xDesignGridSizeComboBox.SelectedIndex = 0;
 			xDesignGridVisibilityButton.IsChecked = false;
-
-
-		    var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
-		    if (activeLayout?.GetField(KeyStore.RowInfoKey) != null || activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
-		    {
-		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
-		        xItemsControlGrid.Visibility = Visibility.Visible;
-                XItemsControlGrid_OnLoaded(xItemsControlGrid, null);
-		    }
 
             // TODO: Add number indicating which template perhoops -sy
 
