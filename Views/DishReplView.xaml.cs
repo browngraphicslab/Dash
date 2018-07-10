@@ -101,6 +101,11 @@ namespace Dash
 
         }
 
+        public DishReplView(OuterReplScope scope)
+        {
+            _scope = scope;
+        }
+
         // ReSharper disable once InconsistentNaming
         private void NewBlankScopeAndDSL()
         {
@@ -236,6 +241,108 @@ namespace Dash
             return new string(resultChars.ToArray());
 
         }
+
+        public void FinishFunctionCall(string text, TextBox box, bool changeHeight = false)
+        {
+            var place1 = box.SelectionStart;
+            var stringLength = 0;
+            var selectOffset = 0;
+            var newText = "";
+            var selectLength = 0;
+            if (text.TrimStart().Length >= "for ".Length && text.Substring(text.Length - "for ".Length).Equals("for "))
+            {
+                while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
+
+                stringLength = 4;
+
+                var ct = Alphabet[_forIndex];
+                _takenLetters.Add(ct);
+                newText = text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
+                selectOffset = 16; //36 to get to body
+                selectLength = 5;
+            }
+            else if (text.TrimStart().Length >= "forin ".Length && text.Substring(text.Length - "forin ".Length).Equals("forin "))
+            {
+                stringLength = 6;
+
+                var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
+                newText = text.Substring(0, text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
+                selectOffset = 12;
+
+            }
+            else if (text.TrimStart().Length >= "forin? ".Length && text.Substring(text.Length - "forin? ".Length).Equals("forin? "))
+            {
+                stringLength = 7;
+                var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
+                newText = text.Substring(0, text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
+                selectOffset = 12;
+                selectLength = 0;
+            }
+            else if (text.TrimStart().Length >= "forin+ ".Length && text.Substring(text.Length - "forin+ ".Length).Equals("forin+ "))
+            {
+                var ret = text.TrimStart().Length == 7 ? "" : "\r";
+                while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
+
+                var newList = "myList" + _forInIndex;
+                _takenNumbers.Add(_forInIndex);
+                box.Text = text.Insert(place1 - 7, $"{ret}var {newList} = []\r");               
+                var offset = _forInIndex.ToString().Length + ret.Length - 1;
+
+                box.Text = box.Text.Substring(0, box.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
+                box.SelectionStart = place1 + 8 + offset;
+                if (changeHeight)
+                {
+                    TextHeight += StratOffset * 2;
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+                
+            }
+            else if (text.TrimStart().Length >= "dowhile ".Length && text.Substring(text.Length - "dowhile ".Length).Equals("dowhile "))
+            {
+                stringLength = 8;
+                newText = text + "(condition) {\r      \r}";
+                selectOffset = 1;
+                selectLength = 9;
+            }
+            else if (text.TrimStart().Length >= "while ".Length && text.Substring(text.Length - "while ".Length).Equals("while "))
+            {
+                stringLength = 6;
+                newText = text + "(condition) {\r      \r}";
+                selectOffset = 1;
+                selectLength = 9;
+            }
+            else if (text.TrimStart().Length >= "if ".Length && text.Substring(text.Length - "if ".Length).Equals("if "))
+            {
+                stringLength = 3;
+                newText = text + "(condition) {\r      \r}";
+                selectOffset = 1;
+                selectLength = 9;
+            }
+
+            if (stringLength != 0)
+            {
+                if (text.TrimStart().Length != stringLength)
+                {
+                    box.Text = text.Insert(place1 - stringLength, "\r");
+                    if (changeHeight)
+                    {
+                        TextHeight += StratOffset;
+                    }
+                   
+                    place1++;
+                }
+
+                box.Text = newText;
+                box.SelectionStart = place1 + selectOffset;
+                box.SelectionLength = selectLength;
+                if (changeHeight)
+                {
+                    TextHeight += 40;
+                    TextGrid.Height = new GridLength(TextHeight);
+                }
+            }
+        }
         #endregion
 
         #region Toolbar
@@ -341,41 +448,43 @@ namespace Dash
             {
                 InputBoxSubmit(model, text);
             }
-           //else if (text != "")
-           // {
-           //     //only give suggestions on last word
-           //     var allText = text.Replace('\r', ' ').Split(' ');
-           //     var lastWord = "";
-           //     if (allText.Length > 0)
-           //     {
-           //         lastWord = allText[allText.Length - 1];
-           //     }
+            //else if (text != "")
+            // {
+            //     //only give suggestions on last word
+            //     var allText = text.Replace('\r', ' ').Split(' ');
+            //     var lastWord = "";
+            //     if (allText.Length > 0)
+            //     {
+            //         lastWord = allText[allText.Length - 1];
+            //     }
 
-           //     if (_dataset == null)
-           //     {
-           //         OperatorScript.Instance.Init();
-           //     }
+            //     if (_dataset == null)
+            //     {
+            //         OperatorScript.Instance.Init();
+            //     }
 
-           //     var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
-           //     xSuggestions.ItemsSource = suggestions;
+            //     var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+            //     xSuggestions.ItemsSource = suggestions;
 
-           //     var numSug = suggestions?.Count;
-           //     if (numSug > 0)
-           //     {
-           //         xSuggestionsPopup.IsOpen = true;
-           //         xSuggestionsPopup.Visibility = Visibility.Visible;
-           //         xSuggestionsPopup.SetValue(Grid.RowProperty, 1);
-           //     }
-           //     else
-           //     {
-           //         xSuggestionsPopup.Visibility = Visibility.Collapsed;
-           //     }
-           // }
-           // else
-           // {
-           //     xSuggestionsPopup.IsOpen = false;
-           //     xSuggestionsPopup.Visibility = Visibility.Collapsed;
-           // }
+            //     var numSug = suggestions?.Count;
+            //     if (numSug > 0)
+            //     {
+            //         xSuggestionsPopup.IsOpen = true;
+            //         xSuggestionsPopup.Visibility = Visibility.Visible;
+            //         xSuggestionsPopup.SetValue(Grid.RowProperty, 1);
+            //     }
+            //     else
+            //     {
+            //         xSuggestionsPopup.Visibility = Visibility.Collapsed;
+            //     }
+            // }
+            // else
+            // {
+            //     xSuggestionsPopup.IsOpen = false;
+            //     xSuggestionsPopup.Visibility = Visibility.Collapsed;
+            // }
+
+            FinishFunctionCall(text, sender as TextBox);
 
         }
 
@@ -547,93 +656,7 @@ namespace Dash
                     _takenLetters.Clear();
                 }
 
-                var place1 = xTextBox.SelectionStart;
-                var stringLength = 0;
-                var selectOffset = 0;
-                var newText = "";
-                var selectLength = 0;
-                if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
-                {
-                    while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
-
-                    stringLength = 4;
-                    
-                    var ct = Alphabet[_forIndex];
-                    _takenLetters.Add(ct);
-                    newText = xTextBox.Text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
-                    selectOffset =  16; //36 to get to body
-                    selectLength = 5;
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
-                {
-                    stringLength = 6;
-                    
-                    var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
-                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
-                    selectOffset=  12;
-                    
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
-                {
-                    stringLength = 7;
-                    var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                    newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\":\"))" + " {\r      data_doc(res). = \r}";
-                    selectOffset = 12;
-                    selectLength = 0;
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
-                {
-                    var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
-                    while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
-
-                    var newList = "myList" + _forInIndex;
-                    _takenNumbers.Add(_forInIndex);
-                    xTextBox.Text = xTextBox.Text.Insert(place1 - 7, $"{ret}var {newList} = []\r");
-                    TextHeight += StratOffset * 2;
-                    var offset = _forInIndex.ToString().Length + ret.Length - 1;
-
-                    xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
-                    xTextBox.SelectionStart = place1 + 8 + offset;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
-                {
-                    stringLength = 8;
-                    newText = xTextBox.Text + "(condition) {\r      \r}";
-                    selectOffset =  1;
-                    selectLength = 9;
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
-                {
-                    stringLength = 6;
-                    newText = xTextBox.Text + "(condition) {\r      \r}";
-                    selectOffset =  1;
-                    selectLength = 9;
-                }
-                else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
-                {
-                    stringLength = 3;
-                    newText = xTextBox.Text + "(condition) {\r      \r}";
-                    selectOffset = 1;
-                    selectLength = 9;
-                }
-
-                if (stringLength != 0)
-                {
-                    if (xTextBox.Text.TrimStart().Length != stringLength)
-                    {
-                        xTextBox.Text = xTextBox.Text.Insert(place1 - stringLength, "\r");
-                        TextHeight += StratOffset;
-                        place1++;
-                    }
-
-                    xTextBox.Text = newText;
-                    xTextBox.SelectionStart = place1 + selectOffset;
-                    xTextBox.SelectionLength = selectLength;
-                    TextHeight += 40;
-                    TextGrid.Height = new GridLength(TextHeight);
-                }
+                FinishFunctionCall(xTextBox.Text, xTextBox, true);
 
                 
                 switch (textDiff)

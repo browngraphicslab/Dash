@@ -17,10 +17,12 @@
                 <RowDefinition Height="*"  />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <Button x:Name="xRepl"  Click="XRepl_OnClick" Grid.Row="0" Background="{ThemeResource TreeviewBrush}" Canvas.ZIndex="1" >
+                <SymbolIcon  Symbol="Switch" Margin="22, 12, 22, 12"></SymbolIcon>
+            </Button>
             <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
                         Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
                 <!--<AppBarButton x:Name="xStop"  Icon="Stop"  Label="Stop" Click="XStop_OnClick" ></AppBarButton>-->
-                <AppBarButton x:Name="xRepl"  Icon="Switch"  Label="Switch" Click="XRepl_OnClick" Margin="{Binding Width}"></AppBarButton>
                 <AppBarButton x:Name="xRun"  Icon="Play"  Label="Run" Click="XRun_OnClick" ></AppBarButton>
             </CommandBar>
             <ScrollViewer Name="xScrollViewer" Grid.Row="1" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 

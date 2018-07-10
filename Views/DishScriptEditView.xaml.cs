@@ -73,11 +73,14 @@ namespace Dash
                 } else if (letter == '"' || letter == '\'')
                 {
                     inQuotes = !inQuotes;
-                }else if (letter == ';' && inBrackets == 0 && !inQuotes)
+                }else if ((letter == ';' || letter == '\r') && inBrackets == 0 && !inQuotes)
                 {
                     //end of command
-                    output.Add(new TextController(newText));
-                    growing = "";
+                    if (newText.Trim('\r') != "")
+                    {
+                        output.Add(new TextController(newText));
+                        growing = "";
+                    }
                 } else if (letter == '}' && !inQuotes)
                 {
                     //end of loop
@@ -170,85 +173,8 @@ namespace Dash
         #region On Type
         private void XTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
         {
-            var place1 = xTextBox.SelectionStart;
-            var length1 = 0;
-            var length2 = 0;
-            var newText = "";
-            var selectLength = 0;
-            if (xTextBox.Text.TrimStart().Length >= "for ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "for ".Length).Equals("for "))
-            {
-                while (_scope.GetVariable(Alphabet[_forIndex].ToString()) != null || _takenLetters.Contains(Alphabet[_forIndex])) { _forIndex++; }
-
-                length1 = 4;
-                length2 = 16;
-                selectLength = 5;
-                var ct = Alphabet[_forIndex];
-                _takenLetters.Add(ct);
-                newText = xTextBox.Text + $"(var {ct} = 0; {ct} < UPPER; {ct}++)" + " {\r      \r}";
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "forin ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin ".Length).Equals("forin "))
-            {
-                length1 = 6;
-                length2 = 12;
-                var varExp = (_scope.GetVariable("item") != null) ? "" : "var ";
-                newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin ".Length) + $"for ({varExp}item in [])" + " {\r      item\r}";
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "forin? ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin? ".Length).Equals("forin? "))
-            {
-                length1 = 7;
-                length2 = 11;
-                selectLength = 8;
-                var varExp = (_scope.GetVariable("res") != null) ? "" : "var ";
-                newText = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin? ".Length) + $"for ({varExp}res in f(\"\"))" + " {\r      res. = \r}";
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "forin+ ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "forin+ ".Length).Equals("forin+ "))
-            {
-                var ret = xTextBox.Text.TrimStart().Length == 7 ? "" : "\r";
-                while (_scope.GetVariable("var myList" + _forInIndex) != null || _takenNumbers.Contains(_forInIndex)) { _forInIndex++; }
-
-                var newList = "myList" + _forInIndex;
-                _takenNumbers.Add(_forInIndex);
-                xTextBox.Text = xTextBox.Text.Insert(place1 - 7, $"{ret}var {newList} = []\r");
-                var offset = _forInIndex.ToString().Length + ret.Length - 1;
-
-                xTextBox.Text = xTextBox.Text.Substring(0, xTextBox.Text.Length - "forin+ ".Length) + $"for (var item in {newList})" + " {\r      item\r}";
-                xTextBox.SelectionStart = place1 + 8 + offset;
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "dowhile ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "dowhile ".Length).Equals("dowhile "))
-            {
-                length1 = 8;
-                length2 = 1;
-                newText = xTextBox.Text + "(condition) {\r      \r}";
-                selectLength = 9;
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "while ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "while ".Length).Equals("while "))
-            {
-                length1 = 6;
-                length2 = 1;
-                newText = xTextBox.Text + "(condition) {\r      \r}";
-                selectLength = 9;
-            }
-            else if (xTextBox.Text.TrimStart().Length >= "if ".Length && xTextBox.Text.Substring(xTextBox.Text.Length - "if ".Length).Equals("if "))
-            {
-                length1 = 3;
-                length2 = 1;
-                newText = xTextBox.Text + "(condition) {\r      \r}";
-                selectLength = 9;
-            }
-
-            if (length1 != 0)
-            {
-                if (xTextBox.Text.TrimStart().Length != length1)
-                {
-                    xTextBox.Text = xTextBox.Text.Insert(place1 - length1, "\r");
-                    place1++;
-                }
-
-                xTextBox.Text = newText;
-                xTextBox.SelectionStart = place1 + length2;
-                xTextBox.SelectionLength = selectLength;
-            }
-
+            DishReplView view = new DishReplView(_scope);
+            view.FinishFunctionCall(xTextBox.Text, xTextBox);
 
             var textDiff = DishReplView.StringDiff(xTextBox.Text, _currentText);
             switch (textDiff)
