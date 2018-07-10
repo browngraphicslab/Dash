@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Zu.TypeScript;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -25,6 +26,7 @@ namespace Dash
         #region Definitions and Initailization
         private DSL _dsl;
 
+        private readonly DocumentController _viewDoc;
         private readonly DocumentController _dataDoc;
         private OuterReplScope _scope;
 
@@ -41,20 +43,104 @@ namespace Dash
 
         private bool _oneStar;
 
-        public DishScriptEditView(DocumentController dataDoc)
+        public DishScriptEditView(DocumentController doc)
         {
-            _dataDoc = dataDoc;
+            _viewDoc = doc;
+            _dataDoc = doc.GetDataDocument();
             _scope = new OuterReplScope();
             InitializeComponent();
 
             //intialize lists to save data
-            _currentText = dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
+            _currentText = _dataDoc.GetField<TextController>(KeyStore.ScriptTextKey).Data;
             xTextBox.Text = _currentText ?? "";
         }
         #endregion
 
 
         #region Button click
+
+        private void textToCommands(char[] letters, string growing, ListController<TextController> output,
+            int inBrackets = 0, bool inQuotes = false)
+        {
+            for (int i = 0; i < letters.Length; i++)
+            {
+                var letter = letters[i];
+                var newText = growing + letter;
+                if (i == letters.Length - 1 && letter != '\r')
+                {
+                    //last char
+                    output.Add(new TextController(newText));
+                } else if (letter == '"' || letter == '\'')
+                {
+                    inQuotes = !inQuotes;
+                }else if (letter == ';' && inBrackets == 0 && !inQuotes)
+                {
+                    //end of command
+                    output.Add(new TextController(newText));
+                    growing = "";
+                } else if (letter == '}' && !inQuotes)
+                {
+                    //end of loop
+                    inBrackets--;
+                    if (inBrackets == 0)
+                    {
+                        output.Add(new TextController(newText));
+                        growing = "";
+                    }
+                }  else if (letter == '{' || letter == '(' && !inQuotes)
+                {
+                    inBrackets++;
+                    growing = newText;
+                } else if (letter == ')' && !inQuotes)
+                {
+                    inBrackets--;
+                    growing = newText;
+                }
+                else if(letter != '\r')
+                {
+                    growing = newText;
+                }
+            }
+
+        }
+
+
+        private void XRepl_OnClick(object sender, RoutedEventArgs e)
+        {
+            var collection = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
+            if (collection == null) return;
+            //open Repl with a command for each input
+           //split _currentText into commands
+            var commands = new ListController<TextController>();
+             textToCommands(_currentText.ToCharArray(), "", commands);
+
+            _scope = new OuterReplScope();
+            _dsl = new DSL(_scope);
+            var results = new ListController<FieldControllerBase>();
+            foreach (var command in commands)
+            {
+                FieldControllerBase returnValue;
+                try
+                {
+                    returnValue = _dsl.Run(command.Data, true);
+                }
+                catch (Exception ex)
+                {
+                    returnValue = new TextController("There was an error: " + ex.StackTrace);
+                }
+                results.Add(returnValue);
+            }
+
+            var pt = _viewDoc.GetPositionField().Data;
+            var width = _viewDoc.GetWidthField().Data;
+            var height = _viewDoc.GetHeightField().Data;
+
+            var note = new DishReplBox(pt.X - width - 15, pt.Y, width, height, commands, results, _scope.VariableDoc());
+
+            Actions.DisplayDocument(collection, note.Document);
+        
+         }
+
         private void XRun_OnClick(object sender, RoutedEventArgs e)
         {
             //make new scope
@@ -242,7 +328,6 @@ namespace Dash
 
         }
          #endregion
-
 
 
     }

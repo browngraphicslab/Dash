@@ -620,11 +620,16 @@ namespace Dash
                                     rightBinExpr
                                 });
                                 case VariableExpression safeBinExpr:
-                                    return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
+                                    if (!_undoVar)
                                     {
-                                    new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
-                                    rightBinExpr
-                                });
+                                        return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
+                                        {
+                                            new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
+                                            rightBinExpr
+                                        });
+                                    }
+
+                                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:

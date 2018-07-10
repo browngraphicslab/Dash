@@ -169,7 +169,7 @@ namespace Dash
                 newRepl.Click += (sender, e) =>
                 {
                     var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishReplBox(where.X, where.Y, 300, 200).Document;
+                    var note = new DishReplBox(where.X, where.Y, 300, 400).Document;
                     Actions.DisplayDocument(ViewModel, note, where);
                 };
                 contextMenu.Items.Add(newRepl);
@@ -181,7 +181,7 @@ namespace Dash
                 newScriptEdit.Click += (sender, e) =>
                 {
                     var where = Util.GetCollectionFreeFormPoint(CurrentView as CollectionFreeformBase, GetFlyoutOriginCoordinates());
-                    var note = new DishScriptBox(where.X, where.Y, 300, 200).Document;
+                    var note = new DishScriptBox(where.X, where.Y, 300, 400).Document;
                     Actions.DisplayDocument(ViewModel, note, where);
                 };
                 contextMenu.Items.Add(newScriptEdit);

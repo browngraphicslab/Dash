@@ -55,8 +55,8 @@ namespace Dash
         private int _forIndex = 0;
         private int _forInIndex = 0;
 
-        private bool wayUp;
-        private bool wayDown;
+        private bool _wayUp;
+        private bool _wayDown;
 
         private bool _oneStar;
 
@@ -271,19 +271,11 @@ namespace Dash
 
             ReplLineViewModel data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
             data.EditTextValue = true;
-
-            //foreach (var item in ViewModel.Items)
-            //{
-            //    if (item == data)
-            //    {
-            //        item.
-            //    }
-            //}
         }
 
-        private void InputBoxSubmit(object sender, int? index = null)
+        private void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
         {
-            if ((sender as TextBox)?.DataContext is ReplLineViewModel data && data.EditTextValue)
+            if (data.EditTextValue)
             {
                 //get element num
                 if (index == null)
@@ -300,7 +292,7 @@ namespace Dash
 
                 data.EditTextValue = false;
 
-                var text = AddSemicolons((sender as TextBox)?.Text);
+                var text = AddSemicolons(currentText);
                 var oldText = data.LineText;
                 data.LineText = text;
 
@@ -336,52 +328,55 @@ namespace Dash
 
         private void XInputBox_OnLostFocus(object sender, RoutedEventArgs e)
         {
-            InputBoxSubmit(sender);
+            var text = (sender as TextBox).Text;
+            var model = (sender as TextBox)?.DataContext as ReplLineViewModel;
+            InputBoxSubmit(model, text);
         }
 
         private void XInputBox_OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
-            //TODO: possibly use data context/ repl line view model to do suggestions
-
             var text = (sender as TextBox).Text;
+            var model = (sender as TextBox)?.DataContext as ReplLineViewModel;
             if (e.Key == VirtualKey.Enter)
             {
-                InputBoxSubmit(sender);
+                InputBoxSubmit(model, text);
             }
-           else if (text != "")
-            {
-                //only give suggestions on last word
-                var allText = text.Replace('\r', ' ').Split(' ');
-                var lastWord = "";
-                if (allText.Length > 0)
-                {
-                    lastWord = allText[allText.Length - 1];
-                }
+           //else if (text != "")
+           // {
+           //     //only give suggestions on last word
+           //     var allText = text.Replace('\r', ' ').Split(' ');
+           //     var lastWord = "";
+           //     if (allText.Length > 0)
+           //     {
+           //         lastWord = allText[allText.Length - 1];
+           //     }
 
-                if (_dataset == null)
-                {
-                    OperatorScript.Instance.Init();
-                }
+           //     if (_dataset == null)
+           //     {
+           //         OperatorScript.Instance.Init();
+           //     }
 
-                var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
-                xSuggestions.ItemsSource = suggestions;
+           //     var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
+           //     xSuggestions.ItemsSource = suggestions;
 
-                var numSug = suggestions?.Count;
-                if (numSug > 0)
-                {
-                    xSuggestionsPopup.IsOpen = true;
-                    xSuggestionsPopup.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    xSuggestionsPopup.Visibility = Visibility.Collapsed;
-                }
-            }
-            else
-            {
-                xSuggestionsPopup.IsOpen = false;
-                xSuggestionsPopup.Visibility = Visibility.Collapsed;
-            }
+           //     var numSug = suggestions?.Count;
+           //     if (numSug > 0)
+           //     {
+           //         xSuggestionsPopup.IsOpen = true;
+           //         xSuggestionsPopup.Visibility = Visibility.Visible;
+           //         xSuggestionsPopup.SetValue(Grid.RowProperty, 1);
+           //     }
+           //     else
+           //     {
+           //         xSuggestionsPopup.Visibility = Visibility.Collapsed;
+           //     }
+           // }
+           // else
+           // {
+           //     xSuggestionsPopup.IsOpen = false;
+           //     xSuggestionsPopup.Visibility = Visibility.Collapsed;
+           // }
+
         }
 
         private void DisableAllTextBoxes()
@@ -391,13 +386,15 @@ namespace Dash
                 var item = ViewModel.Items[i];
                 if (item.EditTextValue)
                 {
-                    InputBoxSubmit(item, i);
+                    InputBoxSubmit(item, item.LineText, i);
                 }
             }
         }
 
         private void reRunLine(ReplLineViewModel data, string text)
         {
+            DisableAllTextBoxes();
+
             //get element num
             int? index = null;
 
@@ -469,7 +466,7 @@ namespace Dash
             var numItem = ViewModel.Items.Count;
             switch (args.VirtualKey)
             {
-                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayUp:
+                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && _wayUp:
                     //get last terminal input entered
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
@@ -490,7 +487,7 @@ namespace Dash
                 case VirtualKey.Up when MainPage.Instance.IsCtrlPressed():
                     if (xSuggestions.SelectedIndex > -1 && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex--;
                     break;
-                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayDown:
+                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && _wayDown:
                     var index = numItem - (_currentHistoryIndex - 1);
                     if (numItem > index && index >= 0)
                     {
@@ -524,9 +521,9 @@ namespace Dash
             }
             
             var beforeCursor = xTextBox.Text.Substring(0, xTextBox.SelectionStart);
-            wayUp = !(beforeCursor.Contains('\r'));
+            _wayUp = !(beforeCursor.Contains('\r'));
             var afterCursor = xTextBox.Text.Substring(xTextBox.SelectionStart, xTextBox.Text.Length - xTextBox.SelectionStart);
-            wayDown = !(afterCursor.Contains('\r'));
+            _wayDown = !(afterCursor.Contains('\r'));
 
             _currentText = xTextBox.Text;
         }
