@@ -121,25 +121,26 @@ namespace Dash
 				{
 					DocumentViewModels.Remove(rightDoc);
                     DataDocument.RemoveFromListField(KeyStore.DataKey, rightDoc.DocumentController);
-					//delete corresponding copy
-					foreach (var copy in ViewCopiesList)
-					{
-						if (copy.DataDocument.Equals(rightDoc.DataDocument))
-                            ViewCopiesList.Remove(copy);
-					    break; //TODO What is this doing?
-					}
 
-				    break;
+					//delete corresponding copy displayed in ListView
+					ViewCopiesList.Remove(this.FindListViewCopy(rightDoc));
+
+					break;
 				}
 				
 			}
 
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
-			xItemsControlGrid.ItemsSource = DocumentViewModels;
+		}
 
-			//find copy and delete that too
-
-			
+		//finds the copy that has the same data doc as the removed doc & removes it
+		private DocumentViewModel FindListViewCopy(DocumentViewModel origDoc)
+		{
+			foreach (var copy in ViewCopiesList)
+			{
+				if (copy.DataDocument.Equals(origDoc.DataDocument)) return copy;
+			}
+			return null;
 		}
 
 	    private void ClearDocs()
@@ -549,7 +550,6 @@ namespace Dash
 			{
 				AlignItem(alignment, dvm);
 			}
-            
 
 		}
         
@@ -618,6 +618,7 @@ namespace Dash
 			}
 
 			dvm.LayoutDocument.SetField(KeyStore.PositionFieldKey, point, true);
+
 		}
 
 
@@ -1900,41 +1901,17 @@ namespace Dash
 
 		private void FormatTemplateIntoList()
 		{
-			//set TemplateStyle key to List
-			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-
 			xGridLeftDragger.Visibility = Visibility.Collapsed;
 			xGridTopDragger.Visibility = Visibility.Collapsed;
-
-			/*xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
-			//align all in center
-			foreach (var dvm in DocumentViewModels)
-			{
-				AlignItem(HorizontalAlignment.Center, dvm);
-			}*/
-
-			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
-
+			
 			xItemsControlCanvas.Visibility = Visibility.Collapsed;
 			xItemsControlList.Visibility = Visibility.Visible;
 
 			//update key
 			DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-
-
-			/*
-			//make a list of copies
 			
-			foreach (var doc in DocumentControllers)
-			{
-				var copy = doc.GetViewCopy();
-				copy.SetPosition(new Point(0,0));
-				list.Add(new DocumentViewModel(copy, new Context(copy)));
-			}
-			*/
 			xItemsControlList.ItemsSource = ViewCopiesList;
-
-
+			
 			//button ui
 			xFreeFormButton.Background = new SolidColorBrush(Colors.Transparent);
 			xListButton.Background = new SolidColorBrush(Colors.White);
