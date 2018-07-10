@@ -422,6 +422,9 @@
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
+    <Compile Include="Views\DockingFrame.xaml.cs">
+      <DependentUpon>DockingFrame.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Document Menu\Toolbar\DropDownTextButton.xaml.cs">
       <DependentUpon>DropDownTextButton.xaml</DependentUpon>
     </Compile>
@@ -910,6 +913,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DockingFrame.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

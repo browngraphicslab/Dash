@@ -527,15 +527,17 @@ namespace Dash
 
         #region CONVENIENCE AND HELPER METHODS
 
-        public override async Task Close()
+        public override Task Close()
         {
             _saveTimer.Stop();
             CleanupDocuments();
             _transactionMutex.WaitOne();
+            CleanupDocuments();
             _currentTransaction?.Commit();
             _currentTransaction = null;
             _transactionMutex.ReleaseMutex();
             _db.Close();
+            return Task.CompletedTask;
         }
 
         public override Dictionary<string, string> GetBackups() { return new Dictionary<string, string>(); }
