@@ -45,51 +45,57 @@ namespace Dash
 		    return myBrush;
 	    }
 
-		public static FrameworkElement MakeView(DocumentController docController, Context context)
-		{
+        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        {
             // retrieve the color and opacity (if existent) from the layout document passed in
-		    var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
-		    color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
-			if (docController.GetField(KeyStore.TemplateStyleKey) == null)
-				docController.SetField<NumberController>(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+            var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
+            color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
+            if (docController.GetField(KeyStore.TemplateStyleKey) == null)
+                docController.SetField<NumberController>(KeyStore.TemplateStyleKey,
+                    new NumberController(TemplateConstants.FreeformView), true);
 
-			//var templateStyle =
-				//docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ?? TemplateConstants.FreeformView;
+            //var templateStyle =
+            //docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ?? TemplateConstants.FreeformView;
 
-			//Debug.WriteLine(templateStyle);
+            //Debug.WriteLine(templateStyle);
 
             // create a grid to use for the main panel of the view
-			var parentGrid = new Grid();
+            var parentGrid = new Grid();
 
 
-		    var grid = new Grid()
-	        {
-				Background = color
-			};
+            var grid = new Grid()
+            {
+                Background = color
+            };
 
-			var stack = new StackPanel()
-			{
-				Background = color,
-				Visibility = Visibility.Collapsed
-			};
+            var stack = new StackPanel()
+            {
+                Background = color,
+                Visibility = Visibility.Collapsed
+            };
 
-			docController.AddFieldUpdatedListener(KeyStore.TemplateStyleKey, OnTemplateStyleUpdatedHandler);
+            docController.AddFieldUpdatedListener(KeyStore.TemplateStyleKey, OnTemplateStyleUpdatedHandler);
 
-			if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
-		    {
-		        docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey).Data.ForEach(i =>
-		            grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength((i as NumberController).Data)}));
-		    }
+            // determine if the document controller is set up to utilize a grid view
+            if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
+            {
+                // if so, use the list of number controllers to create rows with that value as the height
+                docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey).Data.ForEach(i =>
+                    grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength((i as NumberController).Data)}));
+            }
 
-		    if (docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey) != null)
-		    {
-		        docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey).Data.ForEach(i =>
-		            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength((i as NumberController).Data) }));
-		    }
+            // determine if the document controller is set up to utilize a grid view
+            if (docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey) != null)
+            {
+                // if so, use the list of number controllers to create columns with that value as the width
+                docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey).Data.ForEach(i =>
+                    grid.ColumnDefinitions.Add(
+                        new ColumnDefinition {Width = new GridLength((i as NumberController).Data)}));
+            }
 
 
-			LayoutDocuments(docController, context, grid);
-			LayoutDocuments(docController, context, stack);
+            LayoutDocuments(docController, context, grid);
+            LayoutDocuments(docController, context, stack);
 
             // add a clip to the grid and add functionality to update the clip
             grid.Clip = new RectangleGeometry();
@@ -98,16 +104,16 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
             };
 
-			
-			// add a clip to the grid and add functionality to update the clip
-			stack.Clip = new RectangleGeometry();
-			stack.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
-			{
-				stack.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
-			};
-			
 
-			var newCtxt = new Context(context);
+            // add a clip to the grid and add functionality to update the clip
+            stack.Clip = new RectangleGeometry();
+            stack.SizeChanged += delegate(object sender, SizeChangedEventArgs args)
+            {
+                stack.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
+            };
+
+
+            var newCtxt = new Context(context);
 
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
@@ -117,57 +123,60 @@ namespace Dash
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
                     AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
-	                AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
-				}
-                else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
+                    AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
+                }
+                else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs
+                             .ListChangedAction.Content)
                 {
                     LayoutDocuments(sender, newCtxt, grid);
-	                LayoutDocuments(sender, newCtxt, stack);
-				}
+                    LayoutDocuments(sender, newCtxt, stack);
+                }
             }
 
             grid.Loaded += delegate
             {
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
-				
+
             };
 
             grid.Unloaded += delegate
             {
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
-			};
+            };
 
-		    void OnTemplateStyleUpdatedHandler(DocumentController sender,
-			    DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
-		    {
-			    //if (args.OldValue == args.NewValue) return;
+            void OnTemplateStyleUpdatedHandler(DocumentController sender,
+                DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
+            {
+                //if (args.OldValue == args.NewValue) return;
 
-			    if (docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
-			    {
-				    stack.Visibility = Visibility.Visible;
-				    grid.Visibility = Visibility.Collapsed;
-				}
-			    else if(docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.FreeformView)
-			    {
-				    stack.Visibility = Visibility.Collapsed;
-				    grid.Visibility = Visibility.Visible;
-				}
-
-		
-
-		    }
+                if (docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+                    TemplateConstants.ListView)
+                {
+                    stack.Visibility = Visibility.Visible;
+                    grid.Visibility = Visibility.Collapsed;
+                }
+                else if (docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+                         TemplateConstants.FreeformView)
+                {
+                    stack.Visibility = Visibility.Collapsed;
+                    grid.Visibility = Visibility.Visible;
+                }
 
 
-		CourtesyDocument.SetupBindings(parentGrid, docController, context);
 
-			parentGrid.Children.Add(stack);
-			parentGrid.Children.Add(grid);
+            }
+
+
+            CourtesyDocument.SetupBindings(parentGrid, docController, context);
+
+            parentGrid.Children.Add(stack);
+            parentGrid.Children.Add(grid);
 
             return parentGrid;
         }
 
-		
-		private static void LayoutDocuments(DocumentController docController, Context context, Panel grid)
+
+        private static void LayoutDocuments(DocumentController docController, Context context, Panel grid)
         {
             // get the list of layout documents and layout each one on the grid
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
