@@ -31,8 +31,8 @@ namespace Dash
         {
             var doc = _parent.LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
             var layout = doc?.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
-            double width = 300;
-            double height = 400;
+            double width = _parent.xWorkspace.ActualWidth;
+            double height = _parent.xWorkspace.ActualHeight;
             if (layout?.DocumentType.Equals(TemplateBox.DocumentType) ?? false)
             {
                 width = doc.GetWidthField().Data < 500 ? doc.GetWidthField().Data : 500;
