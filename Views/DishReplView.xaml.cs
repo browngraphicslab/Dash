@@ -227,7 +227,7 @@ namespace Dash
                    resultChars.Add(';');
                    resultChars.Add(chars[i]);
                 } else if (i == chars.Length - 1 && i > 0 &&
-                           (Char.IsLetterOrDigit(chars[i]) || chars[i] == '-' || chars[i] == '+'))
+                           (Char.IsLetterOrDigit(chars[i]) || chars[i] == '-' || chars[i] == '+' || chars[i] == '"'))
                 {
                     resultChars.Add(chars[i]);
                     resultChars.Add(';');
@@ -586,7 +586,7 @@ namespace Dash
                     {
                         _currentHistoryIndex++;
                         _textModified = true;
-                        xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
+                        xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText ?? xTextBox.Text;
                          MoveCursorToEnd();
                     }
 
@@ -602,7 +602,7 @@ namespace Dash
                     {
                         _currentHistoryIndex--;
                         _textModified = true;
-                        xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
+                        xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText ?? xTextBox.Text;
                         MoveCursorToEnd();
                     }
                     else if (index == numItem)
