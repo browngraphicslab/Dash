@@ -8,20 +8,33 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
 	public class AnnotationManager
 	{
-		private UIElement    _element;
+		private FrameworkElement    _element;
 		private MenuFlyout   _linkFlyout;
 
-		public AnnotationManager(UIElement uiElement)
+		public AnnotationManager(FrameworkElement uiElement)
 		{
 			_element = uiElement;
+		    _element.GotFocus += Element_OnGotFocus;
+		    _element.LostFocus += Element_OnLostFocus;
 			this.FormatLinkMenu();
 		}
+
+	    private void Element_OnLostFocus(object sender, RoutedEventArgs e)
+	    {
+	        Debug.WriteLine("### Got focus!");
+	    }
+
+	    private void Element_OnGotFocus(object sender, RoutedEventArgs e)
+	    {
+	        Debug.WriteLine("### Focus lost!");
+	    }
 
         //navigation and toggling of linked annotations to the pressed region
         public void RegionPressed(DocumentController theDoc, Point pos, DocumentController chosenDC = null)
@@ -30,26 +43,31 @@ namespace Dash
             {
                 ShowTargetDoc(chosenDC, pos);
             }
-            else
-            {
-                var multiToLinks = showLinks(theDoc, KeyStore.LinkToKey, chosenDC);
-                var multiFromLinks = showLinks(theDoc, KeyStore.LinkFromKey, chosenDC);
 
-                if (multiToLinks.Count + multiFromLinks.Count == 1)
-                {
-                    ShowTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
-                }
-                else if (_linkFlyout.Items.Count == 0)
-                {
-                    if (multiToLinks != null)
-                        AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
-                    if (multiFromLinks != null)
-                        AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
+            //if (chosenDC != null)
+            //{
+            //    ShowTargetDoc(chosenDC, pos);
+            //}
+            //else
+            //{
+            //    var multiToLinks = showLinks(theDoc, KeyStore.LinkToKey, chosenDC);
+            //    var multiFromLinks = showLinks(theDoc, KeyStore.LinkFromKey, chosenDC);
 
-                    if (_linkFlyout.Items.Count > 0)
-                        _linkFlyout.ShowAt((FrameworkElement) _element);
-                }
-            }
+            //    if (multiToLinks.Count + multiFromLinks.Count == 1)
+            //    {
+            //        ShowTargetDoc(multiToLinks.Count > 0 ? multiToLinks.First() : multiFromLinks.First(), pos);
+            //    }
+            //    else if (_linkFlyout.Items.Count == 0)
+            //    {
+            //        if (multiToLinks != null)
+            //            AddToLinksMenu(multiToLinks, KeyStore.LinkToKey, pos, theDoc);
+            //        if (multiFromLinks != null)
+            //            AddToLinksMenu(multiFromLinks, KeyStore.LinkFromKey, pos, theDoc);
+
+            //        if (_linkFlyout.Items.Count > 0)
+            //            _linkFlyout.ShowAt((FrameworkElement) _element);
+            //    }
+            //}
         }
 
         /// <summary>
@@ -136,52 +154,52 @@ namespace Dash
             {
                 if (MainPage.Instance.IsCtrlPressed())
                 {
-                    var viewCopy = theDoc.GetViewCopy(pt);
-                    Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
-                        viewCopy);
-                    // ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
-                    // the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
-                    viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
+                    //var viewCopy = theDoc.GetViewCopy(pt);
+                    //Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel,
+                    //    viewCopy);
+                    //// ctrl-clicking on a hyperlink creates a view copy next to the document. The view copy is marked transient so that if
+                    //// the hyperlink anchor is clicked again the view copy will be removed instead of hidden.
+                    //viewCopy.SetField<NumberController>(KeyStore.TransientKey, 1, true);
                 }
                 else if (nearestOnScreen != null)
                 {
-                    // remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
-                    if (nearestOnScreen.ViewModel.DocumentController
-                            .GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
-                        cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
-                    else
-                        Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
+                    //// remove hyperlink targets marked as Transient, otherwise hide the document so that it will be redisplayed in the same location.
+                    //if (nearestOnScreen.ViewModel.DocumentController
+                    //        .GetDereferencedField<NumberController>(KeyStore.TransientKey, null)?.Data == 1)
+                    //    cvm.RemoveDocument(nearestOnScreen.ViewModel.DocumentController);
+                    //else
+                    //    Actions.HideDocument(cvm, nearestOnScreen.ViewModel.DocumentController);
 
                 }
                 else
                 {
-                    //navigate to the linked doc
-                    MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
+                    ////navigate to the linked doc
+                    //MainPage.Instance.NavigateToDocumentInWorkspace(nearestOnCollection.ViewModel.DocumentController, true);
 
-                    //images have additional highlighting features that should be implemented
-                    if (_element is IVisualAnnotatable)
-                    {
-                        var element = (IVisualAnnotatable) _element;
-                        element.GetAnnotationManager().UpdateHighlight(nearestOnCollection);
-                    }
+                    ////images have additional highlighting features that should be implemented
+                    //if (_element is IVisualAnnotatable)
+                    //{
+                    //    var element = (IVisualAnnotatable) _element;
+                    //    element.GetAnnotationManager().UpdateHighlight(nearestOnCollection);
+                    //}
                 }
             }
             else
             {
-                //toggle the visibility of the linked doc
-                if (theDoc != null)
-                {
-                    if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
-                    {
-                        Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
-                    }
+                ////toggle the visibility of the linked doc
+                //if (theDoc != null)
+                //{
+                //    if (!Actions.UnHideDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc))
+                //    {
+                //        Actions.DisplayDocument(_element.GetFirstAncestorOfType<CollectionView>()?.ViewModel, theDoc.GetViewCopy(pt));
+                //    }
 
-                } //if working with RichTextView, check web context as well
-                else if (_element is RichTextView)
-                {
-                    var richTextView = (RichTextView)_element;
-                    richTextView.CheckWebContext(nearestOnCollection, pt, theDoc);
-                }
+                //} //if working with RichTextView, check web context as well
+                //else if (_element is RichTextView)
+                //{
+                //    var richTextView = (RichTextView)_element;
+                //    richTextView.CheckWebContext(nearestOnCollection, pt, theDoc);
+                //}
             }
         }
 

@@ -23,13 +23,33 @@ namespace Dash
         }
     }
 
+    public class RegionSelectionChangedEventArgs
+    {
+        public List<DocumentController> DeselectedRegions, SelectedRegions;
+
+        public RegionSelectionChangedEventArgs()
+        {
+            DeselectedRegions = new List<DocumentController>();
+            SelectedRegions = new List<DocumentController>();
+        }
+
+        public RegionSelectionChangedEventArgs(List<DocumentController> selected, List<DocumentController> deselected)
+        {
+            DeselectedRegions = deselected;
+            SelectedRegions = selected;
+        }
+    }
+
     public static class SelectionManager
     {
         public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
         private static List<DocumentView> _selectedDocs = new List<DocumentView>();
+        private static List<DocumentController> _selectedRegions = new List<DocumentController>();
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
+        public static event RegionSelectionChangedHandler RegionSelectionChanged;
+        public delegate void RegionSelectionChangedHandler(RegionSelectionChangedEventArgs args);
 
         public static void ToggleSelection(DocumentView doc)
         {
@@ -49,6 +69,14 @@ namespace Dash
             SelectHelper(doc);
             args.SelectedViews.Add(doc);
             SelectionChanged?.Invoke(args);
+        }
+
+        public static void SelectRegion(DocumentController doc)
+        {
+            _selectedRegions.Add(doc);
+            var args = new RegionSelectionChangedEventArgs();
+            args.SelectedRegions.Add(doc);
+            RegionSelectionChanged?.Invoke(args);
         }
 
         public static void SelectDocuments(List<DocumentView> docs)
@@ -79,8 +107,16 @@ namespace Dash
             }
         }
 
+        public static void DeselectRegions(DocumentController doc)
+        {
+            _selectedRegions.Remove(doc);
+            var args = new RegionSelectionChangedEventArgs();
+            args.DeselectedRegions.Add(doc);
+            RegionSelectionChanged?.Invoke(args);
+        }
+
         /*
-         * This method deselects everything that's currently selected, but needs to take in a CollectionFreeformBase (wherever it's being called from) in order to reset its marquees and so on.
+         * This method deselects everything that's currently selected.
          */
         public static void DeselectAll()
         {
@@ -90,6 +126,13 @@ namespace Dash
                 DeselectAllHelper();
                 SelectionChanged?.Invoke(args);
             }
+        }
+
+        public static void DeselectAllRegions()
+        {
+            var args = new RegionSelectionChangedEventArgs {DeselectedRegions = _selectedRegions.ToList()};
+            RegionSelectionChanged?.Invoke(args);
+            _selectedRegions.Clear();
         }
 
         private static void DeselectAllHelper()

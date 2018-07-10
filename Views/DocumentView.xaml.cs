@@ -1247,7 +1247,7 @@ namespace Dash
 			}
 		    else
 		    {
-			    var ann = new AnnotationManager(ViewModel.Content);
+			    var ann = new AnnotationManager((Control) ViewModel.Content);
 			    ann.RegionPressed(ViewModel.DocumentController, e.GetPosition(MainPage.Instance));
 		    }
 		}

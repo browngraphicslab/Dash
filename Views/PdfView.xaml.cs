@@ -313,7 +313,6 @@ namespace Dash
 
         public FrameworkElement GetPositionReference()
         {
-            // TODO: this may not work because it encloses the larger rectangle we actually want to reference. May have to bring the Grid back.
             return xGridForStretching;
         }
 
