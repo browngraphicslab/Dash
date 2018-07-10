@@ -14,10 +14,10 @@ namespace Dash
 
 
         //Input keys
-        public static readonly KeyController QueryKey = new KeyController("2569BB88-F1BD-4953-9403-00B1895109C6", "Query");
+        public static readonly KeyController QueryKey = new KeyController("Query");
 
         //Output keys
-        public static readonly KeyController ScriptKey = new KeyController("EE6A6F8A-D0EF-48FC-89FD-87EBB91F8C77", "Script");
+        public static readonly KeyController ScriptKey = new KeyController("Script");
 
         public ParseSearchStringToDishOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -43,7 +43,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; }
-        private static readonly KeyController TypeKey = new KeyController("91CBB332-871B-4289-B639-ABB4C93D755D", "Parse Search String");
+        private static readonly KeyController TypeKey = new KeyController("Parse Search String", "91CBB332-871B-4289-B639-ABB4C93D755D");
 
         private string WrapSearchTermInFunction(string searchTerm)
         {

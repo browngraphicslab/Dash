@@ -19,15 +19,15 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("434B2CBC-003A-4DAD-8E8B-7F759A39B37C", "Regex");
+        private static readonly KeyController TypeKey = new KeyController("Regex", "434B2CBC-003A-4DAD-8E8B-7F759A39B37C");
 
         //Input keys
-        public static readonly KeyController ExpressionKey      = new KeyController("0FA9226F-35BB-4AEE-A830-C81FF9611F3E", "Expression");
-        public static readonly KeyController SplitExpressionKey = new KeyController("1AB31BED-2FF8-4C84-96E1-7B3C739038AC", "SplitExpression");
-        public static readonly KeyController TextKey            = new KeyController("B4D356C5-361E-4538-BB4D-F14C85159312", "Text");
+        public static readonly KeyController ExpressionKey      = new KeyController("Expression");
+        public static readonly KeyController SplitExpressionKey = new KeyController("SplitExpression");
+        public static readonly KeyController TextKey            = new KeyController("Text");
 
         //Output keys
-        public static readonly KeyController MatchesKey = new KeyController("9C395B1C-A7A7-47A4-9F30-3B83CD2D0939", "Matches");
+        public static readonly KeyController MatchesKey = new KeyController("Matches");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

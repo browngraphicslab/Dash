@@ -25,16 +25,16 @@ namespace Dash
             throw new NotImplementedException();
         }
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3", "SetField");
+        private static readonly KeyController TypeKey = new KeyController("SetField", "8EAF5DD0-6E8E-4102-BDF2-E82F3BC6BCC3");
 
         //Input keys
 
-        public static readonly KeyController InputDocumentKey = new KeyController("922FA00C-C37F-4494-AB6B-AA582BB9F2E2", "InputDoc");
-        public static readonly KeyController KeyNameKey = new KeyController("FB15FB6F-F710-4A53-BACD-D17FAB4E416D", "KeyName");
-        public static readonly KeyController FieldValueKey = new KeyController("C058D184-7464-423E-B5F8-5B1F3707A4A6", "FieldValue");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
+        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
+        public static readonly KeyController FieldValueKey = new KeyController("FieldValue");
 
         //Output keys
-        public static readonly KeyController ResultDocKey = new KeyController("D7000C15-3B29-422E-8C93-A8B696C84904", "ResultDoc");
+        public static readonly KeyController ResultDocKey = new KeyController("ResultDoc");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {
@@ -79,7 +79,7 @@ namespace Dash
 
                 if (!set)
                 {
-                    inputDoc.SetField(new KeyController(UtilShared.GenerateNewId(), fieldName.Data), fieldValue, true);
+                    inputDoc.SetField(new KeyController(fieldName.Data, UtilShared.GenerateNewId()), fieldValue, true);
                 }
             }
 

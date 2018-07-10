@@ -7,10 +7,10 @@ namespace Dash
     [OperatorType("concat")]
     public class ConcatOperatorController : OperatorController
     {
-        public static readonly KeyController AKey = new KeyController("5B15A261-18BF-479C-8F11-BF167A11B5DC", "A");
-        public static readonly KeyController BKey = new KeyController("460427C6-B81C-44F8-AF96-60058BAB4F01", "B");
+        public static readonly KeyController AKey = new KeyController("A");
+        public static readonly KeyController BKey = new KeyController("B");
 
-        public static readonly KeyController OutputKey = new KeyController("nguid", "Output");
+        public static readonly KeyController OutputKey = new KeyController("Output");
 
         public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -22,7 +22,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("F69DF9CF-5B51-482D-AE1E-40B3266930CB", "Concat");
+        private static readonly KeyController TypeKey = new KeyController("Concat", "F69DF9CF-5B51-482D-AE1E-40B3266930CB");
 
         public override FieldControllerBase GetDefaultController()
         {

@@ -19,8 +19,8 @@ namespace Dash.Sources.FilePicker.PDF {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public Uri Source {
-            get { return (Uri)GetValue(SourceProperty); }
-            set { SetValue(SourceProperty, value); }
+            get => (Uri)GetValue(SourceProperty);
+            set => SetValue(SourceProperty, value);
         }
 
         public static readonly DependencyProperty SourceProperty =

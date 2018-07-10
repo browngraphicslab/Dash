@@ -25,7 +25,7 @@ using Windows.UI.Xaml.Media.Imaging;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : UserControl, IAnnotationEnabled
+    public sealed partial class RichTextView : UserControl, IAnnotatable
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
@@ -148,14 +148,14 @@ namespace Dash
                     var key = split.FirstOrDefault().Trim(' ');
                     var value = split.LastOrDefault().Trim(' ');
 
-                    var keycontroller = KeyController.LookupKeyByName(key, true);
+                    var keycontroller = new KeyController(key);
                     var containerDoc = this.GetFirstAncestorOfType<CollectionView>()?.ViewModel;
                     if (containerDoc != null)
                     {
                         var containerData = containerDoc.ContainerDocument.GetDataDocument();
                         containerData.SetField<RichTextController>(keycontroller, new RichTextModel.RTD(value), true);
                         var where = getLayoutDoc().GetPositionField()?.Data ?? new Point();
-                        var dbox = new DataBox(new DocumentReferenceController(containerData.Id, keycontroller), where.X, where.Y).Document;
+                        var dbox = new DataBox(new DocumentReferenceController(containerData, keycontroller), where.X, where.Y).Document;
                         dbox.SetField(KeyStore.DocumentContextKey, containerData, true);
                         dbox.SetTitle(keycontroller.Name);
                         containerDoc.AddDocument(dbox);

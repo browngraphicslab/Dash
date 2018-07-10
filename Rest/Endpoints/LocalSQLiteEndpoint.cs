@@ -530,6 +530,7 @@ namespace Dash
         public override Task Close()
         {
             _saveTimer.Stop();
+            CleanupDocuments();
             _transactionMutex.WaitOne();
             CleanupDocuments();
             _currentTransaction?.Commit();

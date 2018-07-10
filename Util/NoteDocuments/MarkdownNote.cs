@@ -17,7 +17,7 @@ namespace Dash
                 [KeyStore.AbstractInterfaceKey] = new TextController("Markdown Note Data API"),
             };
             var protoDoc = new DocumentController(fields, DocumentType, prototypeID) { Tag = "Markdown Note Protoype" };
-            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc.Id, KeyStore.DataKey), true);
+            protoDoc.SetField(KeyStore.DocumentTextKey, new DocumentReferenceController(protoDoc, KeyStore.DataKey), true);
             return protoDoc;
         }
         

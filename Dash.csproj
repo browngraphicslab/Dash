@@ -161,6 +161,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnnotationManager.cs" />
+    <Compile Include="AnnotationOverlay.xaml.cs">
+      <DependentUpon>AnnotationOverlay.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Browser\BrowserRequest.cs" />
     <Compile Include="Browser\GSuiteImportRequest.cs" />
     <Compile Include="Browser\DocumentContext.cs" />
@@ -226,7 +229,7 @@
     <Compile Include="Converters\TransformGroupMultiConverter.cs" />
     <Compile Include="Converters\UriToIMediaPlayBackSourceConverter.cs" />
     <Compile Include="Converters\UriToStringConverter.cs" />
-    <Compile Include="IAnnotationEnabled.cs" />
+    <Compile Include="IVisualAnnotatable.cs" />
     <Compile Include="Models\AudioModel.cs" />
     <Compile Include="Models\BoolModel.cs" />
     <Compile Include="Models\DocumentReferenceModel.cs" />
@@ -314,7 +317,6 @@
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
@@ -322,8 +324,8 @@
     <Compile Include="Util\FileTypeToDashParsing\TextToDashUtil.cs" />
     <Compile Include="Util\FileTypeToDashParsing\VideoToDashUtil.cs" />
     <Compile Include="Util\IEnumerableExtensions.cs" />
-    <Compile Include="Util\ImageRegionBox.xaml.cs">
-      <DependentUpon>ImageRegionBox.xaml</DependentUpon>
+    <Compile Include="Util\RegionBox.xaml.cs">
+      <DependentUpon>RegionBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\ManipulationControlHelper.cs" />
     <Compile Include="Util\NoteDocuments\AudioNote.cs" />
@@ -452,12 +454,6 @@
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
-    <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
-      <DependentUpon>TreeMenuNode.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
-      <DependentUpon>TreeNode.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
@@ -768,6 +764,7 @@
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
+    <Compile Include="VisualAnnotationManager.cs" />
     <Compile Include="WebBoxView.xaml.cs">
       <DependentUpon>WebBoxView.xaml</DependentUpon>
     </Compile>
@@ -863,6 +860,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AnnotationOverlay.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TagCloud\WordCloud.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -879,7 +880,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Util\ImageRegionBox.xaml">
+    <Page Include="Util\RegionBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -952,14 +953,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DishReplView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

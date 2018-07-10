@@ -195,7 +195,7 @@ namespace Dash
 
             var listToAddHeadersTo = ReferenceEquals(sender, xInputHeaderList) ? InputHeaders : OutputHeaders;
 
-            foreach (var header in deserializedItems.Select(km => new KeyController(km, false)))
+            foreach (var header in deserializedItems.Select(km => new KeyController(km)))
                 listToAddHeadersTo.Add(header);
             _isDroppedOnOtherHeaderList = true;
 

@@ -59,8 +59,8 @@ namespace Dash
                 };
                 element.AddFieldBinding(RichTextView.TextProperty, binding);
 
-                var textWrapRef = new DocumentFieldReference(docController.Id, KeyStore.TextWrappingKey);
-                var widthRef = new DocumentFieldReference(docController.Id, KeyStore.WidthFieldKey);
+                var textWrapRef = new DocumentFieldReference(docController, KeyStore.TextWrappingKey);
+                var widthRef = new DocumentFieldReference(docController, KeyStore.WidthFieldKey);
                 var twrapBinding = new FieldMultiBinding<Windows.UI.Xaml.TextWrapping>(textWrapRef, widthRef)
                 {
                     Mode = BindingMode.OneWay,

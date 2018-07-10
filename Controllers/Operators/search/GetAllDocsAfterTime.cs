@@ -16,10 +16,10 @@ namespace Dash
     public class GetAllDocsAfterTime : OperatorController
     {
         //Input keys
-        public static readonly KeyController TimeKey = new KeyController("47684CA7-687B-489E-8DAA-82051620363C", "Time");
+        public static readonly KeyController TimeKey = new KeyController("Time");
 
         //Output keys
-        public static readonly KeyController ResultsKey = new KeyController("C856C754-B60F-44AF-B262-960F03156691", "Results");
+        public static readonly KeyController ResultsKey = new KeyController("Results");
 
         public GetAllDocsAfterTime() : base(new OperatorModel(TypeKey.KeyModel))
         {
@@ -41,7 +41,7 @@ namespace Dash
             };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C902F10A-454E-40C0-A2C8-9B2FC9711A9B", "After");
+        private static readonly KeyController TypeKey = new KeyController("After", "C902F10A-454E-40C0-A2C8-9B2FC9711A9B");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

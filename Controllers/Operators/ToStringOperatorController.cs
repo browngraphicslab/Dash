@@ -12,10 +12,10 @@ namespace Dash
     public class ToStringOperatorController : OperatorController
     {
         //Input keys
-        public static readonly KeyController InputKey = new KeyController("9BEF4C5D-3E1B-4DF8-8CDE-479A66F18080", "Input");
+        public static readonly KeyController InputKey = new KeyController("Input");
 
         //Output keys
-        public static readonly KeyController ResultStringKey = new KeyController("BD564D24-460A-47EF-9871-FBDADA465812", "String");
+        public static readonly KeyController ResultStringKey = new KeyController("String");
 
 
         public ToStringOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -42,7 +42,7 @@ namespace Dash
         };
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE", "To String");
+        private static readonly KeyController TypeKey = new KeyController("To String", "C9A561E8-D4A1-4C38-A0BD-D9EE3531DACE");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
