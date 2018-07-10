@@ -77,6 +77,7 @@ namespace Dash
 		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
 			DocumentView.DocumentViewDeletedEventArgs args)
 		{
+		    Clear();
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
 					.GetField(KeyStore.TemplateEditorKey) != null)
 				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
@@ -218,7 +219,7 @@ namespace Dash
 			//initialize UI of workspace
 			this.FormatPanes();
 			this.FormatUploadTemplateFlyout();
-			var rect = new Rect(0, 0, 300, 400);
+			var rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height);
 			var rectGeo = new RectangleGeometry { Rect = rect };
 			xWorkspace.Clip = rectGeo;
 
@@ -323,10 +324,12 @@ namespace Dash
             // unload all event handlers
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
 		    xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
-		    //TODO:FIX THIS LINE, DASH CRASHES
-			//this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
-		    
-		    xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
+            //TODO:FIX THIS LINE, DASH CRASHES
+            //DataDocument.SetField<DocumentController>(KeyStore.TemplateEditorKey, this, true);
+            //this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
+
+
+            xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
         }
 
 		private void FormatUploadTemplateFlyout()
@@ -638,8 +641,8 @@ namespace Dash
 		        }  
 
                 // set width and height of the new document
-                dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
-		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
+          //      dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+		        //dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 		        // set the active layout of the working document to the dataDocCopy (which is the template)
 		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
 		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
@@ -729,7 +732,10 @@ namespace Dash
 
         private void XWorkspace_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-          
+            //var grid = sender as Grid;
+            
+            //docController.SetField<NumberController>(KeyStore.WidthFieldKey, xWorkspace.ActualWidth, true);
+            //docController.SetField<NumberController>(KeyStore.HeightFieldKey, xWorkspace.ActualHeight, true);
         }
 
         private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
@@ -1469,8 +1475,6 @@ namespace Dash
 	    private void Clear()
 	    {
 	        DocumentViewModels.Clear();
-	      
-	        
 	        DocumentControllers.Clear();
 	        DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
         }
@@ -1584,9 +1588,9 @@ namespace Dash
             
 	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
 	        {
-	            xWorkspace.Width = 300;
-	            xWorkspace.Height = 400;
-	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, 300, 400) };
+	            //xWorkspace.Width = 300;
+	            //xWorkspace.Height = 400;
+	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height) };
 
 	            Bounds.Width = 70;
 	            Bounds.Height = 70;
@@ -2099,5 +2103,10 @@ namespace Dash
             docView.ViewModel.DocumentController.SetWidth((xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
             docView.ViewModel.DocumentController.SetHeight((xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
         }
-    }
+
+	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+	    {
+	        XScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+	    }
+	}
 }

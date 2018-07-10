@@ -38,8 +38,11 @@
         <StackPanel  Orientation="Horizontal"  BorderThickness="0 0 0 0" x:Name="xOuterPanel">
 
             <!--Panel that holds Key Value Pane-->
-            <ScrollViewer Width="300" Height="500" Visibility="Visible"  VerticalScrollBarVisibility="Auto" Background="White">
-                <StackPanel Orientation="Vertical" x:Name="xDataPanel" Width="300" Background="White" />
+            <ScrollViewer x:Name="XScrollViewer" Width="300" Height="500" Visibility="Visible"  VerticalScrollBarVisibility="Disabled"  Background="White" PointerWheelChanged="ScrollViewer_OnPointerWheelChanged">
+                <StackPanel Orientation="Horizontal" x:Name="xDataPanel" Width="300" Background="White">
+                   
+                    
+                </StackPanel>
             </ScrollViewer>
 
             <!--Panel that holds Canvas-->

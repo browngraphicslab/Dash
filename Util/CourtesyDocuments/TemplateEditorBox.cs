@@ -2,6 +2,7 @@
 using DashShared;
 using Windows.UI.Xaml.Input;
 using Windows.Foundation;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -41,9 +42,41 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
-            SetupBindings(tev, layoutDocController, context);
+            MakeBindings(tev, layoutDocController, context);
+          
 
             return tev;
+        }
+
+        private static void MakeBindings(TemplateEditorView tev, DocumentController layoutDocumentController, Context context)
+        {
+            SetupBindings(tev, layoutDocumentController, context);
+            BindWorkspaceWidth(tev, layoutDocumentController, context);
+            BindWorkspaceHeight(tev, layoutDocumentController, context);
+        }
+
+        private static void BindWorkspaceHeight(TemplateEditorView tev, DocumentController layoutDocumentController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>
+            {
+                Document = layoutDocumentController.GetDataDocument(),
+                Key = KeyStore.WidthFieldKey,
+                Mode = BindingMode.TwoWay,
+                Context = context
+            };
+            tev.xWorkspace.AddFieldBinding(FrameworkElement.WidthProperty, binding);
+        }
+
+        private static void BindWorkspaceWidth(TemplateEditorView tev, DocumentController layoutDocumentController, Context context)
+        {
+            FieldBinding<NumberController> binding = new FieldBinding<NumberController>
+            {
+                Document = layoutDocumentController.GetDataDocument(),
+                Key = KeyStore.HeightFieldKey,
+                Mode = BindingMode.TwoWay,
+                Context = context
+            };
+            tev.xWorkspace.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
     }
 

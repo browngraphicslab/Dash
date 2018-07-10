@@ -134,6 +134,9 @@ namespace Dash
                             Tag = "RenderTransform multi binding in DocumentView"
                         };
                 this.AddFieldBinding(RenderTransformProperty, binding);
+
+                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+              
             }
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
