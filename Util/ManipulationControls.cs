@@ -495,11 +495,11 @@ namespace Dash
         private DockDirection GetDockIntersection()
         {
             var actualX = ParentDocument.ViewModel.ActualSize.X * ParentDocument.ViewModel.Scale.X *
-                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1;
+                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.X ?? 1);
             var actualY = ParentDocument.ViewModel.ActualSize.Y * ParentDocument.ViewModel.Scale.Y *
-                          MainPage.Instance.xMainDocView.ViewModel.DocumentController
-                              .GetField<PointController>(KeyStore.PanZoomKey)?.Data.Y ?? 1;
+                          (MainPage.Instance.xMainDocView.ViewModel.DocumentController
+                               .GetField<PointController>(KeyStore.PanZoomKey)?.Data.Y ?? 1);
 
             var currentBoundingBox = new Rect(ParentDocument.TransformToVisual(MainPage.Instance.xMainDocView).TransformPoint(new Point(0, 0)),
                 new Size(actualX, actualY));
