@@ -276,7 +276,7 @@ namespace Dash
                 string newInput = modInput.Substring(1, modInput.Length - 2);
                 searchDict = Parse(newInput);
             } else {
-                searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
+                searchDict = GetBasicSearchResultsFromSearchPart(finalSearchTerm);
             }
 
             if (isNegated)

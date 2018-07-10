@@ -11,7 +11,7 @@ namespace Dash
 
         public SearchResult() : this(null, "", 0) { }
 
-        public SearchResult(DocumentNode node, string relevantText, int rank)
+        public SearchResult(DocumentNode node, string relevantText, int rank = 1)
         {
             Node = node;
             RelevantText = relevantText;

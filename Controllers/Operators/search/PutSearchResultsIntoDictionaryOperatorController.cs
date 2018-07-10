@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using DashShared;
 
@@ -40,22 +39,21 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var list = (inputs[ListKey] as BaseListController).Data;
+            var list = ((BaseListController) inputs[ListKey]).Data;
             var output = new DocumentController();
             foreach (var searchResultDoc in list)
             {
                 var resultDocument = searchResultDoc as DocumentController;
-                if (resultDocument != null)
+                if (resultDocument == null) continue;
+
+                var resultDocId = resultDocument.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
+                var resultHash = UtilShared.GetDeterministicGuid(resultDocId.Data);
+                var keyController = ContentController<FieldModel>.GetController<KeyController>(resultHash) ?? new KeyController(resultHash);
+                if (output.GetField(keyController) == null)
                 {
-                    var resultDocId = resultDocument.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey);
-                    var resultHash = UtilShared.GetDeterministicGuid(resultDocId.Data);
-                    var keyController = ContentController<FieldModel>.GetController<KeyController>(resultHash) ?? new KeyController(resultHash);
-                    if (output.GetField(keyController) == null)
-                    {
-                        output.SetField(keyController, new ListController<DocumentController>(), true);
-                    }
-                    output.GetField<ListController<DocumentController>>(keyController).Add(resultDocument);
+                    output.SetField(keyController, new ListController<DocumentController>(), true);
                 }
+                output.GetField<ListController<DocumentController>>(keyController).Add(resultDocument);
             }
 
             outputs[DictionaryResultsKey] = output;

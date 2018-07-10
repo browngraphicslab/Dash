@@ -402,9 +402,9 @@ namespace Dash
                                 returnValue = new TextController("There was an error: " + ex.StackTrace);
                             }
 
-                            if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+                            if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
 
-                            xTextBox.Text = ""; xTextBox.Text = "";
+                            xTextBox.Text = "";
                             ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
                             //save input and output data

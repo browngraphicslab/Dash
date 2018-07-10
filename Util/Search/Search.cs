@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using DashShared;
 
 // ReSharper disable once CheckNamespace
 namespace Dash
@@ -36,6 +37,17 @@ namespace Dash
                 .OrderByDescending(res => res.Rank)
                 .ToList();
         }
+
+        public static IEnumerable<SearchResult> SearchByAlias(string id, bool avoidDuplicateViews = false)
+        {
+            var doc = SearchIndividualById(id);
+            var dataDoc = doc.GetDataDocument();
+            var filteredNodes = DocumentTree.MainPageTree.Where(node => node.DataDocument.Equals(dataDoc));
+            if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
+            return filteredNodes.Select(node => new SearchResult(node, id));
+        }
+
+        public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id) ?? new DocumentController();
 
         /*
          * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
