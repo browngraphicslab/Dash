@@ -35,7 +35,7 @@
         </Grid>
 
         <!--StackPanel for panes-->
-        <StackPanel Orientation="Horizontal"  BorderThickness="0 0 0 0" x:Name="xOuterPanel">
+        <StackPanel  Orientation="Horizontal"  BorderThickness="0 0 0 0" x:Name="xOuterPanel">
 
             <!--Panel that holds Key Value Pane-->
             <ScrollViewer Width="300" Height="500" Visibility="Visible"  VerticalScrollBarVisibility="Auto" Background="White">
@@ -45,23 +45,37 @@
             <!--Panel that holds Canvas-->
             <RelativePanel VerticalAlignment="Top" Width="500" Height="500" Background="{StaticResource WindowsBlue}"
                            x:Name="xOuterWorkspace">
+                <Line 
+                    X1="0" Y1="0" X2="500" Y2="0" 
+                    x:Name="xHorizLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
+                    RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
+                <Line 
+                    X1="0" Y1="0" X2="0" Y2="500" 
+                    x:Name="xVertLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
+                    RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
                 <Rectangle x:Name="xGridTopDragger" Visibility="Collapsed" Width="500" Height="20"
                            RelativePanel.AlignTopWithPanel="True" Fill="DarkSlateGray"
                            ManipulationStarted="XGridTopDragger_OnManipulationStarted"
                            ManipulationDelta="XGridTopDragger_OnManipulationDelta"
                            ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
-                           ManipulationMode="All"/>
-                <Rectangle x:Name="xGridBottomDragger" Visibility="Collapsed" Width="20" Height="500"
+                           ManipulationMode="TranslateY"/>
+                <Rectangle x:Name="xGridLeftDragger" Visibility="Collapsed" Width="20" Height="500"
                            RelativePanel.AlignLeftWithPanel="True" Fill="DarkSlateGray"
-                           ManipulationStarted="XGridBottomDragger_OnManipulationStarted"
-                           ManipulationDelta="XGridBottomDragger_OnManipulationDelta"
-                           ManipulationCompleted="XGridBottomDragger_OnManipulationCompleted"
-                           ManipulationMode="All"/>
+                           ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
+                           ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
+                           ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
+                           ManipulationMode="TranslateX"/>
                 
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
-                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
                     <!--DESIGN GRID -->
                     <Grid x:Name="xDesignGridLarge" Width="Auto" Height="Auto" Visibility="Collapsed">
                         <Grid.ColumnDefinitions>
@@ -147,13 +161,14 @@
                               ItemsSource="{Binding DocumentViewModels}"
                               Visibility ="Visible">
                         <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate >
-                                <Canvas x:Name="xCollectionCanvas"
-                                    x:FieldModifier="public"
-                                    Background="Transparent"
-                                    VerticalAlignment="Top"
-                                    HorizontalAlignment="Left" />
-                            </ItemsPanelTemplate>
+                            <ItemsPanelTemplate>
+                                <Canvas x:Name="xCollectionGrid"
+                                      x:FieldModifier="public"
+                                      Background="Transparent"
+                                      VerticalAlignment="Top"
+                                      HorizontalAlignment="Left" >
+                                </Canvas>
+                                </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

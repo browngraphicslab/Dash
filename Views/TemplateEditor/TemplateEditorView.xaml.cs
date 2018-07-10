@@ -35,8 +35,9 @@ using Windows.UI.Xaml.Shapes;
 
 using Dash.Views.TemplateEditor;
 using Microsoft.Office.Interop.Word;
-
+using Microsoft.Toolkit.Uwp.UI.Controls;
 using Border = Microsoft.Office.Interop.Word.Border;
+using Line = Windows.UI.Xaml.Shapes.Line;
 using Point = Windows.Foundation.Point;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -686,7 +687,28 @@ namespace Dash
 		    {
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
 		            new PointController(currPos.X, xWorkspace.Height - calculatedHeight - 1), true);
+		    }
 
+		    if (xGridLeftDragger.Visibility == Visibility.Visible)
+		    {
+		        docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
+		            true);
+		        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
+		            true);
+		        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
+		            new TextController(HorizontalAlignment.Stretch.ToString()), true);
+		        docView.ViewModel.DocumentController.SetField(KeyStore.VerticalAlignmentKey,
+		            new TextController(VerticalAlignment.Stretch.ToString()), true);
+		        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
+		        docView.VerticalAlignment = VerticalAlignment.Stretch;
+
+		        var col = FindColumn(docView.ViewModel.XPos);
+		        var row = FindRow(docView.ViewModel.YPos);
+                Grid.SetColumn(docView, col);
+		        Grid.SetRow(docView, row);
+                docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
+                docView.ViewModel.DocumentController.SetWidth(xWorkspace.ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
+                docView.ViewModel.DocumentController.SetHeight(xWorkspace.RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
 		    }
 			
             //updates and generates bounds for the children inside the template canvas
@@ -1578,6 +1600,23 @@ namespace Dash
 
 	        var oldSize = new Size(xWorkspace.Width, xWorkspace.Height);
 
+	        var topLeft = new Point(double.PositiveInfinity, double.PositiveInfinity);
+	        var bottomRight = new Point(double.NegativeInfinity, double.NegativeInfinity);
+	        foreach (var docview in DocumentViews)
+	        {
+	            topLeft.X = Math.Min(topLeft.X, docview.ViewModel.XPos);
+	            topLeft.Y = Math.Min(topLeft.Y, docview.ViewModel.YPos);
+	            bottomRight.X = Math.Max(bottomRight.X, docview.ViewModel.XPos + docview.ViewModel.ActualSize.X);
+	            bottomRight.Y = Math.Max(bottomRight.Y, docview.ViewModel.YPos + docview.ViewModel.ActualSize.Y);
+            }
+            Debug.WriteLine($"{topLeft} {bottomRight}");
+
+	        var bounds = new Rect(new Point(), newSize);
+	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
+	        {
+	            return;
+	        }
+
 	        foreach (var docview in DocumentViews)
 	        {
 	            var point = docview.ViewModel.DocumentController.GetPosition();
@@ -1585,17 +1624,21 @@ namespace Dash
 	            newPoint.X += (newSize.Width - oldSize.Width) / 2;
 	            newPoint.Y += (newSize.Height - oldSize.Height) / 2;
 	            docview.ViewModel.DocumentController.SetPosition(newPoint);
-            }
+	        }
 
             xWorkspace.Width = newSize.Width;
 	        xWorkspace.Height = newSize.Height;
 	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
 
-	        Bounds.Width = 70;
-	        Bounds.Height = 70;
-	    }
+	        Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
+            Bounds.Height= 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
+	        
+	        //Bounds.Width = bottomRight.X - topLeft.X;
+	        //Bounds.Height = bottomRight.Y - topLeft.Y;
 
-		private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        }
+
+        private void XBackgroundOpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
 		{
 			//update opacity of background
 			xWorkspace.Background.Opacity = e.NewValue / 255;
@@ -1701,7 +1744,8 @@ namespace Dash
 		{
             //set TemplateStyle key to FreeForm
             //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
-		    xGridBottomDragger.Visibility = Visibility.Collapsed;
+
+		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
 			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
 			xItemsControlCanvas.Visibility = Visibility.Visible;
@@ -1715,9 +1759,10 @@ namespace Dash
 
 		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-			//set TemplateStyle key to List
-			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
-		    xGridBottomDragger.Visibility = Visibility.Collapsed;
+            //set TemplateStyle key to List
+            //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+
+		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
 
 			/*xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
@@ -1757,7 +1802,7 @@ namespace Dash
 			//set TemplateStyle key to Grid
 			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.GridView), true);
 
-		    xGridBottomDragger.Visibility = Visibility.Visible;
+		    xGridLeftDragger.Visibility = Visibility.Visible;
 		    xGridTopDragger.Visibility = Visibility.Visible;
 		    //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
 		}
@@ -1818,30 +1863,146 @@ namespace Dash
 
 	    private void XGridTopDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
+	        xHorizLine.Visibility = Visibility.Visible;
+	        xHorizLine.Y1 = e.Position.Y;
+	        xHorizLine.Y2 = e.Position.Y;
 	        e.Handled = true;
 	    }
 
 	    private void XGridTopDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 	    {
+	        var top = xHorizLine.Y1;
+	        top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
+	        xHorizLine.Y1 = top;
+	        xHorizLine.Y2 = top;
+	        e.Handled = true;
 	    }
 
 	    private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
+	        if (0 < xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 &&
+	            xHorizLine.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2 < xWorkspace.Height)
+	        {
+	            var line = new Line
+	            {
+	                X1 = 0,
+	                X2 = 500,
+	                Y1 = xHorizLine.Y1,
+	                Y2 = xHorizLine.Y2,
+	                Stroke = new SolidColorBrush(Colors.Aqua),
+	                StrokeThickness = 1
+	            };
+	            Canvas.SetZIndex(line, 100);
+	            xOuterWorkspace.Children.Add(line);
+
+	            var row = FindRow(line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
+
+	            xWorkspace.RowDefinitions.Insert(row, new RowDefinition
+	            {
+	                Height = new GridLength(row > 0 ? line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2
+	                                                          - xWorkspace.RowDefinitions[row - 1].ActualHeight :
+	                    line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
+	            });
+            }
+
+	        xHorizLine.Visibility = Visibility.Collapsed;
+	        xHorizLine.Y1 = 0;
+	        xHorizLine.Y2 = 0;
+	        e.Handled = true;
 	    }
 
-	    private void XGridBottomDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+	    private void XGridLeftDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
-	    }
+	        xVertLine.Visibility = Visibility.Visible;
+	        xVertLine.X1 = e.Position.X;
+	        xVertLine.X2 = e.Position.X;
+	        e.Handled = true;
+        }
 
-	    private void XGridBottomDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+	    private void XGridLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
 	    {
+	        var left = xVertLine.X1;
+	        left += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).X;
+	        xVertLine.X1 = left;
+	        xVertLine.X2 = left;
+	        e.Handled = true;
 	    }
 
-	    private void XGridBottomDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+	    private void XGridLeftDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
 	    {
+	        if (0 < xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 &&
+	            xVertLine.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2 < xWorkspace.Width)
+	        {
+	            var line = new Line
+	            {
+	                X1 = xVertLine.X1,
+	                X2 = xVertLine.X2,
+	                Y1 = 0,
+	                Y2 = 500,
+	                Stroke = new SolidColorBrush(Colors.Aqua),
+	                StrokeThickness = 1
+	            };
+	            Canvas.SetZIndex(line, 100);
+	            xOuterWorkspace.Children.Add(line);
+
+	            var col = FindColumn(line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
+
+	            xWorkspace.ColumnDefinitions.Insert(col, new ColumnDefinition
+	            {
+	                Width = new GridLength(col > 0 ? line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2
+	                                                         - xWorkspace.ColumnDefinitions[col - 1].ActualWidth :
+	                    line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
+	            });
+            }
+
+            xVertLine.Visibility = Visibility.Collapsed;
+	        xVertLine.X1 = 0;
+	        xVertLine.X2 = 0;
+	        e.Handled = true;
+	    }
+	    private int FindRow(double offsetY)
+	    {
+	        double currOffset = 0;
+	        for (var i = 0; i < xWorkspace.RowDefinitions.Count; i++)
+	        {
+	            if (currOffset < offsetY && offsetY < currOffset + xWorkspace.RowDefinitions[i].ActualHeight)
+	            {
+	                return i;
+	            }
+
+	            currOffset += xWorkspace.RowDefinitions[i].ActualHeight;
+	        }
+
+	        if (currOffset < offsetY && offsetY < xWorkspace.Height)
+	        {
+	            return xWorkspace.RowDefinitions.Count;
+	        }
+
+	        return 0;
 	    }
 
-	    private void TappedHandler(object sender, TappedRoutedEventArgs e)
+	    private int FindColumn(double offsetX)
+	    {
+	        double currOffset = 0;
+	        for (var i = 0; i < xWorkspace.ColumnDefinitions.Count; i++)
+	        {
+	            if (currOffset < offsetX && offsetX < currOffset + xWorkspace.ColumnDefinitions[i].ActualWidth)
+	            {
+	                return i;
+	            }
+
+	            currOffset += xWorkspace.ColumnDefinitions[i].ActualWidth;
+	        }
+
+	        if (currOffset < offsetX && offsetX < xWorkspace.Width)
+	        {
+	            return xWorkspace.ColumnDefinitions.Count;
+	        }
+
+	        return 0;
+	    }
+
+        private void TappedHandler(object sender, TappedRoutedEventArgs e)
 	    {
 	        e.Handled = true;
 	    }
