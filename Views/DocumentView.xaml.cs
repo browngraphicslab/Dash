@@ -143,6 +143,7 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
@@ -170,7 +171,7 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
+                    this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
                 }
@@ -1266,11 +1267,9 @@ namespace Dash
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
 
-		    if (ViewModel.Content is IAnnotationEnabled)
+		    if (ViewModel.Content is IAnnotatable element)
 		    {
-			    var element = (IAnnotationEnabled) ViewModel.Content;
-			    element?.RegionSelected(element, new Point(0, 0), null);
-
+		        element.RegionSelected(element, new Point(0, 0));
 			}
 		    else
 		    {

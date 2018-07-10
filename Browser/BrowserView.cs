@@ -260,8 +260,6 @@ namespace Dash
                 return;
             }
 
-
-
             var prefix = "data:image/jpeg;base64,";
 
             byte[] byteBuffer = Convert.FromBase64String(MainPage.Instance.WebContext.ImageData.StartsWith(prefix)

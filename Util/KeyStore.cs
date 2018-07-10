@@ -71,6 +71,9 @@ namespace Dash
         public static KeyController DockedDocumentsTopKey = new KeyController("Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
         public static KeyController DockedDocumentsBottomKey = new KeyController("Documents docked on the bottom", "F6E10E00-1644-40BE-8A9E-0C648FE4B223");
+        public static KeyController PdfRegionVerticalOffsetKey = new KeyController(DashConstants.KeyStore.PdfRegionVerticalOffsetKey);
+        public static KeyController VisualRegionTopLeftPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionTopLeftPercentileKey);
+        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController(DashConstants.KeyStore.VisualRegionBottomRightPercentileKey);
 
         public static class SearchResultDocumentOutline
         {

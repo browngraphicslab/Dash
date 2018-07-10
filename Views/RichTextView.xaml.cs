@@ -25,7 +25,7 @@ using Windows.UI.Xaml.Media.Imaging;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-    public sealed partial class RichTextView : UserControl, IAnnotationEnabled
+    public sealed partial class RichTextView : UserControl, IAnnotatable
     {
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
             "Text", typeof(RichTextModel.RTD), typeof(RichTextView), new PropertyMetadata(default(RichTextModel.RTD), xRichTextView_TextChangedCallback));
