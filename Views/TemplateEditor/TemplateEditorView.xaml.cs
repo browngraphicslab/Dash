@@ -640,6 +640,9 @@ namespace Dash
 		        // set the position of the data copy to the working document's position
 		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
 		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
+				
+				//dataDocCopy.SetField(KeyStore.TemplateStyleKey,
+				//    style, true);
 
 		        if (xItemsControlGrid.Visibility == Visibility.Visible)
 		        {
@@ -663,7 +666,14 @@ namespace Dash
 		        // let the working doc's title be the template's title
 		        workingDoc.SetField(KeyStore.TitleKey, new DocumentReferenceController(DataDocument, KeyStore.TitleKey),
 		            true);
-		    }
+			    //update template style
+			    if (DataDocument.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ==
+			        TemplateConstants.ListView)
+			    {
+					this.FormatTemplateIntoList();
+			    }
+			    
+			}
 		    else
 		    {
 		        xTitle.Text = "Activate";
@@ -1492,7 +1502,8 @@ namespace Dash
 	    private void Clear()
 	    {
 	        DocumentControllers.Clear();
-        }
+		    ViewCopiesList.Clear();
+	    }
 
 		private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
 		{
@@ -1794,15 +1805,24 @@ namespace Dash
 			//button ui
 			xListButton.Background = new SolidColorBrush(Colors.Transparent);
 			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
+
+			//update key
+			DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
 		}
 
 		private void XListButton_OnChecked(object sender, RoutedEventArgs e)
 		{
-            //set TemplateStyle key to List
-            //DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+			this.FormatTemplateIntoList();
+            
+		}
 
-		    xGridLeftDragger.Visibility = Visibility.Collapsed;
-		    xGridTopDragger.Visibility = Visibility.Collapsed;
+		private void FormatTemplateIntoList()
+		{
+			//set TemplateStyle key to List
+			//DataDocument?.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+
+			xGridLeftDragger.Visibility = Visibility.Collapsed;
+			xGridTopDragger.Visibility = Visibility.Collapsed;
 
 			/*xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(StackPanel));
 			//align all in center
@@ -1812,9 +1832,13 @@ namespace Dash
 			}*/
 
 			//(xItemsControl.ItemsPanelRoot as StackPanel).Spacing = 20;
-			
+
 			xItemsControlCanvas.Visibility = Visibility.Collapsed;
 			xItemsControlList.Visibility = Visibility.Visible;
+
+			//update key
+			DataDocument.SetField(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.ListView), true);
+
 
 			/*
 			//make a list of copies
@@ -1827,7 +1851,7 @@ namespace Dash
 			}
 			*/
 			xItemsControlList.ItemsSource = ViewCopiesList;
-			
+
 
 			//button ui
 			xFreeFormButton.Background = new SolidColorBrush(Colors.Transparent);
@@ -1849,8 +1873,10 @@ namespace Dash
 		    xItemsControlGrid.Visibility = Visibility.Visible;
 
 		    xItemsControlGrid.ItemsSource = DocumentViewModels;
-            //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
-        }
+			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
+			//update key
+			DataDocument.SetField<NumberController>(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
+		}
 
 		ItemsPanelTemplate ItemsPanelTemplateType(Type panelType)
 		{
@@ -2196,5 +2222,15 @@ namespace Dash
 	                break;
 	        }
 	    }
-    }
+
+		private void XItemsControlList_OnDragItemsStartingList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+		{
+			Debug.WriteLine("DRAG STARTED");
+		}
+
+		private void XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+		{
+			Debug.WriteLine("DRAG COMPLETED");
+		}
+	}
 }

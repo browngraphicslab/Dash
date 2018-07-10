@@ -229,18 +229,19 @@
 
                     <ListView x:Name="xItemsControlList"
                               x:FieldModifier="public"
-                              ItemsSource="{Binding DocumentViewModels}"
+                              ItemsSource="{Binding ViewCopiesList}"
                               Visibility ="Collapsed"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
-                              Background="Transparent">
+                              Background="Transparent"
+                              CanReorderItems="True"  AllowDrop="True" CanDragItems="True" ReorderMode="Enabled"
+                              DragItemsStarting="XItemsControlList_OnDragItemsStartingList_DragItemsStarting"
+                              DragItemsCompleted="XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted" >
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid HorizontalAlignment="Stretch">
-                                    <local:DocumentView
+                                <local:DocumentView
                                         BindRenderTransform="True"
-                                        Loaded="DocumentView_OnLoaded_ListView" />
-                                </Grid>
+                                        Loaded="DocumentView_OnLoaded_ListView"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
