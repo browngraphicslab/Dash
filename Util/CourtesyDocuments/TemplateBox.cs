@@ -164,10 +164,6 @@ namespace Dash
                 };
                 layoutView.AddFieldBinding(UIElement.RenderTransformProperty, renderBinding);
 
-                // set width and render transform appropriately
-                layoutDoc.SetField(KeyStore.WidthFieldKey,
-                    new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
-
                 grid.Children.Add(layoutView);
             }
         }
