@@ -396,15 +396,65 @@ namespace Dash
             }
         }
 
-        private void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void reRunLine(ReplLineViewModel data, string text)
         {
-            var a = sender;
+            //get element num
+            int? index = null;
+
+            for (int i = 0; i < ViewModel.Items.Count; i++)
+            {
+                if (ViewModel.Items[i] == data)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            //undo old variable declarations 
+            _dsl.Run(text, true, true);
+
+            FieldControllerBase result;
+            try
+            {
+                result = _dsl.Run(text, true);
+            }
+            catch (Exception ex)
+            {
+                result = new TextController("There was an error: " + ex.StackTrace);
+            }
+
+            if (result == null)
+                result =
+                    new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
+
+            data.LineValueText = data.GetValueFromResult(result);
+            data.Value = result;
+
+            //update input and outputs in list
+            if (index != null)
+            {
+                _outputList[index ?? 0] = result;
+
+            }
         }
 
-        private void XInputArrow_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void XInputArrow_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var a = sender;
+            //tap arrow to revaluate line
+            var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
+            var text = data?.LineText;
+
+            reRunLine(data, text);
         }
+
+        private void XInputBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var data = (sender as TextBlock)?.DataContext as ReplLineViewModel;
+            var text = data?.LineText;
+
+            reRunLine(data, text);
+        }
+
         #endregion
 
         #region On Type Actions
@@ -807,6 +857,6 @@ namespace Dash
         #endregion
 
 
-  
+
     }
 }

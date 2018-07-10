@@ -180,21 +180,22 @@ namespace Dash
         public T this[int index]
         {
             get => TypedData[CheckedIndex(index, TypedData)];
-            set
-            {
-                index = CheckedIndex(index, TypedData);
+            set => SetIndex(index, value);
+        }
 
-                var prevElement = TypedData[index]; // for undo and event args
+        private void SetIndex(int index, T value, bool withUndo = true)
+        {
+            index = CheckedIndex(index, TypedData);
 
-                // extracts a copy of the list, amends it with the replacement, and deep sets it as the value of TypeData (also gets updated in the database)
-                var updatedCopy = TypedData;
-                updatedCopy[index] = value;
-                TypedData = updatedCopy;
+            var prevElement = TypedData[index]; // for undo and event args
 
-                var newEvent = new UndoCommand(() => this[index] = value, () => this[index] = prevElement);
-                UpdateOnServer(newEvent);
-                OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, new List<T> { value }, new List<T> { prevElement }, index));
-            }
+            // extracts a copy of the list, amends it with the replacement, and deep sets it as the value of TypeData (also gets updated in the database)
+            TypedData[index] = value;
+            ListModel.Data[index] = value.Id;
+
+            var newEvent = new UndoCommand(() => SetIndex(index, value, false), () => SetIndex(index, prevElement, false));
+            UpdateOnServer(withUndo ? newEvent : null);
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, new List<T> { value }, new List<T> { prevElement }, index));
         }
 
         //TODO: Remove this accessor - leverage new functionality to improve encapsulation
