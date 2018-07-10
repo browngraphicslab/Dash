@@ -217,7 +217,6 @@ namespace Dash
             Canvas.SetTop(xBounds, Canvas.GetTop(xTop));
 
             _parent.ResizeCanvas(new Size(xBounds.Width, xBounds.Height));
-            _parent.PositionEllipses(_parent.xWorkspace.ActualWidth, _parent.xWorkspace.ActualHeight);
         }
 
         #endregion
