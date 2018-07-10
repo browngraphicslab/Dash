@@ -445,6 +445,9 @@
     <Compile Include="ViewModels\CsvImportHelperViewModel.cs" />
     <Compile Include="ViewModels\DishReplViewModel.cs" />
     <Compile Include="ViewModels\EditableScriptViewModel.cs" />
+    <Compile Include="ViewModels\ReplLineNode.xaml.cs">
+      <DependentUpon>ReplLineNode.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
@@ -919,6 +922,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewModels\ReplLineNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

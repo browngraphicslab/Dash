@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using DashShared;
 
 namespace Dash
@@ -49,18 +50,7 @@ namespace Dash
 
             if (!string.IsNullOrEmpty(id))
             {
-                var doc = ContentController<FieldModel>.GetController<DocumentController>(id);
-                var dataDoc = doc.GetDataDocument();
-
-                var tree = DocumentTree.MainPageTree;
-
-                foreach (var d in tree)
-                {
-                    if (dataDoc.Equals(d.DataDocument) && !doc.Equals(d.ViewDocument))
-                    {
-                        toReturn.Add(d.ViewDocument);
-                    }
-                }
+                toReturn.AddRange(Search.SearchByAlias(id).Select(res => res.ViewDocument).ToList());
             }
 
             outputs[ResultsKey] = toReturn;

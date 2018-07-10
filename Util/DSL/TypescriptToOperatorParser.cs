@@ -131,6 +131,7 @@ namespace Dash
                 try
                 {
                     var exec = se?.Execute(scope ?? new Scope());
+                    if (exec?.TypeInfo == TypeInfo.List) exec = (BaseListController) exec;
                     return exec;
                 }
                 catch (ReturnException)

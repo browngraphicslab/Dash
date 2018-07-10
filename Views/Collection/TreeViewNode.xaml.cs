@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
-using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -24,8 +21,8 @@ namespace Dash
 
         public string FilterString
         {
-            get { return (string) GetValue(FilterStringProperty); }
-            set { SetValue(FilterStringProperty, value); }
+            get => (string) GetValue(FilterStringProperty);
+            set => SetValue(FilterStringProperty, value);
         }
 
         public static readonly DependencyProperty ContainingDocumentProperty = DependencyProperty.Register(
@@ -33,8 +30,8 @@ namespace Dash
 
         public DocumentController ContainingDocument
         {
-            get { return (DocumentController) GetValue(ContainingDocumentProperty); }
-            set { SetValue(ContainingDocumentProperty, value); }
+            get => (DocumentController) GetValue(ContainingDocumentProperty);
+            set => SetValue(ContainingDocumentProperty, value);
         }
 
         public static readonly DependencyProperty SortCriterionProperty = DependencyProperty.Register(
@@ -42,8 +39,8 @@ namespace Dash
 
         public string SortCriterion
         {
-            get { return (string)GetValue(SortCriterionProperty); }
-            set { SetValue(SortCriterionProperty, value); }
+            get => (string)GetValue(SortCriterionProperty);
+            set => SetValue(SortCriterionProperty, value);
         }
         public DocumentViewModel ViewModel => DataContext as DocumentViewModel;
 

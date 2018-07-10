@@ -94,10 +94,10 @@ namespace Dash
 
             var vms = new List<SearchResultViewModel>();
             var tree = DocumentTree.MainPageTree;
-            var docs = GetDocumentControllersFromSearchDictionary(resultDict, text);
+            var docs = GetDocumentControllersFromSearchDictionary(resultDict, text).ToList();
 
             //highlight doc results
-            HighlightSearchResults(docs.ToList<DocumentController>());
+            HighlightSearchResults(docs);
 
             foreach (var doc in docs)
             {
@@ -112,7 +112,7 @@ namespace Dash
                 .Take(maxSearchResultSize).ToArray();
             foreach (var searchResultViewModel in first)
             {
-                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>).Add(searchResultViewModel);
+                (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Add(searchResultViewModel);
             }
 
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,29 +19,33 @@ namespace Dash
             _value = value;
         }
 
-        private string GetValueFromResult(FieldControllerBase controller)
+        private static string GetValueFromResult(FieldControllerBase controller)
         {
-            string result;
+            var result = "";
             try
             {
                 if (controller != null)
                 {
-                    if (controller is ReferenceController)
+                    switch (controller)
                     {
-                        var r = (ReferenceController)controller;
-                        result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null).ToString()}]";
-                    } else if (controller is FunctionOperatorController)
-                    {
-                        result = (controller as FunctionOperatorController).getFunctionString();
+                        case TextController text:
+                            result = text.Data;
+                            break;
+                        case DocumentController doc:
+                            result = FormatFieldOutput(doc);
+                            break;
+                        case ReferenceController r:
+                            result = $"REFERENCE[{r.FieldKey.Name}  :  {r.GetDocumentController(null)}]";
+                            break;
+                        case FunctionOperatorController _:
+                            result = ((FunctionOperatorController) controller).getFunctionString();
+                            break;
+                        case BaseListController list:
+                            var toJoin = new List<string>();
+                            foreach (var element in list.Data) { toJoin.Add(FormatFieldOutput(element)); }
+                            result = $"[{string.Join(",  ", toJoin)}]";
+                            break;
                     }
-                    else
-                    {
-
-                        result = controller is BaseListController
-                            ? string.Join("      ", (controller as BaseListController)?.Data?.Select(i => i?.ToString()))
-                            : controller?.GetValue(null)?.ToString();
-                    }
-
                 }
                 else
                 {
@@ -57,6 +62,26 @@ namespace Dash
             }
 
             return result;
+        }
+
+        private static string FormatFieldOutput(FieldControllerBase docController)
+        {
+            string prefix;
+            string type;
+
+            switch (docController)
+            {
+                case DocumentController doc:
+                    prefix = $"@{doc}";
+                    type = doc.DocumentType.Type;
+                    if (type.EndsWith(" Box")) type = type.Substring(0, type.Length - 4);
+                    break;
+                default:
+                    prefix = "!Doc";
+                    type = "";
+                    break;
+            }
+            return prefix + $" ({type})";
         }
 
         //TODO have this value be dragged out onto the workspace

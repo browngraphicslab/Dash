@@ -15,7 +15,12 @@ namespace Dash
         private DocumentNode Head { get; }
         public Dictionary<DocumentController, DocumentNode> Nodes = new Dictionary<DocumentController, DocumentNode>();
 
-        public DocumentTree(DocumentController headRef) => Head = new DocumentNode(headRef, null, Nodes);
+        public DocumentTree(DocumentController headRef)
+        {
+            var title = headRef.GetField<TextController>(KeyStore.TitleKey);
+            headRef.SetField<TextController>(KeyStore.TitleKey, $"*{title}*", true);
+            Head = new DocumentNode(headRef, null, Nodes);
+        }
 
         /*
          * Returns a new instance of DocumentTree with the main page as the start of the recursive tree construction
