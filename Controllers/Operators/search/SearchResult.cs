@@ -3,32 +3,22 @@ namespace Dash
 {
     public class SearchResult
     {
-        public DocumentController Document;
+        public DocumentNode Node;
+        public DocumentController ViewDocument;
+        public DocumentController DataDocument;
         public int Rank;
         public string RelevantText;
 
-        public SearchResult() : this(null, "", 0)
-        {
-        }
+        public SearchResult() : this(null, "", 0) { }
 
-        public SearchResult(string relevantText, DocumentController document)
+        public SearchResult(DocumentNode node, string relevantText, int rank)
         {
-            RelevantText = relevantText;
-            Document = document;
-            ComputeAndSetRank();
-        }
-
-        public SearchResult(DocumentController document, string relevantText, int rank)
-        {
+            Node = node;
             RelevantText = relevantText;
             Rank = rank;
-            Document = document;
-        }
 
-        private void ComputeAndSetRank()
-        {
-            //TODO: determine frequency of text in all fields of document controller
-            Rank = 0;
+            ViewDocument = node.ViewDocument;
+            DataDocument = node.DataDocument;
         }
     }
 }

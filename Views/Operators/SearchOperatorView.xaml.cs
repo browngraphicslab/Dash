@@ -81,10 +81,10 @@ namespace Dash
                 var searchCollection = _operatorDoc.GetDereferencedField<ListController<DocumentController>>(SearchOperatorController.InputCollection, null)?.TypedData;
                 var searchText = sender.Text;
                 _searchResultViewModels.Clear();
-                foreach (var searchResultViewModel in MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection))
-                {
-                    _searchResultViewModels.Add(searchResultViewModel);
-                }
+                //foreach (var searchResultViewModel in MainSearchBox.SearchHelper.SearchOverCollectionList(searchText, searchCollection))
+                //{
+                //    _searchResultViewModels.Add(searchResultViewModel);
+                //}
             }
 
             // update the current search
