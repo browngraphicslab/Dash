@@ -9,7 +9,7 @@ namespace Dash
     {
         private object _previewContent;
 
-        public string DocId
+        public DocumentController Doc
         {
             get;
             set;
@@ -44,7 +44,7 @@ namespace Dash
                 return;
             }
             var ent = (DictionaryEntry)DataContext;
-            var value = new DocumentFieldReference(DocId, ent.Key as KeyController).DereferenceToRoot(null);
+            var value = new DocumentFieldReference(Doc, ent.Key as KeyController).DereferenceToRoot(null);
             if (value == null)
             {
                 return;

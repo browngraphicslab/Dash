@@ -67,12 +67,12 @@ namespace Dash
         }   
         
         //Input Keys
-        public static readonly KeyController FilterFieldKey = new KeyController("B98F5D76-55D6-4796-B53C-D7C645094A85", "_FilterField");
-        public static readonly KeyController BucketsKey = new KeyController("5F0974E9-08A1-46BD-89E5-6225C1FE40C7", "_Buckets");
-        public static readonly KeyController SelectedKey = new KeyController("A1AABEE2-D842-490A-875E-72C509011D86", "Selected");
-        public static readonly KeyController InputDocsKey = new KeyController("0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17", "Dataset");
-        public static readonly KeyController AutoFitKey = new KeyController("79A247CB-CE40-44EA-9EA5-BB295F1F70F5", "_AutoFit");
-        public static readonly KeyController AvgResultKey = new KeyController("27A7017A-170E-4E4A-8CDC-94983C2A5188", "Avg");
+        public static readonly KeyController FilterFieldKey = new KeyController("_FilterField", "B98F5D76-55D6-4796-B53C-D7C645094A85");
+        public static readonly KeyController BucketsKey = new KeyController("_Buckets", "5F0974E9-08A1-46BD-89E5-6225C1FE40C7");
+        public static readonly KeyController SelectedKey = new KeyController("Selected", "A1AABEE2-D842-490A-875E-72C509011D86");
+        public static readonly KeyController InputDocsKey = new KeyController("Dataset", "0F8FD78F-4B35-4D0B-9CA0-17BAF275FE17");
+        public static readonly KeyController AutoFitKey = new KeyController("_AutoFit", "79A247CB-CE40-44EA-9EA5-BB295F1F70F5");
+        public static readonly KeyController AvgResultKey = new KeyController("Avg", "27A7017A-170E-4E4A-8CDC-94983C2A5188");
 
 
         DocumentController _parentDocument;
@@ -388,7 +388,7 @@ namespace Dash
                 return null;
             // loop through each field to find on that matches the field name pattern 
             if (dmc.GetField(pattern) != null)
-                return new DocumentReferenceController(dmc.Id, pattern);
+                return new DocumentReferenceController(dmc, pattern);
             foreach (var pfield in dmc.EnumFields().Where((pf) => !pf.Key.IsUnrenderedKey() && pf.Value is DocumentController))
             {
                 var nestedDoc = pfield.Value as DocumentController;

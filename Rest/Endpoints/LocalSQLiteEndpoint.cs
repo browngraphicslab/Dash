@@ -72,9 +72,9 @@ namespace Dash
             _backupTimer.Elapsed += (sender, args) => { CopyAsBackup(); };
             _backupTimer.Start();
 
-            _cleanupTimer = new System.Timers.Timer(5 * 1000);
-            _cleanupTimer.Elapsed += (sender, args) => CleanupDocuments();
-            _cleanupTimer.Start();
+            //_cleanupTimer = new System.Timers.Timer(30 * 1000);
+            //_cleanupTimer.Elapsed += (sender, args) => CleanupDocuments();
+            //_cleanupTimer.Start();
 
             NewChangesToBackup = false;
         }
@@ -530,6 +530,7 @@ namespace Dash
         public override async Task Close()
         {
             _saveTimer.Stop();
+            CleanupDocuments();
             _transactionMutex.WaitOne();
             _currentTransaction?.Commit();
             _currentTransaction = null;

@@ -16,14 +16,14 @@ namespace Dash
         /// to the melt operator
         /// </summary>
         public static readonly KeyController HtmlInputKey =
-            new KeyController("4B55E588-D6C9-4C0D-B5A8-AB61BD4B2E9B", "Html Input");
+            new KeyController("Html Input");
 
         public static readonly KeyController ScriptKey =
-            new KeyController("44ACDEBC-D6E5-4491-9755-B4E462202BA7", "Script");
+            new KeyController("Script");
 
         // Output Keys
         public static readonly KeyController OutputDocumentKey =
-            new KeyController("34B77899-D18D-4AD4-8C5E-FC617548C392", "Output Document");
+            new KeyController("Output Document");
 
         public override Func<ReferenceController, CourtesyDocument> LayoutFunc { get; } = rfmc => new ExecuteHtmlOperatorBox(rfmc);
 
@@ -51,7 +51,7 @@ namespace Dash
             execOp.SetField(ScriptKey,    new TextController(""), true);
             execOp.SetField(OutputDocumentKey, new TextController(""), true);
 
-            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp.Id, KeyStore.OperatorKey)).Document;
+            var layoutDoc = new ExecuteHtmlOperatorBox(new DocumentReferenceController(execOp, KeyStore.OperatorKey)).Document;
             execOp.SetActiveLayout(layoutDoc, true, true);
             return execOp;
         }
@@ -68,7 +68,7 @@ namespace Dash
         }
 
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("D0286E73-D9F6-4341-B901-5ECC27AC76BC", "Execute html javascript");
+        private static readonly KeyController TypeKey = new KeyController("Execute html javascript", "D0286E73-D9F6-4341-B901-5ECC27AC76BC");
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,

@@ -73,7 +73,7 @@ namespace Dash
                 if (!string.IsNullOrEmpty(pageDoc.Title))
                 {
                     thumbnailImageViewDoc = new PostitNote(pageDoc.Title.Substring(0, Math.Min(100, pageDoc.Title.Length))).Document;
-                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument().Id, KeyStore.TitleKey), true);
+                    thumbnailImageViewDoc.GetDataDocument().SetField(KeyStore.DataKey, new DocumentReferenceController(pageDoc.GetDataDocument(), KeyStore.TitleKey), true);
                 }
                 else
                 {
@@ -189,14 +189,12 @@ namespace Dash
                     var replacedString = DisplayString;
                     foreach (var keyToReplace in keysToReplace)
                     {
-                        var k = KeyController.LookupKeyByName(keyToReplace.ToString().Substring(1));
-                        if (k != null)
-                        {
-                            var value = CurPage.DataDocument.GetDereferencedField<TextController>(k, null)?.Data;
-                            if (value != null)
-                                replacedString = replacedString.Replace(keyToReplace.ToString(), value);
-                        }
+                        var k = new KeyController(keyToReplace.ToString().Substring(1));
+                        var value = CurPage.DataDocument.GetDereferencedField<TextController>(k, null)?.Data;
+                        if (value != null)
+                            replacedString = replacedString.Replace(keyToReplace.ToString(), value);
                     }
+
                     var img = replacedString == "this" ? CurPage.DocumentController : MainPage.Instance.xMainSearchBox.SearchForFirstMatchingDocument(replacedString, CurPage.DataDocument);
                     if (img != null && (!(data is DocumentController) || !img.GetDataDocument().Equals((data as DocumentController).GetDataDocument())))
                     {
@@ -272,7 +270,7 @@ namespace Dash
                 var keyName = splits.Length > 0 ? splits[0] : key;
                 var keyasgn = splits.Length > 1 ? splits[1] : "";
 
-                SetHackBodyDoc(KeyController.LookupKeyByName(keyName, true), keyasgn);
+                SetHackBodyDoc(new KeyController(keyName), keyasgn);
                 
                 e.AcceptedOperation = DataPackageOperation.Copy;
             }
@@ -296,11 +294,15 @@ namespace Dash
                 if (keyString?.StartsWith("#") == true)
                 {
                     var key = keyString.Substring(1);
-                    var k = KeyController.LookupKeyByName(key);
-                    if (k == null)
+                    KeyController k;
+                    if (key.Contains("="))
                     {
                         var splits = key.Split("=");
-                        k = new KeyController(UtilShared.GenerateNewId(), splits.Length > 0 ? splits[0] : key);
+                        k = new KeyController(splits.Length > 0 ? splits[0] : key);
+                    }
+                    else
+                    {
+                        k = new KeyController(key);
                     }
                     SetHackCaptionText(k);
 

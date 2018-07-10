@@ -24,14 +24,14 @@ namespace Dash
             throw new NotImplementedException();
         }
         public override KeyController OperatorType { get; } = TypeKey;
-        private static readonly KeyController TypeKey = new KeyController("6277A484-644D-4BC4-8D3C-7F7DFCBA6517", "GetField");
+        private static readonly KeyController TypeKey = new KeyController("GetField", "6277A484-644D-4BC4-8D3C-7F7DFCBA6517");
 
         //Input keys
-        public static readonly KeyController KeyNameKey = new KeyController("80628016-F13A-411A-8291-EB8B77391D01", "KeyName");
-        public static readonly KeyController InputDocumentKey = new KeyController("C317E592-D663-4B36-9BC7-922EB2A2E92F", "InputDoc");
+        public static readonly KeyController KeyNameKey = new KeyController("KeyName");
+        public static readonly KeyController InputDocumentKey = new KeyController("InputDoc");
 
         //Output keys
-        public static readonly KeyController ResultFieldKey = new KeyController("601FF47D-128D-40C6-B06C-1E0D1CBCA133", "ResultField");
+        public static readonly KeyController ResultFieldKey = new KeyController("ResultField");
 
         public override ObservableCollection<KeyValuePair<KeyController, IOInfo>> Inputs { get; } = new ObservableCollection<KeyValuePair<KeyController, IOInfo>>
         {

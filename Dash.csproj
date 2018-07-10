@@ -317,7 +317,6 @@
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
     <Compile Include="Util\Factories\FieldControllerFactory.cs" />
-    <Compile Include="Util\Factories\KeyControllerFactory.cs" />
     <Compile Include="Util\Factories\DocumentControllerFactory.cs" />
     <Compile Include="Util\FieldConversion.cs" />
     <Compile Include="Util\FieldMultiBinding.cs" />
@@ -452,12 +451,6 @@
       <DependentUpon>DishReplView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Document Menu\Toolbar\ToolbarConstants.cs" />
-    <Compile Include="Views\Document Menu\TreeMenuNode.xaml.cs">
-      <DependentUpon>TreeMenuNode.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Document Menu\TreeNode.xaml.cs">
-      <DependentUpon>TreeNode.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\EditableScriptView.xaml.cs">
       <DependentUpon>EditableScriptView.xaml</DependentUpon>
     </Compile>
@@ -953,14 +946,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DishReplView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeMenuNode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Document Menu\TreeNode.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

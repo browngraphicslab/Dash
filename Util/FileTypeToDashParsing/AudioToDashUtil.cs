@@ -121,7 +121,7 @@ namespace Dash
 
             // return a audio box, by setting the height to NaN the audio height automatically sizes
             // based on the width according to the aspect ratio
-            return new AudioBox(new DocumentReferenceController(dataDoc.Id, KeyStore.DataKey), h: double.NaN).Document;
+            return new AudioBox(new DocumentReferenceController(dataDoc, KeyStore.DataKey), h: double.NaN).Document;
         }
 
     }
