@@ -134,6 +134,7 @@ namespace Dash
 			}
 
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+			xItemsControlGrid.ItemsSource = DocumentViewModels;
 
 			//find copy and delete that too
 
@@ -185,7 +186,6 @@ namespace Dash
 			var copy = doc.GetViewCopy();
 			copy.SetPosition(new Point(0, 0));
 			ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
-
 		}
 
 		private void XSwitchButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -260,6 +260,7 @@ namespace Dash
 
 			// update item source
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
+			xItemsControlGrid.ItemsSource = DocumentViewModels;
 
 			// set the document context of the data doc (template) to the working document's data doc
 			DataDocument.SetField(KeyStore.DocumentContextKey,
@@ -630,8 +631,20 @@ namespace Dash
 		        dataDocCopy.SetField(KeyStore.PositionFieldKey,
 		            workingDoc.GetField<PointController>(KeyStore.PositionFieldKey), true);
 
-		        // set width and height of the new document
-		        dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+		        if (xItemsControlGrid.Visibility == Visibility.Visible)
+		        {
+		            var rowInfo = new ListController<NumberController>(
+		                (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Select(i =>
+		                    new NumberController(i.ActualHeight)));
+		            dataDocCopy.SetField(KeyStore.RowInfoKey, rowInfo, true);
+		            var colInfo = new ListController<NumberController>(
+		                (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Select(i =>
+		                    new NumberController(i.ActualWidth)));
+		            dataDocCopy.SetField(KeyStore.ColumnInfoKey, colInfo, true);
+		        }  
+
+                // set width and height of the new document
+                dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
 		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 		        // set the active layout of the working document to the dataDocCopy (which is the template)
 		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
@@ -689,28 +702,6 @@ namespace Dash
 		    {
 		        docView.ViewModel.DocumentController.SetField(KeyStore.PositionFieldKey,
 		            new PointController(currPos.X, xWorkspace.Height - calculatedHeight - 1), true);
-		    }
-
-		    if (xGridLeftDragger.Visibility == Visibility.Visible)
-		    {
-		        docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
-		            true);
-		        docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
-		            true);
-		        docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
-		            new TextController(HorizontalAlignment.Stretch.ToString()), true);
-		        docView.ViewModel.DocumentController.SetField(KeyStore.VerticalAlignmentKey,
-		            new TextController(VerticalAlignment.Stretch.ToString()), true);
-		        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
-		        docView.VerticalAlignment = VerticalAlignment.Stretch;
-
-		        var col = FindColumn(docView.ViewModel.XPos);
-		        var row = FindRow(docView.ViewModel.YPos);
-                Grid.SetColumn(docView, col);
-		        Grid.SetRow(docView, row);
-                docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
-                docView.ViewModel.DocumentController.SetWidth(xWorkspace.ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
-                docView.ViewModel.DocumentController.SetHeight(xWorkspace.RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
 		    }
 			
             //updates and generates bounds for the children inside the template canvas
@@ -1235,6 +1226,7 @@ namespace Dash
 
 					    DocumentControllers.Add(dropDoc);
 						xItemsControlCanvas.ItemsSource = DocumentViewModels;
+						xItemsControlGrid.ItemsSource = DocumentViewModels;
 					}
 				}
 			}
@@ -1806,8 +1798,14 @@ namespace Dash
 
 		    xGridLeftDragger.Visibility = Visibility.Visible;
 		    xGridTopDragger.Visibility = Visibility.Visible;
-		    //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
-		}
+
+		    xItemsControlCanvas.Visibility = Visibility.Collapsed;
+		    xItemsControlList.Visibility = Visibility.Collapsed;
+		    xItemsControlGrid.Visibility = Visibility.Visible;
+
+		    xItemsControlGrid.ItemsSource = DocumentViewModels;
+            //xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Grid));
+        }
 
 		ItemsPanelTemplate ItemsPanelTemplateType(Type panelType)
 		{
@@ -1894,15 +1892,19 @@ namespace Dash
 	                Stroke = new SolidColorBrush(Colors.Aqua),
 	                StrokeThickness = 1
 	            };
+                line.ManipulationStarted += HorizontalLine_ManipulationStarted;
+                line.ManipulationDelta += HorizontalLine_ManipulationDelta;
+                line.ManipulationCompleted += HorizontalLine_ManipulationCompleted;
+	            line.ManipulationMode = ManipulationModes.TranslateY;
 	            Canvas.SetZIndex(line, 100);
 	            xOuterWorkspace.Children.Add(line);
 
 	            var row = FindRow(line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2);
 
-	            xWorkspace.RowDefinitions.Insert(row, new RowDefinition
+	            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Insert(row, new RowDefinition
 	            {
 	                Height = new GridLength(row > 0 ? line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2
-	                                                          - xWorkspace.RowDefinitions[row - 1].ActualHeight :
+	                                                          - (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row - 1].ActualHeight :
 	                    line.Y1 - (xOuterWorkspace.Height - xWorkspace.Height) / 2)
 	            });
             }
@@ -1913,7 +1915,43 @@ namespace Dash
 	        e.Handled = true;
 	    }
 
-	    private void XGridLeftDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        private void HorizontalLine_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            var row = FindRow((sender as Line).Y1);
+            (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].Height =
+                new GridLength((sender as Line).Y1 -
+                               row > 0 ? (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row - 1].ActualHeight : 0);
+            e.Handled = true;
+        }
+
+        private void HorizontalLine_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var line = sender as Line;
+            var top = line.Y1;
+            var row = FindRow(line.Y1);
+            double height = 0;
+            for (var i = 0; i < row; i++)
+            {
+                height += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
+            }
+            top += Util.DeltaTransformFromVisual(e.Delta.Translation, xOuterWorkspace).Y;
+
+            if (top > height &&
+                top < height + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row].ActualHeight
+                    + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row + 1]?.ActualHeight)
+            {
+                line.Y1 = top;
+                line.Y2 = top;
+            }
+            e.Handled = true;
+        }
+
+        private void HorizontalLine_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void XGridLeftDragger_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 	    {
 	        xVertLine.Visibility = Visibility.Visible;
 	        xVertLine.X1 = e.Position.X;
@@ -1949,10 +1987,10 @@ namespace Dash
 
 	            var col = FindColumn(line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2);
 
-	            xWorkspace.ColumnDefinitions.Insert(col, new ColumnDefinition
+	            (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Insert(col, new ColumnDefinition
 	            {
 	                Width = new GridLength(col > 0 ? line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2
-	                                                         - xWorkspace.ColumnDefinitions[col - 1].ActualWidth :
+	                                                         - (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[col - 1].ActualWidth :
 	                    line.X1 - (xOuterWorkspace.Width - xWorkspace.Width) / 2)
 	            });
             }
@@ -1965,19 +2003,20 @@ namespace Dash
 	    private int FindRow(double offsetY)
 	    {
 	        double currOffset = 0;
-	        for (var i = 0; i < xWorkspace.RowDefinitions.Count; i++)
+	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count; i++)
 	        {
-	            if (currOffset < offsetY && offsetY < currOffset + xWorkspace.RowDefinitions[i].ActualHeight)
+	            if (currOffset < offsetY && offsetY <
+	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight)
 	            {
 	                return i;
 	            }
 
-	            currOffset += xWorkspace.RowDefinitions[i].ActualHeight;
+	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[i].ActualHeight;
 	        }
 
 	        if (currOffset < offsetY && offsetY < xWorkspace.Height)
 	        {
-	            return xWorkspace.RowDefinitions.Count;
+	            return (xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions.Count;
 	        }
 
 	        return 0;
@@ -1986,19 +2025,20 @@ namespace Dash
 	    private int FindColumn(double offsetX)
 	    {
 	        double currOffset = 0;
-	        for (var i = 0; i < xWorkspace.ColumnDefinitions.Count; i++)
+	        for (var i = 0; i < (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count; i++)
 	        {
-	            if (currOffset < offsetX && offsetX < currOffset + xWorkspace.ColumnDefinitions[i].ActualWidth)
+	            if (currOffset < offsetX && offsetX <
+	                currOffset + (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth)
 	            {
 	                return i;
 	            }
 
-	            currOffset += xWorkspace.ColumnDefinitions[i].ActualWidth;
+	            currOffset += (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[i].ActualWidth;
 	        }
 
 	        if (currOffset < offsetX && offsetX < xWorkspace.Width)
 	        {
-	            return xWorkspace.ColumnDefinitions.Count;
+	            return (xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions.Count;
 	        }
 
 	        return 0;
@@ -2008,5 +2048,30 @@ namespace Dash
 	    {
 	        e.Handled = true;
 	    }
-	}
+
+        private void DocumentView_OnLoaded_GridView(object sender, RoutedEventArgs e)
+        {
+            var docView = sender as DocumentView;
+            docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
+                true);
+            docView.ViewModel.DocumentController.SetField(KeyStore.UseVerticalAlignmentKey, new BoolController(true),
+                true);
+            docView.ViewModel.DocumentController.SetField(KeyStore.HorizontalAlignmentKey,
+                new TextController(HorizontalAlignment.Stretch.ToString()), true);
+            docView.ViewModel.DocumentController.SetField(KeyStore.VerticalAlignmentKey,
+                new TextController(VerticalAlignment.Stretch.ToString()), true);
+            docView.HorizontalAlignment = HorizontalAlignment.Stretch;
+            docView.VerticalAlignment = VerticalAlignment.Stretch;
+
+            var col = FindColumn(docView.ViewModel.XPos);
+            var row = FindRow(docView.ViewModel.YPos);
+            Grid.SetColumn(docView.GetFirstAncestorOfType<ContentPresenter>(), col);
+            Grid.SetRow(docView.GetFirstAncestorOfType<ContentPresenter>(), row);
+            docView.ViewModel.DocumentController.SetField(KeyStore.RowKey, new NumberController(row), true);
+            docView.ViewModel.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(col), true);
+            docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
+            docView.ViewModel.DocumentController.SetWidth((xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
+            docView.ViewModel.DocumentController.SetHeight((xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
+        }
+    }
 }

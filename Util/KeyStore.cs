@@ -76,10 +76,14 @@ namespace Dash
         public static KeyController UseHorizontalAlignmentKey = new KeyController("Use Horizontal Alignment for TemplateBox View", "D58E7E8E-D1C1-476F-ADC3-DF61B1F62239");
 	    public static KeyController TemplateStyleKey = new KeyController("Style of Template View", "54FFT93A-D1C1-476F-ADC3-DF61B1F62239");
 	    public static KeyController TemplateKey = new KeyController("Template For Document", "84FFT93C-D1C8-476F-ADC3-DF68B1F62239");
+	    public static KeyController RowInfoKey = new KeyController("List of grid row sizes", "70F35A73-89D3-40D0-941D-D964F6CB5A8D");
+	    public static KeyController ColumnInfoKey = new KeyController("List of grid column sizes", "CC243D8B-8150-4C48-8DE7-F1E5EB59E3DC");
+        public static KeyController RowKey = new KeyController("Grid row number", "213520CB-3EE9-4948-A063-61E3B9D76953");
+        public static KeyController ColumnKey = new KeyController("Grid column number", "37889D8E-86EB-4DCC-A30C-B3306E423AF2");
 
 
 
-		public static class SearchResultDocumentOutline
+        public static class SearchResultDocumentOutline
         {
             public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));
             public static KeyController SearchResultIdKey = new KeyController(new KeyModel("_searchResultId", "F3740B30-C63F-4549-A814-832CC3E01558"));//TODO TFS make this a doc reference

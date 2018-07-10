@@ -168,7 +168,7 @@
                                       VerticalAlignment="Top"
                                       HorizontalAlignment="Left" >
                                 </Canvas>
-                                </ItemsPanelTemplate>
+                            </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -202,8 +202,28 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     -->
+                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public"
+                                  ItemsSource="{Binding DocumentViewModels}" Visibility="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Grid x:Name="xGrid" x:FieldModifier="public">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                </Grid>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <local:DocumentView BindRenderTransform="True"
+                                                    Loaded="DocumentView_OnLoaded_GridView" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-                    
                     <ListView x:Name="xItemsControlList"
                               x:FieldModifier="public"
                               ItemsSource="{Binding DocumentViewModels}"
