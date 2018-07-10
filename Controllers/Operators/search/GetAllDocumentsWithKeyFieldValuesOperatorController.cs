@@ -59,15 +59,7 @@ namespace Dash
 
                 //TODO FURTHER modify the helpful text of these docs so the text is more helpful
 
-                var found = $"Found the specified key/value: {keyQuery}/{valueQuery} ";
-                var absent = $"Didn't contain the specified negated key/value: {keyQuery}/{valueQuery} ";
-
-                foreach (var resultDoc in finalResults)
-                {
-                    resultDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey).Data = !negateCategory ? found : absent;
-                }
-
-                toReturn.AddRange((IList<DocumentController>) finalResults);
+                toReturn.AddRange(finalResults);
             }
             outputs[ResultsKey] = toReturn;
         }

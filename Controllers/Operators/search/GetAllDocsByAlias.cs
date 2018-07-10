@@ -45,7 +45,6 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
-
             var id = (inputs[IdKey] as TextController)?.Data;
 
             if (!string.IsNullOrEmpty(id))
@@ -56,7 +55,7 @@ namespace Dash
 
                 foreach (var d in tree)
                 {
-                    if (dataDoc.Equals(d.DataDocument)/* && !doc.Equals(d.ViewDocument)*/)
+                    if (dataDoc.Equals(d.DataDocument) && !doc.Equals(d.ViewDocument))
                     {
                         toReturn.Add(d.ViewDocument);
                     }
