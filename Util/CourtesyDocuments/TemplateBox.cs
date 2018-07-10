@@ -50,6 +50,8 @@ namespace Dash
             // retrieve the color and opacity (if existent) from the layout document passed in
 		    var color = GetSolidColorBrush(docController.GetField<TextController>(KeyStore.BackgroundColorKey)?.Data);
 		    color.Opacity = (docController.GetField<NumberController>(KeyStore.OpacitySliderValueKey)?.Data / 255) ?? 1;
+			if (docController.GetField(KeyStore.TemplateStyleKey) == null)
+				docController.SetField<NumberController>(KeyStore.TemplateStyleKey, new NumberController(TemplateConstants.FreeformView), true);
 
 			//var templateStyle =
 				//docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data ?? TemplateConstants.FreeformView;
@@ -57,12 +59,23 @@ namespace Dash
 			//Debug.WriteLine(templateStyle);
 
             // create a grid to use for the main panel of the view
+			var parentGrid = new Grid();
+
+
 		    var grid = new Grid()
 	        {
 				Background = color
 			};
 
-		    if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
+			var stack = new StackPanel()
+			{
+				Background = color,
+				Visibility = Visibility.Collapsed
+			};
+
+			docController.AddFieldUpdatedListener(KeyStore.TemplateStyleKey, OnTemplateStyleUpdatedHandler);
+
+			if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
 		    {
 		        docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey).Data.ForEach(i =>
 		            grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength((i as NumberController).Data)}));
@@ -74,7 +87,9 @@ namespace Dash
 		            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength((i as NumberController).Data) }));
 		    }
 
-            LayoutDocuments(docController, context, grid);
+
+			LayoutDocuments(docController, context, grid);
+			LayoutDocuments(docController, context, stack);
 
             // add a clip to the grid and add functionality to update the clip
             grid.Clip = new RectangleGeometry();
@@ -83,7 +98,16 @@ namespace Dash
                 grid.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
             };
 
-            var newCtxt = new Context(context);
+			
+			// add a clip to the grid and add functionality to update the clip
+			stack.Clip = new RectangleGeometry();
+			stack.SizeChanged += delegate (object sender, SizeChangedEventArgs args)
+			{
+				stack.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height);
+			};
+			
+
+			var newCtxt = new Context(context);
 
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
@@ -93,29 +117,57 @@ namespace Dash
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
                     AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
-                }
+	                AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
+				}
                 else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content)
                 {
                     LayoutDocuments(sender, newCtxt, grid);
-                }
+	                LayoutDocuments(sender, newCtxt, stack);
+				}
             }
 
             grid.Loaded += delegate
             {
                 docController.AddFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
+				
             };
 
             grid.Unloaded += delegate
             {
                 docController.RemoveFieldUpdatedListener(KeyStore.DataKey, OnDocumentFieldUpdatedHandler);
-            };
+			};
 
-            CourtesyDocument.SetupBindings(grid, docController, context);
+		    void OnTemplateStyleUpdatedHandler(DocumentController sender,
+			    DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
+		    {
+			    //if (args.OldValue == args.NewValue) return;
 
-            return grid;
+			    if (docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
+			    {
+				    stack.Visibility = Visibility.Visible;
+				    grid.Visibility = Visibility.Collapsed;
+				}
+			    else if(docController.GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.FreeformView)
+			    {
+				    stack.Visibility = Visibility.Collapsed;
+				    grid.Visibility = Visibility.Visible;
+				}
+
+		
+
+		    }
+
+
+		CourtesyDocument.SetupBindings(parentGrid, docController, context);
+
+			parentGrid.Children.Add(stack);
+			parentGrid.Children.Add(grid);
+
+            return parentGrid;
         }
 
-	    private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
+		
+		private static void LayoutDocuments(DocumentController docController, Context context, Panel grid)
         {
             // get the list of layout documents and layout each one on the grid
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetElements();
@@ -131,7 +183,7 @@ namespace Dash
                 .DereferenceToRoot<ListController<DocumentController>>(context);
         }
 
-        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid)
+        private static void AddDocuments(List<DocumentController> docs, Context context, Panel grid)
         {
             foreach (var layoutDoc in docs)
             {
@@ -163,28 +215,37 @@ namespace Dash
                     };
                 layoutView.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, horizBinding);
 
-                // creates a multibinding to figure out to figure out if we should use both the x or the y positions
-                var renderBinding = new FieldMultiBinding<TranslateTransform>(
-                    new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
-                    new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
-                    new DocumentFieldReference(layoutDoc, KeyStore.PositionFieldKey))
-                {
-                    Mode = BindingMode.OneWay,
-                    Converter = new PositionWithAlignmentMultiBinding(),
-                    Context = null,
-                    CanBeNull = true
-                };
-                layoutView.AddFieldBinding(UIElement.RenderTransformProperty, renderBinding);
+	            if (grid is StackPanel)
+	            {
+		            grid.Children.Add(layoutView);
+		 
+	            }
+	            else
+	            {
+		            // creates a multibinding to figure out to figure out if we should use both the x or the y positions
+		            var renderBinding = new FieldMultiBinding<TranslateTransform>(
+			            new DocumentFieldReference(layoutDoc, KeyStore.UseHorizontalAlignmentKey),
+			            new DocumentFieldReference(layoutDoc, KeyStore.UseVerticalAlignmentKey),
+			            new DocumentFieldReference(layoutDoc, KeyStore.PositionFieldKey))
+		            {
+			            Mode = BindingMode.OneWay,
+			            Converter = new PositionWithAlignmentMultiBinding(),
+			            Context = null,
+			            CanBeNull = true
+		            };
+		            layoutView.AddFieldBinding(UIElement.RenderTransformProperty, renderBinding);
 
-                grid.Children.Add(layoutView);
-                if (layoutDoc.GetField<NumberController>(KeyStore.RowKey) != null)
-                {
-                    Grid.SetRow(layoutView, (int) layoutDoc.GetField<NumberController>(KeyStore.RowKey).Data);
-                }
-                if (layoutDoc.GetField<NumberController>(KeyStore.ColumnKey) != null)
-                {
-                    Grid.SetColumn(layoutView, (int)layoutDoc.GetField<NumberController>(KeyStore.ColumnKey).Data);
-                }
+		            grid.Children.Add(layoutView);
+		            if (layoutDoc.GetField<NumberController>(KeyStore.RowKey) != null)
+		            {
+			            Grid.SetRow(layoutView, (int)layoutDoc.GetField<NumberController>(KeyStore.RowKey).Data);
+		            }
+		            if (layoutDoc.GetField<NumberController>(KeyStore.ColumnKey) != null)
+		            {
+			            Grid.SetColumn(layoutView, (int)layoutDoc.GetField<NumberController>(KeyStore.ColumnKey).Data);
+		            }
+				}
+				
             }
         }
 
