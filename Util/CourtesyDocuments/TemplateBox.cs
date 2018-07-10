@@ -61,7 +61,19 @@ namespace Dash
 	        {
 				Background = color
 			};
-            
+
+		    if (docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey) != null)
+		    {
+		        docController.GetField<ListController<NumberController>>(KeyStore.RowInfoKey).Data.ForEach(i =>
+		            grid.RowDefinitions.Add(new RowDefinition {Height = new GridLength((i as NumberController).Data)}));
+		    }
+
+		    if (docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey) != null)
+		    {
+		        docController.GetField<ListController<NumberController>>(KeyStore.ColumnInfoKey).Data.ForEach(i =>
+		            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength((i as NumberController).Data) }));
+		    }
+
             LayoutDocuments(docController, context, grid);
 
             // add a clip to the grid and add functionality to update the clip
@@ -164,11 +176,15 @@ namespace Dash
                 };
                 layoutView.AddFieldBinding(UIElement.RenderTransformProperty, renderBinding);
 
-                // set width and render transform appropriately
-                layoutDoc.SetField(KeyStore.WidthFieldKey,
-                    new NumberController(layoutDoc.GetField<PointController>(KeyStore.ActualSizeKey).Data.X), true);
-
                 grid.Children.Add(layoutView);
+                if (layoutDoc.GetField<NumberController>(KeyStore.RowKey) != null)
+                {
+                    Grid.SetRow(layoutView, (int) layoutDoc.GetField<NumberController>(KeyStore.RowKey).Data);
+                }
+                if (layoutDoc.GetField<NumberController>(KeyStore.ColumnKey) != null)
+                {
+                    Grid.SetColumn(layoutView, (int)layoutDoc.GetField<NumberController>(KeyStore.ColumnKey).Data);
+                }
             }
         }
 
