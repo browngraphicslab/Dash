@@ -57,13 +57,13 @@
                     x:Name="xVertLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
                     RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
                 <Rectangle x:Name="xGridTopDragger" Visibility="Collapsed" Width="500" Height="20"
-                           RelativePanel.AlignTopWithPanel="True" Fill="DarkSlateGray"
+                           RelativePanel.AlignTopWithPanel="True" Fill="Gray"
                            ManipulationStarted="XGridTopDragger_OnManipulationStarted"
                            ManipulationDelta="XGridTopDragger_OnManipulationDelta"
                            ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
                            ManipulationMode="TranslateY"/>
                 <Rectangle x:Name="xGridLeftDragger" Visibility="Collapsed" Width="20" Height="500"
-                           RelativePanel.AlignLeftWithPanel="True" Fill="DarkSlateGray"
+                           RelativePanel.AlignLeftWithPanel="True" Fill="Gray"
                            ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
                            ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
                            ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
@@ -205,11 +205,11 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     -->
-                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public"
+                    <ItemsControl x:Name="xItemsControlGrid" x:FieldModifier="public" Loaded="XItemsControlGrid_OnLoaded"
                                   ItemsSource="{Binding DocumentViewModels}" Visibility="Collapsed">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid x:Name="xGrid" x:FieldModifier="public">
+                                <Grid x:Name="xGrid" x:FieldModifier="public" Loaded="XGrid_OnLoaded">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
@@ -229,18 +229,19 @@
 
                     <ListView x:Name="xItemsControlList"
                               x:FieldModifier="public"
-                              ItemsSource="{Binding DocumentViewModels}"
+                              ItemsSource="{Binding ViewCopiesList}"
                               Visibility ="Collapsed"
                               HorizontalAlignment="Stretch"
                               VerticalAlignment="Stretch"
-                              Background="Transparent">
+                              Background="Transparent"
+                              CanReorderItems="True"  AllowDrop="True" CanDragItems="True" ReorderMode="Enabled"
+                              DragItemsStarting="XItemsControlList_OnDragItemsStartingList_DragItemsStarting"
+                              DragItemsCompleted="XItemsControlList_OnDragItemsCompletedList_DragItemsCompleted" >
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid HorizontalAlignment="Stretch">
-                                    <local:DocumentView
+                                <local:DocumentView
                                         BindRenderTransform="True"
-                                        Loaded="DocumentView_OnLoaded_ListView" />
-                                </Grid>
+                                        Loaded="DocumentView_OnLoaded_ListView"/>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
@@ -267,7 +268,7 @@
                             
                         
                         <!--Revert Ellipse -->
-                        <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
+                        <Grid PointerPressed="XResetButton_OnClick" PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
                             <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
                             <TextBlock Foreground="White" FontFamily="{StaticResource FontAwesome}" Text="&#xf0e2;" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <ToolTipService.ToolTip>

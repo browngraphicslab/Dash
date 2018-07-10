@@ -13,9 +13,9 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    /// <summary>
-    /// Allows interactions with underlying DocumentModel.
-    /// </summary>
+	/// <summary>
+	/// Allows interactions with underlying DocumentModel.
+	/// </summary>
 	[DebuggerDisplay("DocumentController: {Tag}")]
     public class DocumentController : FieldModelController<DocumentModel>
     {
