@@ -73,7 +73,9 @@ namespace Dash
                 } else if (letter == '"' || letter == '\'')
                 {
                     inQuotes = !inQuotes;
-                }else if ((letter == ';' || letter == '\r') && inBrackets == 0 && !inQuotes)
+                    growing = newText;
+                }
+                else if ((letter == ';' || letter == '\r') && inBrackets == 0 && !inQuotes)
                 {
                     //end of command
                     if (newText.Trim('\r') != "")

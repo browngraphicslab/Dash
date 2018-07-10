@@ -251,6 +251,7 @@ namespace Dash
                 case SyntaxKind.ExtendsKeyword:
                     break;
                 case SyntaxKind.FalseKeyword:
+                    return new LiteralExpression(new BoolController(false));
                     break;
                 case SyntaxKind.FinallyKeyword:
                     break;
@@ -281,6 +282,7 @@ namespace Dash
                 case SyntaxKind.ThrowKeyword:
                     break;
                 case SyntaxKind.TrueKeyword:
+                    return new LiteralExpression(new BoolController(true));
                     break;
                 case SyntaxKind.TryKeyword:
                     break;
