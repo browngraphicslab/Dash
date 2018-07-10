@@ -228,8 +228,9 @@
               
 
                 <!--ELLIPSES-->
-                <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 0, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
+                <RelativePanel x:Name="xEllipsePanel" Background="Transparent" Margin="5, 10, 0, 0" RelativePanel.RightOf="xWorkspace" RelativePanel.AlignTopWith="xWorkspace">
                     <StackPanel x:Name="xEllipseStack" Spacing="10" Width="31" Height="120">
+                       
                         <!--Apply button -->
                         <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" Margin="0,0,0,0" VerticalAlignment="Top">
                             <Ellipse x:Name="xApplyEllipse" Fill="{StaticResource AccentGreenLight}" />
@@ -239,7 +240,9 @@
                                 />
                             </ToolTipService.ToolTip>
                         </Grid>
-
+                        
+                            
+                        
                         <!--Revert Ellipse -->
                         <Grid PointerEntered="Ellipse_OnPointerEntered" PointerExited="Ellipse_OnPointerExited" Width="25" Height="25" Opacity=".75" VerticalAlignment="Center">
                             <Ellipse x:Name="xRevertEllipse" Fill="#FFF3A621" />
@@ -258,6 +261,7 @@
                                     />
                             </ToolTipService.ToolTip>
                         </Grid>
+                        
                     </StackPanel>
                 </RelativePanel>
 

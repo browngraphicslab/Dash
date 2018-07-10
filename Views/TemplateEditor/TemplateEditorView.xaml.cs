@@ -3,11 +3,11 @@ using Dash.Controllers;
 using Dash.Converters;
 using Dash.FontIcons;
 using Dash.Models.DragModels;
+using Dash.Views.TemplateEditor;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using Syncfusion.UI.Xaml.Controls.Media;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -20,7 +20,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Provider;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -32,11 +31,6 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-
-using Dash.Views.TemplateEditor;
-using Microsoft.Office.Interop.Word;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Border = Microsoft.Office.Interop.Word.Border;
 using Line = Windows.UI.Xaml.Shapes.Line;
 using Point = Windows.Foundation.Point;
 
@@ -66,7 +60,8 @@ namespace Dash
 		private bool _isDataDocKvp = true;
 		DataPackage dataPackage = new DataPackage();
 		private FrameworkElement TemplateLayout = null;
-
+	    
+	    
 		public TemplateEditorView()
 		{
 			this.InitializeComponent();
@@ -329,6 +324,7 @@ namespace Dash
 		    xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
 		    //TODO:FIX THIS LINE, DASH CRASHES
 			//this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
+		    
 		    xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
         }
 
@@ -649,6 +645,8 @@ namespace Dash
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
 		{
+
+		    
 			var docView = sender as DocumentView;
 			if (!DocumentViews.Contains(docView))
 			{
@@ -1587,6 +1585,8 @@ namespace Dash
 
 	    public void ResizeCanvas(Size newSize)
 	    {
+
+            
 	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
 	        {
 	            xWorkspace.Width = 300;
@@ -1609,13 +1609,9 @@ namespace Dash
 	            bottomRight.X = Math.Max(bottomRight.X, docview.ViewModel.XPos + docview.ViewModel.ActualSize.X);
 	            bottomRight.Y = Math.Max(bottomRight.Y, docview.ViewModel.YPos + docview.ViewModel.ActualSize.Y);
             }
-            Debug.WriteLine($"{topLeft} {bottomRight}");
+          
 
-	        var bounds = new Rect(new Point(), newSize);
-	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
-	        {
-	            return;
-	        }
+	       
 
 	        foreach (var docview in DocumentViews)
 	        {
@@ -1630,11 +1626,40 @@ namespace Dash
 	        xWorkspace.Height = newSize.Height;
 	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
 
-	        Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
-            Bounds.Height= 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
+	        var bounds = new Rect(new Point(), newSize);
+	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
+	        {
+	            Bounds.Width = 70;
+	            Bounds.Height = 70;
+	            return;
+	        }
+	        else
+	        {
+	            Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
+	            Bounds.Height = 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
+            }
+
+         
 	        
 	        //Bounds.Width = bottomRight.X - topLeft.X;
 	        //Bounds.Height = bottomRight.Y - topLeft.Y;
+
+	        if (xWorkspace.ActualWidth > 420)
+	        {
+	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, true);
+	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, true);
+	            double offsetY = (500 - xWorkspace.ActualHeight) / 2 + 4;
+	            double offsetX = (500 - xWorkspace.ActualWidth) / 2 + xWorkspace.ActualWidth - xEllipseStack.ActualWidth - 12;
+                xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
+
+	        }
+	        else
+	        {
+	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, false);
+	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, false);
+	            //double offset = xWorkspace.ActualHeight
+	            xEllipsePanel.Padding = new Thickness(0, 0, 0, 0);
+            }
 
         }
 
