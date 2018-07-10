@@ -101,6 +101,8 @@ namespace Dash
 
         private ImageSource DocPreview = null;
         private Flyout _flyout;
+        private double _width;
+        private double _height;
 
         // == CONSTRUCTORs ==
 
@@ -132,6 +134,9 @@ namespace Dash
                             Tag = "RenderTransform multi binding in DocumentView"
                         };
                 this.AddFieldBinding(RenderTransformProperty, binding);
+
+                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+              
             }
 
             void sizeChangedHandler(object sender, SizeChangedEventArgs e)
@@ -381,6 +386,7 @@ namespace Dash
                 if (_templateEditor != null)
                 {
                     Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+                    
                     _templateEditor.SetHidden(!_templateEditor.GetHidden());
                     ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
                     return;

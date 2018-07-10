@@ -3,11 +3,11 @@ using Dash.Controllers;
 using Dash.Converters;
 using Dash.FontIcons;
 using Dash.Models.DragModels;
+using Dash.Views.TemplateEditor;
 using DashShared;
 using Microsoft.Toolkit.Uwp.UI.Animations;
 using Syncfusion.UI.Xaml.Controls.Media;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -20,7 +20,6 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Provider;
 using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -32,11 +31,6 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Shapes;
-
-using Dash.Views.TemplateEditor;
-using Microsoft.Office.Interop.Word;
-using Microsoft.Toolkit.Uwp.UI.Controls;
-using Border = Microsoft.Office.Interop.Word.Border;
 using Line = Windows.UI.Xaml.Shapes.Line;
 using Point = Windows.Foundation.Point;
 
@@ -66,7 +60,8 @@ namespace Dash
 		private bool _isDataDocKvp = true;
 		DataPackage dataPackage = new DataPackage();
 		private FrameworkElement TemplateLayout = null;
-
+	    
+	    
 		public TemplateEditorView()
 		{
 			this.InitializeComponent();
@@ -82,6 +77,7 @@ namespace Dash
 		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
 			DocumentView.DocumentViewDeletedEventArgs args)
 		{
+		    Clear();
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
 					.GetField(KeyStore.TemplateEditorKey) != null)
 				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
@@ -103,6 +99,7 @@ namespace Dash
 				case NotifyCollectionChangedAction.Replace:
 					break;
 				case NotifyCollectionChangedAction.Reset:
+                    ClearDocs();
 					break;
 			}
 
@@ -112,26 +109,28 @@ namespace Dash
 		private void RemoveDocs(IEnumerable<DocumentController> oldDocs)
 		{
             // find a matching docment view model and remove it
+		    DocumentViewModel rightDoc = null;
 			foreach (var doc in oldDocs)
 			{
 				//ViewCopiesList.Removedoc.GetDelegates().Remove();
-				var rightDoc = DocumentViewModels.First(i => i.DocumentController.Equals(doc));
+				rightDoc = DocumentViewModels.First(i => i.DocumentController.Equals(doc));
 				if (rightDoc != null)
 				{
 					DocumentViewModels.Remove(rightDoc);
+                    DataDocument.RemoveFromListField(KeyStore.DataKey, rightDoc.DocumentController);
 					//delete corresponding copy
 					foreach (var copy in ViewCopiesList)
 					{
-						if (copy.DataDocument.Equals(rightDoc.DataDocument)) ViewCopiesList.Remove(copy);
-						break;
+						if (copy.DataDocument.Equals(rightDoc.DataDocument))
+                            ViewCopiesList.Remove(copy);
+					    break; //TODO What is this doing?
 					}
+
+				    break;
 				}
 				
 			}
-            
-            // reset the data document's data key to the modified list
-			DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(DocumentControllers),
-				true);
+
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
 			xItemsControlGrid.ItemsSource = DocumentViewModels;
 
@@ -139,6 +138,15 @@ namespace Dash
 
 			
 		}
+
+	    private void ClearDocs()
+	    {
+	        foreach (var documentViewModel in DocumentViewModels)
+	        {
+	            DataDocument.RemoveFromListField(KeyStore.DataKey, documentViewModel.DocumentController);
+	        }
+            DocumentViewModels.Clear();
+	    }
 
 		private void AddDocs(IEnumerable<DocumentController> newDocs)
 		{
@@ -177,8 +185,9 @@ namespace Dash
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
             // adds layout doc to list of layout docs
-		    var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
-		    datakey.Add(doc);
+            DataDocument.AddToListField(KeyStore.DataKey, doc);
+		    //var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
+		    //datakey.Add(doc);
 
 			//add copy for list view
 			var copy = doc.GetViewCopy();
@@ -223,7 +232,7 @@ namespace Dash
 			//initialize UI of workspace
 			this.FormatPanes();
 			this.FormatUploadTemplateFlyout();
-			var rect = new Rect(0, 0, 300, 400);
+			var rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height);
 			var rectGeo = new RectangleGeometry { Rect = rect };
 			xWorkspace.Clip = rectGeo;
 
@@ -328,9 +337,12 @@ namespace Dash
             // unload all event handlers
 			DocumentControllers.CollectionChanged -= DocumentControllers_CollectionChanged;
 		    xKeyBox.PropertyChanged -= XKeyBox_PropertyChanged;
-		    //TODO:FIX THIS LINE, DASH CRASHES
-			//this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
-		    xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
+            //TODO:FIX THIS LINE, DASH CRASHES
+            //DataDocument.SetField<DocumentController>(KeyStore.TemplateEditorKey, this, true);
+            //this.GetFirstAncestorOfType<DocumentView>().DocumentDeleted -= TemplateEditorView_DocumentDeleted;
+
+
+            xTitleBlock.PropertyChanged -= TitleBlock_TextChanged;
         }
 
 		private void FormatUploadTemplateFlyout()
@@ -642,8 +654,8 @@ namespace Dash
 		        }  
 
                 // set width and height of the new document
-                dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
-		        dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
+          //      dataDocCopy.SetField(KeyStore.WidthFieldKey, new NumberController(xWorkspace.Width), true);
+		        //dataDocCopy.SetField(KeyStore.HeightFieldKey, new NumberController(xWorkspace.Height), true);
 		        // set the active layout of the working document to the dataDocCopy (which is the template)
 		        workingDoc.SetField(KeyStore.ActiveLayoutKey, dataDocCopy, true); // changes workingDoc to template box
 		        workingDoc.GetDataDocument().SetField(KeyStore.TemplateEditorKey,
@@ -662,6 +674,8 @@ namespace Dash
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
 		{
+
+		    
 			var docView = sender as DocumentView;
 			if (!DocumentViews.Contains(docView))
 			{
@@ -707,6 +721,7 @@ namespace Dash
 				xWorkspace.Height);
 			docView.Bounds = new RectangleGeometry { Rect = bounds };
 			docView.DocumentSelected += DocView_DocumentSelected;
+           
 			docView.DocumentDeleted += DocView_DocumentDeleted;
 		    docView.SizeChanged += DocumentView_OnSizeChanged;
             docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
@@ -731,7 +746,10 @@ namespace Dash
 
         private void XWorkspace_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-
+            //var grid = sender as Grid;
+            
+            //docController.SetField<NumberController>(KeyStore.WidthFieldKey, xWorkspace.ActualWidth, true);
+            //docController.SetField<NumberController>(KeyStore.HeightFieldKey, xWorkspace.ActualHeight, true);
         }
 
         private void PositionFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args,
@@ -802,6 +820,9 @@ namespace Dash
 
 			xKeyBox.Text = text;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+
+		    ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
+
 		}
 
 		private void XKeyBox_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1470,11 +1491,7 @@ namespace Dash
 
 	    private void Clear()
 	    {
-	        DocumentViewModels.Clear();
-	      
-	        
 	        DocumentControllers.Clear();
-	        DataDocument.SetField(KeyStore.DataKey, new ListController<DocumentController>(), true);
         }
 
 		private void XUploadTemplate_OnClick(object sender, RoutedEventArgs e)
@@ -1488,21 +1505,24 @@ namespace Dash
 		private void DocumentView_OnSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 		    var docView = sender as DocumentView;
-      //      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
-		    //{
-		    //    docView.Width = docView.Bounds.Rect.Width;
-		    //}
-
-		    //if (docView.Bounds.Rect.Height != null && docView.ActualHeight + docView.ViewModel.YPos > docView.Bounds.Rect.Height)
-		    //{
-		    //    docView.Height = docView.Bounds.Rect.Height;
-		    //}
            
-			//var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
-			//	xWorkspace.Height - docView.ActualHeight);
 		   
-   //         docView.Bounds = new RectangleGeometry { Rect = bounds };
-		   
+
+            //      if (docView.Bounds.Rect.Width != null && docView.ActualWidth + docView.ViewModel.XPos > docView.Bounds.Rect.Width)
+            //{
+            //    docView.Width = docView.Bounds.Rect.Width;
+            //}
+
+            //if (docView.Bounds.Rect.Height != null && docView.ActualHeight + docView.ViewModel.YPos > docView.Bounds.Rect.Height)
+            //{
+            //    docView.Height = docView.Bounds.Rect.Height;
+            //}
+
+            //var bounds = new Rect(0, 0, xWorkspace.Width - docView.ActualWidth,
+            //	xWorkspace.Height - docView.ActualHeight);
+
+            //         docView.Bounds = new RectangleGeometry { Rect = bounds };
+
         }
 
 		private void XItemsExpander_OnExpanded(object sender, EventArgs e)
@@ -1579,11 +1599,13 @@ namespace Dash
 
 	    public void ResizeCanvas(Size newSize)
 	    {
+
+            
 	        if (double.IsNaN(xWorkspace.Width) || double.IsNaN(xWorkspace.Height))
 	        {
-	            xWorkspace.Width = 300;
-	            xWorkspace.Height = 400;
-	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, 300, 400) };
+	            //xWorkspace.Width = 300;
+	            //xWorkspace.Height = 400;
+	            xWorkspace.Clip = new RectangleGeometry { Rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height) };
 
 	            Bounds.Width = 70;
 	            Bounds.Height = 70;
@@ -1601,13 +1623,9 @@ namespace Dash
 	            bottomRight.X = Math.Max(bottomRight.X, docview.ViewModel.XPos + docview.ViewModel.ActualSize.X);
 	            bottomRight.Y = Math.Max(bottomRight.Y, docview.ViewModel.YPos + docview.ViewModel.ActualSize.Y);
             }
-            Debug.WriteLine($"{topLeft} {bottomRight}");
+          
 
-	        var bounds = new Rect(new Point(), newSize);
-	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
-	        {
-	            return;
-	        }
+	       
 
 	        foreach (var docview in DocumentViews)
 	        {
@@ -1622,11 +1640,40 @@ namespace Dash
 	        xWorkspace.Height = newSize.Height;
 	        xWorkspace.Clip = new RectangleGeometry {Rect = xWorkspace.GetBoundingRect(xWorkspace)};
 
-	        Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
-            Bounds.Height= 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
+	        var bounds = new Rect(new Point(), newSize);
+	        if (!(bounds.Contains(topLeft) && bounds.Contains(bottomRight)))
+	        {
+	            Bounds.Width = 70;
+	            Bounds.Height = 70;
+	            return;
+	        }
+	        else
+	        {
+	            Bounds.Width = 2 * Math.Max(Math.Abs(bottomRight.X - newSize.Width / 2), Math.Abs(topLeft.X - newSize.Width / 2));
+	            Bounds.Height = 2 * Math.Max(Math.Abs(bottomRight.Y - newSize.Height / 2), Math.Abs(topLeft.Y - newSize.Height / 2));
+            }
+
+         
 	        
 	        //Bounds.Width = bottomRight.X - topLeft.X;
 	        //Bounds.Height = bottomRight.Y - topLeft.Y;
+
+	        if (xWorkspace.ActualWidth > 420)
+	        {
+	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, true);
+	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, true);
+	            double offsetY = (500 - xWorkspace.ActualHeight) / 2 + 4;
+	            double offsetX = (500 - xWorkspace.ActualWidth) / 2 + xWorkspace.ActualWidth - xEllipseStack.ActualWidth - 12;
+                xEllipsePanel.Padding = new Thickness(offsetX, offsetY, 0, 0);
+
+	        }
+	        else
+	        {
+	            RelativePanel.SetAlignTopWithPanel(xEllipsePanel, false);
+	            RelativePanel.SetAlignLeftWithPanel(xEllipsePanel, false);
+	            //double offset = xWorkspace.ActualHeight
+	            xEllipsePanel.Padding = new Thickness(0, 0, 0, 0);
+            }
 
         }
 
@@ -2071,5 +2118,83 @@ namespace Dash
             docView.ViewModel.DocumentController.SetWidth((xItemsControlGrid.ItemsPanelRoot as Grid).ColumnDefinitions[col]?.ActualWidth ?? xWorkspace.Width);
             docView.ViewModel.DocumentController.SetHeight((xItemsControlGrid.ItemsPanelRoot as Grid).RowDefinitions[row]?.ActualHeight ?? xWorkspace.Height);
         }
+
+	    private void ScrollViewer_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+	    {
+	        XScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+	    }
+
+	 
+
+	    private void xButtonStack_OnPointerEntered(object sender, PointerRoutedEventArgs e)
+	    {
+	            var button = sender as StackPanel;
+
+	       
+
+            //toggle visibility of sub-buttons according to what header button was pressed
+            switch (button?.Name)
+	            {
+	                case "xAddItemsButtonStack":
+	                   MakeVisible(xAddItemsButtonStack, xAddItemsArrow);
+                      
+                    break;
+	                case "xFormatItemsButtonStack":
+                        MakeVisible(xFormatItemsButtonStack, xFormatItemsArrow);
+                    break;
+	                case "xFormatTemplateButtonStack":
+	                   MakeVisible(xFormatTemplateButtonStack, xFormatTemplateArrow);
+                    break;
+	                case "xOptionsButtonStack":
+	                   MakeVisible(xOptionsButtonStack, xOptionsArrow);
+                    break;
+	            }
+        }
+
+	    private void MakeVisible(StackPanel buttonStack, FontAwesome arrow)
+	    {
+	        if (buttonStack.Visibility == Visibility.Visible)
+	        {
+	            MakeHidden(buttonStack, arrow);
+	        }
+
+            var centX = (float)xAddItemsArrow.ActualWidth / 2;
+	        var centY = (float)xAddItemsArrow.ActualHeight / 2;
+            arrow.Rotate(value: -90.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+	            easingType: EasingType.Default).Start();
+	        buttonStack.Visibility = Visibility.Visible;
+            
+        }
+
+	    private void MakeHidden(StackPanel buttonStack, FontAwesome arrow)
+	    {
+	        var centX = (float)xAddItemsArrow.ActualWidth / 2;
+	        var centY = (float)xAddItemsArrow.ActualHeight / 2;
+	        arrow.Rotate(value: 0.0f, centerX: centX, centerY: centY, duration: 300, delay: 0,
+	            easingType: EasingType.Default).Start();
+	        buttonStack.Visibility = Visibility.Collapsed;
+        }
+
+        private void xButtonStack_OnPointerExited(object sender, PointerRoutedEventArgs e)
+	    {
+	        var button = sender as StackPanel;
+
+	        //toggle visibility of sub-buttons according to what header button was pressed
+	        switch (button?.Name)
+	        {
+	            case "xAddItemsButtonStack":
+	                MakeHidden(xAddItemsButtonStack, xAddItemsArrow);
+	                break;
+	            case "xFormatItemsButtonStack":
+	               MakeHidden(xFormatItemsButtonStack, xFormatItemsArrow);
+	                break;
+	            case "xFormatTemplateButtonStack":
+	                MakeHidden(xFormatTemplateButtonStack, xFormatTemplateArrow);
+	                break;
+	            case "xOptionsButtonStack":
+	                MakeHidden(xOptionsButtonStack, xOptionsArrow);
+	                break;
+	        }
+	    }
     }
 }
