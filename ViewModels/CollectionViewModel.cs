@@ -1027,6 +1027,14 @@ namespace Dash
                                 KeyStore.RegionCreator[dragDoc.DocumentType] != null)
                                 dragDoc = KeyStore.RegionCreator[dragDoc.DocumentType](dragModel.LinkSourceView);
                             var note = new RichTextNote("<annotation>", where).Document;
+
+	                        SelectionManager.RegionSelectionChanged += args =>
+	                        {
+		                        if (args.DeselectedRegion != null && args.DeselectedRegion == dragDoc)
+		                        {
+			                        note.TogglePinUnpin();
+		                        }
+	                        };
                             dragDoc.Link(note);
                             AddDocument(note);
                         }

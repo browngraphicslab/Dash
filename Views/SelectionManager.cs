@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,14 +24,33 @@ namespace Dash
         }
     }
 
+    public class RegionSelectionChangedEventArgs
+    {
+        public DocumentController DeselectedRegion, SelectedRegion;
+
+        public RegionSelectionChangedEventArgs(DocumentController deselected, DocumentController selected)
+        {
+            DeselectedRegion = deselected;
+            SelectedRegion = selected;
+        }
+    }
+
     public static class SelectionManager
     {
         public static IEnumerable<DocumentView> SelectedDocs => _selectedDocs.Where(dv => dv?.ViewModel?.DocumentController != null).ToList();
         private static List<DocumentView> _selectedDocs = new List<DocumentView>();
-        private static List<DocumentController> _selectedRegions = new List<DocumentController>();
+        private static DocumentController _currentlySelectedRegion;
 
         public delegate void SelectionChangedHandler(DocumentSelectionChangedEventArgs args);
         public static event SelectionChangedHandler SelectionChanged;
+
+        public delegate void RegionChangedHandler(RegionSelectionChangedEventArgs args);
+        public static event RegionChangedHandler RegionSelectionChanged;
+
+        static SelectionManager()
+        {
+            //SelectionChanged += e => DeselectRegion();
+        }
 
         public static void ToggleSelection(DocumentView doc)
         {
@@ -42,6 +62,10 @@ namespace Dash
 
         public static void Select(DocumentView doc)
         {
+			// only deselect all regions if the currently selected one is not contained in the selected doc
+	        var regions = doc.ViewModel.DataDocument.GetField<ListController<DocumentController>>(KeyStore.RegionsKey)?.Data;
+			if (regions == null || !regions.Contains(_currentlySelectedRegion)) DeselectRegion();
+
             var args = new DocumentSelectionChangedEventArgs();
             SelectHelper(doc);
             args.SelectedViews.Add(doc);
@@ -49,13 +73,15 @@ namespace Dash
         }
 
         public static void SelectRegion(DocumentController doc)
-        {
-            _selectedRegions.Add(doc);
-        }
+		{
+			var args = new RegionSelectionChangedEventArgs(_currentlySelectedRegion, doc);
+			_currentlySelectedRegion = doc;
+            RegionSelectionChanged?.Invoke(args);
+		}
 
         public static bool IsRegionSelected(DocumentController doc)
         {
-            return _selectedRegions.Contains(doc);
+	        return _currentlySelectedRegion != null && _currentlySelectedRegion.Equals(doc);
         }
 
         public static void SelectDocuments(List<DocumentView> docs)
@@ -73,8 +99,8 @@ namespace Dash
         }
 
         private static void SelectHelper(DocumentView doc)
-        {
-            _selectedDocs.Add(doc);
+		{
+			_selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
 
@@ -86,13 +112,11 @@ namespace Dash
             }
         }
 
-        public static void DeselectRegions(DocumentController doc)
+        public static void DeselectRegion()
         {
-            _selectedRegions.Remove(doc);
-            var args = new RegionSelectionChangedEventArgs();
-            args.DeselectedRegions.Add(doc);
-            RegionSelectionChanged?.Invoke(args);
-        }
+			RegionSelectionChanged?.Invoke(new RegionSelectionChangedEventArgs(_currentlySelectedRegion, null));
+	        _currentlySelectedRegion = null;
+		}
 
         /*
          * This method deselects everything that's currently selected.
@@ -105,13 +129,6 @@ namespace Dash
                 DeselectAllHelper();
                 SelectionChanged?.Invoke(args);
             }
-        }
-
-        public static void DeselectAllRegions()
-        {
-            var args = new RegionSelectionChangedEventArgs {DeselectedRegions = _selectedRegions.ToList()};
-            RegionSelectionChanged?.Invoke(args);
-            _selectedRegions.Clear();
         }
 
         private static void DeselectAllHelper()
