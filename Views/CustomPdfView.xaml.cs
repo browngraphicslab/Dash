@@ -74,6 +74,7 @@ namespace Dash
         private VisualAnnotationManager _annotationManager;
         private double _maxPdfPageWidth = 1;
 
+        private double _scrollRatio; // scroll bar position as a ratio of its location to the size of the scrollable document
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
 
@@ -280,25 +281,22 @@ namespace Dash
         public event PointerEventHandler NewRegionMoved;
         public event PointerEventHandler NewRegionEnded;
 
-        private void UpdateStuff(double scrollPos)
+        private void updatePageSpacingAndScrollPosition()
         {
             var ratio = PageItemsControl.ActualWidth / _maxPdfPageWidth;
             PageSpacing = _pdfPageSpacing * ratio;
+            var scrollPos = _scrollRatio * TestSelectionCanvas.Height * PageItemsControl.ActualWidth / _maxPdfPageWidth;
             ScrollViewer.ChangeView(null, scrollPos, null, true);
         }
 
         private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            UpdateStuff(_scrollRatio * (TestSelectionCanvas.Height * PageItemsControl.ActualWidth /
-                                        _maxPdfPageWidth));//ScrollViewer.ExtentHeight);
+            updatePageSpacingAndScrollPosition();
         }
-
-        private double _scrollRatio;
 
         private void ScrollViewer_OnViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
         {
-            _scrollRatio = e.FinalView.VerticalOffset / (TestSelectionCanvas.Height * PageItemsControl.ActualWidth /
-                                                         _maxPdfPageWidth);//ScrollViewer.ExtentHeight;
+            _scrollRatio = e.FinalView.VerticalOffset / (TestSelectionCanvas.Height * PageItemsControl.ActualWidth /  _maxPdfPageWidth); 
             LayoutDocument.SetField<NumberController>(KeyStore.PdfVOffsetFieldKey, _scrollRatio, true);
         }
 
@@ -308,8 +306,7 @@ namespace Dash
             {
                 ScrollViewer.LayoutUpdated -= ScrollViewer_OnLayoutUpdated;
                 _scrollRatio = LayoutDocument.GetField<NumberController>(KeyStore.PdfVOffsetFieldKey)?.Data ?? 0;
-                UpdateStuff(_scrollRatio * TestSelectionCanvas.Height * PageItemsControl.ActualWidth /
-                            _maxPdfPageWidth);
+                updatePageSpacingAndScrollPosition();
                 Control.SizeChanged += CustomPdfView_OnSizeChanged;
             }
         }
