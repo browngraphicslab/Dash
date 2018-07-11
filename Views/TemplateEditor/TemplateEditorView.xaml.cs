@@ -195,10 +195,13 @@ namespace Dash
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
 
-		    // set the row and column fields appropriately
-		    dvm.DocumentController.SetField(KeyStore.RowKey, new NumberController(FindRow(dvm.YPos)), true);
-		    dvm.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(FindColumn(dvm.XPos)), true);
-		    dvm.DocumentController.SetPosition(new Point(0, 0));
+		    if (GridRoot != null)
+		    {
+		        // set the row and column fields appropriately
+		        dvm.DocumentController.SetField(KeyStore.RowKey, new NumberController(FindRow(dvm.YPos)), true);
+		        dvm.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(FindColumn(dvm.XPos)), true);
+		        dvm.DocumentController.SetPosition(new Point(0, 0));
+            }
 
             // adds layout doc to list of layout docs
             DataDocument.AddToListField(KeyStore.DataKey, doc);
@@ -289,6 +292,7 @@ namespace Dash
 		        xItemsControlGrid.Visibility = Visibility.Visible;
 		        xGridLeftDragger.Visibility = Visibility.Visible;
 		        xGridTopDragger.Visibility = Visibility.Visible;
+		        xRulerCorner.Visibility = Visibility.Visible;
 		    }
 
             //MAKE TEMPLATE VIEW
@@ -298,8 +302,10 @@ namespace Dash
 			TemplateLayout.Drop += XWorkspace_OnDrop;
 
 		    var workingDocView =
-		        docView.ParentCollection.ViewModel.DocumentViewModels.FirstOrDefault(
-		            i => i.DocumentController.Equals(workingDoc))?.Content.GetFirstAncestorOfType<DocumentView>();
+		        docView.ParentCollection.ViewModel.DocumentViewModels
+		            .FirstOrDefault(i => i.DocumentController.GetDataDocument()
+		                .Equals(workingDoc.GetField<DocumentController>(KeyStore.DocumentContextKey)))?.Content
+		            .GetFirstAncestorOfType<DocumentView>();
             workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
             //xWorkspace.Children.Add(TemplateLayout);
 
@@ -851,6 +857,7 @@ namespace Dash
 	    private void DocView_DocumentDeleted(DocumentView sender, DocumentView.DocumentViewDeletedEventArgs args)
 		{
 			DocumentControllers.Remove(sender.ViewModel.DocumentController);
+		    DocumentViewModels.Remove(sender.ViewModel);
 		    DocumentViews.Remove(sender);
 		}
 
@@ -1857,6 +1864,7 @@ namespace Dash
 
 		    xGridLeftDragger.Visibility = Visibility.Collapsed;
 		    xGridTopDragger.Visibility = Visibility.Collapsed;
+		    xRulerCorner.Visibility = Visibility.Collapsed;
 			//xItemsControl.ItemsPanel = ItemsPanelTemplateType(typeof(Canvas));
 			//update
 			xItemsControlCanvas.ItemsSource = DocumentViewModels;
@@ -1887,6 +1895,7 @@ namespace Dash
 		{
 			xGridLeftDragger.Visibility = Visibility.Collapsed;
 			xGridTopDragger.Visibility = Visibility.Collapsed;
+			xRulerCorner.Visibility = Visibility.Collapsed;
 			
 			xItemsControlCanvas.Visibility = Visibility.Collapsed;
 			xItemsControlList.Visibility = Visibility.Visible;
@@ -1911,6 +1920,7 @@ namespace Dash
             // make visible the dragging starters on the left and top of the outer workspace
 		    xGridLeftDragger.Visibility = Visibility.Visible;
 		    xGridTopDragger.Visibility = Visibility.Visible;
+		    xRulerCorner.Visibility = Visibility.Visible;
 
 		    xItemsControlCanvas.Visibility = Visibility.Collapsed;
 		    xItemsControlList.Visibility = Visibility.Collapsed;
@@ -2203,7 +2213,7 @@ namespace Dash
 	    {
 	        double currOffset = 0;
             // loop through every row definition
-	        for (var i = 0; i < GridRoot.RowDefinitions.Count; i++)
+	        for (var i = 0; i < GridRoot?.RowDefinitions.Count; i++)
 	        {
                 // if the y-offset lands between these two numbers, the y-offset is in row i
 	            if (currOffset < offsetY && offsetY <
@@ -2230,7 +2240,7 @@ namespace Dash
 	    {
 	        double currOffset = 0;
             // loop through every column definition
-	        for (var i = 0; i < GridRoot.ColumnDefinitions.Count; i++)
+	        for (var i = 0; i < GridRoot?.ColumnDefinitions.Count; i++)
 	        {
                 // if the x-offset lands between these two numbers, the x-offset is in column i
 	            if (currOffset < offsetX && offsetX <

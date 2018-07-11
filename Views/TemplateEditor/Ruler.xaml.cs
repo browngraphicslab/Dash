@@ -94,14 +94,17 @@ namespace Dash
             get => xGrid.Children.Count;
             set
             {
+                // calculate the offset between each tick
                 var offset = Length / (value + 1);
                 var extraOffset = offset / 2;
                 for (var i = 0; i <= value; i++)
                 {
+                    // every 5th offset, let the line be longer, every tenth, even longer so
                     var length = i % 5 == 0 ? i % 10 == 0 ? Thickness * 0.75 : Thickness / 2 : Thickness / 3;
                     Line line;
                     switch (Orientation)
                     {
+                        // create either a horizontal or vertical line based on the orientation
                         case Orientation.Vertical:
                             line = new Line
                             {
@@ -124,6 +127,7 @@ namespace Dash
                             throw new ArgumentOutOfRangeException();
                     }
                     line.Stroke = new SolidColorBrush(Colors.Black);
+                    // let the stroke be thicker every 5th tick and thicker still every 10th
                     line.StrokeThickness = i % 5 == 0 ? i % 10 == 0 ? offset / 5 : offset / 7.5 : offset / 10;
                     xGrid.Children.Add(line);
                 }

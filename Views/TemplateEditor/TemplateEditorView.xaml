@@ -261,7 +261,7 @@
                         <TranslateTransform Y="20" />
                     </local:Ruler.RenderTransform>
                 </local:Ruler>
-                <Rectangle Width="20" Height="20" Fill="Gray" />
+                <Rectangle Width="20" Height="20" Fill="Gray" x:Name="xRulerCorner"  Visibility="Collapsed" />
 
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
