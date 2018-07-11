@@ -13,7 +13,7 @@ using System.Diagnostics;
 
 namespace Dash
 {
-    public sealed partial class MainSearchBox : UserControl
+    public sealed partial class MainSearchBox
     {
         //private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private string _currentSearch = "";
@@ -29,7 +29,6 @@ namespace Dash
 
         private void AutoSuggestBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-
             if (sender.Text.Equals("Dash.SearchResultViewModel"))
             {
                 sender.Text = _currentSearch;
@@ -44,7 +43,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+                Search.ExecuteDishSearch(sender);
 
             }
 
@@ -57,17 +56,13 @@ namespace Dash
             if (searchBox == null) return;
 
             //first unhightlight old results
-            unHighlightAllDocs();
+            UnHighlightAllDocs();
 
             //TODO This is going to screw up regex by making it impossible to specify regex with capital letters
             var text = searchBox.Text; //.ToLower();
             (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Clear();
 
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                //ExecuteSearch(searchBox);
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(text)) return;
 
             const int maxSearchResultSize = 75;
             DocumentController resultDict = null;
@@ -130,7 +125,7 @@ namespace Dash
             }
         }
 
-        public static void unHighlightAllDocs()
+        public static void UnHighlightAllDocs()
         {
 
             //TODO:call this when search is unfocused
@@ -141,40 +136,28 @@ namespace Dash
 
             foreach (var coll in allCollections)
             {
-                unHighlightDocs(coll);
+                UnHighlightDocs(coll);
             }
         }
 
-        public static void unHighlightDocs(DocumentController coll)
+        public static void UnHighlightDocs(DocumentController coll)
         {
-            var colDocs = coll.GetDataDocument()
-                .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
             //unhighlight each doc in collection
             foreach (var doc in colDocs)
             {
                 MainPage.Instance.HighlightDoc(doc, false, 2);
                 if (doc.DocumentType.ToString() == "Collection Box")
                 {
-                    unHighlightDocs(doc);
+                    UnHighlightDocs(doc);
                 }
             }
         }
 
-
-
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
             DocumentController searchResultsDictionary, string originalSearch)
         {
-            var lists = new List<List<DocumentController>>();
-
-            foreach (var kvp in searchResultsDictionary.EnumFields(true))
-            {
-                var list = kvp.Value as ListController<DocumentController>;
-                if (list != null)
-                {
-                    lists.Add(list.TypedData);
-                }
-            }
+            var lists = searchResultsDictionary.EnumFields(true).Select(kvp => kvp.Value).OfType<ListController<DocumentController>>().Select(list => list.TypedData).ToList();
 
             var tree = DocumentTree.MainPageTree;
 
@@ -423,11 +406,11 @@ namespace Dash
             /// <param name="resultDocs"></param>
             /// <param name="originalSearch"></param>
             /// <returns></returns>
-            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs,
-                string originalSearch)
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
             {
-                Debug.Assert(resultDocs.Any());
-                return resultDocs.FirstOrDefault();
+                var docsAsList = resultDocs.ToList();
+                Debug.Assert(docsAsList.Any());
+                return docsAsList.FirstOrDefault();
             }
 
             //public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,

@@ -50,7 +50,7 @@ namespace Dash
 
         private string WrapInDictifyFunc(string resultsString)
         {
-            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "("+resultsString+")";
+            return OperatorScript.GetDishOperatorName<PutSearchResultsIntoDictionaryOperatorController>() + "(\""+resultsString+"\")";
         }
 
         private string JoinTwoSearchesWithUnion(string search1, string search2)

@@ -31,7 +31,7 @@ namespace Dash
 
         public override string ToString()
         {
-            return Title;
+            return "@"+Title;
         }
 
         /// <summary>

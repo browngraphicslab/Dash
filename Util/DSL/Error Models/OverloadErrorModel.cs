@@ -39,21 +39,21 @@ namespace Dash
 
             var suffix = _validParamCounts.Count > 1 ? "s" : _validParamCounts[0] == 1 ? "" : "s"; 
             var invalidFeedback = validNumParams ? $"Inputs for {fullFunction} must satisfy one of the expected configurations listed above" : $"{_functionName}() must recieve {paramCountAsString} input{suffix} of proper type";
-            var ambiguousFeedback = $"Consider changing input types or removing \n            conflicting implementations of {fullFunction}";
+            var ambiguousFeedback = $"Consider changing input types or removing \n conflicting implementations of {fullFunction}";
 
             var paramExpr = _givenParamTypes.Count > 0 ? _givenParamTypes.Count == 1 ? "supports 1 parameter" : $"supports { _givenParamTypes.Count} parameters" : "is parameterless";
             var invalidParamNum = validNumParams ? "" : $"\n            No implementation of {_functionName}() {paramExpr}. Instead, try...";
             var receivedTypes = string.Join(", ", _givenParamTypes);
             var receivedExpr = receivedTypes == "" ? "None" : receivedTypes;
-            var invalidTypeBreakdown = $"      \n      Received: \n            ({receivedExpr})\n      Expected:" + invalidParamNum;
-            var ambiguousTypeBreakdown = $"      \n      Received: \n            ({receivedExpr})\n      Ambiguity:";
+            var invalidTypeBreakdown = $"\n Received: \n ({receivedExpr})\n Expected:" + invalidParamNum;
+            var ambiguousTypeBreakdown = $"\n Received: \n ({receivedExpr})\n Ambiguity:";
             foreach (var paramList in _candidateParamTypes)
             {
                 invalidTypeBreakdown += paramList;
                 ambiguousTypeBreakdown += paramList;
             }
-            return _ambiguous ? $" Exception:\n            Ambiguous call to function {_functionName}().\n            Multiple valid overloads exist." + ambiguousTypeBreakdown + $"\n      Feedback:\n            {ambiguousFeedback}." : 
-                $" Exception:\n            No valid overloads exist for function {_functionName}()" + invalidTypeBreakdown + $"\n      Feedback:\n            {invalidFeedback}.";
+            return _ambiguous ? $"Exception:\n Ambiguous call to function {_functionName}().\n Multiple valid overloads exist." + ambiguousTypeBreakdown + $"\n Feedback:\n {ambiguousFeedback}." : 
+                $"Exception:\n No valid overloads exist for function {_functionName}()" + invalidTypeBreakdown + $"\n Feedback:\n {invalidFeedback}.";
         }
     }
 }

@@ -81,7 +81,7 @@ namespace Dash
             var replItems = new ObservableCollection<ReplLineViewModel>();
             for(var i = 0; i < _inputList.Count; i++)
             {
-                var newReplLine = new ReplLineViewModel(_inputList[i].Data, _outputList[i], new TextController("test"));
+                var newReplLine = new ReplLineViewModel { LineText = " >> " + _inputList[i].Data, ResultText = " " + _outputList[i], Value = _outputList[i] };
                 replItems.Add(newReplLine);
             }
 
@@ -202,7 +202,7 @@ namespace Dash
                     {
                         _currentHistoryIndex++;
                         _textModified = true;
-                        xTextBox.Text = ViewModel.Items.ElementAt(index1)?.LineText?.Substring(3) ?? xTextBox.Text;
+                        xTextBox.Text = ViewModel.Items[index1]?.LineText.Substring(4) ?? xTextBox.Text;
                          MoveCursorToEnd();
                     }
 
@@ -218,7 +218,7 @@ namespace Dash
                     {
                         _currentHistoryIndex--;
                         _textModified = true;
-                        xTextBox.Text = ViewModel.Items.ElementAt(index)?.LineText?.Substring(3) ?? xTextBox.Text;
+                        xTextBox.Text = ViewModel.Items[index]?.LineText.Substring(4) ?? xTextBox.Text;
                         MoveCursorToEnd();
                     }
                     else if (index == numItem)
@@ -390,7 +390,7 @@ namespace Dash
 
                             _currentHistoryIndex = 0;
                             //get text replacing newlines with spaces
-                            var currentText = xTextBox.Text.Replace('\r', ' ');
+                            string currentText = xTextBox.Text.Replace('\r', ' ').Trim();
                             
                             FieldControllerBase returnValue;
                             try
@@ -405,7 +405,11 @@ namespace Dash
                             if (returnValue == null) returnValue = new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded a null return. Enter <help()> for a complete catalog of valid functions.");
 
                             xTextBox.Text = "";
-                            ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
+
+                            if (!currentText.ToLower().Equals("clear all") || currentText.ToLower().Equals("clear"))
+                            {
+                                ViewModel.Items.Add(new ReplLineViewModel { LineText = " >> " + currentText, ResultText = " " + returnValue, Value = returnValue });
+                            }
 
                             //save input and output data
                             _inputList.Add(new TextController(currentText));
@@ -497,7 +501,7 @@ namespace Dash
         }
         #endregion
 
-        #region Sugestions 
+        #region Suggestions 
         private void Suggestions_OnItemClick(object sender, ItemClickEventArgs e)
         {
             //get selected item

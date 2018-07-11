@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -8,12 +9,18 @@ namespace Dash
 {
     public class Search
     {
+        public static void ExecuteDishSearch(AutoSuggestBox sender)
+        {
+            if (sender == null) return;
+
+        }
+
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
             {
                 var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
-                var matchLength = stringSearchModel == null ? 0 :
+                int matchLength = stringSearchModel == null ? 0 :
                     (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
                 return new SearchResult(node, stringSearchModel?.RelatedString, matchLength);
             }).OrderByDescending(res => res.Rank);
@@ -25,7 +32,7 @@ namespace Dash
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
             { 
-                var numMatchedFields = node.ViewDocument.EnumDisplayableFields().Count(field => field.Value.DereferenceToRoot(null).SearchForString(query) != StringSearchModel.False) + 
+                int numMatchedFields = node.ViewDocument.EnumDisplayableFields().Count(field => field.Value.DereferenceToRoot(null).SearchForString(query) != StringSearchModel.False) + 
                                        node.DataDocument.EnumDisplayableFields().Count(field => field.Value.DereferenceToRoot(null).SearchForString(query) != StringSearchModel.False);
                 return new SearchResult(node, query, numMatchedFields);
             })
@@ -34,7 +41,34 @@ namespace Dash
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
         }
 
-        private IEnumerable<SearchResult> GetBasicSearchResults(string searchPart, bool negate = false)
+        public static void UnHighlightAllDocs()
+        {
+            //TODO:call this when search is unfocused
+            //list of all collections
+            var allCollections =
+                MainPage.Instance.MainDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey).TypedData;
+
+            foreach (var coll in allCollections)
+            {
+                UnHighlightDocs(coll);
+            }
+        }
+
+        public static void UnHighlightDocs(DocumentController coll)
+        {
+            var colDocs = coll.GetDataDocument().GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+            //unhighlight each doc in collection
+            foreach (var doc in colDocs)
+            {
+                MainPage.Instance.HighlightDoc(doc, false, 2);
+                if (doc.DocumentType.ToString() == "Collection Box")
+                {
+                    UnHighlightDocs(doc);
+                }
+            }
+        }
+
+        public static IEnumerable<SearchResult> GetBasicSearchResults(string searchPart, bool negate = false)
         {
             searchPart = searchPart ?? " ";
             //if the part is a quote, it ignores the colon
@@ -54,18 +88,18 @@ namespace Dash
             }
         }
 
-        private int FindNextDivider(string inputString)
+        private static int FindNextDivider(string inputString)
         {
-            bool inParen = false;
-            int parenCounter = 0;
+            var inParen = false;
+            var parenCounter = 0;
             if (inputString.TrimStart('!').StartsWith("("))
             {
                 inParen = true;
             }
 
-            bool inQuote = false;
+            var inQuote = false;
             int len = inputString.Length;
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
                 // if it starts with quotes, ignore parenthesis, if it starts with parenthesis, ignore quotes
                 char curChar = inputString[i];
@@ -103,25 +137,17 @@ namespace Dash
         }
 
         // Assumes that the inputString starts with "(" or "!("
-        private int FindEndParenthesis(string inputString)
+        private static int FindEndParenthesis(string inputString)
         {
-            int parenCounter = 0;
-            bool inQuote = false;
+            var parenCounter = 0;
+            var inQuote = false;
             int len = inputString.Length;
-            for (int i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
                 char curChar = inputString[i];
                 if (curChar == '"')
                 {
-                    if (inQuote)
-                    {
-                        inQuote = false;
-                    }
-                    else
-                    {
-                        inQuote = true;
-                    }
-
+                    inQuote = !inQuote;
                 }
                 else if (!inQuote && curChar == '(')
                 {
@@ -146,7 +172,7 @@ namespace Dash
             int rep2 = toIgnore.Length;
             int repW1 = replaceWith.Length;
 
-            for (int i = 0; i < len - (rep1 - 1); i++)
+            for (var i = 0; i < len - (rep1 - 1); i++)
             {
                 if (len - i > rep2 - 1 && inputString.Substring(i, rep2).Equals(toIgnore))
                 {
@@ -186,46 +212,39 @@ namespace Dash
             }
 
 
-            IEnumerable<SearchResult> searchDict;
+            IEnumerable<SearchResult> searchResults;
             if (endParenthesis > 0 || (inputString.StartsWith('(') && inputString.EndsWith(')') && (modInput.Contains(' ') || modInput.Contains('|'))))
             {
                 string newInput = modInput.Substring(1, modInput.Length - 2);
-                searchDict = Parse(newInput);
+                searchResults = Parse(newInput);
             }
             else
             {
-                searchDict = GetBasicSearchResults(modifiedSearchTerm, isNegated);
+                searchResults = GetBasicSearchResults(modifiedSearchTerm, isNegated);
             }
-
 
             int len = inputString.Length;
 
             if (dividerIndex == len)
             {
-                return searchDict;
+                return searchResults;
             }
-            else
+
+            char divider = inputString[dividerIndex];
+            string rest = inputString.Substring(dividerIndex + 1);
+
+            switch (divider)
             {
-                char divider = inputString[dividerIndex];
-                string rest = inputString.Substring(dividerIndex + 1);
-
-                if (divider == ' ')
-                {
-                    return JoinTwoSearchesWithIntersection(searchDict, Parse(rest));
-                }
-                else if (divider == '|')
-                {
-                    return JoinTwoSearchesWithUnion(searchDict, Parse(rest));
-                }
-                else
-                {
+                case ' ':
+                    return JoinTwoSearchesWithIntersection(searchResults, Parse(rest));
+                case '|':
+                    return JoinTwoSearchesWithUnion(searchResults, Parse(rest));
+                default:
                     throw new Exception("Unknown Divider");
-                }
-
             }
         }
 
-        private IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithIntersection(
             IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
         {
             //probably won't work
@@ -234,22 +253,16 @@ namespace Dash
             return (search1.Concat(search2)).DistinctBy(node => node.ViewDocument);
         }
 
-        private IEnumerable<SearchResult> JoinTwoSearchesWithUnion(
-    IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
+        private static IEnumerable<SearchResult> JoinTwoSearchesWithUnion(IEnumerable<SearchResult> search1, IEnumerable<SearchResult> search2)
         {
             //probably won't work
             //return search1.Union(search2);
+            var search1List = search1.ToList();
+            var joined = search1List.Where(result => search2.Any(node => node.ViewDocument == result.ViewDocument)).ToList();
 
-            var joined = new List<SearchResult>();
-
-            foreach (var result in search1)
-            {
-                if (search2.Any(node => node.ViewDocument == result.ViewDocument))
-                    joined.Add(result);
-            }
             foreach (var result in search2)
             {
-                if (search1.Any(node => node.ViewDocument == result.ViewDocument) &&
+                if (search1List.Any(node => node.ViewDocument == result.ViewDocument) &&
                     !joined.Any((node => node.ViewDocument == result.ViewDocument)))
                     joined.Add(result);
                 //TODO: combine information from the repeated results
