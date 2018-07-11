@@ -203,23 +203,34 @@ namespace Dash
         /// <param name="context"></param>
         void DocumentController_ActiveLayoutChanged(DocumentController doc, DocumentFieldUpdatedEventArgs args, Context context)
         {
-            var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
-            // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
-            // if a field of the activelayout changed, we ignore that here since it should update the layout directly
-            // through bindings.
-            if (fargs == null && _lastLayout != LayoutDocument)
+            if (args.Action == FieldUpdatedAction.Remove)
             {
-                var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
-                if (curActive == null)
-                {
-                    curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
-                    curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
-                    DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
-                }
-                _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                Content = null;
+                _lastLayout?.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
                 _lastLayout = LayoutDocument;
                 LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
                 LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+            }
+            else
+            {
+                var fargs = (args.FieldArgs as DocumentFieldUpdatedEventArgs)?.Reference.FieldKey;
+                // test that the ActiveLayout field changed and not one of the fields on the ActiveLayout.
+                // if a field of the activelayout changed, we ignore that here since it should update the layout directly
+                // through bindings.
+                if (fargs == null && _lastLayout != LayoutDocument)
+                {
+                    var curActive = DocumentController.GetField(KeyStore.ActiveLayoutKey, true) as DocumentController;
+                    if (curActive == null)
+                    {
+                        curActive = LayoutDocument.GetViewInstance(_lastLayout.GetPosition() ?? new Point());
+                        curActive.SetField(KeyStore.DocumentContextKey, DataDocument, true);
+                        DocumentController.SetField(KeyStore.ActiveLayoutKey, curActive, true);
+                    }
+                    _lastLayout.RemoveFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                    _lastLayout = LayoutDocument;
+                    LayoutDocument.AddFieldUpdatedListener(KeyStore.DataKey, LayoutDocument_DataChanged);
+                    LayoutDocument_DataChanged(null, null, new Context(DocumentController));
+                }
             }
         }
         public void Dispose()
