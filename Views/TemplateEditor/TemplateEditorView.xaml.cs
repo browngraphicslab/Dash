@@ -448,10 +448,8 @@ namespace Dash
                             var scale = xWorkspace.Height / originalHeight;
                             var calculatedWidth = originalWidth * scale;
                             docController.SetWidth(calculatedWidth * 0.8);
-                            //docView.ViewModel.DocumentController.SetActualSize(new Point(xWorkspace.Width * scale, xWorkspace.Height));
                         }
-
-                        // TODO: Check for if height is too large (may be difficult bcs height = nan? -sy
+                        
                         DocumentControllers.Add(docController.GetViewCopy(new Point(0, 0)));
 					}
 				}
