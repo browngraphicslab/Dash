@@ -96,6 +96,14 @@ namespace Dash
 
         private static bool IsBaseCase(FieldControllerBase value) => !(value is DocumentController) && !(value is BaseListController) && !(value is ReferenceController);
 
+        private void ToggleFields()
+        {
+            foreach (var uiElement in xChildren.Children)
+            {
+                var node = (ReplLineNode) uiElement;
+            }
+        }
+
         private void XSnapshotArrowBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             throw new NotImplementedException();

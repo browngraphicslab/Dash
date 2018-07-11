@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.UI.Xaml.Controls;
 using DashShared;
 
 // ReSharper disable once CheckNamespace
@@ -9,12 +8,6 @@ namespace Dash
 {
     public class Search
     {
-        public static void ExecuteDishSearch(AutoSuggestBox sender)
-        {
-            if (sender == null) return;
-
-        }
-
         public static IEnumerable<SearchResult> SearchByKeyValuePair(KeyController key, string value, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
@@ -195,7 +188,7 @@ namespace Dash
             bool isNegated = searchTerm.StartsWith("!");
             string modifiedSearchTerm = searchTerm.TrimStart('!');
 
-            if (modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
+            if (modifiedSearchTerm.Length > 2 && modifiedSearchTerm.StartsWith('"') && modifiedSearchTerm.EndsWith('"'))
             {
                 modifiedSearchTerm = modifiedSearchTerm.Substring(1, modifiedSearchTerm.Length - 2);
             }
@@ -270,39 +263,38 @@ namespace Dash
             return joined;
         }
 
+        /*
+            * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
+            */
+        //private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText, bool isLikelyUsefulContextText = false)
+        //{
+        //    var vms = new List<SearchResultViewModel>();
+        //    var preTitle = "";
 
+        //    var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
+        //    foreach (var documentNode in documentNodes ?? new DocumentNode[0])
+        //    {
+        //        if (documentNode?.Parents?.FirstOrDefault() != null)
+        //        {
+        //            preTitle = " >  " +
+        //                ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
+        //                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
+        //                           ? "?"
+        //                           : documentNode.Parents.First().DataDocument
+        //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
+        //                     ;
+        //        }
 
-            /*
-             * Creates a SearchResultViewModel and correctly fills in fields to help the user understand the search result
-             */
-            //private static SearchResultViewModel[] CreateSearchResults(DocumentTree documentTree, DocumentController dataDocumentController, string bottomText, string titleText, bool isLikelyUsefulContextText = false)
-            //{
-            //    var vms = new List<SearchResultViewModel>();
-            //    var preTitle = "";
+        //        var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
+        //            dataDocumentController.Id,
+        //            documentNode?.ViewDocument ?? dataDocumentController,
+        //            documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
+        //        vms.Add(vm);
+        //    }
 
-            //    var documentNodes = documentTree.GetNodesFromDataDocumentId(dataDocumentController.Id);
-            //    foreach (var documentNode in documentNodes ?? new DocumentNode[0])
-            //    {
-            //        if (documentNode?.Parents?.FirstOrDefault() != null)
-            //        {
-            //            preTitle = " >  " +
-            //                ((string.IsNullOrEmpty(documentNode.Parents.First().DataDocument
-            //                           .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data)
-            //                           ? "?"
-            //                           : documentNode.Parents.First().DataDocument
-            //                               .GetDereferencedField<TextController>(KeyStore.TitleKey, null)?.Data))
-            //                     ;
-            //        }
+        //    return vms.ToArray();
+        //}
 
-            //        var vm = new SearchResultViewModel(titleText + preTitle, bottomText ?? "",
-            //            dataDocumentController.Id,
-            //            documentNode?.ViewDocument ?? dataDocumentController,
-            //            documentNode?.Parents?.FirstOrDefault()?.ViewDocument, isLikelyUsefulContextText);
-            //        vms.Add(vm);
-            //    }
-
-            //    return vms.ToArray();
-            //}
         public static IEnumerable<SearchResult> SearchByAlias(string id, bool avoidDuplicateViews = false)
         {
             var doc = SearchIndividualById(id);
