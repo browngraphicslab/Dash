@@ -11,8 +11,8 @@ namespace Dash
 {
     public class BoundsExtractionStrategy : LocationTextExtractionStrategy
     {
-        private PageSize _pageSize;
-        private double _pageSpacing;
+        private Rectangle _pageSize;
+        private double _pageOffset;
         private int _pageNumber;
 
         private List<SelectableElement> _elements = new List<SelectableElement>();
@@ -39,16 +39,12 @@ namespace Dash
             public ElementType ElementType { get; }
         }
 
-        public void SetPageNumber(int pageNumber)
+        public void SetPage(int pageNumber, double pageOffset, Rectangle pageSize)
         {
             _pageNumber = pageNumber;
+            _pageSize = pageSize;
+            _pageOffset = pageOffset;
             //TODO Cache rects per page, since elements can't cross over pages
-        }
-
-        public BoundsExtractionStrategy(PageSize pageSize, double pageSpacing)
-        {
-            this._pageSize = pageSize;
-            this._pageSpacing = pageSpacing;
         }
 
         public override void EventOccurred(IEventData data, EventType type)
@@ -59,14 +55,17 @@ namespace Dash
                 return;
             }
 
-            var textData = (TextRenderInfo)data;
+            var mainTextData = (TextRenderInfo)data;
+            foreach (var textData in mainTextData.GetCharacterRenderInfos())
+            {
             var start = textData.GetAscentLine().GetStartPoint();
             var end = textData.GetDescentLine().GetEndPoint();
             _elements.Add(new SelectableElement(-1, textData.GetText(),
                 new Rect(start.Get(0),
-                        _pageSize.GetHeight() - start.Get(1) + _pageSpacing * _pageNumber,
+                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
                         end.Get(0) - start.Get(0),
                         start.Get(1) - end.Get(1))));
+            }
         }
 
         public List<SelectableElement> GetSelectableElements()

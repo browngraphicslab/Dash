@@ -43,14 +43,17 @@ namespace Dash
             set { SetValue(PdfUriProperty, value); }
         }
 
-        public static readonly DependencyProperty PageSpacingProperty = DependencyProperty.Register(
-            "PageSpacing", typeof(double), typeof(CustomPdfView), new PropertyMetadata(20.0));
-
         public double PageSpacing
         {
-            get { return (double) GetValue(PageSpacingProperty); }
-            set { SetValue(PageSpacingProperty, value); }
+            get => _pageSpacing;
+            private set
+            {
+                _pageSpacing = value;
+                OnPropertyChanged();
+            }
         }
+
+        private double _pdfPageSpacing = 20;
 
         public event EventHandler DocumentLoaded;
 
@@ -72,6 +75,8 @@ namespace Dash
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
+
+        private PdfDocument _pdfDocument;
 
         public CustomPdfView()
         {
@@ -130,16 +135,21 @@ namespace Dash
             DocumentLoaded?.Invoke(this, new EventArgs());
 
             PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
-            var doc = new PdfDocument(reader);
-            _pdfPageSize = doc.GetDefaultPageSize();
+            _pdfDocument = new PdfDocument(reader);
+            _pdfPageSize = _pdfDocument.GetDefaultPageSize();
+            CustomPdfView_OnSizeChanged(null, null);
             TestSelectionCanvas.Width = _pdfPageSize.GetWidth();
-            TestSelectionCanvas.Height = _pdfPageSize.GetHeight() * doc.GetNumberOfPages() + (doc.GetNumberOfPages() - 1) * PageSpacing;
-            var strategy = new BoundsExtractionStrategy(_pdfPageSize, PageSpacing);
+            TestSelectionCanvas.Height = _pdfPageSize.GetHeight() * _pdfDocument.GetNumberOfPages() +
+                                         (_pdfDocument.GetNumberOfPages() - 1) * _pdfPageSpacing;
+            var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
-            for(int i = 1; i <= doc.GetNumberOfPages(); ++i)
+            double offset = 0;
+            for(int i = 1; i <= _pdfDocument.GetNumberOfPages(); ++i)
             {
-                strategy.SetPageNumber(i - 1);
-                processor.ProcessPageContent(doc.GetPage(i));
+                var page = _pdfDocument.GetPage(i);
+                strategy.SetPage(i - 1, offset, page.GetPageSize());
+                offset += page.GetPageSize().GetHeight() + _pdfPageSpacing;
+                processor.ProcessPageContent(page);
             }
 
             _selectableElements = strategy.GetSelectableElements();
@@ -194,8 +204,9 @@ namespace Dash
                 return;
             }
             var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            pos.X = pos.X / PageItemsControl.ActualWidth * _pdfPageSize.GetWidth();
-            pos.Y = pos.Y / PageItemsControl.ActualHeight * _pdfPageSize.GetHeight();
+            var ratio = _pdfPageSize.GetWidth() / PageItemsControl.ActualWidth;
+            pos.X = pos.X * ratio;
+            pos.Y = pos.Y * ratio;
             foreach (var selectableElement in _selectableElements)
             {
                 if (selectableElement.Bounds.Contains(pos))
@@ -217,13 +228,15 @@ namespace Dash
         }
 
         private BoundsExtractionStrategy.SelectableElement _selectionStart;
+        private double _pageSpacing;
 
         private void ItemsControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             //NewRegionStarted?.Invoke(sender, e);
             var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            pos.X = pos.X / PageItemsControl.ActualWidth * _pdfPageSize.GetWidth();
-            pos.Y = pos.Y / PageItemsControl.ActualHeight * _pdfPageSize.GetHeight();
+            var ratio = _pdfPageSize.GetWidth() / PageItemsControl.ActualWidth;
+            pos.X = pos.X * ratio;
+            pos.Y = pos.Y * ratio;
             foreach (var selectableElement in _selectableElements)
             {
                 if (selectableElement.Bounds.Contains(pos))
@@ -250,5 +263,16 @@ namespace Dash
         public event PointerEventHandler NewRegionStarted;
         public event PointerEventHandler NewRegionMoved;
         public event PointerEventHandler NewRegionEnded;
+
+        private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_pdfPageSize == null)
+            {
+                return;
+            }
+
+            var ratio = PageItemsControl.ActualWidth / _pdfPageSize.GetWidth();
+            PageSpacing = _pdfPageSpacing * ratio;
+        }
     }
 }

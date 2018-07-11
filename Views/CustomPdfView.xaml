@@ -8,7 +8,8 @@
     x:Name="Control"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="400"
+    SizeChanged="CustomPdfView_OnSizeChanged">
 
     <ScrollViewer x:Name="ScrollViewer">
         <Grid>
