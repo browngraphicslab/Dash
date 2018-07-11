@@ -6,6 +6,8 @@ namespace Dash
     public abstract class ScriptExecutionErrorModel : ScriptErrorModel
     {
         public Exception InnerException { get; set; }
+
+        public abstract DocumentController GetErrorDoc();
     }
 
 }

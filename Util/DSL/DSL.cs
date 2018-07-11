@@ -44,11 +44,10 @@ namespace Dash
             }
             catch (DSLException e)
             {
-                if (catchErrors)
-                {
-                    return new TextController(e.GetHelpfulString());
-                }
-                throw e;
+                if (!catchErrors) throw e;
+
+                if (e is ScriptExecutionException doc) return doc.Error.GetErrorDoc(); 
+                return new TextController(e.GetHelpfulString());
             }
         }
 

@@ -13,6 +13,7 @@ namespace Dash
         public string LineText { get; set; }
         public string ResultText { get; set; }
         public FieldControllerBase Value { get; set; }
+        public bool DisplayableOnly { get; set; }
     }
 
     public sealed partial class ReplLineNode
@@ -44,26 +45,28 @@ namespace Dash
                     break;
                 //Recursive cases
                 case DocumentController doc:
-                    foreach (var field in doc.EnumDisplayableFields())
+                    var fields = ViewModel.DisplayableOnly ? doc.EnumDisplayableFields() : doc.EnumFields(); 
+                    foreach (var field in fields)
                     {
                         if (field.Key.Name.ToLower().Equals("width") || field.Key.Name.ToLower().Equals("height")) continue;
-                        xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = Format(field), Value = field.Value } });
+                        string indentOffset = field.Value is BaseListController list && list.Count == 0 ? "   " : "";
+                        xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = indentOffset + Format(field), Value = field.Value, DisplayableOnly = ViewModel.DisplayableOnly} });
                     }
                     break;
                 case BaseListController list:
                     var i = 0;
                     foreach (var element in list.Data)
                     {
-                        xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = $"{IndentOffset(element)}[{i}] : " + element, Value = element } });
+                        xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = $"{IndentOffset(element)}[{i}] : " + element, Value = element, DisplayableOnly = ViewModel.DisplayableOnly } });
                         i++;
                     }
                     break;
                 case ReferenceController r:
                     var rf = r.GetReference();
                     var deref = r.Dereference(null);
-                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = "Reference : " + rf, Value = rf } });
-                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = "   Key : " + r.FieldKey, Value = r.FieldKey } });
-                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = $"{IndentOffset(deref)}Value : " + deref, Value = deref } });
+                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = "Reference : " + rf, Value = rf, DisplayableOnly = ViewModel.DisplayableOnly } });
+                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = "   Key : " + r.FieldKey, Value = r.FieldKey, DisplayableOnly = ViewModel.DisplayableOnly } });
+                    xChildren.Children.Add(new ReplLineNode { DataContext = new ReplLineViewModel { ResultText = $"{IndentOffset(deref)}Value : " + deref, Value = deref, DisplayableOnly = ViewModel.DisplayableOnly } });
                     break;
             }
         }
@@ -116,6 +119,7 @@ namespace Dash
 
             var vm = ViewModel;
             xArrowBlock.Visibility = IsBaseCase(vm.Value) ? Visibility.Collapsed : Visibility.Visible;
+            if (vm.Value is BaseListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed; 
             xArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
 
             ChildrenPopulated = false;

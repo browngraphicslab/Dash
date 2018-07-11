@@ -12,5 +12,7 @@ namespace Dash
         }
 
         public override string GetHelpfulString() => $"Creating a list with a source of type {_typeInfo} currently not supported.";
+
+        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }

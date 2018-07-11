@@ -255,7 +255,11 @@ namespace Dash
             TypedData.CopyTo(destination, index);
         }
 
-        public override string ToString() => $"[{string.Join(", ", TypedData)}]";
+        public override string ToString()
+        {
+            string str = $"[{string.Join(", ", TypedData)}]";
+            return str.Equals("[]") ? "[<empty>]" : str;
+        }
 
         public override string GetTypeAsString()
         {

@@ -81,7 +81,7 @@ namespace Dash
             var replItems = new ObservableCollection<ReplLineViewModel>();
             for(var i = 0; i < _inputList.Count; i++)
             {
-                var newReplLine = new ReplLineViewModel { LineText = " >> " + _inputList[i].Data, ResultText = " " + _outputList[i], Value = _outputList[i] };
+                var newReplLine = new ReplLineViewModel { LineText = " >> " + _inputList[i].Data, ResultText = " " + _outputList[i], Value = _outputList[i], DisplayableOnly = true};
                 replItems.Add(newReplLine);
             }
 
@@ -406,14 +406,13 @@ namespace Dash
 
                             xTextBox.Text = "";
 
-                            if (!currentText.ToLower().Equals("clear all") || currentText.ToLower().Equals("clear"))
+                            if (!(currentText.Trim().ToLower().Equals("clear all") || currentText.Trim().ToLower().Equals("clear")))
                             {
-                                ViewModel.Items.Add(new ReplLineViewModel { LineText = " >> " + currentText, ResultText = " " + returnValue, Value = returnValue });
+                                ViewModel.Items.Add(new ReplLineViewModel { LineText = " >> " + currentText, ResultText = " " + returnValue, Value = returnValue, DisplayableOnly = true });
+                                //save line text and result text data
+                                _inputList.Add(new TextController(currentText));
+                                _outputList.Add(returnValue);
                             }
-
-                            //save input and output data
-                            _inputList.Add(new TextController(currentText));
-                            _outputList.Add(returnValue);
 
                             ScrollToBottom();
                         }

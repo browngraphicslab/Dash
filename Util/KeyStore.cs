@@ -78,6 +78,11 @@ namespace Dash
 
         public static KeyController ScriptTextKey = new KeyController(DashConstants.KeyStore.ScriptTextKey);
 
+        public static KeyController ExceptionKey = new KeyController(DashConstants.KeyStore.ExceptionKey);
+        public static KeyController ReceivedKey = new KeyController(DashConstants.KeyStore.ReceivedKey);
+        public static KeyController ExpectedKey = new KeyController(DashConstants.KeyStore.ExpectedKey);
+        public static KeyController FeedbackKey = new KeyController(DashConstants.KeyStore.FeedbackKey);
+
         public static class SearchResultDocumentOutline
         {
             public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));

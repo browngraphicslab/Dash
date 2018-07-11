@@ -11,6 +11,8 @@ namespace Dash
         {
             return $" Exception:\n            InvalidFunctionCall\n      Feedback:\n            {AttemptedFunction}() is not currently implemented. Enter <help()> for a complete catalog of valid functions.";
         }
+
+        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 
 }

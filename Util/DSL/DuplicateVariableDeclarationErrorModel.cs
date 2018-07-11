@@ -16,5 +16,7 @@ namespace Dash
         {
             return $" Exception:\n            AttemptedDuplicateVariableDeclaration\n      Feedback:\n            Variable {_variableName} already exists with value {_value}. Update current assignment rather than re-declaring.";
         }
+
+        public override DocumentController GetErrorDoc() => new DocumentController();
     }
 }
