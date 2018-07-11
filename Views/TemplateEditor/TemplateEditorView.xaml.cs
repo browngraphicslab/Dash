@@ -676,7 +676,10 @@ namespace Dash
 		// called when apply changes button is clicked
 		private void ApplyChanges_OnClicked(object sender, RoutedEventArgs e)
 		{
-		    var toggle = sender as ToggleButton;
+		    if (sender != null)
+		    {
+		        var toggle = sender as ToggleButton;
+            }
 		    if ((bool) xActivate.IsChecked)
 		    {
 
@@ -2072,6 +2075,7 @@ namespace Dash
                 }
                 xOuterWorkspace.Children.Remove(line);
             }
+            ApplyChanges_OnClicked(null, new RoutedEventArgs());
         }
 
         private void XGridTopDragger_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -2109,6 +2113,15 @@ namespace Dash
                 // by adding a new row, we have cut a row in half, so the other half needs to have its height reset
 	            GridRoot.RowDefinitions[row + 1].Height =
 	                new GridLength(GridRoot.RowDefinitions[row + 1].ActualHeight - height);
+
+	            //foreach (var doc in DocumentViews)
+	            //{
+	            //    if (doc.ViewModel.DocumentController.GetField<NumberController>(KeyStore.RowKey)?.Data == row || doc
+	            //            .ViewModel.DocumentController.GetField<NumberController>(KeyStore.RowKey)?.Data == row + 1)
+	            //    {
+	            //        DocumentView_OnLoaded_GridView(doc, null);
+	            //    }
+	            //}
 	        }
 
             // reset the line that we use as a visual cue of "adding" a new line
@@ -2248,8 +2261,14 @@ namespace Dash
 	    {
 	        // set up variables
 	        var docView = sender as DocumentView;
-
-	        DocumentViews.Add(docView);
+	        if (!DocumentViews.Contains(docView))
+	        {
+	            DocumentViews.Add(docView);
+	            // add event handlers for the document
+	            docView.DocumentDeleted += DocView_DocumentDeleted;
+	            docView.SizeChanged += DocumentView_OnSizeChanged;
+	            docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
+            }
 	        // since we are in a grid, we want to use the horizontal and vertical alignment keys
 	        docView.ViewModel.DocumentController.SetField(KeyStore.UseHorizontalAlignmentKey, new BoolController(true),
 	            true);
@@ -2264,10 +2283,6 @@ namespace Dash
 	            new TextController(VerticalAlignment.Stretch.ToString()), true);
 	        docView.HorizontalAlignment = HorizontalAlignment.Stretch;
 	        docView.VerticalAlignment = VerticalAlignment.Stretch;
-	        // add event handlers for the document
-	        docView.DocumentDeleted += DocView_DocumentDeleted;
-	        docView.SizeChanged += DocumentView_OnSizeChanged;
-	        docView.ViewModel.LayoutDocument.AddFieldUpdatedListener(KeyStore.PositionFieldKey, PositionFieldChanged);
 
 	        // let the column/row index be the column/row key if it exists, otherwise use the
 	        // viewmodel's x/y position to find the correct column/row
@@ -2363,7 +2378,6 @@ namespace Dash
 	        else
 	        {
 	            height = GridRoot.RowDefinitions[(int) row]?.Height.Value ?? xWorkspace.Height;
-
 	        }
 
 	        docView.ViewModel.DocumentController.SetWidth(width);

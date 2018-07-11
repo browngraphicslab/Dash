@@ -124,7 +124,7 @@ namespace Dash
                             throw new ArgumentOutOfRangeException();
                     }
                     line.Stroke = new SolidColorBrush(Colors.Black);
-                    line.StrokeThickness = offset / 10;
+                    line.StrokeThickness = i % 5 == 0 ? i % 10 == 0 ? offset / 5 : offset / 7.5 : offset / 10;
                     xGrid.Children.Add(line);
                 }
             }

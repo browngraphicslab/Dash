@@ -103,6 +103,7 @@ namespace Dash
         {
             xDashTextSubtoolbar.Editor = selection;
             xDashTextSubtoolbar.Visibility = Visibility.Visible;
+            xDashTextSubtoolbar.GetFirstDescendantOfType<StackPanel>().Orientation = Orientation;
         }
 
         /**
