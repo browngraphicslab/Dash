@@ -75,9 +75,15 @@ namespace Dash
 			ViewCopiesList = new ObservableCollection<DocumentViewModel>();
 			DocumentViews = new Collection<DocumentView>();
 			InitialDocumentControllers = new ObservableCollection<DocumentController>();
-		}
+        }
 
-		private void TemplateEditorView_DocumentDeleted(DocumentView sender,
+	    private void WorkingDocumentView_DocumentDeleted()
+	    {
+	        var docView = this.GetFirstAncestorOfType<DocumentView>();
+	        Actions.HideDocument(docView?.ParentCollection.ViewModel, LayoutDocument);
+        }
+
+        private void TemplateEditorView_DocumentDeleted(DocumentView sender,
 			DocumentView.DocumentViewDeletedEventArgs args)
 		{
 		    Clear();
@@ -226,9 +232,9 @@ namespace Dash
 			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
 
 			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-			//workingDoc.SetField(KeyStore.TemplateEditorKey, DataDocument);
-			// if the working document is already a template box, initialize with that template
-		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
+            //workingDoc.SetField(KeyStore.TemplateEditorKey, DataDocument);
+            // if the working document is already a template box, initialize with that template
+            if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
 		    {
 		        DataDocument.SetField(KeyStore.DataKey,
@@ -284,10 +290,15 @@ namespace Dash
 			TemplateLayout.Width = xWorkspace.Width;
 			TemplateLayout.Height = xWorkspace.Height;
 			TemplateLayout.Drop += XWorkspace_OnDrop;
-			//xWorkspace.Children.Add(TemplateLayout);
 
-			//initialize layout documents on workspace
-			DocumentViewModels.Clear();
+		    var workingDocView =
+		        docView.ParentCollection.ViewModel.DocumentViewModels.FirstOrDefault(
+		            i => i.DocumentController.Equals(workingDoc))?.Content.GetFirstAncestorOfType<DocumentView>();
+            workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+            //xWorkspace.Children.Add(TemplateLayout);
+
+            //initialize layout documents on workspace
+            DocumentViewModels.Clear();
             // loop through each layout document in the data document's data key
 			var layoutDocsList = DataDocument
 				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
@@ -362,7 +373,6 @@ namespace Dash
 		        xWorkspace.Height = 400;
 		    }
         }
-
 
         private void StyleWorkspace(int style)
 		{

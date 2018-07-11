@@ -923,6 +923,8 @@ namespace Dash
             this.DocumentView_OnTapped(null, null);
         }
 
+        public Action FadeOutBegin;
+
         /// <summary>
         /// Deletes the document from the view.
         /// </summary>
@@ -932,8 +934,7 @@ namespace Dash
             if (ParentCollection != null)
             {
                 FadeOut.Begin();
-				//TODO: if template editor is active, hide it
-                //_templateEditor?.SetHidden(true);
+                FadeOutBegin?.Invoke();
 
                 if (addTextBox)
                 {

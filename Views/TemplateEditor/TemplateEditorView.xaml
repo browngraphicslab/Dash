@@ -255,7 +255,7 @@
                            ManipulationMode="TranslateX"/>
 
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
-                    x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True" PointerPressed="XWorkspace_OnPointerPressed_">
+                    x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">
                     <!--<xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
