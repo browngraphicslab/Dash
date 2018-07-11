@@ -79,6 +79,8 @@ namespace Dash
 
         private PdfDocument _pdfDocument;
 
+        private WPdf.PdfDocument _wPdfDocument;
+
         public CustomPdfView()
         {
             this.InitializeComponent();
@@ -120,19 +122,8 @@ namespace Dash
                     return;
                 }
             }
-            WPdf.PdfDocument document = await WPdf.PdfDocument.LoadFromFileAsync(file);
-            List<Image> pages = new List<Image>((int)document.PageCount);
-            for (uint i = 0; i < document.PageCount; ++i)
-            {
-                var stream = new InMemoryRandomAccessStream();
-                await document.GetPage(i).RenderToStreamAsync(stream);
-                var source = new BitmapImage();
-                await source.SetSourceAsync(stream);
-                Image page = new Image() { Source = source };
-                pages.Add(page);
-            }
-
-            Pages = pages;
+            _wPdfDocument = await WPdf.PdfDocument.LoadFromFileAsync(file);
+            await RenderPdf(null);
             DocumentLoaded?.Invoke(this, new EventArgs());
 
             PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
@@ -154,6 +145,30 @@ namespace Dash
             TestSelectionCanvas.Height = offset - _pdfPageSpacing;
 
             _selectableElements = strategy.GetSelectableElements();
+        }
+
+        private async Task RenderPdf(double ?targetWidth)
+        {
+            List<Image> pages = new List<Image>((int)_wPdfDocument.PageCount);
+            var options = new WPdf.PdfPageRenderOptions();
+            for (uint i = 0; i < _wPdfDocument.PageCount; ++i)
+            {
+                var stream = new InMemoryRandomAccessStream();
+                if (targetWidth != null)
+                {
+                    options.DestinationWidth  = (uint) (targetWidth * _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width / _maxPdfPageWidth);
+                    options.DestinationHeight = (uint) (options.DestinationWidth *
+                    _wPdfDocument.GetPage(i).Dimensions.MediaBox.Height /
+                        _wPdfDocument.GetPage(i).Dimensions.MediaBox.Width );
+                }
+                await _wPdfDocument.GetPage(i).RenderToStreamAsync(stream, options);
+                var source = new BitmapImage();
+                await source.SetSourceAsync(stream);
+                Image page = new Image() { Source = source };
+                pages.Add(page);
+            }
+
+            Pages = pages;
         }
 
         private static async void PropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
@@ -199,33 +214,33 @@ namespace Dash
 
         private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionEnded?.Invoke(sender, e);
-            if (_selectionStart == null)
-            {
-                return;
-            }
-            var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
-            pos.X = pos.X * ratio;
-            pos.Y = pos.Y * ratio;
-            foreach (var selectableElement in _selectableElements)
-            {
-                if (selectableElement.Bounds.Contains(pos))
-                {
-                    int startIndex = Math.Min(selectableElement.Index, _selectionStart.Index);
-                    int endIndex = Math.Max(selectableElement.Index, _selectionStart.Index);
-                    for (int i = startIndex; i <= endIndex; ++i)
-                    {
-                        AddRect(_selectableElements[i]);
-                    }
-                    break;
-                }
-            }
+            NewRegionEnded?.Invoke(sender, e);
+            //if (_selectionStart == null)
+            //{
+            //    return;
+            //}
+            //var pos = e.GetCurrentPoint(PageItemsControl).Position;
+            //var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
+            //pos.X = pos.X * ratio;
+            //pos.Y = pos.Y * ratio;
+            //foreach (var selectableElement in _selectableElements)
+            //{
+            //    if (selectableElement.Bounds.Contains(pos))
+            //    {
+            //        int startIndex = Math.Min(selectableElement.Index, _selectionStart.Index);
+            //        int endIndex = Math.Max(selectableElement.Index, _selectionStart.Index);
+            //        for (int i = startIndex; i <= endIndex; ++i)
+            //        {
+            //            AddRect(_selectableElements[i]);
+            //        }
+            //        break;
+            //    }
+            //}
         }
 
         private void ItemsControl_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionMoved?.Invoke(sender, e);
+            NewRegionMoved?.Invoke(sender, e);
         }
 
         private BoundsExtractionStrategy.SelectableElement _selectionStart;
@@ -233,19 +248,19 @@ namespace Dash
 
         private void ItemsControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            //NewRegionStarted?.Invoke(sender, e);
-            var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
-            pos.X = pos.X * ratio;
-            pos.Y = pos.Y * ratio;
-            foreach (var selectableElement in _selectableElements)
-            {
-                if (selectableElement.Bounds.Contains(pos))
-                {
-                    _selectionStart = selectableElement;
-                    break;
-                }
-            }
+            NewRegionStarted?.Invoke(sender, e);
+            //var pos = e.GetCurrentPoint(PageItemsControl).Position;
+            //var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
+            //pos.X = pos.X * ratio;
+            //pos.Y = pos.Y * ratio;
+            //foreach (var selectableElement in _selectableElements)
+            //{
+            //    if (selectableElement.Bounds.Contains(pos))
+            //    {
+            //        _selectionStart = selectableElement;
+            //        break;
+            //    }
+            //}
         }
 
         private void AddRect(BoundsExtractionStrategy.SelectableElement element)
@@ -297,6 +312,11 @@ namespace Dash
                             _maxPdfPageWidth);
                 Control.SizeChanged += CustomPdfView_OnSizeChanged;
             }
+        }
+
+        public async void UnFreeze()
+        {
+            await RenderPdf(PageItemsControl.ActualWidth);
         }
     }
 }
