@@ -1536,26 +1536,12 @@ namespace Dash
 			//TODO: reset to original state of template (clear if new, or revert to other if editing)
 
 			Clear();
-
-			foreach (var doc in InitialDocumentControllers)
-			{
-				DocumentControllers.Add(doc);
-			}
-			/*
-			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).DocumentType
-				.Equals(TemplateBox.DocumentType))
-			{
-				DataDocument.SetField(KeyStore.DataKey,
-					LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)
-						.GetField<ListController<DocumentController>>(KeyStore.DataKey),
-					true);
-			}
-			else
-			{
-				this.Clear();
-			}
-			*/
-			
+            var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+		    if (workingDoc.GetField(KeyStore.ActiveLayoutKey) is DocumentController activeLayout)
+		    {
+		        workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
+		        activeLayout.RemoveField(KeyStore.DocumentContextKey);
+		    }
 		}
 
 		private void XClearButton_OnClick(object sender, RoutedEventArgs e)
