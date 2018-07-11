@@ -118,10 +118,6 @@ namespace Dash
             void OnDocumentFieldUpdatedHandler(DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args, Context secondContext)
             {
-
-                    
-                
-               
                 var cfargs = args.FieldArgs as ListController<DocumentController>.ListFieldUpdatedEventArgs;
                 if (cfargs.ListAction ==
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
@@ -232,7 +228,6 @@ namespace Dash
 	            if (grid is StackPanel)
 	            {
 		            grid.Children.Add(layoutView);
-		 
 	            }
 	            else
 	            {

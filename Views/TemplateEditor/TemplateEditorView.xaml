@@ -241,18 +241,27 @@
                     X1="0" Y1="0" X2="0" Y2="500" 
                     x:Name="xVertLine" Stroke="Aqua" StrokeThickness="1" Canvas.ZIndex="100"
                     RelativePanel.AlignTopWithPanel="True" Visibility="Collapsed" />
-                <Rectangle x:Name="xGridTopDragger" Visibility="Collapsed" Width="500" Height="20"
-                           RelativePanel.AlignTopWithPanel="True" Fill="Gray"
-                           ManipulationStarted="XGridTopDragger_OnManipulationStarted"
-                           ManipulationDelta="XGridTopDragger_OnManipulationDelta"
-                           ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
-                           ManipulationMode="TranslateY"/>
-                <Rectangle x:Name="xGridLeftDragger" Visibility="Collapsed" Width="20" Height="500"
-                           RelativePanel.AlignLeftWithPanel="True" Fill="Gray"
-                           ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
-                           ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
-                           ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
-                           ManipulationMode="TranslateX"/>
+                <local:Ruler Orientation="Horizontal" Visibility="Collapsed" Length="480" Thickness="20" Ticks="100" Fill="Gray"
+                             x:Name="xGridTopDragger" RelativePanel.AlignTopWithPanel="True"
+                             ManipulationStarted="XGridTopDragger_OnManipulationStarted"
+                             ManipulationDelta="XGridTopDragger_OnManipulationDelta"
+                             ManipulationCompleted="XGridTopDragger_OnManipulationCompleted"
+                             ManipulationMode="TranslateY">
+                    <local:Ruler.RenderTransform>
+                        <TranslateTransform X="20" />
+                    </local:Ruler.RenderTransform>
+                </local:Ruler>
+                <local:Ruler Orientation="Vertical" Visibility="Collapsed" Length="480" Thickness="20" Ticks="100" Fill="Gray"
+                             x:Name="xGridLeftDragger" RelativePanel.AlignTopWithPanel="True"
+                             ManipulationStarted="XGridLeftDragger_OnManipulationStarted"
+                             ManipulationDelta="XGridLeftDragger_OnManipulationDelta"
+                             ManipulationCompleted="XGridLeftDragger_OnManipulationCompleted"
+                             ManipulationMode="TranslateX">
+                    <local:Ruler.RenderTransform>
+                        <TranslateTransform Y="20" />
+                    </local:Ruler.RenderTransform>
+                </local:Ruler>
+                <Rectangle Width="20" Height="20" Fill="Gray" />
 
                 <Grid  RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True" Background="White" HorizontalAlignment="Center"
                     x:FieldModifier="public" x:Name="xWorkspace" Loaded="XWorkspace_OnLoaded" Unloaded="XWorkspace_OnUnloaded" Drop="XWorkspace_OnDrop" AllowDrop="True">

@@ -194,6 +194,12 @@ namespace Dash
             var dvm =
 		        new DocumentViewModel(doc, new Context(doc));
 		    DocumentViewModels.Add(dvm);
+
+		    // set the row and column fields appropriately
+		    dvm.DocumentController.SetField(KeyStore.RowKey, new NumberController(FindRow(dvm.YPos)), true);
+		    dvm.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(FindColumn(dvm.XPos)), true);
+		    dvm.DocumentController.SetPosition(new Point(0, 0));
+
             // adds layout doc to list of layout docs
             DataDocument.AddToListField(KeyStore.DataKey, doc);
 		    //var datakey = DataDocument.GetField<ListController<DocumentController>>(KeyStore.DataKey);
@@ -722,11 +728,7 @@ namespace Dash
 			    {
 					this.FormatTemplateIntoList();
 			    }
-			    
 			}
-		   
-
-            
         }
 
 		private void DocumentView_OnLoaded(object sender, RoutedEventArgs e)
@@ -1533,13 +1535,14 @@ namespace Dash
 
 		private void XResetButton_OnClick(object sender, RoutedEventArgs e)
 		{
-			//TODO: reset to original state of template (clear if new, or revert to other if editing)
-
 			Clear();
             var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+            // if we have an active layout
 		    if (workingDoc.GetField(KeyStore.ActiveLayoutKey) is DocumentController activeLayout)
 		    {
+                // remove it
 		        workingDoc.RemoveField(KeyStore.ActiveLayoutKey);
+                // remove the active layout's document context
 		        activeLayout.RemoveField(KeyStore.DocumentContextKey);
 		    }
 		}
@@ -2275,10 +2278,6 @@ namespace Dash
 	        // set the content presenter's grid row and column to that index
 	        Grid.SetColumn(docView.GetFirstAncestorOfType<ContentPresenter>(), (int) col);
 	        Grid.SetRow(docView.GetFirstAncestorOfType<ContentPresenter>(), (int) row);
-	        // set the row and column fields appropriately
-	        docView.ViewModel.DocumentController.SetField(KeyStore.RowKey, new NumberController(row), true);
-	        docView.ViewModel.DocumentController.SetField(KeyStore.ColumnKey, new NumberController(col), true);
-	        docView.ViewModel.DocumentController.SetPosition(new Point(0, 0));
 
 	        // retrieve the template box layout information if possible
 	        var layout = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey)

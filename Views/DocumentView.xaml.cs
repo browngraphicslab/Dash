@@ -923,6 +923,7 @@ namespace Dash
             this.DocumentView_OnTapped(null, null);
         }
 
+        // used to remove template editor in sync with document
         public Action FadeOutBegin;
 
         /// <summary>
