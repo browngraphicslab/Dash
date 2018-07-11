@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using iText.Kernel.Geom;
@@ -58,13 +59,13 @@ namespace Dash
             var mainTextData = (TextRenderInfo)data;
             foreach (var textData in mainTextData.GetCharacterRenderInfos())
             {
-            var start = textData.GetAscentLine().GetStartPoint();
-            var end = textData.GetDescentLine().GetEndPoint();
-            _elements.Add(new SelectableElement(-1, textData.GetText(),
-                new Rect(start.Get(0),
-                    _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                        end.Get(0) - start.Get(0),
-                        start.Get(1) - end.Get(1))));
+                var start = textData.GetAscentLine().GetStartPoint();
+                var end = textData.GetDescentLine().GetEndPoint();
+                _elements.Add(new SelectableElement(-1, textData.GetText(),
+                    new Rect(start.Get(0),
+                        _pageSize.GetHeight() - start.Get(1) + _pageOffset,
+                            end.Get(0) - start.Get(0),
+                            start.Get(1) - end.Get(1))));
             }
         }
 
@@ -72,7 +73,7 @@ namespace Dash
         {
             _elements.Sort((e1, e2) => Math.Sign(e1.Bounds.Y - e2.Bounds.Y));
             List<List<SelectableElement>> lines = new List<List<SelectableElement>>();
-            lines.Add(new List<SelectableElement>{_elements.First()});
+            lines.Add(new List<SelectableElement> { _elements.First() });
             SelectableElement element = _elements.First();
             foreach (var selectableElement in _elements.Skip(1))
             {
@@ -80,7 +81,7 @@ namespace Dash
                     Math.Abs(selectableElement.Bounds.Height - element.Bounds.Height) > element.Bounds.Height / 2)
                 {
                     element = selectableElement;
-                    lines.Add(new List<SelectableElement>{element});
+                    lines.Add(new List<SelectableElement> { element });
                 }
                 else
                 {

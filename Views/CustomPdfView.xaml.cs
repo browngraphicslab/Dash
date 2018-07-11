@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -71,7 +72,7 @@ namespace Dash
         private List<BoundsExtractionStrategy.SelectableElement> _selectableElements;
 
         private VisualAnnotationManager _annotationManager;
-        private PageSize _pdfPageSize;
+        private double _maxPdfPageWidth = 1;
 
         public DocumentController LayoutDocument { get; }
         public DocumentController DataDocument { get; }
@@ -136,21 +137,22 @@ namespace Dash
 
             PdfReader reader = new PdfReader(await file.OpenStreamForReadAsync());
             _pdfDocument = new PdfDocument(reader);
-            _pdfPageSize = _pdfDocument.GetDefaultPageSize();
             CustomPdfView_OnSizeChanged(null, null);
-            TestSelectionCanvas.Width = _pdfPageSize.GetWidth();
-            TestSelectionCanvas.Height = _pdfPageSize.GetHeight() * _pdfDocument.GetNumberOfPages() +
-                                         (_pdfDocument.GetNumberOfPages() - 1) * _pdfPageSpacing;
             var strategy = new BoundsExtractionStrategy();
             var processor = new PdfCanvasProcessor(strategy);
             double offset = 0;
             for(int i = 1; i <= _pdfDocument.GetNumberOfPages(); ++i)
             {
                 var page = _pdfDocument.GetPage(i);
-                strategy.SetPage(i - 1, offset, page.GetPageSize());
+                var size = page.GetPageSize();
+                _maxPdfPageWidth = Math.Max(_maxPdfPageWidth, size.GetWidth());
+                strategy.SetPage(i - 1, offset, size);
                 offset += page.GetPageSize().GetHeight() + _pdfPageSpacing;
                 processor.ProcessPageContent(page);
             }
+
+            TestSelectionCanvas.Width = _maxPdfPageWidth;
+            TestSelectionCanvas.Height = offset - _pdfPageSpacing;
 
             _selectableElements = strategy.GetSelectableElements();
         }
@@ -204,7 +206,7 @@ namespace Dash
                 return;
             }
             var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            var ratio = _pdfPageSize.GetWidth() / PageItemsControl.ActualWidth;
+            var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
             pos.X = pos.X * ratio;
             pos.Y = pos.Y * ratio;
             foreach (var selectableElement in _selectableElements)
@@ -234,7 +236,7 @@ namespace Dash
         {
             //NewRegionStarted?.Invoke(sender, e);
             var pos = e.GetCurrentPoint(PageItemsControl).Position;
-            var ratio = _pdfPageSize.GetWidth() / PageItemsControl.ActualWidth;
+            var ratio = _maxPdfPageWidth / PageItemsControl.ActualWidth;
             pos.X = pos.X * ratio;
             pos.Y = pos.Y * ratio;
             foreach (var selectableElement in _selectableElements)
@@ -266,12 +268,7 @@ namespace Dash
 
         private void CustomPdfView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (_pdfPageSize == null)
-            {
-                return;
-            }
-
-            var ratio = PageItemsControl.ActualWidth / _pdfPageSize.GetWidth();
+            var ratio = PageItemsControl.ActualWidth / _maxPdfPageWidth;
             PageSpacing = _pdfPageSpacing * ratio;
         }
     }
