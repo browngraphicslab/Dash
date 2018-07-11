@@ -276,7 +276,7 @@ namespace Dash
                 string newInput = modInput.Substring(1, modInput.Length - 2);
                 searchDict = Parse(newInput);
             } else {
-                searchDict = GetBasicSearchResultsFromSearchPart(finalSearchTerm);
+                searchDict = WrapInDictifyFunc(GetBasicSearchResultsFromSearchPart(finalSearchTerm));
             }
 
             if (isNegated)
@@ -318,7 +318,7 @@ namespace Dash
         {
             var inputString = ((inputs[QueryKey] as TextController)?.Data ?? "").Trim();
             string functionString = Parse(inputString);
-            functionString = functionString.Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r"); ;
+            functionString = functionString.Replace("\n", "\\n").Replace("\t", "\\t").Replace("\r", "\\r");
             outputs[ScriptKey] = new TextController(functionString);
         }
     }

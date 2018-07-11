@@ -188,7 +188,7 @@ namespace Dash
             return inputString;
         }
 
-        private IEnumerable<SearchResult> Parse(string inputString)
+        public static IEnumerable<SearchResult> Parse(string inputString)
         {
             int dividerIndex = FindNextDivider(inputString);
             string searchTerm = inputString.Substring(0, dividerIndex);
