@@ -11,7 +11,7 @@
     d:DesignWidth="944">
 
     <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
-    <Grid Width="844" Height="47">
+    <Grid Width="994" Height="50">
         <Grid.Resources>
             <!--Button style set here-->
             <Style x:Key="xButtonStyle" TargetType="Button">
