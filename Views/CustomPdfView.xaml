@@ -8,10 +8,9 @@
     x:Name="Control"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400"
-    SizeChanged="CustomPdfView_OnSizeChanged">
+    d:DesignWidth="400">
 
-    <ScrollViewer x:Name="ScrollViewer">
+    <ScrollViewer x:Name="ScrollViewer" ViewChanging="ScrollViewer_OnViewChanging" LayoutUpdated="ScrollViewer_OnLayoutUpdated">
         <Grid>
             <ItemsControl x:Name="PageItemsControl" ItemsSource="{x:Bind Pages, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
