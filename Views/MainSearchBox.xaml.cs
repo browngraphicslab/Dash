@@ -43,7 +43,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                Search.ExecuteDishSearch(sender);
+                ExecuteDishSearch(sender);
 
             }
 
@@ -66,6 +66,7 @@ namespace Dash
 
             const int maxSearchResultSize = 75;
             DocumentController resultDict = null;
+            /*
             try
             {
                 //send DSL scripting lang string like "exec(parseSearchString(\"a\"))" to interpret
@@ -78,22 +79,26 @@ namespace Dash
                                                 text + "\"))");
                 resultDict = interpreted as DocumentController;
             }
-
             catch (DSLException)
             {
                 Debug.WriteLine("Search Failed");
             }
+            */
 
-            if (resultDict == null) return;
-            Debug.Assert(resultDict != null);
+            //if (resultDict == null) return;
+            //Debug.Assert(resultDict != null);
 
             var vms = new List<SearchResultViewModel>();
             var tree = DocumentTree.MainPageTree;
-            var docs = GetDocumentControllersFromSearchDictionary(resultDict, text).ToList();
+            //var docs = GetDocumentControllersFromSearchDictionary(resultDict, text).ToList();
 
+            var searchRes = Search.Parse(text);
+            var docs = searchRes.Select(f => f.ViewDocument).ToList();
+            if (docs == null)
+                return;
             //highlight doc results
             HighlightSearchResults(docs);
-
+            /*
             foreach (var doc in docs)
             {
                 var newVm = SearchHelper.DocumentSearchResultToViewModel(doc);
@@ -109,7 +114,7 @@ namespace Dash
             {
                 (searchBox.ItemsSource as ObservableCollection<SearchResultViewModel>)?.Add(searchResultViewModel);
             }
-
+            */
         }
 
         public static void HighlightSearchResults(List<DocumentController> docs)
@@ -117,7 +122,8 @@ namespace Dash
             //highlight new search results
             foreach (var doc in docs)
             {
-                var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                //var id = doc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultIdKey).Data;
+                var id = doc.Id;
                 DocumentController resultDoc = ContentController<FieldModel>.GetController<DocumentController>(id);
 
                 //make border thickness of DocHighlight for each doc 8
