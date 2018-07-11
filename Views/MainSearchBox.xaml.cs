@@ -43,7 +43,7 @@ namespace Dash
                 //Set the ItemsSource to be your filtered dataset
                 //sender.ItemsSource = dataset;
 
-                ExecuteDishSearch(sender);
+                Search.ExecuteDishSearch(sender);
 
             }
 
@@ -154,21 +154,10 @@ namespace Dash
             }
         }
 
-
-
         public static IEnumerable<DocumentController> GetDocumentControllersFromSearchDictionary(
             DocumentController searchResultsDictionary, string originalSearch)
         {
-            var lists = new List<List<DocumentController>>();
-
-            foreach (var kvp in searchResultsDictionary.EnumFields(true))
-            {
-                var list = kvp.Value as ListController<DocumentController>;
-                if (list != null)
-                {
-                    lists.Add(list.TypedData);
-                }
-            }
+            var lists = searchResultsDictionary.EnumFields(true).Select(kvp => kvp.Value).OfType<ListController<DocumentController>>().Select(list => list.TypedData).ToList();
 
             var tree = DocumentTree.MainPageTree;
 
@@ -417,11 +406,11 @@ namespace Dash
             /// <param name="resultDocs"></param>
             /// <param name="originalSearch"></param>
             /// <returns></returns>
-            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs,
-                string originalSearch)
+            public static DocumentController ChooseHelpfulSearchResult(IEnumerable<DocumentController> resultDocs, string originalSearch)
             {
-                Debug.Assert(resultDocs.Any());
-                return resultDocs.FirstOrDefault();
+                var docsAsList = resultDocs.ToList();
+                Debug.Assert(docsAsList.Any());
+                return docsAsList.FirstOrDefault();
             }
 
             //public static IEnumerable<SearchResultViewModel> SearchOverCollection(string searchString,

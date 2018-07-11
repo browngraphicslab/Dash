@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Dash.Controllers
+namespace Dash
 {
     class PointerReferenceController : ReferenceController
     {
@@ -41,20 +41,15 @@ namespace Dash.Controllers
             _lastDoc.RemoveFieldUpdatedListener(DocumentReference.FieldKey, fieldUpdatedHandler);
         }
 
-        public override FieldControllerBase Copy()
-        {
-            return new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
-        }
+        public override FieldControllerBase Copy() => new PointerReferenceController(DocumentReference.Copy() as ReferenceController, FieldKey);
 
-        public override DocumentController GetDocumentController(Context context)
-        {
-            return DocumentReference?.DereferenceToRoot<DocumentController>(context);
-        }
+        public override DocumentController GetDocumentController(Context context) => DocumentReference?.DereferenceToRoot<DocumentController>(context);
 
-        public override FieldReference GetFieldReference()
-        {
-            return new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
-        }
+        public override FieldReference GetFieldReference() => new DocumentPointerFieldReference(DocumentReference.GetFieldReference(), FieldKey);
+
+        public override FieldControllerBase GetReference() => DocumentReference;
+
+        public override string ToString() => $"pRef[{DocumentReference}, {FieldKey}]";
 
         public override FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping)
         {

@@ -39,6 +39,8 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        public abstract FieldControllerBase GetReference();
+
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return GetDocumentController(null);
