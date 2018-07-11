@@ -14,56 +14,96 @@
     xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="1010">
 
-  
+    <Grid  x:Name="xStack">
+        <CommandBar OverflowButtonVisibility="Collapsed">
 
-    <Grid x:Name="xStack" Height="45">
+            <CommandBar.Content>
+                <StackPanel Orientation="Horizontal" >
+                    <!--TODO: ADD LABELS FOR THE BUTTONS/SYMBOLS-->
+                    <SymbolIcon Symbol="FontSize" Width="60" Height="40" Margin="10,0,0,0"></SymbolIcon>
+                    <Slider Width="200" Grid.Column="1"  Margin="0 5 80 0" Minimum="6" Maximum="200" TickFrequency="1" x:Name="xFontSizeSlider" StepFrequency="1"
+                                SnapsTo="StepValues" TickPlacement="None" IntermediateValue="100" ValueChanged="xFontSizeSlider_ValueChanged" />
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid Grid.Column="0" Background="LightGray">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" Margin="0 3 0 0">Font Size:</TextBlock>
-            <Slider Grid.Column="1"  Margin="0 5 10 0" Minimum="6" Maximum="200" TickFrequency="1" x:Name="xFontSizeSlider" StepFrequency="1"
-                    SnapsTo="StepValues" TickPlacement="None" IntermediateValue="100" ValueChanged="xFontSizeSlider_ValueChanged" />
-        </Grid>
-
-        <Grid Grid.Column="1" Background="LightGray" >
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" Margin="0 3 0 0">Font Weight:</TextBlock>
-            <CommandBar Grid.Column="1" x:Name="xPlainTextCommandbar" Background="LightGray" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
-                <CommandBar.Content>
-                    <ComboBox x:Name="xFontWeightOptionsDropdown" SelectedIndex="1" Margin="0 6 0 0" SelectionChanged="XFontWeightOptionsDropdown_OnSelectionChanged">
+                    <SymbolIcon Symbol="Bold" Width="60" Margin="5 0 0 0"></SymbolIcon>
+                    <ComboBox x:Name="xFontWeightOptionsDropdown" SelectedIndex="1" Margin="5 10 90 0" SelectionChanged="XFontWeightOptionsDropdown_OnSelectionChanged" Width="150">
                         <ComboBoxItem Content="Light" x:Name="xLightWeight"/>
                         <ComboBoxItem Content="Normal" x:Name="xNormalWeight"/>
                         <ComboBoxItem Content="Bold" x:Name="xBoldWeight"/>
                         <ComboBoxItem Content="Black" x:Name="xBlackWeight"/>
                     </ComboBox>
-                </CommandBar.Content>
+
+                    <AppBarButton  x:Name="xFontColor" Height="45" Width="45"
+                                  Background="LightGray" Margin="10,0,0,0">
+                        <Button.Flyout>
+                            <Flyout>
+                                <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
+                            </Flyout>
+                        </Button.Flyout>
+                        <Image Source="ms-appx:///Assets/GroupColorIcon.png" />
+                    </AppBarButton>
+                  
+                    <Slider x:Name="xOpacitySlider" 
+                            Minimum="0" 
+                            Maximum="255"
+                            Width="200"
+                            TickFrequency="1" 
+                            StepFrequency="1" 
+                            SnapsTo="StepValues" 
+                            TickPlacement="None"  
+                            IntermediateValue="128" 
+                            Margin="10, 5, 10, 0" 
+                            RightTapped="XOpacitySlider_OnRightTapped"  
+                            ValueChanged="XOpacitySlider_OnValueChanged">
+                        <Slider.Foreground>
+                            <LinearGradientBrush >
+                                <GradientStop Color="White" Offset="0.0" />
+                                <GradientStop Color="Black" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Slider.Foreground>
+                    </Slider>
+                </StackPanel>
+
+            </CommandBar.Content>
+
+
+        </CommandBar>
+            
+<!--
+                <Grid Grid.Column="1" Background="LightGray" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" FontSize="16" FontWeight="Bold" Margin="0 3 0 0">Font Weight:</TextBlock>
+                    <CommandBar Grid.Column="1" x:Name="xPlainTextCommandbar" Background="LightGray" IsOpen="False" IsSticky="True" OverflowButtonVisibility="Collapsed">
+                        <CommandBar.Content>
+                            
+                        </CommandBar.Content>
+                    </CommandBar>
+                    <AppBarButton x:Name="xFontColor" Grid.Column="2" Height="45" Width="45"
+                                  Background="LightGray">
+                        <Button.Flyout>
+                            <Flyout>
+                                <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
+                            </Flyout>
+                        </Button.Flyout>
+                        <Image Source="ms-appx:///Assets/GroupColorIcon.png" />
+                    </AppBarButton>
+                </Grid>
             </CommandBar>
-            <AppBarButton x:Name="xFontColor" Grid.Column="2" Height="45" Width="45"
-                          Background="LightGray">
-                <Button.Flyout>
-                    <Flyout>
-                        <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
-                    </Flyout>
-                </Button.Flyout>
-                <Image Source="ms-appx:///Assets/GroupColorIcon.png" />
-            </AppBarButton>
-        </Grid>
+        </CommandBar>
+        -->
+    </Grid>
+<!--
+    <Grid x:Name="xStack" Height="45">
+
+      
+        
+
+        
         
         <Grid Grid.Column="2" 
               Background="LightGray">
@@ -85,4 +125,5 @@
                     ValueChanged="XOpacitySlider_OnValueChanged"/>
         </Grid>
     </Grid>
+    -->
 </UserControl>

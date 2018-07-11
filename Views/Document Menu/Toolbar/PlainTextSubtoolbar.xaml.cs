@@ -38,7 +38,8 @@ namespace Dash
             _buttons = new Dictionary<string, Button>();
 
             _currBox = null;
-        }
+			Visibility = Visibility.Collapsed;
+		}
 
         /**
 		 * Binds the text toolbar with the most recently selected text box for editing purposes.

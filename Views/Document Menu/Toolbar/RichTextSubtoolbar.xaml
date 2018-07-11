@@ -14,21 +14,22 @@
     xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
 
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="960">
 
   
 
-    <Grid x:Name="xStack" >
+    <Grid x:Name="xStack" Height="50">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="8*"/>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <controls:TextToolbar 
             x:Name="xDashTextSubtoolbar"
             Visibility="Visible"
-            Background="LightGray">
+            Background="LightGray"
+            Grid.Column="0">
             <!--remove Link button from default text toolbar-->
             <controls:TextToolbar.ButtonModifications >
                 <buttons:DefaultButton Type="Link" IsVisible="False" />
@@ -37,7 +38,7 @@
         </controls:TextToolbar>
         <Grid Grid.Column="1" 
                 Background="LightGray">
-            <Slider x:Name="xOpacitySlider" Grid.Column="1"
+            <Slider x:Name="xOpacitySlider" 
                             Minimum="0" 
                             Maximum="255"
                             TickFrequency="1" 
@@ -46,11 +47,12 @@
                             TickPlacement="None"  
                             IntermediateValue="128" 
                             Margin="22, 11, 0, 0" 
+                    
                             RightTapped="XOpacitySlider_OnRightTapped"  
                             ValueChanged="XOpacitySlider_OnValueChanged"/>
         </Grid>
         <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
-            Background="LightGray">
+            Background="LightGray" Height="50">
         <Button.Flyout>
                 <Flyout>
                     <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>
