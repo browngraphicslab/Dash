@@ -53,7 +53,8 @@
             </ctrl:CommandBar>
             <!--<Rectangle x:Name="xPadding" Opacity="0"/>-->
             <StackPanel x:Name="xSubtoolbarStackPanel">
-                <dash:TextSubtoolbar x:Name="xTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:RichTextSubtoolbar x:Name="xRichTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
+                <dash:PlainTextSubtoolbar x:Name="xPlainTextToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
                 <dash:ImageSubtoolbar x:Name="xImageToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>
              
                 <dash:CollectionSubtoolbar x:Name="xCollectionToolbar" Orientation="{x:Bind Orientation, Mode=OneWay}"/>

@@ -462,8 +462,11 @@
     <Compile Include="Views\Document Menu\Toolbar\MenuToolbar.xaml.cs">
       <DependentUpon>MenuToolbar.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml.cs">
-      <DependentUpon>TextSubtoolbar.xaml</DependentUpon>
+    <Compile Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml.cs">
+      <DependentUpon>PlainTextSubtoolbar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml.cs">
+      <DependentUpon>RichTextSubtoolbar.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DishReplView.xaml.cs">
       <DependentUpon>DishReplView.xaml</DependentUpon>
@@ -994,7 +997,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Document Menu\Toolbar\TextSubtoolbar.xaml">
+    <Page Include="Views\Document Menu\Toolbar\PlainTextSubtoolbar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Document Menu\Toolbar\RichTextSubtoolbar.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

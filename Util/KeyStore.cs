@@ -81,6 +81,8 @@ namespace Dash
 	    public static KeyController ColumnInfoKey = new KeyController("List of grid column sizes", "CC243D8B-8150-4C48-8DE7-F1E5EB59E3DC");
         public static KeyController RowKey = new KeyController("Grid row number", "213520CB-3EE9-4948-A063-61E3B9D76953");
         public static KeyController ColumnKey = new KeyController("Grid column number", "37889D8E-86EB-4DCC-A30C-B3306E423AF2");
+        public static KeyController FontWeightKey = new KeyController("Font weight", "02095FC5-6F49-46C1-A2DB-06FF894A5235");
+        public static KeyController FontSizeKey = new KeyController("Font size", "75902765-7F0E-4AA6-A98B-3C8790DBF7CE");
 
 
 

@@ -2111,7 +2111,10 @@ namespace Dash
 	            {
 	                Height = new GridLength(height)
 	            });
-            }
+                // by adding a new row, we have cut a row in half, so the other half needs to have its height reset
+	            GridRoot.RowDefinitions[row + 1].Height =
+	                new GridLength(GridRoot.RowDefinitions[row + 1].ActualHeight - height);
+	        }
 
             // reset the line that we use as a visual cue of "adding" a new line
 	        xHorizLine.Visibility = Visibility.Collapsed;
@@ -2168,7 +2171,10 @@ namespace Dash
 	            {
 	                Width = new GridLength(width)
 	            });
-            }
+                // by creating a new column, we have to cut a previously existing one, so we need to reset the width
+	            GridRoot.ColumnDefinitions[col + 1].Width =
+	                new GridLength(GridRoot.ColumnDefinitions[col + 1].ActualWidth - width);
+	        }
 
             // reset the fake guiding line
             xVertLine.Visibility = Visibility.Collapsed;

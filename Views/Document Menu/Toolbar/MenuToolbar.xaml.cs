@@ -226,7 +226,7 @@ namespace Dash
             {
                 toOpen.CommandBarOpen(true);
             }
-            else if (subtoolbarElement is TextSubtoolbar txt)
+            else if (subtoolbarElement is RichTextSubtoolbar txt)
             {
                 var margin = txt.Margin;
                 margin.Top = 0;
@@ -325,14 +325,14 @@ namespace Dash
                     if (selection.ViewModel.DocumentController.DocumentType.Equals(RichTextBox.DocumentType))
                     {
                         containsInternalContent = true;
-                        baseLevelContentToolbar = xTextToolbar;
+                        baseLevelContentToolbar = xRichTextToolbar;
                         if (FocusManager.GetFocusedElement() is RichEditBox reb)
                         {
-                            xTextToolbar.SetMenuToolBarBinding(reb);
+                            xRichTextToolbar.SetMenuToolBarBinding(reb);
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xTextToolbar.SetCurrTextBox(reb);
-                            xTextToolbar.SetDocs(selection);
-                            subtoolbarElement = xTextToolbar;
+                            xRichTextToolbar.SetCurrTextBox(reb);
+                            xRichTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xRichTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
                     }
@@ -386,15 +386,26 @@ namespace Dash
                             }
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
-                        else if (data is TextController || data is NumberController || data is DateTimeController || data is RichTextController)
+                        else if (data is RichTextController)
                         {
                             containsInternalContent = true;
-                            baseLevelContentToolbar = xTextToolbar;
-                            xTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
+                            baseLevelContentToolbar = xRichTextToolbar;
+                            xRichTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<RichEditBox>(selection));
                             //give toolbar access to the most recently selected text box for editing purposes
-                            xTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
-                            xTextToolbar.SetDocs(selection);
-                            subtoolbarElement = xTextToolbar;
+                            xRichTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<RichEditBox>());
+                            xRichTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xRichTextToolbar;
+                            xGroupToolbar.TryMakeGroupEditable(false);
+                        }
+                        else if (data is TextController || data is DateTimeController || data is NumberController)
+                        {
+                            containsInternalContent = true;
+                            baseLevelContentToolbar = xPlainTextToolbar;
+                            xPlainTextToolbar.SetMenuToolBarBinding(VisualTreeHelperExtensions.GetFirstDescendantOfType<TextBox>(selection));
+                            //give toolbar access to the most recently selected text box for editing purposes
+                            xPlainTextToolbar.SetCurrTextBox(selection.GetFirstDescendantOfType<TextBox>());
+                            xPlainTextToolbar.SetDocs(selection);
+                            subtoolbarElement = xPlainTextToolbar;
                             xGroupToolbar.TryMakeGroupEditable(false);
                         }
                     }
@@ -455,7 +466,7 @@ namespace Dash
                         }
                         else
                         {
-                            //Currently, the TextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
+                            //Currently, the RichTextSubtoolbar is the only toolbar that can't be opened/closed. Therefore, it doesn't need the additional padding
                             var margin = xSubtoolbarStackPanel.Margin;
                             margin.Top = 7;
                             xSubtoolbarStackPanel.Margin = margin;
@@ -777,7 +788,7 @@ namespace Dash
                     toClose.CommandBarOpen(false);
                 }
                 //else, if it is a text toolbar (which doesn't expand), update margins accordingly
-                else if (subtoolbarElement is TextSubtoolbar txt)
+                else if (subtoolbarElement is RichTextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
                     margin.Top = 13;
@@ -800,7 +811,7 @@ namespace Dash
                 {
                     toClose.CommandBarOpen(true);
                 }
-                else if (subtoolbarElement is TextSubtoolbar txt)
+                else if (subtoolbarElement is RichTextSubtoolbar txt)
                 {
                     var margin = txt.Margin;
                     margin.Top = 0;
@@ -834,7 +845,7 @@ namespace Dash
             ToggleVisibilityAsync(visibility);
 
             //set subtoolbar element to null if collapsing toolbar
-            if (subtoolbarElement == xTextToolbar) xTextToolbar.CloseSubMenu();
+            if (subtoolbarElement == xRichTextToolbar) xRichTextToolbar.CloseSubMenu();
             subtoolbarElement = null;
             xToolbar.IsOpen = (state == State.Expanded);
 
