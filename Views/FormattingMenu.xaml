@@ -8,7 +8,7 @@
     xmlns:media="using:Syncfusion.UI.Xaml.Controls.Media"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="844">
+    d:DesignWidth="944">
 
     <!--A single flyout with a 3 row grid, the last row begins as collapsed-->
     <Grid Width="844" Height="47">

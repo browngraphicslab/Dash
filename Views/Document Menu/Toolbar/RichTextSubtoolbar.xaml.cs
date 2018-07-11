@@ -70,6 +70,8 @@ namespace Dash
                     xStack.Children.Add(_menuView);
                     //collapse other text menu
                     xDashTextSubtoolbar.Visibility = Visibility.Collapsed;
+	                xFontColor.Visibility = Visibility.Collapsed;
+	                xOpacitySlider.Visibility = Visibility.Collapsed;
                     _buttons.TryGetValue("Font", out var fontButton);
                     if (fontButton != null)
                     {
@@ -157,8 +159,10 @@ namespace Dash
             _menuView = null;
             //restore other menu
             xDashTextSubtoolbar.Visibility = Visibility.Visible;
+	        xFontColor.Visibility = Visibility.Visible;
+	        xOpacitySlider.Visibility = Visibility.Visible;
 
-        }
+		}
 
         /*
          * Runs the current ARGB color through the "filter" of the current opacity slider value by replacing default alpha prefix with the desired substitution
