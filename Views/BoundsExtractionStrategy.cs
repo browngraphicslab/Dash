@@ -64,8 +64,8 @@ namespace Dash
                 _elements.Add(new SelectableElement(-1, textData.GetText(),
                     new Rect(start.Get(0),
                         _pageSize.GetHeight() - start.Get(1) + _pageOffset,
-                            end.Get(0) - start.Get(0),
-                            start.Get(1) - end.Get(1))));
+                            Math.Abs(end.Get(0) - start.Get(0)),
+                            Math.Abs(end.Get(1) - start.Get(1)))));
             }
         }
 
