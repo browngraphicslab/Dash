@@ -135,7 +135,7 @@ namespace Dash
                         };
                 this.AddFieldBinding(RenderTransformProperty, binding);
 
-                _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+               _templateEditor = ViewModel?.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
               
             }
 
@@ -379,32 +379,32 @@ namespace Dash
 
         public void ToggleTemplateEditor()
         {
-            if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
-            {
-                var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
-                    (RenderTransform as MatrixTransform).Matrix.OffsetY);
-                if (_templateEditor != null)
-                {
-                    Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-                    
-                    _templateEditor.SetHidden(!_templateEditor.GetHidden());
-                    ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                    return;
-                }
+	        if (ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey) == null)
+	        {
+		        var where = new Point((RenderTransform as MatrixTransform).Matrix.OffsetX + ActualWidth + 60,
+			        (RenderTransform as MatrixTransform).Matrix.OffsetY);
+		        if (_templateEditor != null)
+		        {
+			        Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
 
-                _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
-	           
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                //creates a doc controller for the image(s)
-                Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
-            }
-            else
-            {
-                _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
-                ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
-                _templateEditor.SetHidden(!_templateEditor.GetHidden());
-            }
-        }
+			        _templateEditor.SetHidden(!_templateEditor.GetHidden());
+			        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+			        return;
+		        }
+
+		        _templateEditor = new TemplateEditorBox(ViewModel.LayoutDocument, where, new Size(1000, 540)).Document;
+
+		        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+		        //creates a doc controller for the image(s)
+		        Actions.DisplayDocument(ParentCollection.ViewModel, _templateEditor, where);
+	        }
+	        else
+	        {
+		        _templateEditor = ViewModel.DataDocument.GetField<DocumentController>(KeyStore.TemplateEditorKey);
+		        ViewModel.DataDocument.SetField(KeyStore.TemplateEditorKey, _templateEditor, true);
+		        _templateEditor.SetHidden(!_templateEditor.GetHidden());
+	        }
+		}
 
         #region StandardCollectionView
 
@@ -932,7 +932,8 @@ namespace Dash
             if (ParentCollection != null)
             {
                 FadeOut.Begin();
-                _templateEditor?.SetHidden(true);
+				//TODO: if template editor is active, hide it
+                //_templateEditor?.SetHidden(true);
 
                 if (addTextBox)
                 {

@@ -226,6 +226,7 @@ namespace Dash
 			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
 
 			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+			//workingDoc.SetField(KeyStore.TemplateEditorKey, DataDocument);
 			// if the working document is already a template box, initialize with that template
 		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
 		            .Equals(TemplateBox.DocumentType) ?? false)
@@ -869,7 +870,7 @@ namespace Dash
 			xKeyBox.Text = text;
 			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
 
-		    ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
+			if (xFormatItemsButtonStack.Visibility == Visibility.Collapsed) ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
 
 		}
 
@@ -1490,12 +1491,7 @@ namespace Dash
 	                stack = xFormatItemsButtonStack;
 	                arrow = xFormatItemsArrow;
 	                animation = xFadeAnimationFormat;
-	                break;
-	            case "xFormatTemplateHeader":
-	                stack = xFormatTemplateButtonStack;
-	                arrow = xFormatTemplateArrow;
-	                animation = xFadeAnimationFormatTemplate;
-	                break;
+		            break;
 	            case "xOptionsHeader":
 	                stack = xOptionsButtonStack;
 	                arrow = xOptionsArrow;
@@ -2417,6 +2413,14 @@ namespace Dash
                     break;
 	        }
         }
+
+		//IF WE WANT TO CLOSE THE FORMAT ITEMS DROP DOWN WHEN THE ITEM LOSES FOCUS
+		/*
+		private void XWorkspace_OnPointerPressed_(object sender, PointerRoutedEventArgs e)
+		{
+			if (xFormatItemsButtonStack.Visibility == Visibility.Visible) ExpandButtonOnClick(xFormatItemsHeader, new RoutedEventArgs());
+		}
+		*/
 	}
 
 }
