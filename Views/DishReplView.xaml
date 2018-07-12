@@ -44,9 +44,14 @@
                                         <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
                                                  Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  />
                                     </Grid>
-
-                                    <local:ReplLineNode Grid.Row="1"></local:ReplLineNode>
-
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text=" " Grid.Column="0" />
+                                        <local:ReplLineNode Grid.Column="1"></local:ReplLineNode>
+                                    </Grid>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>

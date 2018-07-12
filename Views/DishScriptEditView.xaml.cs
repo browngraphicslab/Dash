@@ -140,7 +140,13 @@ namespace Dash
             var width = _viewDoc.GetWidthField().Data;
             var height = _viewDoc.GetHeightField().Data;
 
-            var note = new DishReplBox(pt.X - width - 15, pt.Y, width, height, commands, results, _scope.VariableDoc());
+            var indents = new ListController<NumberController>();
+            foreach (var unused in results)
+            {
+                indents.Add(new NumberController(3));
+            }
+
+            var note = new DishReplBox(pt.X - width - 15, pt.Y, width, height, commands, results, _scope.VariableDoc(), indents);
 
             Actions.DisplayDocument(collection, note.Document);
         

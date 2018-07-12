@@ -49,7 +49,7 @@
                 Tapped="XArrowBlock_OnTapped" 
                 RightTapped="XSnapshotArrowBlock_OnRightTapped"
                 Foreground="{x:Bind Foreground, Mode=OneWay}" 
-                Text="{x:Bind ViewModel.ResultText}"/>
+                Text="{x:Bind ViewModel.ResultText, Mode=OneWay}"/>
         </Grid>
         <StackPanel x:Name="xChildren" Margin="30, 0, 0, 0" Visibility ="Collapsed"/>
     </StackPanel>

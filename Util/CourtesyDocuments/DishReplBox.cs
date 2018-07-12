@@ -11,7 +11,8 @@ namespace Dash
         private static readonly string PrototypeId = "BD5890ED-EC33-4FDB-AA16-E633FA3BCEC5";
 
         public DishReplBox(double x = 0, double y = 0, double w = 200, double h = 20, 
-            ListController<TextController> inputs = null, ListController<FieldControllerBase> outputs = null, DocumentController scope = null)
+            ListController<TextController> inputs = null, ListController<FieldControllerBase> outputs = null, 
+            DocumentController scope = null, ListController<NumberController> indents = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
             SetupDocument(DocumentType, PrototypeId, "DishReplBox Prototype Layout", fields);
@@ -19,7 +20,7 @@ namespace Dash
             {   [KeyStore.TitleKey] = new TextController("Dish Repl Box"),
                 [KeyStore.ReplLineTextKey] = inputs ?? new ListController<TextController>(),
                 [KeyStore.ReplValuesKey] = outputs ?? new ListController<FieldControllerBase>(),
-                [KeyStore.ReplCurrentIndentKey] = new ListController<NumberController>(),
+                [KeyStore.ReplCurrentIndentKey] = indents ?? new ListController<NumberController>(),
                 [KeyStore.ReplScopeKey] = scope ?? new DocumentController(),
             }, DocumentType.DefaultType);
             Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
