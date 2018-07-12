@@ -102,7 +102,7 @@ namespace Dash
 				else
 				{
 					var dir = distPoint.X > 0 ? DockDirection.Left : DockDirection.Right;
-					MainPage.Instance.Dock(target, dir);
+					MainPage.Instance.DockManager.Dock(target, dir);
 				}
 		    }
 			

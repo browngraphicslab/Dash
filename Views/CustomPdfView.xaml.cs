@@ -213,7 +213,12 @@ namespace Dash
             return dc;
         }
 
-        private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
+	    public VisualAnnotationManager GetAnnotationManager()
+	    {
+		    return _annotationManager;
+	    }
+
+	    private void ItemsControl_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             NewRegionEnded?.Invoke(sender, e);
             //if (_selectionStart == null)
