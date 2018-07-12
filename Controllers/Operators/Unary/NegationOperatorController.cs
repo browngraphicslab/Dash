@@ -11,7 +11,7 @@ namespace Dash
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController( "Negate", "A17762A4-F8CA-4061-8554-0D4EC82E6733");
 
-        public override FieldControllerBase Compute(NumberController inContent) => new NumberController(-1 * inContent.Data);
+        public override FieldControllerBase Compute(NumberController inContent) => new NumberController(-inContent.Data);
 
         public override FieldControllerBase GetDefaultController() => new NegationOperatorController();
     }

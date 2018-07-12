@@ -42,6 +42,7 @@ namespace Dash
 
             outputs[ResultsKey] = null;
 
+            //TODO make different operators for string and list (use overrides instead of type checking)
             switch (indexable)
             {
                 case BaseListController listToIndex:

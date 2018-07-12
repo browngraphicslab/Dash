@@ -37,7 +37,7 @@ namespace Dash
         private static readonly KeyController TypeKey = new KeyController("List appending", "2F2C4A08-C81D-426E-913D-A5FBE5436619");
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var listA = inputs[ListAKey] as ListController<FieldControllerBase>;
+            var listA = inputs[ListAKey] as BaseListController;
             var toAppendController = inputs[ToAppendKey];
 
             var typeList = listA?.ListSubTypeInfo;
@@ -45,8 +45,9 @@ namespace Dash
 
             if (typeList != typeElement) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeElement, typeList, InvalidListOperationErrorModel.OpError.AppendType));
 
-            listA.Add(toAppendController);
-            outputs[ResultsKey] = listA;
+            var l = (BaseListController) listA.Copy();
+            l.AddBase(toAppendController);
+            outputs[ResultsKey] = l;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListAppendOperatorController();

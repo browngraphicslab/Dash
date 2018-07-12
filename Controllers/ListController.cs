@@ -151,16 +151,6 @@ namespace Dash
          */
         public ListModel ListModel => Model as ListModel;
 
-        /*
-         * Returns the length of the list
-         */
-        public int Length => TypedData.Count;
-
-        /*
-         * Returns the element at the last index of the list controller
-         */
-        public T Last => TypedData.Last();
-
         // @IList<T> //
         /*
          * Returns the zero-based index of the specified element in the list. If absent, returns -1
@@ -189,7 +179,6 @@ namespace Dash
 
             var prevElement = TypedData[index]; // for undo and event args
 
-            // extracts a copy of the list, amends it with the replacement, and deep sets it as the value of TypeData (also gets updated in the database)
             TypedData[index] = value;
             ListModel.Data[index] = value.Id;
 
@@ -232,6 +221,8 @@ namespace Dash
          */
         public override StringSearchModel SearchForString(string searchString)
         {
+            //TODO We should cache the result instead of calling Search for string on the same controller twice, 
+            //and also we should probably figure out how many things in TypedData match, and use that for ranking
             return TypedData.FirstOrDefault(controller => controller.SearchForString(searchString).StringFound)?.SearchForString(searchString) ?? StringSearchModel.False;
         }
 
@@ -239,29 +230,9 @@ namespace Dash
         /*
          * Wraps the CopyTo method in the format mandated by IList<Implementation>
          */
-        public void CopyTo(T[] destination, int index) => CopyToManager(destination, index);
-
-        /*
-         * Again wraps List's CopyTo method, which, if possible, copies *all* of *this* ListController's list to the specified portion of the destination array passed in
-         */
-        private void CopyToManager(T[] destination, int index)
-        {
-            if (destination == null) throw new ArgumentNullException(); // cannot copy to a non-existent array
-
-            // ensures that there's enough space in the destination array (from starting index to the end)
-            index = CheckedIndex(index, destination);
-            if (destination.Length - index < Length) throw new ArgumentException();
-
-            TypedData.CopyTo(destination, index);
-        }
+        public void CopyTo(T[] destination, int index) => TypedData.CopyTo(destination, index);
 
         public override string ToString() => $"[{string.Join(", ", TypedData)}]";
-
-        public override string GetTypeAsString()
-        {
-            if (ListModel.SubTypeInfo == TypeInfo.Document) return "List:Doc"; // uses truncated 'doc' instead of 'document'
-            return "List:" + ListModel.SubTypeInfo;
-        }
 
         public override object GetValue(Context context) => TypedData.ToList();
 
@@ -494,7 +465,7 @@ namespace Dash
             }
             TypedData.Clear();
 
-            var newEvent = new UndoCommand(() => ClearManager(false), () => TypedData = prevList);
+            var newEvent = new UndoCommand(() => ClearManager(false), () => SetTypedData(prevList, false));
 
             UpdateOnServer(withUndo ? newEvent : null);
             OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Clear, TypedData, prevList, 0));

@@ -50,6 +50,7 @@ namespace Dash
             Dictionary<KeyController, FieldControllerBase> outputs,
             DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
+            //TODO ScriptLang - Why is varName needed here
             var varName = (inputs[VariableNameKey] as TextController)?.Data;
             var varList = (inputs[VariableKey] as BaseListController)?.Data;
             var varIndex = (int)(inputs[IndexKey] as NumberController)?.Data;

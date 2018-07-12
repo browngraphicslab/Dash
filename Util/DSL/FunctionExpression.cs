@@ -24,6 +24,7 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
             var opName = Op.Parse(_funcName);

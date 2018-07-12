@@ -37,6 +37,7 @@ namespace Dash
             {
                 FieldControllerBase dataVal = _dictionary[KeyStore.DataKey.Name].Execute(scope);
 
+                //TODO ScriptLang - this is probably gonna be turned into separate functions, so this can maybe just return a normal document all the time
                 switch (dataVal.TypeInfo)
                 {
                     case TypeInfo.Text:

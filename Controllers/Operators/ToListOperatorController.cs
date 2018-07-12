@@ -34,6 +34,7 @@ namespace Dash
             var source = inputs[SourceKey];
             BaseListController newList = null;
 
+            //TODO Use operator overloading instead of typeswitching
             switch (source.TypeInfo)
             {
                 case TypeInfo.Text:
