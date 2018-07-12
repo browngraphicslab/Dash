@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Contacts;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
@@ -405,20 +407,13 @@ namespace Dash
             }
             foreach (var dm in collection.ViewModel.DocumentViewModels)
             {
-                var dmd = dm.DocumentController.GetDataDocument();
-                var dd = document.GetDataDocument();
                 if (dm.DocumentController.Equals(document) || (compareDataDocuments && dm.DocumentController.GetDataDocument().Equals(document.GetDataDocument())))
                 {
                     var containerViewModel = rootViewModel ?? dm;
-                    var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
-                    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
-                    var shift = canvas.TransformToVisual(MainDocView).TransformPoint(
-                        new Point(
-                            containerViewModel.XPos + containerViewModel.ActualSize.X / 2,
-                            containerViewModel.YPos + containerViewModel.ActualSize.Y / 2));
-                    if (animated)
-                        root.MoveAnimated(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
-                    else root.Move(new TranslateTransform() { X = center.X - shift.X, Y = center.Y - shift.Y });
+	                var distance = GetDistanceFromMainDocCenter(containerViewModel.DocumentController);
+                    //if (animated)
+                        root.MoveAnimated(new TranslateTransform() { X = distance.X, Y = distance.Y });
+					//else root.Move(new TranslateTransform() { X = distance.X, Y = distance.Y });
                     return true;
                 }
                 else if (dm.Content is CollectionView && (dm.Content as CollectionView)?.CurrentView is CollectionFreeformBase)
@@ -429,6 +424,24 @@ namespace Dash
             }
             return false;
         }
+
+	    public Point GetDistanceFromMainDocCenter(DocumentController dc)
+		{
+			var dvm = MainDocView.DataContext as DocumentViewModel;
+			var root = (dvm.Content as CollectionView)?.CurrentView as CollectionFreeformBase;
+
+			var canvas = root.GetItemsControl().ItemsPanelRoot as Canvas;
+		    var center = new Point((MainDocView.ActualWidth - xMainTreeView.ActualWidth) / 2, MainDocView.ActualHeight / 2);
+		    var dcPoint = dc.GetDereferencedField<PointController>(KeyStore.PositionFieldKey, null).Data;
+		    var dcSize = dc.GetDereferencedField<PointController>(KeyStore.ActualSizeKey, null).Data;
+			var shift = canvas.TransformToVisual(MainDocView).TransformPoint(new Point(
+				dcPoint.X + dcSize.X / 2,
+				dcPoint.Y + dcSize.Y / 2
+		    ));
+
+			Debug.WriteLine(new Point(center.X - shift.X, center.Y - shift.Y));
+		    return new Point(center.X - shift.X, center.Y - shift.Y);
+	    }
 
         private void CoreWindowOnKeyDown(CoreWindow sender, KeyEventArgs e)
         {
