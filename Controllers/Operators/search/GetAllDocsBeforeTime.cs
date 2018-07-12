@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents before a given time
     /// </summary>
-    [OperatorType("before")]
+    [OperatorType(Op.Name.before)]
     public class GetAllDocsBeforeTime : OperatorController
     {
         //Input keys
@@ -45,7 +45,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
 

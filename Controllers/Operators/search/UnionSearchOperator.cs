@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("unionSearch")]
+    [OperatorType(Op.Name.union_search)]
     public class UnionSearchOperator : OperatorController
     {
         //Input keys
@@ -38,9 +38,10 @@ namespace Dash
         {
             [ResultsKey] = TypeInfo.Document
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var d1 = inputs[Dict1Key] as DocumentController;
             var d2 = inputs[Dict2Key] as DocumentController;

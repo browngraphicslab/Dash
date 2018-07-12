@@ -39,7 +39,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var aDocs = (inputs[AKey] as ListController<DocumentController>).GetElements();
             var bDocs = (inputs[BKey] as ListController<DocumentController>).GetElements();

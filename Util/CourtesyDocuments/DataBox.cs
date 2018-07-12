@@ -35,8 +35,10 @@ namespace Dash
             //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
             //}
 
-            if (data is ImageController)
+            if (data is ImageController img)
             {
+                if (img.Data.LocalPath.EndsWith(".pdf"))
+                    return PdfBox.MakeView(documentController, context);
                 return ImageBox.MakeView(documentController, context);
             }
 			if (data is VideoController)
@@ -55,7 +57,7 @@ namespace Dash
 			{
                 // hack to check if the dc is a view document
                 FrameworkElement view = null;
-                if (dc.GetDereferencedField(KeyStore.DocumentContextKey, context) != null)
+                if (KeyStore.TypeRenderer.ContainsKey(dc.DocumentType))
                 {
                     view =  dc.MakeViewUI(context);
                 }

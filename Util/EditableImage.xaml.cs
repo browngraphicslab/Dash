@@ -34,7 +34,7 @@ using Visibility = Windows.UI.Xaml.Visibility;
 namespace Dash
 {
 
-	public partial class EditableImage : INotifyPropertyChanged, IAnnotationEnabled
+	public partial class EditableImage : INotifyPropertyChanged, IVisualAnnotatable
 	{
 		private readonly Context _context;
 		private readonly DocumentController _docCtrl;
@@ -42,30 +42,16 @@ namespace Dash
 		private ImageController _imgctrl;
 		public bool IsCropping;
 		private DocumentView _docview;
-		private Point _anchorPoint;
-		private bool _isDragging;
-		private DocumentView _lastNearest;
-		public ImageRegionBox _selectedRegion = null;
-		private List<ImageRegionBox> _visualRegions;
-		private ListController<DocumentController> _dataRegions;
-		private RegionVisibilityState _regionState;
-		private bool _isLinkMenuOpen = false;
-		private AnnotationManager _annotationManager;
+	    public VisualAnnotationManager AnnotationManager;
+        
+        // interface-required events to communicate with the AnnotationManager
+        public event PointerEventHandler NewRegionStarted;
+	    public event PointerEventHandler NewRegionMoved;
+	    public event PointerEventHandler NewRegionEnded;
 
-		private bool _isPreviousRegionSelected = false;
-
-		private Dictionary<TextBlock, DocumentController> _linkDict = null;
-		//public static KeyController RegionDefinitionKey = new KeyController
-
-		public Image Image => xImage;
+        public Image Image => xImage;
 
 		public event PropertyChangedEventHandler PropertyChanged;
-
-		private enum RegionVisibilityState
-		{
-			Visible,
-			Hidden
-		}
 
 		public EditableImage(DocumentController docCtrl, Context context)
 		{
@@ -75,48 +61,16 @@ namespace Dash
 			Image.Loaded += Image_Loaded;
 			// gets datakey value (which holds an imagecontroller) and cast it as imagecontroller
 			_imgctrl = docCtrl.GetDereferencedField(KeyStore.DataKey, context) as ImageController;
-			xRegionPostManipulationPreview._image = this;
-			
 
-			//load existing annotated regions
-			_visualRegions = new List<ImageRegionBox>();
-			_regionState = RegionVisibilityState.Hidden;
-			
-			_dataRegions = _docCtrl.GetDataDocument().GetField<ListController<DocumentController>>(KeyStore.RegionsKey);
-			if (_dataRegions != null)
-			{
-				foreach (var region in _dataRegions.TypedData)
-				{
-					var pos = region.GetPositionField().Data;
-					var width = region.GetWidthField().Data;
-					var height = region.GetHeightField().Data;
-					var imageSize = _docCtrl.GetField<PointController>(KeyStore.ActualSizeKey).Data;
-
-					var newBox = new ImageRegionBox {LinkTo = region};
-
-					if (pos.X + width <= imageSize.X && pos.Y + height <= imageSize.Y)
-					{
-						newBox.SetPosition(
-							pos,
-							new Size(width, height),
-							new Size(imageSize.X, imageSize.Y));
-						xRegionsGrid.Children.Add(newBox);
-						newBox.PointerPressed += xRegion_OnPointerPressed;
-						newBox.PointerEntered += Region_OnPointerEntered;
-						newBox.PointerExited += Region_OnPointerExited;
-						newBox._image = this;
-						_visualRegions.Add(newBox);
-						newBox.Hide();
-					}
-					
-				}
-			}
-
-			//this.FormatLinkMenu();
-			
+			// existing annotated regions are loaded with the VisualAnnotationManager
 		}
 
-		public async Task ReplaceImage()
+	    public void RegionSelected(object region, Point pt, DocumentController chosenDoc = null)
+	    {
+	        AnnotationManager.RegionSelected(region, pt, chosenDoc);
+	    }
+
+	    public async Task ReplaceImage()
 		{
 			_imgctrl = _docCtrl.GetDereferencedField<ImageController>(KeyStore.DataKey, new Context());
 
@@ -191,7 +145,7 @@ namespace Dash
 			_docview = this.GetFirstAncestorOfType<DocumentView>();
 			Focus(FocusState.Keyboard);
 			_cropControl = new StateCropControl(_docCtrl, this);
-			_annotationManager = new AnnotationManager(this);
+			AnnotationManager = new VisualAnnotationManager(this, _docCtrl, xAnnotations);
 		}
 
 		public async Task Rotate()
@@ -433,52 +387,19 @@ namespace Dash
 			IsCropping = false;
 			_docview.showControls();
 			xGrid.Children.Remove(_cropControl);
-			xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+		    AnnotationManager.ToggleRegionPreviewVisibility(Visibility.Collapsed);
 		}
-
 
 		private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
 		{
 			if (IsCropping) e.Handled = true;
-			var properties = e.GetCurrentPoint(this).Properties;
-
-			if (_isDragging && properties.IsRightButtonPressed == false)
-			{
-				//update size of preview region box according to mouse movement
-
-				var pos = e.GetCurrentPoint(xImage).Position;
-
-				var x = Math.Min(pos.X, _anchorPoint.X);
-				var y = Math.Min(pos.Y, _anchorPoint.Y);
-				xRegionDuringManipulationPreview.Margin = new Thickness(x, y, 0, 0);
-
-				xRegionDuringManipulationPreview.Width = Math.Abs(pos.X - _anchorPoint.X);
-				xRegionDuringManipulationPreview.Height = Math.Abs(pos.Y - _anchorPoint.Y);
-			}
+            NewRegionMoved?.Invoke(this, e);
 		}
 
 		private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			if (IsCropping) e.Handled = true;
-			xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
-			if (MainPage.Instance.IsCtrlPressed())
-			{
-				return;
-			}
-
-			_isDragging = false;
-
-			if (xRegionDuringManipulationPreview.Width < 50 && xRegionDuringManipulationPreview.Height < 50) return;
-
-			// the box only sticks around if it's of a large enough size
-			xRegionPostManipulationPreview.SetPosition(
-				new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-				new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
-				new Size(xImage.ActualWidth, xImage.ActualHeight)
-			);
-			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
+			NewRegionEnded?.Invoke(this, e);
 		}
 
 		private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -488,284 +409,38 @@ namespace Dash
 
 			if (!IsCropping && properties.IsRightButtonPressed == false)
 			{
-
-				var pos = e.GetCurrentPoint(xImage).Position;
-				_anchorPoint = pos;
-				_isDragging = true;
-
-				//reset and get rid of the region preview
-				xRegionDuringManipulationPreview.Width = 0;
-				xRegionDuringManipulationPreview.Height = 0;
-				xRegionDuringManipulationPreview.Visibility = Visibility.Collapsed;
-				xRegionDuringManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-
-				
-				//if not selecting an already selected region, collapse preview boxes
-				if (!(xRegionPostManipulationPreview.Column1.ActualWidth < pos.X) ||
-				    !(pos.X < xRegionPostManipulationPreview.Column1.ActualWidth +
-				      xRegionPostManipulationPreview.Column2.ActualWidth) ||
-				    !(xRegionPostManipulationPreview.Row1.ActualHeight < pos.Y) ||
-				    !(pos.Y < xRegionPostManipulationPreview.Row1.ActualHeight +
-				      xRegionPostManipulationPreview.Row2.ActualHeight))
-				{
-					this.DeselectRegions();
-				}
-				else
-				{
-					//delete if control is pressed
-					if (MainPage.Instance.IsAltPressed())
-					{
-						this.DeleteRegion(_selectedRegion);
-						_isPreviousRegionSelected = false;
-						return;
-					}  
-					//select otherwise
-					//if (xLinkStack.Visibility == Visibility.Collapsed)
-					if (!_isLinkMenuOpen) this.RegionSelected(_selectedRegion, e.GetCurrentPoint(MainPage.Instance).Position);
-				}
-			}
+			    NewRegionStarted?.Invoke(this, e);
+            }
 		}
-
-
-		public bool IsSomethingSelected()
-		{
-			return xRegionPostManipulationPreview.Visibility == Windows.UI.Xaml.Visibility.Visible;
-		}
-
 
 		public DocumentController GetRegionDocument()
 		{
-			if (!this.IsSomethingSelected()) return _docCtrl;
-
-			DocumentController imNote = null;
-
-			//if region is selected, access the selected region's doc controller
-			if (_isPreviousRegionSelected && _selectedRegion != null)
-			{
-				//add this link to list of links
-				imNote = _selectedRegion.LinkTo;
-			}
-			else
-			{
-				// the bitmap streaming to crop doesn't work yet
-				imNote = new ImageNote(_imgctrl.ImageSource,
-						new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-						new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight))
-					.Document;
-                imNote.SetRegionDefinition(_docCtrl);
-
-				//add to regions list
-				var regions = _docCtrl.GetDataDocument()
-					.GetDereferencedField<ListController<DocumentController>>(KeyStore.RegionsKey, null);
-				if (regions == null)
-				{
-					var dregions = new List<DocumentController>();
-					dregions.Add(imNote);
-					_docCtrl.GetDataDocument()
-						.SetField<ListController<DocumentController>>(KeyStore.RegionsKey, dregions, true);
-				}
-				else
-				{
-					regions.Add(imNote);
-				}
-
-				var newBox = new ImageRegionBox { LinkTo = imNote };
-
-				// use During Preview here because it's the one with actual pixel measurements
-				newBox.SetPosition(
-					new Point(xRegionDuringManipulationPreview.Margin.Left, xRegionDuringManipulationPreview.Margin.Top),
-					new Size(xRegionDuringManipulationPreview.ActualWidth, xRegionDuringManipulationPreview.ActualHeight),
-					new Size(xImage.ActualWidth, xImage.ActualHeight));
-				xRegionsGrid.Children.Add(newBox);
-				newBox.PointerPressed += xRegion_OnPointerPressed;
-				newBox._image = this;
-				_visualRegions.Add(newBox);
-				newBox.PointerEntered += Region_OnPointerEntered;
-				newBox.PointerExited += Region_OnPointerExited;
-				xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
-			}
-			return imNote;
+		    return AnnotationManager.GetRegionDocument();
 		}
 
-		
-		private void xRegion_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-		{
-			e.Handled = false;
-			this.RegionSelected((ImageRegionBox) sender, e.GetCurrentPoint(MainPage.Instance).Position);
-			e.Handled = true;
-		}
+	    public DocumentController GetDocControllerFromSelectedRegion()
+	    {
+            // the bitmap streaming to crop doesn't work yet
+	        var imNote = new ImageNote(_imgctrl.ImageSource, xAnnotations.GetTopLeftPoint(),
+	                xAnnotations.GetDuringPreviewActualSize()).Document;
+            imNote.SetRegionDefinition(_docCtrl);
 
-		public void RegionSelected(object region, Point pos, DocumentController chosenDC = null)
-		{
-			if (region == null) return;
+	        return imNote;
+	    }
 
-			
-			DocumentController theDoc = null;
+	    public FrameworkElement Self()
+	    {
+	        return this;
+	    }
 
-			if (region is ImageRegionBox)
-			{
-				//get the linked doc of the selected region
-				var imageRegion = (ImageRegionBox) region;
-				theDoc = imageRegion.LinkTo;
-				if (theDoc == null) return;
+	    public Size GetTotalDocumentSize()
+	    {
+	        return new Size(xImage.ActualWidth, xImage.ActualHeight);
+	    }
 
-				this.SelectRegion(imageRegion);
-			}
-			else
-			{
-				 theDoc = _docCtrl;
-			}
-
-			//delete if control is pressed
-			if (MainPage.Instance.IsAltPressed() && region is ImageRegionBox)
-			{
-				this.DeleteRegion((ImageRegionBox) region);
-				_isPreviousRegionSelected = false;
-				return;
-			}
-
-			if (pos.X == 0 && pos.Y == 0) pos = _docCtrl.GetField<PointController>(KeyStore.PositionFieldKey).Data;
-
-			_annotationManager.RegionPressed(theDoc, pos, chosenDC);
-
-		}
-
-		private void OnLoaded(object sender, RoutedEventArgs e)
-		{
-			//UI for preview boxes
-			xRegionPostManipulationPreview.xRegionBox.Fill = new SolidColorBrush(Colors.AntiqueWhite);
-			xRegionPostManipulationPreview.xRegionBox.Stroke = new SolidColorBrush(Colors.SaddleBrown);
-			xRegionPostManipulationPreview.xRegionBox.StrokeDashArray = new DoubleCollection() { 4 };
-
-			xRegionPostManipulationPreview.xRegionBox.StrokeThickness = 1.5;
-			xRegionPostManipulationPreview.xRegionBox.Opacity = 0.5;
-		}
-
-		//delete passed-in region
-		public void DeleteRegion(ImageRegionBox region)
-		{
-			//collapse any open selection box & links
-			xRegionPostManipulationPreview.Visibility = Visibility.Collapsed;
-			
-			//remove actual region
-			if (region != null)
-			{
-				xRegionsGrid.Children.Remove(region);
-				_visualRegions?.Remove(region);
-				_dataRegions?.Remove(region.LinkTo);
-			}
-			
-			//if region is selected, unhighlight the linked doc
-			if (region == _selectedRegion && _lastNearest?.ViewModel?.DocumentController != null)
-			{
-				MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-				_lastNearest = null;
-				//TODO: Remove annotaion from workspace?
-			}
-
-			this.DeselectRegions();
-		}
-
-		private void SelectRegion(ImageRegionBox region)
-		{
-			_selectedRegion = region;
-			_isPreviousRegionSelected = true;
-			//create a preview region to show that this region is selected
-			xRegionDuringManipulationPreview.Width = 0;
-			xRegionDuringManipulationPreview.Height = 0;
-			xRegionPostManipulationPreview.Column1.Width = region.Column1.Width;
-			xRegionPostManipulationPreview.Column2.Width = region.Column2.Width;
-			xRegionPostManipulationPreview.Column3.Width = region.Column3.Width;
-			xRegionPostManipulationPreview.Row1.Height = region.Row1.Height;
-			xRegionPostManipulationPreview.Row2.Height = region.Row2.Height;
-			xRegionPostManipulationPreview.Row3.Height = region.Row3.Height;
-			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Visible;
-			//xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
-		}
-
-		//deselects all regions on an image
-		private void DeselectRegions()
-		{
-			_isPreviousRegionSelected = false;
-			xRegionPostManipulationPreview.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-			//xRegionPostManipulationPreview.xCloseRegionButton.Visibility = Visibility.Collapsed;
-			_linkDict?.Clear();
-
-			//unhighlight last selected regions' link
-			if (_lastNearest?.ViewModel?.DocumentController != null)
-			{
-				MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-			}
-		}
-
-		//ensures all regions are visible
-		public void ShowRegions()
-		{
-			_regionState = RegionVisibilityState.Visible;
-
-			if (_visualRegions != null && _visualRegions.Any())
-			{
-				foreach (ImageRegionBox region in _visualRegions)
-				{
-					region.Show();
-				}
-			}
-		}
-
-		//hides all visible regions 
-		public void HideRegions()
-		{
-			_regionState = RegionVisibilityState.Hidden;
-
-			if (_visualRegions != null && _visualRegions.Any())
-			{
-				//first, deselect any selected regions
-				this.DeselectRegions();
-
-				foreach (ImageRegionBox region in _visualRegions)
-				{
-					//region.Visibility = Visibility.Collapsed;
-					region.Hide();
-				}
-			}
-		}
-
-		//shows region when user hovers over it
-		private void Region_OnPointerEntered(object sender, RoutedEventArgs e)
-		{
-			if (sender is ImageRegionBox)
-			{
-				ImageRegionBox region = (ImageRegionBox) sender;
-				region.Show();
-			}
-		}
-
-		//hides region when user's cursor leaves it if region visibiliyt mode is hidden
-		private void Region_OnPointerExited(object sender, RoutedEventArgs e)
-		{
-			if (sender is ImageRegionBox)
-			{
-				ImageRegionBox region = (ImageRegionBox)sender;
-				if (_regionState == RegionVisibilityState.Hidden) region.Hide(); 
-			}
-		}
-
-		//called when the selected region changes
-		public void UpdateHighlight(DocumentView nearestOnCollection)
-		{
-			//unhighlight last doc
-			if (_lastNearest?.ViewModel != null)
-			{
-				MainPage.Instance.HighlightDoc(_lastNearest.ViewModel.DocumentController, false, 2);
-			}
-
-			//highlight this linked doc
-			_lastNearest = nearestOnCollection;
-			MainPage.Instance.HighlightDoc(nearestOnCollection.ViewModel.DocumentController, false, 1);
-		}
-
-		
+	    public FrameworkElement GetPositionReference()
+	    {
+	        return xImage;
+	    }
 	}
-
-
 }

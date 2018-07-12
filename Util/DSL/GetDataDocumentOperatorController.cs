@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("dataDoc", "dataDocument")]
+    [OperatorType(Op.Name.data_doc, Op.Name.data_document)]
     public class GetDataDocumentOperatorController : OperatorController
     {
         //Input keys
@@ -48,7 +48,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDocument = inputs[InputDocumentKey] as DocumentController;
             if (inputDocument != null)

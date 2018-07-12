@@ -183,7 +183,7 @@ namespace Dash
             try
             {
                 //fmController = DSL.InterpretUserInput(stringValue, true);
-                fmController = DSL.InterpretUserInput(stringValue, state: ScriptState.CreateStateWithThisDocument(activeContextDoc));
+                fmController = DSL.InterpretUserInput(stringValue, scope: Scope.CreateStateWithThisDocument(activeContextDoc));
             }
             catch (DSLException e)
             {

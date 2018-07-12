@@ -27,7 +27,7 @@ namespace Dash
         private static readonly string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
 
-        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200, ImageRegionBox region = null)
+        public ImageBox(FieldControllerBase refToImage, double x = 0, double y = 0, double w = 200, double h = 200, RegionBox region = null)
         {
 			var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             (fields[KeyStore.HorizontalAlignmentKey] as TextController).Data = HorizontalAlignment.Left.ToString();
@@ -51,27 +51,6 @@ namespace Dash
 
             return editableImage;
         }
-
-	    public static FrameworkElement MakeView(DocumentController docController, Context context, ImageRegionBox region)
-	    {
-		    // create the image
-
-		    var editableImage = new EditableImage(docController, context);
-
-		    var image = editableImage.Image;
-
-		    // setup bindings on the image
-		    SetupBindings(image, docController, context);
-		    SetupImageBinding(image, docController, context);
-
-			//add existing regions
-		    if (region != null)
-		    {
-				editableImage.xRegionsGrid.Children.Add(region);
-		    }
-		    return editableImage;
-	    }
-
 
 		protected static void SetupImageBinding(Image image, DocumentController controller,
             Context context)

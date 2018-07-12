@@ -91,7 +91,6 @@ namespace DashShared
         public static string LocalServerDocumentFilepath = "dash.documents"; //
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
-
         public const int MillisecondBetweenLocalSave = 1000; //1 second
 
         //BACKUP CONSTANTS

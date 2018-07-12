@@ -9,7 +9,7 @@ namespace DashShared
         Number = 0x1,
         Text = 0x2,
         Image = 0x4,
-		Video = 0x8,
+        Video = 0x8,
         Document = 0x10,
         PointerReference = 0x20,
         DocumentReference = 0x40,
@@ -26,6 +26,8 @@ namespace DashShared
         AccessStream = 0x20000,
         Template = 0x40000,
         Reference = PointerReference | DocumentReference,
-        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle | Key | Video | DateTime | Audio | Bool | AccessStream
+
+        Any = Number | Text | Image | Document | Reference | Operator | Point | List | Ink | RichText | Rectangle |
+              Key | Video | DateTime | Audio | Bool
     }
 }

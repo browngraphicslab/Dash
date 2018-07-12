@@ -2,27 +2,20 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
-    [OperatorType("getField")]
-    public class GetFieldOperatorController : OperatorController
+    [OperatorType(Op.Name.get_field)]
+    public sealed class GetFieldOperatorController : OperatorController
     {
         public GetFieldOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
-        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
-        public override FieldControllerBase GetDefaultController()
-        {
-            throw new NotImplementedException();
-        }
+        public override FieldControllerBase GetDefaultController() => throw new NotImplementedException();
+
         public override KeyController OperatorType { get; } = TypeKey;
         private static readonly KeyController TypeKey = new KeyController("GetField", "6277A484-644D-4BC4-8D3C-7F7DFCBA6517");
 
@@ -42,9 +35,10 @@ namespace Dash
         {
             [ResultFieldKey] = TypeInfo.Any,
         };
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var keyName = (inputs[KeyNameKey] as TextController)?.Data;
 
@@ -62,34 +56,8 @@ namespace Dash
             var doc = inputs[InputDocumentKey] as DocumentController;
             if (!string.IsNullOrEmpty(keyName) && doc != null)
             {
-                var fields = doc.EnumFields().ToArray();
-
-                var controller = FindInDocFields(fields, keyName);
-
-                outputs[ResultFieldKey] = controller ?? new TextController();
+                outputs[ResultFieldKey] = doc.GetField(new KeyController(keyName))?? new TextController();
             }
-        }
-
-        private FieldControllerBase FindInDocFields(KeyValuePair<KeyController, FieldControllerBase>[] fields, string keyName)
-        {
-            foreach (var key in fields) //check exact string equality
-            {
-                if (key.Key.Name.Replace(" ", "").Equals(keyName))
-                {
-
-                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
-                }
-            }
-
-            foreach (var key in fields) //check to lower string equality
-            {
-                if (key.Key.Name.Replace(" ", "").ToLower().Equals(keyName.ToLower()))
-                {
-                    return key.Value.DereferenceToRoot(new Context(/*doc*/));
-                }
-            }
-
-            return null;
         }
     }
 }

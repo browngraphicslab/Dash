@@ -55,7 +55,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             initProto();
             var text = (inputs[TextKey] is ListController<TextController>) ? (inputs[TextKey] as ListController<TextController>).Data.Aggregate("", (init, fm) => init + " " + (fm as TextController).Data ) :

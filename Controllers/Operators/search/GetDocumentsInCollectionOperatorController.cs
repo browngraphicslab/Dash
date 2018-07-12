@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("coll", "inside")]
+    [OperatorType(Op.Name.coll, Op.Name.inside)]
     public class GetDocumentsInCollectionOperatorController : OperatorController
     {
         //Input keys
@@ -18,10 +18,7 @@ namespace Dash
         public static readonly KeyController ResultsKey = new KeyController("Results");
 
 
-        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+        public GetDocumentsInCollectionOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public GetDocumentsInCollectionOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -41,11 +38,9 @@ namespace Dash
         {
             [ResultsKey] = TypeInfo.List,
         };
-
-
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var searchTerm = inputs[TextKey] as TextController;
             if (searchTerm != null && searchTerm.Data != null)
