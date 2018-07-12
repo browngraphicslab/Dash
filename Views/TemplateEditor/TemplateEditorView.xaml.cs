@@ -86,7 +86,7 @@ namespace Dash
         private void TemplateEditorView_DocumentDeleted(DocumentView sender,
 			DocumentView.DocumentViewDeletedEventArgs args)
 		{
-		    Clear();
+		    //Clear();
 			if (LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
 					.GetField(KeyStore.TemplateEditorKey) != null)
 				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument()
@@ -237,156 +237,186 @@ namespace Dash
 	    }
 
 	    private void XWorkspace_OnLoaded(object sender, RoutedEventArgs e)
-		{
-			xFreeFormButton.Background = new SolidColorBrush(Colors.White);
+	    {
+	        xFreeFormButton.Background = new SolidColorBrush(Colors.White);
 
-			var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
-            //workingDoc.SetField(KeyStore.TemplateEditorKey, DataDocument);
-            // if the working document is already a template box, initialize with that template
-            if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
-		            .Equals(TemplateBox.DocumentType) ?? false)
-		    {
-		        DataDocument.SetField(KeyStore.DataKey,
-		            workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-		                .GetField<ListController<DocumentController>>(KeyStore.DataKey), true);
-				//check template style, override current template format if necessary
-			    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
-				        .GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
-			    {
-					this.FormatTemplateIntoList();
-			    }
-			    else
-			    {
-				    this.FormatTemplateIntoFreeform();
-			    }
-		    }
+	        var workingDoc = LayoutDocument.GetField<DocumentController>(KeyStore.DataKey);
+	        //workingDoc.SetField(KeyStore.TemplateEditorKey, DataDocument);
+	        // if the working document is already a template box, initialize with that template
+	        if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
+	                .Equals(TemplateBox.DocumentType) ?? false)
+	        {
+	            DataDocument.SetField(KeyStore.DataKey,
+	                workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+	                    .GetField<ListController<DocumentController>>(KeyStore.DataKey), true);
+	            //check template style, override current template format if necessary
+	            if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)
+	                    .GetField<NumberController>(KeyStore.TemplateStyleKey)?.Data == TemplateConstants.ListView)
+	            {
+	                this.FormatTemplateIntoList();
+	            }
+	            else
+	            {
+	                this.FormatTemplateIntoFreeform();
+	            }
+	        }
 
-			//initialize UI of workspace
-			this.FormatPanes();
-			this.FormatUploadTemplateFlyout();
+	        //initialize UI of workspace
+	        this.FormatPanes();
+	        this.FormatUploadTemplateFlyout();
+
+	        var rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height);
+	        var rectGeo = new RectangleGeometry {Rect = rect};
+	        xWorkspace.Clip = rectGeo;
+
+	        // sets the minimum bounds and adds the resizing tool
+	        Bounds = new Rect(0, 0, 70, 70);
+	        var resizer = new ResizingControls(this);
+	        xOuterWorkspace.Children.Add(resizer);
+	        RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
+	        RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
+
+	        //hide resize and ellipse controls for template editor
+	        var docView = this.GetFirstAncestorOfType<DocumentView>();
+	        docView.ViewModel.DisableDecorations = true;
+	        docView.hideControls();
+
+	        // determine if the active layout exists and has information about rows and columns
+	        var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
+	        if (activeLayout?.GetField(KeyStore.RowInfoKey) != null ||
+	            activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
+	        {
+	            // change the template editor into a grid view
+	            xItemsControlList.Visibility = Visibility.Collapsed;
+	            xItemsControlCanvas.Visibility = Visibility.Collapsed;
+
+	            xItemsControlGrid.Visibility = Visibility.Visible;
+	            xGridLeftDragger.Visibility = Visibility.Visible;
+	            xGridTopDragger.Visibility = Visibility.Visible;
+	            xRulerCorner.Visibility = Visibility.Visible;
+	        }
+
+	        //MAKE TEMPLATE VIEW
+	        TemplateLayout = DataDocument.MakeViewUI(new Context());
+	        TemplateLayout.Width = xWorkspace.Width;
+	        TemplateLayout.Height = xWorkspace.Height;
+	        TemplateLayout.Drop += XWorkspace_OnDrop;
+
+            // gets the parent collection's list of view models
+	        var parentCollectionViewModels = docView.ParentCollection.ViewModel.DocumentViewModels;
+            // gets the viewmodel whose data document matches the working document's doc context
+	        var workingDocViewModel = parentCollectionViewModels.FirstOrDefault(i => i.DocumentController.GetDataDocument()
+	            .Equals(workingDoc.GetField<DocumentController>(KeyStore.DocumentContextKey)));
+            // gets the view of the working document's view model
+	        var workingDocView = workingDocViewModel?.Content.GetFirstAncestorOfType<DocumentView>();
+            // listen for when the document view starts fading out
+	        workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
+	        //xWorkspace.Children.Add(TemplateLayout);
+
+	        //initialize layout documents on workspace
+	        DocumentViewModels.Clear();
+	        // loop through each layout document in the data document's data key
+	        var layoutDocsList = DataDocument
+	            .GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
+	        foreach (var layoutDoc in layoutDocsList)
+	        {
+	            // add them logically to the document controllers list
+	            DocumentControllers.Add(layoutDoc);
+	            // add them graphically to the document view models list
+	            // we must do both here because as of yet, there are no collection changed handles
+	            DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
+	            InitialDocumentControllers.Add(layoutDoc);
+	            //add copy for list view
+	            var copy = layoutDoc.GetViewCopy();
+	            copy.SetPosition(new Point(0, 0));
+	            ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
+	        }
+
+	        // update item source
+	        xItemsControlCanvas.ItemsSource = DocumentViewModels;
+	        xItemsControlGrid.ItemsSource = DocumentViewModels;
+
+	        // set the document context of the data doc (template) to the working document's data doc
+	        DataDocument.SetField(KeyStore.DocumentContextKey,
+	            LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
+
+	        //set background color
+	        var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
+	        var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
+	        xWorkspace.Background = backgroundColor;
+	        xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
+	        xDesignGridSizeComboBox.SelectedIndex = 0;
+	        xDesignGridVisibilityButton.IsChecked = false;
             
-		    var rect = new Rect(0, 0, xWorkspace.Width, xWorkspace.Height);
-			var rectGeo = new RectangleGeometry { Rect = rect };
-			xWorkspace.Clip = rectGeo;
+	        // if the title key doesn't exist or is empty
+	        if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
+	            !DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
+	        {
+	            // use a default title
+	            var title = "MyTemplate";
 
-			// sets the minimum bounds and adds the resizing tool
-			Bounds = new Rect(0, 0, 70, 70);
-			var resizer = new ResizingControls(this);
-			xOuterWorkspace.Children.Add(resizer);
-			RelativePanel.SetAlignHorizontalCenterWithPanel(resizer, true);
-			RelativePanel.SetAlignVerticalCenterWithPanel(resizer, true);
+                // gets the parents collection's list of document view models
+	            var parentViewModels = docView.ParentCollection.ViewModel.DocumentViewModels;
+                // finds all of the viewmodels that are template boxes
+	            var templateViewModels = parentViewModels
+	                .Where(dvm => dvm.DocumentController.GetActiveLayout()?.DocumentType
+	                                  .Equals(TemplateBox.DocumentType) ?? false).ToList();
+                // finds all of the templates whose names are default (start with MyTemplate)
+	            var defaultNamedTemplateViewModels =
+	                templateViewModels.Where(tvm => tvm.DocumentController.Title.StartsWith(title));
+                // retrieves a list of the templates titles
+	            var templateTitles = defaultNamedTemplateViewModels.Select(tvm => tvm.DocumentController.Title);
+                // finds all the viewmodels that are template editor boxes
+	            var templateEditorViewModels =
+	                parentViewModels.Where(
+	                    dvm => dvm.DocumentController.DocumentType.Equals(TemplateEditorBox.DocumentType) &&
+	                           !dvm.DocumentController.Equals(LayoutDocument));
+                // finds all the template editor viewmodels that aren't represented in the list of template viewmodels
+	            var missingTemplateEditorViewModels =
+	                templateEditorViewModels.Where(tevm => !templateTitles.Contains(tevm.DocumentController.Title));
+                // count both and add 1 (so we start counting at 1 and not 0)
+	            var number = templateViewModels.Count(tvm => tvm.DocumentController.Title.StartsWith(title)) +
+	                         missingTemplateEditorViewModels.Count(tevm => tevm.DocumentController.Title
+	                             .StartsWith(title)) + 1;
+                // append the number to the title
+	            title += number.ToString();
 
-			//hide resize and ellipse controls for template editor
-			var docView = this.GetFirstAncestorOfType<DocumentView>();
-			docView.ViewModel.DisableDecorations = true;
-			docView.hideControls();
-            
-            // determine if the active layout exists and has information about rows and columns
-		    var activeLayout = workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey);
-		    if (activeLayout?.GetField(KeyStore.RowInfoKey) != null || activeLayout?.GetField(KeyStore.ColumnInfoKey) != null)
-		    {
-                // change the template editor into a grid view
-		        xItemsControlList.Visibility = Visibility.Collapsed;
-		        xItemsControlCanvas.Visibility = Visibility.Collapsed;
+	            xTitleBlock.Text = title;
+	            DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
+	        }
 
-		        xItemsControlGrid.Visibility = Visibility.Visible;
-		        xGridLeftDragger.Visibility = Visibility.Visible;
-		        xGridTopDragger.Visibility = Visibility.Visible;
-		        xRulerCorner.Visibility = Visibility.Visible;
-		    }
+	        // create a new field binding to link the title with the editable text block
+	        var templateEditorBinding = new FieldBinding<TextController>
+	        {
+	            Document = DataDocument,
+	            Key = KeyStore.TitleKey,
+	            Mode = BindingMode.TwoWay
+	        };
+	        xTitleBlock.AddFieldBinding(EditableTextBlock.TextProperty, templateEditorBinding);
 
-            //MAKE TEMPLATE VIEW
-            TemplateLayout = DataDocument.MakeViewUI(new Context());
-			TemplateLayout.Width = xWorkspace.Width;
-			TemplateLayout.Height = xWorkspace.Height;
-			TemplateLayout.Drop += XWorkspace_OnDrop;
+	        // add event handlers
+	        DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
+	        xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
+	        docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
 
-		    var workingDocView =
-		        docView.ParentCollection.ViewModel.DocumentViewModels
-		            .FirstOrDefault(i => i.DocumentController.GetDataDocument()
-		                .Equals(workingDoc.GetField<DocumentController>(KeyStore.DocumentContextKey)))?.Content
-		            .GetFirstAncestorOfType<DocumentView>();
-            workingDocView.FadeOutBegin += WorkingDocumentView_DocumentDeleted;
-            //xWorkspace.Children.Add(TemplateLayout);
+	        // initialize the size of the workspace based on the working doc's width and height fields
+	        // determine if the active layout exists and if it is a template box
+	        if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
+	                .Equals(TemplateBox.DocumentType) ?? false)
+	        {
+	            // set the width to the working doc's width field if the width field is less than 500, otherwise 500
+	            xWorkspace.Width = workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500;
+	            xWorkspace.Height = workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500;
+	        }
+	        else
+	        {
+	            // otherwise, set the width and height to an arbitrary default
+	            xWorkspace.Width = 300;
+	            xWorkspace.Height = 400;
+	        }
+	    }
 
-            //initialize layout documents on workspace
-            DocumentViewModels.Clear();
-            // loop through each layout document in the data document's data key
-			var layoutDocsList = DataDocument
-				.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null).TypedData;
-			foreach (var layoutDoc in layoutDocsList)
-			{
-                // add them logically to the document controllers list
-				DocumentControllers.Add(layoutDoc);
-                // add them graphically to the document view models list
-                // we must do both here because as of yet, there are no collection changed handles
-                DocumentViewModels.Add(new DocumentViewModel(layoutDoc));
-				InitialDocumentControllers.Add(layoutDoc);
-				//add copy for list view
-				var copy = layoutDoc.GetViewCopy();
-				copy.SetPosition(new Point(0, 0));
-				ViewCopiesList.Add(new DocumentViewModel(copy, new Context(copy)));
-			}
-
-			// update item source
-			xItemsControlCanvas.ItemsSource = DocumentViewModels;
-			xItemsControlGrid.ItemsSource = DocumentViewModels;
-
-			// set the document context of the data doc (template) to the working document's data doc
-			DataDocument.SetField(KeyStore.DocumentContextKey,
-				LayoutDocument.GetField<DocumentController>(KeyStore.DataKey).GetDataDocument(), true);
-
-			//set background color
-			var colorString = DataDocument.GetField<TextController>(KeyStore.BackgroundColorKey, true)?.Data ?? "#FFFFFF";
-			var backgroundColor = new StringToBrushConverter().ConvertDataToXaml(colorString);
-			xWorkspace.Background = backgroundColor;
-			xBackgroundColorPreviewBox.Fill = xWorkspace.Background;
-			xDesignGridSizeComboBox.SelectedIndex = 0;
-			xDesignGridVisibilityButton.IsChecked = false;
-
-            // TODO: Add number indicating which template perhoops -sy
-            // if the title key doesn't exist or is empty
-            if (DataDocument.GetField<TextController>(KeyStore.TitleKey) == null ||
-				!DataDocument.GetField<TextController>(KeyStore.TitleKey).Data.Any())
-			{
-				// use a default title
-				var title = "MyTemplate";
-				xTitleBlock.Text = title;
-				DataDocument.SetField(KeyStore.TitleKey, new TextController(title), true);
-			}
-
-			// create a new field binding to link the title with the editable text block
-			var templateEditorBinding = new FieldBinding<TextController>
-			{
-				Document = DataDocument,
-				Key = KeyStore.TitleKey,
-				Mode = BindingMode.TwoWay
-			};
-			xTitleBlock.AddFieldBinding(EditableTextBlock.TextProperty, templateEditorBinding);
-
-            // add event handlers
-            DocumentControllers.CollectionChanged += DocumentControllers_CollectionChanged;
-			xKeyBox.PropertyChanged += XKeyBox_PropertyChanged;
-			docView.DocumentDeleted += TemplateEditorView_DocumentDeleted;
-
-            // initialize the size of the workspace based on the working doc's width and height fields
-            // determine if the active layout exists and if it is a template box
-		    if (workingDoc.GetField<DocumentController>(KeyStore.ActiveLayoutKey)?.DocumentType
-		            .Equals(TemplateBox.DocumentType) ?? false)
-		    {
-                // set the width to the working doc's width field if the width field is less than 500, otherwise 500
-		        xWorkspace.Width = workingDoc.GetWidthField().Data < 500 ? workingDoc.GetWidthField().Data : 500;
-		        xWorkspace.Height = workingDoc.GetHeightField().Data < 500 ? workingDoc.GetHeightField().Data : 500;
-            }
-		    else
-		    {
-                // otherwise, set the width and height to an arbitrary default
-		        xWorkspace.Width = 300;
-		        xWorkspace.Height = 400;
-		    }
-        }
-
-        private void StyleWorkspace(int style)
+	    private void StyleWorkspace(int style)
 		{
 			switch (style)
 			{
