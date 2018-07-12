@@ -71,13 +71,17 @@ namespace Dash
         public static KeyController DockedDocumentsTopKey = new KeyController("Documents docked on the top", "5A5AC489-8988-44BE-AC06-AE76CF81FB04");
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
         public static KeyController DockedDocumentsBottomKey = new KeyController("Documents docked on the bottom", "F6E10E00-1644-40BE-8A9E-0C648FE4B223");
+        public static KeyController DockedLength = new KeyController("Docked column/row length", "A31E063D-A314-4AF9-973E-595FF70A2592");
+        public static KeyController PdfRegionVerticalOffsetKey = new KeyController("Region on PDF vertical offset", "806A9F4F-1258-4630-A272-B325DC7503EC");
+        public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
+        public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
 
-        public static KeyController ReplLineTextKey = new KeyController(DashConstants.KeyStore.ReplLineTextsKey);
-        public static KeyController ReplValuesKey = new KeyController(DashConstants.KeyStore.ReplValuesKey);
-        public static KeyController ReplCurrentIndentKey = new KeyController(DashConstants.KeyStore.ReplCurrentIndentKey);
-        public static KeyController ReplScopeKey = new KeyController(DashConstants.KeyStore.ReplScopeKey);
+        public static KeyController ReplLineTextKey = new KeyController("Repl Inputs", "EDB6FB6F-36B6-4A09-B7E5-ED3490262293");
+        public static KeyController ReplValuesKey = new KeyController("Repl Outputs", "24D90B3A-73B9-4F51-81A3-484F43CB4265");
+        public static KeyController ReplCurrentIndentKey = new KeyController("Repl Stored Tab Setting", "B590D696-AAD0-4DA3-A934-936C60A76394");
+        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "C1C62569-A534-4F31-8F17-94F6191B402B");
 
-        public static KeyController ScriptTextKey = new KeyController(DashConstants.KeyStore.ScriptTextKey);
+        public static KeyController ScriptTextKey = new KeyController("Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
 
         public static KeyController ExceptionKey = new KeyController("Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
         public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");

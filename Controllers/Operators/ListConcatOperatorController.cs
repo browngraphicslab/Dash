@@ -46,8 +46,9 @@ namespace Dash
 
             if (typeA != typeB) throw new ScriptExecutionException(new InvalidListOperationErrorModel(typeA, typeB, InvalidListOperationErrorModel.OpError.ConcatType));
 
-            listA.AddRange(listB.Data);
-            outputs[ResultsKey] = listA;
+            var l = (BaseListController) listA.Copy();
+            l.AddRange(listB.Data);
+            outputs[ResultsKey] = l;
         }
 
         public override FieldControllerBase GetDefaultController() => new ListConcatOperatorController();

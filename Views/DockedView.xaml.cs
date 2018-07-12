@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -16,7 +17,7 @@ using Microsoft.Toolkit.Uwp.UI.Controls;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public enum DockDirection
     {
@@ -32,28 +33,74 @@ namespace Dash.Views
         public DockedView NestedView { get; set; }
         public DockedView PreviousView { get; set; }
         public DockDirection Direction { get; set; }
+        public DocumentController ContainedDocumentController { get; set; }
+        public event EventHandler<GridSplitterEventArgs> NestedLengthChanged;
 
-        public DockedView(DockDirection direction)
+        public DockedView(DockDirection direction, DocumentController dc)
         {
             this.InitializeComponent();
             Direction = direction;
+            ContainedDocumentController = dc;
         }
 
         private void xCloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            MainPage.Instance.Undock(this);
+            MainPage.Instance.DockManager.Undock(this);
         }
 
         public void ChangeView(FrameworkElement view)
         {
             Grid.SetColumn(view, 0);
             Grid.SetColumnSpan(view, 2);
-            Grid.SetRow(view, 0);
-            Grid.SetRowSpan(view, 2);
+            Grid.SetRow(view, 1);
+            view.Margin = new Thickness(5);
 
             xMainDockedView.Children.Clear();
             xMainDockedView.Children.Add(view);
             xMainDockedView.Children.Add(xCloseButton);
+        }
+
+        public void SetNestedViewSize(double dim)
+        {
+            if (NestedView == null) return;
+            var gridLength = new GridLength(dim);
+            switch (NestedView.Direction)
+            {
+                case DockDirection.Left:
+                    xLeftNestedViewColumn.Width = gridLength;
+                    break;
+                case DockDirection.Right:
+                    xRightNestedViewColumn.Width = gridLength;
+                    break;
+                case DockDirection.Top:
+                    xTopNestedViewRow.Height = gridLength;
+                    break;
+                case DockDirection.Bottom:
+                    xBottomNestedViewRow.Height = gridLength;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets the column or row height of this DockedView's NestedView.
+        /// </summary>
+        /// <returns></returns>
+        public double GetNestedViewSize()
+        {
+            if (NestedView == null) return -1;
+            switch (NestedView.Direction)
+            {
+                case DockDirection.Left:
+                    return xLeftNestedViewColumn.Width.Value;
+                case DockDirection.Right:
+                    return xRightNestedViewColumn.Width.Value;
+                case DockDirection.Top:
+                    return xTopNestedViewRow.Height.Value;
+                case DockDirection.Bottom:
+                    return xBottomNestedViewRow.Height.Value;
+                default:
+                    return -1;
+            }
         }
 
         public void ChangeNestedView(DockedView view)
@@ -147,5 +194,16 @@ namespace Dash.Views
             NestedView = null;
             return toReturn;
         }
+
+        private void xSplitter_OnPointerReleased(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
+        {
+            NestedLengthChanged?.Invoke(this, new GridSplitterEventArgs { NewLength = GetNestedViewSize(), DocumentToUpdate = NestedView.ContainedDocumentController });
+        }
+    }
+
+    public class GridSplitterEventArgs : EventArgs
+    {
+        public double NewLength;
+        public DocumentController DocumentToUpdate;
     }
 }

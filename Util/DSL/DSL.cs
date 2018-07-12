@@ -30,13 +30,14 @@ namespace Dash
             _scope = scope;
         }
 
-        public FieldControllerBase Run(string script, bool catchErrors =  false)
+        public FieldControllerBase Run(string script, bool catchErrors =  false, bool undoVar = false)
         {
             try
             {
                 if (CheckSpecialCommands(script)) return new TextController();
 
-                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope);
+                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
+
                 return interpreted;
             }
             catch (DSLException e)

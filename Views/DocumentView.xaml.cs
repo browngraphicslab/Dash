@@ -143,13 +143,14 @@ namespace Dash
 
                 SizeChanged += sizeChangedHandler;
                 ViewModel?.LayoutDocument.SetActualSize(new Point(ActualWidth, ActualHeight));
+                Debug.WriteLine("ActualSize is set to " + new Point(ActualWidth, ActualHeight));
                 SetZLayer();
             };
             Unloaded += (sender, e) => SizeChanged -= sizeChangedHandler;
 
             PointerPressed += (sender, e) =>
             {
-                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
@@ -170,7 +171,7 @@ namespace Dash
                 MainPage.Instance.Focus(FocusState.Programmatic);
                 if (!this.IsRightBtnPressed()) // ignore right button drags
                 {
-                    MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
+                    this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.Freeze());
                     PointerExited -= DocumentView_PointerExited;// ignore any pointer exit events which will change the visibility of the dragger
                     e.Handled = true;
                 }
@@ -186,7 +187,7 @@ namespace Dash
             void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
             {
                 ResizeHandles_restorePointerTracking();
-                MainPage.Instance.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
+                this.GetDescendantsOfType<CustomPdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
 
                 UndoManager.EndBatch();
@@ -875,8 +876,10 @@ namespace Dash
             {
                 ToFront();
             }
-            if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
+
+            if ((ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
+                var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
@@ -888,7 +891,7 @@ namespace Dash
                 }
                 if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                 {
-                    cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    cfview?.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
 
                 //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
@@ -1266,11 +1269,9 @@ namespace Dash
 	    private void XAnnotateEllipseBorder_OnTapped_(object sender, TappedRoutedEventArgs e)
 	    {
 
-		    if (ViewModel.Content is IAnnotationEnabled)
+		    if (ViewModel.Content is IAnnotatable element)
 		    {
-			    var element = (IAnnotationEnabled) ViewModel.Content;
-			    element?.RegionSelected(element, new Point(0, 0), null);
-
+		        element.RegionSelected(element, new Point(0, 0));
 			}
 		    else
 		    {

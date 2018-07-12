@@ -10,37 +10,53 @@
     d:DesignWidth="400"
     x:Name="Control">
 
-
     <Grid>
         <Border x:Name="xScriptRepl" BorderBrush="Black" BorderThickness="1">
             <Grid VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="50" x:Name="TextGrid" />
                 </Grid.RowDefinitions>
+                <CommandBar x:Name="xToolbar" IsSticky="True" IsOpen="False" OverflowButtonVisibility="Collapsed" 
+                            Grid.Row="0" Background="{ThemeResource TreeviewBrush}" >
+                    <AppBarButton x:Name="xScript"  Icon="Switch"  Label="Switch" Click="XScript_OnClick"></AppBarButton>
+                </CommandBar>
                 <ScrollViewer Name="xScrollViewer" VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True"  
-                          Margin="5" Foreground="White" Background="Black">
-                    <ItemsControl VerticalAlignment="Stretch" Grid.Row="0"  ItemsSource="{Binding Items}">
+                          Margin="5" Foreground="White" Background="#232625" Grid.Row="1">
+                    <ItemsControl VerticalAlignment="Stretch"  ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,0,0,5" DragStarting="UIElement_OnDragStarting" CanDrag="True" >
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height="20" />
+                                        <RowDefinition Height="30" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="{Binding LineText}" TextWrapping="Wrap" />
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="xInputArrow" Text=">>" Grid.Column="0" Tapped="XInputArrow_OnTapped" />
+                                        <TextBlock x:Name="xInputBlock" Grid.Column="1" Text="{Binding LineText}" TextWrapping="Wrap" Visibility ="{Binding NotEditTextValue, Mode=OneWay}"  
+                                                   DoubleTapped="XInputBlock_OnDoubleTapped" Tapped="XInputBlock_OnTapped" />
+                                        <TextBox x:Name="xInputBox" Grid.Column="1" Text="{Binding LineText}"  Visibility ="{Binding EditTextValue, Mode=OneWay}" 
+                                                 Background="Azure" Foreground="Black" LostFocus="XInputBox_OnLostFocus" KeyUp="XInputBox_OnKeyUp"  />
+                                    </Grid>
+
                                     <local:ReplLineNode Grid.Row="1"></local:ReplLineNode>
+
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <TextBox Name="xTextBox" Grid.Row="1" Height="{x:Bind TextHeight, Mode=OneWay}" Background="White" FontSize="18"
-                            PlaceholderText="Enter Command" 
+                <TextBox Name="xTextBox" Grid.Row="2" Height="{x:Bind TextHeight, Mode=OneWay}" Background="White" FontSize="18"
+                            PlaceholderText="Enter Command"  GettingFocus="XTextBox_OnGettingFocus"
                 TextChanged="XTextBox_OnTextChanged" AcceptsReturn="true" IsSpellCheckEnabled="False">
                 </TextBox>
-                <Popup x:Name="xSuggestionsPopup" Grid.Row="1" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
+                <Popup x:Name="xSuggestionsPopup" Grid.Row="2" Canvas.ZIndex="-1"  VerticalOffset="{x:Bind TextHeight, Mode=OneWay}" >
                     <ScrollViewer VerticalAlignment="Stretch" VerticalScrollMode="Enabled" 
                               HorizontalScrollMode="Disabled" IsVerticalRailEnabled="True" HorizontalAlignment="Stretch" Width="{Binding ElementName=Control, Path=Width}" >
                         <Border x:Name="xSuggestionsContainer" Background="LightGray">

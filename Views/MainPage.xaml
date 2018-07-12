@@ -18,67 +18,47 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300" x:Name="xTreeMenuColumn" />
             <ColumnDefinition Width="7"/>
-            <ColumnDefinition Width="0" x:Name="xLeftDockColumn"/>
-            <ColumnDefinition Width="0" x:Name="xLeftDockSplitterColumn"/>
             <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="0" x:Name="xRightDockSplitterColumn"/>
-            <ColumnDefinition Width="0" x:Name="xRightDockColumn"/>
             <ColumnDefinition Width="0" x:Name="xUtilTabColumn"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="0" x:Name="xTopDockRow"/>
-            <RowDefinition Height="0" x:Name="xTopDockSplitterRow"/>
-            <RowDefinition Height="3*"/>
-            <RowDefinition Height="0" x:Name="xBottomDockSplitterRow"/>
-            <RowDefinition Height="0" x:Name="xBottomDockRow"/>
-        </Grid.RowDefinitions>
 
         <WebView x:Name="JavaScriptHack" x:FieldModifier="public" Width="1" Height="1" IsHitTestVisible="false"/>
+        
+        <!-- MainDocView -->
+        <local:DockingFrame x:Name="xDockFrame" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <local:DockingFrame.DocumentContent>
+                <Grid>
+                    <local:DocumentView x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                        <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
+                            <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"/>
+                        </Grid>
+                        <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
+                            <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
+                        </Button>
+                        <Button Name="xBackButton" VerticalAlignment="Stretch">
+                            <SymbolIcon Symbol="Back"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </local:DockingFrame.DocumentContent>
+        </local:DockingFrame>
 
-        <Grid Grid.Column="4" Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="7"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="7"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="7"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="7"/>
-            </Grid.RowDefinitions>
-            <local:DocumentView Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3" x:Name="xMainDocView" x:FieldModifier="public" DoubleTapped="MainDocView_OnDoubleTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN"/>
-            <Rectangle Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockLeft" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Column="2" Grid.Row="0" Grid.RowSpan="3" x:Name="xDockRight" x:FieldModifier="public" Width="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockTop" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-            <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xDockBottom" x:FieldModifier="public" Height="15" HorizontalAlignment="Stretch" Fill="Gold" Opacity="0" VerticalAlignment="Stretch"/>
-        </Grid>
-        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="4" Grid.Row="2">
-            <Grid Name="xSearchBoxGrid" Visibility="Collapsed">
-                <local:MainSearchBox x:Name="xMainSearchBox" x:FieldModifier="public" Width="300"></local:MainSearchBox>
-            </Grid>
-            <Button Name="xSearchButton" Tapped="xSearchButton_Tapped" VerticalAlignment="Stretch">
-                <TextBlock x:Name="xShowHideSearchIcon" Text="&#xE721;" FontFamily="Segoe MDL2 Assets"/>
-            </Button>
-            <Button Name="xBackButton" VerticalAlignment="Stretch">
-                <SymbolIcon Symbol="Back"></SymbolIcon>
-            </Button>
-        </StackPanel>
+        <local:SettingsView x:Name="xSettingsView" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
 
-        <local:SettingsView x:Name="xSettingsView" Grid.Column="4" Grid.Row="2" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="NaN" Height="NaN" x:FieldModifier="public"/>
-
-        <Grid x:Name="xSettingsGrid" Grid.Column="4" Grid.Row="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
+        <Grid x:Name="xSettingsGrid" Grid.Column="2" Tapped="xSettingsButton_Tapped" PointerEntered="xSettingsButton_PointerEntered" PointerExited="xSettingsButton_PointerExited">
             <Ellipse x:Name="xSettingsButton" Width="40" Height="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" Fill="{ThemeResource WorkspaceButtonBrush}" ></Ellipse>
             <SymbolIcon Symbol="Setting" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="White"></SymbolIcon>
         </Grid>
 
-        <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Grid.Row="0" Grid.RowSpan="5" Width="15"/>
+        <localMicrosoft:GridSplitter x:Name="xSplitter" Grid.Column="1" Width="15"/>
 
-        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="2" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
-            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
-            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"></Line>
+        <Canvas x:Name="xCanvas" Grid.Column="0" Grid.ColumnSpan="3" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" >
+            <Line x:Name="HorizontalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
+            <Line x:Name="VerticalAlignmentLine" x:FieldModifier="public" Stroke="#da3d1c" StrokeThickness="1.2"/>
         </Canvas>
 
-        <Grid x:Name="xLeftGrid" Grid.Column="0" Grid.Row="0" Grid.RowSpan="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="xLeftGrid" Grid.Column="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="7" x:Name="xTreeSplitter"/>
@@ -98,12 +78,7 @@
 
         </Grid>
 
-        <!--Dock gridsplitters-->
-        <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="5"/>
-        <localMicrosoft:GridSplitter Grid.Row="0" Grid.RowSpan="5" Grid.Column="3"/>
-        <localMicrosoft:GridSplitter Grid.Row="1" Grid.Column="4"/>
-        <localMicrosoft:GridSplitter Grid.Row="3" Grid.Column="4"/>
-        <views:PresentationView x:Name="xPresentationView" Grid.Column="7" Grid.Row="0" Grid.RowSpan="5" HorizontalAlignment="Stretch"/>
+        <local:PresentationView x:Name="xPresentationView" Grid.Column="3" HorizontalAlignment="Stretch"/>
 
         <local:MenuToolbar x:Name="Toolbar" CollapseColor="{ThemeResource WindowsBlue}" ExpandColor="{ThemeResource WorkspaceButtonBrush}"/>
     </Grid>

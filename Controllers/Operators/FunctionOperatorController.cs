@@ -17,15 +17,15 @@ namespace Dash
         {
         }
 
-        public FunctionOperatorController(NodeArray<ParameterDeclaration> paramss, ScriptExpression block, TypeInfo type) : base(new OperatorModel(TypeKey.KeyModel))
+        public FunctionOperatorController(NodeArray<ParameterDeclaration> paramss, ScriptExpression block, TypeInfo returnType) : base(new OperatorModel(TypeKey.KeyModel))
         {
             _block = block;
-            _returnType = type;
+            _returnType = returnType;
 
             //set document keys
             foreach (var param in paramss)
             {
-                var newKey = new KeyController(_inputNames.Count.ToString());
+                var newKey = new KeyController(param.IdentifierStr);
                 _inputNames.Add(param.IdentifierStr);
                 
                 //restrict types based on user input
@@ -77,7 +77,7 @@ namespace Dash
         {
             for (int i = 0; i < _inputNames.Count; i++)
             {
-                var value = inputs[new KeyController(i.ToString())];
+                var value = inputs[Inputs[i].Key];
                 
                 var expectedType = Inputs[i].Value.Type;
 

@@ -8,14 +8,19 @@ namespace Dash
 {
     public class OuterReplScope : ReturnScope
     {
-         private DocumentController variableDoc;
+         private readonly DocumentController _variableDoc;
+
+        public DocumentController VariableDoc()
+        {
+            return _variableDoc;
+        }
 
         public OuterReplScope(DocumentController doc) : base(null)
         {
-            variableDoc = doc;
+            _variableDoc = doc;
 
             _dictionary = new Dictionary<string, FieldControllerBase>();
-            foreach (var var in variableDoc.EnumFields())
+            foreach (var var in _variableDoc.EnumFields())
             {
                 _dictionary.Add(var.Key.Name, var.Value);
             }
@@ -23,7 +28,7 @@ namespace Dash
 
         public OuterReplScope() : base(null)
         {
-            variableDoc = new DocumentController();
+            _variableDoc = new DocumentController();
 
             _dictionary = new Dictionary<string, FieldControllerBase>();
         }
@@ -37,7 +42,7 @@ namespace Dash
             DishReplView.NewVariable(variableName);
 
             var key = new KeyController(variableName);
-            variableDoc.SetField(key, valueToSet, true);
+            _variableDoc.SetField(key, valueToSet, true);
         }
 
         public override void SetVariable(string variableName, FieldControllerBase valueToSet)
@@ -48,7 +53,7 @@ namespace Dash
             this._dictionary[variableName] = valueToSet;
 
             var key = new KeyController(variableName, variableName);
-            variableDoc.SetField(key, valueToSet, true);
+            _variableDoc.SetField(key, valueToSet, true);
         }
     }
 }

@@ -108,11 +108,6 @@ namespace Dash
             return false;
         }
 
-        public override string GetTypeAsString()
-        {
-            return "Ref";
-        }
-
         /// <summary>
         /// we dont want referenced obejects to search again, for now.  
         /// This could lead to big issues with performance, not knowing how to display such a distant result, and also with inifinite loops

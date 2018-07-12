@@ -9,14 +9,14 @@ using DashShared;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public class ReplLineViewModel
-    {
-        public string LineText { get; set; }
-        public string ResultText { get; set; }
-        public FieldControllerBase Value { get; set; }
-        public bool DisplayableOnly { get; set; }
-        public int Indent { get; set; }
-    }
+    //public class ReplLineViewModel
+    //{
+    //    public string LineText { get; set; }
+    //    public string ResultText { get; set; }
+    //    public FieldControllerBase Value { get; set; }
+    //    public bool DisplayableOnly { get; set; }
+    //    public int Indent { get; set; }
+    //}
 
     public sealed partial class ReplLineNode
     {

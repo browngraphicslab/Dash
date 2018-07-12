@@ -21,17 +21,18 @@
                                                   HorizontalAlignment="Left" VerticalAlignment="Top" 
                                                   ViewMode="FitWidth" HorizontalContentAlignment="Left"
                                                   HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"
+                                                  VerticalScrollBarVisibility="Hidden"
                                                   IsTextSelectionEnabled="False" DocumentLoaded="XPdfView_OnDocumentLoaded"/>
-                <ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanging="ScrollViewer_OnViewChanging" HorizontalAlignment="Stretch">
-                    <Grid x:Name="xRegionsGrid" Opacity="0.4" Background="Transparent" PointerPressed="XRegionsGrid_OnPointerPressed" PointerMoved="XRegionsGrid_OnPointerMoved" PointerReleased="XRegionsGrid_OnPointerReleased"  HorizontalAlignment="Stretch">
-                        <dash:PDFRegionMarker x:Name="xTemporaryRegionMarker" Visibility="Collapsed"/>
+
+                <!--<ScrollViewer x:Name="xRegionsScrollviewer" ZoomMode="Disabled" ViewChanged="xRegionsScrollviewer_ViewChanged" PointerPressed="xScrollViewer_OnPointerPressed" PointerMoved="xScrollViewer_OnPointerMoved" PointerReleased="xScrollViewer_OnPointerReleased" HorizontalAlignment="Stretch">
+                    <Grid x:Name="xGridForStretching" Opacity="0.4" Background="Transparent" HorizontalAlignment="Stretch">
+
                     </Grid>
-                </ScrollViewer>
+                </ScrollViewer>-->
             </Canvas>
         </Grid>
         <Image x:Name="xPdfFrozenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed"/>
-        <Grid x:Name="xAnnotationMarkers" Margin="-20, 0, 0, 0"/>
+        <Grid x:Name="xAnnotationMarkers" Margin="-20, 0, 0, 0" Visibility="Collapsed"/>
         <StackPanel x:Name="xAnnotationNavigation" HorizontalAlignment="Right" VerticalAlignment="Bottom" Opacity="0.0" Margin="0, 0, -20, 0">
             <Grid PointerPressed="xPrevAnnotation_OnPointerPressed">
                 <Ellipse Fill="#221111" Width="18" Height="18" PointerPressed="xNextAnnotation_OnPointerPressed"/>

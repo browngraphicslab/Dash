@@ -89,16 +89,6 @@ namespace Dash
         public virtual FieldControllerBase CopyIfMapped(Dictionary<FieldControllerBase, FieldControllerBase> mapping) { return null; }
 
         /// <summary>
-        /// Returns the type of this field as a string. Can override this for more complex
-        /// string displays.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetTypeAsString()
-        {
-            return TypeInfo.ToString();
-        }
-
-        /// <summary>
         /// Gets the default representation of this fieldcontroller. For example with a number
         /// the default value could be 0. With a string the default value could be an empty string.
         /// </summary>

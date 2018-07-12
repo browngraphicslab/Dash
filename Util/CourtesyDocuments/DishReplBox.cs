@@ -10,16 +10,17 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("BD5890ED-EC33-4FDB-AA16-E633FA3BCEC5", "Dish Repl Box");
         private static readonly string PrototypeId = "BD5890ED-EC33-4FDB-AA16-E633FA3BCEC5";
 
-        public DishReplBox(double x = 0, double y = 0, double w = 200, double h = 200)
+        public DishReplBox(double x = 0, double y = 0, double w = 200, double h = 20, 
+            ListController<TextController> inputs = null, ListController<FieldControllerBase> outputs = null, DocumentController scope = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h));
             SetupDocument(DocumentType, PrototypeId, "DishReplBox Prototype Layout", fields);
             var dataDoc = new DocumentController(new Dictionary<KeyController, FieldControllerBase>
             {   [KeyStore.TitleKey] = new TextController("Dish Repl Box"),
-                [KeyStore.ReplLineTextKey] = new ListController<TextController>(),
-                [KeyStore.ReplValuesKey] = new ListController<FieldControllerBase>(),
+                [KeyStore.ReplLineTextKey] = inputs ?? new ListController<TextController>(),
+                [KeyStore.ReplValuesKey] = outputs ?? new ListController<FieldControllerBase>(),
                 [KeyStore.ReplCurrentIndentKey] = new ListController<NumberController>(),
-                [KeyStore.ReplScopeKey] = new DocumentController(),
+                [KeyStore.ReplScopeKey] = scope ?? new DocumentController(),
             }, DocumentType.DefaultType);
             Document.SetField(KeyStore.DocumentContextKey, dataDoc, true);
         }
@@ -29,11 +30,9 @@ namespace Dash
             CourtesyDocument.SetupBindings(element, docController, context);
         }
 
-
-
         public static FrameworkElement MakeView(DocumentController docController, Context context)
         {
-            var tb = new DishReplView(docController.GetDataDocument());
+            var tb = new DishReplView(docController);
             SetupBindings(tb, docController, context);
 
             return tb;

@@ -12,6 +12,8 @@ namespace Dash
     {
         private static HashSet<string> _currentScriptExecutions = new HashSet<string>();
 
+        private static bool _undoVar;
+
 
         public static void TEST()
         {
@@ -114,9 +116,11 @@ namespace Dash
         /// </summary>
         /// <param name="script"></param>
         /// <returns></returns>
-        public static FieldControllerBase Interpret(string script, Scope scope = null)
+        public static FieldControllerBase Interpret(string script, Scope scope = null, bool undoVar = false)
         {
-            string hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
+            _undoVar = undoVar;
+
+            var hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
 
             if (_currentScriptExecutions.Contains(hash))
             {
@@ -248,6 +252,7 @@ namespace Dash
                 case SyntaxKind.ExtendsKeyword:
                     break;
                 case SyntaxKind.FalseKeyword:
+                    return new LiteralExpression(new BoolController(false));
                     break;
                 case SyntaxKind.FinallyKeyword:
                     break;
@@ -278,6 +283,7 @@ namespace Dash
                 case SyntaxKind.ThrowKeyword:
                     break;
                 case SyntaxKind.TrueKeyword:
+                    return new LiteralExpression(new BoolController(true));
                     break;
                 case SyntaxKind.TryKeyword:
                     break;
@@ -617,11 +623,16 @@ namespace Dash
                                     rightBinExpr
                                 });
                                 case VariableExpression safeBinExpr:
-                                    return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
+                                    if (!_undoVar)
                                     {
-                                    new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
-                                    rightBinExpr
-                                });
+                                        return new FunctionExpression(DSL.GetFuncName<VariableAssignOperatorController>(), new List<ScriptExpression>
+                                        {
+                                            new LiteralExpression(new TextController(safeBinExpr.GetVariableName())),
+                                            rightBinExpr
+                                        });
+                                    }
+
+                                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                             }
                             throw new Exception("Unknown usage of equals in binary expression");
                         case SyntaxKind.PlusEqualsToken:
@@ -684,7 +695,8 @@ namespace Dash
 
                     return ParseToExpression(varStatement.DeclarationList);
                 case SyntaxKind.EmptyStatement:
-                    break;
+                    //return empty string
+                    return new FunctionExpression(Op.Name.invalid, new List<ScriptExpression>());
                 case SyntaxKind.ExpressionStatement:
                     var exp = (node as ExpressionStatement).Expression;
                     return ParseToExpression(exp);
@@ -773,7 +785,7 @@ namespace Dash
                 case SyntaxKind.VariableDeclaration:
                     var variableDeclaration = node as VariableDeclaration;
 
-                    return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]));
+                    return new VariableDeclarationExpression(variableDeclaration.IdentifierStr, ParseToExpression(variableDeclaration.Children[1]), _undoVar);
                 case SyntaxKind.VariableDeclarationList:
                     var varDeclList = node as VariableDeclarationList;
 
@@ -788,7 +800,7 @@ namespace Dash
                 case SyntaxKind.FunctionDeclaration:
                     var funDec = (node as FunctionDeclaration);
 
-                    return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None));
+                    return new VariableDeclarationExpression(funDec.IdentifierStr, new FunctionDeclarationExpression(funDec.Parameters, ParseToExpression(funDec.Body), TypeInfo.None), _undoVar);
                 case SyntaxKind.ClassDeclaration:
                     break;
                 case SyntaxKind.InterfaceDeclaration:
@@ -987,17 +999,26 @@ namespace Dash
         {
             private readonly string _variableName;
             private readonly ScriptExpression _value;
+            private readonly bool _unassignVar;
 
-            public VariableDeclarationExpression(string variableName, ScriptExpression value)
+            public VariableDeclarationExpression(string variableName, ScriptExpression value, bool unassignVar)
             {
                 Debug.Assert(variableName != null);
                 _variableName = variableName;
                 _value = value;
+                _unassignVar = unassignVar;
                 if (_value == null) throw new ScriptExecutionException(new VariableNotFoundExecutionErrorModel(_variableName));
             }
 
             public override FieldControllerBase Execute(Scope scope)
             {
+                if (_unassignVar)
+                {
+                    scope.DeleteVariable(_variableName);
+
+                    return new TextController("");
+                }
+
                 var value = scope.GetVariable(_variableName);
                 if (value != null) throw new ScriptExecutionException(new DuplicateVariableDeclarationErrorModel(_variableName, value));
                 var val = _value.Execute(scope);

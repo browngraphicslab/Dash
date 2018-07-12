@@ -24,17 +24,19 @@ namespace Dash
 
         public override FieldControllerBase Execute(Scope scope)
         {
+            //TODO ScriptLang - Don't take _funcName, take a script expression that evaluated to a FuncitonOperatorController
             var userFunction = scope.GetVariable(_funcName) as FunctionOperatorController;
             var inputs = _parameters.Select(v => v?.Execute(scope)).ToList();
             var opName = Op.Parse(_funcName);
-            //functions shouldn't have acess to any variables outside function
-            scope = new ReturnScope(/*scope.GetFirstAncestor()*/);
-
+            
             try
             {
                 //use user defined function
                 if (userFunction != null)
                 {
+                    //functions shouldn't have acess to any variables outside function
+                    scope = new ReturnScope();
+
                     //check if user defiend function
                     var output = OperatorScript.Run(userFunction, inputs, scope);
                     return output;
@@ -42,6 +44,7 @@ namespace Dash
 
                 if (opName != Op.Name.invalid)
                 {
+                    scope = new ReturnScope(scope);
 
                     var output = OperatorScript.Run(opName, inputs, scope);
                     return output;

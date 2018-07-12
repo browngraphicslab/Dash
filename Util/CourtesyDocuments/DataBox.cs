@@ -35,8 +35,10 @@ namespace Dash
             //    data = new TextController(new ObjectToStringConverter().ConvertDataToXaml(documentList, null));
             //}
 
-            if (data is ImageController)
+            if (data is ImageController img)
             {
+                if (img.Data.LocalPath.EndsWith(".pdf"))
+                    return PdfBox.MakeView(documentController, context);
                 return ImageBox.MakeView(documentController, context);
             }
 			if (data is VideoController)
