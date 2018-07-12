@@ -91,7 +91,7 @@ namespace Dash
             }
 
             UpdateOnServer(withUndo ? newEvent : null);
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, elements as List<T>, prevList, 0));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Replace, enumerable, prevList, 0));
         }
 
         #endregion
