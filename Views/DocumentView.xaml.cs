@@ -1180,7 +1180,7 @@ namespace Dash
                 {
                     var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                     if (!footer)
-                        listCtrl.Add(newFieldDoc, 0);
+                        listCtrl.Insert(0, newFieldDoc);
                     else listCtrl.Add(newFieldDoc);
                 }
             }

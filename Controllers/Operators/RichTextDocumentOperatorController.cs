@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    [OperatorType("docText")]
+    [OperatorType(Op.Name.rich_document_text)]
     public class RichTextDocumentOperatorController : OperatorController
     {
 
@@ -40,7 +40,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var richTextController = inputs[KeyStore.DataKey] as RichTextController;
             if (richTextController != null)

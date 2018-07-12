@@ -3,12 +3,12 @@
 
     public class GeneralScriptExecutionFailureModel : ScriptExecutionErrorModel
     {
-        public GeneralScriptExecutionFailureModel(string functionName)
+        public Op.Name FunctionName { get; }
+
+        public GeneralScriptExecutionFailureModel(Op.Name functionName)
         {
             FunctionName = functionName;
         }
-
-        public string FunctionName { get; private set; }
 
         public override string GetHelpfulString()
         {

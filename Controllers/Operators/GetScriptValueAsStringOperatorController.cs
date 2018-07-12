@@ -6,7 +6,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("execToString")]
+    [OperatorType(Op.Name.exec_to_string)]
     public class GetScriptValueAsStringOperatorController : OperatorController
     {
         //Input keys
@@ -44,13 +44,13 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             string result;
             try
             {
                 var script = inputs[ScriptKey] as TextController;
-                var dsl = new DSL(ScriptState.ContentAware());
+                var dsl = new DSL(new Scope());
                 var scriptToRun = (script)?.Data ?? "";
                 var controller = dsl.Run(scriptToRun, true);
                 if (controller != null)

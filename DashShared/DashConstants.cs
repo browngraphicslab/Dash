@@ -91,7 +91,6 @@ namespace DashShared
         public static string LocalServerDocumentFilepath = "dash.documents"; //
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
-
         public const int MillisecondBetweenLocalSave = 1000; //1 second
 
         //BACKUP CONSTANTS
@@ -156,7 +155,7 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
-        
+
         public static class TypeStore
         {
             public static DocumentType FreeFormDocumentType = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");

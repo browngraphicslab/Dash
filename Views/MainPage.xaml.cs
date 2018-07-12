@@ -75,7 +75,7 @@ namespace Dash
             xBackButton.Tapped += (s, e) => GoBack();
             Window.Current.CoreWindow.KeyUp += CoreWindowOnKeyUp;
             Window.Current.CoreWindow.KeyDown += CoreWindowOnKeyDown;
-
+            
 			Toolbar.SetValue(Canvas.ZIndexProperty, 20);
 
 		}

@@ -182,10 +182,42 @@
     <Compile Include="Controllers\IControllerBase.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\EqualityOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ExponentialOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\GreaterThanEqualsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\GreaterThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\InverseEqualityOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\LessThanEqualsOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\LessThanOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\ModuloOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\MultiplyOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\BinaryOperatorControllerBase.cs" />
+    <Compile Include="Controllers\Operators\ElementAcessOperatorController.cs" />
+    <Compile Include="Controllers\Operators\FunctionOperatorController.cs" />
+    <Compile Include="Controllers\Operators\HelpOperatorController.cs" />
+    <Compile Include="Controllers\Operators\IdToDocumentOperator.cs" />
+    <Compile Include="Controllers\Operators\InvalidListOperationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\ListAppendOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ListConcatOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ListZipOperatorController.cs" />
+    <Compile Include="Controllers\Operators\search\SearchResult.cs" />
+    <Compile Include="Controllers\Operators\SubstringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\TestAddOperatorControllers.cs" />
+    <Compile Include="Controllers\Operators\Unary\NegationOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Unary\UnaryOperatorControllerBase.cs" />
+    <Compile Include="Util\CourtesyDocuments\DishScriptBox.cs" />
+    <Compile Include="Util\DSL\DuplicateVariableDeclarationErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\DocumentationNotFoundErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ImageCreationFailureErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\IndexOutOfBoundsErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidListCreationErrorModel.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForInOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\IfOperatorController.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\WhileOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Op.cs" />
     <Compile Include="Controllers\Operators\RegexOperatorController.cs" />
     <Compile Include="Controllers\Operators\RichTextDocumentOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\SubtractOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\SubtractOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\ExecuteHtmlJavaScriptController.cs" />
     <Compile Include="Controllers\Operators\DataCleaning\MeltOperatorController.cs" />
@@ -208,14 +240,19 @@
     <Compile Include="Controllers\Operators\search\NegationSearchOperator.cs" />
     <Compile Include="Controllers\Operators\search\PutSearchResultsIntoDictionaryOperatorController.cs" />
     <Compile Include="Controllers\Operators\search\UnionSearchOperator.cs" />
+    <Compile Include="Controllers\Operators\SetListFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectByValueOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorController.cs" />
     <Compile Include="Controllers\Operators\SimplifiedSearchOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveCharOperatorController.cs" />
+    <Compile Include="Controllers\Operators\String\RemoveFirstCharOperatorController.cs" />
     <Compile Include="Controllers\Operators\String\ToLowerOperator.cs" />
     <Compile Include="Controllers\Operators\TextToImageOperator.cs" />
     <Compile Include="Controllers\Operators\Titles\CollectionTitleOperatorController.cs" />
     <Compile Include="Controllers\Operators\Titles\RichTextTitleOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ToListOperatorController.cs" />
     <Compile Include="Controllers\Operators\ToStringOperatorController.cs" />
+    <Compile Include="Controllers\Operators\VariableAssignOperatorController.cs" />
     <Compile Include="Controllers\PointerReferenceController.cs" />
     <Compile Include="Controllers\VideoController.cs" />
     <Compile Include="Converters\BoolInverter.cs" />
@@ -236,7 +273,6 @@
     <Compile Include="Models\DragModels\DragCollectionFieldModel.cs" />
     <Compile Include="Models\DragModels\DragDocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
-    <Compile Include="Models\AccessStreamModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorModel.cs" />
     <Compile Include="Models\PointerReferenceModel.cs" />
     <Compile Include="Models\PointModel.cs" />
@@ -260,6 +296,7 @@
     <Compile Include="Util\CourtesyDocuments\AudioBox.cs" />
     <Compile Include="Util\CourtesyDocuments\BackgroundShape.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DishReplBox.cs" />
     <Compile Include="Util\CourtesyDocuments\EditableScriptBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExecuteHtmlOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\ExtractSentencesOperatorBox.cs" />
@@ -272,47 +309,66 @@
     <Compile Include="Util\CourtesyDocuments\SearchOperatorBox.cs" />
     <Compile Include="Util\DateTimeToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\VideoBox.cs" />
+    <Compile Include="Util\DSL\Error Models\AbsentStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\BreakLoopExpression.cs" />
+    <Compile Include="Util\DSL\ArrayExpression.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidReturnStatementErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\TextErrorModel.cs" />
+    <Compile Include="Util\DSL\FunctionDeclarationExpression.cs" />
+    <Compile Include="Util\DSL\FunctionExpression.cs" />
+    <Compile Include="Util\DSL\ObjectExpression.cs" />
+    <Compile Include="Util\DSL\OuterReplScope.cs" />
+    <Compile Include="Util\DSL\Error Models\OverloadErrorModel.cs" />
     <Compile Include="Util\DSL\DashException.cs" />
     <Compile Include="Util\DSL\DSL.cs" />
     <Compile Include="Util\DocumentTree\DocumentNode.cs" />
     <Compile Include="Util\DocumentTree\DocumentTree.cs" />
+    <Compile Include="Util\DSL\ForExpression.cs" />
+    <Compile Include="Controllers\Operators\LoopCondit\ForOperatorController.cs" />
+    <Compile Include="Util\DSL\ForInExpression.cs" />
+    <Compile Include="Util\DSL\IfExpression.cs" />
+    <Compile Include="Util\DSL\OperatorControllerOverload.cs" />
+    <Compile Include="Util\DSL\ReturnException.cs" />
+    <Compile Include="Util\DSL\ReturnExpression.cs" />
+    <Compile Include="Util\DSL\ReturnScope.cs" />
+    <Compile Include="Util\DSL\Scope.cs" />
+    <Compile Include="Util\DSL\ScriptHelpExcerpt.cs" />
+    <Compile Include="Util\DSL\SelfRefAssignmentExpression.cs" />
+    <Compile Include="Util\DSL\Error Models\SetFieldFailedScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\WhileExpression.cs" />
     <Compile Include="Util\EditableMarkdownBlock.xaml.cs">
       <DependentUpon>EditableMarkdownBlock.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\Export\ExportToTxt.cs" />
     <Compile Include="Util\DSL\DSLException.cs" />
-    <Compile Include="Util\DSL\EmptyScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\EmptyScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FindSingleDocumentOperatorController.cs" />
-    <Compile Include="Util\DSL\FunctionCallMissingScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\FunctionExpression.cs" />
-    <Compile Include="Util\DSL\FunctionNotFoundScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\FunctionCallMissingScriptErrorModel.cs" />
     <Compile Include="Util\DSL\FunctionParts.cs" />
-    <Compile Include="Util\DSL\GeneralScriptExecutionFailureModel.cs" />
+    <Compile Include="Util\DSL\Error Models\GeneralScriptExecutionFailureModel.cs" />
     <Compile Include="Util\DSL\GetDataDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\GetFieldOperatorController.cs" />
     <Compile Include="Util\DSL\GetKeysOfDocumentOperatorController.cs" />
     <Compile Include="Util\DSL\InvalidDishScriptException.cs" />
-    <Compile Include="Util\DSL\InvalidDotNotationScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\InvalidParameterScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\InvalidStringScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidDotNotationScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\InvalidStringScriptErrorModel.cs" />
     <Compile Include="Util\DSL\LetExpression.cs" />
     <Compile Include="Util\DSL\ExpressionChain.cs" />
     <Compile Include="Util\DSL\LetOperatorController.cs" />
     <Compile Include="Util\DSL\LiteralExpression.cs" />
     <Compile Include="Util\DSL\MapOperatorController.cs" />
-    <Compile Include="Util\DSL\MissingParameterScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\MissingParameterScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ParameterProvidedMultipleTimesScriptErrorModel.cs" />
-    <Compile Include="Util\DSL\ScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ScriptErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptException.cs" />
-    <Compile Include="Util\DSL\ScriptExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\ScriptExecutionErrorModel.cs" />
     <Compile Include="Util\DSL\ScriptExecutionException.cs" />
     <Compile Include="Util\DSL\ScriptExpression.cs" />
-    <Compile Include="Util\DSL\ScriptState.cs" />
     <Compile Include="Util\DSL\SetFieldOperatorController.cs" />
-    <Compile Include="Util\DSL\State.cs" />
     <Compile Include="Util\DSL\TypescriptToOperatorParser.cs" />
     <Compile Include="Util\DSL\VariableExpression.cs" />
-    <Compile Include="Util\DSL\VariableNotFoundExecutionErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\VariableNotFoundExecutionErrorModel.cs" />
     <Compile Include="Util\Extensions\ControllerExtensions.cs" />
     <Compile Include="Util\Extensions\ModelExtensions.cs" />
     <Compile Include="Util\Factories\BaseControllerFactory.cs" />
@@ -380,7 +436,7 @@
     <Compile Include="TagCloud\WordCloud.xaml.cs">
       <DependentUpon>WordCloud.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Util\DSL\TooManyParametersGivenScriptErrorModel.cs" />
+    <Compile Include="Util\DSL\Error Models\TooManyParametersGivenScriptErrorModel.cs" />
     <Compile Include="Util\TypeTimer.cs" />
     <Compile Include="Util\UndoCommand.cs" />
     <Compile Include="Util\UndoManager.cs" />
@@ -423,6 +479,10 @@
     <Compile Include="Views\CustomGroupGeometries\CustomGroupGeometryTemplate.cs" />
     <Compile Include="Views\CustomGroupGeometries\EnumToGeometry.cs" />
     <Compile Include="Views\CustomGroupGeometries\GroupGeometryConstants.cs" />
+    <Compile Include="Views\DishScriptEditView.cs" />
+    <Compile Include="Views\DishScriptEditView.xaml.cs">
+      <DependentUpon>DishScriptEditView.xaml</DependentUpon>
+      </Compile>
     <Compile Include="Views\CustomPdfView.xaml.cs">
       <DependentUpon>CustomPdfView.xaml</DependentUpon>
     </Compile>
@@ -681,8 +741,8 @@
     <Compile Include="Models\ImageModel.cs" />
     <Compile Include="Models\NumberModel.cs" />
     <Compile Include="Models\OperatorDocumentFactory.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorController.cs" />
-    <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\AddOperatorController.cs" />
+    <Compile Include="Controllers\Operators\Binary\DivideOperatorController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorController.cs" />
@@ -917,6 +977,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CSVImportHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DishScriptEditView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

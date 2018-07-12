@@ -6,6 +6,8 @@
     xmlns:localMicrosoft="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:Dash.Views"
+    xmlns:tsTypes="using:Zu.TypeScript.TsTypes"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
@@ -62,11 +64,13 @@
                 <RowDefinition Height="7" x:Name="xTreeSplitter"/>
                 <RowDefinition Height="325" />
             </Grid.RowDefinitions>
+
+          
+
             <Grid x:Name="xLeftStack" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <!--
-                <local:DishReplView  Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="350" Height="250">
-                </local:DishReplView>-->
+                
             </Grid>
+            
             <local:CollectionTreeView x:Name="xMainTreeView" x:FieldModifier="public"/>
 
             <localMicrosoft:GridSplitter 

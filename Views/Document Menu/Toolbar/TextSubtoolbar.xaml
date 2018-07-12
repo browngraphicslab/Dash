@@ -50,7 +50,7 @@
                             ValueChanged="XOpacitySlider_OnValueChanged"/>
         </Grid>
         <AppBarButton x:Name="xFontColor" Label="Color" Grid.Column="2" 
-            Background="LightGray">
+            Background="LightGray" >
         <Button.Flyout>
                 <Flyout>
                     <media:SfColorPicker  x:Name="xBackgroundColorPicker"  PointerReleased="XBackgroundColorPicker_OnPointerReleased"/>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -325,7 +326,7 @@ namespace Dash
         {
             return document.GetDereferencedField<ListController<DocumentController>>(linkFromOrToKey, null);
         }
-        public static void    AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
+        public static void AddToLinks(this DocumentController document, KeyController LinkFromOrToKey, List<DocumentController> docs)
         {
             var todocs = document.GetLinks(LinkFromOrToKey);
             if (todocs == null)
@@ -359,31 +360,31 @@ namespace Dash
             document.SetField(KeyStore.RegionDefinitionKey, regionParent, true);
         }
 
-        public static bool    GetTransient(this DocumentController document)
+        public static bool GetTransient(this DocumentController document)
         {
             var data = document.GetDereferencedField<TextController>(KeyStore.TransientKey, null);
             return data?.Data == "true";
         }
-        public static void    SetTransient(this DocumentController document, bool hidden)
+        public static void SetTransient(this DocumentController document, bool hidden)
         {
             document.SetField<TextController>(KeyStore.TransientKey, hidden ? "true" : "false", true);
         }
 
-        public static int ?   GetSideCount(this DocumentController document)
+        public static int? GetSideCount(this DocumentController document)
         {
             return (int?)document.GetDereferencedField<NumberController>(KeyStore.SideCountKey, null)?.Data;
         }
-        public static void    SetSideCount(this DocumentController document, int count)
+        public static void SetSideCount(this DocumentController document, int count)
         {
             document.SetField<NumberController>(KeyStore.SideCountKey, count, true);
         }
 
-        public static void    SetWidth(this DocumentController document, double width)
+        public static void SetWidth(this DocumentController document, double width)
         {
             document.SetField<NumberController>(KeyStore.WidthFieldKey, width, true);
         }
 
-        public static void    SetHeight(this DocumentController document, double height)
+        public static void SetHeight(this DocumentController document, double height)
         {
             document.SetField<NumberController>(KeyStore.HeightFieldKey, height, true);
         }

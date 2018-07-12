@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// operator to get all documents before a given time
     /// </summary>
-    [OperatorType("alias")]
+    [OperatorType(Op.Name.alias)]
     public class GetAllDocsByAlias : OperatorController
     {
         //Input keys
@@ -45,7 +45,7 @@ namespace Dash
         /// <summary>
         /// Searches through all documents in the dash view and compares their data documents to find aliases
         /// </summary>
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var toReturn = new ListController<DocumentController>();
 

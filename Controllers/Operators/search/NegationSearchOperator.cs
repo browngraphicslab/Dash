@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("negationSearch")]
+    [OperatorType(Op.Name.negation_search)]
     public class NegationSearchOperator : OperatorController
     {
         //Input keys
@@ -42,7 +42,7 @@ namespace Dash
         /// </summary>
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var allResults = DSL.Interpret(OperatorScript.GetDishOperatorName<SearchOperatorController>() + "(\" \")") as ListController<DocumentController>;
             var dictOp = new PutSearchResultsIntoDictionaryOperatorController();

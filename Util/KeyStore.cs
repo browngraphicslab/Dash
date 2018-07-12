@@ -76,6 +76,12 @@ namespace Dash
         public static KeyController VisualRegionTopLeftPercentileKey = new KeyController("Top-left % of region", "FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C");
         public static KeyController VisualRegionBottomRightPercentileKey = new KeyController("Bottom-right & of region", "05BA4856-AAA4-4212-9A52-650C85F4A4D6");
 
+        public static KeyController ReplInputsKey = new KeyController("Repl Inputs", "650072AB-1821-4BC6-A7F5-096094CF6EB7");
+        public static KeyController ReplOutputsKey = new KeyController("Repl Outputs", "0676C751-B6DE-480F-A5EB-8362F6238D13");
+        public static KeyController ReplScopeKey = new KeyController("Repl Scope", "0F9B3576-A5B1-458C-89B0-AADC7FD278BC");
+
+        public static KeyController ScriptTextKey = new KeyController("Script Text", "8BC898FC-6865-4C69-9FFF-DC64D53277B0");
+
         public static class SearchResultDocumentOutline
         {
             public static KeyController SearchResultTitleKey = new KeyController(new KeyModel("_searchResultTitle", "4ACEB999-6E82-4B40-9602-BD6D362CAC54"));

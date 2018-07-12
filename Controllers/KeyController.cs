@@ -75,7 +75,7 @@ namespace Dash
                     SaveOnServer();
                 }
             });
-            Debug.Assert(!_nameDictionary.ContainsKey(name));
+            Debug.Assert(!_nameDictionary.ContainsKey(name) || _nameDictionary[name] == guid);
             _nameDictionary[name] = guid;
         }
 
@@ -164,6 +164,7 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+
         /*
 
         public static Dictionary<staticKey, Tuple<string, string>> _dict = new Dictionary<staticKey, Tuple<string, string>>()

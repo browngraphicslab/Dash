@@ -750,6 +750,10 @@ namespace Dash
         public bool RemoveField(KeyController key)
         {
             var proto = GetPrototypeWithFieldKey(key);
+            if (proto == null)
+            {
+                return false;
+            }
 
             if (!proto._fields.ContainsKey(key))
                 return false;

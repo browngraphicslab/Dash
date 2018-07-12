@@ -171,7 +171,7 @@ namespace Dash
         }
 
         private static IEnumerable<Type> OperatorTypes { get; } = typeof(OperatorController).Assembly.GetTypes()
-            .Where(type => type.IsSubclassOf(typeof(OperatorController)));
+            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(OperatorController)));
 
         private static OperatorController MakeOperatorController(OperatorModel model)
         {
@@ -299,7 +299,8 @@ namespace Dash
                     controller = new ListController<KeyController>();
                     break;
                 case TypeInfo.Any:
-                    Debug.Fail("idk why you got here");
+                    controller = new ListController<FieldControllerBase>();
+                    //Debug.Fail("idk why you got here");
                     break;
                 default:
                     break;

@@ -4,7 +4,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("concat")]
+    [OperatorType(Op.Name.add, Op.Name.concat, Op.Name.operator_add)]
     public class ConcatOperatorController : OperatorController
     {
         public static readonly KeyController AKey = new KeyController("A");
@@ -12,10 +12,8 @@ namespace Dash
 
         public static readonly KeyController OutputKey = new KeyController("Output");
 
-        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
-        {
-            SaveOnServer();
-        }
+
+        public ConcatOperatorController() : base(new OperatorModel(TypeKey.KeyModel)) => SaveOnServer();
 
         public ConcatOperatorController(OperatorModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -42,10 +40,10 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
-            var a = (inputs[AKey] as TextController).Data;
-            var b = (inputs[BKey] as TextController).Data;
+            var a = (inputs[AKey] as TextController)?.Data;
+            var b = (inputs[BKey] as TextController)?.Data;
             outputs[OutputKey] = new TextController(a + b);
         }
     }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
+// ReSharper disable once CheckNamespace
 namespace Dash
 {
     public class IOInfo : ISerializable
@@ -21,16 +22,10 @@ namespace Dash
         /// </summary>
         public bool IsRequired { get; set; }
 
-        /// <summary>
-        /// True if an update of this field should trigger the operator to re-execute
-        /// </summary>
-        public bool TriggerUpdate { get; set; }
-
-        public IOInfo(TypeInfo type, bool isRequired, bool triggerUpdate = true)
+        public IOInfo(TypeInfo type, bool isRequired)
         {
             Type = type;
             IsRequired = isRequired;
-            TriggerUpdate = triggerUpdate;
         }
     }
 
@@ -38,43 +33,20 @@ namespace Dash
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
     public class OperatorTypeAttribute : Attribute
     {
-        private string[] _names;
-        public double version;
+        private readonly Op.Name[] _names;
+        public double Version;
 
-        public OperatorTypeAttribute(string name) //Cant pass enumerable to type attribute consrtructor.  Hacky but it works and shouldn't need to scale much
+        public OperatorTypeAttribute(params Op.Name[] names)
         {
-            this._names = new []{name};
+            var namesWithUniversalEnums = names.ToList();
+            //namesWithUniversalEnums.Add(Op.Name.help);
+            _names = namesWithUniversalEnums.ToArray();
 
             // Default value.
-            version = 1.0;
+            Version = 1.0;
         }
 
-        public OperatorTypeAttribute(string name1, string name2)
-        {
-            this._names = new[] { name1, name2 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-
-        public OperatorTypeAttribute(string name1, string name2, string name3)
-        {
-            this._names = new[] { name1, name2, name3 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-        public OperatorTypeAttribute(string name1, string name2, string name3, string name4)
-        {
-            this._names = new[] { name1, name2, name3, name4 };
-
-            // Default value.
-            version = 1.0;
-        }
-
-        public string[] GetTypeNames()
+        public Op.Name[] GetTypeNames()
         {
             return _names;
         }
@@ -124,7 +96,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null);
+        public abstract void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null);
 
         /// <summary>
         /// Create a new <see cref="OperatorController"/> associated with the passed in <see cref="OperatorFieldModel" />
