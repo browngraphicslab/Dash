@@ -481,6 +481,28 @@
 
                     </StackPanel>
 
+                    <StackPanel x:Name="xToggleControl" Orientation="Horizontal" Margin="5,10,0,20" HorizontalAlignment="Left" VerticalAlignment="Center">
+
+                        <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
+
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Name="xActivateIcon" FontSize="14" Foreground="White"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ActivateIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
+                                <TextBlock x:Name="xActivateTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
+
+                            </StackPanel>
+
+                        </ToggleButton>
+                        <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock x:Name="xPreviewIcon" FontSize="14" Foreground="White"
+                                           FontFamily="{StaticResource FontAwesome}" Text="{StaticResource PreviewIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
+                                <TextBlock x:Name="xPreviewTitle" FontSize="14" Foreground="White" Text="Preview"></TextBlock>
+
+                            </StackPanel>
+                        </ToggleButton>
+                    </StackPanel>
+
                     <!--Add Items Drop Down-->
                     <StackPanel x:Name="XAddItemsGrid" Width="170" PointerEntered="XExpansionGrid_OnPointerEntered" PointerExited="XExpansionGrid_OnPointerExited" Background="#416857">
                         <StackPanel.Resources>
@@ -790,27 +812,7 @@
                     </Button>
                 </StackPanel>-->
 
-                        <StackPanel x:Name="xToggleControl" Orientation="Horizontal" Margin="0,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
-
-                            <ToggleButton Style="{StaticResource ToggleButtonStyler}" Name="xActivate" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
-
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock x:Name="xActivateIcon" FontSize="14" Foreground="White"
-                                                   FontFamily="{StaticResource FontAwesome}" Text="{StaticResource ActivateIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
-                                    <TextBlock x:Name="xActivateTitle" FontSize="14" Foreground="White" Text="Activate"></TextBlock>
-
-                                </StackPanel>
-
-                            </ToggleButton>
-                            <ToggleButton  Style="{StaticResource ToggleButtonStyler}" Name="xPreview" Height="50" Width="85" Background="#334f43" Checked="ToggleControl_OnChecked">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock x:Name="xPreviewIcon" FontSize="14" Foreground="White"
-                                               FontFamily="{StaticResource FontAwesome}" Text="{StaticResource PreviewIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0, -4, 0, -14"/>
-                                    <TextBlock x:Name="xPreviewTitle" FontSize="14" Foreground="White" Text="Preview"></TextBlock>
-
-                                </StackPanel>
-                            </ToggleButton>
-                        </StackPanel>
+                        
 
 
 
