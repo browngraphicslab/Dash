@@ -8,12 +8,14 @@ namespace Dash
         public DocumentController DataDocument;
         public int Rank;
         public string RelevantText;
+        public string TitleAppendix;
 
-        public SearchResult() : this(null, "", 0) { }
+        public SearchResult() : this(null, "", "", 0) { }
 
-        public SearchResult(DocumentNode node, string relevantText, int rank = 1)
+        public SearchResult(DocumentNode node, string titleAppendix, string relevantText, int rank = 1)
         {
             Node = node;
+            TitleAppendix = titleAppendix;
             RelevantText = relevantText;
             Rank = rank;
 

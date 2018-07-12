@@ -46,7 +46,10 @@
                 Grid.Column="1" 
                 FontFamily="{StaticResource FontAwesome}" 
                 Style="{StaticResource xMenuItemExpandRight}" 
-                Tapped="XArrowBlock_OnTapped" Foreground="{x:Bind Foreground, Mode=OneWay}" Text="{x:Bind ViewModel.ResultText}"/>
+                Tapped="XArrowBlock_OnTapped" 
+                RightTapped="XSnapshotArrowBlock_OnRightTapped"
+                Foreground="{x:Bind Foreground, Mode=OneWay}" 
+                Text="{x:Bind ViewModel.ResultText}"/>
         </Grid>
         <StackPanel x:Name="xChildren" Margin="30, 0, 0, 0" Visibility ="Collapsed"/>
     </StackPanel>

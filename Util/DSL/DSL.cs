@@ -34,11 +34,8 @@ namespace Dash
         {
             try
             {
-                if (script.Trim().Equals("clear") || script.Trim().Equals("clear all"))
-                {
-                    _replView.Clear(script.Equals("clear all"));
-                    return new TextController();
-                }
+                if (CheckSpecialCommands(script)) return new TextController();
+
                 var interpreted = TypescriptToOperatorParser.Interpret(script, _scope);
                 return interpreted;
             }
@@ -49,6 +46,42 @@ namespace Dash
                 if (e is ScriptExecutionException doc) return doc.Error.GetErrorDoc(); 
                 return new TextController(e.GetHelpfulString());
             }
+        }
+
+        private bool CheckSpecialCommands(string script)
+        {
+            // CLEAR
+            if (script.Trim().Equals("clear") || script.Trim().Equals("clear all"))
+            {
+                _replView.Clear(script.Equals("clear all"));
+                return true;
+            }
+
+            //CLOSE ALL
+            if (script.Trim().Equals("close") || script.Trim().Equals("close all"))
+            {
+                _replView.Close(script.Equals("close all"));
+                return true;
+            }
+
+            //TAB
+            var indentSplit = script.Replace(" ", "").Split("=", StringSplitOptions.RemoveEmptyEntries);
+            if (indentSplit[0].Equals("tab"))
+            {
+                // DEFAULT
+                if (indentSplit.Length == 1)
+                {
+                    _replView.SetIndent(3);
+                    return true;
+                }
+                if (double.TryParse(indentSplit[1].Trim(), out double tab))
+                {
+                    _replView.SetIndent((int)tab);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public FieldControllerBase GetOperatorController(string script, bool catchErrors = false)

@@ -116,7 +116,7 @@ namespace Dash
         /// <returns></returns>
         public static FieldControllerBase Interpret(string script, Scope scope = null)
         {
-            var hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
+            string hash = script;//DashShared.UtilShared.GetDeterministicGuid(script);
 
             if (_currentScriptExecutions.Contains(hash))
             {

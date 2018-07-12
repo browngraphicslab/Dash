@@ -257,7 +257,17 @@ namespace Dash
 
         public override string ToString()
         {
-            string str = $"[{string.Join(", ", TypedData)}]";
+            const int cutoff = 5;
+
+            int initialLength = TypedData.Count;
+            var copy = new List<T>(TypedData);
+            bool condense = initialLength > cutoff;
+
+            if (condense) while (copy.Count > cutoff) { copy.RemoveAt(cutoff); }
+
+            string suffix = condense ? $", ... +{initialLength - cutoff}" : "";
+            string str = $"[{string.Join(", ", copy)}{suffix}]";
+
             return str.Equals("[]") ? "[<empty>]" : str;
         }
 
@@ -346,7 +356,7 @@ namespace Dash
             return true;
         }
 
-        public override void AddRange(IList<FieldControllerBase> elements)
+        public override void AddRange(IEnumerable<FieldControllerBase> elements)
         {
             if (!IsReadOnly) AddRangeManager(elements.OfType<T>().ToList());
         }
@@ -364,26 +374,27 @@ namespace Dash
             return this[index];
         }
 
-        public void AddRange(IList<T> elements)
+        public void AddRange(IEnumerable<T> elements)
         {
             if (!IsReadOnly) AddRangeManager(elements);
         }
 
-        private void AddRangeManager(IList<T> elements, bool withUndo = true)
+        private void AddRangeManager(IEnumerable<T> elements, bool withUndo = true)
         {
             if (IsReadOnly) return;
 
             var prevList = TypedData;
-            foreach (var element in elements)
+            var enumerable = elements.ToList();
+            foreach (var element in enumerable)
             {
                 AddHelper(element);
                 //TODO tfs: Remove deleted elements from the list when they are deleted if we can delete fields 
                 // Or just use reference counting if that ever gets implemented
             }
 
-            var newEvent = new UndoCommand(() => AddRangeManager(elements, false), () =>
+            var newEvent = new UndoCommand(() => AddRangeManager(enumerable, false), () =>
             {
-                foreach (var element in elements)
+                foreach (var element in enumerable)
                 {
                     RemoveManager(element, false);
                 }
@@ -391,7 +402,7 @@ namespace Dash
 
             UpdateOnServer(withUndo ? newEvent : null);
 
-            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, elements.ToList(), prevList, prevList.Count - 1));
+            OnFieldModelUpdated(new ListFieldUpdatedEventArgs(ListFieldUpdatedEventArgs.ListChangedAction.Add, enumerable.ToList(), prevList, prevList.Count - 1));
         }
 
         // @IList<T> //

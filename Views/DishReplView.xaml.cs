@@ -19,7 +19,7 @@ using DashShared;
 // ReSharper disable once CheckNamespace
 namespace Dash
 {
-    public sealed partial class DishReplView : UserControl, INotifyPropertyChanged
+    public sealed partial class DishReplView : INotifyPropertyChanged
     {
         #region Defintions and Intilization  
         private readonly DocumentController _dataDoc;
@@ -37,8 +37,21 @@ namespace Dash
         private int _textHeight = 50;
         private const int StratOffset = 32;
 
-        private readonly ListController<TextController> _inputList;
-        private readonly ListController<FieldControllerBase> _outputList;
+        private int _currentTab = 3;
+
+        private static readonly List<string> SpecialCommands = new List<string>
+        {
+            "clear",
+            "clear all",
+            "tab",
+            "close",
+            "close all"
+        };
+
+        private readonly ListController<TextController> _lineTextList;
+        private readonly ListController<FieldControllerBase> _valueList;
+        private readonly ListController<NumberController> _indents;
+        private readonly List<ReplLineViewModel> _viewModelsInSession = new List<ReplLineViewModel>();
 
         private OuterReplScope _scope;
 
@@ -49,8 +62,8 @@ namespace Dash
         private int _forIndex = 0;
         private int _forInIndex = 0;
 
-        private bool wayUp;
-        private bool wayDown;
+        private bool _wayUp;
+        private bool _wayDown;
 
         private int TextHeight
         {
@@ -74,20 +87,35 @@ namespace Dash
             if (dataset != null) SetDataset(dataset);
 
             //intialize lists to save data
-            _inputList =_dataDoc.GetField<ListController<TextController>>(KeyStore.ReplInputsKey);
-            _outputList = _dataDoc.GetField<ListController<FieldControllerBase>>(KeyStore.ReplOutputsKey);
+            _lineTextList =_dataDoc.GetField<ListController<TextController>>(KeyStore.ReplLineTextKey);
+            _valueList = _dataDoc.GetField<ListController<FieldControllerBase>>(KeyStore.ReplValuesKey);
+            _indents = _dataDoc.GetField<ListController<NumberController>>(KeyStore.ReplCurrentIndentKey);
+            if (_indents.Count > 0) _currentTab = (int) _indents.Last.Data;
             //var scopeDoc = dataDoc.GetField<DocumentController>(KeyStore.ReplScopeKey);
             //add items from lists to Repl
             var replItems = new ObservableCollection<ReplLineViewModel>();
-            for(var i = 0; i < _inputList.Count; i++)
+            for(var i = 0; i < _lineTextList.Count; i++)
             {
-                var newReplLine = new ReplLineViewModel { LineText = " >> " + _inputList[i].Data, ResultText = " " + _outputList[i], Value = _outputList[i], DisplayableOnly = true};
+                var newReplLine = new ReplLineViewModel
+                {
+                    LineText = " >> " + _lineTextList[i].Data,
+                    ResultText = " " + _valueList[i],
+                    Value = _valueList[i],
+                    DisplayableOnly = true,
+                    Indent = (int) _indents[i].Data
+                };
                 replItems.Add(newReplLine);
             }
 
             ViewModel.Items = replItems;
             ScrollToBottom();
 
+        }
+
+        public void SetIndent(int tab)
+        {
+            if (!(tab > 0 && tab < 6)) return;
+            _currentTab = tab;
         }
 
         // ReSharper disable once InconsistentNaming
@@ -106,8 +134,7 @@ namespace Dash
             var dataBox = new DataBox(outputData).Document;
             args.Data.Properties[nameof(DragDocumentModel)] = new DragDocumentModel(dataBox, true);
             args.AllowedOperations = DataPackageOperation.Link | DataPackageOperation.Move | DataPackageOperation.Copy;
-            args.Data.RequestedOperation =
-                DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
+            args.Data.RequestedOperation = DataPackageOperation.Move | DataPackageOperation.Copy | DataPackageOperation.Link;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -124,8 +151,22 @@ namespace Dash
             if (!clearData) return;
             _dataDoc.SetField(KeyStore.ReplScopeKey, new DocumentController(), true);
             NewBlankScopeAndDSL();
-            _inputList?.Clear();
-            _outputList?.Clear();
+            _lineTextList?.Clear();
+            _valueList?.Clear();
+        }
+
+        public void Close(bool closeAll)
+        {
+            return;
+            //if (closeAll)
+            //{
+            //    foreach (var vm in _viewModelsInSession)
+            //    {
+            //        if (vm.ArrowState == ReplLineNode.ArrowState.Open) vm.ArrowState = ReplLineNode.ArrowState.Closed;
+            //    }
+            //    return;
+            //}
+            //if (_viewModelsInSession.Count > 0 && _viewModelsInSession.Last().ArrowState is ReplLineNode.ArrowState.Open) _viewModelsInSession.Last().ArrowState = ReplLineNode.ArrowState.Closed;
         }
 
         public static void SetDataset(List<string> data) => _dataset = data;
@@ -191,7 +232,7 @@ namespace Dash
             var numItem = ViewModel.Items.Count;
             switch (args.VirtualKey)
             {
-                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayUp:
+                case VirtualKey.Up when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && _wayUp:
                     //get last terminal input entered
                     var index1 = numItem - (_currentHistoryIndex + 1);
                     if (index1 + 1 == numItem)
@@ -212,7 +253,7 @@ namespace Dash
                 case VirtualKey.Up when MainPage.Instance.IsCtrlPressed():
                     if (xSuggestions.SelectedIndex > -1 && xSuggestionsPopup.Visibility == Visibility.Visible) xSuggestions.SelectedIndex--;
                     break;
-                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && wayDown:
+                case VirtualKey.Down when !MainPage.Instance.IsCtrlPressed() && !MainPage.Instance.IsShiftPressed() && _wayDown:
                     var index = numItem - (_currentHistoryIndex - 1);
                     if (numItem > index && index >= 0)
                     {
@@ -246,9 +287,9 @@ namespace Dash
             }
             
             var beforeCursor = xTextBox.Text.Substring(0, xTextBox.SelectionStart);
-            wayUp = !(beforeCursor.Contains('\r'));
+            _wayUp = !(beforeCursor.Contains('\r'));
             var afterCursor = xTextBox.Text.Substring(xTextBox.SelectionStart, xTextBox.Text.Length - xTextBox.SelectionStart);
-            wayDown = !(afterCursor.Contains('\r'));
+            _wayDown = !(afterCursor.Contains('\r'));
 
             _currentText = xTextBox.Text;
         }
@@ -406,12 +447,23 @@ namespace Dash
 
                             xTextBox.Text = "";
 
-                            if (!(currentText.Trim().ToLower().Equals("clear all") || currentText.Trim().ToLower().Equals("clear")))
+                            if (!SpecialCommand(currentText))
                             {
-                                ViewModel.Items.Add(new ReplLineViewModel { LineText = " >> " + currentText, ResultText = " " + returnValue, Value = returnValue, DisplayableOnly = true });
+                                var head = new ReplLineViewModel
+                                {
+                                    LineText = " >> " + currentText,
+                                    ResultText = " " + returnValue,
+                                    Value = returnValue,
+                                    DisplayableOnly = true,
+                                    Indent = _currentTab
+                                };
+
+                                ViewModel.Items.Add(head);
                                 //save line text and result text data
-                                _inputList.Add(new TextController(currentText));
-                                _outputList.Add(returnValue);
+                                _lineTextList.Add(new TextController(currentText));
+                                _valueList.Add(returnValue);
+                                _indents.Add(new NumberController(_currentTab));
+                                _viewModelsInSession.Add(head);
                             }
 
                             ScrollToBottom();
@@ -497,6 +549,16 @@ namespace Dash
 
             _currentText = xTextBox.Text;
             _textModified = false;
+        }
+
+        private static bool SpecialCommand(string currentText)
+        {
+            currentText = currentText.Trim().ToLower();
+            foreach (string cmd in SpecialCommands)
+            {
+                if (currentText.StartsWith(cmd)) return true;
+            }
+            return false;
         }
         #endregion
 

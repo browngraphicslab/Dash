@@ -219,8 +219,9 @@ namespace DashShared
             public static KeyModel SettingsUpwardPanningKey = new KeyModel("3B354602-794D-4FC0-A289-1EBA7EC23FD1", "Infinite Upward Panning Enabled");
             public static KeyModel SettingsMarkdownModeKey = new KeyModel("2575EAFA-2689-40DD-A0A8-9EE0EC0720ED", "Markdown vs RTF");
 
-            public static KeyModel ReplInputsKey = new  KeyModel("C17B3D33-EAE2-4477-BC5B-0ECDADC48779", "Repl Inputs");
-            public static KeyModel ReplOutputsKey = new KeyModel("6FE39D8B-933D-4478-8499-71C8AAE887BA", "Repl Outputs");
+            public static KeyModel ReplLineTextsKey = new  KeyModel("C17B3D33-EAE2-4477-BC5B-0ECDADC48779", "Repl Inputs");
+            public static KeyModel ReplValuesKey = new KeyModel("6FE39D8B-933D-4478-8499-71C8AAE887BA", "Repl Outputs");
+            public static KeyModel ReplCurrentIndentKey = new KeyModel("AADD7D98-CABF-4355-AD19-81437F9A53C4", "Repl Stored Tab Setting");
             public static KeyModel ReplScopeKey = new   KeyModel("D4390CDC-FD08-4A69-912F-54A6C6FA9304", "Repl Scope");
 
             public static KeyModel ScriptTextKey = new KeyModel("9F34AB80-5ACA-4981-823A-45FD481507CE", "Script Text");
@@ -229,11 +230,6 @@ namespace DashShared
             public static KeyModel DockedDocumentsTopKey = new KeyModel("5A5AC489-8988-44BE-AC06-AE76CF81FB04", "Documents docked on the top");
             public static KeyModel DockedDocumentsRightKey = new KeyModel("F9E7580F-2053-49AA-B829-7B7347C65394", "Documents docked on the right");
             public static KeyModel DockedDocumentsBottomKey = new KeyModel("F6E10E00-1644-40BE-8A9E-0C648FE4B223", "Documents docked on the bottom");
-
-            public static KeyModel ExceptionKey = new KeyModel("34171C23-6A1B-4760-BF71-06758507B26C", "_Exception Type");
-            public static KeyModel ReceivedKey = new KeyModel("BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B", "_Inputs Received");
-            public static KeyModel ExpectedKey = new KeyModel("999EF787-80A7-4277-B0E4-DD36FBB48857", "_Inputs Expected");
-            public static KeyModel FeedbackKey = new KeyModel("EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9", "_Feedback");
         }
 
         public static class TypeStore
@@ -250,6 +246,7 @@ namespace DashShared
             public static DocumentType ExtractSentencesDocumentType = new DocumentType("3B6B9420-FD08-4CBA-99AA-5FAA261266AE", "Extract Sentences Operator Box");
             public static DocumentType SearchOperatorType = new DocumentType("7A83F04B-7715-40B3-A867-B29E7812B8C4", "Search Operator");
             public static DocumentType QuizletOperatorType = new DocumentType("7F97DB94-CE77-4082-8E1B-EF4518475C38", "Quizlet Operator");
+            public static DocumentType ErrorType = new DocumentType("55F9E738-C215-4EA7-8878-4C561C16A5FC", "Error Message");
         }
     }
 }

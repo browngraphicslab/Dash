@@ -15,7 +15,7 @@ namespace Dash
                 var stringSearchModel = node.DataDocument?.GetDereferencedField(key, null)?.SearchForString(value);
                 int matchLength = stringSearchModel == null ? 0 :
                     (stringSearchModel == StringSearchModel.False) ? 0 : stringSearchModel.RelatedString.Length;
-                return new SearchResult(node, stringSearchModel?.RelatedString, matchLength);
+                return new SearchResult(node, $" >> {key}", $"\" {stringSearchModel?.RelatedString} \"", matchLength);
             }).OrderByDescending(res => res.Rank);
 
             return negate ? filteredNodes.Where(res => res.Rank == 0) : filteredNodes.Where(res => res.Rank > 0);
@@ -24,10 +24,54 @@ namespace Dash
         public static IEnumerable<SearchResult> SearchByQuery(string query, bool negate = false)
         {
             var filteredNodes = DocumentTree.MainPageTree.Select(node =>
-            { 
-                int numMatchedFields = node.ViewDocument.EnumDisplayableFields().Count(field => field.Value.DereferenceToRoot(null).SearchForString(query) != StringSearchModel.False) + 
-                                       node.DataDocument.EnumDisplayableFields().Count(field => field.Value.DereferenceToRoot(null).SearchForString(query) != StringSearchModel.False);
-                return new SearchResult(node, query, numMatchedFields);
+            {
+                var relatedString = "";
+                KeyController relatedField = null;
+
+                var numMatchedFields = 0;
+                foreach (var field in node.ViewDocument.EnumDisplayableFields())
+                {
+                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
+                    if (ssm == StringSearchModel.False) continue;
+
+                    if (string.IsNullOrEmpty(relatedString))
+                    {
+                        relatedString = ssm.RelatedString;
+                        relatedField = field.Key;
+                    }
+                    numMatchedFields++;
+                }
+                foreach (var field in node.DataDocument.EnumDisplayableFields())
+                {
+                    var ssm = field.Value.DereferenceToRoot(null).SearchForString(query);
+                    if (ssm == StringSearchModel.False) continue;
+
+                    if (string.IsNullOrEmpty(relatedString))
+                    {
+                        relatedString = ssm.RelatedString;
+                        relatedField = field.Key;
+                    }
+                    numMatchedFields++;
+                }
+
+                var s = "";
+                var e = "";
+                if (!string.IsNullOrEmpty(relatedString))
+                {
+                    int ind = relatedString.ToLower().IndexOf(query.ToLower(), StringComparison.Ordinal);
+                    var pre = 0;
+                    while (ind - pre > 0 && pre < 5/* && !$"{relatedString[ind - pre]}".Equals("\r")*/) { pre++; }
+
+                    var post = 0;
+                    while (ind + post + query.Length < relatedString.Length && post < 5/* && !$"{relatedString[ind + post]}".Equals("\r")*/) { post++; }
+
+                    if (ind - pre != 0) s = "...";
+                    if (post == 5) e = "...";
+
+                    relatedString = relatedString.Substring(ind - pre, pre + query.Length + post);
+                }
+
+                    return new SearchResult(node, $" >> { relatedField }", $"\" {s}{relatedString}{e} \" ", numMatchedFields);
             })
                 .OrderByDescending(res => res.Rank);
 
@@ -73,12 +117,26 @@ namespace Dash
                 var parts = searchPart.Split(':', 2).Select(s => s.Trim()).ToArray();
                 //created a key field query function with both parts as parameters if parts[0] isn't a function name
 
-                return SearchByKeyValuePair(new KeyController(parts[0]), parts[1], negate);
+
+                return ParameterizeFunction(parts[0], parts[1], negate); ;
             }
-            else
+            return SearchByQuery(searchPart, negate);
+        }
+
+        private static IEnumerable<SearchResult> ParameterizeFunction(string name, string paramName, bool negate)
+        {
+            //this returns a string that more closely follows function syntax
+            //TODO check if func exists
+
+            if (!DSL.FuncNameExists(name))
             {
-                return SearchByQuery(searchPart, negate);
+                return SearchByKeyValuePair(new KeyController(name), paramName, negate);
             }
+            var resultDocs = DSL.Interpret(name + "(\"" + paramName + "\")");
+            if (resultDocs is BaseListController resultList) return resultList.Data.Select(fcb => new SearchResult());
+
+            // Don't think this line should be reached
+            return null;
         }
 
         private static int FindNextDivider(string inputString)
@@ -183,6 +241,10 @@ namespace Dash
 
         public static IEnumerable<SearchResult> Parse(string inputString)
         {
+            if (string.IsNullOrEmpty(inputString))
+            {
+                return new List<SearchResult>();
+            }
             int dividerIndex = FindNextDivider(inputString);
             string searchTerm = inputString.Substring(0, dividerIndex);
             bool isNegated = searchTerm.StartsWith("!");
@@ -301,7 +363,7 @@ namespace Dash
             var dataDoc = doc.GetDataDocument();
             var filteredNodes = DocumentTree.MainPageTree.Where(node => node.DataDocument.Equals(dataDoc));
             if (avoidDuplicateViews) filteredNodes = filteredNodes.Where(node => !node.ViewDocument.Equals(doc));
-            return filteredNodes.Select(node => new SearchResult(node, id));
+            return filteredNodes.Select(node => new SearchResult(node, "", id));
         }
 
         public static DocumentController SearchIndividualById(string id) => ContentController<FieldModel>.GetController<DocumentController>(id) ?? new DocumentController();

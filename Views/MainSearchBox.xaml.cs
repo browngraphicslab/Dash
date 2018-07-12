@@ -73,8 +73,9 @@ namespace Dash
             var vms = new List<SearchResultViewModel>();
             foreach (var res in searchRes)
             {
-                var newVm = SearchHelper.DocumentSearchResultToViewModel(res.ViewDocument);
-                newVm.DocumentCollection = res.Node.Parent.ViewDocument;
+                var newVm = SearchHelper.DocumentSearchResultToViewModel(res);
+                var parent = res.Node.Parent?.ViewDocument;
+                if (parent != null) newVm.DocumentCollection = parent;
                 vms.Add(newVm);
             }
 
@@ -196,8 +197,7 @@ namespace Dash
 
         }
 
-        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender,
-            AutoSuggestBoxSuggestionChosenEventArgs args)
+        private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             // Set sender.Text. You can use args.SelectedItem to build your text string.
             if (args.SelectedItem is SearchResultViewModel resultVM)
@@ -396,12 +396,12 @@ namespace Dash
             //        .Where(vm => collectionDocuments == null || collectionDocuments.Contains(vm.ViewDocument)));
             //}
 
-            public static SearchResultViewModel DocumentSearchResultToViewModel(DocumentController viewDoc)
+            public static SearchResultViewModel DocumentSearchResultToViewModel(SearchResult res)
             {
-                string title = viewDoc.ToString().Substring(1); // .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey)?.Data;
-                string helpText = viewDoc.GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultHelpTextKey)?.Data;
+                string title = res.ViewDocument.ToString().Substring(1) + res.TitleAppendix; // .GetField<TextController>(KeyStore.SearchResultDocumentOutline.SearchResultTitleKey)?.Data;
+                string helpText = res.RelevantText;
 
-                return new SearchResultViewModel(title, "<Helpful Text Here>", viewDoc, null, true);
+                return new SearchResultViewModel(title, helpText, res.ViewDocument, null, true);
             }
 
             /*

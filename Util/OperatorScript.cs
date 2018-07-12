@@ -298,7 +298,7 @@ namespace Dash
                 if (args.Count == numParams) properNumParams = true;
                 if (!allParamCounts.Contains(numParams)) allParamCounts.Add(numParams);
                 var operatorInfo = ambiguous ? $" -> {overload.OperatorType.ToString().Substring(5)}" : "";
-                typeSublists.Add(new KeyValuePair<int, string>(numParams, $"\n ({string.Join(", ", typeInfoList)})" + operatorInfo));
+                typeSublists.Add(new KeyValuePair<int, string>(numParams, $"({string.Join(", ", typeInfoList)})" + operatorInfo));
             }
 
             var oneElement = typeSublists.Count == 1;
@@ -308,7 +308,7 @@ namespace Dash
             {
                 var properTypes = sortedParams.Where(kv => kv.Key == args.Count).ToList();
                 sortedParams.RemoveAll(kv => kv.Key == args.Count);
-                if (!oneElement && !ambiguous) properTypes.Add(new KeyValuePair<int, string>(0, "\n ^^"));
+                if (!oneElement && !ambiguous) properTypes.Add(new KeyValuePair<int, string>(0, "^^"));
                 properTypes.AddRange(sortedParams);
                 sortedParams = properTypes;
             }
@@ -318,7 +318,7 @@ namespace Dash
                 var below = sortedParams.Where(kv => kv.Key < args.Count).ToList();
                 var above = sortedParams.Where(kv => kv.Key > args.Count).ToList();
                 ordered.AddRange(below);
-                if (!oneElement && !ambiguous) ordered.Add(new KeyValuePair<int, string>(0, "\n --> ?"));
+                if (!oneElement && !ambiguous) ordered.Add(new KeyValuePair<int, string>(0, "--> ?"));
                 ordered.AddRange(above);
                 sortedParams = ordered;
             }

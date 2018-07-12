@@ -72,16 +72,17 @@ namespace Dash
         public static KeyController DockedDocumentsRightKey = new KeyController("Documents docked on the right", "F9E7580F-2053-49AA-B829-7B7347C65394");
         public static KeyController DockedDocumentsBottomKey = new KeyController("Documents docked on the bottom", "F6E10E00-1644-40BE-8A9E-0C648FE4B223");
 
-        public static KeyController ReplInputsKey = new KeyController(DashConstants.KeyStore.ReplInputsKey);
-        public static KeyController ReplOutputsKey = new KeyController(DashConstants.KeyStore.ReplOutputsKey);
+        public static KeyController ReplLineTextKey = new KeyController(DashConstants.KeyStore.ReplLineTextsKey);
+        public static KeyController ReplValuesKey = new KeyController(DashConstants.KeyStore.ReplValuesKey);
+        public static KeyController ReplCurrentIndentKey = new KeyController(DashConstants.KeyStore.ReplCurrentIndentKey);
         public static KeyController ReplScopeKey = new KeyController(DashConstants.KeyStore.ReplScopeKey);
 
         public static KeyController ScriptTextKey = new KeyController(DashConstants.KeyStore.ScriptTextKey);
 
-        public static KeyController ExceptionKey = new KeyController(DashConstants.KeyStore.ExceptionKey);
-        public static KeyController ReceivedKey = new KeyController(DashConstants.KeyStore.ReceivedKey);
-        public static KeyController ExpectedKey = new KeyController(DashConstants.KeyStore.ExpectedKey);
-        public static KeyController FeedbackKey = new KeyController(DashConstants.KeyStore.FeedbackKey);
+        public static KeyController ExceptionKey = new KeyController("Exception Type", "34171C23-6A1B-4760-BF71-06758507B26C");
+        public static KeyController ReceivedKey = new KeyController("Inputs Received", "BF6E2306-751E-4A6F-AC97-6B96DD9C5C5B");
+        public static KeyController ExpectedKey = new KeyController("Inputs Expected", "999EF787-80A7-4277-B0E4-DD36FBB48857");
+        public static KeyController FeedbackKey = new KeyController("Feedback", "EA22528F-BEBA-4CEA-AD5D-6CF58D3045B9");
 
         public static class SearchResultDocumentOutline
         {
