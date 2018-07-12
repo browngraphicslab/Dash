@@ -545,6 +545,10 @@ namespace Dash
         // DO NOT ADD NEW CODE INTO THIS METHOD (see overloaded method with no parameters below). This one is ONLY for dealing with unique eventargs-related stuff.
         private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
+            var right = (ParentDocument.IsRightBtnPressed() || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+            var parentFreeform = ParentDocument.GetFirstAncestorOfType<CollectionFreeformBase>();
+            var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
+            ParentDocument.ManipulationMode = right && parentFreeform != null && (ParentDocument.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
             if (e != null && ParentDocument.ManipulationMode == ManipulationModes.None)
             {
                 e.Complete();
