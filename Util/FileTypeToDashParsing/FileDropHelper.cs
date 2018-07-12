@@ -94,11 +94,11 @@ namespace Dash
             // if there is more than one file then we add it to the collection as a collection of documents
             else if (files.Any())
             {
-                var CollectionNoteOffset = 250;
+                var CollectionNoteOffset = 260;
                 // create a containing collection to hold all the files
                 var outputCollection = new List<DocumentController>();
 
-                int xPos = 0, yPos = 0, count = 0;  
+                double xPos = 0, yPos = 0, count = 0;  
                 // for each file, get its type, parse it, and add it to the output collection
                 foreach (var file in files)
                 {
@@ -116,8 +116,9 @@ namespace Dash
                                 yPos += CollectionNoteOffset;
                                 xPos = 0;
                             }
-                            documentController.GetPositionField().Data = new Point(xPos, yPos); 
-                            xPos += CollectionNoteOffset;
+                            documentController.GetPositionField().Data = new Point(xPos, yPos);
+                            var docWidth = documentController.GetWidthField()?.Data + 10 ?? CollectionNoteOffset;
+                            xPos += double.IsNaN(docWidth) ? CollectionNoteOffset : docWidth;
                             count++;
                         }
                     }

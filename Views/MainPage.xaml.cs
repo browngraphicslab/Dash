@@ -84,7 +84,6 @@ namespace Dash
         {
             async Task Success(IEnumerable<DocumentModel> mainPages)
             {
-                Debug.WriteLine(ContentController<FieldModel>.GetControllers<FieldControllerBase>().Count());
                 var doc = mainPages.FirstOrDefault();
                 if (doc != null)
                 {
