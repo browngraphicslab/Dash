@@ -450,6 +450,7 @@
     <Compile Include="ViewModels\ReplLineViewModel.cs" />
     <Compile Include="ViewModels\SearchResultViewModel.cs" />
     <Compile Include="ViewModels\TabItemViewModel.cs" />
+    <Compile Include="Views\BoundsExtractionStrategy.cs" />
     <Compile Include="Views\Collection\CollectionStandardView.xaml.cs">
       <DependentUpon>CollectionStandardView.xaml</DependentUpon>
     </Compile>
@@ -482,6 +483,9 @@
     <Compile Include="Views\DishScriptEditView.xaml.cs">
       <DependentUpon>DishScriptEditView.xaml</DependentUpon>
       </Compile>
+    <Compile Include="Views\CustomPdfView.xaml.cs">
+      <DependentUpon>CustomPdfView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DockingFrame.xaml.cs">
       <DependentUpon>DockingFrame.xaml</DependentUpon>
     </Compile>
@@ -980,6 +984,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\CustomPdfView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\DockingFrame.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1285,6 +1293,9 @@
     </PackageReference>
     <PackageReference Include="HockeySDK.UWP">
       <Version>4.1.6</Version>
+    </PackageReference>
+    <PackageReference Include="itext7">
+      <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="lightbuzz-smtp">
       <Version>1.8.0</Version>

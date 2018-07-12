@@ -318,6 +318,7 @@ namespace Dash
         }
         public static void    SetHidden(this DocumentController document, bool hidden)
         {
+            //TODO This should use a BoolController
             document.SetField<TextController>(KeyStore.HiddenKey, hidden ? "true":"false", true);
         }
 

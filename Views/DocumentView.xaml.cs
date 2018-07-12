@@ -187,7 +187,7 @@ namespace Dash
             void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
             {
                 ResizeHandles_restorePointerTracking();
-                this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
+                this.GetDescendantsOfType<CustomPdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
 
                 UndoManager.EndBatch();

@@ -6,15 +6,19 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Syncfusion.Windows.PdfViewer;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Linq;
 using Windows.UI;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
-using Syncfusion.Pdf.Graphics;
-using Syncfusion.Pdf.Interactive;
+using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Parser;
+using iText.Kernel.Pdf.Canvas.Parser.Data;
+using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using Syncfusion.Windows.PdfViewer;
+using Color = Windows.UI.Color;
+using PdfReader = iText.Kernel.Pdf.PdfReader;
 using Point = Windows.Foundation.Point;
 using Size = Windows.Foundation.Size;
 
@@ -89,7 +93,67 @@ namespace Dash
                 var curOffset = doc.GetDereferencedField<NumberController>(KeyStore.PdfVOffsetFieldKey, null)?.Data;
                 GetInternalScrollViewer().ChangeView(null, curOffset ?? 0.0, null);
                 xPdfView.GetFirstDescendantOfType<ScrollViewer>().Margin = new Thickness(0);
+
+                //PdfTest();
             };
+        }
+
+        private class BoundsTextExtractionStrategy : LocationTextExtractionStrategy
+        {
+            private Canvas c;
+            private Size _canvasSize, _pageSize;
+            private double _pageGap;
+            public BoundsTextExtractionStrategy(Canvas c, Size canvasSize, Size pageSize, double pageGap)
+            {
+                this.c = c;
+                _canvasSize = canvasSize;
+                _pageSize = pageSize;
+            }
+
+            public override void EventOccurred(IEventData data, EventType type)
+            {
+                base.EventOccurred(data, type);
+                if (type == EventType.RENDER_TEXT)
+                {
+                    var blockData = data as TextRenderInfo;
+                    foreach (var textData in blockData.GetCharacterRenderInfos())
+                    {
+                        var rect = new Windows.UI.Xaml.Shapes.Rectangle
+                        {
+                            Width = 1,
+                            Height = 1
+                        };
+                        var start = textData.GetDescentLine().GetStartPoint();
+                        var end = textData.GetAscentLine().GetEndPoint();
+
+                        double xScale = _canvasSize.Width / _pageSize.Width;
+                        double yScale = _canvasSize.Height / _pageSize.Height;
+                        var mat = new Matrix
+                        {
+                            M11 = (end.Get(0) - start.Get(0)) * xScale,
+                            M22 = (end.Get(1) - start.Get(1)) * yScale,
+                            OffsetX = start.Get(0) * xScale,
+                            OffsetY = _pageGap + (_pageSize.Height - end.Get(1)) * yScale
+                        };
+                        rect.RenderTransform = new MatrixTransform { Matrix = mat };
+                        Canvas.SetZIndex(rect, 500);
+                        rect.Fill = new SolidColorBrush(Color.FromArgb(40, 0, 0, 0));
+                        c.Children.Add(rect);
+                    }
+                }
+            }
+        }
+
+        private void PdfTest()
+        {
+            var pdfUri = DataDocument.GetField<ImageController>(KeyStore.DataKey).Data;
+
+            PdfDocument pdfDocument =
+                new PdfDocument(new PdfReader(UriToStreamConverter.Instance.ConvertDataToXaml(pdfUri)));
+            var s = pdfDocument.GetDefaultPageSize();
+            var strategy = new BoundsTextExtractionStrategy(pdfNativeCanvas, pdfNativeSize, new Size(s.GetWidth(), s.GetHeight()), xPdfView.PageGap);
+            var processsor = new PdfCanvasProcessor(strategy);
+            processsor.ProcessPageContent(pdfDocument.GetFirstPage());
         }
 
         private void OnNewRegionMade(object sender, RegionEventArgs e)
@@ -380,6 +444,7 @@ namespace Dash
 
         private void XAnnotations_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            PdfTest();
             NewRegionStarted?.Invoke(sender, e);
         }
     }
