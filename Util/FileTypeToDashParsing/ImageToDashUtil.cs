@@ -168,25 +168,37 @@ namespace Dash
         /// </summary>
         public static async Task<DocumentController> CreateImageBoxFromLocalFile(IStorageFile localFile, string title)
         {
-            var imgSize = await GetImageSize(localFile);
+            var imgWidth = await GetImageWidth(localFile);
 
-            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgSize.Width, double.NaN), title).Document;
+            return new ImageNote(new Uri(localFile.Path), new Point(), new Size(imgWidth, double.NaN), title).Document;
         }
 
         /// <summary>
         /// Return the height and width of an image stored in a randomaccess stream
         /// </summary>
-        private static async Task<Size> GetImageSize(IRandomAccessStreamReference streamRef)
+        private static async Task<double> GetImageWidth(IRandomAccessStreamReference streamRef)
         {
-            int pictureHeight;
-            int pictureWidth;
+            const double maxDim = 250;
+            double pictureHeight;
+            double pictureWidth;
             using (var stream = await streamRef.OpenReadAsync())
             {
                 var decoder = await BitmapDecoder.CreateAsync(stream);
-                pictureHeight = Convert.ToInt32(decoder.PixelHeight);
-                pictureWidth = Convert.ToInt32(decoder.PixelWidth);
+                pictureHeight = (double)Convert.ToInt32(decoder.OrientedPixelHeight);
+                pictureWidth = (double)Convert.ToInt32(decoder.OrientedPixelWidth);
+
+                if (pictureHeight > pictureWidth && pictureHeight > maxDim)
+                {
+                    pictureWidth = pictureWidth / pictureHeight * maxDim;
+                    pictureHeight = maxDim;
+                }
+                else if (pictureWidth > maxDim)
+                {
+                    pictureHeight = pictureHeight / pictureWidth * maxDim;
+                    pictureWidth = maxDim;
+                }
             }
-            return new Size(pictureWidth, pictureHeight);
+            return pictureWidth;
         }
     }
 }

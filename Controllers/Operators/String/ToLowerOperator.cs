@@ -37,11 +37,9 @@ namespace Dash
         {
             [OutputStringKey] = TypeInfo.Text,
         };
-
-
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             if (inputs[InputStringKey] is TextController tc)
             {

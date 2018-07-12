@@ -7,7 +7,7 @@ namespace Dash
     /// <summary>
     /// Operator Class used to execute Dish Scripting Language (DSL) as a string and return the return value
     /// </summary>
-    [OperatorType("exec")]
+    [OperatorType(Op.Name.exec)]
     public class ExecDishOperatorController : OperatorController
     {
 
@@ -41,7 +41,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             try
             {

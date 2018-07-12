@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("map")]
+    [OperatorType(Op.Name.map)]
     public class MapOperator : OperatorController
     {
 
@@ -53,7 +53,7 @@ namespace Dash
 
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputList = inputs[ListKey] as BaseListController;
             var lambdaString = inputs[LambdaFuncKey] as TextController;
@@ -65,7 +65,9 @@ namespace Dash
 
                 foreach (var obj in inputList.Data.ToArray())
                 {
-                    var dsl = new DSL(ScriptState.ContentAware().AddOrUpdateValue(variableName.Data, obj) as ScriptState);
+                    var newScope = new Scope();
+                    newScope.SetVariable(variableName.Data, obj);
+                    var dsl = new DSL(newScope);
                     var executed = dsl.Run(lambdaString.Data, false);
                     outputList.Add(executed);
                 }

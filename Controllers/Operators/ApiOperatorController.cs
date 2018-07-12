@@ -175,9 +175,10 @@ namespace Dash
             return true;
         }
 
+
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var url = (inputs[UrlKey] as TextController).Data;
             var method = (inputs[MethodKey] as TextController).Data;

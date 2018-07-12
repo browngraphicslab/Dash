@@ -302,7 +302,7 @@ namespace Dash
                         var field = doc.GetField(key);
                         if (field != null)
                         {
-                            list.Add(field);
+                            list.AddBase(field);
                         }
                         var textBox = new TextingBox(new DocumentReferenceController(doc, key),
                             relativePosition.X, relativePosition.Y, containedRect.Width, containedRect.Height);

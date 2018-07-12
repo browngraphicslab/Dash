@@ -80,7 +80,6 @@ namespace Dash
             get => _prevScale;
             set => SetProperty(ref _prevScale, value);
         }
-
         private void UpdateViewLevel()
         {
             foreach (var dvm in DocumentViewModels)
@@ -90,7 +89,7 @@ namespace Dash
             }
         }
         #endregion
-
+        
         void PanZoomFieldChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args, Context context)
         {
             OnPropertyChanged(nameof(TransformGroup));
@@ -215,7 +214,7 @@ namespace Dash
         {
             if (args.Action == DocumentController.FieldUpdatedAction.Update && args.FieldArgs is ListController<DocumentController>.ListFieldUpdatedEventArgs docListFieldArgs)
             {
-                updateViewModels(docListFieldArgs.ListAction, docListFieldArgs.ChangedDocuments);
+                updateViewModels(docListFieldArgs);
             }
             else
             {
@@ -225,9 +224,9 @@ namespace Dash
                         args.NewValue.DereferenceToRoot<ListController<DocumentController>>(null);
                     if (collectionFieldModelController != null)
                     {
-                        updateViewModels(
+                        updateViewModels(new ListController<DocumentController>.ListFieldUpdatedEventArgs(
                             ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace,
-                            collectionFieldModelController.GetElements());
+                            collectionFieldModelController.GetElements(), new List<DocumentController>(), 0));
                     }
                 }
             }
@@ -236,13 +235,13 @@ namespace Dash
         #region DocumentModel and DocumentViewModel Data Changes
 
         public string Tag;
-        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction action, List<DocumentController> docs)
+        void updateViewModels(ListController<DocumentController>.ListFieldUpdatedEventArgs args)
         {
-            switch (action)
+            switch (args.ListAction)
             {
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Content:
                     // we only care about changes to the Hidden field of the contained documents.
-                    foreach (var d in docs)
+                    foreach (var d in args.NewItems)
                     {
                         var visible = !d.GetHidden();
                         var shown = DocumentViewModels.Where((dvm) => dvm.DocumentController.Equals(d)).Count() > 0;
@@ -253,19 +252,17 @@ namespace Dash
                     }
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add:
-                    addViewModels(docs);
+                    addViewModels(args.NewItems);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Remove:
-                    removeViewModels(docs);
+                    removeViewModels(args.OldItems);
                     break;
                 case ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Replace:
                     DocumentViewModels.Clear();
-                    addViewModels(docs);
-                    break;
-                default:
+                    addViewModels(args.NewItems);
                     break;
             }
         }

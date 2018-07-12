@@ -47,6 +47,15 @@ namespace Dash
             var column2 = size.Width / imageSize.Width;
             var column3 = 1 - column1 - column2;
 
+            if (row3 < 0 || row3 > 1 || double.IsNaN(row3))
+                row3 = 0;
+            if (column1 < 0 || column1 > 1 || double.IsNaN(column1))
+                column1 = 0;
+            if (column2 < 0 || column2 > 1 || double.IsNaN(column2))
+                column2 = 0;
+            if (column3 < 0 || column3 > 1 || double.IsNaN(column3))
+                column3 = 0;
+
             TopLeftPercentile = new Point(column1, row1);
             BottomRightPercentile = new Point(column2 + column1, row2 + row1);
 

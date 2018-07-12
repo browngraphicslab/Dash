@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("setField")]
+    [OperatorType(Op.Name.set_field)]
     public class SetFieldOperatorController : OperatorController
     {
         public SetFieldOperatorController() : base(new OperatorModel(TypeKey.KeyModel))
@@ -46,44 +46,21 @@ namespace Dash
         {
             [ResultDocKey] = TypeInfo.Document,
         };
-        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
-            Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+
+        public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs, Dictionary<KeyController, FieldControllerBase> outputs, DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var inputDoc = inputs[InputDocumentKey] as DocumentController;
-            var fieldName = inputs[KeyNameKey] as TextController;
+            var keyName = (inputs[KeyNameKey] as TextController)?.Data.Replace("_", " ");
             var fieldValue = inputs[FieldValueKey];
-            if (inputDoc != null && fieldName != null && fieldValue != null)
-            {
-                var inps = new Dictionary<KeyController, FieldControllerBase>();
-                inps[GetFieldOperatorController.KeyNameKey] = fieldName;
-                inps[GetFieldOperatorController.InputDocumentKey] = inputDoc;
-                var outs = new Dictionary<KeyController, FieldControllerBase>();
-                var getFieldController = new GetFieldOperatorController();
-                getFieldController.Execute(inps, outs, args);
 
-                var outValue = outs[GetFieldOperatorController.ResultFieldKey];
-                var set = false;
-                if (outValue != null)
-                {
-                    foreach(var field in inputDoc.EnumFields())
-                    {
-                        if (field.Value.Equals(outValue))
-                        {
-                            inputDoc.SetField(field.Key, fieldValue, true);
-                            set = true;
-                            break;
-                        }
-                    }
-                }
+            if (inputDoc == null) throw new ScriptExecutionException(new SetFieldFailedScriptErrorModel(KeyNameKey.GetName(), fieldValue.GetValue(null).ToString()));
 
-                if (!set)
-                {
-                    inputDoc.SetField(new KeyController(fieldName.Data, UtilShared.GenerateNewId()), fieldValue, true);
-                }
-            }
+            var success = inputDoc.SetField(new KeyController(keyName), fieldValue, true);
 
-            outputs[ResultDocKey] = inputDoc;
+            var feedback = success ? $"{keyName} successfully set to " : $"Could not set {keyName} to "; 
+
+            outputs[ResultDocKey] = new TextController(feedback + fieldValue.GetValue(null));
+
         }
     }
 }

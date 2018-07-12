@@ -8,7 +8,7 @@ using DashShared;
 
 namespace Dash
 {
-    [OperatorType("intersectSearch")]
+    [OperatorType(Op.Name.intersect_search)]
     public class IntersectSearchOperator : OperatorController
     {
         //Input keys
@@ -46,7 +46,7 @@ namespace Dash
         /// </summary>
         public override void Execute(Dictionary<KeyController, FieldControllerBase> inputs,
             Dictionary<KeyController, FieldControllerBase> outputs,
-            DocumentController.DocumentFieldUpdatedEventArgs args, ScriptState state = null)
+            DocumentController.DocumentFieldUpdatedEventArgs args, Scope scope = null)
         {
             var d1 = inputs[Dict1Key] as DocumentController;
             var d2 = inputs[Dict2Key] as DocumentController;

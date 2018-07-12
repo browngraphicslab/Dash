@@ -11,35 +11,35 @@ namespace Dash
     /// This class can be instantiated to use local state, 
     /// or can be used as a Public static API for using DSL
     /// </summary>
+    // ReSharper disable once InconsistentNaming
     public class DSL
     {
-        ~DSL()
+        private readonly Scope _scope;
+        private readonly DishReplView _replView;
+
+        public DSL(Scope scope = null) => _scope = new Scope(scope);
+
+        public DSL(OuterReplScope scope, DishReplView replView)
         {
-            if (_state.IsTracked)
-            {
-                State<string>.RemoveTrackedState(_state.TrackingId);
-            }
+            _scope = scope;
+            _replView = replView;
         }
 
-        private ScriptState _state;
-        private bool _updateState;
-        public DSL(ScriptState state = null, bool updateStatePerScript = false)
+        public DSL(OuterReplScope scope)
         {
-            _updateState = updateStatePerScript;
-
-            _state = updateStatePerScript ? new ScriptState(state, DashShared.UtilShared.GenerateNewId()) : new ScriptState(state);
+            _scope = scope;
         }
 
-        public FieldControllerBase Run(string script, bool catchErrors =  false)
+        public FieldControllerBase Run(string script, bool catchErrors =  false, bool undoVar = false)
         {
             try
             {
-                var interpreted = TypescriptToOperatorParser.Interpret(script, _state);
-                if (_updateState)
+                if (script.Trim().Equals("clear") || script.Trim().Equals("clear all"))
                 {
-                    _state = (State<string>.GetTrackedState(_state.TrackingId) as ScriptState) ?? _state;
+                    _replView.Clear(script.Equals("clear all"));
+                    return new TextController();
                 }
-
+                var interpreted = TypescriptToOperatorParser.Interpret(script, _scope, undoVar);
                 return interpreted;
             }
             catch (DSLException e)
@@ -56,7 +56,7 @@ namespace Dash
         {
             try
             {
-                var controller = TypescriptToOperatorParser.GetOperatorControllerForScript(script, _state);
+                var controller = TypescriptToOperatorParser.GetOperatorControllerForScript(script, _scope);
                 return controller;
             }
             catch (DSLException e)
@@ -72,8 +72,8 @@ namespace Dash
 
         public FieldControllerBase this[string variableName]
         {
-            get { return _state[variableName]; }
-            set { _state = _state.AddOrUpdateValue(variableName, value) as ScriptState; }
+            get => _scope[variableName];
+            set => _scope.SetVariable(variableName, value);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Dash
         /// <typeparam name="T"></typeparam>
         /// <param name="operatorController"></param>
         /// <returns></returns>
-        public static string GetFuncName<T>(T operatorController) where T : OperatorController
+        public static Op.Name GetFuncName<T>(T operatorController) where T : OperatorController
         {
             return OperatorScript.GetDishOperatorName(operatorController);
         }
@@ -94,7 +94,7 @@ namespace Dash
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static string GetFuncName<T>() where T : OperatorController
+        public static Op.Name GetFuncName<T>() where T : OperatorController
         {
             return OperatorScript.GetDishOperatorName<T>();
         }
@@ -104,10 +104,7 @@ namespace Dash
         /// </summary>
         /// <param name="funcName"></param>
         /// <returns></returns>
-        public static bool FuncNameExists(string funcName)
-        {
-            return OperatorScript.FuncNameExists(funcName);
-        }
+        public static bool FuncNameExists(string funcName) => Op.TryParse(funcName, out var funcEnum) && OperatorScript.FuncNameExists(funcEnum);
 
         /// <summary>
         /// Method to call to execute a string as a Dish Script and return the FieldController return value.
@@ -170,21 +167,21 @@ namespace Dash
         /// <param name="input"></param>
         /// <param name="catchErrors"></param>
         /// <returns></returns>
-        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, ScriptState state = null)
+        public static FieldControllerBase InterpretUserInput(string input, bool catchErrors = false, Scope scope = null)
         {
             var newInput = input?.Trim() ?? "";
 
 
             if (newInput.StartsWith("=="))
             {
-                var dsl = new DSL(state);
-                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);
+                var dsl = new DSL(scope);
+                return dsl.GetOperatorController(newInput.Remove(0, 2), catchErrors);//TODO we might need to prepend "return " to the input but maybe not?
             }
 
             if (newInput.StartsWith("="))
             {
-                var dsl = new DSL(state);
-                return dsl.Run(newInput.Remove(0, 1), catchErrors);
+                var dsl = new DSL(scope);
+                return dsl.Run("return " + newInput.Remove(0, 1), catchErrors);
             }
 
 

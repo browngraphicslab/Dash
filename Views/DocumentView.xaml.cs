@@ -150,7 +150,7 @@ namespace Dash
 
             PointerPressed += (sender, e) =>
             {
-                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast);
+                var right = (e.GetCurrentPoint(this).Properties.IsRightButtonPressed || MenuToolbar.Instance.GetMouseMode() == MenuToolbar.MouseMode.PanFast) && !ViewModel.Undecorated;
                 var parentFreeform = this.GetFirstAncestorOfType<CollectionFreeformBase>();
                 var parentParentFreeform = parentFreeform?.GetFirstAncestorOfType<CollectionFreeformBase>();
                 ManipulationMode = right && parentFreeform != null && (this.IsShiftPressed() || parentParentFreeform == null) ? ManipulationModes.All : ManipulationModes.None;
@@ -187,7 +187,7 @@ namespace Dash
             void ResizeHandles_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
             {
                 ResizeHandles_restorePointerTracking();
-                this.GetDescendantsOfType<PdfView>().ToList().ForEach((p) => p.UnFreeze());
+                this.GetDescendantsOfType<CustomPdfView>().ToList().ForEach((p) => p.UnFreeze());
                 e.Handled = true;
 
                 UndoManager.EndBatch();
@@ -876,8 +876,10 @@ namespace Dash
             {
                 ToFront();
             }
-            if (ParentCollection?.CurrentView is CollectionFreeformBase cfview && (e == null || !e.Handled))
+
+            if (!this.IsRightBtnPressed() && (ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
+                var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (this.IsShiftPressed())
                 {
                     SelectionManager.ToggleSelection(this);
@@ -889,7 +891,7 @@ namespace Dash
                 }
                 if (SelectionManager.SelectedDocs.Count() > 1 && this.IsShiftPressed())
                 {
-                    cfview.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
+                    cfview?.Focus(FocusState.Programmatic); // move focus to container if multiple documents are selected, otherwise allow keyboard focus to remain where it was
                 }
 
                 //TODO this should always be handled but OnTapped is sometimes called from righttapped with null event
@@ -1178,7 +1180,7 @@ namespace Dash
                 {
                     var listCtrl = activeLayout.GetDereferencedField<ListController<DocumentController>>(KeyStore.DataKey, null);
                     if (!footer)
-                        listCtrl.Add(newFieldDoc, 0);
+                        listCtrl.Insert(0, newFieldDoc);
                     else listCtrl.Add(newFieldDoc);
                 }
             }

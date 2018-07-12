@@ -91,7 +91,6 @@ namespace DashShared
         public static string LocalServerDocumentFilepath = "dash.documents"; //
         public static string LocalServerKeyFilepath = "dash.keys"; //
         public static string LocalServerFieldFilepath =  "dash.fields"; //
-
         public const int MillisecondBetweenLocalSave = 1000; //1 second
 
         //BACKUP CONSTANTS
@@ -156,15 +155,7 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
-        
-        public static class KeyStore
-        {
-           
-            public static KeyModel PdfRegionVerticalOffsetKey = new KeyModel("806A9F4F-1258-4630-A272-B325DC7503EC", "Region on PDF vertical offset");
-            public static KeyModel VisualRegionTopLeftPercentileKey = new KeyModel("FEA17CB1-3EFF-4B95-97F5-CCA67EEFB16C", "Top-left % of region");
-            public static KeyModel VisualRegionBottomRightPercentileKey = new KeyModel("05BA4856-AAA4-4212-9A52-650C85F4A4D6", "Bottom-right & of region");
-        }
-        
+
         public static class TypeStore
         {
             public static DocumentType FreeFormDocumentType = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
