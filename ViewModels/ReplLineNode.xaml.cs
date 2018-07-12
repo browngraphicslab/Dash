@@ -154,18 +154,41 @@ namespace Dash
         private void ReplLineNode_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             if (_oldViewModel == args.NewValue) return;
+            if (_oldViewModel != null)
+            {
+                _oldViewModel.Updated -= ViewModelOnUpdated;
+            }
+
             _oldViewModel = ViewModel;
 
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            ViewModel.Updated += ViewModelOnUpdated;
+
+            Update();
+        }
+
+        private void Update()
+        {
             var vm = ViewModel;
             xArrowBlock.Visibility = IsBaseCase(vm.Value) ? Visibility.Collapsed : Visibility.Visible;
-            if (vm.Value is BaseListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed; 
-            xArrowBlock.Text = (string) Application.Current.Resources["ExpandArrowIcon"];
+            if (vm.Value is BaseListController list && list.Count == 0) xArrowBlock.Visibility = Visibility.Collapsed;
+            xArrowBlock.Text = (string)Application.Current.Resources["ExpandArrowIcon"];
 
             var m = xChildren.Margin;
             m.Left = vm.Indent * 10;
             xChildren.Margin = m;
 
+            xChildren.Children.Clear();
             ChildrenPopulated = false;
+        }
+
+        private void ViewModelOnUpdated(object sender, EventArgs eventArgs)
+        {
+            Update();
         }
 
         // If we want to add editing capabilities, implement here. Currently, triggered by right clicking on all nodes

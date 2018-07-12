@@ -17,9 +17,21 @@ namespace Dash
 
         //this is the stored value of every line;
 
+        public event EventHandler Updated;
+
+        public void Update()
+        {
+            Updated?.Invoke(this, EventArgs.Empty);
+        }
+
         public FieldControllerBase Value { get; set; }
 
-        public string ResultText { get; set; }
+        private string _resultText;
+        public string ResultText
+        {
+            get => _resultText;
+            set => SetProperty(ref _resultText, value);
+        }
         public bool DisplayableOnly { get; set; }
         public int Indent { get; set; }
 
@@ -27,19 +39,9 @@ namespace Dash
         public string LineText
         {
             get =>  _lineText;
-            set
-            {
-                SetProperty(ref _lineText, value);
-            }
+            set => SetProperty(ref _lineText, value);
         }
         
-
-        private string _lineValueText = "";
-        public string LineValueText
-        {
-            get => "     " + _lineValueText;
-            set => SetProperty(ref _lineValueText, value);
-        }
 
 
         public string GetLineText()
@@ -70,7 +72,7 @@ namespace Dash
         {
             _outputValue = outputValue;
             LineText = lineText;
-            LineValueText = GetValueFromResult(value);
+            //LineText = GetValueFromResult(value);
             Value = value;
         }
 

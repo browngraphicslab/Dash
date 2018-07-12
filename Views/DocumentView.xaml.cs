@@ -877,7 +877,7 @@ namespace Dash
                 ToFront();
             }
 
-            if ((ParentCollection == null || ParentCollection.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
+            if ((ParentCollection == null || ParentCollection?.CurrentView is CollectionFreeformBase) && (e == null || !e.Handled))
             {
                 var cfview = ParentCollection?.CurrentView as CollectionFreeformBase;
                 if (this.IsShiftPressed())

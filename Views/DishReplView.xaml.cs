@@ -423,7 +423,7 @@ namespace Dash
 
         private void InputBoxSubmit(ReplLineViewModel data, string currentText, int? index = null)
         {
-            if (data.EditTextValue)
+             if (data.EditTextValue)
             {
                 //get element num
                 if (index == null)
@@ -461,9 +461,12 @@ namespace Dash
                     result =
                         new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
-                data.LineValueText = data.GetValueFromResult(result);
-                data.Value = result;
 
+                data.Indent = _currentTab;
+                data.ResultText = data.GetValueFromResult(result);
+                data.Value = result;
+                data.DisplayableOnly = true;
+                data.Update();
                 //update input and outputs in list
                 if (index != null)
                 {
@@ -489,41 +492,6 @@ namespace Dash
             {
                 InputBoxSubmit(model, text);
             }
-            //else if (text != "")
-            // {
-            //     //only give suggestions on last word
-            //     var allText = text.Replace('\r', ' ').Split(' ');
-            //     var lastWord = "";
-            //     if (allText.Length > 0)
-            //     {
-            //         lastWord = allText[allText.Length - 1];
-            //     }
-
-            //     if (_dataset == null)
-            //     {
-            //         OperatorScript.Instance.Init();
-            //     }
-
-            //     var suggestions = _dataset?.Where(x => x.StartsWith(lastWord)).ToList();
-            //     xSuggestions.ItemsSource = suggestions;
-
-            //     var numSug = suggestions?.Count;
-            //     if (numSug > 0)
-            //     {
-            //         xSuggestionsPopup.IsOpen = true;
-            //         xSuggestionsPopup.Visibility = Visibility.Visible;
-            //         xSuggestionsPopup.SetValue(Grid.RowProperty, 1);
-            //     }
-            //     else
-            //     {
-            //         xSuggestionsPopup.Visibility = Visibility.Collapsed;
-            //     }
-            // }
-            // else
-            // {
-            //     xSuggestionsPopup.IsOpen = false;
-            //     xSuggestionsPopup.Visibility = Visibility.Collapsed;
-            // }
 
             FinishFunctionCall(text, sender as TextBox);
 
@@ -574,8 +542,11 @@ namespace Dash
                 result =
                     new TextController($" Exception:\n            InvalidInput\n      Feedback:\n            Input yielded an invalid return. Enter <help()> for a complete catalog of valid functions.");
 
-            data.LineValueText = data.GetValueFromResult(result);
+            data.Indent = _currentTab;
+            data.ResultText = data.GetValueFromResult(result);
             data.Value = result;
+            data.DisplayableOnly = true;
+            data.Update();
 
             //update input and outputs in list
             if (index != null)
@@ -715,6 +686,7 @@ namespace Dash
                         {
                             //get rid of enter
                             xTextBox.Text = _currentText;
+                            _textModified = true;
 
                             //enter pressed without key modifiers - send code to terminal
                             _takenLetters.Clear();
@@ -743,7 +715,8 @@ namespace Dash
 
                             var currentText = AddSemicolons(xTextBox.Text).Replace('\r', ' ');
 
-                            xTextBox.Text = ""; 
+                            xTextBox.Text = "";
+                            _textModified = true;
                             //ViewModel.Items.Add(new ReplLineViewModel(currentText, returnValue, new TextController("test")));
 
                             if (!SpecialCommand(currentText))
@@ -751,15 +724,15 @@ namespace Dash
                                 var head = new ReplLineViewModel
                                 {
                                     LineText = currentText,
-                                    ResultText = " " + returnValue,
                                     Value = returnValue,
                                     DisplayableOnly = true,
                                     Indent = _currentTab
                                 };
 
-                                //var head = new ReplLineViewModel(currentText, returnValue, new TextController("test"));
 
+                                head.ResultText = head.GetValueFromResult(returnValue);
                                 ViewModel.Items.Add(head);
+                                
                                 //save line text and result text data
                                 _lineTextList.Add(new TextController(currentText));
                                 _valueList.Add(returnValue);
@@ -779,6 +752,7 @@ namespace Dash
                         place += offset;
 
                         xTextBox.Text = xTextBox.Text.Insert(place, "\"");
+                        _textModified = true;
                         xTextBox.SelectionStart = place;
                         break;
                     case "(" when xTextBox.Text.Length > _currentText.Length:
@@ -789,6 +763,7 @@ namespace Dash
                         place += offset;
 
                         xTextBox.Text = xTextBox.Text.Insert(place, ")");
+                        _textModified = true;
                         xTextBox.SelectionStart = place;
                         break;
                     case "\'" when xTextBox.Text.Length > _currentText.Length:
@@ -799,11 +774,13 @@ namespace Dash
                         place += offset;
 
                         xTextBox.Text = xTextBox.Text.Insert(place, "\'");
+                        _textModified = true;
                         xTextBox.SelectionStart = place;
                         break;
                     case "{" when xTextBox.Text.Length > _currentText.Length:
                         place = xTextBox.SelectionStart;
                         xTextBox.Text = xTextBox.Text.Insert(place, "\r      \r}");
+                        _textModified = true;
                         xTextBox.SelectionStart = place + 7;
                         TextHeight += 40;
                         TextGrid.Height = new GridLength(TextHeight);
@@ -813,6 +790,7 @@ namespace Dash
                         {
                             place = xTextBox.SelectionStart;
                             xTextBox.Text += "      */";
+                            _textModified = true;
                             xTextBox.SelectionStart = place + 1;
                             _oneStar = false;
                         }
@@ -860,10 +838,13 @@ namespace Dash
 
                         break;
                 }
+                _currentText = xTextBox.Text;
+                
             }
-
-            _currentText = xTextBox.Text;
-            _textModified = false;
+            else
+            {
+                _textModified = false;
+            }
         }
 
         private static bool SpecialCommand(string currentText)
@@ -944,7 +925,6 @@ namespace Dash
             xSuggestionsPopup.Visibility = Visibility.Collapsed;
         }
         #endregion
-
 
 
     }
