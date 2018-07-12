@@ -99,6 +99,7 @@ namespace Dash
             }
         }
         
+        private Flyout _flyout;
         private double _width;
         private double _height;
         private ImageSource _docPreview = null;

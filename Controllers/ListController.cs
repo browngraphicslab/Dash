@@ -317,8 +317,8 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
-
-        private bool RemoveHelper(T element)
+        
+        public override void AddRange(IList<FieldControllerBase> elements)
         {
             if (!IsReadOnly) AddRangeManager(elements.OfType<T>().ToList());
         }

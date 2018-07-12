@@ -23,17 +23,9 @@
         <local:BoolToBrushConverter x:Key="BoolToBrushConverter"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="{ThemeResource DocumentBackgroundColor}"></SolidColorBrush>
     </UserControl.Resources>
-    
 
-    <Grid x:Name="xMasterStack" >
-        <Grid.ColumnDefinitions>
-
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" x:Name="xAnnotationColumn"/>
-        </Grid.ColumnDefinitions>
-
-        <Grid x:Name="LayoutRoot" Background="{Binding BackgroundBrush}" BorderThickness="0" Grid.Column="0">
-            <!-- Main document view -->
+    <Grid x:Name="LayoutRoot" Grid.Column="0" Background="{Binding BackgroundBrush}" BorderThickness="0">
+        <!-- Main document view -->
 
             <!-- Context flyout for right-click context menu; this opens automatically when the DocumentView grid is right clicked and is dismissed when anything else is clicked-->
             <Grid.ContextFlyout>

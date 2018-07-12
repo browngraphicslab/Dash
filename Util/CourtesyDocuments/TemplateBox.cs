@@ -122,8 +122,8 @@ namespace Dash
                 if (cfargs.ListAction ==
                     ListController<DocumentController>.ListFieldUpdatedEventArgs.ListChangedAction.Add)
                 {
-                    AddDocuments(cfargs.ChangedDocuments, newCtxt, grid);
-                    AddDocuments(cfargs.ChangedDocuments, newCtxt, stack);
+                    AddDocuments(cfargs.NewItems, newCtxt, grid);
+                    AddDocuments(cfargs.NewItems, newCtxt, stack);
                 }
                 else if (cfargs.ListAction != ListController<DocumentController>.ListFieldUpdatedEventArgs
                              .ListChangedAction.Content)
