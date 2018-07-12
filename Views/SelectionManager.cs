@@ -70,6 +70,14 @@ namespace Dash
             _selectedDocs.Add(doc);
             doc.SetSelectionBorder(true);
         }
+        public static void RefreshSelected(IEnumerable<DocumentView> viewModels)
+        {
+            var oldSelected = _selectedDocs.Select((dv) => dv.ViewModel.DocumentController).ToList();
+            DeselectAll();
+            foreach (var v in viewModels)
+                if (oldSelected.Contains(v.ViewModel.DocumentController))
+                    SelectionManager.Select(v);
+        }
 
         public static void Deselect(DocumentView doc)
         {

@@ -61,6 +61,7 @@ namespace Dash
             ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             MainPage.Instance.xMainTreeView.ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
             this.GetFirstAncestorOfType<DocumentView>().ViewModel.ViewLevel = CollectionViewModel.StandardViewLevel.None;
+            SelectionManager.RefreshSelected(this.GetDescendantsOfType<DocumentView>());
         }
 
         public override Canvas GetCanvas()
